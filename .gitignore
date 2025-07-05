@@ -9,6 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+backend/node_modules/
 
 # testing
 /coverage
@@ -19,6 +20,7 @@
 
 # production
 /build
+backend/dist/
 
 # misc
 .DS_Store
@@ -39,3 +41,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Cache
+.cache/
+.eslintcache
+
+# TensorFlow.js models (will be downloaded)
+public/models/
+
+# Logs
+*.log
+logs/
