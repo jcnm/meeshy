@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
   Dialog, 
@@ -33,6 +34,15 @@ export default function DashboardPage() {
   const [conversationLinks, setConversationLinks] = useState<ConversationLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
+  
+  // États pour la modal de création de conversation
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [conversationType, setConversationType] = useState<'direct' | 'group'>('direct');
+  const [conversationTitle, setConversationTitle] = useState('');
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -89,6 +99,16 @@ export default function DashboardPage() {
         const linksData = await linksResponse.json();
         setConversationLinks(linksData);
       }
+      
+      // Charger les utilisateurs disponibles
+      const usersResponse = await fetch('http://localhost:3002/users/search', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (usersResponse.ok) {
+        const users = await usersResponse.json();
+        setAvailableUsers(users.filter((user: User) => user.id !== userId));
+      }
     } catch (error) {
       console.error('Erreur chargement données:', error);
     }
@@ -101,9 +121,59 @@ export default function DashboardPage() {
   };
 
   const createNewConversation = async () => {
-    if (!currentUser) return;
+    if (!currentUser || selectedUsers.length === 0) {
+      toast.error('Veuillez sélectionner au moins un participant');
+      return;
+    }
 
     setIsCreatingConversation(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const participantIds = selectedUsers.map(user => user.id);
+      
+      const response = await fetch('http://localhost:3002/conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          type: conversationType,
+          title: conversationTitle || `Conversation avec ${selectedUsers.map(u => u.firstName).join(', ')}`,
+          description: `Conversation créée le ${new Date().toLocaleDateString()}`,
+          participantIds,
+        }),
+      });
+
+      if (response.ok) {
+        const newConversation = await response.json();
+        setConversations(prev => [newConversation, ...prev]);
+        toast.success('Conversation créée !');
+        
+        // Réinitialiser la modal
+        setIsCreateModalOpen(false);
+        setSelectedUsers([]);
+        setConversationTitle('');
+        setConversationType('direct');
+        
+        router.push(`/chat/${newConversation.id}`);
+      } else {
+        const errorData = await response.json();
+        console.error('Erreur serveur:', errorData);
+        toast.error(errorData.message || 'Erreur lors de la création de la conversation');
+      }
+    } catch (error) {
+      console.error('Erreur création conversation:', error);
+      toast.error('Erreur de connexion');
+    } finally {
+      setIsCreatingConversation(false);
+    }
+  };
+
+  const generateConversationLink = async () => {
+    if (!currentUser) return;
+
+    setIsGeneratingLink(true);
     try {
       const token = localStorage.getItem('auth_token');
       const response = await fetch('http://localhost:3002/conversation', {
@@ -113,25 +183,52 @@ export default function DashboardPage() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          name: `Nouvelle conversation ${new Date().toLocaleDateString()}`,
-          isGroup: false,
-          isPrivate: false,
+          type: 'group',
+          title: `Conversation partagée de ${currentUser.firstName}`,
+          description: 'Conversation créée via lien de partage',
+          participantIds: [], // Conversation vide pour l'instant
         }),
       });
 
       if (response.ok) {
         const newConversation = await response.json();
-        setConversations(prev => [newConversation, ...prev]);
-        toast.success('Conversation créée !');
-        router.push(`/chat/${newConversation.id}`);
-      } else {
-        toast.error('Erreur lors de la création de la conversation');
+        
+        // Générer un lien unique pour cette conversation
+        const linkId = `link-${newConversation.id}-${Date.now()}`;
+        
+        // Créer le lien de partage (il faudra ajouter cette route au backend)
+        const linkResponse = await fetch('http://localhost:3002/conversation/create-link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            conversationId: newConversation.id,
+            linkId,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 jours
+          }),
+        });
+
+        if (linkResponse.ok) {
+          const linkData = await linkResponse.json();
+          const fullLink = `${window.location.origin}/join/${linkId}`;
+          
+          await navigator.clipboard.writeText(fullLink);
+          toast.success('Lien de conversation copié dans le presse-papiers !');
+          
+          // Recharger les liens
+          if (currentUser.id) {
+            const token = localStorage.getItem('auth_token');
+            await loadUserData(currentUser.id, token!);
+          }
+        }
       }
     } catch (error) {
-      console.error('Erreur création conversation:', error);
-      toast.error('Erreur de connexion');
+      console.error('Erreur génération lien:', error);
+      toast.error('Erreur lors de la génération du lien');
     } finally {
-      setIsCreatingConversation(false);
+      setIsGeneratingLink(false);
     }
   };
 
@@ -192,12 +289,21 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button 
-                  onClick={createNewConversation}
-                  disabled={isCreatingConversation}
+                  onClick={() => setIsCreateModalOpen(true)}
                   className="w-full flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>{isCreatingConversation ? 'Création...' : 'Nouvelle conversation'}</span>
+                  <span>Nouvelle conversation</span>
+                </Button>
+                
+                <Button 
+                  onClick={generateConversationLink}
+                  disabled={isGeneratingLink}
+                  variant="outline"
+                  className="w-full flex items-center space-x-2"
+                >
+                  <Link2 className="h-4 w-4" />
+                  <span>{isGeneratingLink ? 'Génération...' : 'Générer un lien'}</span>
                 </Button>
                 
                 <Button 
@@ -333,6 +439,130 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Modal de création de conversation */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Nouvelle conversation</DialogTitle>
+            <DialogDescription>
+              Sélectionnez les participants pour votre conversation
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Type de conversation */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Type de conversation</label>
+              <div className="flex space-x-4">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    value="direct"
+                    checked={conversationType === 'direct'}
+                    onChange={(e) => setConversationType(e.target.value as 'direct' | 'group')}
+                  />
+                  <span>Directe</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    value="group"
+                    checked={conversationType === 'group'}
+                    onChange={(e) => setConversationType(e.target.value as 'direct' | 'group')}
+                  />
+                  <span>Groupe</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Titre de la conversation (optionnel pour direct) */}
+            {conversationType === 'group' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Titre du groupe</label>
+                <Input
+                  placeholder="Nom de votre groupe"
+                  value={conversationTitle}
+                  onChange={(e) => setConversationTitle(e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* Sélection des participants */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Participants ({selectedUsers.length} sélectionné{selectedUsers.length > 1 ? 's' : ''})
+              </label>
+              <div className="max-h-60 overflow-y-auto border rounded-lg p-2 space-y-2">
+                {availableUsers.length > 0 ? (
+                  availableUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className={`flex items-center justify-between p-2 rounded-lg border cursor-pointer hover:bg-gray-50 ${
+                        selectedUsers.some(u => u.id === user.id) ? 'bg-blue-50 border-blue-200' : ''
+                      }`}
+                      onClick={() => {
+                        if (conversationType === 'direct' && selectedUsers.length >= 1 && !selectedUsers.some(u => u.id === user.id)) {
+                          toast.error('Une conversation directe ne peut avoir qu\'un seul participant');
+                          return;
+                        }
+                        
+                        setSelectedUsers(prev => 
+                          prev.some(u => u.id === user.id)
+                            ? prev.filter(u => u.id !== user.id)
+                            : [...prev, user]
+                        );
+                      }}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">
+                            {user.firstName[0]}{user.lastName[0]}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium">{user.firstName} {user.lastName}</p>
+                          <p className="text-sm text-gray-500">@{user.username}</p>
+                        </div>
+                      </div>
+                      {selectedUsers.some(u => u.id === user.id) && (
+                        <div className="h-5 w-5 bg-blue-500 rounded-full flex items-center justify-center">
+                          <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 py-4">Aucun utilisateur disponible</p>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsCreateModalOpen(false);
+                  setSelectedUsers([]);
+                  setConversationTitle('');
+                  setConversationType('direct');
+                }}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={createNewConversation}
+                disabled={isCreatingConversation || selectedUsers.length === 0}
+              >
+                {isCreatingConversation ? 'Création...' : 'Créer la conversation'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

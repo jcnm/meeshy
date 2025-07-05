@@ -1,8 +1,9 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Request, Delete } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
-import { CreateConversationDto, JoinConversationDto, CreateMessageDto } from '../dto';
+import { CreateConversationDto, JoinConversationDto, CreateMessageDto, CreateConversationLinkDto } from '../dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PrismaService } from '../prisma/prisma.service';
 
 interface AuthenticatedRequest {
   user: {
@@ -13,39 +14,74 @@ interface AuthenticatedRequest {
 }
 
 @Controller('conversation')
-@UseGuards(JwtAuthGuard)
 export class ConversationController {
   constructor(
     private conversationService: ConversationService,
     private messageService: MessageService,
+    private prisma: PrismaService,
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   async create(@Body() createConversationDto: CreateConversationDto, @Request() req: AuthenticatedRequest) {
     return this.conversationService.create(createConversationDto, req.user.id);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async findUserConversations(@Request() req: AuthenticatedRequest) {
     return this.conversationService.findUserConversations(req.user.id);
   }
 
+  @Get('link/:linkId')
+  async getConversationByLink(@Param('linkId') linkId: string) {
+    return this.conversationService.getConversationByLinkId(linkId);
+  }
+
+  @Post('join/:linkId')
+  @UseGuards(JwtAuthGuard)
+  async joinByLink(@Param('linkId') linkId: string, @Request() req: AuthenticatedRequest) {
+    // Récupérer les informations du lien
+    const linkInfo = await this.conversationService.getConversationByLinkId(linkId);
+    
+    // Préparer le DTO pour rejoindre la conversation
+    const joinDto: JoinConversationDto = {
+      conversationId: linkInfo.conversationId,
+      linkId: linkId,
+    };
+
+    // Rejoindre la conversation
+    const result = await this.conversationService.join(joinDto, req.user.id);
+    
+    // Incrémenter le compteur d'utilisation du lien
+    await this.prisma.conversationShareLink.update({
+      where: { linkId },
+      data: { currentUses: { increment: 1 } },
+    });
+
+    return result;
+  }
+
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   async findOne(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.conversationService.findOne(id, req.user.id);
   }
 
   @Post('join')
+  @UseGuards(JwtAuthGuard)
   async join(@Body() joinConversationDto: JoinConversationDto, @Request() req: AuthenticatedRequest) {
     return this.conversationService.join(joinConversationDto, req.user.id);
   }
 
   @Delete(':id/leave')
+  @UseGuards(JwtAuthGuard)
   async leave(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.conversationService.leave(id, req.user.id);
   }
 
   @Get(':id/messages')
+  @UseGuards(JwtAuthGuard)
   async getMessages(
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,
@@ -54,6 +90,7 @@ export class ConversationController {
   }
 
   @Post(':id/messages')
+  @UseGuards(JwtAuthGuard)
   async sendMessage(
     @Param('id') conversationId: string,
     @Body() createMessageDto: CreateMessageDto,
@@ -64,42 +101,20 @@ export class ConversationController {
   }
 
   @Get('user/:userId')
+  @UseGuards(JwtAuthGuard)
   async findConversationsByUser(@Param('userId') userId: string) {
     return this.conversationService.findUserConversations(userId);
   }
 
   @Get('links/user/:userId')
+  @UseGuards(JwtAuthGuard)
   async findLinksByUser(@Param('userId') userId: string) {
-    // Pour l'instant, retourner un tableau vide
-    return [];
+    return this.conversationService.findUserConversationLinks(userId);
   }
 
-  @Get('link/:linkId')
-  async getConversationByLink(@Param('linkId') linkId: string) {
-    // Pour l'instant, simuler un lien valide
-    const mockLink = {
-      id: linkId,
-      conversationId: 'conv-1',
-      linkId: linkId,
-      isActive: true,
-      currentUses: 0,
-      maxUses: null,
-      expiresAt: null,
-      conversation: {
-        id: 'conv-1',
-        name: 'Conversation de test',
-        isGroup: false,
-        isPrivate: false,
-        createdAt: new Date(),
-        members: []
-      }
-    };
-    return mockLink;
-  }
-
-  @Post('join/:linkId')
-  async joinByLink(@Param('linkId') linkId: string, @Request() req: AuthenticatedRequest) {
-    // Pour l'instant, simuler une jointure réussie
-    return { success: true, message: 'Rejoint avec succès' };
+  @Post('create-link')
+  @UseGuards(JwtAuthGuard)
+  async createConversationLink(@Body() createLinkDto: CreateConversationLinkDto, @Request() req: AuthenticatedRequest) {
+    return this.conversationService.createConversationLink(createLinkDto, req.user.id);
   }
 }

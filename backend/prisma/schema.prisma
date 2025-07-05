@@ -35,6 +35,7 @@ model User {
   // Relations
   sentMessages      Message[]           @relation("UserSentMessages")
   conversationLinks ConversationLink[]
+  shareLinksCreated ConversationShareLink[] @relation("ShareLinkCreator")
   userStats         UserStats?
   userPreferences   UserPreference[]
   groupMemberships  GroupMember[]
@@ -58,6 +59,7 @@ model Conversation {
   // Relations
   messages    Message[]
   links       ConversationLink[]
+  shareLinks  ConversationShareLink[]
   group       Group?
   preferences ConversationPreference[]
 
@@ -80,6 +82,25 @@ model ConversationLink {
 
   @@unique([conversationId, userId])
   @@map("conversation_links")
+}
+
+model ConversationShareLink {
+  id             String      @id @default(cuid())
+  linkId         String      @unique
+  conversationId String
+  createdBy      String
+  maxUses        Int?
+  currentUses    Int         @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  creator        User         @relation("ShareLinkCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("conversation_share_links")
 }
 
 model Group {

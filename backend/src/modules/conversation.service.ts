@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateConversationDto, JoinConversationDto, ConversationResponse } from '../dto';
+import { CreateConversationDto, JoinConversationDto, ConversationResponse, CreateConversationLinkDto } from '../dto';
 
 @Injectable()
 export class ConversationService {
   constructor(private prisma: PrismaService) {}
 
   async create(createConversationDto: CreateConversationDto, creatorId: string) {
-    const { type, title, description, participantIds } = createConversationDto;
+    const { type, title, description, participantIds = [] } = createConversationDto;
 
     // Ajouter le créateur aux participants s'il n'y est pas déjà
     const allParticipants = participantIds.includes(creatorId) 
@@ -308,6 +308,181 @@ export class ConversationService {
         isPublic: conversation.group.isPublic,
         memberCount: conversation.group.members?.length || 0,
       } : undefined,
+    };
+  }
+
+  async findUserConversationLinks(userId: string) {
+    // Récupérer les liens de conversation créés par l'utilisateur
+    const links = await this.prisma.conversationShareLink.findMany({
+      where: {
+        conversation: {
+          links: {
+            some: {
+              userId,
+              leftAt: null,
+            }
+          }
+        },
+        isActive: true,
+      },
+      include: {
+        conversation: {
+          include: {
+            links: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    firstName: true,
+                    lastName: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return links;
+  }
+
+  async createConversationLink(createLinkDto: CreateConversationLinkDto, creatorId: string) {
+    const { conversationId, linkId, maxUses, expiresAt } = createLinkDto;
+
+    // Vérifier que l'utilisateur est membre de la conversation
+    const userLink = await this.prisma.conversationLink.findFirst({
+      where: {
+        conversationId,
+        userId: creatorId,
+        leftAt: null,
+      }
+    });
+
+    if (!userLink) {
+      throw new ForbiddenException('Vous n\'êtes pas membre de cette conversation');
+    }
+
+    // Créer le lien de partage
+    const shareLink = await this.prisma.conversationShareLink.create({
+      data: {
+        linkId,
+        conversationId,
+        createdBy: creatorId,
+        maxUses: maxUses || null,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        isActive: true,
+        currentUses: 0,
+      },
+      include: {
+        conversation: {
+          include: {
+            links: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    firstName: true,
+                    lastName: true,
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return shareLink;
+  }
+
+  async getConversationByLinkId(linkId: string) {
+    const shareLink = await this.prisma.conversationShareLink.findUnique({
+      where: { linkId },
+      include: {
+        conversation: {
+          include: {
+            links: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    firstName: true,
+                    lastName: true,
+                    displayName: true,
+                    avatar: true,
+                    isOnline: true,
+                  },
+                },
+              },
+              where: {
+                leftAt: null,
+              },
+            },
+            messages: {
+              take: 1,
+              orderBy: {
+                createdAt: 'desc',
+              },
+              include: {
+                sender: {
+                  select: {
+                    username: true,
+                    displayName: true,
+                  },
+                },
+              },
+            },
+            group: {
+              include: {
+                members: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        username: true,
+                        firstName: true,
+                        lastName: true,
+                        displayName: true,
+                        avatar: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            displayName: true,
+          },
+        },
+      },
+    });
+
+    if (!shareLink) {
+      throw new NotFoundException('Lien de conversation introuvable');
+    }
+
+    return {
+      id: shareLink.id,
+      linkId: shareLink.linkId,
+      conversationId: shareLink.conversationId,
+      isActive: shareLink.isActive,
+      currentUses: shareLink.currentUses,
+      maxUses: shareLink.maxUses,
+      expiresAt: shareLink.expiresAt,
+      createdAt: shareLink.createdAt,
+      conversation: this.formatConversationResponse(shareLink.conversation),
+      creator: shareLink.creator,
     };
   }
 }

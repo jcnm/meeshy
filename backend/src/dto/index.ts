@@ -48,6 +48,13 @@ export class UpdateConversationDto {
   isActive?: boolean;
 }
 
+export class CreateConversationLinkDto {
+  conversationId: string;
+  linkId: string;
+  maxUses?: number;
+  expiresAt?: Date;
+}
+
 // Group DTOs
 export class CreateGroupDto {
   title: string;
