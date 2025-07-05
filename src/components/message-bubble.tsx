@@ -3,31 +3,23 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import {
   Eye,
-  EyeOff,
   Languages,
   Edit,
   RotateCcw,
 } from 'lucide-react';
-import { TranslatedMessage, SUPPORTED_LANGUAGES, Translation, TRANSLATION_MODELS, TranslationModelType } from '@/types';
+import { TranslatedMessage, SUPPORTED_LANGUAGES, Translation, TRANSLATION_MODELS } from '@/types';
 
 interface MessageBubbleProps {
   message: TranslatedMessage;
   currentUserId: string;
+  currentUserLanguage: string; // Langue par défaut de l'utilisateur actuel
   onTranslate: (messageId: string, targetLanguage: string) => Promise<void>;
-  onRetranslate: (messageId: string) => Promise<void>;
   onEdit: (messageId: string, newContent: string) => Promise<void>;
   onToggleOriginal: (messageId: string) => void;
 }
@@ -35,8 +27,8 @@ interface MessageBubbleProps {
 export function MessageBubble({ 
   message, 
   currentUserId, 
+  currentUserLanguage,
   onTranslate, 
-  onRetranslate,
   onEdit,
   onToggleOriginal 
 }: MessageBubbleProps) {
@@ -49,7 +41,19 @@ export function MessageBubble({
   const isReceivedMessage = !isOwnMessage;
   const hasTranslations = message.translations && message.translations.length > 0;
   const hasFailedTranslation = message.translationFailed;
-  const canShowHideOriginal = isReceivedMessage && (message.isTranslated || hasTranslations);
+  
+  // Languages already translated
+  const translatedLanguages = hasTranslations 
+    ? message.translations!.map(t => t.language) 
+    : [];
+  
+  // Available languages for new translations
+  const availableLanguages = SUPPORTED_LANGUAGES.filter(
+    lang => !translatedLanguages.includes(lang.code) && lang.code !== message.originalLanguage
+  );
+
+  // Show the eye icon only for received messages with translations or translation capability
+  const canToggleView = isReceivedMessage && (hasTranslations || message.translatedContent);
 
   // Determine the model border color
   const getModelBorderColor = (): string => {
@@ -83,7 +87,8 @@ export function MessageBubble({
     
     setIsTranslating(true);
     try {
-      await onRetranslate(message.id);
+      // Retranslate vers la langue par défaut de l'utilisateur
+      await onTranslate(message.id, currentUserLanguage);
     } catch (error) {
       console.error('Erreur de retraduction:', error);
     } finally {
@@ -220,8 +225,75 @@ export function MessageBubble({
           
           {/* Action icons */}
           <div className="flex items-center space-x-1">
-            {/* Retranslate icon - always visible if translation failed, otherwise on hover */}
-            {(hasFailedTranslation || isHovered) && (
+            {/* Eye icon - toggle between showing original/translations - only for received messages */}
+            {isReceivedMessage && canToggleView && (isHovered || !message.showingOriginal) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-gray-600 hover:text-gray-800"
+                onClick={() => onToggleOriginal(message.id)}
+                title={message.showingOriginal ? 'Voir uniquement la traduction de destination' : 'Voir l\'original et toutes les traductions'}
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+            )}
+            
+            {/* Translation icon - list of available languages */}
+            {isHovered && !isEditing && availableLanguages.length > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-6 w-6 p-0 ${
+                      isOwnMessage ? 'text-white hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    disabled={isTranslating}
+                    title="Traduire vers une nouvelle langue"
+                  >
+                    <Languages className="h-3 w-3" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Traduire vers :</p>
+                    <div className="grid gap-1">
+                      {availableLanguages.map((lang) => (
+                        <Button
+                          key={lang.code}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start"
+                          onClick={() => handleTranslate(lang.code)}
+                          disabled={isTranslating}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span>{lang.flag}</span>
+                            <span>{lang.name}</span>
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+            
+            {/* Edit icon - only for own messages */}
+            {isOwnMessage && isHovered && !isEditing && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-white hover:text-gray-200"
+                onClick={() => setIsEditing(true)}
+                title="Modifier le message"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+            )}
+            
+            {/* Retranslate icon - regenerate translation to user's default language */}
+            {(isHovered || hasFailedTranslation) && !isEditing && translatedLanguages.includes(currentUserLanguage) && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -230,80 +302,10 @@ export function MessageBubble({
                 } ${hasFailedTranslation ? 'text-red-500 hover:text-red-400' : ''}`}
                 onClick={handleRetranslate}
                 disabled={isTranslating}
-                title="Retraduire avec un modèle plus puissant"
+                title={`Regénérer la traduction en ${SUPPORTED_LANGUAGES.find(l => l.code === currentUserLanguage)?.name || currentUserLanguage}`}
               >
                 <RotateCcw className={`h-3 w-3 ${isTranslating ? 'animate-spin' : ''}`} />
               </Button>
-            )}
-            
-            {/* Hover-only icons */}
-            {isHovered && !isEditing && (
-              <>
-                {/* Show/hide original - only for received translated messages */}
-                {canShowHideOriginal && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-6 w-6 p-0 ${
-                      isOwnMessage ? 'text-white hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    onClick={() => onToggleOriginal(message.id)}
-                    title={message.showingOriginal ? 'Voir la traduction' : 'Voir l\'original'}
-                  >
-                    {message.showingOriginal ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                  </Button>
-                )}
-                
-                {/* Language selector for translation */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-6 w-6 p-0 ${
-                        isOwnMessage ? 'text-white hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
-                      }`}
-                      disabled={isTranslating}
-                      title="Traduire vers une langue"
-                    >
-                      <Languages className="h-3 w-3" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-2">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Traduire vers :</p>
-                      <Select onValueChange={handleTranslate} disabled={isTranslating}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Choisir une langue" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SUPPORTED_LANGUAGES.map((lang) => (
-                            <SelectItem key={lang.code} value={lang.code}>
-                              <span className="flex items-center gap-2">
-                                <span>{lang.flag}</span>
-                                <span>{lang.name}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                
-                {/* Edit icon - only for own messages */}
-                {isOwnMessage && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-white hover:text-gray-200"
-                    onClick={() => setIsEditing(true)}
-                    title="Modifier le message"
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                )}
-              </>
             )}
           </div>
         </div>

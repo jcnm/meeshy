@@ -44,18 +44,26 @@ const getOptimalTranslationModel = (content: string): TranslationModelType => {
   if (hasUpperCase) complexityScore += 1;
   
   // Sélection du modèle selon la longueur et complexité
-  if (messageLength <= 20 && complexityScore === 0) {
+  if (messageLength <= 15 && complexityScore === 0) {
     return 'MT5_SMALL'; // Messages très courts et simples
-  } else if (messageLength <= 50 && complexityScore <= 1) {
+  } else if (messageLength <= 30 && complexityScore <= 1) {
     return 'MT5_BASE'; // Messages courts avec peu de complexité
-  } else if (messageLength <= 100 && complexityScore <= 2) {
-    return 'NLLB_200M'; // Messages moyens, modèle NLLB léger
-  } else if (messageLength <= 200 && complexityScore <= 3) {
+  } else if (messageLength <= 60 && complexityScore <= 2) {
+    return 'MT5_LARGE'; // Messages moyens avec MT5
+  } else if (messageLength <= 80 && complexityScore <= 3) {
+    return 'MT5_XL'; // Messages moyens-longs avec MT5
+  } else if (messageLength <= 100 && complexityScore <= 4) {
+    return 'NLLB_200M'; // Transition vers NLLB pour textes plus complexes
+  } else if (messageLength <= 200 && complexityScore <= 5) {
     return 'NLLB_DISTILLED_600M'; // Messages moyens-longs
-  } else if (messageLength <= 500 || complexityScore <= 4) {
-    return 'NLLB_1_3B'; // Messages longs ou complexes
+  } else if (messageLength <= 400 && complexityScore <= 6) {
+    return 'NLLB_DISTILLED_1_3B'; // Messages longs
+  } else if (messageLength <= 600 && complexityScore <= 7) {
+    return 'NLLB_1_3B'; // Messages très longs ou complexes
+  } else if (messageLength <= 1000 && complexityScore <= 8) {
+    return 'NLLB_3_3B'; // Messages très longs et complexes
   } else {
-    return 'NLLB_3_3B'; // Messages très longs ou très complexes
+    return 'NLLB_54B'; // Messages extrêmement longs ou complexes
   }
 };
 
@@ -335,52 +343,6 @@ export default function ChatPage() {
     }
   };
 
-  const handleRetranslate = async (messageId: string) => {
-    try {
-      const message = messages.find(m => m.id === messageId);
-      if (!message || !currentUser) return;
-      
-      // Use the most powerful model available for retranslation
-      const modelToUse: TranslationModelType = 'NLLB_3_3B';
-      const targetLanguage = message.targetLanguage || currentUser.systemLanguage;
-      const modelInfo = TRANSLATION_MODELS[modelToUse];
-      
-      // TODO: Utiliser le modèle NLLB 3.3B pour une traduction plus précise
-      const newTranslatedContent = `[RETRADUIT via ${modelInfo.displayName}] ${message.content}`;
-      
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { 
-              ...msg, 
-              translatedContent: newTranslatedContent,
-              translationFailed: false,
-              isTranslated: true,
-              showingOriginal: false,
-              translations: [
-                ...(msg.translations || []),
-                {
-                  language: targetLanguage,
-                  content: newTranslatedContent,
-                  flag: getLanguageFlag(targetLanguage),
-                  createdAt: new Date(),
-                  modelUsed: modelToUse,
-                  modelCost: modelInfo.cost
-                }
-              ]
-            }
-          : msg
-      ));
-      
-      // Save to cache
-      saveTranslationToCache(message.content, message.originalLanguage || 'fr', targetLanguage, newTranslatedContent, modelToUse);
-      
-      toast.success(`Message retraduit avec succès (${modelInfo.displayName})`);
-    } catch (error) {
-      console.error('Erreur de retraduction:', error);
-      toast.error('Erreur lors de la retraduction');
-    }
-  };
-
   const handleEdit = async (messageId: string, newContent: string) => {
     try {
       const token = localStorage.getItem('auth_token');
@@ -551,8 +513,8 @@ export default function ChatPage() {
             key={message.id}
             message={message}
             currentUserId={currentUser.id}
+            currentUserLanguage={currentUser.systemLanguage}
             onTranslate={handleTranslate}
-            onRetranslate={handleRetranslate}
             onEdit={handleEdit}
             onToggleOriginal={handleToggleOriginal}
           />
