@@ -1,30 +1,30 @@
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ModelManager } from '@/components/model-manager';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { TranslationTest } from '@/components/translation-test';
+import { ModelManagerModal } from '@/components/model-manager-modal';
+import { Settings } from 'lucide-react';
 
 export default function TestPage() {
+  const [modelModalOpen, setModelModalOpen] = useState(false);
+
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Meeshy - Tests du Système de Traduction
-      </h1>
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-center flex-1">
+          Meeshy - Test de Traduction
+        </h1>
+        
+        <ModelManagerModal open={modelModalOpen} onOpenChange={setModelModalOpen}>
+          <Button variant="outline" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Gérer les Modèles
+          </Button>
+        </ModelManagerModal>
+      </div>
       
-      <Tabs defaultValue="translation" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="translation">Test de Traduction</TabsTrigger>
-          <TabsTrigger value="models">Gestion des Modèles</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="translation" className="mt-6">
-          <TranslationTest />
-        </TabsContent>
-        
-        <TabsContent value="models" className="mt-6">
-          <ModelManager />
-        </TabsContent>
-      </Tabs>
+      <TranslationTest />
     </div>
   );
 }

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Send, 
@@ -19,7 +18,7 @@ import { User, Message } from '@/types';
 import { UserSettingsModal } from './user-settings-modal';
 import { TypingIndicator } from './typing-indicator';
 import { useTypingIndicator } from '@/hooks/use-typing-indicator';
-import { ModelManager } from './model-manager';
+import { ModelManagerModal } from './model-manager-modal';
 import { MessageBubble } from './message-bubble';
 import { useTranslation } from '@/hooks/use-translation';
 import { detectLanguage } from '@/utils/translation';
@@ -50,6 +49,7 @@ export function ChatInterface({
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messageContent, setMessageContent] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [modelModalOpen, setModelModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { startTyping, stopTyping } = useTypingIndicator();
   
@@ -159,6 +159,11 @@ export function ChatInterface({
             </div>
             
             <div className="flex gap-1">
+              <ModelManagerModal open={modelModalOpen} onOpenChange={setModelModalOpen}>
+                <Button size="sm" variant="ghost" title="Gérer les modèles de traduction">
+                  <Languages className="h-4 w-4" />
+                </Button>
+              </ModelManagerModal>
               <UserSettingsModal 
                 user={currentUser} 
                 onUserUpdate={(updatedUser) => {
@@ -178,64 +183,53 @@ export function ChatInterface({
           </div>
         </div>
 
-        <Tabs defaultValue="users" className="flex-1">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="users">
-              <Users className="h-4 w-4 mr-2" />
-              Utilisateurs
-            </TabsTrigger>
-            <TabsTrigger value="translation">
-              <Languages className="h-4 w-4 mr-2" />
-              Traduction
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="users" className="mt-0">
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="p-4 space-y-2">
-                {onlineUsers
-                  .filter(user => user.id !== currentUser.id)
-                  .map(user => (
-                    <Card 
-                      key={user.id} 
-                      className={`cursor-pointer transition-colors hover:bg-accent ${
-                        selectedUser?.id === user.id ? 'bg-accent' : ''
-                      }`}
-                      onClick={() => setSelectedUser(user)}
-                    >
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="text-xs">
-                              {user.username.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{user.username}</p>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              {getLanguageFlag(user.systemLanguage)}
-                              {getLanguageName(user.systemLanguage)}
-                            </div>
+        <div className="flex-1">
+          <div className="p-4 border-b">
+            <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Utilisateurs en ligne
+            </h3>
+          </div>
+          <ScrollArea className="h-[calc(100vh-200px)]">
+            <div className="p-4 space-y-2">
+              {onlineUsers
+                .filter(user => user.id !== currentUser.id)
+                .map(user => (
+                  <Card 
+                    key={user.id} 
+                    className={`cursor-pointer transition-colors hover:bg-accent ${
+                      selectedUser?.id === user.id ? 'bg-accent' : ''
+                    }`}
+                    onClick={() => setSelectedUser(user)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="text-xs">
+                            {user.username.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{user.username}</p>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            {getLanguageFlag(user.systemLanguage)}
+                            {getLanguageName(user.systemLanguage)}
                           </div>
-                          <Badge 
-                            variant={user.isOnline ? "default" : "secondary"}
-                            className={user.isOnline ? "bg-green-500" : ""}
-                          >
-                            {user.isOnline ? "En ligne" : "Hors ligne"}
-                          </Badge>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                }
-              </div>
-            </ScrollArea>
-          </TabsContent>
-          
-          <TabsContent value="translation" className="mt-0 p-4">
-            <ModelManager />
-          </TabsContent>
-        </Tabs>
+                        <Badge 
+                          variant={user.isOnline ? "default" : "secondary"}
+                          className={user.isOnline ? "bg-green-500" : ""}
+                        >
+                          {user.isOnline ? "En ligne" : "Hors ligne"}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              }
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {/* Chat Area */}
