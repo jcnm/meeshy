@@ -104,13 +104,31 @@ export interface Conversation {
   maxMembers?: number;
   createdAt: Date;
   updatedAt: Date;
-  members?: ConversationMember[];
-  participants?: ConversationParticipant[];
+  participants?: ThreadMember[];
   messages?: Message[];
   lastMessage?: Message;
   unreadCount?: number;
 }
 
+export interface ThreadMember {
+  id: string;
+  conversationId: string;
+  userId: string;
+  joinedAt: Date;
+  role: 'ADMIN' | 'MEMBER';
+  user: User;
+}
+
+export interface GroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  joinedAt: Date;
+  role: 'ADMIN' | 'MEMBER';
+  user: User;
+}
+
+// Types obsolètes - utiliser ThreadMember à la place
 export interface ConversationMember {
   id: string;
   conversationId: string;
@@ -127,27 +145,6 @@ export interface ConversationParticipant {
   avatar?: string;
   isOnline: boolean;
   role: string;
-}
-
-export interface Group {
-  id: string;
-  name: string;
-  description?: string;
-  isPrivate: boolean;
-  maxMembers?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  members: GroupMember[];
-  conversations: Conversation[];
-}
-
-export interface GroupMember {
-  id: string;
-  groupId: string;
-  userId: string;
-  joinedAt: Date;
-  role: 'ADMIN' | 'MEMBER';
-  user: User;
 }
 
 export interface AuthRequest {
@@ -194,3 +191,15 @@ export interface OnlineStatus {
 }
 
 export type AuthMode = 'welcome' | 'login' | 'register' | 'join';
+
+export interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  isPrivate: boolean;
+  maxMembers?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  members: GroupMember[];
+  conversations: Conversation[];
+}

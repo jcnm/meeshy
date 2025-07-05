@@ -25,7 +25,7 @@ import {
 import { User, Conversation, ConversationLink } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { formatConversationTitle, getUserFirstName } from '@/utils/user';
+import { formatConversationTitleFromMembers, getUserFirstName } from '@/utils/user';
 
 export default function DashboardPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -346,12 +346,7 @@ export default function DashboardPage() {
                               <div>
                                 <CardTitle className="text-lg">
                                   {currentUser && conversation.participants 
-                                    ? formatConversationTitle(
-                                        conversation.participants, 
-                                        currentUser.id, 
-                                        conversation.isGroup || false,
-                                        conversation.members
-                                      )
+                                    ? formatConversationTitleFromMembers(conversation.participants, currentUser.id)
                                     : conversation.name || 'Conversation sans nom'}
                                 </CardTitle>
                                 <CardDescription>

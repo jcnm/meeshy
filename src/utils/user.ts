@@ -1,4 +1,4 @@
-import { User, ConversationParticipant } from '@/types';
+import { User, ThreadMember } from '@/types';
 import { SUPPORTED_LANGUAGES } from '@/types';
 
 /**
@@ -53,14 +53,20 @@ export function getUserFirstName(user: User): string {
 }
 
 /**
- * Retourne le prénom d'un participant de conversation
+ * Retourne le prénom d'un membre de thread
  */
-export function getParticipantFirstName(participant: ConversationParticipant): string {
-  if (participant.displayName) {
-    return participant.displayName.split(' ')[0];
+export function getThreadMemberFirstName(member: ThreadMember): string {
+  const user = member.user;
+  
+  if (user.firstName) {
+    return user.firstName;
   }
   
-  return participant.username;
+  if (user.displayName) {
+    return user.displayName.split(' ')[0];
+  }
+  
+  return user.username;
 }
 
 /**
@@ -82,12 +88,13 @@ export function formatUserForConversation(user: User): string {
 }
 
 /**
- * Formate un participant pour l'affichage dans une conversation
+ * Formate un membre de thread pour l'affichage dans une conversation
  * Retourne "firstName (username)"
  */
-export function formatParticipantForConversation(participant: ConversationParticipant): string {
-  const firstName = getParticipantFirstName(participant);
-  return `${firstName} (${participant.username})`;
+export function formatThreadMemberForConversation(member: ThreadMember): string {
+  const user = member.user;
+  const firstName = getThreadMemberFirstName(member);
+  return `${firstName} (${user.username})`;
 }
 
 /**
@@ -103,12 +110,18 @@ export function getLanguageFlag(languageCode: string): string {
  * Affiche: "🏴 username, 🏴 username, 🏴 username" (avec drapeaux des langues de lecture)
  */
 export function formatConversationTitle(
-  participants: ConversationParticipant[], 
+  participants: ThreadMember[], 
   currentUserId: string, 
   isGroup: boolean,
-  members?: Array<{ user: User }>
+  members?: Array<User>
 ): string {
-  const otherParticipants = participants.filter(p => p.id !== currentUserId);
+  // Si les participants sont des ThreadMember complets, utiliser la fonction dédiée
+  if (participants.length > 0 && 'primaryLanguage' in participants[0]) {
+    return formatConversationTitleFromMembers(participants, currentUserId);
+  }
+  
+  // Fallback pour compatibilité
+  const otherParticipants = participants.filter(p => p.userId !== currentUserId);
   
   if (otherParticipants.length === 0) {
     return "Conversation vide";
@@ -118,7 +131,7 @@ export function formatConversationTitle(
   const displayParticipants = otherParticipants.slice(0, 3);
   const participantNames = displayParticipants.map(participant => {
     // Essayer de récupérer les infos complètes de l'utilisateur via members
-    const memberInfo = members?.find(m => m.user.id === participant.id)?.user;
+    const memberInfo = members?.find(m => m.id === participant.userId);
     
     if (memberInfo) {
       // Déterminer la langue de lecture selon les préférences de l'utilisateur
@@ -131,11 +144,50 @@ export function formatConversationTitle(
       }
       
       const flag = getLanguageFlag(readingLanguage);
-      return `${flag} ${participant.username}`;
+      return `${flag} ${participant.user.username}`;
     }
     
     // Fallback si pas d'infos complètes
-    return `🌐 ${participant.username}`;
+    return `🌐 ${participant.user.username}`;
+  });
+  
+  if (otherParticipants.length > 3) {
+    participantNames.push(`+${otherParticipants.length - 3} autres`);
+  }
+  
+  return participantNames.join(', ');
+}
+
+/**
+ * Formate le titre d'une conversation basé sur ses participants (ThreadMember)
+ * Affiche: "🏴 username, 🏴 username, 🏴 username" (avec drapeaux des langues de lecture)
+ */
+export function formatConversationTitleFromMembers(
+  participants: ThreadMember[], 
+  currentUserId: string
+): string {
+  const otherParticipants = participants.filter(p => p.userId !== currentUserId);
+  
+  if (otherParticipants.length === 0) {
+    return "Conversation vide";
+  }
+  
+  // Afficher les 3 premiers participants avec drapeau + username
+  const displayParticipants = otherParticipants.slice(0, 3);
+  const participantNames = displayParticipants.map(participant => {
+    const user = participant.user;
+    
+    // Déterminer la langue de lecture selon les préférences de l'utilisateur
+    let readingLanguage = user.systemLanguage; // Par défaut
+    
+    if (user.useCustomDestination && user.customDestinationLanguage) {
+      readingLanguage = user.customDestinationLanguage;
+    } else if (user.translateToRegionalLanguage) {
+      readingLanguage = user.regionalLanguage;
+    }
+    
+    const flag = getLanguageFlag(readingLanguage);
+    return `${flag} ${user.username}`;
   });
   
   if (otherParticipants.length > 3) {

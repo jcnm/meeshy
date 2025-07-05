@@ -296,19 +296,19 @@ export default function ChatPage() {
                       <div className="flex items-center space-x-3">
                         <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium">
-                            {member.displayName ? member.displayName[0].toUpperCase() : member.username[0].toUpperCase()}
+                            {member.user.displayName ? member.user.displayName[0].toUpperCase() : member.user.username[0].toUpperCase()}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium">{member.displayName || member.username}</p>
-                          <p className="text-sm text-gray-500">@{member.username}</p>
+                          <p className="font-medium">{member.user.displayName || member.user.username}</p>
+                          <p className="text-sm text-gray-500">@{member.user.username}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant={member.role === 'ADMIN' ? 'default' : 'secondary'}>
                           {member.role}
                         </Badge>
-                        {member.isOnline && (
+                        {member.user.isOnline && (
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         )}
                       </div>

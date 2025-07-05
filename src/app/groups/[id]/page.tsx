@@ -249,7 +249,7 @@ export default function GroupDetailPage() {
                           <div>
                             <p className="font-medium">{conversation.name || 'Conversation sans nom'}</p>
                             <p className="text-sm text-gray-500">
-                              {conversation.members?.length || 0} participant(s)
+                              {conversation.participants?.length || 0} participant(s)
                             </p>
                           </div>
                         </div>

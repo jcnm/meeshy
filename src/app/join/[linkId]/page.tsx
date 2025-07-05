@@ -268,7 +268,7 @@ export default function JoinConversationPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Participants:</span>
                   <span className="text-sm text-gray-600">
-                    {conversationLink.conversation?.participants?.length || conversationLink.conversation?.members?.length || 0} membre(s)
+                    {conversationLink.conversation?.participants?.length || 0} membre(s)
                   </span>
                 </div>
                 
