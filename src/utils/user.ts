@@ -100,8 +100,7 @@ export function getLanguageFlag(languageCode: string): string {
 
 /**
  * Formate le titre d'une conversation basé sur ses participants
- * Pour conversations 1-1: "firstName (username)" + contact + drapeau (si disponible via member)
- * Pour conversations groupes: "firstName (username), firstName (username), firstName (username)"
+ * Affiche: "🏴 username, 🏴 username, 🏴 username" (avec drapeaux des langues de lecture)
  */
 export function formatConversationTitle(
   participants: ConversationParticipant[], 
@@ -115,31 +114,28 @@ export function formatConversationTitle(
     return "Conversation vide";
   }
   
-  if (!isGroup && otherParticipants.length === 1) {
-    // Conversation 1-1: afficher nom + contact + drapeau si disponible
-    const participant = otherParticipants[0];
-    let result = formatParticipantForConversation(participant);
-    
-    // Essayer de récupérer les infos complètes de l'utilisateur via members
-    const memberInfo = members?.find(m => m.user.id === participant.id)?.user;
-    if (memberInfo) {
-      if (memberInfo.phoneNumber) {
-        result += ` • ${memberInfo.phoneNumber}`;
-      } else if (memberInfo.email) {
-        result += ` • ${memberInfo.email}`;
-      }
-      
-      const flag = getLanguageFlag(memberInfo.systemLanguage);
-      result += ` ${flag}`;
-    }
-    
-    return result;
-  }
-  
-  // Conversation de groupe: afficher les 3 premiers participants
+  // Afficher les 3 premiers participants avec drapeau + username
   const displayParticipants = otherParticipants.slice(0, 3);
   const participantNames = displayParticipants.map(participant => {
-    return formatParticipantForConversation(participant);
+    // Essayer de récupérer les infos complètes de l'utilisateur via members
+    const memberInfo = members?.find(m => m.user.id === participant.id)?.user;
+    
+    if (memberInfo) {
+      // Déterminer la langue de lecture selon les préférences de l'utilisateur
+      let readingLanguage = memberInfo.systemLanguage; // Par défaut
+      
+      if (memberInfo.useCustomDestination && memberInfo.customDestinationLanguage) {
+        readingLanguage = memberInfo.customDestinationLanguage;
+      } else if (memberInfo.translateToRegionalLanguage) {
+        readingLanguage = memberInfo.regionalLanguage;
+      }
+      
+      const flag = getLanguageFlag(readingLanguage);
+      return `${flag} ${participant.username}`;
+    }
+    
+    // Fallback si pas d'infos complètes
+    return `🌐 ${participant.username}`;
   });
   
   if (otherParticipants.length > 3) {
