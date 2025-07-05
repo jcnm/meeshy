@@ -20,107 +20,11 @@ import {
   Users, 
   Settings
 } from 'lucide-react';
-import { User, Conversation, Message, TranslatedMessage, TRANSLATION_MODELS, TranslationModelType } from '@/types';
+import { User, Conversation, Message, TranslatedMessage } from '@/types';
 import { toast } from 'sonner';
 import { io, Socket } from 'socket.io-client';
 import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
-
-// Utility functions
-const getOptimalTranslationModel = (content: string): TranslationModelType => {
-  const messageLength = content.length;
-  
-  // Analyse de la complexité du texte
-  const hasComplexPunctuation = /[.!?;:,]{2,}|[""''«»]/g.test(content);
-  const hasNumbers = /\d+/g.test(content);
-  const hasSpecialChars = /[#@$%^&*()_+=\[\]{}|\\:";'<>?,./]/.test(content);
-  const hasMultipleSentences = (content.match(/[.!?]+/g) || []).length > 1;
-  const hasUpperCase = /[A-Z]{2,}/.test(content);
-  
-  let complexityScore = 0;
-  if (hasComplexPunctuation) complexityScore += 1;
-  if (hasNumbers) complexityScore += 1;
-  if (hasSpecialChars) complexityScore += 1;
-  if (hasMultipleSentences) complexityScore += 2;
-  if (hasUpperCase) complexityScore += 1;
-  
-  // Sélection du modèle selon la longueur et complexité
-  if (messageLength <= 15 && complexityScore === 0) {
-    return 'MT5_SMALL'; // Messages très courts et simples
-  } else if (messageLength <= 30 && complexityScore <= 1) {
-    return 'MT5_BASE'; // Messages courts avec peu de complexité
-  } else if (messageLength <= 60 && complexityScore <= 2) {
-    return 'MT5_LARGE'; // Messages moyens avec MT5
-  } else if (messageLength <= 80 && complexityScore <= 3) {
-    return 'MT5_XL'; // Messages moyens-longs avec MT5
-  } else if (messageLength <= 100 && complexityScore <= 4) {
-    return 'NLLB_200M'; // Transition vers NLLB pour textes plus complexes
-  } else if (messageLength <= 200 && complexityScore <= 5) {
-    return 'NLLB_DISTILLED_600M'; // Messages moyens-longs
-  } else if (messageLength <= 400 && complexityScore <= 6) {
-    return 'NLLB_DISTILLED_1_3B'; // Messages longs
-  } else if (messageLength <= 600 && complexityScore <= 7) {
-    return 'NLLB_1_3B'; // Messages très longs ou complexes
-  } else if (messageLength <= 1000 && complexityScore <= 8) {
-    return 'NLLB_3_3B'; // Messages très longs et complexes
-  } else {
-    return 'NLLB_54B'; // Messages extrêmement longs ou complexes
-  }
-};
-
-const saveTranslationToCache = (
-  originalText: string, 
-  sourceLanguage: string, 
-  targetLanguage: string, 
-  translatedText: string, 
-  modelUsed: TranslationModelType
-) => {
-  try {
-    const key = `translation_${btoa(originalText + sourceLanguage + targetLanguage)}`;
-    const cacheEntry = {
-      key,
-      originalMessage: originalText,
-      sourceLanguage,
-      targetLanguage,
-      translatedMessage: translatedText,
-      timestamp: new Date(),
-      modelUsed,
-      modelCost: TRANSLATION_MODELS[modelUsed].cost
-    };
-    
-    localStorage.setItem(key, JSON.stringify(cacheEntry));
-    
-    // Also save to global translation stats
-    const statsKey = 'translation_stats';
-    const stats = JSON.parse(localStorage.getItem(statsKey) || '{}');
-    
-    if (!stats[modelUsed]) {
-      stats[modelUsed] = {
-        count: 0,
-        totalCost: {
-          energyConsumption: 0,
-          computationalCost: 0,
-          co2Equivalent: 0,
-          monetaryEquivalent: 0,
-          memoryUsage: 0,
-          inferenceTime: 0
-        }
-      };
-    }
-    
-    stats[modelUsed].count++;
-    const modelCost = TRANSLATION_MODELS[modelUsed].cost;
-    stats[modelUsed].totalCost.energyConsumption += modelCost.energyConsumption;
-    stats[modelUsed].totalCost.computationalCost += modelCost.computationalCost;
-    stats[modelUsed].totalCost.co2Equivalent += modelCost.co2Equivalent;
-    stats[modelUsed].totalCost.monetaryEquivalent += modelCost.monetaryEquivalent;
-    stats[modelUsed].totalCost.memoryUsage += modelCost.memoryUsage;
-    stats[modelUsed].totalCost.inferenceTime += modelCost.inferenceTime;
-    
-    localStorage.setItem(statsKey, JSON.stringify(stats));
-  } catch (error) {
-    console.error('Erreur sauvegarde cache:', error);
-  }
-};
+import { useMessageTranslation } from '@/hooks/useMessageTranslation';
 
 export default function ChatPage() {
   const params = useParams();
@@ -138,6 +42,13 @@ export default function ChatPage() {
   
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Hook de traduction avec persistance
+  const { translate } = useMessageTranslation(
+    messages,
+    setMessages,
+    currentUser?.systemLanguage || 'fr'
+  );
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -298,49 +209,7 @@ export default function ChatPage() {
 
   // Handlers for MessageBubble actions
   const handleTranslate = async (messageId: string, targetLanguage: string) => {
-    try {
-      const message = messages.find(m => m.id === messageId);
-      if (!message) return;
-
-      // Determine which model to use based on message length and complexity
-      const modelToUse = getOptimalTranslationModel(message.content);
-      
-      // TODO: Implémenter la traduction côté client avec MT5/NLLB
-      // Pour l'instant, simuler la traduction
-      const modelInfo = TRANSLATION_MODELS[modelToUse];
-      const translatedContent = `[TRADUIT vers ${targetLanguage} via ${modelInfo.displayName}] ${message.content}`;
-      
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { 
-              ...msg, 
-              translatedContent,
-              targetLanguage,
-              isTranslated: true,
-              showingOriginal: false,
-              translations: [
-                ...(msg.translations || []),
-                {
-                  language: targetLanguage,
-                  content: translatedContent,
-                  flag: getLanguageFlag(targetLanguage),
-                  createdAt: new Date(),
-                  modelUsed: modelToUse,
-                  modelCost: modelInfo.cost
-                }
-              ]
-            }
-          : msg
-      ));
-      
-      // Save to local cache with model information
-      saveTranslationToCache(message.content, message.originalLanguage || 'fr', targetLanguage, translatedContent, modelToUse);
-      
-      toast.success(`Message traduit avec succès (${modelInfo.displayName})`);
-    } catch (error) {
-      console.error('Erreur de traduction:', error);
-      toast.error('Erreur lors de la traduction');
-    }
+    await translate(messageId, targetLanguage, false);
   };
 
   const handleEdit = async (messageId: string, newContent: string) => {
@@ -388,25 +257,6 @@ export default function ChatPage() {
         ? { ...msg, showingOriginal: !msg.showingOriginal }
         : msg
     ));
-  };
-
-  // Helper function to get language flag
-  const getLanguageFlag = (languageCode: string): string => {
-    const flagMap: Record<string, string> = {
-      'fr': '🇫🇷',
-      'en': '🇺🇸',
-      'es': '🇪🇸',
-      'de': '🇩🇪',
-      'it': '🇮🇹',
-      'pt': '🇵🇹',
-      'ru': '🇷🇺',
-      'ja': '🇯🇵',
-      'ko': '🇰🇷',
-      'zh': '🇨🇳',
-      'ar': '🇸🇦',
-      'hi': '🇮🇳',
-    };
-    return flagMap[languageCode] || '🌐';
   };
 
   if (isLoading) {
