@@ -25,6 +25,8 @@ import { toast } from 'sonner';
 import { io, Socket } from 'socket.io-client';
 import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
 import { useMessageTranslation } from '@/hooks/useMessageTranslation';
+import { ModelSetupModal } from '@/components/model-setup-modal';
+import { useModelStatus } from '@/hooks/useModelStatus';
 
 export default function ChatPage() {
   const params = useParams();
@@ -49,6 +51,11 @@ export default function ChatPage() {
     setMessages,
     currentUser?.systemLanguage || 'fr'
   );
+
+  // Hook de vérification des modèles
+  const { hasAnyModel, isLoading: isLoadingModels } = useModelStatus();
+  const [showModelSetup, setShowModelSetup] = useState(false);
+  const [hasCheckedModels, setHasCheckedModels] = useState(false);
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -259,6 +266,17 @@ export default function ChatPage() {
     ));
   };
 
+  // Effet pour vérifier les modèles après l'initialisation
+  useEffect(() => {
+    if (currentUser && !isLoadingModels && !hasCheckedModels) {
+      if (!hasAnyModel) {
+        setShowModelSetup(true);
+      } else {
+        setHasCheckedModels(true);
+      }
+    }
+  }, [currentUser, hasAnyModel, isLoadingModels, hasCheckedModels]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -400,6 +418,13 @@ export default function ChatPage() {
           </Button>
         </div>
       </div>
+
+      {/* Model Setup Modal */}
+      <ModelSetupModal 
+        isOpen={showModelSetup} 
+        onOpenChange={setShowModelSetup} 
+        onComplete={() => setHasCheckedModels(true)}
+      />
     </div>
   );
 }

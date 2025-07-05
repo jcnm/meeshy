@@ -13,6 +13,7 @@ import { MODEL_FAMILIES, ModelVariant } from '@/lib/model-config';
 import { Brain, Download, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ModelLegend } from '@/components/model-legend';
+import { SystemTest } from '@/components/system-test';
 
 interface ModelConfig {
   mt5Variant: string;
@@ -216,12 +217,17 @@ export function ModelSettings() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="mt5" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
+      <Tabs defaultValue="system-test" className="w-full">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-4 h-auto">
+          <TabsTrigger value="system-test" className="text-xs sm:text-sm">Test Système</TabsTrigger>
           <TabsTrigger value="mt5" className="text-xs sm:text-sm">MT5 (Textes simples)</TabsTrigger>
           <TabsTrigger value="nllb" className="text-xs sm:text-sm">NLLB (Textes complexes)</TabsTrigger>
           <TabsTrigger value="legend" className="text-xs sm:text-sm">Référence des Modèles</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="system-test" className="space-y-4">
+          <SystemTest />
+        </TabsContent>
 
         <TabsContent value="mt5" className="space-y-4">
           <Card>
