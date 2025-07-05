@@ -51,6 +51,10 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 - Interface responsive pour mobile et desktop
 - Utilise les hooks React pour la logique métier
 - Fortement utiliser l'approche SWR (state fetching with revalidation) pour les données dynamiques
+- Utiliser des notifications pour les erreurs et succès (Sonner)
+- Utiliser des WebSockets pour la messagerie en temps réel
+- Commit lorsqu'un travail est terminé ou qu'une fonctionnalité est implémentée
+- Commit lorsqu'un long travail va être effectué
 
 ### Structure des Dossiers
 ```

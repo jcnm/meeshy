@@ -86,10 +86,10 @@ export class TranslationModelsService {
       this.loadingPromises.delete(modelName);
       console.log(`✅ Modèle ${modelName} chargé avec succès`);
       return model;
-    } catch (error) {
+    } catch (loadError) {
       this.loadingPromises.delete(modelName);
-      console.error(`❌ Erreur lors du chargement du modèle ${modelName}:`, error);
-      throw error;
+      console.error(`❌ Erreur lors du chargement du modèle ${modelName}:`, loadError);
+      throw loadError;
     }
   }
 
@@ -109,7 +109,7 @@ export class TranslationModelsService {
       // Charger le modèle TensorFlow.js
       const model = await tf.loadGraphModel(modelPath);
       return model;
-    } catch (error) {
+    } catch {
       console.warn(`⚠️ Modèle ${modelName} non disponible, utilisation du mock`);
       // Retourner un modèle factice pour le développement
       return this.createMockModel();
@@ -152,9 +152,10 @@ export class TranslationModelsService {
       // Ici, nous aurions la logique réelle de traduction avec TensorFlow.js
       // Pour l'instant, utiliser la simulation
       return this.simulateTranslation(text, sourceLang, targetLang, modelName);
-    } catch (error) {
-      console.error('Erreur lors de la traduction:', error);
-      throw new Error(`Erreur de traduction: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (translationError) {
+      console.error('Erreur lors de la traduction:', translationError);
+      const errorMessage = translationError instanceof Error ? translationError.message : String(translationError);
+      throw new Error(`Erreur de traduction: ${errorMessage}`);
     }
   }
 

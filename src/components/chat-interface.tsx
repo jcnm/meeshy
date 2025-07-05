@@ -5,54 +5,31 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';            {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              {filteredMessages.map(message => (
-                <MessageBubble key={message.id} message={message} />
-              ))}
-              <div ref={messagesEndRef} />
-            </ScrollArea>
-
-            {/* Indicateurs de frappe */}
-            <TypingIndicator 
-              chatId={`${currentUser.id}-${selectedUser.id}`}
-              currentUserId={currentUser.id}
-              users={onlineUsers}
-              className="px-4 py-2 border-t border-border"
-            />
-
-            {/* Message Input */}
-            <div className="p-4 border-t border-border bg-card">
-              <div className="flex gap-2">
-                <Input
-                  value={messageContent}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  onBlur={handleInputBlur}
-                  placeholder="Tapez votre message..."TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Send, 
   Languages, 
   RotateCcw, 
-  Settings, 
-  Users,
+  Users, 
+  Settings,
   Loader2,
-  AlertCircle,
-  CheckCircle2
+  AlertTriangle
 } from 'lucide-react';
-import { Message, User, SUPPORTED_LANGUAGES } from '@/types';
+import { User, Message, TranslatedMessage } from '@/types';
 import { UserSettingsModal } from './user-settings-modal';
 import { TypingIndicator } from './typing-indicator';
 import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { ModelsStatus } from './models-status';
 
-interface TranslatedMessage extends Message {
-  translatedContent?: string;
-  isTranslated?: boolean;
-  isTranslating?: boolean;
-  translationError?: string;
-}
+const SUPPORTED_LANGUAGES = [
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+];
 
 interface ChatInterfaceProps {
   currentUser: User;
@@ -124,6 +101,10 @@ export function ChatInterface({
     try {
       await onSendMessage(selectedUser.id, messageContent, currentUser.systemLanguage);
       setMessageContent('');
+      // Arrêter l'indicateur de frappe après envoi
+      if (selectedUser) {
+        stopTyping(`${currentUser.id}-${selectedUser.id}`);
+      }
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error);
     } finally {
@@ -138,10 +119,11 @@ export function ChatInterface({
     }
   };
 
+  // Filtrer les messages pour la conversation actuelle
   const filteredMessages = selectedUser 
-    ? messages.filter(msg => 
-        (msg.senderId === currentUser.id && msg.recipientId === selectedUser.id) ||
-        (msg.senderId === selectedUser.id && msg.recipientId === currentUser.id)
+    ? messages.filter(message => 
+        (message.senderId === currentUser.id && message.recipientId === selectedUser.id) ||
+        (message.senderId === selectedUser.id && message.recipientId === currentUser.id)
       )
     : [];
 
@@ -152,51 +134,47 @@ export function ChatInterface({
 
     return (
       <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`max-w-xs lg:max-w-md ${isOwn ? 'order-2' : 'order-1'}`}>
-          <div className={`rounded-lg px-4 py-2 ${
+        <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
+          <div className={`rounded-lg p-3 ${
             isOwn 
               ? 'bg-primary text-primary-foreground' 
-              : 'bg-muted text-muted-foreground'
+              : 'bg-muted'
           }`}>
-            <div className="flex items-start gap-2">
+            <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm">{content}</p>
+                <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
                 
                 {/* Indicateurs de traduction */}
-                {displayedMessage && (
-                  <div className="flex items-center gap-2 mt-2">
-                    {displayedMessage.isTranslating && (
-                      <div className="flex items-center gap-1 text-xs">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        <span>Traduction...</span>
-                      </div>
-                    )}
-                    
-                    {displayedMessage.translationError && (
-                      <div className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        <span>Erreur</span>
-                      </div>
-                    )}
-                    
-                    {displayedMessage.translatedContent && !displayedMessage.isTranslating && (
-                      <div className="flex items-center gap-1 text-xs">
-                        <CheckCircle2 className="h-3 w-3 text-green-500" />
-                        <span>Traduit</span>
-                      </div>
-                    )}
+                {displayedMessage?.isTranslating && (
+                  <div className="flex items-center gap-1 mt-2 text-xs opacity-70">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Traduction en cours...
                   </div>
+                )}
+                
+                {displayedMessage?.translationError && (
+                  <div className="flex items-center gap-1 mt-2 text-xs text-red-400">
+                    <AlertTriangle className="h-3 w-3" />
+                    Erreur de traduction
+                  </div>
+                )}
+
+                {displayedMessage?.isTranslated && !displayedMessage.isTranslating && (
+                  <Badge variant="secondary" className="mt-2 text-xs">
+                    <Languages className="h-3 w-3 mr-1" />
+                    Traduit
+                  </Badge>
                 )}
               </div>
               
               {/* Actions de traduction */}
               {!isOwn && isTranslationAvailable && (
-                <div className="flex gap-1">
+                <div className="flex gap-1 ml-2">
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => onToggleTranslation(message.id)}
-                    className="h-6 w-6 p-0"
+                    className="h-6 w-6 p-0 hover:bg-background/20"
                   >
                     <Languages className="h-3 w-3" />
                   </Button>
@@ -206,7 +184,7 @@ export function ChatInterface({
                       size="sm"
                       variant="ghost"
                       onClick={() => onRetranslateMessage(message.id)}
-                      className="h-6 w-6 p-0"
+                      className="h-6 w-6 p-0 hover:bg-background/20"
                     >
                       <RotateCcw className="h-3 w-3" />
                     </Button>
@@ -278,17 +256,15 @@ export function ChatInterface({
           </TabsList>
           
           <TabsContent value="users" className="mt-0">
-            <ScrollArea className="h-[calc(100vh-8rem)]">
+            <ScrollArea className="h-[calc(100vh-200px)]">
               <div className="p-4 space-y-2">
                 {onlineUsers
                   .filter(user => user.id !== currentUser.id)
                   .map(user => (
-                    <Card
-                      key={user.id}
-                      className={`cursor-pointer transition-colors ${
-                        selectedUser?.id === user.id 
-                          ? 'bg-primary/10 border-primary' 
-                          : 'hover:bg-muted/50'
+                    <Card 
+                      key={user.id} 
+                      className={`cursor-pointer transition-colors hover:bg-accent ${
+                        selectedUser?.id === user.id ? 'bg-accent' : ''
                       }`}
                       onClick={() => setSelectedUser(user)}
                     >
@@ -334,7 +310,7 @@ export function ChatInterface({
             {/* Chat Header */}
             <div className="p-4 border-b border-border bg-card">
               <div className="flex items-center gap-3">
-                <Avatar>
+                <Avatar className="h-8 w-8">
                   <AvatarFallback>
                     {selectedUser.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
@@ -361,6 +337,14 @@ export function ChatInterface({
               ))}
               <div ref={messagesEndRef} />
             </ScrollArea>
+
+            {/* Indicateurs de frappe */}
+            <TypingIndicator 
+              chatId={`${currentUser.id}-${selectedUser.id}`}
+              currentUserId={currentUser.id}
+              users={onlineUsers}
+              className="px-4 py-2 border-t border-border"
+            />
 
             {/* Message Input */}
             <div className="p-4 border-t border-border bg-card">

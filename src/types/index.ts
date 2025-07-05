@@ -29,6 +29,14 @@ export interface TranslationCache {
   timestamp: Date;
 }
 
+export interface TranslatedMessage extends Message {
+  originalContent?: string;
+  translatedContent?: string;
+  isTranslated?: boolean;
+  isTranslating?: boolean;
+  translationError?: string;
+}
+
 export interface ChatRoom {
   id: string;
   participantIds: string[];

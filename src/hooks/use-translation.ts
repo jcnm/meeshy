@@ -1,15 +1,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Message, User, TranslationModel } from '@/types';
+import { Message, User, TranslationModel, TranslatedMessage } from '@/types';
 import { translateMessage, detectLanguage } from '@/utils/translation';
-
-interface TranslatedMessage extends Message {
-  translatedContent?: string;
-  isTranslated?: boolean;
-  isTranslating?: boolean;
-  translationError?: string;
-}
 
 export function useTranslation(currentUser: User | null) {
   const [translatedMessages, setTranslatedMessages] = useState<Map<string, TranslatedMessage>>(new Map());

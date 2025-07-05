@@ -157,11 +157,6 @@ export default function Home() {
     toast.info('Déconnecté');
   };
 
-  const handleOpenSettings = () => {
-    // TODO: Implémenter le dialogue des paramètres
-    toast.info('Paramètres à venir...');
-  };
-
   // Si pas d'utilisateur sélectionné, afficher le sélecteur
   if (!currentUser || !isConnected) {
     return (
@@ -185,7 +180,6 @@ export default function Home() {
       getMessageContent={getMessageContent}
       getDisplayedMessage={getDisplayedMessage}
       isTranslationAvailable={isTranslationAvailable}
-      onOpenSettings={handleOpenSettings}
       onLogout={handleLogout}
     />
   );
