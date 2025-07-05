@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { APP_CONFIG } from '@/lib/config';
 
 interface OnlineUser {
   userId: string;
@@ -24,7 +25,7 @@ export const useOnlinePresence = (): UseOnlinePresenceReturn => {
   const connectToPresence = useCallback((token: string) => {
     if (socket?.connected) return;
 
-    const newSocket = io('http://localhost:3002', {
+    const newSocket = io(APP_CONFIG.getBackendUrl(), {
       auth: {
         token,
       },

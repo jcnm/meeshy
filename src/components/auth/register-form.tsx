@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { User, SUPPORTED_LANGUAGES } from '@/types';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 interface RegisterFormProps {
   onSuccess: (user: User, token: string) => void;
@@ -37,7 +38,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3002/auth/register', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.REGISTER), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

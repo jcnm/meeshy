@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { User, Group } from '@/types';
 import { toast } from 'sonner';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 export default function GroupsPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -53,7 +54,7 @@ export default function GroupsPage() {
         }
 
         // Vérifier l'auth
-        const authResponse = await fetch('http://localhost:3002/auth/me', {
+        const authResponse = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -81,7 +82,7 @@ export default function GroupsPage() {
 
   const loadGroups = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:3002/groups/search', {
+      const response = await fetch(buildApiUrl('/groups'), {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -103,16 +104,16 @@ export default function GroupsPage() {
     setIsCreating(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3002/groups', {
+      const response = await fetch(buildApiUrl('/groups'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          name: newGroup.name.trim(),
+          title: newGroup.name.trim(),
           description: newGroup.description.trim() || undefined,
-          isPrivate: newGroup.isPrivate,
+          isPublic: !newGroup.isPrivate,
           maxMembers: newGroup.maxMembers || undefined,
         }),
       });

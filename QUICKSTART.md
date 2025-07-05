@@ -33,7 +33,7 @@ cd ..
 cd backend
 npm run start:dev
 ```
-> Backend démarré sur http://localhost:3002
+> Backend démarré sur http://localhost:3100
 
 **Terminal 2 - Frontend** :
 ```bash

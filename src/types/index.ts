@@ -1,8 +1,9 @@
 export interface User {
   id: string;
   username: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
   email: string;
   phoneNumber?: string;
   systemLanguage: string;
@@ -13,6 +14,8 @@ export interface User {
   translateToRegionalLanguage: boolean;
   useCustomDestination: boolean;
   isOnline: boolean;
+  avatar?: string;
+  lastSeen?: Date;
   createdAt: Date;
   lastActiveAt: Date;
 }
@@ -91,15 +94,26 @@ export const SUPPORTED_LANGUAGES: LanguageCode[] = [
 
 export interface Conversation {
   id: string;
+  type: string;
+  title?: string;
   name?: string;
   description?: string;
-  isGroup: boolean;
-  isPrivate: boolean;
+  isGroup?: boolean;
+  isPrivate?: boolean;
+  isActive: boolean;
   maxMembers?: number;
   createdAt: Date;
   updatedAt: Date;
-  members: ConversationMember[];
-  messages: Message[];
+  members?: ConversationMember[];
+  participants?: Array<{
+    id: string;
+    username: string;
+    displayName?: string;
+    avatar?: string;
+    isOnline: boolean;
+    role: string;
+  }>;
+  messages?: Message[];
   lastMessage?: Message;
   unreadCount?: number;
 }

@@ -124,7 +124,7 @@ dev() {
     
     echo -e "${GREEN}✅ Serveurs démarrés !${NC}"
     echo -e "${BLUE}📱 Frontend: http://localhost:3000${NC}"
-    echo -e "${BLUE}🔌 Backend:  http://localhost:3002${NC}"
+    echo -e "${BLUE}🔌 Backend:  http://localhost:3100${NC}"
     echo ""
     echo -e "${YELLOW}Appuyez sur Ctrl+C pour arrêter${NC}"
     

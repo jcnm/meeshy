@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
+import { APP_CONFIG } from '@/lib/config';
 
 export interface NotificationData {
   id: string;
@@ -45,7 +46,7 @@ export const useNotifications = (): UseNotificationsReturn => {
   const connectToNotifications = useCallback((token: string, userId: string) => {
     if (socket?.connected) return;
 
-    const newSocket = io('http://localhost:3002', {
+    const newSocket = io(APP_CONFIG.getBackendUrl(), {
       auth: { token },
       transports: ['websocket'],
     });

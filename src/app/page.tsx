@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { 
   Dialog, 
   DialogContent, 
@@ -44,7 +45,7 @@ export default function LandingPage() {
       try {
         const token = localStorage.getItem('auth_token');
         if (token) {
-          const response = await fetch('http://localhost:3002/auth/me', {
+          const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
             headers: { Authorization: `Bearer ${token}` }
           });
           

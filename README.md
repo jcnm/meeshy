@@ -83,7 +83,7 @@ cd backend
 npm run start:dev
 ```
 
-Le backend sera disponible sur http://localhost:3002
+Le backend sera disponible sur http://localhost:3100
 
 ### 6. Démarrer le frontend
 ```bash
@@ -91,7 +91,7 @@ Le backend sera disponible sur http://localhost:3002
 npm run dev
 ```
 
-Le frontend sera disponible sur http://localhost:3000
+Le frontend sera disponible sur http://localhost:3200
 
 ## 🎯 Utilisation
 

@@ -77,7 +77,7 @@ else
 fi
 
 # Vérifier backend
-if curl -s http://localhost:3002/users > /dev/null; then
+if curl -s http://localhost:3100/users > /dev/null; then
   echo "✅ Backend disponible (port 3002)"
 else
   echo "❌ Backend non accessible"

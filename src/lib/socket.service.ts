@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { User, Message, SocketResponse } from '@/types';
+import { APP_CONFIG } from './config';
 
 export class SocketService {
   private static instance: SocketService;
@@ -25,7 +26,7 @@ export class SocketService {
         return;
       }
 
-      this.socket = io('http://localhost:3001', {
+      this.socket = io(APP_CONFIG.getBackendUrl(), {
         autoConnect: true,
         reconnection: true,
         reconnectionAttempts: 5,

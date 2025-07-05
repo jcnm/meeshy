@@ -27,6 +27,7 @@ import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { User, ConversationLink, AuthMode } from '@/types';
 import { toast } from 'sonner';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 export default function JoinConversationPage() {
   const params = useParams();
@@ -46,7 +47,7 @@ export default function JoinConversationPage() {
         // Vérifier l'authentification
         const token = localStorage.getItem('auth_token');
         if (token) {
-          const authResponse = await fetch('http://localhost:3002/auth/me', {
+          const authResponse = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -59,7 +60,7 @@ export default function JoinConversationPage() {
         }
 
         // Charger les informations du lien
-        const linkResponse = await fetch(`http://localhost:3002/conversation/link/${linkId}`);
+        const linkResponse = await fetch(`${buildApiUrl('/conversation/link')}/${linkId}`);
         
         if (linkResponse.ok) {
           const linkData = await linkResponse.json();
@@ -101,7 +102,7 @@ export default function JoinConversationPage() {
     setIsJoining(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`http://localhost:3002/conversation/join/${linkId}`, {
+      const response = await fetch(`${buildApiUrl('/conversation/join')}/${linkId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -239,7 +240,7 @@ export default function JoinConversationPage() {
           <Card className="shadow-xl">
             <CardHeader className="text-center">
               <div className="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                {conversationLink.conversation.isGroup ? (
+                {conversationLink.conversation?.type === 'GROUP' ? (
                   <Users className="h-8 w-8 text-blue-600" />
                 ) : (
                   <MessageSquare className="h-8 w-8 text-blue-600" />
@@ -250,7 +251,7 @@ export default function JoinConversationPage() {
                 Rejoindre la conversation
               </CardTitle>
               <CardDescription className="text-lg">
-                Vous êtes invité(e) à rejoindre &quot;{conversationLink.conversation.name || 'Conversation sans nom'}&quot;
+                Vous êtes invité(e) à rejoindre &quot;{conversationLink.conversation?.title || 'Conversation sans nom'}&quot;
               </CardDescription>
             </CardHeader>
             
@@ -259,22 +260,22 @@ export default function JoinConversationPage() {
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Type:</span>
-                  <Badge variant={conversationLink.conversation.isGroup ? "default" : "secondary"}>
-                    {conversationLink.conversation.isGroup ? 'Groupe' : 'Conversation privée'}
+                  <Badge variant={conversationLink.conversation?.type === 'GROUP' ? "default" : "secondary"}>
+                    {conversationLink.conversation?.type === 'GROUP' ? 'Groupe' : 'Conversation privée'}
                   </Badge>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Participants:</span>
                   <span className="text-sm text-gray-600">
-                    {conversationLink.conversation.members.length} membre(s)
+                    {conversationLink.conversation?.participants?.length || conversationLink.conversation?.members?.length || 0} membre(s)
                   </span>
                 </div>
                 
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Créée le:</span>
                   <span className="text-sm text-gray-600">
-                    {new Date(conversationLink.conversation.createdAt).toLocaleDateString()}
+                    {conversationLink.conversation?.createdAt ? new Date(conversationLink.conversation.createdAt).toLocaleDateString() : 'N/A'}
                   </span>
                 </div>
 
@@ -296,7 +297,7 @@ export default function JoinConversationPage() {
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <div>
                       <p className="font-medium text-green-900">
-                        Connecté en tant que {currentUser.firstName} {currentUser.lastName}
+                        Connecté en tant que {currentUser.firstName || currentUser.displayName || currentUser.username} {currentUser.lastName || ''}
                       </p>
                       <p className="text-sm text-green-700">@{currentUser.username}</p>
                     </div>

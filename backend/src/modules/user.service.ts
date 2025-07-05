@@ -133,6 +133,8 @@ export class UserService {
           {
             OR: [
               { username: { contains: query } },
+              { firstName: { contains: query } },
+              { lastName: { contains: query } },
               { displayName: { contains: query } },
               { email: { contains: query } },
             ],
@@ -145,6 +147,8 @@ export class UserService {
       select: {
         id: true,
         username: true,
+        firstName: true,
+        lastName: true,
         displayName: true,
         avatar: true,
         isOnline: true,

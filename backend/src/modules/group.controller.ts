@@ -21,6 +21,11 @@ export class GroupController {
     return this.groupService.create(createGroupDto, req.user.id);
   }
 
+  @Get()
+  async findUserGroups(@Request() req: AuthenticatedRequest) {
+    return this.groupService.findUserGroups(req.user.id);
+  }
+
   @Get('search')
   async searchPublicGroups(@Query('q') query: string, @Query('page') page?: string) {
     const pageNum = page ? parseInt(page, 10) : 1;

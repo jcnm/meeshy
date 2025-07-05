@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { User, Group } from '@/types';
 import { toast } from 'sonner';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -36,7 +37,7 @@ export default function GroupDetailPage() {
         }
 
         // Vérifier l'auth
-        const authResponse = await fetch('http://localhost:3002/auth/me', {
+        const authResponse = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -50,7 +51,7 @@ export default function GroupDetailPage() {
         setCurrentUser(userData);
 
         // Charger les détails du groupe
-        const groupResponse = await fetch(`http://localhost:3002/groups/${groupId}`, {
+        const groupResponse = await fetch(`${buildApiUrl('/groups')}/${groupId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -188,11 +189,11 @@ export default function GroupDetailPage() {
                       <div className="flex items-center space-x-3">
                         <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium">
-                            {member.user.firstName[0]}{member.user.lastName[0]}
+                            {member.user.firstName?.[0] || member.user.username[0]}{member.user.lastName?.[0] || ''}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium">{member.user.firstName} {member.user.lastName}</p>
+                          <p className="font-medium">{member.user.firstName || member.user.displayName || member.user.username} {member.user.lastName || ''}</p>
                           <p className="text-sm text-gray-500">@{member.user.username}</p>
                         </div>
                       </div>

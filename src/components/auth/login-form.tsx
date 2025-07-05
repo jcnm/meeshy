@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { User } from '@/types';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 interface LoginFormProps {
   onSuccess: (user: User, token: string) => void;
@@ -28,7 +29,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3002/auth/login', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

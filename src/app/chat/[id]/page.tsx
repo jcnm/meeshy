@@ -25,6 +25,7 @@ import {
 import { User, Conversation, Message, TranslatedMessage } from '@/types';
 import { toast } from 'sonner';
 import { io, Socket } from 'socket.io-client';
+import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
 
 export default function ChatPage() {
   const params = useParams();
@@ -54,7 +55,7 @@ export default function ChatPage() {
         }
 
         // Vérifier l'auth et récupérer l'utilisateur
-        const authResponse = await fetch('http://localhost:3002/auth/me', {
+        const authResponse = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -68,7 +69,7 @@ export default function ChatPage() {
         setCurrentUser(userData);
 
         // Charger la conversation
-        const conversationResponse = await fetch(`http://localhost:3002/conversation/${conversationId}`, {
+        const conversationResponse = await fetch(`${buildApiUrl('/conversation')}/${conversationId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -82,7 +83,7 @@ export default function ChatPage() {
         setConversation(conversationData);
 
         // Charger les messages
-        const messagesResponse = await fetch(`http://localhost:3002/message/conversation/${conversationId}`, {
+        const messagesResponse = await fetch(`${buildApiUrl('/message/conversation')}/${conversationId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -97,7 +98,7 @@ export default function ChatPage() {
 
         // Initialiser WebSocket
         const initializeWebSocket = (userId: string, token: string) => {
-          socketRef.current = io('http://localhost:3002', {
+          socketRef.current = io(APP_CONFIG.getBackendUrl(), {
             auth: { token }
           });
 
@@ -168,7 +169,7 @@ export default function ChatPage() {
     setIsSending(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3002/message', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.MESSAGE.SEND), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +267,7 @@ export default function ChatPage() {
                   {conversation.name || 'Conversation sans nom'}
                 </h1>
                 <p className="text-sm text-gray-500">
-                  {conversation.members.length} participant(s)
+                  {conversation.participants?.length || 0} participant(s)
                   {typingUsers.length > 0 && (
                     <span className="ml-2 text-blue-600">• En train d'écrire...</span>
                   )}
@@ -290,24 +291,24 @@ export default function ChatPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-3">
-                  {conversation.members.map((member) => (
+                  {conversation.participants?.map((member) => (
                     <div key={member.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium">
-                            {member.user.firstName[0]}{member.user.lastName[0]}
+                            {member.displayName ? member.displayName[0].toUpperCase() : member.username[0].toUpperCase()}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium">{member.user.firstName} {member.user.lastName}</p>
-                          <p className="text-sm text-gray-500">@{member.user.username}</p>
+                          <p className="font-medium">{member.displayName || member.username}</p>
+                          <p className="text-sm text-gray-500">@{member.username}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Badge variant={member.role === 'ADMIN' ? 'default' : 'secondary'}>
                           {member.role}
                         </Badge>
-                        {connectedUsers.some(u => u.id === member.user.id) && (
+                        {member.isOnline && (
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         )}
                       </div>

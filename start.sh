@@ -4,6 +4,8 @@
 # Lance le frontend et le backend en parallèle
 
 echo "🚀 Démarrage de Meeshy..."
+echo "📦 Backend : http://localhost:3100"
+echo "🌐 Frontend : http://localhost:3200"
 
 # Fonction pour nettoyer les processus en arrière-plan
 cleanup() {
@@ -29,8 +31,7 @@ fi
 # Démarrer le backend
 echo "🔧 Démarrage du backend NestJS..."
 cd backend && npm run start:dev &
-BACKEND_PID=$!
-cd ..
+BACKEND_PID=$! 
 
 # Attendre que le backend démarre
 sleep 3
@@ -45,7 +46,7 @@ sleep 5
 
 echo "✅ Services démarrés !"
 echo "📱 Frontend: http://localhost:3000 (ou port alternatif)"
-echo "🔧 Backend: http://localhost:3002"
+echo "🔧 Backend: http://localhost:3100"
 echo ""
 echo "💡 Modèles de traduction disponibles :"
 echo "   - mT5: Messages simples (≤100 caractères)"

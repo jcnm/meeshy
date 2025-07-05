@@ -49,7 +49,7 @@ export class GroupService {
       },
     });
 
-    return this.getGroupWithDetails(group.id);
+    return this.getGroupForFrontend(group.id);
   }
 
   async findOne(id: string, userId?: string) {
@@ -353,6 +353,30 @@ export class GroupService {
     }));
   }
 
+  private async getGroupForFrontend(groupId: string) {
+    const group = await this.getGroupWithDetails(groupId);
+    if (!group) return null;
+
+    return {
+      id: group.id,
+      name: group.title,
+      description: group.description,
+      isPrivate: !group.isPublic,
+      maxMembers: group.maxMembers,
+      createdAt: group.createdAt,
+      updatedAt: group.updatedAt,
+      members: group.members.map(m => ({
+        id: m.id,
+        groupId: m.groupId,
+        userId: m.userId,
+        joinedAt: m.joinedAt,
+        role: m.role,
+        user: m.user,
+      })),
+      conversations: [{ id: group.conversation.id }],
+    };
+  }
+
   private async getGroupWithDetails(groupId: string) {
     return this.prisma.group.findUnique({
       where: { id: groupId },
@@ -416,5 +440,69 @@ export class GroupService {
     if (!member || !['admin', 'moderator'].includes(member.role)) {
       throw new ForbiddenException('Permissions de modérateur requises');
     }
+  }
+
+  async findUserGroups(userId: string) {
+    const groupMembers = await this.prisma.groupMember.findMany({
+      where: { userId },
+      include: {
+        group: {
+          include: {
+            members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                    isOnline: true,
+                  },
+                },
+              },
+            },
+            createdBy: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+              },
+            },
+            conversation: {
+              select: {
+                id: true,
+                updatedAt: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        joinedAt: 'desc',
+      },
+    });
+
+    return groupMembers.map(member => ({
+      id: member.group.id,
+      name: member.group.title,
+      description: member.group.description,
+      isPrivate: !member.group.isPublic,
+      maxMembers: member.group.maxMembers,
+      memberCount: member.group.members.length,
+      createdAt: member.group.createdAt,
+      updatedAt: member.group.updatedAt,
+      members: member.group.members.map(m => ({
+        id: m.id,
+        groupId: m.groupId,
+        userId: m.userId,
+        joinedAt: m.joinedAt,
+        role: m.role,
+        user: m.user,
+      })),
+      conversations: [{ id: member.group.conversation.id }],
+    }));
   }
 }

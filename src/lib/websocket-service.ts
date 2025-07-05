@@ -1,11 +1,12 @@
 import { io, Socket } from 'socket.io-client';
 import { User, Message, SocketResponse } from '@/types';
+import { APP_CONFIG } from './config';
 
 class WebSocketService {
   private socket: Socket | null = null;
   private currentUser: User | null = null;
 
-  connect(serverUrl: string = 'http://localhost:3002'): void {
+  connect(serverUrl: string = APP_CONFIG.getBackendUrl()): void {
     if (this.socket?.connected) return;
 
     this.socket = io(serverUrl, {

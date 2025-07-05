@@ -11,8 +11,7 @@ import {
   DialogContent, 
   DialogDescription, 
   DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+  DialogTitle 
 } from '@/components/ui/dialog';
 import { 
   Plus, 
@@ -21,12 +20,11 @@ import {
   Settings,
   LogOut,
   Link2,
-  Copy,
-  Globe,
-  Clock
+  Copy
 } from 'lucide-react';
 import { User, Conversation, ConversationLink } from '@/types';
 import { toast } from 'sonner';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 export default function DashboardPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -55,7 +53,7 @@ export default function DashboardPage() {
         }
 
         // Vérifier le token et récupérer les données utilisateur
-        const response = await fetch('http://localhost:3002/auth/me', {
+        const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -81,7 +79,7 @@ export default function DashboardPage() {
   const loadUserData = async (userId: string, token: string) => {
     try {
       // Charger les conversations
-      const conversationsResponse = await fetch(`http://localhost:3002/conversation/user/${userId}`, {
+      const conversationsResponse = await fetch(`${buildApiUrl('/conversation/user')}/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -91,7 +89,7 @@ export default function DashboardPage() {
       }
 
       // Charger les liens de conversation
-      const linksResponse = await fetch(`http://localhost:3002/conversation/links/user/${userId}`, {
+      const linksResponse = await fetch(`${buildApiUrl('/conversation/links/user')}/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -101,7 +99,7 @@ export default function DashboardPage() {
       }
       
       // Charger les utilisateurs disponibles
-      const usersResponse = await fetch('http://localhost:3002/users/search', {
+      const usersResponse = await fetch(buildApiUrl(API_ENDPOINTS.USER.SEARCH), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -131,7 +129,7 @@ export default function DashboardPage() {
       const token = localStorage.getItem('auth_token');
       const participantIds = selectedUsers.map(user => user.id);
       
-      const response = await fetch('http://localhost:3002/conversation', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.CREATE), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,7 +174,7 @@ export default function DashboardPage() {
     setIsGeneratingLink(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3002/conversation', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.CREATE), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +182,7 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({
           type: 'group',
-          title: `Conversation partagée de ${currentUser.firstName}`,
+          title: `Conversation partagée de ${currentUser.firstName || currentUser.displayName || currentUser.username}`,
           description: 'Conversation créée via lien de partage',
           participantIds: [], // Conversation vide pour l'instant
         }),
@@ -197,7 +195,7 @@ export default function DashboardPage() {
         const linkId = `link-${newConversation.id}-${Date.now()}`;
         
         // Créer le lien de partage (il faudra ajouter cette route au backend)
-        const linkResponse = await fetch('http://localhost:3002/conversation/create-link', {
+        const linkResponse = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.CREATE_LINK), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -211,7 +209,7 @@ export default function DashboardPage() {
         });
 
         if (linkResponse.ok) {
-          const linkData = await linkResponse.json();
+          await linkResponse.json(); // Valider la réponse
           const fullLink = `${window.location.origin}/join/${linkId}`;
           
           await navigator.clipboard.writeText(fullLink);
@@ -261,7 +259,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Meeshy</h1>
-              <p className="text-sm text-gray-600">Bienvenue, {currentUser.firstName} !</p>
+              <p className="text-sm text-gray-600">Bienvenue, {currentUser.firstName || currentUser.displayName || currentUser.username} !</p>
             </div>
           </div>
           
@@ -345,7 +343,7 @@ export default function DashboardPage() {
                                   {conversation.name || 'Conversation sans nom'}
                                 </CardTitle>
                                 <CardDescription>
-                                  {conversation.members.length} participant(s)
+                                  {conversation.participants?.length || 0} participant(s)
                                   {conversation.lastMessage && (
                                     <span className="ml-2">
                                       • Dernier message il y a {/* Calculate time */}
@@ -517,11 +515,11 @@ export default function DashboardPage() {
                       <div className="flex items-center space-x-3">
                         <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-sm font-medium">
-                            {user.firstName[0]}{user.lastName[0]}
+                            {user.firstName?.[0] || user.username[0]}{user.lastName?.[0] || ''}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium">{user.firstName} {user.lastName}</p>
+                          <p className="font-medium">{user.firstName || user.displayName || user.username} {user.lastName || ''}</p>
                           <p className="text-sm text-gray-500">@{user.username}</p>
                         </div>
                       </div>

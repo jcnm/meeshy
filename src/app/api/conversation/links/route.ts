@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { APP_CONFIG } from '@/lib/config';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3002';
+const BACKEND_URL = APP_CONFIG.getBackendUrl();
 
 export async function GET(request: NextRequest) {
   try {

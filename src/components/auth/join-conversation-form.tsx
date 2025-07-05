@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { buildApiUrl } from '@/lib/config';
 
 interface JoinConversationFormProps {
   onSuccess: (linkId: string) => void;
@@ -30,7 +31,7 @@ export function JoinConversationForm({ onSuccess }: JoinConversationFormProps) {
         : linkId.trim();
 
       // Vérifier si le lien existe
-      const response = await fetch(`http://localhost:3002/conversation/link/${extractedLinkId}`);
+      const response = await fetch(buildApiUrl(`conversation/link/${extractedLinkId}`));
       
       if (response.ok) {
         const result = await response.json();
