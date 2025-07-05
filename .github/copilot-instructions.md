@@ -1,17 +1,19 @@
 # Copilot Instructions pour Meeshy
 
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization #_use-a-githubcopilotinstructionsmd-file -->
 
 ## Contexte du Projet
 
 Ce projet est une application de messagerie avec traduction automatique côté client appelée "Meeshy".
 
-### Architecture
+### Architecture Générale
 - **Frontend**: Next.js 15 avec TypeScript, Tailwind CSS, et shadcn/ui
 - **Backend**: NestJS avec WebSockets pour la messagerie temps réel
 - **Traduction**: Modèles MT5 et NLLB via TensorFlow.js (côté client uniquement)
 - **Cache**: localStorage du navigateur pour les traductions
-- **Base de données**: En mémoire pour le développement
+- **Base de données**: SQLite avec Prisma ORM pour le développement
+- **Authentification**: JWT avec NestJS Guards et stratégies Passport
+- **Sécurité**: Validation stricte, chiffrement des données sensibles, CORS configuré
 
 ### Spécificités Techniques
 
@@ -30,10 +32,19 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 - WebSocket client pour la messagerie temps réel
 
 #### Backend (NestJS)
-- API REST pour la gestion des utilisateurs et paramètres
-- WebSocket Gateway pour la messagerie
-- Utilisateurs prédéfinis en mémoire (4-7 utilisateurs)
-- Pas de base de données externe, usage de sqlite pour le développement
+- **Structure modulaire**: Modules organisés par domaine métier (auth, users, conversations, groups)
+- **API REST**: Endpoints sécurisés avec validation class-validator
+- **WebSocket Gateway**: Messagerie temps réel avec gestion des rooms
+- **Base de données**: Prisma avec SQLite, migrations gérées
+- **Authentification**: JWT avec refresh tokens, rate limiting
+- **Validation**: DTOs strictement typés avec class-validator/class-transformer
+- **Sécurité**: Chiffrement bcrypt, secrets sécurisés, CORS configuré
+- **Utilisateurs prédéfinis**: 5 utilisateurs de test avec données seed
+- **Gestion des erreurs**: Middleware global pour les erreurs, logging structuré
+- **Documentation**: Swagger pour l'API REST
+- **Tests**: Tests unitaires et d'intégration avec Jest
+- **Notifications**: Système de notifications temps réel avec Sonner
+- **Système de présence**: Indicateurs en ligne/hors ligne, indicateurs de frappe, et notifications de lecture
 
 #### Flux de Données
 1. Message envoyé dans la langue native de l'utilisateur
@@ -43,6 +54,22 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 5. Affichage avec option de basculement original/traduit
 
 ### Bonnes Pratiques
+
+#### Cohérence de Conception
+- **Types partagés**: Source unique de vérité pour les interfaces entre frontend/backend
+- **Validation complète**: Validation stricte côté client ET serveur
+- **Gestion d'erreurs**: Middleware global avec messages utilisateur cohérents
+- **UX cohérente**: Interface intuitive, navigation fluide, feedback immédiat
+- **Performance**: Cache intelligent, lazy loading, optimisation des requêtes
+
+#### Standards Techniques
+- **TypeScript strict**: Configuration stricte avec validation complète
+- **Architecture modulaire**: Séparation claire des responsabilités
+- **Sécurité**: Chiffrement, validation, protection CSRF/XSS
+- **Tests**: Validation continue avec tests unitaires et d'intégration
+- **Documentation**: Code auto-documenté avec commentaires en français
+
+#### Développement
 - Toujours vérifier les interfaces et correspondances de types avant de proposer des modifications
 - Toujours vérifier la cohérence des types et données entre le frontend et le backend
 - Toujours valider les inputs côté client et serveur
@@ -70,11 +97,35 @@ src/
 
 backend/                 # Application NestJS séparée
 ├── src/
-│   ├── modules/         # Modules NestJS
-│   ├── gateway/         # WebSocket Gateway
-│   └── types/           # Types partagés
+│   ├── auth/           # Authentification et autorisation
+│   ├── common/         # Types partagés, guards, decorators
+│   ├── config/         # Configuration centralisée
+│   ├── dto/            # Data Transfer Objects
+│   ├── gateway/        # WebSocket Gateway
+│   ├── modules/        # Modules métier (users, conversations, groups)
+│   ├── prisma/         # Service Prisma
+│   └── types/          # Types TypeScript partagés
+├── prisma/             # Schéma et migrations
 └── package.json
 ```
+
+### Règles de Cohérence UX
+
+#### Navigation et Interface
+- **Consistance visuelle**: Composants shadcn/ui uniformes, palette couleurs cohérente
+- **Navigation intuitive**: Breadcrumbs clairs, état actuel visible, retour facile
+- **Feedback utilisateur**: Loading states, confirmations, messages d'erreur explicites
+- **Responsivité**: Interface adaptée mobile/desktop avec même logique
+
+#### Gestion des Données
+- **État synchronisé**: Cohérence temps réel entre tous les clients connectés
+- **Cache intelligent**: Mise à jour optimiste avec rollback en cas d'erreur
+- **Offline graceful**: Gestion des états de connexion avec retry automatique
+
+#### Sécurité Utilisateur
+- **Données au repos**: Chiffrement transparent avec bcrypt pour les mots de passe
+- **Validation stricte**: Input sanitization côté client ET serveur
+- **Sessions sécurisées**: JWT avec expiration, refresh tokens, rate limiting
 
 ### Conventions de Code
 - Utiliser des noms de composants en PascalCase
