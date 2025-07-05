@@ -86,25 +86,27 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[80vh] p-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="text-xl font-semibold">Paramètres et Configuration</DialogTitle>
+      <DialogContent className="max-w-[98vw] w-full h-[95vh] p-0 sm:max-w-[95vw] sm:h-[90vh]">
+        <DialogHeader className="px-4 py-3 border-b sm:px-6 sm:py-4">
+          <DialogTitle className="text-lg sm:text-xl font-semibold">Paramètres et Configuration</DialogTitle>
         </DialogHeader>
         
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar avec tabs - Desktop */}
-          <div className="hidden lg:flex lg:w-64 lg:flex-col lg:border-r lg:bg-muted/30">
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-2">
+          <div className="hidden lg:flex lg:w-72 xl:w-80 lg:flex-col lg:border-r lg:bg-muted/30">
+            <ScrollArea className="flex-1 p-4 xl:p-6">
+              <div className="space-y-2 xl:space-y-3">
                 {tabs.map((tab) => (
                   <Button
                     key={tab.id}
                     variant={activeTab === tab.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start gap-3 h-12"
+                    className="w-full justify-start gap-2 xl:gap-3 h-12 xl:h-14 text-left text-sm xl:text-base"
                     onClick={() => setActiveTab(tab.id)}
                   >
-                    {tab.icon}
-                    <span className="text-left">{tab.label}</span>
+                    <div className="flex items-center gap-2 xl:gap-3">
+                      {tab.icon}
+                      <span className="font-medium">{tab.label}</span>
+                    </div>
                   </Button>
                 ))}
               </div>
@@ -113,12 +115,12 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
 
           {/* Contenu principal */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Menu déroulant pour mobile */}
-            <div className="lg:hidden p-4 border-b">
+            {/* Menu déroulant pour mobile et tablette */}
+            <div className="lg:hidden p-3 sm:p-4 border-b bg-background">
               <select 
                 value={activeTab} 
                 onChange={(e) => setActiveTab(e.target.value)}
-                className="w-full p-2 border rounded-md bg-background"
+                className="w-full p-2 sm:p-3 border rounded-lg bg-background text-sm sm:text-base"
               >
                 {tabs.map((tab) => (
                   <option key={tab.id} value={tab.id}>
@@ -129,8 +131,10 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
             </div>
 
             {/* Contenu de l'onglet actif */}
-            <ScrollArea className="flex-1 p-6">
-              {tabs.find(tab => tab.id === activeTab)?.component}
+            <ScrollArea className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8">
+              <div className="max-w-none lg:max-w-5xl xl:max-w-6xl mx-auto">
+                {tabs.find(tab => tab.id === activeTab)?.component}
+              </div>
             </ScrollArea>
           </div>
         </div>

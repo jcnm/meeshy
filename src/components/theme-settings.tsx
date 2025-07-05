@@ -50,60 +50,60 @@ export function ThemeSettings() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
             Thème et couleurs
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Personnalisez l&apos;apparence de l&apos;application
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label>Mode d&apos;affichage</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <Label className="text-sm sm:text-base">Mode d&apos;affichage</Label>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Button
                 variant={config.theme === 'light' ? 'default' : 'outline'}
                 onClick={() => handleConfigChange('theme', 'light')}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Sun className="h-4 w-4" />
-                Clair
+                <span className="text-sm sm:text-base">Clair</span>
               </Button>
               <Button
                 variant={config.theme === 'dark' ? 'default' : 'outline'}
                 onClick={() => handleConfigChange('theme', 'dark')}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Moon className="h-4 w-4" />
-                Sombre
+                <span className="text-sm sm:text-base">Sombre</span>
               </Button>
               <Button
                 variant={config.theme === 'system' ? 'default' : 'outline'}
                 onClick={() => handleConfigChange('theme', 'system')}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Monitor className="h-4 w-4" />
-                Système
+                <span className="text-sm sm:text-base">Système</span>
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Couleur d&apos;accent</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <Label className="text-sm sm:text-base">Couleur d&apos;accent</Label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               {accentColors.map((color) => (
                 <Button
                   key={color.value}
                   variant={config.accentColor === color.value ? 'default' : 'outline'}
                   onClick={() => handleConfigChange('accentColor', color.value)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 justify-center sm:justify-start text-sm"
                 >
                   <div className={`w-3 h-3 rounded-full ${color.color}`} />
-                  {color.label}
+                  <span className="hidden sm:inline">{color.label}</span>
                 </Button>
               ))}
             </div>
@@ -113,19 +113,19 @@ export function ThemeSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Interface utilisateur</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">Interface utilisateur</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             Options d&apos;affichage et de comportement
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label>Taille de police</Label>
+            <Label className="text-sm sm:text-base">Taille de police</Label>
             <Select
               value={config.fontSize}
               onValueChange={(value) => handleConfigChange('fontSize', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -136,10 +136,10 @@ export function ThemeSettings() {
             </Select>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label>Mode compact</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1 flex-1">
+              <Label className="text-sm sm:text-base">Mode compact</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Réduit l&apos;espacement pour afficher plus de contenu
               </p>
             </div>
@@ -149,10 +149,10 @@ export function ThemeSettings() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label>Animations</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1 flex-1">
+              <Label className="text-sm sm:text-base">Animations</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Active les transitions et animations de l&apos;interface
               </p>
             </div>
@@ -166,13 +166,13 @@ export function ThemeSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Aperçu</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">Aperçu</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             Prévisualisation des paramètres appliqués
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="p-4 border rounded-lg bg-muted/50">
+          <div className="p-3 sm:p-4 border rounded-lg bg-muted/50">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className={`font-medium ${config.fontSize === 'small' ? 'text-sm' : config.fontSize === 'large' ? 'text-lg' : 'text-base'}`}>

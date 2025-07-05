@@ -132,22 +132,22 @@ export function ModelSettings() {
   const memoryPercentage = (memoryUsage / config.maxMemoryUsage) * 100;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
             Configuration des modèles IA
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Gérez les modèles de traduction et leurs paramètres
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label>Sélection automatique du modèle</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1 flex-1">
+              <Label className="text-sm sm:text-base">Sélection automatique du modèle</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Choisit automatiquement le meilleur modèle selon la complexité du texte
               </p>
             </div>
@@ -157,10 +157,10 @@ export function ModelSettings() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label>Préchargement des modèles</Label>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1 flex-1">
+              <Label className="text-sm sm:text-base">Préchargement des modèles</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Charge les modèles en mémoire au démarrage pour des traductions plus rapides
               </p>
             </div>
@@ -171,12 +171,12 @@ export function ModelSettings() {
           </div>
 
           <div className="space-y-2">
-            <Label>Limite mémoire maximale (MB)</Label>
+            <Label className="text-sm sm:text-base">Limite mémoire maximale (MB)</Label>
             <Select
               value={config.maxMemoryUsage.toString()}
               onValueChange={(value) => handleConfigChange('maxMemoryUsage', parseInt(value))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -192,22 +192,22 @@ export function ModelSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Utilisation mémoire</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">Utilisation mémoire</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             Mémoire utilisée par les modèles chargés
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex flex-col gap-1 sm:flex-row sm:justify-between text-sm">
               <span>Utilisation actuelle</span>
               <span>{formatFileSize(memoryUsage * 1024 * 1024)} / {formatFileSize(config.maxMemoryUsage * 1024 * 1024)}</span>
             </div>
             <Progress value={memoryPercentage} className="h-2" />
             {memoryPercentage > 80 && (
-              <div className="flex items-center gap-2 text-amber-600">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-sm">Utilisation mémoire élevée</span>
+              <div className="flex items-center gap-2 p-2 sm:p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <span className="text-xs sm:text-sm text-amber-800">Utilisation mémoire élevée</span>
               </div>
             )}
           </div>
@@ -215,9 +215,9 @@ export function ModelSettings() {
       </Card>
 
       <Tabs defaultValue="mt5" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="mt5">MT5 (Textes simples)</TabsTrigger>
-          <TabsTrigger value="nllb">NLLB (Textes complexes)</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-auto">
+          <TabsTrigger value="mt5" className="text-xs sm:text-sm">MT5 (Textes simples)</TabsTrigger>
+          <TabsTrigger value="nllb" className="text-xs sm:text-sm">NLLB (Textes complexes)</TabsTrigger>
         </TabsList>
 
         <TabsContent value="mt5" className="space-y-4">

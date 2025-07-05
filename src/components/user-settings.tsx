@@ -92,20 +92,20 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
             Personnalisez votre photo de profil visible par les autres utilisateurs
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20">
+        <CardContent className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+            <Avatar className="h-24 w-24 sm:h-20 sm:w-20">
               <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback className="text-lg">
                 {getUserInitials(user)}
               </AvatarFallback>
             </Avatar>
-            <div className="space-y-2">
-              <Button variant="outline" size="sm">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <Upload className="h-4 w-4 mr-2" />
                 Télécharger une image
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <Camera className="h-4 w-4 mr-2" />
                 Prendre une photo
               </Button>
@@ -121,8 +121,8 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
             Modifiez vos informations de profil
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="firstName">Prénom</Label>
               <Input
@@ -130,6 +130,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 placeholder="Votre prénom"
+                className="w-full"
               />
             </div>
             <div className="space-y-2">
@@ -139,52 +140,58 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 placeholder="Votre nom"
+                className="w-full"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="displayName">Nom d'affichage</Label>
+            <Label htmlFor="displayName">Nom d&apos;affichage</Label>
             <Input
               id="displayName"
               value={formData.displayName}
               onChange={(e) => handleInputChange('displayName', e.target.value)}
               placeholder="Comment vous voulez apparaître dans les conversations"
+              className="w-full"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              placeholder="votre.email@exemple.com"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="votre.email@exemple.com"
+                className="w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">Numéro de téléphone</Label>
+              <Input
+                id="phoneNumber"
+                type="tel"
+                value={formData.phoneNumber}
+                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                placeholder="+33 1 23 45 67 89"
+                className="w-full"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Numéro de téléphone</Label>
-            <Input
-              id="phoneNumber"
-              type="tel"
-              value={formData.phoneNumber}
-              onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-              placeholder="+33 1 23 45 67 89"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="username">Nom d'utilisateur</Label>
+            <Label htmlFor="username">Nom d&apos;utilisateur</Label>
             <Input
               id="username"
               value={user.username}
               disabled
-              className="bg-muted"
+              className="bg-muted w-full"
             />
             <p className="text-sm text-muted-foreground">
-              Le nom d'utilisateur ne peut pas être modifié
+              Le nom d&apos;utilisateur ne peut pas être modifié
             </p>
           </div>
         </CardContent>

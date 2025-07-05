@@ -90,111 +90,113 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
             Langues principales
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Configurez vos langues préférées pour la communication
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="systemLanguage">Langue système</Label>
-            <Select
-              value={settings.systemLanguage}
-              onValueChange={(value) => handleSettingChange('systemLanguage', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    <span className="flex items-center gap-2">
-                      <span>{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground">
-              Langue principale de votre interface et de vos messages
-            </p>
-          </div>
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="systemLanguage" className="text-sm sm:text-base">Langue système</Label>
+              <Select
+                value={settings.systemLanguage}
+                onValueChange={(value) => handleSettingChange('systemLanguage', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      <span className="flex items-center gap-2">
+                        <span>{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Langue principale de votre interface et de vos messages
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="regionalLanguage">Langue régionale</Label>
-            <Select
-              value={settings.regionalLanguage}
-              onValueChange={(value) => handleSettingChange('regionalLanguage', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    <span className="flex items-center gap-2">
-                      <span>{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground">
-              Langue de votre région ou langue secondaire préférée
-            </p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="regionalLanguage" className="text-sm sm:text-base">Langue régionale</Label>
+              <Select
+                value={settings.regionalLanguage}
+                onValueChange={(value) => handleSettingChange('regionalLanguage', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      <span className="flex items-center gap-2">
+                        <span>{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Langue de votre région ou langue secondaire préférée
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="customDestinationLanguage">Langue de destination personnalisée</Label>
-            <Select
-              value={settings.customDestinationLanguage}
-              onValueChange={(value) => handleSettingChange('customDestinationLanguage', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner une langue" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Aucune</SelectItem>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    <span className="flex items-center gap-2">
-                      <span>{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-muted-foreground">
-              Langue spécifique pour la traduction automatique (optionnel)
-            </p>
+            <div className="space-y-2 lg:col-span-2 xl:col-span-1">
+              <Label htmlFor="customDestinationLanguage" className="text-sm sm:text-base">Langue de destination personnalisée</Label>
+              <Select
+                value={settings.customDestinationLanguage}
+                onValueChange={(value) => handleSettingChange('customDestinationLanguage', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Sélectionner une langue" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Aucune</SelectItem>
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code}>
+                      <span className="flex items-center gap-2">
+                        <span>{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Langue spécifique pour la traduction automatique (optionnel)
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Languages className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Languages className="h-4 w-4 sm:h-5 sm:w-5" />
             Options de traduction automatique
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Configurez comment les messages sont traduits automatiquement
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="autoTranslateEnabled">Traduction automatique</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1 flex-1">
+              <Label htmlFor="autoTranslateEnabled" className="text-sm sm:text-base">Traduction automatique</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Active la traduction automatique des messages entrants
               </p>
             </div>
@@ -206,13 +208,13 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
           </div>
 
           {settings.autoTranslateEnabled && (
-            <>
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label htmlFor="translateToSystemLanguage">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1 flex-1">
+                  <Label htmlFor="translateToSystemLanguage" className="text-sm sm:text-base">
                     Traduire vers la langue système
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Traduit les messages vers {getLanguageFlag(settings.systemLanguage)} {getLanguageName(settings.systemLanguage)}
                   </p>
                 </div>
@@ -223,12 +225,12 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label htmlFor="translateToRegionalLanguage">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1 flex-1">
+                  <Label htmlFor="translateToRegionalLanguage" className="text-sm sm:text-base">
                     Traduire vers la langue régionale
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Traduit les messages vers {getLanguageFlag(settings.regionalLanguage)} {getLanguageName(settings.regionalLanguage)}
                   </p>
                 </div>
@@ -239,12 +241,12 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label htmlFor="useCustomDestination">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1 flex-1">
+                  <Label htmlFor="useCustomDestination" className="text-sm sm:text-base">
                     Utiliser la langue personnalisée
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {settings.customDestinationLanguage ? (
                       <>Traduit les messages vers {getLanguageFlag(settings.customDestinationLanguage)} {getLanguageName(settings.customDestinationLanguage)}</>
                     ) : (
@@ -259,67 +261,71 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   disabled={!settings.customDestinationLanguage}
                 />
               </div>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Target className="h-4 w-4 sm:h-5 sm:w-5" />
             Aperçu de la configuration
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">Langue système</Badge>
-              <span className="flex items-center gap-1">
+          <div className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+              <Badge variant="secondary" className="text-xs sm:text-sm w-fit">Langue système</Badge>
+              <span className="flex items-center gap-1 text-sm sm:text-base">
                 {getLanguageFlag(settings.systemLanguage)} {getLanguageName(settings.systemLanguage)}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary">Langue régionale</Badge>
-              <span className="flex items-center gap-1">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+              <Badge variant="secondary" className="text-xs sm:text-sm w-fit">Langue régionale</Badge>
+              <span className="flex items-center gap-1 text-sm sm:text-base">
                 {getLanguageFlag(settings.regionalLanguage)} {getLanguageName(settings.regionalLanguage)}
               </span>
             </div>
             {settings.customDestinationLanguage && (
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">Langue personnalisée</Badge>
-                <span className="flex items-center gap-1">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+                <Badge variant="secondary" className="text-xs sm:text-sm w-fit">Langue personnalisée</Badge>
+                <span className="flex items-center gap-1 text-sm sm:text-base">
                   {getLanguageFlag(settings.customDestinationLanguage)} {getLanguageName(settings.customDestinationLanguage)}
                 </span>
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <Badge variant={settings.autoTranslateEnabled ? "default" : "outline"}>
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
+              <Badge variant={settings.autoTranslateEnabled ? "default" : "outline"} className="text-xs sm:text-sm w-fit">
                 Traduction automatique
               </Badge>
-              <span>{settings.autoTranslateEnabled ? 'Activée' : 'Désactivée'}</span>
+              <span className="text-sm sm:text-base">{settings.autoTranslateEnabled ? 'Activée' : 'Désactivée'}</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex justify-end space-x-4">
-        <Button variant="outline" onClick={() => {
-          if (user) {
-            setSettings({
-              systemLanguage: user.systemLanguage,
-              regionalLanguage: user.regionalLanguage,
-              customDestinationLanguage: user.customDestinationLanguage || '',
-              autoTranslateEnabled: user.autoTranslateEnabled,
-              translateToSystemLanguage: user.translateToSystemLanguage,
-              translateToRegionalLanguage: user.translateToRegionalLanguage,
-              useCustomDestination: user.useCustomDestination,
-            });
-          }
-        }}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:space-x-4">
+        <Button 
+          variant="outline" 
+          className="w-full sm:w-auto" 
+          onClick={() => {
+            if (user) {
+              setSettings({
+                systemLanguage: user.systemLanguage,
+                regionalLanguage: user.regionalLanguage,
+                customDestinationLanguage: user.customDestinationLanguage || '',
+                autoTranslateEnabled: user.autoTranslateEnabled,
+                translateToSystemLanguage: user.translateToSystemLanguage,
+                translateToRegionalLanguage: user.translateToRegionalLanguage,
+                useCustomDestination: user.useCustomDestination,
+              });
+            }
+          }}
+        >
           Annuler
         </Button>
-        <Button onClick={handleSave} disabled={isLoading}>
+        <Button onClick={handleSave} disabled={isLoading} className="w-full sm:w-auto">
           {isLoading ? 'Sauvegarde...' : 'Sauvegarder'}
         </Button>
       </div>

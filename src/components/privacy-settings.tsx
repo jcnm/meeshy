@@ -74,22 +74,22 @@ export function PrivacySettings() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
             Visibilité et statut
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Contrôlez les informations que les autres utilisateurs peuvent voir
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label>Statut en ligne</Label>
-              <p className="text-sm text-muted-foreground">
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1 flex-1">
+              <Label className="text-sm sm:text-base">Statut en ligne</Label>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Permet aux autres de voir si vous êtes connecté
               </p>
             </div>

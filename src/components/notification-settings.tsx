@@ -56,24 +56,24 @@ export function NotificationSettings() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
             Types de notifications
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-sm sm:text-base">
             Choisissez les événements pour lesquels vous souhaitez être notifié
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              <div className="space-y-1">
-                <Label>Nouveaux messages</Label>
-                <p className="text-sm text-muted-foreground">
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3 flex-1">
+              <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="space-y-1 flex-1">
+                <Label className="text-sm sm:text-base">Nouveaux messages</Label>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Notifications pour tous les nouveaux messages
                 </p>
               </div>
@@ -84,12 +84,12 @@ export function NotificationSettings() {
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <div className="space-y-1">
-                <Label>Mentions</Label>
-                <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3 flex-1">
+              <Bell className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div className="space-y-1 flex-1">
+                <Label className="text-sm sm:text-base">Mentions</Label>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Quand quelqu&apos;un vous mentionne dans un message
                 </p>
               </div>

@@ -114,45 +114,45 @@ export function CacheManager({ className }: CacheManagerProps) {
   return (
     <Card className={className}>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Database className="h-4 w-4 sm:h-5 sm:w-5" />
               Gestionnaire de Cache
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm sm:text-base">
               Gestion et statistiques du cache de traduction
             </CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport}>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" size="sm" onClick={handleExport} className="w-full sm:w-auto">
               <Download className="h-4 w-4 mr-1" />
-              Exporter
+              <span className="text-xs sm:text-sm">Exporter</span>
             </Button>
-            <Button variant="outline" size="sm" onClick={clear}>
+            <Button variant="outline" size="sm" onClick={clear} className="w-full sm:w-auto">
               <Trash2 className="h-4 w-4 mr-1" />
-              Vider
+              <span className="text-xs sm:text-sm">Vider</span>
             </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="stats" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="stats">Statistiques</TabsTrigger>
-            <TabsTrigger value="entries">Entrées</TabsTrigger>
-            <TabsTrigger value="management">Gestion</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
+            <TabsTrigger value="stats" className="text-xs sm:text-sm">Statistiques</TabsTrigger>
+            <TabsTrigger value="entries" className="text-xs sm:text-sm">Entrées</TabsTrigger>
+            <TabsTrigger value="management" className="text-xs sm:text-sm">Gestion</TabsTrigger>
           </TabsList>
 
           <TabsContent value="stats" className="space-y-4">
             {/* Métriques principales */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="p-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <Card className="p-3 sm:p-4">
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4 text-blue-600" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Entrées</p>
-                    <p className="text-2xl font-bold">{stats.totalEntries}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Entrées</p>
+                    <p className="text-lg sm:text-2xl font-bold">{stats.totalEntries}</p>
                   </div>
                 </div>
               </Card>
