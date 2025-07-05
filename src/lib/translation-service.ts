@@ -65,10 +65,10 @@ export class TranslationService {
         reject(request.error);
       };
 
-      request.onsuccess = () => {
+      request.onsuccess = async () => {
         this.db = request.result;
         console.log('✅ Base de données de traductions initialisée');
-        this.loadMemoryCache();
+        await this.loadMemoryCache();
         resolve();
       };
 
@@ -140,43 +140,112 @@ export class TranslationService {
     sourceLanguage: string, 
     targetLanguage: string
   ): Promise<CachedTranslation | null> {
-    const key = this.getTranslationKey(messageId, sourceLanguage, targetLanguage);
-    return this.memoryCache.get(key) || null;
+    if (!messageId || !sourceLanguage || !targetLanguage) {
+      console.warn('Paramètres manquants pour getCachedTranslation');
+      return null;
+    }
+
+    try {
+      const key = this.getTranslationKey(messageId, sourceLanguage, targetLanguage);
+      const cached = this.memoryCache.get(key);
+      
+      if (cached) {
+        // Vérifier que la traduction n'est pas trop ancienne (7 jours)
+        const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 jours en ms
+        const isExpired = Date.now() - cached.timestamp > maxAge;
+        
+        if (isExpired) {
+          console.log(`🗑️ Traduction expirée supprimée: ${key}`);
+          this.memoryCache.delete(key);
+          return null;
+        }
+      }
+      
+      return cached || null;
+    } catch (error) {
+      console.error('Erreur récupération cache:', error);
+      return null;
+    }
   }
 
   /**
    * Sauvegarde une traduction dans le cache
    */
   async saveTranslation(translation: CachedTranslation): Promise<boolean> {
-    if (!this.db) await this.initializeDatabase();
-    if (!this.db) return false;
+    if (!translation || !translation.messageId || !translation.translatedText) {
+      console.warn('Traduction invalide pour la sauvegarde');
+      return false;
+    }
 
-    const key = this.getTranslationKey(
-      translation.messageId, 
-      translation.sourceLanguage, 
-      translation.targetLanguage
-    );
+    try {
+      if (!this.db) {
+        console.log('🔄 Initialisation de la base de données...');
+        await this.initializeDatabase();
+      }
+      
+      if (!this.db) {
+        console.warn('Base de données non disponible, sauvegarde en mémoire uniquement');
+        // Sauvegarder quand même en mémoire
+        const key = this.getTranslationKey(
+          translation.messageId, 
+          translation.sourceLanguage, 
+          translation.targetLanguage
+        );
+        this.memoryCache.set(key, translation);
+        return true;
+      }
 
-    // Mise à jour du cache mémoire
-    this.memoryCache.set(key, translation);
+      const key = this.getTranslationKey(
+        translation.messageId, 
+        translation.sourceLanguage, 
+        translation.targetLanguage
+      );
 
-    // Sauvegarde en base
-    return new Promise((resolve) => {
-      const transaction = this.db!.transaction(['translations'], 'readwrite');
-      const store = transaction.objectStore('translations');
-      const translationWithId = { ...translation, id: key };
-      const request = store.put(translationWithId);
+      // Mise à jour du cache mémoire
+      this.memoryCache.set(key, translation);
 
-      request.onsuccess = () => {
-        this.updateStats(translation.modelUsed);
-        resolve(true);
-      };
+      // Sauvegarde en base avec timeout
+      return new Promise((resolve) => {
+        try {
+          const transaction = this.db!.transaction(['translations'], 'readwrite');
+          const store = transaction.objectStore('translations');
+          const translationWithId = { ...translation, id: key };
+          const request = store.put(translationWithId);
 
-      request.onerror = () => {
-        console.error('Erreur lors de la sauvegarde de la traduction');
-        resolve(false);
-      };
-    });
+          // Timeout pour éviter les blocages
+          const timeoutId = setTimeout(() => {
+            console.warn('Timeout sauvegarde IndexedDB');
+            resolve(false);
+          }, 5000);
+
+          request.onsuccess = () => {
+            clearTimeout(timeoutId);
+            this.updateStats(translation.modelUsed).catch(error => {
+              console.warn('Erreur mise à jour stats:', error);
+            });
+            resolve(true);
+          };
+
+          request.onerror = () => {
+            clearTimeout(timeoutId);
+            console.error('Erreur lors de la sauvegarde de la traduction:', request.error);
+            resolve(false);
+          };
+
+          transaction.onerror = () => {
+            clearTimeout(timeoutId);
+            console.error('Erreur transaction IndexedDB:', transaction.error);
+            resolve(false);
+          };
+        } catch (error) {
+          console.error('Erreur création transaction:', error);
+          resolve(false);
+        }
+      });
+    } catch (error) {
+      console.error('Erreur sauvegarde traduction:', error);
+      return false;
+    }
   }
 
   /**
@@ -219,28 +288,46 @@ export class TranslationService {
    * Effectue une traduction (depuis cache ou API)
    */
   async translate(request: TranslationRequest): Promise<TranslationResult> {
-    // Vérifier le cache d'abord (sauf si force retranslate)
-    if (!request.forceRetranslate) {
-      const cached = await this.getCachedTranslation(
-        request.messageId, 
-        request.sourceLanguage, 
-        request.targetLanguage
-      );
-
-      if (cached) {
-        console.log(`✅ Traduction trouvée en cache: ${request.targetLanguage}`);
-        return {
-          translatedText: cached.translatedText,
-          modelUsed: cached.modelUsed,
-          fromCache: true,
-        };
-      }
+    // Validation des paramètres
+    if (!request.text || !request.sourceLanguage || !request.targetLanguage || !request.messageId) {
+      throw new Error('Paramètres de traduction manquants');
     }
 
-    // Sélectionner le modèle optimal
-    const modelUsed = this.selectOptimalModel(request.text);
+    if (request.text.trim().length === 0) {
+      throw new Error('Texte à traduire vide');
+    }
+
+    if (request.sourceLanguage === request.targetLanguage) {
+      // Pas besoin de traduire si c'est la même langue
+      return {
+        translatedText: request.text,
+        modelUsed: 'MT5_SMALL',
+        fromCache: false
+      };
+    }
 
     try {
+      // Vérifier le cache d'abord (sauf si force retranslate)
+      if (!request.forceRetranslate) {
+        const cached = await this.getCachedTranslation(
+          request.messageId, 
+          request.sourceLanguage, 
+          request.targetLanguage
+        );
+
+        if (cached) {
+          console.log(`✅ Traduction trouvée en cache: ${request.targetLanguage}`);
+          return {
+            translatedText: cached.translatedText,
+            modelUsed: cached.modelUsed,
+            fromCache: true,
+          };
+        }
+      }
+
+      // Sélectionner le modèle optimal
+      const modelUsed = this.selectOptimalModel(request.text);
+
       // Effectuer la traduction via API
       const translatedText = await this.performTranslation(
         request.text, 
@@ -261,7 +348,11 @@ export class TranslationService {
         version: 1,
       };
 
-      await this.saveTranslation(translation);
+      // Sauvegarder de manière asynchrone pour ne pas bloquer
+      this.saveTranslation(translation).catch(error => {
+        console.warn('Erreur sauvegarde traduction:', error);
+        // Ne pas faire échouer la traduction pour une erreur de sauvegarde
+      });
 
       console.log(`✅ Traduction effectuée: ${request.sourceLanguage} → ${request.targetLanguage} (${modelUsed})`);
 
@@ -273,7 +364,13 @@ export class TranslationService {
 
     } catch (error) {
       console.error('Erreur lors de la traduction:', error);
-      throw error;
+      
+      // Enrichir l'erreur avec des informations de contexte
+      const enhancedError = new Error(
+        `Erreur traduction ${request.sourceLanguage}→${request.targetLanguage}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      );
+      
+      throw enhancedError;
     }
   }
 
@@ -328,32 +425,64 @@ export class TranslationService {
     text: string,
     sourceLanguage: string,
     targetLanguage: string,
-    _modelUsed: TranslationModelType
+    modelUsed: TranslationModelType
   ): Promise<string> {
+    if (!text || text.trim().length === 0) {
+      throw new Error('Texte vide pour la traduction');
+    }
+
     try {
+      // Timeout pour éviter les blocages
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes timeout
+
       // Utiliser MyMemory API pour le développement
       const response = await fetch(
-        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLanguage}|${targetLanguage}`
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLanguage}|${targetLanguage}`,
+        { 
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Meeshy Translation App'
+          }
+        }
       );
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error('Erreur API de traduction');
+        throw new Error(`Erreur API HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
       
-      if (data.responseStatus !== 200) {
-        throw new Error('Réponse API invalide');
+      if (!data || data.responseStatus !== 200) {
+        throw new Error(`Réponse API invalide: ${data?.responseStatus || 'inconnue'}`);
       }
 
-      // Ajouter un préfixe pour indiquer le modèle utilisé (pour le développement)
+      if (!data.responseData || !data.responseData.translatedText) {
+        throw new Error('Données de traduction manquantes dans la réponse API');
+      }
+
       const translatedText = data.responseData.translatedText;
+      
+      // Validation basique du résultat
+      if (!translatedText || translatedText.trim().length === 0) {
+        throw new Error('Traduction vide reçue de l\'API');
+      }
+
+      // Ajouter un préfixe de développement si nécessaire
+      console.log(`📡 Traduction API: ${sourceLanguage}→${targetLanguage}, modèle: ${modelUsed}`);
       
       return translatedText;
 
     } catch (error) {
       // Fallback : traduction simulée en cas d'erreur API
       console.warn('Fallback vers traduction simulée:', error);
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('Timeout de l\'API de traduction');
+      }
+      
       return this.getSimulatedTranslation(text, sourceLanguage, targetLanguage);
     }
   }
