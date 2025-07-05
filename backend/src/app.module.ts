@@ -3,13 +3,20 @@ import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // Services
 import { PrismaService } from './prisma/prisma.service';
+import { CacheService } from './common/cache.service';
+import { CacheCleanupService } from './common/cache-cleanup.service';
 import { UserService } from './modules/user.service';
 import { MessageService } from './modules/message.service';
 import { ConversationService } from './modules/conversation.service';
 import { GroupService } from './modules/group.service';
+
+// Optimized Services
+import { ConversationServiceOptimized } from './common/conversation-optimized.service';
+import { MessageServiceOptimized } from './common/message-optimized.service';
 
 // Controllers
 import { UserController } from './modules/user.controller';
@@ -35,6 +42,9 @@ import { globalValidationPipe } from './common/validation.pipe';
       envFilePath: '.env',
     }),
     
+    // Scheduler pour les tâches automatiques
+    ScheduleModule.forRoot(),
+    
     // Rate limiting global
     ThrottlerModule.forRoot([{
       ttl: parseInt(process.env.RATE_LIMIT_TTL || '60') * 1000, // 60 secondes
@@ -59,11 +69,17 @@ import { globalValidationPipe } from './common/validation.pipe';
   providers: [
     // Services métier
     PrismaService,
+    CacheService,
+    CacheCleanupService,
     UserService,
     MessageService,
     ConversationService,
     GroupService,
     ChatGateway,
+    
+    // Optimized Services
+    ConversationServiceOptimized,
+    MessageServiceOptimized,
     
     // Sécurité globale
     {

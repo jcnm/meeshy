@@ -355,7 +355,7 @@ export class ConversationService {
   }
 
   async createConversationLink(createLinkDto: CreateConversationLinkDto, creatorId: string) {
-    const { conversationId, linkId, maxUses, expiresAt } = createLinkDto;
+    const { conversationId, maxUses, expiresAt } = createLinkDto;
 
     // Vérifier que l'utilisateur est membre de la conversation
     const userLink = await this.prisma.conversationLink.findFirst({

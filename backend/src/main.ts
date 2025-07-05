@@ -22,7 +22,7 @@ async function bootstrap() {
   }));
 
   // Configuration CORS sécurisée
-  const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3200', 'http://localhost:3000'];
+  const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3200', 'http://localhost:3000', 'http://localhost:3300'];
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
