@@ -33,7 +33,7 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 - API REST pour la gestion des utilisateurs et paramètres
 - WebSocket Gateway pour la messagerie
 - Utilisateurs prédéfinis en mémoire (4-7 utilisateurs)
-- Pas de base de données externe
+- Pas de base de données externe, usage de sqlite pour le développement
 
 #### Flux de Données
 1. Message envoyé dans la langue native de l'utilisateur
@@ -43,6 +43,8 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 5. Affichage avec option de basculement original/traduit
 
 ### Bonnes Pratiques
+- Toujours vérifier les interfaces et correspondances de types avant de proposer des modifications
+- Toujours vérifier la cohérence des types et données entre le frontend et le backend
 - Toujours valider les inputs côté client et serveur
 - Utiliser des types TypeScript stricts
 - Implémenter le lazy loading pour les modèles de traduction

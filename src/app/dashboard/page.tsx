@@ -25,6 +25,7 @@ import {
 import { User, Conversation, ConversationLink } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { formatConversationTitle, getUserFirstName } from '@/utils/user';
 
 export default function DashboardPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -37,7 +38,6 @@ export default function DashboardPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [conversationType, setConversationType] = useState<'direct' | 'group'>('direct');
   const [conversationTitle, setConversationTitle] = useState('');
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   
@@ -129,6 +129,12 @@ export default function DashboardPage() {
       const token = localStorage.getItem('auth_token');
       const participantIds = selectedUsers.map(user => user.id);
       
+      // Déterminer automatiquement le type selon le nombre de participants
+      const type = selectedUsers.length === 1 ? 'direct' : 'group';
+      const title = type === 'group' 
+        ? (conversationTitle || `Conversation avec ${selectedUsers.map(u => getUserFirstName(u)).join(', ')}`)
+        : `Conversation avec ${getUserFirstName(selectedUsers[0])}`;
+      
       const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.CREATE), {
         method: 'POST',
         headers: {
@@ -136,8 +142,8 @@ export default function DashboardPage() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          type: conversationType,
-          title: conversationTitle || `Conversation avec ${selectedUsers.map(u => u.firstName).join(', ')}`,
+          type,
+          title,
           description: `Conversation créée le ${new Date().toLocaleDateString()}`,
           participantIds,
         }),
@@ -152,7 +158,6 @@ export default function DashboardPage() {
         setIsCreateModalOpen(false);
         setSelectedUsers([]);
         setConversationTitle('');
-        setConversationType('direct');
         
         router.push(`/chat/${newConversation.id}`);
       } else {
@@ -340,7 +345,14 @@ export default function DashboardPage() {
                               </div>
                               <div>
                                 <CardTitle className="text-lg">
-                                  {conversation.name || 'Conversation sans nom'}
+                                  {currentUser && conversation.participants 
+                                    ? formatConversationTitle(
+                                        conversation.participants, 
+                                        currentUser.id, 
+                                        conversation.isGroup || false,
+                                        conversation.members
+                                      )
+                                    : conversation.name || 'Conversation sans nom'}
                                 </CardTitle>
                                 <CardDescription>
                                   {conversation.participants?.length || 0} participant(s)
@@ -449,33 +461,8 @@ export default function DashboardPage() {
           </DialogHeader>
           
           <div className="space-y-4">
-            {/* Type de conversation */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Type de conversation</label>
-              <div className="flex space-x-4">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    value="direct"
-                    checked={conversationType === 'direct'}
-                    onChange={(e) => setConversationType(e.target.value as 'direct' | 'group')}
-                  />
-                  <span>Directe</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    value="group"
-                    checked={conversationType === 'group'}
-                    onChange={(e) => setConversationType(e.target.value as 'direct' | 'group')}
-                  />
-                  <span>Groupe</span>
-                </label>
-              </div>
-            </div>
-
             {/* Titre de la conversation (optionnel pour direct) */}
-            {conversationType === 'group' && (
+            {selectedUsers.length > 1 && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Titre du groupe</label>
                 <Input
@@ -489,7 +476,16 @@ export default function DashboardPage() {
             {/* Sélection des participants */}
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Participants ({selectedUsers.length} sélectionné{selectedUsers.length > 1 ? 's' : ''})
+                Participants 
+                <span className={`ml-2 px-2 py-1 rounded text-sm font-semibold ${
+                  selectedUsers.length === 1 
+                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                    : selectedUsers.length > 1 
+                    ? 'bg-orange-100 text-orange-800 border border-orange-200'
+                    : 'bg-gray-100 text-gray-800 border border-gray-200'
+                }`}>
+                  {selectedUsers.length} sélectionné{selectedUsers.length > 1 ? 's' : ''}
+                </span>
               </label>
               <div className="max-h-60 overflow-y-auto border rounded-lg p-2 space-y-2">
                 {availableUsers.length > 0 ? (
@@ -500,11 +496,6 @@ export default function DashboardPage() {
                         selectedUsers.some(u => u.id === user.id) ? 'bg-blue-50 border-blue-200' : ''
                       }`}
                       onClick={() => {
-                        if (conversationType === 'direct' && selectedUsers.length >= 1 && !selectedUsers.some(u => u.id === user.id)) {
-                          toast.error('Une conversation directe ne peut avoir qu\'un seul participant');
-                          return;
-                        }
-                        
                         setSelectedUsers(prev => 
                           prev.some(u => u.id === user.id)
                             ? prev.filter(u => u.id !== user.id)
@@ -546,7 +537,6 @@ export default function DashboardPage() {
                   setIsCreateModalOpen(false);
                   setSelectedUsers([]);
                   setConversationTitle('');
-                  setConversationType('direct');
                 }}
               >
                 Annuler

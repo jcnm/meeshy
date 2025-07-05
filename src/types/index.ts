@@ -105,14 +105,7 @@ export interface Conversation {
   createdAt: Date;
   updatedAt: Date;
   members?: ConversationMember[];
-  participants?: Array<{
-    id: string;
-    username: string;
-    displayName?: string;
-    avatar?: string;
-    isOnline: boolean;
-    role: string;
-  }>;
+  participants?: ConversationParticipant[];
   messages?: Message[];
   lastMessage?: Message;
   unreadCount?: number;
@@ -125,6 +118,15 @@ export interface ConversationMember {
   joinedAt: Date;
   role: 'ADMIN' | 'MEMBER';
   user: User;
+}
+
+export interface ConversationParticipant {
+  id: string;
+  username: string;
+  displayName?: string;
+  avatar?: string;
+  isOnline: boolean;
+  role: string;
 }
 
 export interface Group {
