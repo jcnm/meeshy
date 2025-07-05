@@ -26,15 +26,37 @@ import { io, Socket } from 'socket.io-client';
 import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
 
 // Utility functions
-const getOptimalTranslationModel = (content: string): 'MT5' | 'NLLB' => {
-  // Use MT5 for short messages (≤50 characters, low complexity)
-  // Use NLLB for long and complex messages
-  const isShort = content.length <= 50;
+const getOptimalTranslationModel = (content: string): TranslationModelType => {
+  const messageLength = content.length;
+  
+  // Analyse de la complexité du texte
   const hasComplexPunctuation = /[.!?;:,]{2,}|[""''«»]/g.test(content);
   const hasNumbers = /\d+/g.test(content);
-  const isComplex = hasComplexPunctuation || hasNumbers;
+  const hasSpecialChars = /[#@$%^&*()_+=\[\]{}|\\:";'<>?,./]/.test(content);
+  const hasMultipleSentences = (content.match(/[.!?]+/g) || []).length > 1;
+  const hasUpperCase = /[A-Z]{2,}/.test(content);
   
-  return isShort && !isComplex ? 'MT5' : 'NLLB';
+  let complexityScore = 0;
+  if (hasComplexPunctuation) complexityScore += 1;
+  if (hasNumbers) complexityScore += 1;
+  if (hasSpecialChars) complexityScore += 1;
+  if (hasMultipleSentences) complexityScore += 2;
+  if (hasUpperCase) complexityScore += 1;
+  
+  // Sélection du modèle selon la longueur et complexité
+  if (messageLength <= 20 && complexityScore === 0) {
+    return 'MT5_SMALL'; // Messages très courts et simples
+  } else if (messageLength <= 50 && complexityScore <= 1) {
+    return 'MT5_BASE'; // Messages courts avec peu de complexité
+  } else if (messageLength <= 100 && complexityScore <= 2) {
+    return 'NLLB_200M'; // Messages moyens, modèle NLLB léger
+  } else if (messageLength <= 200 && complexityScore <= 3) {
+    return 'NLLB_DISTILLED_600M'; // Messages moyens-longs
+  } else if (messageLength <= 500 || complexityScore <= 4) {
+    return 'NLLB_1_3B'; // Messages longs ou complexes
+  } else {
+    return 'NLLB_3_3B'; // Messages très longs ou très complexes
+  }
 };
 
 const saveTranslationToCache = (
@@ -42,7 +64,7 @@ const saveTranslationToCache = (
   sourceLanguage: string, 
   targetLanguage: string, 
   translatedText: string, 
-  modelUsed: 'MT5' | 'NLLB'
+  modelUsed: TranslationModelType
 ) => {
   try {
     const key = `translation_${btoa(originalText + sourceLanguage + targetLanguage)}`;
@@ -70,16 +92,21 @@ const saveTranslationToCache = (
           energyConsumption: 0,
           computationalCost: 0,
           co2Equivalent: 0,
-          monetaryEquivalent: 0
+          monetaryEquivalent: 0,
+          memoryUsage: 0,
+          inferenceTime: 0
         }
       };
     }
     
     stats[modelUsed].count++;
-    stats[modelUsed].totalCost.energyConsumption += TRANSLATION_MODELS[modelUsed].cost.energyConsumption;
-    stats[modelUsed].totalCost.computationalCost += TRANSLATION_MODELS[modelUsed].cost.computationalCost;
-    stats[modelUsed].totalCost.co2Equivalent += TRANSLATION_MODELS[modelUsed].cost.co2Equivalent;
-    stats[modelUsed].totalCost.monetaryEquivalent += TRANSLATION_MODELS[modelUsed].cost.monetaryEquivalent;
+    const modelCost = TRANSLATION_MODELS[modelUsed].cost;
+    stats[modelUsed].totalCost.energyConsumption += modelCost.energyConsumption;
+    stats[modelUsed].totalCost.computationalCost += modelCost.computationalCost;
+    stats[modelUsed].totalCost.co2Equivalent += modelCost.co2Equivalent;
+    stats[modelUsed].totalCost.monetaryEquivalent += modelCost.monetaryEquivalent;
+    stats[modelUsed].totalCost.memoryUsage += modelCost.memoryUsage;
+    stats[modelUsed].totalCost.inferenceTime += modelCost.inferenceTime;
     
     localStorage.setItem(statsKey, JSON.stringify(stats));
   } catch (error) {
@@ -268,11 +295,12 @@ export default function ChatPage() {
       if (!message) return;
 
       // Determine which model to use based on message length and complexity
-      const modelToUse: 'MT5' | 'NLLB' = getOptimalTranslationModel(message.content);
+      const modelToUse = getOptimalTranslationModel(message.content);
       
       // TODO: Implémenter la traduction côté client avec MT5/NLLB
       // Pour l'instant, simuler la traduction
-      const translatedContent = `[TRADUIT vers ${targetLanguage} via ${modelToUse}] ${message.content}`;
+      const modelInfo = TRANSLATION_MODELS[modelToUse];
+      const translatedContent = `[TRADUIT vers ${targetLanguage} via ${modelInfo.displayName}] ${message.content}`;
       
       setMessages(prev => prev.map(msg => 
         msg.id === messageId 
@@ -290,7 +318,7 @@ export default function ChatPage() {
                   flag: getLanguageFlag(targetLanguage),
                   createdAt: new Date(),
                   modelUsed: modelToUse,
-                  modelCost: TRANSLATION_MODELS[modelToUse].cost
+                  modelCost: modelInfo.cost
                 }
               ]
             }
@@ -300,7 +328,7 @@ export default function ChatPage() {
       // Save to local cache with model information
       saveTranslationToCache(message.content, message.originalLanguage || 'fr', targetLanguage, translatedContent, modelToUse);
       
-      toast.success(`Message traduit avec succès (${modelToUse})`);
+      toast.success(`Message traduit avec succès (${modelInfo.displayName})`);
     } catch (error) {
       console.error('Erreur de traduction:', error);
       toast.error('Erreur lors de la traduction');
@@ -312,12 +340,13 @@ export default function ChatPage() {
       const message = messages.find(m => m.id === messageId);
       if (!message || !currentUser) return;
       
-      // Always use NLLB for retranslation (most powerful model)
-      const modelToUse = 'NLLB' as const;
+      // Use the most powerful model available for retranslation
+      const modelToUse: TranslationModelType = 'NLLB_3_3B';
       const targetLanguage = message.targetLanguage || currentUser.systemLanguage;
+      const modelInfo = TRANSLATION_MODELS[modelToUse];
       
-      // TODO: Utiliser le modèle NLLB pour une traduction plus précise
-      const newTranslatedContent = `[RETRADUIT via ${modelToUse}] ${message.content}`;
+      // TODO: Utiliser le modèle NLLB 3.3B pour une traduction plus précise
+      const newTranslatedContent = `[RETRADUIT via ${modelInfo.displayName}] ${message.content}`;
       
       setMessages(prev => prev.map(msg => 
         msg.id === messageId 
@@ -335,7 +364,7 @@ export default function ChatPage() {
                   flag: getLanguageFlag(targetLanguage),
                   createdAt: new Date(),
                   modelUsed: modelToUse,
-                  modelCost: TRANSLATION_MODELS[modelToUse].cost
+                  modelCost: modelInfo.cost
                 }
               ]
             }
@@ -345,7 +374,7 @@ export default function ChatPage() {
       // Save to cache
       saveTranslationToCache(message.content, message.originalLanguage || 'fr', targetLanguage, newTranslatedContent, modelToUse);
       
-      toast.success(`Message retraduit avec succès (${modelToUse})`);
+      toast.success(`Message retraduit avec succès (${modelInfo.displayName})`);
     } catch (error) {
       console.error('Erreur de retraduction:', error);
       toast.error('Erreur lors de la retraduction');

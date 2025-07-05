@@ -187,7 +187,7 @@ export function MessageBubble({
                     }`}
                     style={{
                       borderLeft: translation.modelUsed 
-                        ? `2px solid ${TRANSLATION_MODELS[translation.modelUsed].color}`
+                        ? `3px solid ${TRANSLATION_MODELS[translation.modelUsed].color}`
                         : undefined
                     }}
                   >
@@ -196,7 +196,7 @@ export function MessageBubble({
                       <span className="block">{translation.content}</span>
                       {translation.modelUsed && (
                         <span className="text-xs opacity-60 mt-1 block">
-                          via {translation.modelUsed}
+                          via {TRANSLATION_MODELS[translation.modelUsed].displayName}
                         </span>
                       )}
                     </div>
