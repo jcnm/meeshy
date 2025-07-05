@@ -117,7 +117,7 @@ export default function ChatPage() {
         socketRef.current.disconnect();
       }
     };
-  }, [conversationId, router]);
+  }, [conversationId, router, initializeWebSocket]);
 
   const initializeWebSocket = (userId: string, token: string) => {
     socketRef.current = io('http://localhost:3002', {
