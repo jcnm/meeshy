@@ -33,7 +33,7 @@ Après une analyse complète du backend NestJS de Meeshy, voici les principales 
 ### 4. **Configuration d'Environnement**
 - **Problème** : Configuration incomplète et incohérente
 - **Exemples** :
-  - Port par défaut différent entre frontend (3200) et documentation
+  - Port par défaut différent entre frontend (3000) et documentation
   - Secrets de développement non sécurisés
   - Variables d'environnement manquantes pour certaines fonctionnalités
 

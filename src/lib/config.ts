@@ -1,30 +1,30 @@
 // Configuration centralisée pour les URLs et ports de l'application
 export const APP_CONFIG = {
   // URLs des services
-  FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3200',
-  BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3100',
+  FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100',
+  BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000',
   
   // Ports
-  FRONTEND_PORT: 3200,
-  BACKEND_PORT: 3100,
+  FRONTEND_PORT: 3100,
+  BACKEND_PORT: 3000,
   
   // URLs spécifiques pour différents environnements
   getBackendUrl: () => {
     if (typeof window !== 'undefined') {
       // Côté client
-      return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3100';
+      return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
     }
     // Côté serveur
-    return process.env.BACKEND_URL || 'http://localhost:3100';
+    return process.env.BACKEND_URL || 'http://localhost:3000';
   },
   
   getFrontendUrl: () => {
     if (typeof window !== 'undefined') {
       // Côté client
-      return process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3200';
+      return process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100';
     }
     // Côté serveur
-    return process.env.FRONTEND_URL || 'http://localhost:3200';
+    return process.env.FRONTEND_URL || 'http://localhost:3100';
   }
 };
 

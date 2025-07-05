@@ -108,7 +108,7 @@
 ## 📊 Métriques du Projet
 
 - **Fichiers créés/modifiés** : 50+
-- **Lignes de code** : 3000+
+- **Lignes de code** : 3100+
 - **Composants React** : 15+
 - **Hooks personnalisés** : 5+
 - **Services** : 3+

@@ -31,8 +31,8 @@ console.log('\n🔌 Vérification des ports:');
 const configPath = path.join(__dirname, 'src/lib/config.ts');
 if (fs.existsSync(configPath)) {
   const configContent = fs.readFileSync(configPath, 'utf8');
-  if (configContent.includes('3100') && configContent.includes('3200')) {
-    console.log('  ✅ Ports corrects dans config.ts (Backend: 3100, Frontend: 3200)');
+  if (configContent.includes('3000') && configContent.includes('3100')) {
+    console.log('  ✅ Ports corrects dans config.ts (Backend: 3000, Frontend: 3100)');
   } else {
     console.log('  ❌ Ports incorrects dans config.ts');
   }
@@ -42,7 +42,7 @@ if (fs.existsSync(configPath)) {
 const backendMainPath = path.join(__dirname, 'backend/src/main.ts');
 if (fs.existsSync(backendMainPath)) {
   const backendContent = fs.readFileSync(backendMainPath, 'utf8');
-  if (backendContent.includes('3100')) {
+  if (backendContent.includes('3000')) {
     console.log('  ✅ Port correct dans backend/src/main.ts (3100)');
   } else {
     console.log('  ❌ Port incorrect dans backend/src/main.ts');

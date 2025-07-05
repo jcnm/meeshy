@@ -4,7 +4,7 @@
 
 ### Services de base
 - ✅ **Frontend Next.js** : http://localhost:3001 (fonctionnel)
-- ✅ **Backend NestJS** : http://localhost:3100 (fonctionnel)
+- ✅ **Backend NestJS** : http://localhost:3000 (fonctionnel)
 - ✅ **API de traduction externe** : MyMemory API (fonctionnelle)
 - ✅ **TensorFlow.js** : Chargé correctement (CPU + WebGL backends)
 

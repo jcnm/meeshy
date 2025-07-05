@@ -14,7 +14,7 @@ echo -e "${BLUE}=== ÉTAPE 1: Test des Services de Base ===${NC}"
 
 # Test 1.1: API Backend
 echo -e "${YELLOW}🔄 Test 1.1: API Backend...${NC}"
-if curl -s "http://localhost:3100/users" > /dev/null; then
+if curl -s "http://localhost:3000/users" > /dev/null; then
   echo -e "${GREEN}✅ Backend accessible${NC}"
 else
   echo -e "${RED}❌ Backend non accessible${NC}"

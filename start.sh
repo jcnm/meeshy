@@ -4,8 +4,8 @@
 # Lance le frontend et le backend en parallèle
 
 echo "🚀 Démarrage de Meeshy..."
-echo "📦 Backend : http://localhost:3100"
-echo "🌐 Frontend : http://localhost:3200"
+echo "📦 Backend : http://localhost:3000"
+echo "🌐 Frontend : http://localhost:3100"
 
 # Fonction pour nettoyer les processus en arrière-plan
 cleanup() {
@@ -46,7 +46,7 @@ sleep 5
 
 echo "✅ Services démarrés !"
 echo "📱 Frontend: http://localhost:3000 (ou port alternatif)"
-echo "🔧 Backend: http://localhost:3100"
+echo "🔧 Backend: http://localhost:3000"
 echo ""
 echo "💡 Modèles de traduction disponibles :"
 echo "   - mT5: Messages simples (≤100 caractères)"

@@ -108,7 +108,7 @@ dev() {
     
     sleep 3
     
-    echo -e "${YELLOW}🔄 Démarrage du frontend (port 3000)...${NC}"
+    echo -e "${YELLOW}🔄 Démarrage du frontend (port3100)...${NC}"
     npm run dev &
     FRONTEND_PID=$!
     
@@ -251,9 +251,9 @@ check() {
     # Vérifier les ports
     echo -e "\n${YELLOW}🔌 Ports :${NC}"
     if lsof -i :3000 &> /dev/null; then
-        echo -e "  🟡 Port 3000 occupé"
+        echo -e "  🟡 Port3100 occupé"
     else
-        echo -e "  ✅ Port 3000 libre"
+        echo -e "  ✅ Port 3100 libre"
     fi
     
     if lsof -i :3002 &> /dev/null; then

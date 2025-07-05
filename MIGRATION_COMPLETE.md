@@ -3,8 +3,8 @@
 ## ✅ Tâches accomplies
 
 ### 1. Normalisation des ports
-- **Backend NestJS**: Port 3100 (changé depuis 3002)
-- **Frontend Next.js**: Port 3200 (changé depuis 3001)
+- **Backend NestJS**: Port 3000
+- **Frontend Next.js**: Port 3100
 - Tous les fichiers de configuration mis à jour
 
 ### 2. Configuration centralisée
@@ -37,8 +37,8 @@
 
 ### Ports
 ```
-Backend:  http://localhost:3100
-Frontend: http://localhost:3200
+Backend:  http://localhost:3000
+Frontend: http://localhost:3100
 ```
 
 ### Fichiers clés
@@ -50,11 +50,11 @@ Frontend: http://localhost:3200
 ### Variables d'environnement
 ```bash
 # Frontend
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3100
-NEXT_PUBLIC_FRONTEND_URL=http://localhost:3200
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+NEXT_PUBLIC_FRONTEND_URL=http://localhost:3100
 
 # Backend
-PORT=3100
+PORT=3000
 JWT_SECRET=your-secret-key
 ```
 

@@ -6,8 +6,8 @@ Normalisation des ports pour éviter les conflits et centraliser la configuratio
 ## 📝 Changements Effectués
 
 ### Nouveaux Ports
-- **Frontend Next.js** : `3000` → `3200`
-- **Backend NestJS** : `3002` → `3100`
+- **Frontend Next.js** : `3000` → `3100`
+- **Backend NestJS** : `3002` → `3000`
 - **Prisma Studio** : `5555` (inchangé)
 
 ### 🔧 Configuration Centralisée
@@ -15,8 +15,8 @@ Création de `/src/lib/config.ts` pour centraliser toutes les URLs :
 
 ```typescript
 export const APP_CONFIG = {
-  FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3200',
-  BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3100',
+  FRONTEND_URL: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100',
+  BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000',
   // ...
 };
 
@@ -30,11 +30,11 @@ export const API_ENDPOINTS = {
 ### 📂 Fichiers Modifiés
 
 #### Backend
-- `backend/src/main.ts` - Port changé vers 3100
+- `backend/src/main.ts` - Port changé vers 3000
 - `backend/.env.example` - Nouvelle configuration
 
 #### Frontend - Configuration
-- `package.json` - Scripts dev et start avec `-p 3200`
+- `package.json` - Scripts dev et start avec `-p 3100`
 - `src/lib/config.ts` - **NOUVEAU** fichier de configuration centralisée
 - `.env.example` - **NOUVEAU** fichier d'environnement
 
@@ -75,8 +75,8 @@ export const API_ENDPOINTS = {
 - Distinction côté client/serveur
 
 ### ✅ Ports Normalisés
-- `3200` pour le frontend (plus logique, proche de 3000)
-- `3100` pour le backend (évite les conflits)
+- `3100` pour le frontend (plus logique, proche de 3000)
+- `3000` pour le backend (évite les conflits)
 - Cohérence dans toute l'application
 
 ### ✅ Maintenance Simplifiée
@@ -108,11 +108,11 @@ const customUrl = buildApiUrl('/custom-endpoint');
 ### Variables d'Environnement
 ```bash
 # .env.local (frontend)
-NEXT_PUBLIC_FRONTEND_URL=http://localhost:3200
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3100
+NEXT_PUBLIC_FRONTEND_URL=http://localhost:3100
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
 
 # backend/.env
-FRONTEND_URL=http://localhost:3200
+FRONTEND_URL=http://localhost:3100
 ```
 
 ## 🎯 Résultat
