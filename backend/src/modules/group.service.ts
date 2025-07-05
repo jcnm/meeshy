@@ -9,25 +9,25 @@ export class GroupService {
   async create(createGroupDto: CreateGroupDto, creatorId: string) {
     const { title, description, image, isPublic, maxMembers } = createGroupDto;
 
-    // Créer d'abord une conversation pour le groupe
-    const conversation = await this.prisma.conversation.create({
-      data: {
-        type: 'group',
-        title,
-        description,
-      },
-    });
-
-    // Créer le groupe
+    // Créer d'abord le groupe
     const group = await this.prisma.group.create({
       data: {
-        conversationId: conversation.id,
         title,
         description,
         image,
         isPublic: isPublic || false,
         maxMembers,
         createdById: creatorId,
+      },
+    });
+
+    // Créer une conversation par défaut pour le groupe
+    const conversation = await this.prisma.conversation.create({
+      data: {
+        type: 'group',
+        title: `${title} - Discussion générale`,
+        description,
+        groupId: group.id, // Lier la conversation au groupe
       },
     });
 
@@ -82,17 +82,25 @@ export class GroupService {
     // Vérifier que l'utilisateur est admin du groupe
     await this.checkAdminPermission(id, userId);
 
-    const updatedGroup = await this.prisma.group.update({
+    await this.prisma.group.update({
       where: { id },
       data: updateGroupDto,
     });
 
-    // Mettre à jour aussi le titre de la conversation si nécessaire
+    // Mettre à jour aussi le titre des conversations du groupe si nécessaire
     if (updateGroupDto.title) {
-      await this.prisma.conversation.update({
-        where: { id: updatedGroup.conversationId },
-        data: { title: updateGroupDto.title },
+      // Mettre à jour la conversation principale (première créée)
+      const firstConversation = await this.prisma.conversation.findFirst({
+        where: { groupId: id },
+        orderBy: { createdAt: 'asc' },
       });
+
+      if (firstConversation) {
+        await this.prisma.conversation.update({
+          where: { id: firstConversation.id },
+          data: { title: `${updateGroupDto.title} - Discussion générale` },
+        });
+      }
     }
 
     return this.getGroupWithDetails(id);
@@ -130,14 +138,24 @@ export class GroupService {
       throw new ForbiddenException('L\'utilisateur est déjà membre du groupe');
     }
 
-    // Ajouter à la conversation et au groupe
-    await this.prisma.conversationLink.create({
-      data: {
-        conversationId: group.conversationId,
-        userId,
-        role: 'member',
-      },
+    // Ajouter à toutes les conversations du groupe
+    const groupConversations = await this.prisma.conversation.findMany({
+      where: { groupId },
+      select: { id: true },
     });
+
+    // Ajouter l'utilisateur à toutes les conversations du groupe
+    await Promise.all(
+      groupConversations.map(conv =>
+        this.prisma.conversationLink.create({
+          data: {
+            conversationId: conv.id,
+            userId,
+            role: 'member',
+          },
+        })
+      )
+    );
 
     await this.prisma.groupMember.create({
       data: {
@@ -163,16 +181,26 @@ export class GroupService {
       throw new ForbiddenException('Impossible de supprimer le créateur du groupe');
     }
 
-    // Supprimer de la conversation et du groupe
-    await this.prisma.conversationLink.updateMany({
-      where: {
-        conversationId: group!.conversationId,
-        userId,
-      },
-      data: {
-        leftAt: new Date(),
-      },
+    // Supprimer de toutes les conversations du groupe
+    const groupConversations = await this.prisma.conversation.findMany({
+      where: { groupId },
+      select: { id: true },
     });
+
+    // Marquer l'utilisateur comme ayant quitté toutes les conversations du groupe
+    await Promise.all(
+      groupConversations.map(conv =>
+        this.prisma.conversationLink.updateMany({
+          where: {
+            conversationId: conv.id,
+            userId,
+          },
+          data: {
+            leftAt: new Date(),
+          },
+        })
+      )
+    );
 
     await this.prisma.groupMember.delete({
       where: {
@@ -200,6 +228,11 @@ export class GroupService {
     }
 
     // Mettre à jour les rôles
+    const groupConversations = await this.prisma.conversation.findMany({
+      where: { groupId },
+      select: { id: true },
+    });
+
     await Promise.all([
       this.prisma.groupMember.update({
         where: {
@@ -210,17 +243,20 @@ export class GroupService {
         },
         data: { role: newRole },
       }),
-      this.prisma.conversationLink.updateMany({
-        where: {
-          conversationId: group!.conversationId,
-          userId,
-        },
-        data: {
-          role: newRole,
-          isAdmin: newRole === 'admin',
-          isModerator: newRole === 'moderator',
-        },
-      }),
+      // Mettre à jour le rôle dans toutes les conversations du groupe
+      ...groupConversations.map(conv =>
+        this.prisma.conversationLink.updateMany({
+          where: {
+            conversationId: conv.id,
+            userId,
+          },
+          data: {
+            role: newRole,
+            isAdmin: newRole === 'admin',
+            isModerator: newRole === 'moderator',
+          },
+        })
+      ),
     ]);
 
     return this.getGroupWithDetails(groupId);
@@ -259,14 +295,24 @@ export class GroupService {
       throw new ForbiddenException('Vous êtes déjà membre de ce groupe');
     }
 
-    // Ajouter à la conversation et au groupe
-    await this.prisma.conversationLink.create({
-      data: {
-        conversationId: group.conversationId,
-        userId,
-        role: 'member',
-      },
+    // Ajouter à toutes les conversations du groupe
+    const groupConversations = await this.prisma.conversation.findMany({
+      where: { groupId },
+      select: { id: true },
     });
+
+    // Ajouter l'utilisateur à toutes les conversations du groupe
+    await Promise.all(
+      groupConversations.map(conv =>
+        this.prisma.conversationLink.create({
+          data: {
+            conversationId: conv.id,
+            userId,
+            role: 'member',
+          },
+        })
+      )
+    );
 
     await this.prisma.groupMember.create({
       data: {
@@ -293,16 +339,26 @@ export class GroupService {
       throw new ForbiddenException('Le créateur ne peut pas quitter son propre groupe');
     }
 
-    // Quitter la conversation et le groupe
-    await this.prisma.conversationLink.updateMany({
-      where: {
-        conversationId: group.conversationId,
-        userId,
-      },
-      data: {
-        leftAt: new Date(),
-      },
+    // Quitter toutes les conversations du groupe
+    const groupConversations = await this.prisma.conversation.findMany({
+      where: { groupId },
+      select: { id: true },
     });
+
+    // Marquer l'utilisateur comme ayant quitté toutes les conversations du groupe
+    await Promise.all(
+      groupConversations.map(conv =>
+        this.prisma.conversationLink.updateMany({
+          where: {
+            conversationId: conv.id,
+            userId,
+          },
+          data: {
+            leftAt: new Date(),
+          },
+        })
+      )
+    );
 
     await this.prisma.groupMember.delete({
       where: {
@@ -373,7 +429,13 @@ export class GroupService {
         role: m.role,
         user: m.user,
       })),
-      conversations: [{ id: group.conversation.id }],
+      conversations: group.conversations.map(conv => ({ 
+        id: conv.id, 
+        title: conv.title,
+        description: conv.description,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt
+      })),
     };
   }
 
@@ -402,10 +464,16 @@ export class GroupService {
             avatar: true,
           },
         },
-        conversation: {
+        conversations: {
           select: {
             id: true,
+            title: true,
+            description: true,
             updatedAt: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: 'asc',
           },
         },
       },
@@ -471,10 +539,16 @@ export class GroupService {
                 avatar: true,
               },
             },
-            conversation: {
+            conversations: {
               select: {
                 id: true,
+                title: true,
+                description: true,
+                createdAt: true,
                 updatedAt: true,
+              },
+              orderBy: {
+                createdAt: 'asc',
               },
             },
           },
@@ -502,7 +576,13 @@ export class GroupService {
         role: m.role,
         user: m.user,
       })),
-      conversations: [{ id: member.group.conversation.id }],
+      conversations: member.group.conversations.map(conv => ({ 
+        id: conv.id, 
+        title: conv.title,
+        description: conv.description,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt
+      })),
     }));
   }
 }

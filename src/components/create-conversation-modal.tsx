@@ -34,41 +34,55 @@ export function CreateConversationModal({
 }: CreateConversationModalProps) {
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [conversationTitle, setConversationTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Charger les utilisateurs disponibles
-  const loadUsers = useCallback(async () => {
+  // Recherche d'utilisateurs
+  const searchUsers = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setAvailableUsers([]);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.USER.SEARCH), {
+      const response = await fetch(buildApiUrl(`${API_ENDPOINTS.USER.SEARCH}?q=${encodeURIComponent(query)}`), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.ok) {
-        const data = await response.json();
-        // Exclure l'utilisateur actuel
-        const users = (data.users || []).filter((user: User) => user.id !== currentUser.id);
-        setAvailableUsers(users);
+        const users = await response.json();
+        // Exclure l'utilisateur actuel et les utilisateurs déjà sélectionnés
+        const filteredUsers = users.filter((user: User) => 
+          user.id !== currentUser.id && 
+          !selectedUsers.some(selected => selected.id === user.id)
+        );
+        setAvailableUsers(filteredUsers);
       } else {
-        toast.error('Erreur lors du chargement des utilisateurs');
+        toast.error('Erreur lors de la recherche');
       }
     } catch (error) {
-      console.error('Erreur chargement utilisateurs:', error);
-      toast.error('Erreur lors du chargement des utilisateurs');
+      console.error('Erreur recherche utilisateurs:', error);
+      toast.error('Erreur lors de la recherche');
     } finally {
       setIsLoading(false);
     }
-  }, [currentUser.id]);
+  }, [currentUser.id, selectedUsers]);
 
+  // Effet pour gérer la recherche en temps réel
   useEffect(() => {
-    if (isOpen) {
-      loadUsers();
+    if (isOpen && searchQuery.trim()) {
+      const timer = setTimeout(() => {
+        searchUsers(searchQuery);
+      }, 300); // Debounce de 300ms
+
+      return () => clearTimeout(timer);
+    } else if (isOpen && !searchQuery.trim()) {
+      setAvailableUsers([]);
     }
-  }, [isOpen, loadUsers]);
+  }, [isOpen, searchQuery, searchUsers]);
 
   const toggleUserSelection = (user: User) => {
     setSelectedUsers(prev => {
@@ -90,11 +104,10 @@ export function CreateConversationModal({
     setIsCreating(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const title = conversationTitle.trim() || 
-        (selectedUsers.length === 1 
-          ? `Conversation avec ${selectedUsers[0].displayName || selectedUsers[0].username}`
-          : `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`
-        );
+      // Générer automatiquement un titre basé sur les participants
+      const title = selectedUsers.length === 1 
+        ? `Conversation avec ${selectedUsers[0].displayName || selectedUsers[0].username}`
+        : `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`;
 
       const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.CREATE), {
         method: 'POST',
@@ -104,14 +117,15 @@ export function CreateConversationModal({
         },
         body: JSON.stringify({
           title,
+          type: 'direct', // Type requis pour les conversations directes
           participantIds: selectedUsers.map(u => u.id)
         })
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const conversation = await response.json();
         toast.success('Conversation créée avec succès');
-        onConversationCreated(data.conversation.id);
+        onConversationCreated(conversation.id);
         handleClose();
       } else {
         const error = await response.json();
@@ -127,15 +141,10 @@ export function CreateConversationModal({
 
   const handleClose = () => {
     setSelectedUsers([]);
-    setConversationTitle('');
     setSearchQuery('');
+    setAvailableUsers([]);
     onClose();
   };
-
-  const filteredUsers = availableUsers.filter(user =>
-    (user.displayName || user.username).toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -148,20 +157,6 @@ export function CreateConversationModal({
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* Titre de conversation */}
-          <div>
-            <Label htmlFor="title" className="text-sm font-medium">
-              Titre de la conversation (optionnel)
-            </Label>
-            <Input
-              id="title"
-              value={conversationTitle}
-              onChange={(e) => setConversationTitle(e.target.value)}
-              placeholder="Nom de la conversation..."
-              className="mt-1"
-            />
-          </div>
-          
           {/* Recherche d'utilisateurs */}
           <div>
             <Label htmlFor="search" className="text-sm font-medium">
@@ -210,13 +205,13 @@ export function CreateConversationModal({
                 <div className="p-4 text-center text-gray-500">
                   Chargement des utilisateurs...
                 </div>
-              ) : filteredUsers.length === 0 ? (
+              ) : availableUsers.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
-                  Aucun utilisateur trouvé
+                  {searchQuery ? 'Aucun utilisateur trouvé' : 'Tapez pour rechercher des utilisateurs'}
                 </div>
               ) : (
                 <div className="p-2">
-                  {filteredUsers.map(user => {
+                  {availableUsers.map(user => {
                     const isSelected = selectedUsers.some(u => u.id === user.id);
                     return (
                       <div

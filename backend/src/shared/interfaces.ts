@@ -49,6 +49,7 @@ export interface Conversation {
   type: ConversationType;
   title?: string;
   description?: string;
+  groupId?: string; // Référence au groupe si c'est une conversation de groupe
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -56,6 +57,7 @@ export interface Conversation {
   messages?: Message[];
   lastMessage?: Message;
   unreadCount?: number;
+  group?: Group; // Relation avec le groupe
 }
 
 export interface ConversationParticipant {
@@ -108,7 +110,6 @@ export interface MessageResponse {
 
 export interface Group {
   id: string;
-  conversationId: string;
   title: string;
   description?: string;
   image?: string;
@@ -118,7 +119,7 @@ export interface Group {
   createdAt: Date;
   updatedAt: Date;
   members?: GroupMember[];
-  conversation?: Conversation;
+  conversations?: Conversation[]; // Un groupe peut avoir plusieurs conversations
 }
 
 export interface GroupMember {

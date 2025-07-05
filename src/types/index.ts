@@ -346,6 +346,7 @@ export interface Conversation {
   title?: string;
   name?: string;
   description?: string;
+  groupId?: string; // Référence au groupe si c'est une conversation de groupe
   isGroup?: boolean;
   isPrivate?: boolean;
   isActive: boolean;

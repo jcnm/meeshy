@@ -491,4 +491,87 @@ export class ConversationService {
       creator: shareLink.creator,
     };
   }
+
+  async findGroupConversations(groupId: string, userId: string): Promise<ConversationResponse[]> {
+    // Vérifier que l'utilisateur est membre du groupe
+    const groupMember = await this.prisma.groupMember.findUnique({
+      where: {
+        groupId_userId: {
+          groupId,
+          userId,
+        },
+      },
+    });
+
+    if (!groupMember) {
+      throw new ForbiddenException('Vous n\'êtes pas membre de ce groupe');
+    }
+
+    // Récupérer toutes les conversations du groupe
+    const conversations = await this.prisma.conversation.findMany({
+      where: {
+        groupId,
+        isActive: true,
+      },
+      include: {
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          include: {
+            sender: {
+              select: USER_SELECT_FIELDS,
+            },
+          },
+        },
+        links: {
+          where: {
+            userId,
+            leftAt: null,
+          },
+          include: {
+            user: {
+              select: USER_SELECT_FIELDS,
+            },
+          },
+        },
+        group: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        _count: {
+          select: {
+            messages: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return conversations.map(conversation => ({
+      id: conversation.id,
+      type: conversation.type as any,
+      title: conversation.title || undefined,
+      description: conversation.description || undefined,
+      isGroup: true,
+      isPrivate: false,
+      isActive: conversation.isActive,
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt,
+      lastMessage: conversation.messages[0] || null,
+      unreadCount: 0, // TODO: Calculer le nombre de messages non lus
+      participants: conversation.links.map(link => ({
+        id: link.id,
+        conversationId: link.conversationId,
+        userId: link.userId,
+        role: link.role as any,
+        joinedAt: link.joinedAt,
+        leftAt: link.leftAt,
+        isAdmin: link.isAdmin,
+        isModerator: link.isModerator,
+        user: link.user,
+      })),
+    }));
+  }
 }

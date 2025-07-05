@@ -74,6 +74,33 @@ export default function LandingPage() {
     router.push('/dashboard');
   };
 
+  const quickLogin = async (username: string) => {
+    try {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password: 'password123',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.user && result.access_token) {
+        toast.success(`Connecté en tant que ${username} !`);
+        handleAuthSuccess(result.user, result.access_token);
+      } else {
+        toast.error(result.message || 'Erreur de connexion');
+      }
+    } catch (error) {
+      console.error('Erreur login rapide:', error);
+      toast.error('Erreur de connexion');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -99,6 +126,37 @@ export default function LandingPage() {
           </div>
           
           <div className="flex items-center space-x-2">
+            {/* Boutons de test rapide en développement */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="flex items-center space-x-1 mr-4 text-xs">
+                <span className="text-gray-500">Test rapide:</span>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => quickLogin('Alice Martin')}
+                  className="text-xs px-2 py-1 h-6"
+                >
+                  Alice
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => quickLogin('Bob Johnson')}
+                  className="text-xs px-2 py-1 h-6"
+                >
+                  Bob
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => quickLogin('Carlos Rodriguez')}
+                  className="text-xs px-2 py-1 h-6"
+                >
+                  Carlos
+                </Button>
+              </div>
+            )}
+            
             <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
               <DialogTrigger asChild>
                 <Button variant="ghost" className="flex items-center space-x-2">

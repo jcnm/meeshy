@@ -8,13 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,13 +59,16 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   
   // États pour les modals
   const [isCreateConversationOpen, setIsCreateConversationOpen] = useState(false);
   const [isCreateLinkOpen, setIsCreateLinkOpen] = useState(false);
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  
+  // État pour l'expansion des groupes
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  const [groupConversations, setGroupConversations] = useState<Record<string, Conversation[]>>({});
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -92,13 +88,28 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
   const loadConversations = useCallback(async () => {
     try {
       const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.warn('Pas de token trouvé');
+        return;
+      }
+      
       const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.LIST), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (response.ok) {
         const data = await response.json();
-        setConversations(data.conversations || []);
+        console.log('Conversations reçues:', data);
+        // L'API retourne directement un tableau de conversations
+        setConversations(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Erreur response conversations:', response.status, response.statusText);
+        const errorData = await response.text();
+        console.error('Détails erreur:', errorData);
+        if (response.status === 401) {
+          localStorage.removeItem('auth_token');
+          toast.error('Session expirée, veuillez vous reconnecter');
+        }
       }
     } catch (error) {
       console.error('Erreur chargement conversations:', error);
@@ -127,11 +138,49 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
     }
   }, []);
 
+  const loadGroupConversations = useCallback(async (groupId: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.GET_GROUP_CONVERSATIONS(groupId)), {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGroupConversations(prev => ({ ...prev, [groupId]: data }));
+      }
+    } catch (error) {
+      console.error('Erreur chargement conversations du groupe:', error);
+      toast.error('Erreur lors du chargement des conversations du groupe');
+    }
+  }, []);
+
+  const handleConversationClick = (conversation: Conversation) => {
+    if (conversation.type === 'group' && conversation.groupId) {
+      // Pour les conversations de groupe, gérer l'expansion/collapse du groupe
+      if (expandedGroupId === conversation.groupId) {
+        setExpandedGroupId(null);
+      } else {
+        setExpandedGroupId(conversation.groupId);
+        // Charger les conversations du groupe si pas encore chargées
+        if (!groupConversations[conversation.groupId]) {
+          loadGroupConversations(conversation.groupId);
+        }
+      }
+    } else {
+      // Pour les conversations directes, ouvrir normalement
+      openConversation(conversation.id);
+    }
+  };
+
   const openConversation = useCallback(async (conversationId: string) => {
     const conversation = conversations.find(c => c.id === conversationId);
     if (conversation) {
       setSelectedConversation(conversation);
-      setIsDrawerOpen(true);
       await loadMessages(conversationId);
       
       // Réinitialiser le compteur non lus
@@ -160,9 +209,7 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
         scrollToBottom();
         
         // Marquer comme lu si c'est ouvert
-        if (isDrawerOpen) {
-          markMessageAsRead(message.id);
-        }
+        markMessageAsRead(message.id);
       } else {
         // Conversation pas ouverte -> notification + incrémenter unread
         setUnreadCounts(prev => ({
@@ -208,7 +255,7 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
       socket.off('messageEdited', handleMessageEdited);
       socket.off('messageDeleted', handleMessageDeleted);
     };
-  }, [socket, selectedConversation, isDrawerOpen, openConversation]);
+  }, [socket, selectedConversation, openConversation]);
 
   // Gestion typing indicator
   useEffect(() => {
@@ -443,20 +490,29 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
                   key={conversation.id}
                   className={cn(
                     "mb-2 cursor-pointer transition-colors hover:bg-gray-50",
-                    selectedConversation?.id === conversation.id && "bg-blue-50 border-blue-200"
+                    selectedConversation?.id === conversation.id && "bg-blue-50 border-blue-200",
+                    expandedGroupId === conversation.groupId && conversation.type === 'group' && "ring-2 ring-blue-300"
                   )}
-                  onClick={() => openConversation(conversation.id)}
+                  onClick={() => handleConversationClick(conversation)}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3 flex-1 min-w-0">
                         {/* Avatar */}
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={conversation.participants?.[0]?.user?.avatar} />
-                          <AvatarFallback>
-                            {conversation.title?.[0] || conversation.participants?.[0]?.user?.username[0] || '?'}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className="relative">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={conversation.participants?.[0]?.user?.avatar} />
+                            <AvatarFallback>
+                              {conversation.title?.[0] || conversation.participants?.[0]?.user?.username[0] || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          {/* Indicateur de groupe */}
+                          {conversation.type === 'group' && (
+                            <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-1">
+                              <Users className="h-3 w-3 text-white" />
+                            </div>
+                          )}
+                        </div>
                         
                         {/* Info conversation */}
                         <div className="flex-1 min-w-0">
@@ -490,6 +546,70 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
                       </div>
                     </div>
                   </CardContent>
+                  
+                  {/* Contenu étendu pour les groupes */}
+                  {conversation.type === 'group' && expandedGroupId === conversation.groupId && (
+                    <div className="border-t border-gray-200 p-4 bg-gray-50">
+                      {/* Boutons de gestion du groupe */}
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <Button size="sm" variant="outline" className="text-xs">
+                          <MessageSquare className="h-3 w-3 mr-1" />
+                          Nouvelle conversation
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-xs">
+                          <UserPlus className="h-3 w-3 mr-1" />
+                          Ajouter membre
+                        </Button>
+                        <Button size="sm" variant="outline" className="text-xs">
+                          <Settings className="h-3 w-3 mr-1" />
+                          Gérer groupe
+                        </Button>
+                        <Button size="sm" variant="destructive" className="text-xs">
+                          <X className="h-3 w-3 mr-1" />
+                          Quitter
+                        </Button>
+                      </div>
+                      
+                      {/* Liste des conversations du groupe */}
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium text-gray-700">
+                          Conversations du groupe
+                        </div>
+                        {conversation.groupId && groupConversations[conversation.groupId] ? (
+                          <div className="space-y-1">
+                            {groupConversations[conversation.groupId].map((groupConv) => (
+                              <div
+                                key={groupConv.id}
+                                className="flex items-center space-x-2 p-2 rounded hover:bg-gray-100 cursor-pointer text-sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openConversation(groupConv.id);
+                                }}
+                              >
+                                <MessageSquare className="h-4 w-4 text-gray-400" />
+                                <span className="flex-1 truncate">
+                                  {groupConv.title || 'Conversation sans titre'}
+                                </span>
+                                {unreadCounts[groupConv.id] > 0 && (
+                                  <Badge variant="destructive" className="h-4 w-4 p-0 text-xs">
+                                    {unreadCounts[groupConv.id]}
+                                  </Badge>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : conversation.groupId ? (
+                          <div className="text-sm text-gray-500 italic">
+                            Chargement des conversations...
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-500">
+                            {conversation.participants?.length || 0} membres
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </Card>
               ))
             )}
@@ -523,104 +643,120 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
             </div>
           </div>
         ) : (
-          /* Chat drawer */
-          <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-            <SheetContent side="right" className="w-full sm:w-[600px] p-0">
-              <div className="flex flex-col h-full">
-                {/* Header conversation */}
-                <SheetHeader className="p-4 border-b border-gray-200">
-                  <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarImage src={selectedConversation.participants?.[0]?.user?.avatar} />
-                      <AvatarFallback>
-                        {selectedConversation.title?.[0] || selectedConversation.participants?.[0]?.user?.username[0] || '?'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <SheetTitle className="text-left truncate">
-                        {selectedConversation.title || 
-                         selectedConversation.participants?.map(p => p.user?.displayName || p.user?.username).join(', ')}
-                      </SheetTitle>
-                      <SheetDescription className="text-left">
-                        {isConnected && typingUsers[selectedConversation.id]?.length > 0 ? (
-                          <TypingIndicator 
-                            chatId={selectedConversation.id}
-                            currentUserId={currentUser.id}
-                          />
-                        ) : (
-                          `${selectedConversation.participants?.length || 0} participant(s)`
-                        )}
-                      </SheetDescription>
-                    </div>
-                  </div>
-                </SheetHeader>
-
-                {/* Messages */}
-                <ScrollArea className="flex-1 p-4">
-                  <div className="space-y-4">
-                    {messages.map(message => (
-                      <MessageBubble
-                        key={message.id}
-                        message={message}
-                        currentUserId={currentUser.id}
-                        currentUserLanguage={currentUser.systemLanguage}
-                        onTranslate={async () => {}}
-                        onEdit={async () => {}}
-                        onToggleOriginal={() => {}}
-                      />
-                    ))}
-                    {/* Indicateur de frappe */}
-                    {isConnected && typingUsers[selectedConversation.id]?.length > 0 && (
-                      <div className="flex items-center space-x-2 text-sm text-gray-500">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                        <span>
-                          {typingUsers[selectedConversation.id].map(u => u.username).join(', ')} 
-                          {typingUsers[selectedConversation.id].length > 1 ? ' sont en train d\'écrire...' : ' est en train d\'écrire...'}
-                        </span>
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
-
-                {/* Input message */}
-                <div className="p-4 border-t border-gray-200">
-                  <div className="flex space-x-2">
-                    <Input
-                      ref={messageInputRef}
-                      placeholder="Tapez votre message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          sendMessage();
-                        }
-                      }}
-                      disabled={!isConnected}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={sendMessage}
-                      disabled={!newMessage.trim() || !isConnected}
-                      size="icon"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {!isConnected && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Connexion interrompue - Reconnexion en cours...
+          /* Zone de chat directe */
+          <div className="flex flex-col h-full">
+            {/* Header conversation */}
+            <div className="p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarImage src={selectedConversation.participants?.[0]?.user?.avatar} />
+                    <AvatarFallback>
+                      {selectedConversation.title?.[0] || selectedConversation.participants?.[0]?.user?.username[0] || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold truncate">
+                      {selectedConversation.title || 
+                       selectedConversation.participants?.map(p => p.user?.displayName || p.user?.username).join(', ')}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {isConnected && typingUsers[selectedConversation.id]?.length > 0 ? (
+                        <TypingIndicator 
+                          chatId={selectedConversation.id}
+                          currentUserId={currentUser.id}
+                        />
+                      ) : (
+                        `${selectedConversation.participants?.length || 0} participant(s)`
+                      )}
                     </p>
-                  )}
+                  </div>
                 </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setSelectedConversation(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-            </SheetContent>
-          </Sheet>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-4 bg-gray-50">
+              <div className="space-y-4">
+                {messages.map(message => (
+                  <MessageBubble
+                    key={message.id}
+                    message={message}
+                    currentUserId={currentUser.id}
+                    currentUserLanguage={currentUser.systemLanguage}
+                    onTranslate={async () => {}}
+                    onEdit={async () => {}}
+                    onToggleOriginal={() => {}}
+                  />
+                ))}
+                {/* Indicateur de frappe */}
+                {isConnected && typingUsers[selectedConversation.id]?.length > 0 && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                    <span>
+                      {typingUsers[selectedConversation.id].map(u => u.username).join(', ')} 
+                      {typingUsers[selectedConversation.id].length > 1 ? ' sont en train d\'écrire...' : ' est en train d\'écrire...'}
+                    </span>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Zone de saisie */}
+            <div className="p-4 border-t border-gray-200 bg-white">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                sendMessage();
+              }} className="flex space-x-2">
+                <Input
+                  ref={messageInputRef}
+                  value={newMessage}
+                  onChange={(e) => {
+                    setNewMessage(e.target.value);
+                    // Gérer l'indicateur de frappe
+                    if (selectedConversation && e.target.value.trim()) {
+                      startTyping(selectedConversation.id);
+                    } else if (selectedConversation) {
+                      stopTyping(selectedConversation.id);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder="Tapez votre message..."
+                  className="flex-1"
+                  disabled={!isConnected}
+                />
+                <Button 
+                  type="submit" 
+                  size="sm"
+                  disabled={!newMessage.trim() || !isConnected}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+              {!isConnected && (
+                <p className="text-xs text-red-500 mt-2">
+                  Connexion interrompue - Reconnexion en cours...
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </div>
 
@@ -668,8 +804,10 @@ export default function ChatLayout({ currentUser }: ChatLayoutProps) {
         onClose={() => setIsCreateGroupOpen(false)}
         currentUser={currentUser}
         onGroupCreated={(groupId) => {
+          // Recharger les conversations
+          loadConversations();
           // Rediriger vers la page du groupe créé
-          window.location.href = `/groups/${groupId}`;
+          router.push(`/groups/${groupId}`);
         }}
       />
     </div>

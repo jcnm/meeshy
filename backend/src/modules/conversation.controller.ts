@@ -117,4 +117,10 @@ export class ConversationController {
   async createConversationLink(@Body() createLinkDto: CreateConversationLinkDto, @Request() req: AuthenticatedRequest) {
     return this.conversationService.createConversationLink(createLinkDto, req.user.id);
   }
+
+  @Get('group/:groupId')
+  @UseGuards(JwtAuthGuard)
+  async findGroupConversations(@Param('groupId') groupId: string, @Request() req: AuthenticatedRequest) {
+    return this.conversationService.findGroupConversations(groupId, req.user.id);
+  }
 }

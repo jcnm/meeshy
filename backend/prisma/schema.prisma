@@ -53,6 +53,7 @@ model Conversation {
   type        String   // "direct" or "group"
   title       String?
   description String?
+  groupId     String?  // Référence au groupe si c'est une conversation de groupe
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -61,7 +62,7 @@ model Conversation {
   messages    Message[]
   links       ConversationLink[]
   shareLinks  ConversationShareLink[]
-  group       Group?
+  group       Group?                   @relation(fields: [groupId], references: [id])
   preferences ConversationPreference[]
 
   @@map("conversations")
@@ -106,7 +107,6 @@ model ConversationShareLink {
 
 model Group {
   id          String   @id @default(cuid())
-  conversationId String @unique
   title       String
   description String?
   image       String?
@@ -117,7 +117,7 @@ model Group {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  conversation Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversations Conversation[] // Une groupe peut avoir plusieurs conversations
   createdBy    User          @relation("GroupCreator", fields: [createdById], references: [id])
   members      GroupMember[]
   admins       User[]        @relation("GroupAdmins")
