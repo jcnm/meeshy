@@ -102,11 +102,16 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<AuthResponse> {
     const { username, password } = loginDto;
-    const email = username; // Retain email for future use, if needed
     console.log('Attempting login with:', JSON.stringify(loginDto));
-    // Trouver l'utilisateur
-    const user = await this.prisma.user.findUnique({
-      where: { email },
+    
+    // Trouver l'utilisateur par username ou email
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email: username },
+        ],
+      },
     });
 
     console.log('User found:', user);

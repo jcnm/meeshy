@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Dialog, 
@@ -19,7 +18,6 @@ import {
   ArrowLeft, 
   Users, 
   Settings,
-  MoreVertical,
   Languages,
   Eye,
   EyeOff
@@ -98,6 +96,43 @@ export default function ChatPage() {
         }
 
         // Initialiser WebSocket
+        const initializeWebSocket = (userId: string, token: string) => {
+          socketRef.current = io('http://localhost:3002', {
+            auth: { token }
+          });
+
+          socketRef.current.on('connect', () => {
+            console.log('Connected to WebSocket');
+            socketRef.current?.emit('join-conversation', { conversationId, userId });
+          });
+
+          socketRef.current.on('new-message', (message: Message) => {
+            setMessages(prev => [...prev, {
+              ...message,
+              isTranslated: false,
+              showingOriginal: true,
+            }]);
+            scrollToBottom();
+          });
+
+          socketRef.current.on('user-typing', ({ userId: typingUserId }: { userId: string }) => {
+            if (typingUserId !== userId) {
+              setTypingUsers(prev => [...prev.filter(id => id !== typingUserId), typingUserId]);
+              setTimeout(() => {
+                setTypingUsers(prev => prev.filter(id => id !== typingUserId));
+              }, 3000);
+            }
+          });
+
+          socketRef.current.on('user-joined', (users: User[]) => {
+            setConnectedUsers(users);
+          });
+
+          socketRef.current.on('disconnect', () => {
+            console.log('Disconnected from WebSocket');
+          });
+        };
+
         initializeWebSocket(userData.id, token);
 
       } catch (error) {
@@ -117,44 +152,7 @@ export default function ChatPage() {
         socketRef.current.disconnect();
       }
     };
-  }, [conversationId, router, initializeWebSocket]);
-
-  const initializeWebSocket = (userId: string, token: string) => {
-    socketRef.current = io('http://localhost:3002', {
-      auth: { token }
-    });
-
-    socketRef.current.on('connect', () => {
-      console.log('Connected to WebSocket');
-      socketRef.current?.emit('join-conversation', { conversationId, userId });
-    });
-
-    socketRef.current.on('new-message', (message: Message) => {
-      setMessages(prev => [...prev, {
-        ...message,
-        isTranslated: false,
-        showingOriginal: true,
-      }]);
-      scrollToBottom();
-    });
-
-    socketRef.current.on('user-typing', ({ userId: typingUserId }: { userId: string }) => {
-      if (typingUserId !== userId) {
-        setTypingUsers(prev => [...prev.filter(id => id !== typingUserId), typingUserId]);
-        setTimeout(() => {
-          setTypingUsers(prev => prev.filter(id => id !== typingUserId));
-        }, 3000);
-      }
-    });
-
-    socketRef.current.on('user-joined', (users: User[]) => {
-      setConnectedUsers(users);
-    });
-
-    socketRef.current.on('user-left', (users: User[]) => {
-      setConnectedUsers(users);
-    });
-  };
+  }, [conversationId, router]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
