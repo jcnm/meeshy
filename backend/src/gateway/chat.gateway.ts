@@ -11,12 +11,13 @@ import { Server, Socket } from 'socket.io';
 import { Injectable, Logger } from '@nestjs/common';
 import { UserService } from '../modules/user.service';
 import { MessageService } from '../modules/message.service';
+import { ConversationService } from '../modules/conversation.service';
 import { SocketResponse, Message, User } from '../types';
 
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:3001', 'http://localhost:3002'],
+    origin: ['http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003'],
     credentials: true,
   },
 })
@@ -27,11 +28,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ChatGateway.name);
   private userSockets: Map<string, string> = new Map(); // userId -> socketId
   private socketUsers: Map<string, string> = new Map(); // socketId -> userId
-  private typingUsers = new Map<string, Set<string>>(); // userId -> Set<chatId>
+  private typingUsers = new Map<string, Set<string>>(); // userId -> Set<conversationId>
 
   constructor(
     private readonly userService: UserService,
     private readonly messageService: MessageService,
+    private readonly conversationService: ConversationService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -50,6 +52,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         userId,
         isOnline: false,
       });
+
+      // Nettoyer les indications de frappe
+      this.typingUsers.delete(userId);
     }
     
     this.logger.log(`Client disconnected: ${client.id}`);
