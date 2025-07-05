@@ -12,7 +12,7 @@ interface AuthenticatedRequest {
   };
 }
 
-@Controller('conversations')
+@Controller('conversation')
 @UseGuards(JwtAuthGuard)
 export class ConversationController {
   constructor(
@@ -61,5 +61,45 @@ export class ConversationController {
   ) {
     createMessageDto.conversationId = conversationId;
     return this.messageService.create(createMessageDto, req.user.id);
+  }
+
+  @Get('user/:userId')
+  async findConversationsByUser(@Param('userId') userId: string) {
+    return this.conversationService.findUserConversations(userId);
+  }
+
+  @Get('links/user/:userId')
+  async findLinksByUser(@Param('userId') userId: string) {
+    // Pour l'instant, retourner un tableau vide
+    return [];
+  }
+
+  @Get('link/:linkId')
+  async getConversationByLink(@Param('linkId') linkId: string) {
+    // Pour l'instant, simuler un lien valide
+    const mockLink = {
+      id: linkId,
+      conversationId: 'conv-1',
+      linkId: linkId,
+      isActive: true,
+      currentUses: 0,
+      maxUses: null,
+      expiresAt: null,
+      conversation: {
+        id: 'conv-1',
+        name: 'Conversation de test',
+        isGroup: false,
+        isPrivate: false,
+        createdAt: new Date(),
+        members: []
+      }
+    };
+    return mockLink;
+  }
+
+  @Post('join/:linkId')
+  async joinByLink(@Param('linkId') linkId: string, @Request() req: AuthenticatedRequest) {
+    // Pour l'instant, simuler une jointure réussie
+    return { success: true, message: 'Rejoint avec succès' };
   }
 }

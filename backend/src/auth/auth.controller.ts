@@ -40,6 +40,12 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMe(@Request() req: AuthenticatedRequest) {
+    return req.user;
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('profile')
   async getProfile(@Request() req: AuthenticatedRequest) {
     return req.user;

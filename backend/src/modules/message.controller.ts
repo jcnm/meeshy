@@ -11,7 +11,7 @@ interface AuthenticatedRequest {
   };
 }
 
-@Controller('messages')
+@Controller('message')
 @UseGuards(JwtAuthGuard)
 export class MessageController {
   constructor(private messageService: MessageService) {}
