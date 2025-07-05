@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import styles from './config-modal.module.css';
 import { 
   User, 
   Globe, 
@@ -86,15 +86,18 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] w-full h-[95vh] p-0 sm:max-w-[95vw] sm:h-[90vh]">
-        <DialogHeader className="px-4 py-3 border-b sm:px-6 sm:py-4">
+      <DialogContent 
+        className={`max-w-[98vw] w-full h-[95vh] p-0 sm:max-w-[95vw] sm:h-[90vh] !grid-template-rows-none !gap-0 ${styles.configModalContent}`}
+        showCloseButton={true}
+      >
+        <DialogHeader className={`px-4 py-3 border-b sm:px-6 sm:py-4 ${styles.configModalHeader}`}>
           <DialogTitle className="text-lg sm:text-xl font-semibold">Paramètres et Configuration</DialogTitle>
         </DialogHeader>
         
-        <div className="flex flex-1 overflow-hidden">
+        <div className={`flex flex-1 min-h-0 overflow-hidden ${styles.configModalMain}`}>
           {/* Sidebar avec tabs - Desktop */}
-          <div className="hidden lg:flex lg:w-72 xl:w-80 lg:flex-col lg:border-r lg:bg-muted/30">
-            <ScrollArea className="flex-1 p-4 xl:p-6">
+          <div className={`hidden lg:flex lg:w-72 xl:w-80 lg:flex-col lg:border-r lg:bg-muted/30 lg:overflow-hidden ${styles.configModalSidebar}`}>
+            <div className="flex-1 overflow-y-auto p-4 xl:p-6">
               <div className="space-y-2 xl:space-y-3">
                 {tabs.map((tab) => (
                   <Button
@@ -110,13 +113,13 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
                   </Button>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </div>
 
           {/* Contenu principal */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Menu déroulant pour mobile et tablette */}
-            <div className="lg:hidden p-3 sm:p-4 border-b bg-background">
+            <div className="lg:hidden p-3 sm:p-4 border-b bg-background flex-shrink-0">
               <select 
                 value={activeTab} 
                 onChange={(e) => setActiveTab(e.target.value)}
@@ -131,11 +134,11 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
             </div>
 
             {/* Contenu de l'onglet actif */}
-            <ScrollArea className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8">
-              <div className="max-w-none lg:max-w-5xl xl:max-w-6xl mx-auto">
+            <div className={`flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 xl:p-8 ${styles.configModalContentArea}`}>
+              <div className="max-w-none lg:max-w-5xl xl:max-w-6xl mx-auto pb-8">
                 {tabs.find(tab => tab.id === activeTab)?.component}
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </div>
       </DialogContent>

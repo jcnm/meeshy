@@ -62,7 +62,8 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
       
       onUserUpdate(updatedUser);
       toast.success('Paramètres de langue mis à jour');
-    } catch (error) {
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour:', err);
       toast.error('Erreur lors de la mise à jour');
     } finally {
       setIsLoading(false);
@@ -156,14 +157,14 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
             <div className="space-y-2 lg:col-span-2 xl:col-span-1">
               <Label htmlFor="customDestinationLanguage" className="text-sm sm:text-base">Langue de destination personnalisée</Label>
               <Select
-                value={settings.customDestinationLanguage}
-                onValueChange={(value) => handleSettingChange('customDestinationLanguage', value)}
+                value={settings.customDestinationLanguage || "none"}
+                onValueChange={(value) => handleSettingChange('customDestinationLanguage', value === "none" ? "" : value)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Sélectionner une langue" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Aucune</SelectItem>
+                  <SelectItem value="none">Aucune</SelectItem>
                   {SUPPORTED_LANGUAGES.map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
