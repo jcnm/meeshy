@@ -2,28 +2,49 @@
 
 Meeshy est une application de messagerie innovante qui permet aux utilisateurs de communiquer dans leurs langues natives respectives grâce à un système de traduction automatique côté client.
 
+## ✅ Statut du Développement
+
+### Fonctionnalités Implémentées
+- ✅ **Authentification complète** - Registration, login, JWT auth
+- ✅ **Base de données** - Prisma + SQLite avec modèles complets
+- ✅ **Conversations et groupes** - Création, gestion, participation
+- ✅ **Liens de conversation** - Génération, partage, jointure avec validation
+- ✅ **Interface utilisateur** - Landing, dashboard, chat, auth forms
+- ✅ **WebSocket intégration** - Chat temps réel, typing indicators, online presence
+- ✅ **Système de traduction** - Hooks et services prêts (MT5/NLLB)
+- ✅ **Notifications** - Système de notifications temps réel intégré
+
+### En Cours de Développement
+- 🔄 **Traduction active** - Intégration finale des modèles MT5/NLLB
+- 🔄 **Tests** - Ajout de tests unitaires et d'intégration
+- 🔄 **Optimisations** - Performance et UX améliorées
+
 ## 🌟 Fonctionnalités Principales
 
 - **Traduction côté client uniquement** - Aucune dépendance aux API externes
 - **Modèles de traduction edge** - MT5 et NLLB via TensorFlow.js
 - **Cache intelligent** - Stockage local des traductions pour une performance optimale
 - **Messagerie temps réel** - WebSocket pour une communication instantanée
+- **Liens d'invitation** - Partage facile de conversations avec validation
+- **Présence en ligne** - Statut temps réel des utilisateurs connectés
 - **Interface moderne** - UI responsive avec shadcn/ui et Tailwind CSS
 
 ## 🏗️ Architecture
 
 ### Frontend (Next.js 15)
-- **Framework** : Next.js 15 avec App Router
-- **Styling** : Tailwind CSS + shadcn/ui
+- **Framework** : Next.js 15 avec App Router et TypeScript
+- **Styling** : Tailwind CSS + shadcn/ui components
 - **State Management** : React hooks personnalisés
-- **WebSocket Client** : Socket.io-client
-- **Traduction** : TensorFlow.js (MT5 + NLLB)
+- **WebSocket Client** : Socket.io-client pour temps réel
+- **Traduction** : TensorFlow.js (MT5 + NLLB) côté client
+- **Notifications** : Sonner pour les toasts et notifications
 
 ### Backend (NestJS)
 - **Framework** : NestJS avec TypeScript
+- **Base de données** : Prisma + SQLite
 - **WebSocket** : Socket.io pour la messagerie temps réel
-- **API REST** : Gestion des utilisateurs et paramètres
-- **Base de données** : En mémoire (pour le développement)
+- **API REST** : Gestion complète des utilisateurs, conversations, groupes
+- **Authentification** : JWT avec bcryptjs
 
 ## 🚀 Installation et Démarrage
 
@@ -49,15 +70,22 @@ npm install
 cd ..
 ```
 
-### 4. Démarrer le backend
+### 4. Initialiser la base de données
+```bash
+cd backend
+npx prisma migrate reset --force  # Recrée la DB avec les données de test
+cd ..
+```
+
+### 5. Démarrer le backend
 ```bash
 cd backend
 npm run start:dev
 ```
 
-Le backend sera disponible sur http://localhost:3001
+Le backend sera disponible sur http://localhost:3002
 
-### 5. Démarrer le frontend
+### 6. Démarrer le frontend
 ```bash
 # Dans un nouveau terminal, depuis la racine du projet
 npm run dev
@@ -67,16 +95,29 @@ Le frontend sera disponible sur http://localhost:3000
 
 ## 🎯 Utilisation
 
-1. **Sélection d'utilisateur** : Choisissez un utilisateur prédéfini depuis l'écran d'accueil
-2. **Interface de chat** : Discutez avec d'autres utilisateurs en temps réel
-3. **Traduction automatique** : Les messages sont automatiquement traduits selon vos paramètres
-4. **Basculement original/traduit** : Cliquez sur l'icône de traduction pour voir le message original
+1. **Inscription/Connexion** : Créez un compte ou connectez-vous avec un utilisateur existant
+2. **Dashboard** : Accédez à vos conversations et créez-en de nouvelles
+3. **Création de conversation** : Sélectionnez des participants et créez une conversation
+4. **Liens d'invitation** : Générez des liens pour inviter d'autres utilisateurs
+5. **Chat temps réel** : Discutez avec notifications et indicateurs de frappe
+6. **Traduction automatique** : Les messages sont traduits selon vos paramètres (à finaliser)
 
-## 👥 Utilisateurs Prédéfinis
+## 👥 Utilisateurs de Test
 
-- **Alice** (Français) - Traduction vers la langue système
-- **Bob** (Anglais/Russe) - Traduction vers la langue régionale
-- **Carlos** (Espagnol) - Traduction personnalisée vers l'anglais
+Comptes prêts à utiliser (mot de passe: `password123`) :
+- **alice.martin@email.com** (Alice Martin) - Français
+- **bob.johnson@email.com** (Bob Johnson) - Anglais/Russe  
+- **carlos.rodriguez@email.com** (Carlos Rodriguez) - Espagnol
+- **diana.chen@email.com** (Diana Chen) - Chinois
+- **emma.schmidt@email.com** (Emma Schmidt) - Allemand
+
+## 🔗 Test des Liens de Conversation
+
+1. Connectez-vous en tant qu'Alice et créez une conversation
+2. Générez un lien d'invitation depuis le dashboard
+3. Copiez le lien généré (format: `/join/[linkId]`)
+4. Ouvrez le lien dans un nouvel onglet ou partagez-le
+5. Connectez-vous avec un autre utilisateur pour rejoindre la conversation
 - **Diana** (Allemand) - Traduction désactivée
 - **Erik** (Suédois) - Traduction vers la langue système
 
