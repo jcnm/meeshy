@@ -29,6 +29,7 @@ export interface Message {
   content: string;
   originalLanguage: string;
   isEdited: boolean;
+  isDeleted?: boolean;
   editedAt?: Date;
   createdAt: Date;
   updatedAt: Date;

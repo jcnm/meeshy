@@ -41,7 +41,8 @@ export const API_ENDPOINTS = {
     CREATE: '/conversation',
     JOIN: '/conversation/join',
     LINK: '/conversation/link',
-    CREATE_LINK: '/conversation/create-link'
+    CREATE_LINK: '/conversation/create-link',
+    MESSAGES: '/conversation/:id/messages'
   },
   MESSAGE: {
     LIST: '/message/conversation',
