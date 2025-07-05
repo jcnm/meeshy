@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto, LoginDto, AuthResponse } from '../dto';
+import e from 'cors';
 
 @Injectable()
 export class AuthService {
@@ -100,13 +101,15 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponse> {
-    const { email, password } = loginDto;
-
+    const { username, password } = loginDto;
+    const email = username; // Retain email for future use, if needed
+    console.log('Attempting login with:', JSON.stringify(loginDto));
     // Trouver l'utilisateur
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
 
+    console.log('User found:', user);
     if (!user) {
       throw new UnauthorizedException('Email ou mot de passe invalide');
     }

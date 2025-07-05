@@ -41,9 +41,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
       const result = await response.json();
 
-      if (response.ok && result.user && result.token) {
+      if (response.ok && result.user && result.access_token) {
         toast.success('Connexion réussie !');
-        onSuccess(result.user, result.token);
+        onSuccess(result.user, result.access_token);
       } else {
         toast.error(result.message || 'Erreur de connexion');
       }

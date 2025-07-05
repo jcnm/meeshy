@@ -26,7 +26,7 @@ interface AuthenticatedSocket extends Socket {
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    origin: ['http://localhost:3000', 'http://localhost:3000'],
     credentials: true,
   },
   namespace: '/',

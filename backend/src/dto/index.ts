@@ -30,7 +30,7 @@ export class UpdateUserDto {
 }
 
 export class LoginDto {
-  email: string;
+  username: string;
   password: string;
 }
 
