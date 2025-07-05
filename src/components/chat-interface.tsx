@@ -11,20 +11,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Send, 
   Languages, 
-  RotateCcw, 
   Users, 
   Settings,
-  Loader2,
-  AlertTriangle
+  Loader2
 } from 'lucide-react';
-import { User, Message, TranslatedMessage } from '@/types';
+import { User, Message } from '@/types';
 import { UserSettingsModal } from './user-settings-modal';
 import { TypingIndicator } from './typing-indicator';
 import { useTypingIndicator } from '@/hooks/use-typing-indicator';
-import { ModelsStatus } from './models-status';
-import { useNotifications, ConnectionStatus, NotificationCenter } from './notifications';
-import { useUserPreferences } from '@/hooks/use-user-preferences';
-import { formatLanguageName } from '@/utils/language-detection';
+import { ModelManager } from './model-manager';
+import { MessageBubble } from './message-bubble';
+import { useTranslation } from '@/hooks/use-translation';
+import { detectLanguage } from '@/utils/translation';
 
 const SUPPORTED_LANGUAGES = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -39,11 +37,6 @@ interface ChatInterfaceProps {
   onlineUsers: User[];
   messages: Message[];
   onSendMessage: (recipientId: string, content: string, originalLanguage: string) => Promise<void>;
-  onToggleTranslation: (messageId: string) => void;
-  onRetranslateMessage: (messageId: string) => void;
-  getMessageContent: (messageId: string) => string;
-  getDisplayedMessage: (messageId: string) => TranslatedMessage | undefined;
-  isTranslationAvailable: boolean;
   onLogout: () => void;
 }
 
@@ -52,11 +45,6 @@ export function ChatInterface({
   onlineUsers,
   messages,
   onSendMessage,
-  onToggleTranslation,
-  onRetranslateMessage,
-  getMessageContent,
-  getDisplayedMessage,
-  isTranslationAvailable,
   onLogout,
 }: ChatInterfaceProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -65,14 +53,20 @@ export function ChatInterface({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { startTyping, stopTyping } = useTypingIndicator();
   
-  // Nouveaux hooks pour les fonctionnalités améliorées
-  const { 
-    notifySuccess, 
-    notifyError, 
-    notifyTranslationSuccess, 
-    notifyTranslationError 
-  } = useNotifications();
-  const { preferences, detectMessageLanguage, shouldTranslate } = useUserPreferences(currentUser);
+  // Nouveau système de traduction
+  const {
+    addMessage,
+    toggleMessageTranslation,
+    retranslateMessage,
+    getDisplayedMessage,
+  } = useTranslation(currentUser);
+
+  // Traiter les nouveaux messages
+  useEffect(() => {
+    messages.forEach(message => {
+      addMessage(message);
+    });
+  }, [messages, addMessage]);
 
   // Auto-scroll vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
@@ -112,13 +106,10 @@ export function ChatInterface({
     setIsSending(true);
     try {
       // Détecter automatiquement la langue du message
-      const detectedLanguage = detectMessageLanguage(messageContent);
+      const detectedLanguage = detectLanguage(messageContent);
       
       await onSendMessage(selectedUser.id, messageContent, detectedLanguage);
       setMessageContent('');
-      
-      // Notification de succès
-      notifySuccess('Message envoyé', `Envoyé en ${formatLanguageName(detectedLanguage, 'native')}`);
       
       // Arrêter l'indicateur de frappe après envoi
       if (selectedUser) {
@@ -126,7 +117,6 @@ export function ChatInterface({
       }
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error);
-      notifyError('Erreur d\'envoi', 'Impossible d\'envoyer le message');
     } finally {
       setIsSending(false);
     }
@@ -146,81 +136,6 @@ export function ChatInterface({
         (message.senderId === selectedUser.id && message.recipientId === currentUser.id)
       )
     : [];
-
-  const MessageBubble = ({ message }: { message: Message }) => {
-    const isOwn = message.senderId === currentUser.id;
-    const displayedMessage = getDisplayedMessage(message.id);
-    const content = getMessageContent(message.id);
-
-    return (
-      <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
-          <div className={`rounded-lg p-3 ${
-            isOwn 
-              ? 'bg-primary text-primary-foreground' 
-              : 'bg-muted'
-          }`}>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
-                
-                {/* Indicateurs de traduction */}
-                {displayedMessage?.isTranslating && (
-                  <div className="flex items-center gap-1 mt-2 text-xs opacity-70">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Traduction en cours...
-                  </div>
-                )}
-                
-                {displayedMessage?.translationError && (
-                  <div className="flex items-center gap-1 mt-2 text-xs text-red-400">
-                    <AlertTriangle className="h-3 w-3" />
-                    Erreur de traduction
-                  </div>
-                )}
-
-                {displayedMessage?.isTranslated && !displayedMessage.isTranslating && (
-                  <Badge variant="secondary" className="mt-2 text-xs">
-                    <Languages className="h-3 w-3 mr-1" />
-                    Traduit
-                  </Badge>
-                )}
-              </div>
-              
-              {/* Actions de traduction */}
-              {!isOwn && isTranslationAvailable && (
-                <div className="flex gap-1 ml-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => onToggleTranslation(message.id)}
-                    className="h-6 w-6 p-0 hover:bg-background/20"
-                  >
-                    <Languages className="h-3 w-3" />
-                  </Button>
-                  
-                  {displayedMessage?.translationError && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onRetranslateMessage(message.id)}
-                      className="h-6 w-6 p-0 hover:bg-background/20"
-                    >
-                      <RotateCcw className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-            
-            <div className="text-xs opacity-70 mt-1">
-              {new Date(message.timestamp).toLocaleTimeString()}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -244,8 +159,6 @@ export function ChatInterface({
             </div>
             
             <div className="flex gap-1">
-              <ConnectionStatus />
-              <NotificationCenter />
               <UserSettingsModal 
                 user={currentUser} 
                 onUserUpdate={(updatedUser) => {
@@ -320,7 +233,7 @@ export function ChatInterface({
           </TabsContent>
           
           <TabsContent value="translation" className="mt-0 p-4">
-            <ModelsStatus />
+            <ModelManager />
           </TabsContent>
         </Tabs>
       </div>
@@ -354,9 +267,22 @@ export function ChatInterface({
 
             {/* Messages */}
             <ScrollArea className="flex-1 p-4">
-              {filteredMessages.map(message => (
-                <MessageBubble key={message.id} message={message} />
-              ))}
+              {filteredMessages.map(message => {
+                const displayedMessage = getDisplayedMessage(message.id);
+                const senderName = onlineUsers.find(u => u.id === message.senderId)?.username || 'Inconnu';
+                
+                return displayedMessage ? (
+                  <MessageBubble
+                    key={message.id}
+                    message={displayedMessage}
+                    isOwn={message.senderId === currentUser.id}
+                    senderName={senderName}
+                    onToggleTranslation={toggleMessageTranslation}
+                    onRetranslate={retranslateMessage}
+                    isTranslationAvailable={currentUser.autoTranslateEnabled || false}
+                  />
+                ) : null;
+              })}
               <div ref={messagesEndRef} />
             </ScrollArea>
 

@@ -4,9 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:frontend": "next dev --turbopack",
+    "dev:backend": "cd backend && npm run start:dev",
+    "dev:all": "./dev.sh dev",
     "build": "next build",
+    "build:all": "./dev.sh build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:all": "./dev.sh lint",
+    "test": "echo \"No tests yet\"",
+    "test:all": "./dev.sh test",
+    "setup": "./dev.sh setup",
+    "clean": "./dev.sh clean",
+    "check": "./dev.sh check",
+    "models": "./dev.sh models"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.6.1",

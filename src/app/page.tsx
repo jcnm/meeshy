@@ -24,11 +24,6 @@ export default function Home() {
 
   const {
     addMessage,
-    toggleMessageTranslation,
-    retranslateMessage,
-    getDisplayedMessage,
-    getMessageContent,
-    isTranslationAvailable,
   } = useTranslation(currentUser);
 
   // Charger la liste des utilisateurs au démarrage
@@ -176,11 +171,6 @@ export default function Home() {
       onlineUsers={onlineUsers}
       messages={messages}
       onSendMessage={handleSendMessage}
-      onToggleTranslation={toggleMessageTranslation}
-      onRetranslateMessage={retranslateMessage}
-      getMessageContent={getMessageContent}
-      getDisplayedMessage={getDisplayedMessage}
-      isTranslationAvailable={isTranslationAvailable}
       onLogout={handleLogout}
     />
   );

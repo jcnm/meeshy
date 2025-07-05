@@ -1,238 +1,362 @@
-// import * as tf from '@tensorflow/tfjs'; // Sera utilisé pour l'implémentation réelle
-import { TranslationCache } from '@/types';
+/**
+ * Système de traduction avec modèles TensorFlow.js et fallback API
+ * Supporte mT5 et NLLB avec différentes tailles selon les capacités machine
+ */
+
+import * as tf from '@tensorflow/tfjs';
+import { 
+  detectSystemCapabilities, 
+  recommendModelVariants, 
+  getModelConfig 
+} from '@/lib/model-config';
+import { modelCache } from '@/lib/model-cache';
+
+// Configuration globale
+const systemCapabilities = detectSystemCapabilities();
+const recommendedVariants = recommendModelVariants(systemCapabilities);
+
+// Cache de traduction simple
+const translationCache = new Map<string, string>();
+
+// Modèles TensorFlow.js chargés
+const loadedModels = new Map<string, tf.GraphModel>();
+const loadingPromises = new Map<string, Promise<tf.GraphModel | null>>();
 
 /**
- * Générer une clé de cache unique pour une traduction
+ * Génère une clé de cache pour une traduction
  */
-export function generateCacheKey(
-  message: string,
-  sourceLanguage: string,
-  targetLanguage: string
-): string {
-  const data = `${message}_${sourceLanguage}_${targetLanguage}`;
-  // Simple hash function pour créer une clé unique
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return `translation_${Math.abs(hash)}`;
+function getCacheKey(text: string, sourceLang: string, targetLang: string): string {
+  return `${sourceLang}-${targetLang}-${text.trim().toLowerCase()}`;
 }
 
 /**
- * Sauvegarder une traduction dans le cache localStorage
- */
-export function saveTranslationToCache(
-  originalMessage: string,
-  sourceLanguage: string,
-  targetLanguage: string,
-  translatedMessage: string
-): void {
-  try {
-    const key = generateCacheKey(originalMessage, sourceLanguage, targetLanguage);
-    const cache: TranslationCache = {
-      key,
-      originalMessage,
-      sourceLanguage,
-      targetLanguage,
-      translatedMessage,
-      timestamp: new Date(),
-    };
-
-    localStorage.setItem(key, JSON.stringify(cache));
-    
-    // Nettoyer le cache si nécessaire (garder max 1000 entrées)
-    cleanupCache();
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde en cache:', error);
-  }
-}
-
-/**
- * Récupérer une traduction depuis le cache
- */
-export function getTranslationFromCache(
-  message: string,
-  sourceLanguage: string,
-  targetLanguage: string
-): string | null {
-  try {
-    const key = generateCacheKey(message, sourceLanguage, targetLanguage);
-    const cached = localStorage.getItem(key);
-    
-    if (!cached) return null;
-    
-    const cache: TranslationCache = JSON.parse(cached);
-    
-    // Vérifier si le cache n'est pas trop ancien (30 jours)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    if (new Date(cache.timestamp) < thirtyDaysAgo) {
-      localStorage.removeItem(key);
-      return null;
-    }
-    
-    return cache.translatedMessage;
-  } catch (error) {
-    console.error('Erreur lors de la récupération du cache:', error);
-    return null;
-  }
-}
-
-/**
- * Nettoyer le cache en gardant seulement les 1000 entrées les plus récentes
- */
-function cleanupCache(): void {
-  try {
-    const translationKeys: Array<{ key: string; timestamp: Date }> = [];
-    
-    // Récupérer toutes les clés de traduction
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('translation_')) {
-        const cached = localStorage.getItem(key);
-        if (cached) {
-          const cache: TranslationCache = JSON.parse(cached);
-          translationKeys.push({ key, timestamp: new Date(cache.timestamp) });
-        }
-      }
-    }
-    
-    // Si plus de 1000 entrées, supprimer les plus anciennes
-    if (translationKeys.length > 1000) {
-      translationKeys.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-      
-      // Supprimer les entrées au-delà de 1000
-      for (let i = 1000; i < translationKeys.length; i++) {
-        localStorage.removeItem(translationKeys[i].key);
-      }
-    }
-  } catch (error) {
-    console.error('Erreur lors du nettoyage du cache:', error);
-  }
-}
-
-/**
- * Déterminer si un message est simple ou complexe
- * Simple: ≤50 caractères et faible complexité syntaxique
- */
-export function isSimpleMessage(message: string): boolean {
-  if (message.length > 50) return false;
-  
-  // Vérifier la complexité syntaxique
-  const complexPatterns = [
-    /[.!?]{2,}/, // Plusieurs ponctuations
-    /[;:]/, // Points-virgules ou deux-points
-    /\b(que|qui|dont|où|because|since|although|however)\b/i, // Mots de liaison complexes
-    /\([^)]*\)/, // Parenthèses
-    /\[[^\]]*\]/, // Crochets
-    /"[^"]*"/, // Guillemets
-  ];
-  
-  return !complexPatterns.some(pattern => pattern.test(message));
-}
-
-/**
- * Détecter la langue d'un texte (fonction simple basée sur des patterns)
+ * Détecte la langue d'un texte avec des patterns simples
  */
 export function detectLanguage(text: string): string {
-  const languagePatterns = {
-    en: /\b(the|and|is|are|was|were|have|has|will|would|could|should)\b/gi,
-    fr: /\b(le|la|les|et|est|sont|était|étaient|avoir|aura|aurait|pourrait|devrait)\b/gi,
-    es: /\b(el|la|los|las|y|es|son|era|eran|tener|tendrá|tendría|podría|debería)\b/gi,
-    de: /\b(der|die|das|und|ist|sind|war|waren|haben|wird|würde|könnte|sollte)\b/gi,
-    ru: /[а-яё]/gi,
-    zh: /[\u4e00-\u9fff]/g,
-    ja: /[\u3040-\u309f\u30a0-\u30ff]/g,
-    ar: /[\u0600-\u06ff]/g,
+  if (!text || text.trim().length === 0) {
+    return 'en'; // Langue par défaut
+  }
+
+  const cleanText = text.toLowerCase().trim();
+
+  // Patterns de détection basiques
+  const patterns: Record<string, RegExp[]> = {
+    fr: [
+      /\b(le|la|les|de|du|des|un|une|et|est|avec|pour|par|dans|sur|son|sa|ses|que|qui|où|quand|comment|pourquoi|je|tu|il|elle|nous|vous|ils|elles|moi|toi|lui|eux|ça|ce|cette|ces|mon|ma|mes|ton|ta|tes)\b/g,
+      /[àâäéèêëïîôöùûüÿç]/g,
+    ],
+    es: [
+      /\b(el|la|los|las|de|del|un|una|y|es|con|para|por|en|sobre|su|sus|que|quien|donde|cuando|como|porque|yo|tú|él|ella|nosotros|vosotros|ellos|ellas|mi|tu|su|nuestro|vuestro)\b/g,
+      /[áéíóúüñ]/g,
+    ],
+    de: [
+      /\b(der|die|das|den|dem|ein|eine|und|ist|mit|für|von|in|auf|sein|seine|ihre|dass|wer|wo|wann|wie|warum|ich|du|er|sie|es|wir|ihr|sie|mein|dein|sein|unser|euer)\b/g,
+      /[äöüß]/g,
+    ],
+    it: [
+      /\b(il|la|lo|gli|le|di|del|un|una|e|è|con|per|da|in|su|suo|sua|che|chi|dove|quando|come|perché|io|tu|lui|lei|noi|voi|loro|mio|tuo|suo|nostro|vostro)\b/g,
+      /[àèéìíîòóù]/g,
+    ],
+    pt: [
+      /\b(o|a|os|as|de|do|da|um|uma|e|é|com|para|por|em|sobre|seu|sua|que|quem|onde|quando|como|porque|eu|tu|ele|ela|nós|vós|eles|elas|meu|teu|seu|nosso|vosso)\b/g,
+      /[àáâãéêíóôõú]/g,
+    ],
+    en: [
+      /\b(the|a|an|and|is|with|for|by|in|on|his|her|their|that|who|where|when|how|why|i|you|he|she|we|they|me|him|her|us|them|my|your|his|her|our|their)\b/g,
+    ],
   };
-  
-  let maxMatches = 0;
-  let detectedLanguage = 'en';
-  
-  for (const [lang, pattern] of Object.entries(languagePatterns)) {
-    const matches = text.match(pattern);
-    const matchCount = matches ? matches.length : 0;
-    
-    if (matchCount > maxMatches) {
-      maxMatches = matchCount;
-      detectedLanguage = lang;
+
+  // Compter les matches pour chaque langue
+  const scores: Record<string, number> = {};
+
+  for (const [lang, langPatterns] of Object.entries(patterns)) {
+    let score = 0;
+    for (const pattern of langPatterns) {
+      const matches = cleanText.match(pattern);
+      if (matches) {
+        score += matches.length;
+      }
     }
+    scores[lang] = score;
+  }
+
+  // Trouver la langue avec le meilleur score
+  const sortedScores = Object.entries(scores)
+    .filter(([, score]) => score > 0)
+    .sort(([, a], [, b]) => b - a);
+
+  if (sortedScores.length > 0 && sortedScores[0][1] > 1) {
+    return sortedScores[0][0];
+  }
+
+  // Fallback à l'anglais
+  return 'en';
+}
+
+/**
+ * Sélectionne le modèle approprié selon le message
+ */
+function selectModel(text: string): { family: string; variant: string } {
+  const length = text.length;
+  const hasComplexPunctuation = /[;:,!?(){}[\]"']/.test(text);
+  const wordCount = text.split(/\s+/).length;
+  const hasMultipleSentences = text.split(/[.!?]+/).length > 1;
+
+  // Utiliser mT5 pour les messages courts et simples
+  if (length <= 100 && wordCount <= 15 && !hasComplexPunctuation && !hasMultipleSentences) {
+    return { family: 'mt5', variant: recommendedVariants.mt5 };
+  }
+
+  // Utiliser NLLB pour les messages longs et complexes
+  return { family: 'nllb', variant: recommendedVariants.nllb };
+}
+
+/**
+ * Charge un modèle TensorFlow.js depuis le cache ou télécharge-le
+ */
+async function loadModel(family: string, variant: string): Promise<tf.GraphModel | null> {
+  const modelKey = `${family}-${variant}`;
+  
+  // Si déjà chargé en mémoire
+  if (loadedModels.has(modelKey)) {
+    return loadedModels.get(modelKey)!;
   }
   
-  return detectedLanguage;
-}
+  // Si en cours de chargement
+  if (loadingPromises.has(modelKey)) {
+    return loadingPromises.get(modelKey)!;
+  }
 
-/**
- * Fonction simulée de traduction MT5 (remplacer par l'implémentation réelle)
- */
-export async function translateWithMT5(
-  text: string,
-  sourceLanguage: string,
-  targetLanguage: string
-): Promise<string> {
-  // Vérifier le cache d'abord
-  const cached = getTranslationFromCache(text, sourceLanguage, targetLanguage);
-  if (cached) return cached;
-  
-  // Simulation de traduction (remplacer par l'implémentation TensorFlow.js réelle)
-  await new Promise(resolve => setTimeout(resolve, 500)); // Simuler le temps de traduction
-  
-  const mockTranslation = `[MT5] ${text} (${sourceLanguage}→${targetLanguage})`;
-  
-  // Sauvegarder en cache
-  saveTranslationToCache(text, sourceLanguage, targetLanguage, mockTranslation);
-  
-  return mockTranslation;
-}
+  const loadingPromise = (async (): Promise<tf.GraphModel | null> => {
+    try {
+      console.log(`🔄 Chargement du modèle ${family}-${variant}...`);
 
-/**
- * Fonction simulée de traduction NLLB (remplacer par l'implémentation réelle)
- */
-export async function translateWithNLLB(
-  text: string,
-  sourceLanguage: string,
-  targetLanguage: string
-): Promise<string> {
-  // Vérifier le cache d'abord
-  const cached = getTranslationFromCache(text, sourceLanguage, targetLanguage);
-  if (cached) return cached;
-  
-  // Simulation de traduction (remplacer par l'implémentation TensorFlow.js réelle)
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simuler le temps de traduction plus long
-  
-  const mockTranslation = `[NLLB] ${text} (${sourceLanguage}→${targetLanguage})`;
-  
-  // Sauvegarder en cache
-  saveTranslationToCache(text, sourceLanguage, targetLanguage, mockTranslation);
-  
-  return mockTranslation;
-}
+      // Vérifier le cache local d'abord
+      const cachedModel = await modelCache.getCachedModel(family, variant);
+      
+      if (cachedModel) {
+        console.log(`📦 Modèle ${family}-${variant} trouvé dans le cache`);
+        // Charger depuis le blob en cache
+        const modelArrayBuffer = await cachedModel.modelBlob.arrayBuffer();
+        const model = await tf.loadGraphModel(tf.io.fromMemory(modelArrayBuffer));
+        loadedModels.set(modelKey, model);
+        return model;
+      }
 
-/**
- * Fonction principale de traduction qui choisit automatiquement le modèle
- */
-export async function translateMessage(
-  text: string,
-  sourceLanguage: string,
-  targetLanguage: string
-): Promise<string> {
-  if (sourceLanguage === targetLanguage) return text;
+      // Si pas en cache, essayer de télécharger
+      const config = getModelConfig(family, variant);
+      if (!config) {
+        console.error(`❌ Configuration non trouvée pour ${family}-${variant}`);
+        return null;
+      }
+
+      console.log(`⬇️ Téléchargement du modèle ${family}-${variant} depuis ${config.variant.modelUrl}`);
+      
+      // Télécharger et mettre en cache
+      const downloadSuccess = await modelCache.downloadAndCacheModel(
+        family,
+        variant,
+        config.variant.modelUrl,
+        config.variant.tokenizerUrl
+      );
+
+      if (!downloadSuccess) {
+        console.error(`❌ Échec du téléchargement de ${family}-${variant}`);
+        return null;
+      }
+
+      // Recharger depuis le cache maintenant qu'il est téléchargé
+      const newCachedModel = await modelCache.getCachedModel(family, variant);
+      if (newCachedModel) {
+        const modelArrayBuffer = await newCachedModel.modelBlob.arrayBuffer();
+        const model = await tf.loadGraphModel(tf.io.fromMemory(modelArrayBuffer));
+        loadedModels.set(modelKey, model);
+        return model;
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`❌ Erreur lors du chargement du modèle ${family}-${variant}:`, error);
+      return null;
+    }
+  })();
+
+  loadingPromises.set(modelKey, loadingPromise);
   
   try {
-    if (isSimpleMessage(text)) {
-      return await translateWithMT5(text, sourceLanguage, targetLanguage);
-    } else {
-      return await translateWithNLLB(text, sourceLanguage, targetLanguage);
-    }
+    const result = await loadingPromise;
+    loadingPromises.delete(modelKey);
+    return result;
   } catch (error) {
-    console.error('Erreur de traduction:', error);
-    return text; // Fallback: retourner le texte original
+    loadingPromises.delete(modelKey);
+    throw error;
   }
 }
 
-// Aliases pour la compatibilité avec le nouveau hook
-export const getCachedTranslation = getTranslationFromCache;
-export const setCachedTranslation = saveTranslationToCache;
+/**
+ * Traduit un texte avec les modèles TensorFlow.js
+ */
+async function translateWithModels(text: string, sourceLang: string, targetLang: string): Promise<string> {
+  if (sourceLang === targetLang) {
+    return text;
+  }
+
+  try {
+    const { family, variant } = selectModel(text);
+    
+    console.log(`🤖 Tentative de traduction avec ${family}-${variant}: ${sourceLang} → ${targetLang}`);
+    
+    const model = await loadModel(family, variant);
+    
+    if (!model) {
+      throw new Error(`Modèle ${family}-${variant} non disponible`);
+    }
+
+    // TODO: Implémentation réelle de la traduction avec TensorFlow.js
+    // Pour l'instant, nous simulons un échec pour utiliser le fallback API
+    // Dans une version complète, ici on ferait:
+    // 1. Tokenisation du texte source
+    // 2. Inférence avec le modèle
+    // 3. Décodage du résultat
+    
+    console.log(`⚠️ Traduction TensorFlow.js pas encore implémentée pour ${family}-${variant}`);
+    throw new Error('Traduction TensorFlow.js non implémentée');
+    
+  } catch (error) {
+    console.error('Erreur modèle TensorFlow.js:', error);
+    throw error;
+  }
+}
+
+/**
+ * Traduit un texte avec l'API MyMemory (fallback)
+ */
+async function translateWithAPI(text: string, sourceLang: string, targetLang: string): Promise<string> {
+  if (sourceLang === targetLang) {
+    return text;
+  }
+
+  try {
+    const url = new URL('https://api.mymemory.translated.net/get');
+    url.searchParams.set('q', text);
+    url.searchParams.set('langpair', `${sourceLang}|${targetLang}`);
+    
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.responseStatus === 200 && data.responseData) {
+      const translatedText = data.responseData.translatedText;
+      
+      // Vérifier que la traduction n'est pas identique (signe d'échec)
+      if (translatedText && translatedText.trim() !== text.trim()) {
+        return translatedText;
+      }
+    }
+    
+    throw new Error('Traduction API non disponible');
+  } catch (error) {
+    console.error('Erreur API de traduction:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fonction principale de traduction
+ * Essaie d'abord les modèles TensorFlow.js, puis fallback vers l'API
+ */
+export async function translateMessage(
+  text: string, 
+  sourceLang: string, 
+  targetLang: string
+): Promise<string> {
+  if (!text || !text.trim()) {
+    return text;
+  }
+
+  if (sourceLang === targetLang) {
+    return text;
+  }
+
+  // Vérifier le cache d'abord
+  const cacheKey = getCacheKey(text, sourceLang, targetLang);
+  const cached = translationCache.get(cacheKey);
+  if (cached) {
+    console.log('✅ Traduction trouvée dans le cache');
+    return cached;
+  }
+
+  let translatedText: string;
+
+  try {
+    // Essayer d'abord les modèles TensorFlow.js
+    console.log(`🤖 Tentative de traduction avec modèles TensorFlow.js: ${sourceLang} → ${targetLang}`);
+    translatedText = await translateWithModels(text, sourceLang, targetLang);
+    console.log('✅ Traduction réussie avec modèles TensorFlow.js');
+  } catch {
+    console.log('⚠️ Échec des modèles TensorFlow.js, tentative avec API...');
+    
+    try {
+      // Fallback vers l'API
+      translatedText = await translateWithAPI(text, sourceLang, targetLang);
+      console.log('✅ Traduction réussie avec API de fallback');
+    } catch {
+      console.error('❌ Échec de toutes les méthodes de traduction');
+      throw new Error('Échec de traduction');
+    }
+  }
+
+  // Mettre en cache le résultat
+  if (translatedText && translatedText !== text) {
+    translationCache.set(cacheKey, translatedText);
+  }
+
+  return translatedText;
+}
+
+/**
+ * Nettoie le cache de traduction
+ */
+export function clearTranslationCache(): void {
+  translationCache.clear();
+}
+
+/**
+ * Obtient les statistiques du cache
+ */
+export function getCacheStats(): { size: number; keys: string[] } {
+  return {
+    size: translationCache.size,
+    keys: Array.from(translationCache.keys()),
+  };
+}
+
+/**
+ * Obtient une traduction du cache
+ */
+export function getCachedTranslation(text: string, sourceLang: string, targetLang: string): string | null {
+  const cacheKey = getCacheKey(text, sourceLang, targetLang);
+  return translationCache.get(cacheKey) || null;
+}
+
+/**
+ * Met en cache une traduction
+ */
+export function setCachedTranslation(
+  text: string, 
+  sourceLang: string, 
+  targetLang: string, 
+  translation: string
+): void {
+  const cacheKey = getCacheKey(text, sourceLang, targetLang);
+  translationCache.set(cacheKey, translation);
+}

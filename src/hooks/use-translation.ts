@@ -1,199 +1,250 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { Message, User, TranslationModel, TranslatedMessage } from '@/types';
+import { Message, User, TranslatedMessage } from '@/types';
 import { translateMessage, detectLanguage } from '@/utils/translation';
 
 export function useTranslation(currentUser: User | null) {
   const [translatedMessages, setTranslatedMessages] = useState<Map<string, TranslatedMessage>>(new Map());
-  const [translationModels, setTranslationModels] = useState<TranslationModel[]>([
-    { name: 'MT5', isLoaded: false },
-    { name: 'NLLB', isLoaded: false },
-  ]);
+  const [isTranslationEnabled, setIsTranslationEnabled] = useState(false);
 
-  // Simuler le chargement des modèles de traduction
+  // Vérifier si la traduction est activée pour l'utilisateur
   useEffect(() => {
-    const loadModels = async () => {
-      // Simulation du chargement des modèles
-      setTimeout(() => {
-        setTranslationModels(prev => 
-          prev.map(model => ({ ...model, isLoaded: true }))
-        );
-      }, 2000);
-    };
+    setIsTranslationEnabled(currentUser?.autoTranslateEnabled || false);
+  }, [currentUser]);
 
-    loadModels();
-  }, []);
-
-  const getTargetLanguage = useCallback((user: User): string => {
-    if (!user.autoTranslateEnabled) return '';
+  /**
+   * Obtient la langue cible pour la traduction (langue que l'utilisateur comprend)
+   */
+  const getTargetLanguage = useCallback((): string => {
+    if (!currentUser) return 'en';
     
-    if (user.useCustomDestination && user.customDestinationLanguage) {
-      return user.customDestinationLanguage;
+    // Langue de destination personnalisée en priorité
+    if (currentUser.customDestinationLanguage) {
+      return currentUser.customDestinationLanguage;
     }
     
-    if (user.translateToSystemLanguage) {
-      return user.systemLanguage;
-    }
-    
-    if (user.translateToRegionalLanguage) {
-      return user.regionalLanguage;
-    }
-    
-    return '';
-  }, []);
+    // Sinon, langue système
+    return currentUser.systemLanguage || 'en';
+  }, [currentUser]);
 
-  const translateMessageContent = useCallback(async (
-    message: Message,
-    targetLanguage: string
-  ): Promise<string> => {
-    if (!targetLanguage || message.originalLanguage === targetLanguage) {
-      return message.content;
-    }
-
-    try {
-      const translatedContent = await translateMessage(
-        message.content,
-        message.originalLanguage,
-        targetLanguage
-      );
-      
-      return translatedContent;
-    } catch (error) {
-      console.error('Erreur de traduction:', error);
-      throw error;
-    }
-  }, []);
-
+  /**
+   * Traduit automatiquement un message reçu vers la langue de l'utilisateur
+   */
   const translateIncomingMessage = useCallback(async (message: Message): Promise<void> => {
-    if (!currentUser) return;
-
-    const targetLanguage = getTargetLanguage(currentUser);
-    if (!targetLanguage) {
-      // Pas de traduction nécessaire
+    if (!currentUser || !isTranslationEnabled) {
+      // Pas de traduction, juste stocker le message original
       setTranslatedMessages(prev => new Map(prev.set(message.id, {
         ...message,
         isTranslated: false,
+        showingOriginal: false,
       })));
       return;
     }
 
-    // Marquer le message comme en cours de traduction
+    const targetLanguage = getTargetLanguage();
+    const sourceLanguage = message.originalLanguage || detectLanguage(message.content);
+
+    // Si même langue, pas de traduction nécessaire
+    if (sourceLanguage === targetLanguage) {
+      setTranslatedMessages(prev => new Map(prev.set(message.id, {
+        ...message,
+        originalLanguage: sourceLanguage,
+        isTranslated: false,
+        showingOriginal: false,
+      })));
+      return;
+    }
+
+    // Marquer comme en cours de traduction
     setTranslatedMessages(prev => new Map(prev.set(message.id, {
       ...message,
+      originalLanguage: sourceLanguage,
       isTranslating: true,
       isTranslated: false,
+      showingOriginal: false,
     })));
 
     try {
-      const translatedContent = await translateMessageContent(message, targetLanguage);
+      console.log(`🔄 Traduction de "${message.content}" (${sourceLanguage} → ${targetLanguage})`);
       
+      const translatedContent = await translateMessage(
+        message.content,
+        sourceLanguage,
+        targetLanguage
+      );
+      
+      console.log(`✅ Traduction réussie: "${translatedContent}"`);
+
+      // Sauvegarder la traduction réussie
       setTranslatedMessages(prev => new Map(prev.set(message.id, {
         ...message,
+        originalLanguage: sourceLanguage,
         translatedContent,
+        targetLanguage,
         isTranslated: true,
         isTranslating: false,
+        showingOriginal: false,
+        translationError: undefined,
       })));
+
     } catch (error) {
+      console.error('❌ Erreur de traduction:', error);
+
+      // Sauvegarder l'erreur et afficher le message original
       setTranslatedMessages(prev => new Map(prev.set(message.id, {
         ...message,
-        isTranslating: false,
+        originalLanguage: sourceLanguage,
         isTranslated: false,
-        translationError: error instanceof Error ? error.message : 'Erreur de traduction',
+        isTranslating: false,
+        showingOriginal: true,
+        translationError: 'Échec de traduction',
       })));
     }
-  }, [currentUser, getTargetLanguage, translateMessageContent]);
+  }, [currentUser, isTranslationEnabled, getTargetLanguage]);
 
-  const toggleMessageTranslation = useCallback(async (messageId: string): Promise<void> => {
-    const translatedMessage = translatedMessages.get(messageId);
-    if (!translatedMessage || !currentUser) return;
+  /**
+   * Bascule entre le message original et traduit
+   */
+  const toggleMessageTranslation = useCallback((messageId: string): void => {
+    const message = translatedMessages.get(messageId);
+    if (!message) return;
 
-    if (translatedMessage.isTranslated && translatedMessage.translatedContent) {
-      // Basculer entre original et traduit
+    // Si on a une traduction, basculer l'affichage
+    if (message.isTranslated && message.translatedContent) {
       setTranslatedMessages(prev => new Map(prev.set(messageId, {
-        ...translatedMessage,
-        isTranslated: !translatedMessage.isTranslated,
+        ...message,
+        showingOriginal: !message.showingOriginal,
       })));
-    } else if (!translatedMessage.translatedContent && !translatedMessage.isTranslating) {
-      // Traduire le message pour la première fois
-      await translateIncomingMessage(translatedMessage);
     }
-  }, [translatedMessages, currentUser, translateIncomingMessage]);
+  }, [translatedMessages]);
 
+  /**
+   * Force la retraduction d'un message
+   */
   const retranslateMessage = useCallback(async (messageId: string): Promise<void> => {
-    const translatedMessage = translatedMessages.get(messageId);
-    if (!translatedMessage || !currentUser) return;
+    const message = translatedMessages.get(messageId);
+    if (!message || !currentUser) return;
 
-    const targetLanguage = getTargetLanguage(currentUser);
-    if (!targetLanguage) return;
+    const targetLanguage = getTargetLanguage();
+    const sourceLanguage = message.originalLanguage || detectLanguage(message.content);
 
     // Marquer comme en cours de traduction
     setTranslatedMessages(prev => new Map(prev.set(messageId, {
-      ...translatedMessage,
+      ...message,
       isTranslating: true,
       translationError: undefined,
     })));
 
     try {
-      const translatedContent = await translateMessageContent(translatedMessage, targetLanguage);
-      
+      const translatedContent = await translateMessage(
+        message.content,
+        sourceLanguage,
+        targetLanguage
+      );
+
       setTranslatedMessages(prev => new Map(prev.set(messageId, {
-        ...translatedMessage,
+        ...message,
         translatedContent,
+        targetLanguage,
         isTranslated: true,
         isTranslating: false,
+        showingOriginal: false,
         translationError: undefined,
       })));
+
     } catch (error) {
+      console.error('Erreur de retraduction:', error);
+
       setTranslatedMessages(prev => new Map(prev.set(messageId, {
-        ...translatedMessage,
+        ...message,
         isTranslating: false,
-        translationError: error instanceof Error ? error.message : 'Erreur de traduction',
+        showingOriginal: true,
+        translationError: 'Échec de traduction',
       })));
     }
-  }, [translatedMessages, currentUser, getTargetLanguage, translateMessageContent]);
+  }, [translatedMessages, currentUser, getTargetLanguage]);
 
+  /**
+   * Ajoute un nouveau message (envoyé ou reçu)
+   */
   const addMessage = useCallback((message: Message): void => {
-    // Ajouter le message et le traduire automatiquement si nécessaire
-    setTranslatedMessages(prev => new Map(prev.set(message.id, message)));
-    
-    if (currentUser?.autoTranslateEnabled) {
+    // Pour les messages reçus (pas envoyés par l'utilisateur actuel), traduire automatiquement
+    if (currentUser && message.senderId !== currentUser.id) {
       translateIncomingMessage(message);
+    } else {
+      // Pour les messages envoyés, juste les stocker sans traduction
+      setTranslatedMessages(prev => new Map(prev.set(message.id, {
+        ...message,
+        originalLanguage: message.originalLanguage || detectLanguage(message.content),
+        isTranslated: false,
+        showingOriginal: false,
+      })));
     }
   }, [currentUser, translateIncomingMessage]);
 
+  /**
+   * Obtient le message formaté pour l'affichage
+   */
   const getDisplayedMessage = useCallback((messageId: string): TranslatedMessage | undefined => {
     return translatedMessages.get(messageId);
   }, [translatedMessages]);
 
+  /**
+   * Obtient le contenu à afficher (original ou traduit)
+   */
   const getMessageContent = useCallback((messageId: string): string => {
     const message = translatedMessages.get(messageId);
     if (!message) return '';
     
-    if (message.isTranslated && message.translatedContent) {
-      return message.translatedContent;
+    // Si on affiche l'original ou qu'il n'y a pas de traduction
+    if (message.showingOriginal || !message.isTranslated || !message.translatedContent) {
+      return message.content;
     }
     
-    return message.content;
+    // Sinon afficher la traduction
+    return message.translatedContent;
   }, [translatedMessages]);
 
-  const isTranslationAvailable = useCallback((): boolean => {
-    return translationModels.every(model => model.isLoaded);
-  }, [translationModels]);
+  /**
+   * Vérifie si un message est en cours de traduction
+   */
+  const isMessageTranslating = useCallback((messageId: string): boolean => {
+    const message = translatedMessages.get(messageId);
+    return message?.isTranslating || false;
+  }, [translatedMessages]);
+
+  /**
+   * Vérifie si un message a une erreur de traduction
+   */
+  const hasTranslationError = useCallback((messageId: string): boolean => {
+    const message = translatedMessages.get(messageId);
+    return Boolean(message?.translationError);
+  }, [translatedMessages]);
+
+  /**
+   * Obtient l'erreur de traduction d'un message
+   */
+  const getTranslationError = useCallback((messageId: string): string | undefined => {
+    const message = translatedMessages.get(messageId);
+    return message?.translationError;
+  }, [translatedMessages]);
 
   return {
     // État
-    translatedMessages: Array.from(translatedMessages.values()),
-    translationModels,
-    isTranslationAvailable: isTranslationAvailable(),
+    isTranslationEnabled,
     
     // Actions
-    translateIncomingMessage,
+    addMessage,
     toggleMessageTranslation,
     retranslateMessage,
-    addMessage,
+    
+    // Getters
     getDisplayedMessage,
     getMessageContent,
+    isMessageTranslating,
+    hasTranslationError,
+    getTranslationError,
     
     // Utilitaires
     detectLanguage,

@@ -32,8 +32,10 @@ export interface TranslationCache {
 export interface TranslatedMessage extends Message {
   originalContent?: string;
   translatedContent?: string;
+  targetLanguage?: string;
   isTranslated?: boolean;
   isTranslating?: boolean;
+  showingOriginal?: boolean;
   translationError?: string;
 }
 
