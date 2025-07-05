@@ -32,13 +32,28 @@ export class ModelCacheService {
   }
 
   private constructor() {
-    this.initializeDatabase();
+    // Seulement initialiser côté client
+    if (typeof window !== 'undefined') {
+      this.initializeDatabase();
+    }
+  }
+
+  /**
+   * Vérifie si IndexedDB est disponible (côté client seulement)
+   */
+  private isIndexedDBAvailable(): boolean {
+    return typeof window !== 'undefined' && 'indexedDB' in window;
   }
 
   /**
    * Initialise la base de données IndexedDB pour le cache
    */
   private async initializeDatabase(): Promise<void> {
+    if (!this.isIndexedDBAvailable()) {
+      console.warn('⚠️ IndexedDB non disponible (environnement serveur)');
+      return Promise.resolve();
+    }
+
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion);
 
@@ -83,6 +98,7 @@ export class ModelCacheService {
    * Vérifie si un modèle est en cache
    */
   async isModelCached(family: string, variant: string): Promise<boolean> {
+    if (!this.isIndexedDBAvailable()) return false;
     if (!this.db) await this.initializeDatabase();
     if (!this.db) return false;
 
@@ -106,6 +122,7 @@ export class ModelCacheService {
    * Récupère un modèle depuis le cache
    */
   async getCachedModel(family: string, variant: string): Promise<ModelCacheEntry | null> {
+    if (!this.isIndexedDBAvailable()) return null;
     if (!this.db) await this.initializeDatabase();
     if (!this.db) return null;
 
@@ -140,6 +157,7 @@ export class ModelCacheService {
     tokenizerBlob?: Blob,
     version: string = '1.0.0'
   ): Promise<boolean> {
+    if (!this.isIndexedDBAvailable()) return false;
     if (!this.db) await this.initializeDatabase();
     if (!this.db) return false;
 
@@ -179,6 +197,7 @@ export class ModelCacheService {
    * Supprime un modèle du cache
    */
   async removeModel(family: string, variant: string): Promise<boolean> {
+    if (!this.isIndexedDBAvailable()) return false;
     if (!this.db) await this.initializeDatabase();
     if (!this.db) return false;
 
@@ -203,6 +222,7 @@ export class ModelCacheService {
    * Obtient la liste de tous les modèles en cache
    */
   async getCachedModels(): Promise<CachedModelInfo[]> {
+    if (!this.isIndexedDBAvailable()) return [];
     if (!this.db) await this.initializeDatabase();
     if (!this.db) return [];
 
