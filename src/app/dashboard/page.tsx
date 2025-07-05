@@ -26,6 +26,7 @@ import { User, Conversation, ConversationLink } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { formatConversationTitleFromMembers, getUserFirstName } from '@/utils/user';
+import { ConfigModal } from '@/components/config-modal';
 
 export default function DashboardPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -40,6 +41,9 @@ export default function DashboardPage() {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [conversationTitle, setConversationTitle] = useState('');
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  
+  // État pour la modal de configuration
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   
   const router = useRouter();
 
@@ -241,6 +245,11 @@ export default function DashboardPage() {
     toast.success('Lien copié !');
   };
 
+  const handleUserUpdate = (updatedUser: User) => {
+    setCurrentUser(updatedUser);
+    // TODO: Optionnellement, synchroniser avec le serveur
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -269,7 +278,11 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsConfigModalOpen(true)}
+            >
               <Settings className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -546,6 +559,14 @@ export default function DashboardPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de configuration */}
+      <ConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        currentUser={currentUser}
+        onUserUpdate={handleUserUpdate}
+      />
     </div>
   );
 }
