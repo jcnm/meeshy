@@ -152,6 +152,30 @@ export class CreateConversationDto {
   participantIds!: string[];
 }
 
+export class CreateConversationLinkDto {
+  @IsUUID(4)
+  conversationId!: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  maxUses?: number;
+
+  @IsOptional()
+  expiresAt?: Date;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  description?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(365)
+  expiresInDays?: number;
+}
+
 export class UpdateConversationDto {
   @IsOptional()
   @IsString()

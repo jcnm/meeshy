@@ -34,7 +34,7 @@ interface AuthenticatedSocket extends Socket {
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private connectedUsers = new Map<string, string>(); // userId -> socketId
   private userSockets = new Map<string, string>(); // socketId -> userId
@@ -180,7 +180,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { success: true, message };
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error);
-      return { error: error.message };
+      return { error: error instanceof Error ? error.message : 'Erreur inconnue' };
     }
   }
 
@@ -212,7 +212,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { success: true, message };
     } catch (error) {
       console.error('Erreur lors de la modification du message:', error);
-      return { error: error.message };
+      return { error: error instanceof Error ? error.message : 'Erreur inconnue' };
     }
   }
 
@@ -253,7 +253,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { success: true };
     } catch (error) {
       console.error('Erreur lors de la suppression du message:', error);
-      return { error: error.message };
+      return { error: error instanceof Error ? error.message : 'Erreur inconnue' };
     }
   }
 

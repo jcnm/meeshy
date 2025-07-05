@@ -130,6 +130,22 @@ export interface GroupMember {
   user?: User;
 }
 
+export interface ConversationResponse {
+  id: string;
+  type: ConversationType;
+  title?: string;
+  name?: string; // Alias pour compatibilité
+  description?: string;
+  isGroup: boolean;
+  isPrivate: boolean;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  lastMessage?: any; // Temporaire, à typer proprement plus tard
+  unreadCount: number;
+  participants: Array<any>; // Temporaire, à typer proprement plus tard
+}
+
 // ===== TYPES POUR WEBSOCKETS =====
 
 export interface TypingEvent {
@@ -141,7 +157,7 @@ export interface TypingEvent {
 
 export interface MessageEvent {
   type: 'new_message' | 'message_edited' | 'message_deleted';
-  message: Message;
+  message: MessageResponse;  // Utiliser MessageResponse pour WebSocket
   conversationId: string;
 }
 

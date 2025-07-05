@@ -289,10 +289,10 @@ export class MessageService {
       senderId: message.senderId,
       conversationId: message.conversationId,
       senderName: message.sender.displayName || message.sender.username,
-      senderAvatar: message.sender.avatar,
+      senderAvatar: message.sender.avatar || undefined,
       originalLanguage: message.originalLanguage,
       isEdited: message.isEdited,
-      editedAt: message.editedAt,
+      editedAt: message.editedAt || undefined,
       isDeleted: message.isDeleted,
       replyTo: message.replyTo ? {
         id: message.replyTo.id,

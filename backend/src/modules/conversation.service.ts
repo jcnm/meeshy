@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateConversationDto, JoinConversationDto } from '../shared/dto';
-import { Conversation } from '../shared/interfaces';
+import { CreateConversationDto, JoinConversationDto, CreateConversationLinkDto } from '../shared/dto';
+import { ConversationResponse } from '../shared/interfaces';
 import { USER_SELECT_FIELDS } from '../shared/constants';
 
 @Injectable()
@@ -373,7 +373,7 @@ export class ConversationService {
     // Créer le lien de partage
     const shareLink = await this.prisma.conversationShareLink.create({
       data: {
-        linkId,
+        linkId: userLink.id,
         conversationId,
         createdBy: creatorId,
         maxUses: maxUses || null,

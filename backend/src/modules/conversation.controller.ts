@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Request, Delete } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
-import { CreateConversationDto, JoinConversationDto, CreateMessageDto } from '../shared/dto';
+import { CreateConversationDto, JoinConversationDto, CreateMessageDto, CreateConversationLinkDto } from '../shared/dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
 
