@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { MessageBubble } from '@/components/message-bubble';
 import { 
   Dialog, 
   DialogContent, 
@@ -17,15 +18,74 @@ import {
   Send, 
   ArrowLeft, 
   Users, 
-  Settings,
-  Languages,
-  Eye,
-  EyeOff
+  Settings
 } from 'lucide-react';
-import { User, Conversation, Message, TranslatedMessage } from '@/types';
+import { User, Conversation, Message, TranslatedMessage, TRANSLATION_MODELS, TranslationModelType } from '@/types';
 import { toast } from 'sonner';
 import { io, Socket } from 'socket.io-client';
 import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
+
+// Utility functions
+const getOptimalTranslationModel = (content: string): 'MT5' | 'NLLB' => {
+  // Use MT5 for short messages (≤50 characters, low complexity)
+  // Use NLLB for long and complex messages
+  const isShort = content.length <= 50;
+  const hasComplexPunctuation = /[.!?;:,]{2,}|[""''«»]/g.test(content);
+  const hasNumbers = /\d+/g.test(content);
+  const isComplex = hasComplexPunctuation || hasNumbers;
+  
+  return isShort && !isComplex ? 'MT5' : 'NLLB';
+};
+
+const saveTranslationToCache = (
+  originalText: string, 
+  sourceLanguage: string, 
+  targetLanguage: string, 
+  translatedText: string, 
+  modelUsed: 'MT5' | 'NLLB'
+) => {
+  try {
+    const key = `translation_${btoa(originalText + sourceLanguage + targetLanguage)}`;
+    const cacheEntry = {
+      key,
+      originalMessage: originalText,
+      sourceLanguage,
+      targetLanguage,
+      translatedMessage: translatedText,
+      timestamp: new Date(),
+      modelUsed,
+      modelCost: TRANSLATION_MODELS[modelUsed].cost
+    };
+    
+    localStorage.setItem(key, JSON.stringify(cacheEntry));
+    
+    // Also save to global translation stats
+    const statsKey = 'translation_stats';
+    const stats = JSON.parse(localStorage.getItem(statsKey) || '{}');
+    
+    if (!stats[modelUsed]) {
+      stats[modelUsed] = {
+        count: 0,
+        totalCost: {
+          energyConsumption: 0,
+          computationalCost: 0,
+          co2Equivalent: 0,
+          monetaryEquivalent: 0
+        }
+      };
+    }
+    
+    stats[modelUsed].count++;
+    stats[modelUsed].totalCost.energyConsumption += TRANSLATION_MODELS[modelUsed].cost.energyConsumption;
+    stats[modelUsed].totalCost.computationalCost += TRANSLATION_MODELS[modelUsed].cost.computationalCost;
+    stats[modelUsed].totalCost.co2Equivalent += TRANSLATION_MODELS[modelUsed].cost.co2Equivalent;
+    stats[modelUsed].totalCost.monetaryEquivalent += TRANSLATION_MODELS[modelUsed].cost.monetaryEquivalent;
+    
+    localStorage.setItem(statsKey, JSON.stringify(stats));
+  } catch (error) {
+    console.error('Erreur sauvegarde cache:', error);
+  }
+};
 
 export default function ChatPage() {
   const params = useParams();
@@ -39,7 +99,6 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isConnectedUsers, setIsConnectedUsers] = useState(false);
-  const [connectedUsers, setConnectedUsers] = useState<User[]>([]);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   
   const socketRef = useRef<Socket | null>(null);
@@ -125,8 +184,8 @@ export default function ChatPage() {
             }
           });
 
-          socketRef.current.on('user-joined', (users: User[]) => {
-            setConnectedUsers(users);
+          socketRef.current.on('user-joined', () => {
+            // Users joined, could be used for presence indicators
           });
 
           socketRef.current.on('disconnect', () => {
@@ -202,30 +261,161 @@ export default function ChatPage() {
     }
   };
 
-  const translateMessage = async (message: TranslatedMessage, targetLanguage: string) => {
-    // TODO: Implémenter la traduction côté client avec MT5/NLLB
-    // Pour l'instant, simuler la traduction
-    const translatedContent = `[TRADUIT] ${message.content}`;
-    
-    setMessages(prev => prev.map(msg => 
-      msg.id === message.id 
-        ? { 
-            ...msg, 
-            translatedContent,
-            targetLanguage,
-            isTranslated: true,
-            showingOriginal: false 
-          }
-        : msg
-    ));
+  // Handlers for MessageBubble actions
+  const handleTranslate = async (messageId: string, targetLanguage: string) => {
+    try {
+      const message = messages.find(m => m.id === messageId);
+      if (!message) return;
+
+      // Determine which model to use based on message length and complexity
+      const modelToUse: 'MT5' | 'NLLB' = getOptimalTranslationModel(message.content);
+      
+      // TODO: Implémenter la traduction côté client avec MT5/NLLB
+      // Pour l'instant, simuler la traduction
+      const translatedContent = `[TRADUIT vers ${targetLanguage} via ${modelToUse}] ${message.content}`;
+      
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              translatedContent,
+              targetLanguage,
+              isTranslated: true,
+              showingOriginal: false,
+              translations: [
+                ...(msg.translations || []),
+                {
+                  language: targetLanguage,
+                  content: translatedContent,
+                  flag: getLanguageFlag(targetLanguage),
+                  createdAt: new Date(),
+                  modelUsed: modelToUse,
+                  modelCost: TRANSLATION_MODELS[modelToUse].cost
+                }
+              ]
+            }
+          : msg
+      ));
+      
+      // Save to local cache with model information
+      saveTranslationToCache(message.content, message.originalLanguage || 'fr', targetLanguage, translatedContent, modelToUse);
+      
+      toast.success(`Message traduit avec succès (${modelToUse})`);
+    } catch (error) {
+      console.error('Erreur de traduction:', error);
+      toast.error('Erreur lors de la traduction');
+    }
   };
 
-  const toggleOriginalTranslated = (messageId: string) => {
+  const handleRetranslate = async (messageId: string) => {
+    try {
+      const message = messages.find(m => m.id === messageId);
+      if (!message || !currentUser) return;
+      
+      // Always use NLLB for retranslation (most powerful model)
+      const modelToUse = 'NLLB' as const;
+      const targetLanguage = message.targetLanguage || currentUser.systemLanguage;
+      
+      // TODO: Utiliser le modèle NLLB pour une traduction plus précise
+      const newTranslatedContent = `[RETRADUIT via ${modelToUse}] ${message.content}`;
+      
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              translatedContent: newTranslatedContent,
+              translationFailed: false,
+              isTranslated: true,
+              showingOriginal: false,
+              translations: [
+                ...(msg.translations || []),
+                {
+                  language: targetLanguage,
+                  content: newTranslatedContent,
+                  flag: getLanguageFlag(targetLanguage),
+                  createdAt: new Date(),
+                  modelUsed: modelToUse,
+                  modelCost: TRANSLATION_MODELS[modelToUse].cost
+                }
+              ]
+            }
+          : msg
+      ));
+      
+      // Save to cache
+      saveTranslationToCache(message.content, message.originalLanguage || 'fr', targetLanguage, newTranslatedContent, modelToUse);
+      
+      toast.success(`Message retraduit avec succès (${modelToUse})`);
+    } catch (error) {
+      console.error('Erreur de retraduction:', error);
+      toast.error('Erreur lors de la retraduction');
+    }
+  };
+
+  const handleEdit = async (messageId: string, newContent: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${buildApiUrl('/message')}/${messageId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          content: newContent
+        }),
+      });
+
+      if (response.ok) {
+        setMessages(prev => prev.map(msg => 
+          msg.id === messageId 
+            ? { 
+                ...msg, 
+                content: newContent,
+                isEdited: true,
+                // Reset translations when content changes
+                translatedContent: undefined,
+                isTranslated: false,
+                showingOriginal: true,
+                translations: []
+              }
+            : msg
+        ));
+        toast.success('Message modifié');
+      } else {
+        toast.error('Erreur lors de la modification');
+      }
+    } catch (error) {
+      console.error('Erreur modification message:', error);
+      toast.error('Erreur de connexion');
+    }
+  };
+
+  const handleToggleOriginal = (messageId: string) => {
     setMessages(prev => prev.map(msg => 
       msg.id === messageId 
         ? { ...msg, showingOriginal: !msg.showingOriginal }
         : msg
     ));
+  };
+
+  // Helper function to get language flag
+  const getLanguageFlag = (languageCode: string): string => {
+    const flagMap: Record<string, string> = {
+      'fr': '🇫🇷',
+      'en': '🇺🇸',
+      'es': '🇪🇸',
+      'de': '🇩🇪',
+      'it': '🇮🇹',
+      'pt': '🇵🇹',
+      'ru': '🇷🇺',
+      'ja': '🇯🇵',
+      'ko': '🇰🇷',
+      'zh': '🇨🇳',
+      'ar': '🇸🇦',
+      'hi': '🇮🇳',
+    };
+    return flagMap[languageCode] || '🌐';
   };
 
   if (isLoading) {
@@ -269,7 +459,7 @@ export default function ChatPage() {
                 <p className="text-sm text-gray-500">
                   {conversation.participants?.length || 0} participant(s)
                   {typingUsers.length > 0 && (
-                    <span className="ml-2 text-blue-600">• En train d'écrire...</span>
+                    <span className="ml-2 text-blue-600">• En train d&apos;écrire...</span>
                   )}
                 </p>
               </div>
@@ -328,63 +518,15 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
-          <div 
+          <MessageBubble
             key={message.id}
-            className={`flex ${message.senderId === currentUser.id ? 'justify-end' : 'justify-start'}`}
-          >
-            <div className={`max-w-xs lg:max-w-md ${
-              message.senderId === currentUser.id 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-900'
-            } rounded-lg px-4 py-2 shadow`}>
-              {message.senderId !== currentUser.id && (
-                <p className="text-xs font-medium mb-1 opacity-70">
-                  {message.sender?.firstName} {message.sender?.lastName}
-                </p>
-              )}
-              
-              <p className="text-sm">
-                {message.isTranslated && !message.showingOriginal 
-                  ? message.translatedContent 
-                  : message.content
-                }
-              </p>
-              
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-xs opacity-70">
-                  {new Date(message.createdAt).toLocaleTimeString()}
-                </p>
-                
-                {message.senderId !== currentUser.id && (
-                  <div className="flex items-center space-x-1">
-                    {message.isTranslated && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`h-6 w-6 p-0 ${
-                          message.senderId === currentUser.id ? 'text-white hover:text-gray-200' : ''
-                        }`}
-                        onClick={() => toggleOriginalTranslated(message.id)}
-                      >
-                        {message.showingOriginal ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                      </Button>
-                    )}
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={`h-6 w-6 p-0 ${
-                        message.senderId === currentUser.id ? 'text-white hover:text-gray-200' : ''
-                      }`}
-                      onClick={() => translateMessage(message, currentUser.systemLanguage)}
-                    >
-                      <Languages className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+            message={message}
+            currentUserId={currentUser.id}
+            onTranslate={handleTranslate}
+            onRetranslate={handleRetranslate}
+            onEdit={handleEdit}
+            onToggleOriginal={handleToggleOriginal}
+          />
         ))}
         <div ref={messagesEndRef} />
       </div>

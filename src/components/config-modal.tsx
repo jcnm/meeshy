@@ -11,7 +11,8 @@ import {
   Database, 
   Palette, 
   Shield,
-  Bell
+  Bell,
+  BarChart3
 } from 'lucide-react';
 import { User as UserType } from '@/types';
 import { UserSettings } from '@/components/user-settings';
@@ -21,6 +22,7 @@ import { CacheManager } from '@/components/cache-manager';
 import { ThemeSettings } from '@/components/theme-settings';
 import { PrivacySettings } from '@/components/privacy-settings';
 import { NotificationSettings } from '@/components/notification-settings';
+import { TranslationStats } from '@/components/translation-stats';
 
 interface ConfigModalProps {
   isOpen: boolean;
@@ -69,6 +71,12 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
       label: 'Apparence',
       icon: <Palette className="h-4 w-4" />,
       component: <ThemeSettings />
+    },
+    {
+      id: 'stats',
+      label: 'Statistiques',
+      icon: <BarChart3 className="h-4 w-4" />,
+      component: <TranslationStats />
     },
     {
       id: 'notifications',

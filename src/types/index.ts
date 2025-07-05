@@ -24,6 +24,8 @@ export interface Message {
   id: string;
   conversationId: string;
   senderId: string;
+  senderName?: string;
+  senderAvatar?: string;
   content: string;
   originalLanguage: string;
   isEdited: boolean;
@@ -33,6 +35,15 @@ export interface Message {
   sender: User;
 }
 
+export interface Translation {
+  language: string;
+  content: string;
+  flag: string;
+  createdAt: Date;
+  modelUsed?: TranslationModelType;
+  modelCost?: ModelCost;
+}
+
 export interface TranslationCache {
   key: string;
   originalMessage: string;
@@ -40,6 +51,8 @@ export interface TranslationCache {
   targetLanguage: string;
   translatedMessage: string;
   timestamp: Date;
+  modelUsed: TranslationModelType;
+  modelCost: ModelCost;
 }
 
 export interface TranslatedMessage extends Message {
@@ -50,6 +63,8 @@ export interface TranslatedMessage extends Message {
   isTranslating?: boolean;
   showingOriginal?: boolean;
   translationError?: string;
+  translationFailed?: boolean;
+  translations?: Translation[];
 }
 
 export interface ChatRoom {
@@ -65,11 +80,46 @@ export interface SocketResponse<T = unknown> {
   error?: string;
 }
 
+export type TranslationModelType = 'MT5' | 'NLLB';
+
+export interface ModelCost {
+  energyConsumption: number; // en Wh (Watt-heure)
+  computationalCost: number; // score relatif de 1-10
+  co2Equivalent: number; // en grammes de CO2
+  monetaryEquivalent: number; // en centimes d'euro
+}
+
 export interface TranslationModel {
-  name: 'MT5' | 'NLLB';
+  name: TranslationModelType;
   isLoaded: boolean;
   model?: unknown;
+  cost: ModelCost;
+  color: string; // Couleur pour la bordure
 }
+
+// Configuration des modèles avec leurs coûts et couleurs
+export const TRANSLATION_MODELS: Record<TranslationModelType, Omit<TranslationModel, 'isLoaded' | 'model'>> = {
+  MT5: {
+    name: 'MT5',
+    cost: {
+      energyConsumption: 0.05, // 0.05 Wh par traduction
+      computationalCost: 3,
+      co2Equivalent: 0.025, // 25 milligrammes
+      monetaryEquivalent: 0.01 // 0.01 centime
+    },
+    color: '#10B981' // Vert émeraude (modèle léger)
+  },
+  NLLB: {
+    name: 'NLLB',
+    cost: {
+      energyConsumption: 0.2, // 0.2 Wh par traduction
+      computationalCost: 8,
+      co2Equivalent: 0.1, // 100 milligrammes
+      monetaryEquivalent: 0.05 // 0.05 centime
+    },
+    color: '#F97316' // Orange corail (modèle lourd)
+  }
+};
 
 export interface LanguageCode {
   code: string;
