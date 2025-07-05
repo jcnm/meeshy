@@ -22,6 +22,9 @@ import { UserSettingsModal } from './user-settings-modal';
 import { TypingIndicator } from './typing-indicator';
 import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { ModelsStatus } from './models-status';
+import { useNotifications, ConnectionStatus, NotificationCenter } from './notifications';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
+import { formatLanguageName } from '@/utils/language-detection';
 
 const SUPPORTED_LANGUAGES = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -61,6 +64,15 @@ export function ChatInterface({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { startTyping, stopTyping } = useTypingIndicator();
+  
+  // Nouveaux hooks pour les fonctionnalités améliorées
+  const { 
+    notifySuccess, 
+    notifyError, 
+    notifyTranslationSuccess, 
+    notifyTranslationError 
+  } = useNotifications();
+  const { preferences, detectMessageLanguage, shouldTranslate } = useUserPreferences(currentUser);
 
   // Auto-scroll vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
@@ -99,14 +111,22 @@ export function ChatInterface({
 
     setIsSending(true);
     try {
-      await onSendMessage(selectedUser.id, messageContent, currentUser.systemLanguage);
+      // Détecter automatiquement la langue du message
+      const detectedLanguage = detectMessageLanguage(messageContent);
+      
+      await onSendMessage(selectedUser.id, messageContent, detectedLanguage);
       setMessageContent('');
+      
+      // Notification de succès
+      notifySuccess('Message envoyé', `Envoyé en ${formatLanguageName(detectedLanguage, 'native')}`);
+      
       // Arrêter l'indicateur de frappe après envoi
       if (selectedUser) {
         stopTyping(`${currentUser.id}-${selectedUser.id}`);
       }
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error);
+      notifyError('Erreur d\'envoi', 'Impossible d\'envoyer le message');
     } finally {
       setIsSending(false);
     }
@@ -224,6 +244,8 @@ export function ChatInterface({
             </div>
             
             <div className="flex gap-1">
+              <ConnectionStatus />
+              <NotificationCenter />
               <UserSettingsModal 
                 user={currentUser} 
                 onUserUpdate={(updatedUser) => {

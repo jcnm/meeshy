@@ -10,9 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User } from '@/types';
-import { Settings, Languages, Globe, User as UserIcon, Zap } from 'lucide-react';
+import { Settings, Languages, Globe, Database, Zap } from 'lucide-react';
 import { useSimpleTranslation } from '@/hooks/use-simple-translation';
+import { LanguageSelector } from './language-selector';
+import { getUserPreferredLanguage, detectLanguage } from '@/utils/language-detection';
 import { ModelsStatus } from './models-status';
+import { CacheManager } from './cache-manager';
 
 interface UserSettingsModalProps {
   user: User | null;
@@ -85,7 +88,7 @@ export function UserSettingsModal({ user, onUserUpdate, onClose, children }: Use
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserIcon className="h-5 w-5" />
+            <Settings className="h-5 w-5" />
             Paramètres de {user.username}
           </DialogTitle>
           <DialogDescription>
@@ -94,7 +97,7 @@ export function UserSettingsModal({ user, onUserUpdate, onClose, children }: Use
         </DialogHeader>
 
         <Tabs defaultValue="languages" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="languages" className="gap-2">
               <Languages className="h-4 w-4" />
               Langues
@@ -106,6 +109,10 @@ export function UserSettingsModal({ user, onUserUpdate, onClose, children }: Use
             <TabsTrigger value="models" className="gap-2">
               <Zap className="h-4 w-4" />
               Modèles
+            </TabsTrigger>
+            <TabsTrigger value="cache" className="gap-2">
+              <Database className="h-4 w-4" />
+              Cache
             </TabsTrigger>
           </TabsList>
 
@@ -121,60 +128,30 @@ export function UserSettingsModal({ user, onUserUpdate, onClose, children }: Use
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="systemLanguage">Langue système</Label>
-                    <Select
-                      value={localSettings.systemLanguage}
+                    <LanguageSelector
+                      value={localSettings.systemLanguage || ''}
                       onValueChange={(value) => updateSetting('systemLanguage', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez votre langue système" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LANGUAGES.map((lang) => (
-                          <SelectItem key={lang.code} value={lang.code}>
-                            {getLanguageDisplay(lang.code)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Sélectionnez votre langue système"
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="regionalLanguage">Langue régionale</Label>
-                    <Select
-                      value={localSettings.regionalLanguage}
+                    <LanguageSelector
+                      value={localSettings.regionalLanguage || ''}
                       onValueChange={(value) => updateSetting('regionalLanguage', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez votre langue régionale" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LANGUAGES.map((lang) => (
-                          <SelectItem key={lang.code} value={lang.code}>
-                            {getLanguageDisplay(lang.code)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      placeholder="Sélectionnez votre langue régionale"
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="customDestinationLanguage">Langue de destination personnalisée</Label>
-                  <Select
+                  <LanguageSelector
                     value={localSettings.customDestinationLanguage || ''}
                     onValueChange={(value) => updateSetting('customDestinationLanguage', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionnez une langue personnalisée (optionnel)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map((lang) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {getLanguageDisplay(lang.code)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Sélectionnez une langue personnalisée (optionnel)"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -300,6 +277,10 @@ export function UserSettingsModal({ user, onUserUpdate, onClose, children }: Use
                 </Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="cache" className="space-y-4">
+            <CacheManager />
           </TabsContent>
         </Tabs>
 
