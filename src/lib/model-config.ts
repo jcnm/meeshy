@@ -35,7 +35,7 @@ export const MODEL_FAMILIES: Record<string, ModelFamily> = {
         downloadSize: 580, // 580MB
         performance: 'fast',
         description: 'Modèle léger, idéal pour machines avec 8GB RAM ou moins',
-        modelUrl: 'https://huggingface.co/google/mt5-small/resolve/main/model.json',
+        modelUrl: 'https://huggingface.co/google/mt5-small/resolve/main/tf_model.h5',
         tokenizerUrl: 'https://huggingface.co/google/mt5-small/resolve/main/tokenizer.json',
       },
       base: {
@@ -44,7 +44,7 @@ export const MODEL_FAMILIES: Record<string, ModelFamily> = {
         downloadSize: 1200, // 1.2GB
         performance: 'balanced',
         description: 'Modèle équilibré, recommandé pour machines avec 16GB RAM',
-        modelUrl: 'https://huggingface.co/google/mt5-base/resolve/main/model.json',
+        modelUrl: 'https://huggingface.co/google/mt5-base/resolve/main/tf_model.h5',
         tokenizerUrl: 'https://huggingface.co/google/mt5-base/resolve/main/tokenizer.json',
       },
       large: {
@@ -53,7 +53,7 @@ export const MODEL_FAMILIES: Record<string, ModelFamily> = {
         downloadSize: 2400, // 2.4GB
         performance: 'accurate',
         description: 'Modèle précis, pour machines avec 32GB RAM ou plus',
-        modelUrl: 'https://huggingface.co/google/mt5-large/resolve/main/model.json',
+        modelUrl: 'https://huggingface.co/google/mt5-large/resolve/main/tf_model.h5',
         tokenizerUrl: 'https://huggingface.co/google/mt5-large/resolve/main/tokenizer.json',
       },
     },

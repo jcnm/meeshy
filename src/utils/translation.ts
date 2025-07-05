@@ -10,6 +10,10 @@ import {
   getModelConfig 
 } from '@/lib/model-config';
 import { modelCache } from '@/lib/model-cache';
+import { testModelService } from '@/lib/test-model-service';
+
+// Mode de test (utilise le service de test au lieu du vrai cache)
+const TEST_MODE = true;
 
 // Configuration globale
 const systemCapabilities = detectSystemCapabilities();
@@ -131,19 +135,33 @@ async function loadModel(family: string, variant: string): Promise<tf.GraphModel
     try {
       console.log(`🔄 Chargement du modèle ${family}-${variant}...`);
 
-      // Vérifier le cache local d'abord
-      const cachedModel = await modelCache.getCachedModel(family, variant);
+      // Utiliser le service de test ou le vrai cache selon le mode
+      const cacheService = TEST_MODE ? testModelService : modelCache;
+      const cachedModel = await cacheService.getCachedModel(family, variant);
       
       if (cachedModel) {
         console.log(`📦 Modèle ${family}-${variant} trouvé dans le cache`);
-        // Charger depuis le blob en cache
+        // En mode test, on simule un modèle "chargé" mais on utilisera l'API
+        if (TEST_MODE) {
+          console.log(`🧪 Mode test: simulation de chargement réussie pour ${family}-${variant}`);
+          // Retourner null pour forcer l'utilisation de l'API fallback
+          return null;
+        }
+        
+        // Charger depuis le blob en cache (mode réel)
         const modelArrayBuffer = await cachedModel.modelBlob.arrayBuffer();
         const model = await tf.loadGraphModel(tf.io.fromMemory(modelArrayBuffer));
         loadedModels.set(modelKey, model);
         return model;
       }
 
-      // Si pas en cache, essayer de télécharger
+      // Si pas en cache, essayer de télécharger (uniquement en mode test pour l'instant)
+      if (TEST_MODE) {
+        console.log(`⚠️ Modèle ${family}-${variant} non trouvé en cache. Utilisation directe de l'API.`);
+        return null;
+      }
+
+      // Mode réel: télécharger depuis Hugging Face
       const config = getModelConfig(family, variant);
       if (!config) {
         console.error(`❌ Configuration non trouvée pour ${family}-${variant}`);
@@ -205,6 +223,35 @@ async function translateWithModels(text: string, sourceLang: string, targetLang:
     const { family, variant } = selectModel(text);
     
     console.log(`🤖 Tentative de traduction avec ${family}-${variant}: ${sourceLang} → ${targetLang}`);
+    
+    if (TEST_MODE) {
+      // En mode test, vérifier si le modèle est "téléchargé"
+      const isDownloaded = await testModelService.isModelCached(family, variant);
+      if (!isDownloaded) {
+        console.log(`⚠️ Modèle ${family}-${variant} non téléchargé en mode test`);
+        throw new Error(`Modèle ${family}-${variant} non téléchargé`);
+      }
+      
+      // En mode test avec modèle téléchargé, simuler une traduction réussie
+      console.log(`🧪 Mode test: simulation de traduction réussie avec ${family}-${variant}`);
+      
+      // Traduction simulée basique pour le test (remplacer par l'API dans le fallback)
+      const simulatedTranslations: Record<string, Record<string, string>> = {
+        'Hello': { 'fr': 'Bonjour', 'es': 'Hola', 'de': 'Hallo', 'it': 'Ciao', 'pt': 'Olá' },
+        'How are you?': { 'fr': 'Comment allez-vous ?', 'es': '¿Cómo estás?', 'de': 'Wie geht es dir?', 'it': 'Come stai?', 'pt': 'Como está?' },
+        'Thank you': { 'fr': 'Merci', 'es': 'Gracias', 'de': 'Danke', 'it': 'Grazie', 'pt': 'Obrigado' },
+        'Good morning': { 'fr': 'Bonjour', 'es': 'Buenos días', 'de': 'Guten Morgen', 'it': 'Buongiorno', 'pt': 'Bom dia' }
+      };
+      
+      const simpleTranslation = simulatedTranslations[text]?.[targetLang];
+      if (simpleTranslation) {
+        return simpleTranslation;
+      }
+      
+      // Si pas de traduction simple, utiliser l'API fallback
+      console.log(`🧪 Mode test: pas de traduction simulée, utilisation API fallback`);
+      throw new Error('Mode test: utiliser API fallback');
+    }
     
     const model = await loadModel(family, variant);
     

@@ -25,6 +25,10 @@ import {
   type SystemCapabilities 
 } from '@/lib/model-config';
 import { modelCache, type CachedModelInfo } from '@/lib/model-cache';
+import { testModelService } from '@/lib/test-model-service';
+
+// Mode de test
+const TEST_MODE = true;
 
 export function ModelManager() {
   const [capabilities, setCapabilities] = useState<SystemCapabilities | null>(null);
@@ -41,10 +45,12 @@ export function ModelManager() {
     const caps = detectSystemCapabilities();
     setCapabilities(caps);
 
-    const models = await modelCache.getCachedModels();
+    // Utiliser le service de test ou le vrai cache
+    const cacheService = TEST_MODE ? testModelService : modelCache;
+    const models = await cacheService.getCachedModels();
     setCachedModels(models);
 
-    const stats = await modelCache.getStats();
+    const stats = await cacheService.getStats();
     setCacheStats(stats);
   };
 
@@ -57,7 +63,10 @@ export function ModelManager() {
       const modelFamily = MODEL_FAMILIES[family];
       const modelVariant = modelFamily.variants[variant];
 
-      const success = await modelCache.downloadAndCacheModel(
+      // Utiliser le service de test ou le vrai cache
+      const cacheService = TEST_MODE ? testModelService : modelCache;
+      
+      const success = await cacheService.downloadAndCacheModel(
         family,
         variant,
         modelVariant.modelUrl,
@@ -83,7 +92,9 @@ export function ModelManager() {
 
   const removeModel = async (family: string, variant: string) => {
     try {
-      await modelCache.removeModel(family, variant);
+      // Utiliser le service de test ou le vrai cache
+      const cacheService = TEST_MODE ? testModelService : modelCache;
+      await cacheService.removeModel(family, variant);
       await initializeData(); // Refresh data
       console.log(`🗑️ Modèle ${family}-${variant} supprimé`);
     } catch (error) {
