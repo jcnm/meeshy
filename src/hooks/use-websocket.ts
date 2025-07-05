@@ -34,18 +34,38 @@ export function useWebSocket() {
       );
     };
 
-    // Ajouter les event listeners
-    if (webSocketService.isConnected) {
-      setIsConnected(true);
+    const handleConnect = () => {
+      console.log('WebSocket connecté');
+      // Note: on ne met pas isConnected à true ici car cela signifie juste que 
+      // le WebSocket est connecté, pas que l'utilisateur est loggé
       setConnectionError(null);
-    }
+    };
 
+    const handleDisconnect = () => {
+      console.log('WebSocket déconnecté');
+      setIsConnected(false);
+      setConnectionError('Connexion WebSocket fermée');
+    };
+
+    const handleConnectError = (error: Error) => {
+      console.error('Erreur de connexion WebSocket:', error);
+      setIsConnected(false);
+      setConnectionError('Erreur de connexion WebSocket');
+    };
+
+    // Ajouter les event listeners
+    webSocketService.onConnect(handleConnect);
+    webSocketService.onDisconnect(handleDisconnect);
+    webSocketService.onConnectError(handleConnectError);
     webSocketService.onNewMessage(handleNewMessage);
     webSocketService.onMessageSent(handleMessageSent);
     webSocketService.onUserStatusChanged(handleUserStatusChanged);
 
     // Cleanup
     return () => {
+      webSocketService.removeListener('connect');
+      webSocketService.removeListener('disconnect');
+      webSocketService.removeListener('connect_error');
       webSocketService.removeListener('newMessage');
       webSocketService.removeListener('messageSent');
       webSocketService.removeListener('userStatusChanged');
@@ -57,6 +77,7 @@ export function useWebSocket() {
       const response = await webSocketService.loginUser(userId);
       if (response.success && response.data) {
         setCurrentUser(response.data);
+        setIsConnected(true); // Marquer comme connecté après le login réussi
         setConnectionError(null);
         
         // Récupérer la liste des utilisateurs en ligne

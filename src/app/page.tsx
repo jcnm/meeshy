@@ -13,7 +13,6 @@ export default function Home() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
   const {
-    isConnected,
     currentUser,
     onlineUsers,
     messages,
@@ -41,6 +40,7 @@ export default function Home() {
         if (response.ok) {
           const users = await response.json();
           setAllUsers(users);
+          toast.success('Utilisateurs chargés avec succès');
         } else {
           // Utilisateurs par défaut en cas d'erreur API
           const defaultUsers: User[] = [
@@ -103,10 +103,11 @@ export default function Home() {
             },
           ];
           setAllUsers(defaultUsers);
+          toast.error('Impossible de charger les utilisateurs, utilisation des utilisateurs par défaut');
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Erreur lors du chargement des utilisateurs:', error);
-        toast.error('Impossible de charger les utilisateurs');
+        toast.error('Impossible de charger les utilisateurs: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
       } finally {
         setIsLoadingUsers(false);
       }
@@ -157,8 +158,8 @@ export default function Home() {
     toast.info('Déconnecté');
   };
 
-  // Si pas d'utilisateur sélectionné, afficher le sélecteur
-  if (!currentUser || !isConnected) {
+  // Si pas d'utilisateur connecté, afficher le sélecteur
+  if (!currentUser) {
     return (
       <UserSelector
         users={allUsers}

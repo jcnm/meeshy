@@ -123,6 +123,21 @@ class WebSocketService {
   }
 
   // Event listeners pour les événements entrants
+  onConnect(callback: () => void): void {
+    if (!this.socket) return;
+    this.socket.on('connect', callback);
+  }
+
+  onDisconnect(callback: () => void): void {
+    if (!this.socket) return;
+    this.socket.on('disconnect', callback);
+  }
+
+  onConnectError(callback: (error: Error) => void): void {
+    if (!this.socket) return;
+    this.socket.on('connect_error', callback);
+  }
+
   onNewMessage(callback: (message: Message) => void): void {
     if (!this.socket) return;
     this.socket.on('newMessage', callback);
