@@ -177,7 +177,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 <ConversationList
                   conversations={conversations}
                   selectedConversation={selectedConversation}
-                  onSelectConversation={handleSelectConversation}
+                  expandedGroupId={null}
+                  groupConversations={{}}
+                  unreadCounts={{}}
+                  searchQuery=""
+                  onSearchChange={() => {}}
+                  onConversationClick={handleSelectConversation}
+                  onOpenConversation={(id: string) => handleSelectConversation(conversations.find(c => c.id === id)!)}
                   currentUser={user!}
                 />
               ) : (
@@ -204,11 +210,17 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
           {/* Vue de conversation */}
           <div className="flex-1">
-            {selectedConversation ? (
+            {selectedConversation && user ? (
               <ConversationView
                 conversation={selectedConversation}
+                messages={selectedConversation.messages || []}
+                newMessage=""
+                onNewMessageChange={() => {}}
+                onSendMessage={() => {}}
+                onKeyPress={() => {}}
                 currentUser={user}
-                onUpdateConversation={updateConversation}
+                isConnected={true}
+                typingUsers={[]}
               />
             ) : (
               <PageContent>
@@ -231,12 +243,17 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         </div>
 
         {/* Modal de création */}
-        <CreateConversationModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={handleCreateConversation}
-          currentUser={user}
-        />
+        {user && (
+          <CreateConversationModal
+            isOpen={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            onConversationCreated={(conversationId: string) => {
+              setIsCreateModalOpen(false);
+              // TODO: Navigate to new conversation
+            }}
+            currentUser={user}
+          />
+        )}
       </ResponsiveLayout>
     </ErrorBoundary>
   );

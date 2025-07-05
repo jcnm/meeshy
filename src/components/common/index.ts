@@ -1,6 +1,7 @@
 // Composants communs réutilisables
 export { ErrorBoundary } from './ErrorBoundary';
 export { LoadingSpinner, LoadingState, LoadingSkeleton, LoadingCard } from './LoadingStates';
+export { UserSelector } from './user-selector';
 
 // Re-export des composants UI shadcn/ui pour centraliser les imports
 export { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { User } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { CompleteUserSettings } from '@/components/complete-user-settings';
-import { PageLayout } from '@/components/page-layout';
+import { CompleteUserSettings } from '@/components/settings/complete-user-settings';
+import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -101,29 +101,30 @@ export default function SettingsPage() {
   }
 
   return (
-    <PageLayout
-      title="• Paramètres de"
-      subtitle={currentUser?.username}
-      headerActions={
-        <Button 
-          onClick={handleSave}
-          disabled={isSaving}
-        >
-          {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
-        </Button>
-      }
-    >
+    <ResponsiveLayout showNavigation={true}>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Paramètres de {currentUser?.username}</h1>
+          </div>
+          <Button 
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
+          </Button>
+        </div>
+        
         <CompleteUserSettings 
           user={currentUser}
           localSettings={localSettings}
           onSettingUpdate={updateSetting}
-          onUserUpdate={(updatedUser) => {
+          onUserUpdate={(updatedUser: Partial<User>) => {
             setCurrentUser({ ...currentUser, ...updatedUser });
             setLocalSettings({ ...localSettings, ...updatedUser });
           }}
         />
       </div>
-    </PageLayout>
+    </ResponsiveLayout>
   );
 }

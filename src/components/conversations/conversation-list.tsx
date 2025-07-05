@@ -16,8 +16,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { User, Conversation } from '@/types';
-import { CreateConversationModal } from '@/components/create-conversation-modal';
-import { CreateGroupModal } from '@/components/create-group-modal';
+import { CreateConversationModal } from './create-conversation-modal';
+import { CreateGroupModal } from '../groups/create-group-modal';
 
 interface ConversationListProps {
   conversations: Conversation[];

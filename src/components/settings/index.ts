@@ -7,3 +7,4 @@ export { CompleteUserSettings } from './complete-user-settings';
 export { NotificationSettings } from './notification-settings';
 export { PrivacySettings } from './privacy-settings';
 export { ThemeSettings } from './theme-settings';
+export { ConfigModal } from './config-modal';

@@ -1,84 +1,92 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import webSocketService from '@/lib/websocket-service';
+import { useState, useEffect } from 'react';
+import { useOptimizedWebSocket } from './optimized';
 
 interface TypingUser {
   userId: string;
-  chatId: string;
+  username: string;
+  conversationId: string;
   timestamp: number;
 }
 
-interface UseTypingIndicatorReturn {
-  typingUsers: TypingUser[];
-  startTyping: (chatId: string) => void;
-  stopTyping: (chatId: string) => void;
-  isUserTyping: (userId: string, chatId: string) => boolean;
-}
-
-export const useTypingIndicator = (): UseTypingIndicatorReturn => {
+export function useTypingIndicator(conversationId: string, currentUserId: string) {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const { on, off, emit, isConnected } = useOptimizedWebSocket();
 
-  // Nettoyer les indicateurs de frappe expirés
+  // Nettoyer les anciens indicateurs de frappe
   useEffect(() => {
-    const cleanup = setInterval(() => {
+    const interval = setInterval(() => {
       const now = Date.now();
       setTypingUsers(prev => 
-        prev.filter(user => now - user.timestamp < 5000) // Supprimer après 5 secondes
+        prev.filter(user => now - user.timestamp < 3000) // 3 secondes
       );
     }, 1000);
 
-    return () => clearInterval(cleanup);
+    return () => clearInterval(interval);
   }, []);
 
-  // Écouter les événements de frappe
+  // Écouter les indicateurs de frappe
   useEffect(() => {
-    const handleUserTyping = (data: { userId: string; chatId: string; isTyping: boolean }) => {
-      setTypingUsers(prev => {
-        const filtered = prev.filter(user => 
-          !(user.userId === data.userId && user.chatId === data.chatId)
-        );
+    if (!isConnected) return;
 
-        if (data.isTyping) {
+    const handleUserTyping = (data: unknown) => {
+      const typingData = data as {
+        userId: string;
+        username: string;
+        conversationId: string;
+      };
+
+      if (typingData.conversationId === conversationId && typingData.userId !== currentUserId) {
+        setTypingUsers(prev => {
+          const filtered = prev.filter(user => user.userId !== typingData.userId);
           return [...filtered, {
-            userId: data.userId,
-            chatId: data.chatId,
+            ...typingData,
             timestamp: Date.now()
           }];
-        }
-
-        return filtered;
-      });
+        });
+      }
     };
 
-    // Ajouter l'event listener via le service WebSocket
-    webSocketService.onUserTyping(handleUserTyping);
+    const handleUserStoppedTyping = (data: unknown) => {
+      const typingData = data as {
+        userId: string;
+        conversationId: string;
+      };
+
+      if (typingData.conversationId === conversationId) {
+        setTypingUsers(prev => 
+          prev.filter(user => user.userId !== typingData.userId)
+        );
+      }
+    };
+
+    on('user_typing', handleUserTyping);
+    on('user_stopped_typing', handleUserStoppedTyping);
 
     return () => {
-      webSocketService.offUserTyping(handleUserTyping);
+      off('user_typing');
+      off('user_stopped_typing');
     };
-  }, []);
+  }, [isConnected, conversationId, currentUserId, on, off]);
 
-  const startTyping = useCallback((chatId: string) => {
-    webSocketService.emitUserTyping(chatId);
-  }, []);
+  // Envoyer un indicateur de frappe
+  const startTyping = () => {
+    if (isConnected) {
+      emit('start_typing', { conversationId });
+    }
+  };
 
-  const stopTyping = useCallback((chatId: string) => {
-    webSocketService.emitUserStoppedTyping(chatId);
-  }, []);
-
-  const isUserTyping = useCallback((userId: string, chatId: string): boolean => {
-    return typingUsers.some(user => 
-      user.userId === userId && 
-      user.chatId === chatId &&
-      Date.now() - user.timestamp < 3000
-    );
-  }, [typingUsers]);
+  // Arrêter l'indicateur de frappe
+  const stopTyping = () => {
+    if (isConnected) {
+      emit('stop_typing', { conversationId });
+    }
+  };
 
   return {
     typingUsers,
     startTyping,
-    stopTyping,
-    isUserTyping
+    stopTyping
   };
-};
+}

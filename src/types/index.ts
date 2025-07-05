@@ -452,3 +452,15 @@ export interface Group {
   members: GroupMember[];
   conversations: Conversation[];
 }
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'message' | 'group_invite' | 'conversation_invite' | 'system' | 'translation_error' | 'model_update' | 'user_joined' | 'user_left' | 'typing';
+  title: string;
+  message: string;
+  isRead: boolean;
+  data?: Record<string, unknown>;
+  createdAt: Date;
+  expiresAt?: Date;
+}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { GroupsLayout } from '@/components/groups-layout';
+import { GroupsLayout } from '@/components/groups/groups-layout';
 import { toast } from 'sonner';
 
 export default function GroupsPage() {

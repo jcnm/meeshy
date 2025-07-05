@@ -19,7 +19,7 @@ export function TypingIndicator({
   users = [], 
   className = "" 
 }: TypingIndicatorProps) {
-  const { typingUsers } = useTypingIndicator();
+  const { typingUsers } = useTypingIndicator(chatId, currentUserId || '');
   const [dots, setDots] = useState('');
 
   // Animation des points
@@ -36,7 +36,7 @@ export function TypingIndicator({
 
   // Filtrer les utilisateurs qui tapent dans ce chat (exclure l'utilisateur actuel)
   const usersTypingInChat = typingUsers.filter(typingUser => 
-    typingUser.chatId === chatId && 
+    typingUser.conversationId === chatId && 
     typingUser.userId !== currentUserId
   );
 
@@ -80,9 +80,11 @@ export function TypingBadge({
   chatId: string; 
   className?: string; 
 }) {
-  const { isUserTyping } = useTypingIndicator();
+  const { typingUsers } = useTypingIndicator(chatId, userId);
 
-  if (!isUserTyping(userId, chatId)) {
+  const isUserTyping = typingUsers.some(user => user.userId === userId && user.conversationId === chatId);
+
+  if (!isUserTyping) {
     return null;
   }
 
