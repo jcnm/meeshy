@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateUserDto } from '../dto';
-import { USER_SELECT_FIELDS, USER_BASIC_SELECT_FIELDS } from '../constants/user-select';
+import { UpdateUserDto } from '../shared/dto';
+import { USER_SELECT_FIELDS, USER_SAFE_SELECT_FIELDS } from '../shared/constants';
 
 @Injectable()
 export class UserService {
@@ -9,7 +9,7 @@ export class UserService {
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: USER_BASIC_SELECT_FIELDS,
+      select: USER_SAFE_SELECT_FIELDS,
       orderBy: {
         username: 'asc',
       },

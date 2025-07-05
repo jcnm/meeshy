@@ -86,6 +86,26 @@ export interface Message {
   replyTo?: Message;
 }
 
+export interface MessageResponse {
+  id: string;
+  content: string;
+  senderId: string;
+  senderName: string;
+  senderAvatar?: string;
+  originalLanguage: string;
+  isEdited: boolean;
+  editedAt?: Date;
+  isDeleted: boolean;
+  conversationId: string;
+  replyTo?: {
+    id: string;
+    content: string;
+    senderName: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface Group {
   id: string;
   conversationId: string;

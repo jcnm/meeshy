@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMessageDto, UpdateMessageDto, MessageResponse } from '../dto';
-import { USER_SELECT_FIELDS } from '../constants/user-select';
+import { CreateMessageDto, UpdateMessageDto } from '../shared/dto';
+import { MessageResponse } from '../shared/interfaces';
+import { USER_SELECT_FIELDS } from '../shared/constants';
 
 @Injectable()
 export class MessageService {

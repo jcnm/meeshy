@@ -13,7 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessageService } from '../modules/message.service';
 import { UserService } from '../modules/user.service';
-import { CreateMessageDto, TypingEvent, MessageEvent, UserStatusEvent, MessageResponse } from '../dto';
+import { CreateMessageDto } from '../shared/dto';
+import { TypingEvent, MessageEvent, UserStatusEvent, MessageResponse } from '../shared/interfaces';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;

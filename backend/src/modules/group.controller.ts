@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { GroupService } from './group.service';
-import { CreateGroupDto, UpdateGroupDto } from '../dto';
+import { CreateGroupDto, UpdateGroupDto } from '../shared/dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 interface AuthenticatedRequest {

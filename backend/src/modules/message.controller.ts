@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { MessageService } from './message.service';
-import { CreateMessageDto, UpdateMessageDto } from '../dto';
+import { CreateMessageDto, UpdateMessageDto } from '../shared/dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 interface AuthenticatedRequest {
