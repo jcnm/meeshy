@@ -18,6 +18,11 @@ import { GroupService } from './modules/group.service';
 import { ConversationServiceOptimized } from './common/conversation-optimized.service';
 import { MessageServiceOptimized } from './common/message-optimized.service';
 
+// Advanced Services
+import { NotificationService } from './common/notification.service';
+import { HealthController } from './common/health.controller';
+import { NotificationController } from './common/notification.controller';
+
 // Controllers
 import { UserController } from './modules/user.controller';
 import { ConversationController } from './modules/conversation.controller';
@@ -65,6 +70,8 @@ import { globalValidationPipe } from './common/validation.pipe';
     ConversationController,
     GroupController,
     MessageController,
+    HealthController,
+    NotificationController,
   ],
   providers: [
     // Services métier
@@ -80,6 +87,9 @@ import { globalValidationPipe } from './common/validation.pipe';
     // Optimized Services
     ConversationServiceOptimized,
     MessageServiceOptimized,
+    
+    // Advanced Services
+    NotificationService,
     
     // Sécurité globale
     {
