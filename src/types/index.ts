@@ -1,6 +1,10 @@
 export interface User {
   id: string;
   username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
   systemLanguage: string;
   regionalLanguage: string;
   customDestinationLanguage?: string;
@@ -9,15 +13,21 @@ export interface User {
   translateToRegionalLanguage: boolean;
   useCustomDestination: boolean;
   isOnline: boolean;
+  createdAt: Date;
+  lastActiveAt: Date;
 }
 
 export interface Message {
   id: string;
+  conversationId: string;
   senderId: string;
-  recipientId: string;
   content: string;
-  timestamp: Date;
   originalLanguage: string;
+  isEdited: boolean;
+  editedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  sender: User;
 }
 
 export interface TranslationCache {
@@ -78,3 +88,93 @@ export const SUPPORTED_LANGUAGES: LanguageCode[] = [
   { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
 ];
+
+export interface Conversation {
+  id: string;
+  name?: string;
+  description?: string;
+  isGroup: boolean;
+  isPrivate: boolean;
+  maxMembers?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  members: ConversationMember[];
+  messages: Message[];
+  lastMessage?: Message;
+  unreadCount?: number;
+}
+
+export interface ConversationMember {
+  id: string;
+  conversationId: string;
+  userId: string;
+  joinedAt: Date;
+  role: 'ADMIN' | 'MEMBER';
+  user: User;
+}
+
+export interface Group {
+  id: string;
+  name: string;
+  description?: string;
+  isPrivate: boolean;
+  maxMembers?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  members: GroupMember[];
+  conversations: Conversation[];
+}
+
+export interface GroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  joinedAt: Date;
+  role: 'ADMIN' | 'MEMBER';
+  user: User;
+}
+
+export interface AuthRequest {
+  username: string;
+  password?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  systemLanguage?: string;
+  regionalLanguage?: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  user?: User;
+  token?: string;
+  message?: string;
+}
+
+export interface ConversationLink {
+  id: string;
+  conversationId: string;
+  linkId: string;
+  expiresAt?: Date;
+  maxUses?: number;
+  currentUses: number;
+  isActive: boolean;
+  createdAt: Date;
+  conversation: Conversation;
+}
+
+export interface TypingIndicator {
+  userId: string;
+  conversationId: string;
+  isTyping: boolean;
+  user: User;
+}
+
+export interface OnlineStatus {
+  userId: string;
+  isOnline: boolean;
+  lastActiveAt: Date;
+}
+
+export type AuthMode = 'welcome' | 'login' | 'register' | 'join';

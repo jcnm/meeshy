@@ -1,162 +1,313 @@
-import { Injectable } from '@nestjs/common';
-import { ConversationLink, Conversation, Message } from '../types';
-import { v4 as uuidv4 } from 'uuid';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateConversationDto, JoinConversationDto, ConversationResponse } from '../dto';
 
 @Injectable()
 export class ConversationService {
-  private conversationLinks: Map<string, ConversationLink> = new Map();
-  private conversations: Map<string, Conversation> = new Map();
-  private messages: Map<string, Message[]> = new Map();
+  constructor(private prisma: PrismaService) {}
 
-  constructor() {}
+  async create(createConversationDto: CreateConversationDto, creatorId: string) {
+    const { type, title, description, participantIds } = createConversationDto;
 
-  // Créer un lien de conversation
-  createConversationLink(createdBy: string, expiresInHours: number = 24 * 7): ConversationLink {
-    const link: ConversationLink = {
-      id: uuidv4(),
-      createdBy,
-      participants: [createdBy],
-      isActive: true,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + expiresInHours * 60 * 60 * 1000),
-    };
+    // Ajouter le créateur aux participants s'il n'y est pas déjà
+    const allParticipants = participantIds.includes(creatorId) 
+      ? participantIds 
+      : [creatorId, ...participantIds];
 
-    this.conversationLinks.set(link.id, link);
-    console.log(`📎 Lien de conversation créé: ${link.id} par ${createdBy}`);
-    return link;
+    // Créer la conversation
+    const conversation = await this.prisma.conversation.create({
+      data: {
+        type,
+        title,
+        description,
+      },
+    });
+
+    // Ajouter les liens de conversation
+    const links = allParticipants.map((userId) => ({
+      conversationId: conversation.id,
+      userId,
+      isAdmin: userId === creatorId,
+      role: userId === creatorId ? 'admin' : 'member',
+    }));
+
+    await this.prisma.conversationLink.createMany({
+      data: links,
+    });
+
+    return this.getConversationWithDetails(conversation.id);
   }
 
-  // Obtenir un lien de conversation
-  getConversationLink(linkId: string): ConversationLink | undefined {
-    const link = this.conversationLinks.get(linkId);
-    if (link && (!link.expiresAt || link.expiresAt > new Date())) {
-      return link;
-    }
-    return undefined;
+  async findUserConversations(userId: string): Promise<ConversationResponse[]> {
+    const conversationsWithLinks = await this.prisma.conversationLink.findMany({
+      where: {
+        userId,
+        leftAt: null, // N'inclure que les conversations non quittées
+      },
+      include: {
+        conversation: {
+          include: {
+            links: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                    isOnline: true,
+                  },
+                },
+              },
+              where: {
+                leftAt: null,
+              },
+            },
+            messages: {
+              take: 1,
+              orderBy: {
+                createdAt: 'desc',
+              },
+              include: {
+                sender: {
+                  select: {
+                    username: true,
+                  },
+                },
+              },
+            },
+            group: {
+              include: {
+                members: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        conversation: {
+          updatedAt: 'desc',
+        },
+      },
+    });
+
+    return conversationsWithLinks.map(link => this.formatConversationResponse(link.conversation));
   }
 
-  // Rejoindre une conversation via un lien
-  joinConversationViaLink(linkId: string, userId: string): Conversation | null {
-    const link = this.getConversationLink(linkId);
-    if (!link || !link.isActive) {
-      return null;
-    }
+  async findOne(id: string, userId: string) {
+    const link = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId: id,
+          userId,
+        },
+        leftAt: null,
+      },
+    });
 
-    // Ajouter l'utilisateur aux participants du lien
-    if (!link.participants.includes(userId)) {
-      link.participants.push(userId);
-    }
-
-    // Créer ou obtenir la conversation
-    let conversation = this.getConversationByLinkId(linkId);
-    if (!conversation) {
-      conversation = {
-        id: uuidv4(),
-        linkId,
-        participants: [userId],
-        messages: [],
-        createdAt: new Date(),
-        lastMessageAt: new Date(),
-      };
-      this.conversations.set(conversation.id, conversation);
-      this.messages.set(conversation.id, []);
-    } else if (!conversation.participants.includes(userId)) {
-      conversation.participants.push(userId);
-    }
-
-    console.log(`👥 Utilisateur ${userId} a rejoint la conversation ${conversation.id}`);
-    return conversation;
-  }
-
-  // Obtenir une conversation par ID de lien
-  getConversationByLinkId(linkId: string): Conversation | undefined {
-    return Array.from(this.conversations.values()).find(conv => conv.linkId === linkId);
-  }
-
-  // Obtenir toutes les conversations d'un utilisateur
-  getUserConversations(userId: string): Conversation[] {
-    return Array.from(this.conversations.values()).filter(conv => 
-      conv.participants.includes(userId)
-    );
-  }
-
-  // Ajouter un message à une conversation
-  addMessage(conversationId: string, senderId: string, content: string, originalLanguage: string): Message | null {
-    const conversation = this.conversations.get(conversationId);
-    if (!conversation || !conversation.participants.includes(senderId)) {
-      return null;
-    }
-
-    const message: Message = {
-      id: uuidv4(),
-      conversationId,
-      senderId,
-      content,
-      timestamp: new Date(),
-      originalLanguage,
-    };
-
-    const messages = this.messages.get(conversationId) || [];
-    messages.push(message);
-    this.messages.set(conversationId, messages);
-
-    // Mettre à jour la dernière activité de la conversation
-    conversation.lastMessageAt = new Date();
-
-    console.log(`💬 Message ajouté à la conversation ${conversationId}`);
-    return message;
-  }
-
-  // Obtenir les messages d'une conversation
-  getConversationMessages(conversationId: string, userId: string): Message[] {
-    const conversation = this.conversations.get(conversationId);
-    if (!conversation || !conversation.participants.includes(userId)) {
-      return [];
+    if (!link) {
+      throw new NotFoundException('Conversation non trouvée ou accès refusé');
     }
 
-    return this.messages.get(conversationId) || [];
+    return this.getConversationWithDetails(id);
   }
 
-  // Obtenir une conversation par ID
-  getConversation(conversationId: string): Conversation | undefined {
-    return this.conversations.get(conversationId);
-  }
+  async join(joinConversationDto: JoinConversationDto, userId: string) {
+    const { conversationId } = joinConversationDto;
 
-  // Désactiver un lien de conversation
-  deactivateConversationLink(linkId: string, userId: string): boolean {
-    const link = this.conversationLinks.get(linkId);
-    if (!link || link.createdBy !== userId) {
-      return false;
+    // Vérifier si la conversation existe
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        group: true,
+      },
+    });
+
+    if (!conversation || !conversation.isActive) {
+      throw new NotFoundException('Conversation non trouvée ou inactive');
     }
 
-    link.isActive = false;
-    console.log(`🔒 Lien de conversation ${linkId} désactivé`);
-    return true;
-  }
+    // Vérifier si l'utilisateur n'est pas déjà dans la conversation
+    const existingLink = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+    });
 
-  // Obtenir tous les liens d'un utilisateur
-  getUserConversationLinks(userId: string): ConversationLink[] {
-    return Array.from(this.conversationLinks.values()).filter(link => 
-      link.createdBy === userId
-    );
-  }
-
-  // Nettoyer les liens expirés
-  cleanupExpiredLinks(): number {
-    const now = new Date();
-    let cleaned = 0;
-
-    for (const [id, link] of this.conversationLinks.entries()) {
-      if (link.expiresAt && link.expiresAt < now) {
-        this.conversationLinks.delete(id);
-        cleaned++;
+    if (existingLink) {
+      if (existingLink.leftAt) {
+        // L'utilisateur était parti, le remettre
+        await this.prisma.conversationLink.update({
+          where: { id: existingLink.id },
+          data: {
+            leftAt: null,
+            joinedAt: new Date(),
+          },
+        });
       }
+      return this.getConversationWithDetails(conversationId);
     }
 
-    if (cleaned > 0) {
-      console.log(`🧹 ${cleaned} liens de conversation expirés supprimés`);
+    // Pour les groupes publics ou avec invitation
+    if (conversation.group?.isPublic || joinConversationDto.linkId) {
+      await this.prisma.conversationLink.create({
+        data: {
+          conversationId,
+          userId,
+          role: 'member',
+        },
+      });
+
+      return this.getConversationWithDetails(conversationId);
     }
 
-    return cleaned;
+    throw new ForbiddenException('Impossible de rejoindre cette conversation');
+  }
+
+  async leave(conversationId: string, userId: string) {
+    const link = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId: conversationId,
+          userId,
+        },
+        leftAt: null,
+      },
+    });
+
+    if (!link) {
+      throw new NotFoundException('Vous n\'êtes pas dans cette conversation');
+    }
+
+    await this.prisma.conversationLink.update({
+      where: { id: link.id },
+      data: {
+        leftAt: new Date(),
+      },
+    });
+
+    return { message: 'Conversation quittée avec succès' };
+  }
+
+  async updateLastActivity(conversationId: string) {
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  private async getConversationWithDetails(conversationId: string) {
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        links: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                isOnline: true,
+              },
+            },
+          },
+          where: {
+            leftAt: null,
+          },
+        },
+        messages: {
+          take: 1,
+          orderBy: {
+            createdAt: 'desc',
+          },
+          include: {
+            sender: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        },
+        group: {
+          include: {
+            members: true,
+          },
+        },
+      },
+    });
+
+    return conversation ? this.formatConversationResponse(conversation) : null;
+  }
+
+  private formatConversationResponse(conversation: {
+    id: string;
+    type: string;
+    title: string | null;
+    description: string | null;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    links: Array<{
+      role: string;
+      user: {
+        id: string;
+        username: string;
+        displayName: string | null;
+        avatar: string | null;
+        isOnline: boolean;
+      };
+    }>;
+    messages: Array<{
+      id: string;
+      content: string;
+      senderId: string;
+      createdAt: Date;
+    }>;
+    group?: {
+      id: string;
+      title: string;
+      description: string | null;
+      image: string | null;
+      isPublic: boolean;
+      members?: Array<unknown>;
+    } | null;
+  }): ConversationResponse {
+    return {
+      id: conversation.id,
+      type: conversation.type,
+      title: conversation.title,
+      description: conversation.description,
+      isActive: conversation.isActive,
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt,
+      participants: conversation.links.map((link) => ({
+        id: link.user.id,
+        username: link.user.username,
+        displayName: link.user.displayName,
+        avatar: link.user.avatar,
+        isOnline: link.user.isOnline,
+        role: link.role,
+      })),
+      lastMessage: conversation.messages[0] ? {
+        id: conversation.messages[0].id,
+        content: conversation.messages[0].content,
+        senderId: conversation.messages[0].senderId,
+        createdAt: conversation.messages[0].createdAt,
+      } : undefined,
+      group: conversation.group ? {
+        id: conversation.group.id,
+        title: conversation.group.title,
+        description: conversation.group.description,
+        image: conversation.group.image,
+        isPublic: conversation.group.isPublic,
+        memberCount: conversation.group.members?.length || 0,
+      } : undefined,
+    };
   }
 }

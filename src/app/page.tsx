@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,303 +14,313 @@ import {
   DialogTrigger 
 } from '@/components/ui/dialog';
 import { 
-  Plus, 
-  Link, 
-  Copy, 
-  Users, 
   MessageSquare, 
-  Settings,
-  ExternalLink,
-  Clock
+  Globe, 
+  Users, 
+  Zap, 
+  Shield, 
+  LogIn, 
+  UserPlus,
+  Link2,
+  ArrowRight,
+  Languages,
+  Sparkles
 } from 'lucide-react';
-import { ModelManagerModal } from '@/components/model-manager-modal';
-import { User, ConversationLink, Conversation } from '@/types/frontend';
+import { LoginForm } from '@/components/auth/login-form';
+import { RegisterForm } from '@/components/auth/register-form';
+import { JoinConversationForm } from '@/components/auth/join-conversation-form';
+import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 
-export default function HomePage() {
+export default function LandingPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [conversationLinks, setConversationLinks] = useState<ConversationLink[]>([]);
-  const [isCreateLinkOpen, setIsCreateLinkOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>('welcome');
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    // Charger les données utilisateur depuis localStorage
-    const savedUser = localStorage.getItem('meeshy_user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setCurrentUser(user);
-      loadUserData(user.id);
-    }
-  }, []);
-
-  const loadUserData = async (userId: string) => {
-    try {
-      // Charger les conversations
-      const conversationsResponse = await fetch(`/api/conversation?userId=${userId}`);
-      const conversationsResult = await conversationsResponse.json();
-      
-      if (conversationsResult.success) {
-        setConversations(conversationsResult.data);
+    // Vérifier si l'utilisateur est déjà connecté
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          const response = await fetch('http://localhost:3002/auth/me', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          if (response.ok) {
+            const userData = await response.json();
+            setCurrentUser(userData);
+            router.push('/dashboard');
+            return;
+          } else {
+            localStorage.removeItem('auth_token');
+          }
+        }
+      } catch (error) {
+        console.error('Erreur vérification auth:', error);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      // Charger les liens de conversation
-      const linksResponse = await fetch(`/api/conversation/links?userId=${userId}`);
-      const linksResult = await linksResponse.json();
-      
-      if (linksResult.success) {
-        setConversationLinks(linksResult.data);
-      }
-    } catch (error) {
-      console.error('Erreur chargement données:', error);
-    }
+    checkAuth();
+  }, [router]);
+
+  const handleAuthSuccess = (user: User, token: string) => {
+    localStorage.setItem('auth_token', token);
+    setCurrentUser(user);
+    router.push('/dashboard');
   };
 
-  const createConversationLink = async () => {
-    if (!currentUser) return;
-
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/conversation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: currentUser.id,
-          expiresInHours: 24 * 7, // 7 jours
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setConversationLinks(prev => [...prev, result.data.link]);
-        setIsCreateLinkOpen(false);
-        toast.success('Lien de conversation créé !');
-      } else {
-        toast.error(result.error || 'Erreur lors de la création du lien');
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
-      toast.error('Erreur de connexion au serveur');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const copyLinkToClipboard = (url: string) => {
-    navigator.clipboard.writeText(url);
-    toast.success('Lien copié dans le presse-papiers !');
-  };
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }).format(new Date(date));
-  };
-
-  if (!currentUser) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Meeshy</CardTitle>
-            <CardDescription>
-              Messagerie multilingue avec traduction automatique
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                Pour commencer, vous devez rejoindre une conversation via un lien d&apos;invitation.
-              </p>
-              <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                <h4 className="font-medium mb-2">🌍 Fonctionnalités</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Traduction automatique en temps réel</li>
-                  <li>• Confidentialité (traduction locale)</li>
-                  <li>• Support de nombreuses langues</li>
-                  <li>• Interface moderne et intuitive</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
 
+  if (currentUser) {
+    return null; // Redirection en cours
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto p-4">
-        {/* En-tête */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Bonjour, {currentUser.firstName} 👋
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Gérez vos conversations et liens d&apos;invitation
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Header */}
+      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+              <MessageSquare className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">Meeshy</span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="flex items-center space-x-2">
+                  <LogIn className="h-4 w-4" />
+                  <span>Se connecter</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Se connecter</DialogTitle>
+                  <DialogDescription>
+                    Connectez-vous à votre compte Meeshy
+                  </DialogDescription>
+                </DialogHeader>
+                <LoginForm onSuccess={handleAuthSuccess} />
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center space-x-2">
+                  <UserPlus className="h-4 w-4" />
+                  <span>S'inscrire</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Créer un compte</DialogTitle>
+                  <DialogDescription>
+                    Rejoignez Meeshy et communiquez sans barrières
+                  </DialogDescription>
+                </DialogHeader>
+                <RegisterForm onSuccess={handleAuthSuccess} />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-16 lg:py-24">
+        <div className="text-center max-w-4xl mx-auto">
+          <Badge variant="secondary" className="mb-4">
+            <Sparkles className="h-3 w-3 mr-1" />
+            Traduction en temps réel
+          </Badge>
+          
+          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Communiquez sans{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+              barrières linguistiques
+            </span>
+          </h1>
+          
+          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA, 
+            directement dans votre navigateur. Aucune donnée ne quitte votre appareil.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
+              <DialogTrigger asChild>
+                <Button size="lg" className="flex items-center space-x-2">
+                  <UserPlus className="h-5 w-5" />
+                  <span>Commencer gratuitement</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Créer un compte</DialogTitle>
+                  <DialogDescription>
+                    Rejoignez Meeshy et communiquez sans barrières
+                  </DialogDescription>
+                </DialogHeader>
+                <RegisterForm onSuccess={handleAuthSuccess} />
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={authMode === 'join'} onOpenChange={(open) => setAuthMode(open ? 'join' : 'welcome')}>
+              <DialogTrigger asChild>
+                <Button size="lg" variant="outline" className="flex items-center space-x-2">
+                  <Link2 className="h-5 w-5" />
+                  <span>Rejoindre une conversation</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Rejoindre une conversation</DialogTitle>
+                  <DialogDescription>
+                    Entrez le lien de conversation que vous avez reçu
+                  </DialogDescription>
+                </DialogHeader>
+                <JoinConversationForm onSuccess={(linkId: string) => {
+                  router.push(`/join/${linkId}`);
+                }} />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="bg-white py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Pourquoi choisir Meeshy ?
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Une messagerie moderne qui brise les barrières linguistiques
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <ModelManagerModal>
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Modèles
-              </Button>
-            </ModelManagerModal>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Globe className="h-12 w-12 text-blue-600 mb-4" />
+                <CardTitle>Traduction Universelle</CardTitle>
+                <CardDescription>
+                  Support de plus de 15 langues avec des modèles IA avancés (MT5 et NLLB)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Shield className="h-12 w-12 text-green-600 mb-4" />
+                <CardTitle>100% Privé</CardTitle>
+                <CardDescription>
+                  Traduction côté client uniquement. Vos données restent sur votre appareil.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Zap className="h-12 w-12 text-yellow-600 mb-4" />
+                <CardTitle>Temps Réel</CardTitle>
+                <CardDescription>
+                  Messages traduits instantanément avec indicateurs de frappe et présence.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Users className="h-12 w-12 text-purple-600 mb-4" />
+                <CardTitle>Conversations de Groupe</CardTitle>
+                <CardDescription>
+                  Créez des groupes multilingues et gérez les permissions facilement.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Languages className="h-12 w-12 text-indigo-600 mb-4" />
+                <CardTitle>Multi-Langues Personnalisées</CardTitle>
+                <CardDescription>
+                  Configurez vos langues système et régionale pour une expérience sur mesure.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <MessageSquare className="h-12 w-12 text-red-600 mb-4" />
+                <CardTitle>Interface Moderne</CardTitle>
+                <CardDescription>
+                  Design responsive et intuitive pour une expérience utilisateur optimale.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </div>
+      </section>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Liens de conversation */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Link className="h-5 w-5" />
-                    Liens de conversation
-                  </CardTitle>
-                  <CardDescription>
-                    Créez des liens pour inviter d&apos;autres personnes
-                  </CardDescription>
-                </div>
-                <Dialog open={isCreateLinkOpen} onOpenChange={setIsCreateLinkOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Créer un lien
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Créer un lien de conversation</DialogTitle>
-                      <DialogDescription>
-                        Créez un lien d&apos;invitation pour permettre à d&apos;autres personnes de vous rejoindre.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                        <h4 className="font-medium mb-2">ℹ️ À propos des liens</h4>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          <li>• Le lien expire automatiquement après 7 jours</li>
-                          <li>• Les personnes peuvent créer un compte ou se connecter</li>
-                          <li>• La traduction automatique est activée par défaut</li>
-                        </ul>
-                      </div>
-                      <Button onClick={createConversationLink} disabled={isLoading} className="w-full">
-                        {isLoading ? 'Création...' : 'Créer le lien'}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {conversationLinks.length === 0 ? (
-                <div className="text-center py-8">
-                  <Link className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Aucun lien créé</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Créez votre premier lien pour inviter des personnes
-                  </p>
-                </div>
-              ) : (
-                conversationLinks.map((link) => (
-                  <div key={link.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge variant={link.isActive ? 'default' : 'secondary'}>
-                          {link.isActive ? 'Actif' : 'Inactif'}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {link.participants.length} participant(s)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => copyLinkToClipboard(link.url || '')}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(link.url, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Créé le {formatDate(link.createdAt)}
-                      </div>
-                      {link.expiresAt && (
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          Expire le {formatDate(link.expiresAt)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Conversations actives */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Conversations actives
-              </CardTitle>
-              <CardDescription>
-                Vos conversations récentes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {conversations.length === 0 ? (
-                <div className="text-center py-8">
-                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Aucune conversation</h3>
-                  <p className="text-muted-foreground">
-                    Créez un lien d&apos;invitation pour commencer à discuter
-                  </p>
-                </div>
-              ) : (
-                conversations.map((conversation) => (
-                  <div key={conversation.id} className="border rounded-lg p-4 hover:bg-muted/50 cursor-pointer">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">
-                          {conversation.participants.length} participant(s)
-                        </span>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDate(conversation.lastMessageAt)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {conversation.messages.length} message(s)
-                    </p>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+      {/* CTA Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-600 py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
+            Prêt à communiquer sans limites ?
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Rejoignez des milliers d'utilisateurs qui utilisent déjà Meeshy pour briser les barrières linguistiques.
+          </p>
+          
+          <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
+            <DialogTrigger asChild>
+              <Button size="lg" variant="secondary" className="flex items-center space-x-2">
+                <UserPlus className="h-5 w-5" />
+                <span>Créer mon compte</span>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Créer un compte</DialogTitle>
+                <DialogDescription>
+                  Rejoignez Meeshy et communiquez sans barrières
+                </DialogDescription>
+              </DialogHeader>
+              <RegisterForm onSuccess={handleAuthSuccess} />
+            </DialogContent>
+          </Dialog>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="h-6 w-6 bg-gradient-to-br from-blue-600 to-indigo-600 rounded flex items-center justify-center">
+              <MessageSquare className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-lg font-bold">Meeshy</span>
+          </div>
+          <p className="text-gray-400">
+            © 2024 Meeshy. Communication sans barrières linguistiques.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

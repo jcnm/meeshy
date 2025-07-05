@@ -1,0 +1,207 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                          String   @id @default(cuid())
+  username                    String   @unique
+  firstName                   String
+  lastName                    String
+  email                       String   @unique
+  phoneNumber                 String?  @unique
+  password                    String
+  displayName                 String?
+  avatar                      String?
+  isOnline                    Boolean  @default(false)
+  lastSeen                    DateTime @default(now())
+  lastActiveAt                DateTime @default(now())
+  systemLanguage              String   @default("fr")
+  regionalLanguage            String   @default("fr")
+  autoTranslateEnabled        Boolean  @default(true)
+  translateToSystemLanguage   Boolean  @default(true)
+  translateToRegionalLanguage Boolean  @default(false)
+  useCustomDestination        Boolean  @default(false)
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  // Relations
+  sentMessages      Message[]           @relation("UserSentMessages")
+  conversationLinks ConversationLink[]
+  userStats         UserStats?
+  userPreferences   UserPreference[]
+  groupMemberships  GroupMember[]
+  adminGroups       Group[]             @relation("GroupAdmins")
+  moderatorGroups   Group[]             @relation("GroupModerators")
+  createdGroups     Group[]             @relation("GroupCreator")
+  typingIndicators  TypingIndicator[]
+
+  @@map("users")
+}
+
+model Conversation {
+  id          String   @id @default(cuid())
+  type        String   // "direct" or "group"
+  title       String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  messages    Message[]
+  links       ConversationLink[]
+  group       Group?
+  preferences ConversationPreference[]
+
+  @@map("conversations")
+}
+
+model ConversationLink {
+  id             String      @id @default(cuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime    @default(now())
+  leftAt         DateTime?
+  isAdmin        Boolean     @default(false)
+  isModerator    Boolean     @default(false)
+  role           String      @default("member") // "member", "admin", "moderator"
+
+  // Relations
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("conversation_links")
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  conversationId String @unique
+  title       String
+  description String?
+  image       String?
+  isPublic    Boolean  @default(false)
+  maxMembers  Int?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  conversation Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdBy    User          @relation("GroupCreator", fields: [createdById], references: [id])
+  members      GroupMember[]
+  admins       User[]        @relation("GroupAdmins")
+  moderators   User[]        @relation("GroupModerators")
+
+  @@map("groups")
+}
+
+model GroupMember {
+  id      String   @id @default(cuid())
+  groupId String
+  userId  String
+  role    String   @default("member") // "member", "admin", "moderator"
+  joinedAt DateTime @default(now())
+
+  // Relations
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@map("group_members")
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  originalLanguage String   @default("fr")
+  isEdited       Boolean   @default(false)
+  editedAt       DateTime?
+  isDeleted      Boolean   @default(false)
+  deletedAt      DateTime?
+  replyToId      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("UserSentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo      Message?     @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies      Message[]    @relation("MessageReplies")
+
+  @@map("messages")
+}
+
+model UserStats {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  messagesSent     Int      @default(0)
+  messagesReceived Int      @default(0)
+  conversationsJoined Int   @default(0)
+  groupsCreated    Int      @default(0)
+  translationsUsed Int      @default(0)
+  lastActiveAt     DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model UserPreference {
+  id     String @id @default(cuid())
+  userId String
+  key    String
+  value  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@map("user_preferences")
+}
+
+model ConversationPreference {
+  id             String @id @default(cuid())
+  conversationId String
+  userId         String
+  key            String
+  value          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId, key])
+  @@map("conversation_preferences")
+}
+
+model TypingIndicator {
+  id             String   @id @default(cuid())
+  conversationId String
+  userId         String
+  isTyping       Boolean  @default(true)
+  startedAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@map("typing_indicators")
+}

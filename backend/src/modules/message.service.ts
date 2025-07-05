@@ -1,73 +1,313 @@
-import { Injectable } from '@nestjs/common';
-import { Message, ChatRoom } from '../types';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateMessageDto, UpdateMessageDto, MessageResponse } from '../dto';
 
 @Injectable()
 export class MessageService {
-  private messages: Map<string, Message> = new Map();
-  private chatRooms: Map<string, ChatRoom> = new Map();
+  constructor(private prisma: PrismaService) {}
 
-  createMessage(senderId: string, recipientId: string, content: string, originalLanguage: string): Message {
-    const message: Message = {
-      id: this.generateId(),
-      senderId,
-      recipientId,
-      content,
-      timestamp: new Date(),
-      originalLanguage,
-    };
+  async create(createMessageDto: CreateMessageDto, senderId: string): Promise<MessageResponse> {
+    const { content, conversationId, originalLanguage, replyToId } = createMessageDto;
 
-    this.messages.set(message.id, message);
-    this.addMessageToChatRoom(senderId, recipientId, message);
+    // Vérifier que l'utilisateur est dans la conversation
+    const link = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId: senderId,
+        },
+        leftAt: null,
+      },
+    });
 
-    return message;
-  }
-
-  private addMessageToChatRoom(senderId: string, recipientId: string, message: Message): void {
-    const chatRoomId = this.getChatRoomId(senderId, recipientId);
-    let chatRoom = this.chatRooms.get(chatRoomId);
-
-    if (!chatRoom) {
-      chatRoom = {
-        id: chatRoomId,
-        participantIds: [senderId, recipientId],
-        messages: [],
-        createdAt: new Date(),
-      };
-      this.chatRooms.set(chatRoomId, chatRoom);
+    if (!link) {
+      throw new ForbiddenException('Vous n\'êtes pas autorisé à envoyer des messages dans cette conversation');
     }
 
-    chatRoom.messages.push(message);
+    // Créer le message
+    const message = await this.prisma.message.create({
+      data: {
+        content,
+        conversationId,
+        senderId,
+        originalLanguage: originalLanguage || 'fr',
+        replyToId,
+      },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            displayName: true,
+            avatar: true,
+          },
+        },
+        replyTo: {
+          include: {
+            sender: {
+              select: {
+                username: true,
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Mettre à jour l'activité de la conversation
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    return this.formatMessageResponse(message);
   }
 
-  getChatHistory(userId1: string, userId2: string): Message[] {
-    const chatRoomId = this.getChatRoomId(userId1, userId2);
-    const chatRoom = this.chatRooms.get(chatRoomId);
-    return chatRoom ? chatRoom.messages : [];
+  async findByConversation(conversationId: string, userId: string, page = 1, limit = 50): Promise<MessageResponse[]> {
+    // Vérifier que l'utilisateur a accès à la conversation
+    const link = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+        leftAt: null,
+      },
+    });
+
+    if (!link) {
+      throw new ForbiddenException('Accès refusé à cette conversation');
+    }
+
+    const messages = await this.prisma.message.findMany({
+      where: {
+        conversationId,
+        isDeleted: false,
+      },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            displayName: true,
+            avatar: true,
+          },
+        },
+        replyTo: {
+          include: {
+            sender: {
+              select: {
+                username: true,
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return messages.reverse().map(message => this.formatMessageResponse(message));
   }
 
-  getUserChatRooms(userId: string): ChatRoom[] {
-    return Array.from(this.chatRooms.values())
-      .filter(room => room.participantIds.includes(userId));
+  async update(messageId: string, updateMessageDto: UpdateMessageDto, userId: string): Promise<MessageResponse> {
+    // Vérifier que le message existe et appartient à l'utilisateur
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            displayName: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message non trouvé');
+    }
+
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('Vous ne pouvez modifier que vos propres messages');
+    }
+
+    if (message.isDeleted) {
+      throw new ForbiddenException('Impossible de modifier un message supprimé');
+    }
+
+    // Mettre à jour le message
+    const updatedMessage = await this.prisma.message.update({
+      where: { id: messageId },
+      data: {
+        content: updateMessageDto.content,
+        isEdited: true,
+        editedAt: new Date(),
+      },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            displayName: true,
+            avatar: true,
+          },
+        },
+        replyTo: {
+          include: {
+            sender: {
+              select: {
+                username: true,
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return this.formatMessageResponse(updatedMessage);
   }
 
-  private getChatRoomId(userId1: string, userId2: string): string {
-    // Créer un ID de chat room consistant en triant les IDs
-    const sortedIds = [userId1, userId2].sort();
-    return `${sortedIds[0]}_${sortedIds[1]}`;
+  async delete(messageId: string, userId: string): Promise<void> {
+    // Vérifier que le message existe et appartient à l'utilisateur
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        conversation: {
+          include: {
+            links: {
+              where: {
+                userId,
+                role: { in: ['admin', 'moderator'] },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message non trouvé');
+    }
+
+    // Vérifier les permissions (propriétaire du message ou admin/modérateur)
+    const isOwner = message.senderId === userId;
+    const isAdminOrModerator = message.conversation.links.length > 0;
+
+    if (!isOwner && !isAdminOrModerator) {
+      throw new ForbiddenException('Vous n\'êtes pas autorisé à supprimer ce message');
+    }
+
+    // Marquer le message comme supprimé
+    await this.prisma.message.update({
+      where: { id: messageId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        content: '[Message supprimé]',
+      },
+    });
   }
 
-  private generateId(): string {
-    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  async search(conversationId: string, query: string, userId: string): Promise<MessageResponse[]> {
+    // Vérifier l'accès à la conversation
+    const link = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+        leftAt: null,
+      },
+    });
+
+    if (!link) {
+      throw new ForbiddenException('Accès refusé à cette conversation');
+    }
+
+    const messages = await this.prisma.message.findMany({
+      where: {
+        conversationId,
+        isDeleted: false,
+        content: {
+          contains: query,
+        },
+      },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            displayName: true,
+            avatar: true,
+          },
+        },
+        replyTo: {
+          include: {
+            sender: {
+              select: {
+                username: true,
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 20,
+    });
+
+    return messages.map(message => this.formatMessageResponse(message));
   }
 
-  getMessageById(messageId: string): Message | undefined {
-    return this.messages.get(messageId);
-  }
-
-  getRecentMessages(limit: number = 50): Message[] {
-    const allMessages = Array.from(this.messages.values());
-    return allMessages
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, limit);
+  private formatMessageResponse(message: {
+    id: string;
+    content: string;
+    senderId: string;
+    conversationId: string;
+    originalLanguage: string;
+    isEdited: boolean;
+    editedAt: Date | null;
+    isDeleted: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    sender: {
+      username: string;
+      displayName: string | null;
+      avatar: string | null;
+    };
+    replyTo?: {
+      id: string;
+      content: string;
+      sender: {
+        username: string;
+        displayName: string | null;
+      };
+    } | null;
+  }): MessageResponse {
+    return {
+      id: message.id,
+      content: message.content,
+      senderId: message.senderId,
+      conversationId: message.conversationId,
+      senderName: message.sender.displayName || message.sender.username,
+      senderAvatar: message.sender.avatar,
+      originalLanguage: message.originalLanguage,
+      isEdited: message.isEdited,
+      editedAt: message.editedAt,
+      isDeleted: message.isDeleted,
+      replyTo: message.replyTo ? {
+        id: message.replyTo.id,
+        content: message.replyTo.content,
+        senderName: message.replyTo.sender.displayName || message.replyTo.sender.username,
+      } : undefined,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt,
+    };
   }
 }

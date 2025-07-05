@@ -1,39 +1,53 @@
-import { Controller, Get, Put, Param, Body, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, UseGuards, Request, Query } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from '../types';
+import { UpdateUserDto } from '../dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+
+interface AuthenticatedRequest {
+  user: {
+    id: string;
+    username: string;
+    email: string;
+  };
+}
 
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private userService: UserService) {}
 
   @Get()
-  getAllUsers(): User[] {
-    return this.userService.getAllUsers();
+  async findAll() {
+    return this.userService.findAll();
   }
 
-  @Get('online')
-  getOnlineUsers(): User[] {
-    return this.userService.getOnlineUsers();
+  @Get('search')
+  async search(@Query('q') query: string, @Request() req: AuthenticatedRequest) {
+    return this.userService.searchUsers(query, [req.user.id]);
+  }
+
+  @Get('me')
+  async getProfile(@Request() req: AuthenticatedRequest) {
+    return this.userService.findOne(req.user.id);
+  }
+
+  @Patch('me')
+  async updateProfile(@Body() updateUserDto: UpdateUserDto, @Request() req: AuthenticatedRequest) {
+    return this.userService.update(req.user.id, updateUserDto);
+  }
+
+  @Get('me/stats')
+  async getMyStats(@Request() req: AuthenticatedRequest) {
+    return this.userService.getStats(req.user.id);
   }
 
   @Get(':id')
-  getUserById(@Param('id') id: string): User {
-    const user = this.userService.getUserById(id);
-    if (!user) {
-      throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
-    }
-    return user;
+  async findOne(@Param('id') id: string) {
+    return this.userService.findOne(id);
   }
 
-  @Put(':id/settings')
-  updateUserSettings(
-    @Param('id') id: string,
-    @Body() settings: Partial<User>,
-  ): User {
-    const updatedUser = this.userService.updateUserSettings(id, settings);
-    if (!updatedUser) {
-      throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
-    }
-    return updatedUser;
+  @Get(':id/stats')
+  async getStats(@Param('id') id: string) {
+    return this.userService.getStats(id);
   }
 }
