@@ -1,6 +1,14 @@
-import { IsString, IsEmail, IsOptional, IsBoolean, MinLength, MaxLength, IsEnum, IsArray, IsUUID, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsBoolean, MinLength, MaxLength, IsEnum, IsArray, IsNumber, Min, Max, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ConversationType, ParticipantRole } from './interfaces';
+
+// Validateur pour les IDs Prisma (CUID ou IDs numériques du seed)
+// Accepte: CUID (format: c + 24 caractères) OU IDs numériques string (ex: "1", "2", "3")
+export const IsPrismaId = (options?: { each?: boolean }) => 
+  Matches(/^(c[a-z0-9]{24}|\d+)$/, { 
+    message: 'must be a valid Prisma ID (CUID or numeric string)',
+    each: options?.each 
+  });
 
 // ===== USER DTOs =====
 
@@ -148,12 +156,12 @@ export class CreateConversationDto {
   description?: string;
 
   @IsArray()
-  @IsUUID(4, { each: true })
+  @IsPrismaId({ each: true })
   participantIds!: string[];
 }
 
 export class CreateConversationLinkDto {
-  @IsUUID(4)
+  @IsPrismaId()
   conversationId!: string;
 
   @IsOptional()
@@ -193,7 +201,7 @@ export class UpdateConversationDto {
 }
 
 export class JoinConversationDto {
-  @IsUUID(4)
+  @IsPrismaId()
   conversationId!: string;
 
   @IsOptional()
@@ -210,7 +218,7 @@ export class CreateMessageDto {
   @Transform(({ value }) => value?.trim())
   content!: string;
 
-  @IsUUID(4)
+  @IsPrismaId()
   conversationId!: string;
 
   @IsOptional()
@@ -219,7 +227,7 @@ export class CreateMessageDto {
   originalLanguage?: string;
 
   @IsOptional()
-  @IsUUID(4)
+  @IsPrismaId()
   replyToId?: string;
 }
 
