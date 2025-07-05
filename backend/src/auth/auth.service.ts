@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto, LoginDto, AuthResponse } from '../dto';
-import e from 'cors';
+import { USER_SELECT_FIELDS } from '../constants/user-select';
 
 @Injectable()
 export class AuthService {
@@ -164,25 +164,7 @@ export class AuthService {
   async validateUser(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        displayName: true,
-        avatar: true,
-        systemLanguage: true,
-        regionalLanguage: true,
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: true,
-        useCustomDestination: true,
-        isOnline: true,
-        lastSeen: true,
-        lastActiveAt: true,
-      },
+      select: USER_SELECT_FIELDS,
     });
   }
 

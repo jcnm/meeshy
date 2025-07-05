@@ -25,6 +25,7 @@ model User {
   lastActiveAt                DateTime @default(now())
   systemLanguage              String   @default("fr")
   regionalLanguage            String   @default("fr")
+  customDestinationLanguage   String?
   autoTranslateEnabled        Boolean  @default(true)
   translateToSystemLanguage   Boolean  @default(true)
   translateToRegionalLanguage Boolean  @default(false)

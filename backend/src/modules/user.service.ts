@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from '../dto';
+import { USER_SELECT_FIELDS, USER_BASIC_SELECT_FIELDS } from '../constants/user-select';
 
 @Injectable()
 export class UserService {
@@ -8,19 +9,7 @@ export class UserService {
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        displayName: true,
-        avatar: true,
-        isOnline: true,
-        lastSeen: true,
-        systemLanguage: true,
-        regionalLanguage: true,
-        createdAt: true,
-      },
+      select: USER_BASIC_SELECT_FIELDS,
       orderBy: {
         username: 'asc',
       },
@@ -31,26 +20,9 @@ export class UserService {
     return this.prisma.user.findUnique({
       where: { id },
       select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        displayName: true,
-        avatar: true,
-        isOnline: true,
-        lastSeen: true,
-        lastActiveAt: true,
-        systemLanguage: true,
-        regionalLanguage: true,
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: true,
-        useCustomDestination: true,
-        createdAt: true,
-        updatedAt: true,
+        ...USER_SELECT_FIELDS,
         userStats: true,
+        updatedAt: true,
       },
     });
   }
@@ -60,20 +32,7 @@ export class UserService {
       where: { id },
       data: updateUserDto,
       select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        phoneNumber: true,
-        displayName: true,
-        avatar: true,
-        systemLanguage: true,
-        regionalLanguage: true,
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: true,
-        useCustomDestination: true,
+        ...USER_SELECT_FIELDS,
         updatedAt: true,
       },
     });

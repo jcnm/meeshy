@@ -123,32 +123,107 @@ export interface ConversationResponse {
   id: string;
   type: string;
   title?: string;
+  name?: string;
   description?: string;
+  isGroup?: boolean;
+  isPrivate?: boolean;
   isActive: boolean;
+  maxMembers?: number;
   createdAt: Date;
   updatedAt: Date;
-  participants: Array<{
+  participants?: Array<{
     id: string;
-    username: string;
-    displayName?: string;
-    avatar?: string;
-    isOnline: boolean;
-    role: string;
+    conversationId: string;
+    userId: string;
+    joinedAt: Date;
+    role: 'ADMIN' | 'MEMBER';
+    user: {
+      id: string;
+      username: string;
+      firstName?: string;
+      lastName?: string;
+      displayName?: string;
+      email: string;
+      phoneNumber?: string;
+      systemLanguage: string;
+      regionalLanguage: string;
+      customDestinationLanguage?: string;
+      autoTranslateEnabled: boolean;
+      translateToSystemLanguage: boolean;
+      translateToRegionalLanguage: boolean;
+      useCustomDestination: boolean;
+      isOnline: boolean;
+      avatar?: string;
+      lastSeen?: Date;
+      createdAt: Date;
+      lastActiveAt: Date;
+    };
+  }>;
+  messages?: Array<{
+    id: string;
+    conversationId: string;
+    senderId: string;
+    content: string;
+    originalLanguage: string;
+    isEdited: boolean;
+    editedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    sender: {
+      id: string;
+      username: string;
+      firstName?: string;
+      lastName?: string;
+      displayName?: string;
+      email: string;
+      phoneNumber?: string;
+      systemLanguage: string;
+      regionalLanguage: string;
+      customDestinationLanguage?: string;
+      autoTranslateEnabled: boolean;
+      translateToSystemLanguage: boolean;
+      translateToRegionalLanguage: boolean;
+      useCustomDestination: boolean;
+      isOnline: boolean;
+      avatar?: string;
+      lastSeen?: Date;
+      createdAt: Date;
+      lastActiveAt: Date;
+    };
   }>;
   lastMessage?: {
     id: string;
-    content: string;
+    conversationId: string;
     senderId: string;
+    content: string;
+    originalLanguage: string;
+    isEdited: boolean;
+    editedAt?: Date;
     createdAt: Date;
+    updatedAt: Date;
+    sender: {
+      id: string;
+      username: string;
+      firstName?: string;
+      lastName?: string;
+      displayName?: string;
+      email: string;
+      phoneNumber?: string;
+      systemLanguage: string;
+      regionalLanguage: string;
+      customDestinationLanguage?: string;
+      autoTranslateEnabled: boolean;
+      translateToSystemLanguage: boolean;
+      translateToRegionalLanguage: boolean;
+      useCustomDestination: boolean;
+      isOnline: boolean;
+      avatar?: string;
+      lastSeen?: Date;
+      createdAt: Date;
+      lastActiveAt: Date;
+    };
   };
-  group?: {
-    id: string;
-    title: string;
-    description?: string;
-    image?: string;
-    isPublic: boolean;
-    memberCount: number;
-  };
+  unreadCount?: number;
 }
 
 export interface MessageResponse {

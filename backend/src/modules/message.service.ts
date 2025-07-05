@@ -1,10 +1,16 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto, UpdateMessageDto, MessageResponse } from '../dto';
+import { USER_SELECT_FIELDS } from '../constants/user-select';
 
 @Injectable()
 export class MessageService {
   constructor(private prisma: PrismaService) {}
+
+  // Fonction utilitaire pour la sélection complète des utilisateurs
+  private getUserSelect() {
+    return USER_SELECT_FIELDS;
+  }
 
   async create(createMessageDto: CreateMessageDto, senderId: string): Promise<MessageResponse> {
     const { content, conversationId, originalLanguage, replyToId } = createMessageDto;
@@ -35,19 +41,12 @@ export class MessageService {
       },
       include: {
         sender: {
-          select: {
-            username: true,
-            displayName: true,
-            avatar: true,
-          },
+          select: this.getUserSelect(),
         },
         replyTo: {
           include: {
             sender: {
-              select: {
-                username: true,
-                displayName: true,
-              },
+              select: this.getUserSelect(),
             },
           },
         },
@@ -86,19 +85,12 @@ export class MessageService {
       },
       include: {
         sender: {
-          select: {
-            username: true,
-            displayName: true,
-            avatar: true,
-          },
+          select: this.getUserSelect(),
         },
         replyTo: {
           include: {
             sender: {
-              select: {
-                username: true,
-                displayName: true,
-              },
+              select: this.getUserSelect(),
             },
           },
         },

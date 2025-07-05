@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConversationDto, JoinConversationDto, ConversationResponse, CreateConversationLinkDto } from '../dto';
+import { USER_SELECT_FIELDS } from '../constants/user-select';
 
 @Injectable()
 export class ConversationService {
@@ -50,13 +51,7 @@ export class ConversationService {
             links: {
               include: {
                 user: {
-                  select: {
-                    id: true,
-                    username: true,
-                    displayName: true,
-                    avatar: true,
-                    isOnline: true,
-                  },
+                  select: USER_SELECT_FIELDS,
                 },
               },
               where: {
@@ -245,69 +240,79 @@ export class ConversationService {
     return conversation ? this.formatConversationResponse(conversation) : null;
   }
 
-  private formatConversationResponse(conversation: {
-    id: string;
-    type: string;
-    title: string | null;
-    description: string | null;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    links: Array<{
-      role: string;
-      user: {
-        id: string;
-        username: string;
-        displayName: string | null;
-        avatar: string | null;
-        isOnline: boolean;
-      };
-    }>;
-    messages: Array<{
-      id: string;
-      content: string;
-      senderId: string;
-      createdAt: Date;
-    }>;
-    group?: {
-      id: string;
-      title: string;
-      description: string | null;
-      image: string | null;
-      isPublic: boolean;
-      members?: Array<unknown>;
-    } | null;
-  }): ConversationResponse {
+  private formatConversationResponse(conversation: any): ConversationResponse {
     return {
       id: conversation.id,
       type: conversation.type,
       title: conversation.title,
+      name: conversation.title, // Alias pour compatibilité
       description: conversation.description,
+      isGroup: conversation.type === 'group',
+      isPrivate: !conversation.group?.isPublic,
       isActive: conversation.isActive,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
-      participants: conversation.links.map((link) => ({
-        id: link.user.id,
-        username: link.user.username,
-        displayName: link.user.displayName,
-        avatar: link.user.avatar,
-        isOnline: link.user.isOnline,
-        role: link.role,
-      })),
-      lastMessage: conversation.messages[0] ? {
+      participants: conversation.links?.map((link: any) => ({
+        id: link.id,
+        conversationId: link.conversationId,
+        userId: link.userId,
+        joinedAt: link.joinedAt,
+        role: (link.role === 'admin' ? 'ADMIN' : 'MEMBER') as 'ADMIN' | 'MEMBER',
+        user: {
+          id: link.user.id,
+          username: link.user.username,
+          firstName: link.user.firstName || '',
+          lastName: link.user.lastName || '',
+          displayName: link.user.displayName,
+          email: link.user.email,
+          phoneNumber: link.user.phoneNumber,
+          systemLanguage: link.user.systemLanguage,
+          regionalLanguage: link.user.regionalLanguage,
+          customDestinationLanguage: link.user.customDestinationLanguage,
+          autoTranslateEnabled: link.user.autoTranslateEnabled,
+          translateToSystemLanguage: link.user.translateToSystemLanguage,
+          translateToRegionalLanguage: link.user.translateToRegionalLanguage,
+          useCustomDestination: link.user.useCustomDestination,
+          isOnline: link.user.isOnline,
+          avatar: link.user.avatar,
+          lastSeen: link.user.lastSeen,
+          createdAt: link.user.createdAt,
+          lastActiveAt: link.user.lastActiveAt,
+        },
+      })) || [],
+      lastMessage: conversation.messages?.[0] ? {
         id: conversation.messages[0].id,
-        content: conversation.messages[0].content,
+        conversationId: conversation.id,
         senderId: conversation.messages[0].senderId,
+        content: conversation.messages[0].content,
+        originalLanguage: conversation.messages[0].originalLanguage || 'fr',
+        isEdited: conversation.messages[0].isEdited || false,
+        editedAt: conversation.messages[0].editedAt,
         createdAt: conversation.messages[0].createdAt,
+        updatedAt: conversation.messages[0].updatedAt,
+        sender: {
+          id: conversation.messages[0].sender?.id || conversation.messages[0].senderId,
+          username: conversation.messages[0].sender?.username || 'unknown',
+          firstName: conversation.messages[0].sender?.firstName || '',
+          lastName: conversation.messages[0].sender?.lastName || '',
+          displayName: conversation.messages[0].sender?.displayName,
+          email: conversation.messages[0].sender?.email || '',
+          phoneNumber: conversation.messages[0].sender?.phoneNumber,
+          systemLanguage: conversation.messages[0].sender?.systemLanguage || 'fr',
+          regionalLanguage: conversation.messages[0].sender?.regionalLanguage || 'fr',
+          customDestinationLanguage: conversation.messages[0].sender?.customDestinationLanguage,
+          autoTranslateEnabled: conversation.messages[0].sender?.autoTranslateEnabled || true,
+          translateToSystemLanguage: conversation.messages[0].sender?.translateToSystemLanguage || true,
+          translateToRegionalLanguage: conversation.messages[0].sender?.translateToRegionalLanguage || false,
+          useCustomDestination: conversation.messages[0].sender?.useCustomDestination || false,
+          isOnline: conversation.messages[0].sender?.isOnline || false,
+          avatar: conversation.messages[0].sender?.avatar,
+          lastSeen: conversation.messages[0].sender?.lastSeen,
+          createdAt: conversation.messages[0].sender?.createdAt || new Date(),
+          lastActiveAt: conversation.messages[0].sender?.lastActiveAt || new Date(),
+        },
       } : undefined,
-      group: conversation.group ? {
-        id: conversation.group.id,
-        title: conversation.group.title,
-        description: conversation.group.description,
-        image: conversation.group.image,
-        isPublic: conversation.group.isPublic,
-        memberCount: conversation.group.members?.length || 0,
-      } : undefined,
+      unreadCount: 0, // TODO: Calculer le nombre de messages non lus
     };
   }
 

@@ -116,7 +116,7 @@ export function formatConversationTitle(
   members?: Array<User>
 ): string {
   // Si les participants sont des ThreadMember complets, utiliser la fonction dédiée
-  if (participants.length > 0 && 'primaryLanguage' in participants[0]) {
+  if (participants.length > 0 && 'user' in participants[0]) {
     return formatConversationTitleFromMembers(participants, currentUserId);
   }
   
