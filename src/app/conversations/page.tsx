@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { DashboardLayout } from '@/components/dashboard-layout';
+import { NewChatLayout } from '@/components/new-chat-layout';
 import { toast } from 'sonner';
 
-export default function DashboardPage() {
+export default function ConversationsPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -57,5 +57,5 @@ export default function DashboardPage() {
     return null; // Redirection en cours
   }
 
-  return <DashboardLayout currentUser={currentUser} />;
+  return <NewChatLayout currentUser={currentUser} />;
 }

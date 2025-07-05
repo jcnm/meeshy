@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { DashboardLayout } from '@/components/dashboard-layout';
+import { NewChatLayout } from '@/components/new-chat-layout';
 import { toast } from 'sonner';
 
-export default function DashboardPage() {
+export default function ConversationPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const params = useParams();
+  const conversationId = params.id as string;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -57,5 +59,5 @@ export default function DashboardPage() {
     return null; // Redirection en cours
   }
 
-  return <DashboardLayout currentUser={currentUser} />;
+  return <NewChatLayout currentUser={currentUser} initialConversationId={conversationId} />;
 }

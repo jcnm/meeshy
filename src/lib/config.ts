@@ -51,6 +51,19 @@ export const API_ENDPOINTS = {
   },
   USER: {
     SEARCH: '/users/search'
+  },
+  GROUP: {
+    LIST: '/groups',
+    CREATE: '/groups',
+    JOIN: '/groups/:id/join',
+    LEAVE: '/groups/:id/leave',
+    SEARCH: '/groups/search',
+    DETAILS: (id: string) => `/groups/${id}`,
+    MEMBERS: (id: string) => `/groups/${id}/members`,
+    UPDATE: (id: string) => `/groups/${id}`,
+    ADD_MEMBER: (groupId: string, userId: string) => `/groups/${groupId}/members/${userId}`,
+    REMOVE_MEMBER: (groupId: string, userId: string) => `/groups/${groupId}/members/${userId}`,
+    UPDATE_ROLE: (groupId: string, userId: string) => `/groups/${groupId}/members/${userId}/role`
   }
 };
 
