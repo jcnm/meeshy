@@ -151,7 +151,7 @@ export function useMessageTranslation(
       
       const request: TranslationRequest = {
         text: message.content,
-        sourceLanguage: message.originalLanguage || 'fr',
+        sourceLanguage: message.originalLanguage || 'auto', // Utiliser détection automatique si non définie
         targetLanguage,
         messageId,
         forceRetranslate

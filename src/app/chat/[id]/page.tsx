@@ -215,8 +215,8 @@ export default function ChatPage() {
   };
 
   // Handlers for MessageBubble actions
-  const handleTranslate = async (messageId: string, targetLanguage: string) => {
-    await translate(messageId, targetLanguage, false);
+  const handleTranslate = async (messageId: string, targetLanguage: string, forceRetranslate = false) => {
+    await translate(messageId, targetLanguage, forceRetranslate);
   };
 
   const handleEdit = async (messageId: string, newContent: string) => {

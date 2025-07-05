@@ -19,7 +19,7 @@ interface MessageBubbleProps {
   message: TranslatedMessage;
   currentUserId: string;
   currentUserLanguage: string; // Langue par défaut de l'utilisateur actuel
-  onTranslate: (messageId: string, targetLanguage: string) => Promise<void>;
+  onTranslate: (messageId: string, targetLanguage: string, forceRetranslate?: boolean) => Promise<void>;
   onEdit: (messageId: string, newContent: string) => Promise<void>;
   onToggleOriginal: (messageId: string) => void;
 }
@@ -47,10 +47,15 @@ export function MessageBubble({
     ? message.translations!.map(t => t.language) 
     : [];
   
-  // Available languages for new translations
+  // Available languages for new translations - TOUJOURS montrer toutes les langues
   const availableLanguages = SUPPORTED_LANGUAGES.filter(
-    lang => !translatedLanguages.includes(lang.code) && lang.code !== message.originalLanguage
+    lang => lang.code !== message.originalLanguage
   );
+
+  // Langues déjà traduites pour les marquer visuellement
+  const getLanguageStatus = (langCode: string) => {
+    return translatedLanguages.includes(langCode) ? 'translated' : 'available';
+  };
 
   // Show the eye icon only for received messages with translations or translation capability
   const canToggleView = isReceivedMessage && (hasTranslations || message.translatedContent);
@@ -87,8 +92,8 @@ export function MessageBubble({
     
     setIsTranslating(true);
     try {
-      // Retranslate vers la langue par défaut de l'utilisateur
-      await onTranslate(message.id, currentUserLanguage);
+      // Force retraduction vers la langue par défaut avec le modèle le plus puissant
+      await onTranslate(message.id, currentUserLanguage, true); // true = forceRetranslate
     } catch (error) {
       console.error('Erreur de retraduction:', error);
     } finally {
@@ -258,21 +263,31 @@ export function MessageBubble({
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Traduire vers :</p>
                     <div className="grid gap-1">
-                      {availableLanguages.map((lang) => (
-                        <Button
-                          key={lang.code}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full justify-start"
-                          onClick={() => handleTranslate(lang.code)}
-                          disabled={isTranslating}
-                        >
-                          <span className="flex items-center gap-2">
-                            <span>{lang.flag}</span>
-                            <span>{lang.name}</span>
-                          </span>
-                        </Button>
-                      ))}
+                      {availableLanguages.map((lang) => {
+                        const isAlreadyTranslated = getLanguageStatus(lang.code) === 'translated';
+                        return (
+                          <Button
+                            key={lang.code}
+                            variant="ghost"
+                            size="sm"
+                            className={`w-full justify-between ${
+                              isAlreadyTranslated ? 'bg-green-50 border border-green-200' : ''
+                            }`}
+                            onClick={() => handleTranslate(lang.code)}
+                            disabled={isTranslating}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span>{lang.flag}</span>
+                              <span>{lang.name}</span>
+                            </span>
+                            {isAlreadyTranslated && (
+                              <span className="text-xs text-green-600 font-medium">
+                                ✓ Traduit
+                              </span>
+                            )}
+                          </Button>
+                        );
+                      })}
                     </div>
                   </div>
                 </PopoverContent>

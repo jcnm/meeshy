@@ -297,7 +297,15 @@ export class TranslationService {
       throw new Error('Texte à traduire vide');
     }
 
-    if (request.sourceLanguage === request.targetLanguage) {
+    // Détection automatique de la langue source
+    const detectedSourceLanguage = await this.detectLanguage(request.text);
+    const actualSourceLanguage = request.sourceLanguage === 'auto' 
+      ? detectedSourceLanguage 
+      : request.sourceLanguage;
+
+    console.log(`🔍 Langue source: ${request.sourceLanguage} → ${actualSourceLanguage}`);
+
+    if (actualSourceLanguage === request.targetLanguage) {
       // Pas besoin de traduire si c'est la même langue
       return {
         translatedText: request.text,
@@ -311,7 +319,7 @@ export class TranslationService {
       if (!request.forceRetranslate) {
         const cached = await this.getCachedTranslation(
           request.messageId, 
-          request.sourceLanguage, 
+          actualSourceLanguage, 
           request.targetLanguage
         );
 
@@ -326,12 +334,18 @@ export class TranslationService {
       }
 
       // Sélectionner le modèle optimal
-      const modelUsed = this.selectOptimalModel(request.text);
+      const modelUsed = request.forceRetranslate 
+        ? this.selectMostPowerfulModel() 
+        : this.selectOptimalModel(request.text);
+
+      if (request.forceRetranslate) {
+        console.log(`🔄 Retraduction forcée avec le modèle le plus puissant: ${modelUsed}`);
+      }
 
       // Effectuer la traduction via API
       const translatedText = await this.performTranslation(
         request.text, 
-        request.sourceLanguage, 
+        actualSourceLanguage, 
         request.targetLanguage, 
         modelUsed
       );
@@ -340,7 +354,7 @@ export class TranslationService {
       const translation: CachedTranslation = {
         messageId: request.messageId,
         originalText: request.text,
-        sourceLanguage: request.sourceLanguage,
+        sourceLanguage: actualSourceLanguage, // Utiliser la langue détectée
         targetLanguage: request.targetLanguage,
         translatedText,
         modelUsed,
@@ -354,7 +368,7 @@ export class TranslationService {
         // Ne pas faire échouer la traduction pour une erreur de sauvegarde
       });
 
-      console.log(`✅ Traduction effectuée: ${request.sourceLanguage} → ${request.targetLanguage} (${modelUsed})`);
+      console.log(`✅ Traduction effectuée: ${actualSourceLanguage} → ${request.targetLanguage} (${modelUsed})`);
 
       return {
         translatedText,
@@ -367,7 +381,7 @@ export class TranslationService {
       
       // Enrichir l'erreur avec des informations de contexte
       const enhancedError = new Error(
-        `Erreur traduction ${request.sourceLanguage}→${request.targetLanguage}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+        `Erreur traduction ${actualSourceLanguage}→${request.targetLanguage}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
       );
       
       throw enhancedError;
@@ -578,6 +592,114 @@ export class TranslationService {
         resolve({});
       };
     });
+  }
+
+  /**
+   * Détecte automatiquement la langue d'un texte
+   */
+  private async detectLanguage(text: string): Promise<string> {
+    if (!text || text.trim().length === 0) {
+      return 'fr'; // Fallback par défaut
+    }
+
+    try {
+      // Patterns de détection basique pour les langues courantes
+      const patterns = {
+        'en': /\b(the|and|is|are|was|were|have|has|will|would|could|should)\b/gi,
+        'fr': /\b(le|la|les|de|du|des|est|sont|était|étaient|avoir|être|avec|pour)\b/gi,
+        'es': /\b(el|la|los|las|de|del|es|son|era|eran|tener|ser|con|para)\b/gi,
+        'it': /\b(il|la|lo|gli|le|di|del|è|sono|era|erano|avere|essere|con|per)\b/gi,
+        'de': /\b(der|die|das|den|ein|eine|ist|sind|war|waren|haben|sein|mit|für)\b/gi,
+        'pt': /\b(o|a|os|as|de|do|da|é|são|era|eram|ter|ser|com|para)\b/gi
+      };
+
+      let maxMatches = 0;
+      let detectedLang = 'fr';
+
+      for (const [lang, pattern] of Object.entries(patterns)) {
+        const matches = text.match(pattern);
+        const matchCount = matches ? matches.length : 0;
+        
+        if (matchCount > maxMatches) {
+          maxMatches = matchCount;
+          detectedLang = lang;
+        }
+      }
+
+      // Si pas assez de correspondances, utiliser une détection par caractères
+      if (maxMatches < 2) {
+        if (/[àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/i.test(text)) {
+          return 'fr';
+        } else if (/[ñáéíóúü]/i.test(text)) {
+          return 'es';
+        } else if (/[äöüß]/i.test(text)) {
+          return 'de';
+        } else if (/[àèìòù]/i.test(text)) {
+          return 'it';
+        } else if (/[ãõçá]/i.test(text)) {
+          return 'pt';
+        }
+      }
+
+      console.log(`🔍 Langue détectée: ${detectedLang} (${maxMatches} correspondances)`);
+      return detectedLang;
+
+    } catch (error) {
+      console.warn('Erreur détection langue:', error);
+      return 'fr'; // Fallback
+    }
+  }
+
+  /**
+   * Sélectionne le modèle le plus puissant disponible pour la retraduction
+   */
+  private selectMostPowerfulModel(): TranslationModelType {
+    // Vérifier quels modèles sont téléchargés
+    const loadedModels = typeof window !== 'undefined' 
+      ? JSON.parse(localStorage.getItem('meeshy-loaded-models') || '{}')
+      : {};
+
+    // Ordre de préférence du plus puissant au plus léger
+    const modelPriority: TranslationModelType[] = [
+      'NLLB_54B',
+      'NLLB_3_3B', 
+      'NLLB_1_3B',
+      'NLLB_DISTILLED_1_3B',
+      'NLLB_DISTILLED_600M',
+      'NLLB_200M',
+      'MT5_XL',
+      'MT5_LARGE',
+      'MT5_BASE',
+      'MT5_SMALL'
+    ];
+
+    // Mapping des modèles vers leurs clés de stockage
+    const modelKeyMap: Record<TranslationModelType, string> = {
+      'NLLB_54B': 'nllb-54b',
+      'NLLB_3_3B': 'nllb-3.3b',
+      'NLLB_1_3B': 'nllb-1.3b',
+      'NLLB_DISTILLED_1_3B': 'nllb-distilled-1.3b',
+      'NLLB_DISTILLED_600M': 'nllb-distilled-600m',
+      'NLLB_200M': 'nllb-200m',
+      'MT5_XXL': 'mt5-xxl',
+      'MT5_XL': 'mt5-xl',
+      'MT5_LARGE': 'mt5-large',
+      'MT5_BASE': 'mt5-base',
+      'MT5_SMALL': 'mt5-small'
+    };
+
+    // Trouver le premier modèle disponible dans l'ordre de priorité
+    for (const model of modelPriority) {
+      const modelKey = modelKeyMap[model];
+      if (loadedModels[modelKey]) {
+        console.log(`🚀 Modèle le plus puissant sélectionné: ${model} (clé: ${modelKey})`);
+        return model;
+      }
+    }
+
+    // Fallback si aucun modèle n'est téléchargé
+    console.warn('⚠️ Aucun modèle téléchargé, utilisation du modèle par défaut');
+    return 'MT5_SMALL';
   }
 }
 
