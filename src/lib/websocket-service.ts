@@ -138,6 +138,27 @@ class WebSocketService {
     this.socket.on('userStatusChanged', callback);
   }
 
+  // Méthodes pour les indicateurs de frappe
+  onUserTyping(callback: (data: { userId: string; chatId: string; isTyping: boolean }) => void): void {
+    if (!this.socket) return;
+    this.socket.on('user-typing', callback);
+  }
+
+  offUserTyping(callback?: (data: { userId: string; chatId: string; isTyping: boolean }) => void): void {
+    if (!this.socket) return;
+    this.socket.off('user-typing', callback);
+  }
+
+  emitUserTyping(chatId: string): void {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('user-typing', { chatId });
+  }
+
+  emitUserStoppedTyping(chatId: string): void {
+    if (!this.socket || !this.socket.connected) return;
+    this.socket.emit('user-stopped-typing', { chatId });
+  }
+
   // Getters
   get isConnected(): boolean {
     return this.socket?.connected ?? false;

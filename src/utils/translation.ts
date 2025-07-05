@@ -232,3 +232,7 @@ export async function translateMessage(
     return text; // Fallback: retourner le texte original
   }
 }
+
+// Aliases pour la compatibilité avec le nouveau hook
+export const getCachedTranslation = getTranslationFromCache;
+export const setCachedTranslation = saveTranslationToCache;

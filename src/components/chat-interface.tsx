@@ -5,8 +5,31 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';            {/* Messages */}
+            <ScrollArea className="flex-1 p-4">
+              {filteredMessages.map(message => (
+                <MessageBubble key={message.id} message={message} />
+              ))}
+              <div ref={messagesEndRef} />
+            </ScrollArea>
+
+            {/* Indicateurs de frappe */}
+            <TypingIndicator 
+              chatId={`${currentUser.id}-${selectedUser.id}`}
+              currentUserId={currentUser.id}
+              users={onlineUsers}
+              className="px-4 py-2 border-t border-border"
+            />
+
+            {/* Message Input */}
+            <div className="p-4 border-t border-border bg-card">
+              <div className="flex gap-2">
+                <Input
+                  value={messageContent}
+                  onChange={(e) => handleInputChange(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  onBlur={handleInputBlur}
+                  placeholder="Tapez votre message..."TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Send, 
@@ -19,6 +42,10 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Message, User, SUPPORTED_LANGUAGES } from '@/types';
+import { UserSettingsModal } from './user-settings-modal';
+import { TypingIndicator } from './typing-indicator';
+import { useTypingIndicator } from '@/hooks/use-typing-indicator';
+import { ModelsStatus } from './models-status';
 
 interface TranslatedMessage extends Message {
   translatedContent?: string;
@@ -37,7 +64,6 @@ interface ChatInterfaceProps {
   getMessageContent: (messageId: string) => string;
   getDisplayedMessage: (messageId: string) => TranslatedMessage | undefined;
   isTranslationAvailable: boolean;
-  onOpenSettings: () => void;
   onLogout: () => void;
 }
 
@@ -51,18 +77,35 @@ export function ChatInterface({
   getMessageContent,
   getDisplayedMessage,
   isTranslationAvailable,
-  onOpenSettings,
   onLogout,
 }: ChatInterfaceProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messageContent, setMessageContent] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { startTyping, stopTyping } = useTypingIndicator();
 
   // Auto-scroll vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Gestion des indicateurs de frappe
+  const handleInputChange = (value: string) => {
+    setMessageContent(value);
+    
+    if (selectedUser && value.trim()) {
+      startTyping(`${currentUser.id}-${selectedUser.id}`);
+    } else if (selectedUser) {
+      stopTyping(`${currentUser.id}-${selectedUser.id}`);
+    }
+  };
+
+  const handleInputBlur = () => {
+    if (selectedUser) {
+      stopTyping(`${currentUser.id}-${selectedUser.id}`);
+    }
+  };
 
   const getLanguageFlag = (languageCode: string): string => {
     const language = SUPPORTED_LANGUAGES.find(lang => lang.code === languageCode);
@@ -203,9 +246,18 @@ export function ChatInterface({
             </div>
             
             <div className="flex gap-1">
-              <Button size="sm" variant="ghost" onClick={onOpenSettings}>
-                <Settings className="h-4 w-4" />
-              </Button>
+              <UserSettingsModal 
+                user={currentUser} 
+                onUserUpdate={(updatedUser) => {
+                  // Callback pour mettre à jour les paramètres utilisateur
+                  console.log('Paramètres mis à jour:', updatedUser);
+                  // TODO: Implémenter la mise à jour via WebSocket
+                }}
+              >
+                <Button size="sm" variant="ghost">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </UserSettingsModal>
               <Button size="sm" variant="ghost" onClick={onLogout}>
                 Déconnexion
               </Button>
@@ -269,28 +321,8 @@ export function ChatInterface({
             </ScrollArea>
           </TabsContent>
           
-          <TabsContent value="translation" className="mt-0">
-            <div className="p-4 space-y-4">
-              <div className="text-center">
-                <Badge 
-                  variant={isTranslationAvailable ? "default" : "secondary"}
-                  className={isTranslationAvailable ? "bg-green-500" : ""}
-                >
-                  {isTranslationAvailable ? "Modèles chargés" : "Chargement..."}
-                </Badge>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">MT5 (messages courts)</span>
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">NLLB (messages complexes)</span>
-                  <CheckCircle2 className="h-4 w-4 text-green-500" />
-                </div>
-              </div>
-            </div>
+          <TabsContent value="translation" className="mt-0 p-4">
+            <ModelsStatus />
           </TabsContent>
         </Tabs>
       </div>
@@ -335,8 +367,9 @@ export function ChatInterface({
               <div className="flex gap-2">
                 <Input
                   value={messageContent}
-                  onChange={(e) => setMessageContent(e.target.value)}
+                  onChange={(e) => handleInputChange(e.target.value)}
                   onKeyPress={handleKeyPress}
+                  onBlur={handleInputBlur}
                   placeholder="Tapez votre message..."
                   disabled={isSending}
                   className="flex-1"

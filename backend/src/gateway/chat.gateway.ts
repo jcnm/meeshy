@@ -27,6 +27,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(ChatGateway.name);
   private userSockets: Map<string, string> = new Map(); // userId -> socketId
   private socketUsers: Map<string, string> = new Map(); // socketId -> userId
+  private typingUsers = new Map<string, Set<string>>(); // userId -> Set<chatId>
 
   constructor(
     private readonly userService: UserService,
@@ -179,5 +180,56 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.error('Erreur lors de la mise à jour des paramètres:', error);
       return { success: false, error: 'Erreur de mise à jour' };
     }
+  }
+
+  @SubscribeMessage('user-typing')
+  async handleUserTyping(
+    @MessageBody() data: { chatId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = this.socketUsers.get(client.id);
+    if (!userId) return;
+
+    // Ajouter l'utilisateur à la liste des utilisateurs en train de taper
+    if (!this.typingUsers.has(userId)) {
+      this.typingUsers.set(userId, new Set());
+    }
+    this.typingUsers.get(userId)!.add(data.chatId);
+
+    // Informer les autres utilisateurs
+    client.broadcast.emit('user-typing', {
+      userId,
+      chatId: data.chatId,
+      isTyping: true
+    });
+
+    // Programmer l'arrêt automatique après 3 secondes
+    setTimeout(() => {
+      this.handleUserStoppedTyping({ chatId: data.chatId }, client);
+    }, 3000);
+  }
+
+  @SubscribeMessage('user-stopped-typing')
+  async handleUserStoppedTyping(
+    @MessageBody() data: { chatId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const userId = this.socketUsers.get(client.id);
+    if (!userId) return;
+
+    // Retirer l'utilisateur de la liste des utilisateurs en train de taper
+    if (this.typingUsers.has(userId)) {
+      this.typingUsers.get(userId)!.delete(data.chatId);
+      if (this.typingUsers.get(userId)!.size === 0) {
+        this.typingUsers.delete(userId);
+      }
+    }
+
+    // Informer les autres utilisateurs
+    client.broadcast.emit('user-typing', {
+      userId,
+      chatId: data.chatId,
+      isTyping: false
+    });
   }
 }
