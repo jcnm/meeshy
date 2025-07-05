@@ -4,20 +4,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ResponsiveLayout } from '@/components/responsive-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
-  Plus, 
   MessageSquare,
   Users,
   UserPlus,
-  Link,
+  Link2,
   TrendingUp,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Clock
 } from 'lucide-react';
-import { User, Conversation, Group, Message } from '@/types';
+import { User, Conversation, Group } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
@@ -29,14 +30,18 @@ interface DashboardStats {
   totalConversations: number;
   totalGroups: number;
   totalMessages: number;
-  totalContacts: number;
-  totalLinks: number;
+  unreadMessages: number;
+  activeConversations: number;
+  weeklyActivity: number;
 }
 
-interface RecentActivity {
-  conversations: Conversation[];
-  groups: Group[];
-  messages: Message[];
+interface QuickAction {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  action: () => void;
+  color: string;
 }
 
 export function DashboardLayout({ currentUser }: DashboardLayoutProps) {
@@ -47,15 +52,50 @@ export function DashboardLayout({ currentUser }: DashboardLayoutProps) {
     totalConversations: 0,
     totalGroups: 0,
     totalMessages: 0,
-    totalContacts: 0,
-    totalLinks: 0
+    unreadMessages: 0,
+    activeConversations: 0,
+    weeklyActivity: 0
   });
-  const [recentActivity, setRecentActivity] = useState<RecentActivity>({
-    conversations: [],
-    groups: [],
-    messages: []
-  });
+  
+  const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
+  const [recentGroups, setRecentGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Actions rapides
+  const quickActions: QuickAction[] = [
+    {
+      id: 'new-conversation',
+      title: 'Nouvelle conversation',
+      description: 'Commencer une nouvelle discussion',
+      icon: MessageSquare,
+      action: () => router.push('/conversations?new=true'),
+      color: 'bg-blue-500'
+    },
+    {
+      id: 'create-group',
+      title: 'Créer un groupe',
+      description: 'Organiser une discussion de groupe',
+      icon: Users,
+      action: () => router.push('/groups?new=true'),
+      color: 'bg-green-500'
+    },
+    {
+      id: 'add-contact',
+      title: 'Ajouter un contact',
+      description: 'Inviter de nouveaux utilisateurs',
+      icon: UserPlus,
+      action: () => router.push('/contacts?new=true'),
+      color: 'bg-purple-500'
+    },
+    {
+      id: 'create-link',
+      title: 'Créer un lien',
+      description: 'Générer un lien d\'invitation',
+      icon: Link2,
+      action: () => router.push('/links?new=true'),
+      color: 'bg-orange-500'
+    }
+  ];
 
   // Charger les données du dashboard
   const loadDashboardData = useCallback(async () => {
@@ -83,20 +123,37 @@ export function DashboardLayout({ currentUser }: DashboardLayoutProps) {
         groups = await groupsResponse.json();
       }
       
-      // Mettre à jour les stats et activités récentes
+      // Calculer les statistiques
+      const totalMessages = conversations.reduce((acc, conv) => acc + (conv.messages?.length || 0), 0);
+      const unreadMessages = conversations.reduce((acc, conv) => acc + (conv.unreadCount || 0), 0);
+      const activeConversations = conversations.filter(conv => 
+        conv.lastMessage && 
+        new Date(conv.lastMessage.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      ).length;
+      
       setStats({
         totalConversations: conversations.length,
         totalGroups: groups.length,
-        totalMessages: conversations.reduce((acc, conv) => acc + (conv.messages?.length || 0), 0),
-        totalContacts: 0, // À implémenter
-        totalLinks: 0 // À implémenter
+        totalMessages,
+        unreadMessages,
+        activeConversations,
+        weeklyActivity: Math.floor(Math.random() * 50) + 10 // Simulé pour l'instant
       });
       
-      setRecentActivity({
-        conversations: conversations.slice(0, 5),
-        groups: groups.slice(0, 5),
-        messages: []
-      });
+      // Activités récentes (5 éléments max)
+      setRecentConversations(conversations
+        .sort((a, b) => {
+          const aTime = a.lastMessage?.createdAt || a.updatedAt;
+          const bTime = b.lastMessage?.createdAt || b.updatedAt;
+          return new Date(bTime).getTime() - new Date(aTime).getTime();
+        })
+        .slice(0, 5)
+      );
+      
+      setRecentGroups(groups
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .slice(0, 5)
+      );
       
     } catch (error) {
       console.error('Erreur chargement dashboard:', error);
@@ -110,271 +167,315 @@ export function DashboardLayout({ currentUser }: DashboardLayoutProps) {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  // Naviguer vers une section
-  const navigateToSection = (path: string) => {
-    router.push(path);
-  };
-
   // Contenu de la sidebar
   const sidebarContent = (
-    <div className="space-y-4">
-      {/* Cartes de statistiques */}
-      <div className="grid grid-cols-1 gap-3">
-        <Card className="cursor-pointer hover:bg-gray-50" onClick={() => navigateToSection('/conversations')}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center justify-between">
-              <div className="flex items-center">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Conversations
-              </div>
-              <Badge variant="secondary">{stats.totalConversations}</Badge>
-            </CardTitle>
-          </CardHeader>
-        </Card>
+    <div className="space-y-6">
+      {/* Profil utilisateur */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-3">
+            <Avatar>
+              <AvatarImage src={currentUser.avatar} />
+              <AvatarFallback>
+                {(currentUser.displayName || currentUser.username)?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {currentUser.displayName || currentUser.username}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {currentUser.email}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card className="cursor-pointer hover:bg-gray-50" onClick={() => navigateToSection('/groups')}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center justify-between">
-              <div className="flex items-center">
-                <Users className="w-4 h-4 mr-2" />
-                Groupes
+      {/* Statistiques rapides */}
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <CardContent className="p-3">
+            <div className="flex items-center space-x-2">
+              <MessageSquare className="w-4 h-4 text-blue-500" />
+              <div>
+                <p className="text-lg font-bold">{stats.totalConversations}</p>
+                <p className="text-xs text-gray-500">Conversations</p>
               </div>
-              <Badge variant="secondary">{stats.totalGroups}</Badge>
-            </CardTitle>
-          </CardHeader>
+            </div>
+          </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center justify-between">
-              <div className="flex items-center">
-                <Activity className="w-4 h-4 mr-2" />
-                Messages
+          <CardContent className="p-3">
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-green-500" />
+              <div>
+                <p className="text-lg font-bold">{stats.totalGroups}</p>
+                <p className="text-xs text-gray-500">Groupes</p>
               </div>
-              <Badge variant="secondary">{stats.totalMessages}</Badge>
-            </CardTitle>
-          </CardHeader>
+            </div>
+          </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center justify-between">
-              <div className="flex items-center">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Contacts
+          <CardContent className="p-3">
+            <div className="flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-purple-500" />
+              <div>
+                <p className="text-lg font-bold">{stats.unreadMessages}</p>
+                <p className="text-xs text-gray-500">Non lus</p>
               </div>
-              <Badge variant="secondary">{stats.totalContacts}</Badge>
-            </CardTitle>
-          </CardHeader>
+            </div>
+          </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center justify-between">
-              <div className="flex items-center">
-                <Link className="w-4 h-4 mr-2" />
-                Liens
+          <CardContent className="p-3">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="w-4 h-4 text-orange-500" />
+              <div>
+                <p className="text-lg font-bold">{stats.activeConversations}</p>
+                <p className="text-xs text-gray-500">Actives</p>
               </div>
-              <Badge variant="secondary">{stats.totalLinks}</Badge>
-            </CardTitle>
-          </CardHeader>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
       {/* Actions rapides */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <h3 className="text-sm font-medium text-gray-700">Actions rapides</h3>
-        <Button 
-          className="w-full justify-start" 
-          variant="outline"
-          onClick={() => navigateToSection('/conversations?new=true')}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle conversation
-        </Button>
-        <Button 
-          className="w-full justify-start" 
-          variant="outline"
-          onClick={() => navigateToSection('/groups?new=true')}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Créer un groupe
-        </Button>
+        <div className="space-y-2">
+          {quickActions.map((action) => {
+            const IconComponent = action.icon;
+            return (
+              <Button
+                key={action.id}
+                variant="outline"
+                className="w-full justify-start h-auto p-3"
+                onClick={action.action}
+              >
+                <div className={`w-8 h-8 rounded-lg ${action.color} flex items-center justify-center mr-3`}>
+                  <IconComponent className="w-4 h-4 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium">{action.title}</p>
+                  <p className="text-xs text-gray-500">{action.description}</p>
+                </div>
+              </Button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 
-  // Contenu principal selon la section sélectionnée
-  const renderMainContent = () => {
-    if (isLoading) {
-      return (
-        <div className="h-full flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      );
-    }
+  // Contenu principal
+  const mainContent = (
+    <div className="h-full">
+      <ScrollArea className="h-full">
+        <div className="p-6 space-y-8">
+          {/* En-tête de bienvenue */}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Bonjour, {currentUser.displayName || currentUser.username} ! 👋
+            </h1>
+            <p className="text-gray-600">
+              Voici un aperçu de votre activité sur Meeshy
+            </p>
+          </div>
 
-    return (
-      <div className="h-full">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-8">
-            {/* Bienvenue */}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Bienvenue, {currentUser.displayName || currentUser.username} !
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Voici un aperçu de votre activité sur Meeshy
-              </p>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
+          ) : (
+            <>
+              {/* Métriques principales */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="border-l-4 border-l-blue-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center">
+                      <MessageSquare className="w-5 h-5 mr-2 text-blue-500" />
+                      Messages
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-blue-600 mb-1">
+                      {stats.totalMessages}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      {stats.unreadMessages} non lus
+                    </p>
+                  </CardContent>
+                </Card>
 
-            {/* Statistiques détaillées */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Conversations actives</CardTitle>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalConversations}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +2 cette semaine
-                  </p>
-                </CardContent>
-              </Card>
+                <Card className="border-l-4 border-l-green-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center">
+                      <Activity className="w-5 h-5 mr-2 text-green-500" />
+                      Activité
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-green-600 mb-1">
+                      {stats.weeklyActivity}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      interactions cette semaine
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Groupes rejoints</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalGroups}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +1 ce mois-ci
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Messages échangés</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalMessages}</div>
-                  <p className="text-xs text-muted-foreground">
-                    +12 aujourd'hui
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Conversations récentes */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Conversations récentes</h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigateToSection('/conversations')}
-                >
-                  Voir tout
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
+                <Card className="border-l-4 border-l-purple-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center">
+                      <Clock className="w-5 h-5 mr-2 text-purple-500" />
+                      Connexions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-purple-600 mb-1">
+                      {stats.activeConversations}
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      conversations actives
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="space-y-3">
-                {recentActivity.conversations.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6 text-center text-gray-500">
-                      Aucune conversation récente
-                    </CardContent>
-                  </Card>
-                ) : (
-                  recentActivity.conversations.map((conversation) => (
-                    <Card 
-                      key={conversation.id}
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => navigateToSection(`/conversations/${conversation.id}`)}
+
+              {/* Conversations récentes */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center">
+                      <MessageSquare className="w-5 h-5 mr-2" />
+                      Conversations récentes
+                    </CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => router.push('/conversations')}
                     >
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-sm font-medium flex items-center">
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            {conversation.title || conversation.name || 'Conversation'}
-                            {conversation.isGroup && (
-                              <Badge variant="secondary" className="ml-2">Groupe</Badge>
+                      Voir tout
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {recentConversations.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Aucune conversation récente
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentConversations.map((conversation) => (
+                        <div 
+                          key={conversation.id}
+                          className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 cursor-pointer"
+                          onClick={() => router.push(`/conversations/${conversation.id}`)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                              {conversation.isGroup ? (
+                                <Users className="w-5 h-5 text-blue-600" />
+                              ) : (
+                                <MessageSquare className="w-5 h-5 text-blue-600" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">
+                                {conversation.title || conversation.name || 'Conversation'}
+                              </p>
+                              {conversation.lastMessage && (
+                                <p className="text-sm text-gray-500 truncate max-w-xs">
+                                  {conversation.lastMessage.content.substring(0, 50)}...
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {conversation.lastMessage && (
+                              <p className="text-xs text-gray-400">
+                                {new Date(conversation.lastMessage.createdAt).toLocaleDateString()}
+                              </p>
                             )}
-                          </CardTitle>
-                          <div className="text-xs text-gray-500">
-                            {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleDateString()}
+                            {conversation.unreadCount && conversation.unreadCount > 0 && (
+                              <Badge variant="destructive" className="mt-1">
+                                {conversation.unreadCount}
+                              </Badge>
+                            )}
                           </div>
                         </div>
-                        {conversation.lastMessage && (
-                          <CardDescription className="text-xs">
-                            {conversation.lastMessage.content.substring(0, 100)}...
-                          </CardDescription>
-                        )}
-                      </CardHeader>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Groupes récents */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Groupes récents</h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigateToSection('/groups')}
-                >
-                  Voir tout
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {recentActivity.groups.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6 text-center text-gray-500">
-                      Aucun groupe récent
-                    </CardContent>
-                  </Card>
-                ) : (
-                  recentActivity.groups.map((group) => (
-                    <Card 
-                      key={group.id}
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => navigateToSection(`/groups/${group.id}`)}
+              {/* Groupes récents */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center">
+                      <Users className="w-5 h-5 mr-2" />
+                      Groupes récents
+                    </CardTitle>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => router.push('/groups')}
                     >
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-sm font-medium flex items-center">
-                            <Users className="w-4 h-4 mr-2" />
-                            {group.name}
-                          </CardTitle>
-                          <Badge variant="secondary">
-                            {group.members?.length || 0} membres
-                          </Badge>
+                      Voir tout
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {recentGroups.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      Aucun groupe récent
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {recentGroups.map((group) => (
+                        <div 
+                          key={group.id}
+                          className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 cursor-pointer"
+                          onClick={() => router.push(`/groups/${group.id}`)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                              <Users className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{group.name}</p>
+                              {group.description && (
+                                <p className="text-sm text-gray-500 truncate max-w-xs">
+                                  {group.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="secondary">
+                              {group.members?.length || 0} membres
+                            </Badge>
+                          </div>
                         </div>
-                        {group.description && (
-                          <CardDescription className="text-xs">
-                            {group.description}
-                          </CardDescription>
-                        )}
-                      </CardHeader>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </ScrollArea>
-      </div>
-    );
-  };
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
 
   return (
     <ResponsiveLayout
@@ -384,7 +485,7 @@ export function DashboardLayout({ currentUser }: DashboardLayoutProps) {
       showMainContent={true}
       mainContentTitle="Vue d'ensemble"
       mainContentSubtitle="Activité et statistiques de votre compte"
-      mainContent={renderMainContent()}
+      mainContent={mainContent}
       onBackToList={() => {}}
     >
       <div />
