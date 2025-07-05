@@ -79,8 +79,8 @@
 ./start.sh
 
 # Ou séparément
-npm run dev              # Frontend (port 3000/3001)
-cd backend && npm run start:dev  # Backend (port 3002)
+npm run dev              # Frontend (port 3100/3200/3300)
+cd backend && npm run start:dev  # Backend (port 3000/3500)
 ```
 
 ### Test des Fonctionnalités

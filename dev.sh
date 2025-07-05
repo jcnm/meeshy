@@ -108,7 +108,7 @@ dev() {
     
     sleep 3
     
-    echo -e "${YELLOW}🔄 Démarrage du frontend (port3100)...${NC}"
+    echo -e "${YELLOW}🔄 Démarrage du frontend (port 3100)...${NC}"
     npm run dev &
     FRONTEND_PID=$!
     
@@ -123,8 +123,8 @@ dev() {
     trap cleanup INT
     
     echo -e "${GREEN}✅ Serveurs démarrés !${NC}"
-    echo -e "${BLUE}📱 Frontend: http://localhost:3000${NC}"
-    echo -e "${BLUE}🔌 Backend:  http://localhost:3100${NC}"
+    echo -e "${BLUE}📱 Frontend: http://localhost:3100${NC}"
+    echo -e "${BLUE}🔌 Backend:  http://localhost:3000${NC}"
     echo ""
     echo -e "${YELLOW}Appuyez sur Ctrl+C pour arrêter${NC}"
     
