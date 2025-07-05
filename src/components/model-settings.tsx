@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MODEL_FAMILIES, ModelVariant } from '@/lib/model-config';
 import { Brain, Download, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { ModelLegend } from '@/components/model-legend';
 
 interface ModelConfig {
   mt5Variant: string;
@@ -107,6 +108,7 @@ export function ModelSettings() {
       
       toast.success(`Modèle ${modelKey} téléchargé avec succès`);
     } catch (error) {
+      console.error('Erreur téléchargement modèle:', error);
       toast.error(`Erreur lors du téléchargement du modèle ${modelKey}`);
     } finally {
       setDownloadProgress(prev => {
@@ -215,9 +217,10 @@ export function ModelSettings() {
       </Card>
 
       <Tabs defaultValue="mt5" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 h-auto">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto">
           <TabsTrigger value="mt5" className="text-xs sm:text-sm">MT5 (Textes simples)</TabsTrigger>
           <TabsTrigger value="nllb" className="text-xs sm:text-sm">NLLB (Textes complexes)</TabsTrigger>
+          <TabsTrigger value="legend" className="text-xs sm:text-sm">Référence des Modèles</TabsTrigger>
         </TabsList>
 
         <TabsContent value="mt5" className="space-y-4">
@@ -406,6 +409,10 @@ export function ModelSettings() {
               })}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="legend" className="space-y-4">
+          <ModelLegend />
         </TabsContent>
       </Tabs>
     </div>
