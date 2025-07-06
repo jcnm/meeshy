@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,10 +13,8 @@ import {
   Users, 
   Plus, 
   Send,
-  MoreVertical,
-  Link2,
   ArrowLeft,
-  Search
+  Link2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Conversation, Message, TranslatedMessage } from '@/types';
@@ -44,6 +41,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [translatedMessages, setTranslatedMessages] = useState<TranslatedMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
   
   // États UI responsive
@@ -105,59 +103,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     console.log('Toggle original for message:', messageId);
   };
 
-  // Charger les messages d'une conversation
-  const loadMessages = useCallback(async (conversationId: string) => {
-    if (!user) return;
-
-    try {
-      console.log(`📬 Chargement des messages pour la conversation ${conversationId}`);
-      const messagesData = await conversationsService.getMessages(conversationId);
-      const rawMessages = messagesData.messages;
-      
-      setMessages(rawMessages);
-
-      if (user.autoTranslateEnabled && rawMessages.length > 0) {
-        try {
-          const translated = await translateMessages(rawMessages, user.systemLanguage);
-          setTranslatedMessages(translated);
-        } catch (error) {
-          console.error('❌ Erreur lors de la traduction des messages:', error);
-          const convertedMessages = rawMessages.map(msg => convertToTranslatedMessage(msg));
-          setTranslatedMessages(convertedMessages);
-        }
-      } else {
-        const convertedMessages = rawMessages.map(msg => convertToTranslatedMessage(msg));
-        setTranslatedMessages(convertedMessages);
-      }
-    } catch (error) {
-      console.error('❌ Erreur lors du chargement des messages:', error);
-      toast.error('Erreur lors du chargement des messages');
-      
-      // Messages mock pour le développement
-      const mockMessages = createMockMessages(conversationId);
-      setMessages(mockMessages);
-      const convertedMockMessages = mockMessages.map(msg => convertToTranslatedMessage(msg));
-      setTranslatedMessages(convertedMockMessages);
-    }
-  }, [user, translateMessages]);
-
-  // Fonction utilitaire pour convertir Message en TranslatedMessage
-  const convertToTranslatedMessage = (msg: Message): TranslatedMessage => ({
-    ...msg,
-    originalContent: msg.content,
-    translatedContent: undefined,
-    targetLanguage: undefined,
-    isTranslated: false,
-    isTranslating: false,
-    showingOriginal: true,
-    translationError: undefined,
-    translationFailed: false,
-    translations: [],
-    sender: msg.sender || createDefaultSender(msg.senderId)
-  });
-
   // Créer un sender par défaut
-  const createDefaultSender = (senderId: string) => ({
+  const createDefaultSender = useCallback((senderId: string) => ({
     id: senderId,
     username: 'unknown',
     firstName: 'Utilisateur',
@@ -184,10 +131,25 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     isOnline: false,
     createdAt: new Date(),
     lastActiveAt: new Date(),
-  });
+  }), []);
+
+  // Fonction utilitaire pour convertir Message en TranslatedMessage
+  const convertToTranslatedMessage = useCallback((msg: Message): TranslatedMessage => ({
+    ...msg,
+    originalContent: msg.content,
+    translatedContent: undefined,
+    targetLanguage: undefined,
+    isTranslated: false,
+    isTranslating: false,
+    showingOriginal: true,
+    translationError: undefined,
+    translationFailed: false,
+    translations: [],
+    sender: msg.sender || createDefaultSender(msg.senderId)
+  }), [createDefaultSender]);
 
   // Créer des messages mock
-  const createMockMessages = (conversationId: string): Message[] => [
+  const createMockMessages = useCallback((conversationId: string): Message[] => [
     {
       id: '1',
       conversationId,
@@ -227,7 +189,46 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       updatedAt: new Date(Date.now() - 30 * 60 * 1000),
       sender: user || createDefaultSender('current-user'),
     },
-  ];
+  ], [user, createDefaultSender]);
+
+  // Charger les messages d'une conversation
+  const loadMessages = useCallback(async (conversationId: string) => {
+    if (!user) return;
+
+    try {
+      setIsLoadingMessages(true);
+      console.log(`📬 Chargement des messages pour la conversation ${conversationId}`);
+      const messagesData = await conversationsService.getMessages(conversationId);
+      const rawMessages = messagesData.messages;
+      
+      setMessages(rawMessages);
+
+      if (user.autoTranslateEnabled && rawMessages.length > 0) {
+        try {
+          const translated = await translateMessages(rawMessages, user.systemLanguage);
+          setTranslatedMessages(translated);
+        } catch (error) {
+          console.error('❌ Erreur lors de la traduction des messages:', error);
+          const convertedMessages = rawMessages.map(msg => convertToTranslatedMessage(msg));
+          setTranslatedMessages(convertedMessages);
+        }
+      } else {
+        const convertedMessages = rawMessages.map(msg => convertToTranslatedMessage(msg));
+        setTranslatedMessages(convertedMessages);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des messages:', error);
+      console.log('🔄 Utilisation des messages mock pour le développement');
+      
+      // Messages mock pour le développement - ne pas afficher d'erreur
+      const mockMessages = createMockMessages(conversationId);
+      setMessages(mockMessages);
+      const convertedMockMessages = mockMessages.map(msg => convertToTranslatedMessage(msg));
+      setTranslatedMessages(convertedMockMessages);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [user, translateMessages, convertToTranslatedMessage, createMockMessages]);
 
   // Charger les données initiales
   const loadData = useCallback(async () => {
@@ -242,7 +243,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setConversations(conversationsData);
       console.log(`✅ ${conversationsData.length} conversations chargées`);
 
-      // Sélectionner une conversation par défaut ou depuis l'URL
+      // Sélectionner une conversation seulement si spécifiée dans l'URL
       const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
       if (conversationIdFromUrl) {
         const conversation = conversationsData.find(c => c.id === conversationIdFromUrl);
@@ -250,12 +251,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           setSelectedConversation(conversation);
           await loadMessages(conversation.id);
         }
-      } else if (conversationsData.length > 0) {
-        // Sélectionner la première conversation par défaut
-        const firstConversation = conversationsData[0];
-        setSelectedConversation(firstConversation);
-        await loadMessages(firstConversation.id);
       }
+      // Ne plus sélectionner automatiquement la première conversation
     } catch (error) {
       console.error('❌ Erreur lors du chargement des conversations:', error);
       toast.error('Erreur lors du chargement des conversations');
@@ -440,10 +437,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       
       setConversations(mockConversations);
       
-      if (mockConversations.length > 0) {
-        const firstConversation = mockConversations[0];
-        setSelectedConversation(firstConversation);
-        await loadMessages(firstConversation.id);
+      // Sélectionner seulement si spécifié dans l'URL
+      const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
+      if (conversationIdFromUrl && mockConversations.length > 0) {
+        const conversation = mockConversations.find(c => c.id === conversationIdFromUrl);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          await loadMessages(conversation.id);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -534,7 +535,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex h-full items-center justify-center">
+        <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Chargement des conversations...</p>
@@ -546,66 +547,54 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   return (
     <DashboardLayout>
-      <div className="flex h-full bg-background">
-        {/* Liste des conversations */}
+      {/* Conteneur principal avec hauteur fixe */}
+      <div className="h-full flex bg-transparent">
+        {/* Liste des conversations - Structure simple */}
         <div className={cn(
-          "flex flex-col border-r bg-background",
-          isMobile ? (showConversationList ? "w-full" : "hidden") : "w-1/3 min-w-[300px] max-w-[400px]"
+          "flex flex-col bg-transparent border-r border-border/30",
+          isMobile ? (showConversationList ? "w-full" : "hidden") : "w-2/5 min-w-[400px] max-w-[500px]"
         )}>
-          {/* En-tête de la liste */}
-          <CardHeader className="border-b">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Conversations
-              </CardTitle>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsCreateLinkModalOpen(true)}
-                >
-                  <Link2 className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsCreateConversationModalOpen(true)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
+          {/* Header fixe de la liste */}
+          <div className="flex-shrink-0 p-4 border-b border-border/30 bg-background/50">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-3">
+              <MessageSquare className="h-6 w-6 text-primary" />
+              Mes conversations
+            </h1>
+          </div>
 
-          {/* Liste scrollable */}
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
+          {/* Zone scrollable des conversations */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-2 space-y-2">
               {conversations.map((conversation) => (
                 <div
                   key={conversation.id}
                   className={cn(
-                    "flex items-center p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent",
-                    selectedConversation?.id === conversation.id && "bg-accent"
+                    "flex items-center p-4 rounded-2xl cursor-pointer transition-all duration-200 hover:bg-accent/50",
+                    selectedConversation?.id === conversation.id && "bg-primary/10 shadow-sm"
                   )}
                   onClick={() => handleSelectConversation(conversation)}
                 >
-                  <Avatar className="h-10 w-10 mr-3">
-                    <AvatarImage />
-                    <AvatarFallback>
-                      {conversation.isGroup ? (
-                        <Users className="h-5 w-5" />
-                      ) : (
-                        (conversation.name || conversation.title || 'U').slice(0, 2).toUpperCase()
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                      <AvatarImage />
+                      <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
+                        {conversation.isGroup ? (
+                          <Users className="h-6 w-6" />
+                        ) : (
+                          (conversation.name || conversation.title || 'U').slice(0, 2).toUpperCase()
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
+                  </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium truncate">{conversation.name || conversation.title || 'Conversation sans nom'}</p>
+                  <div className="flex-1 min-w-0 ml-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-semibold truncate text-foreground text-base">
+                        {conversation.name || conversation.title || 'Conversation sans nom'}
+                      </p>
                       {conversation.lastMessage && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground font-medium">
                           {formatDate(conversation.lastMessage.createdAt)}
                         </span>
                       )}
@@ -618,112 +607,179 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                   </div>
                   
                   {(conversation.unreadCount || 0) > 0 && (
-                    <div className="ml-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
                       {conversation.unreadCount}
                     </div>
                   )}
                 </div>
               ))}
             </div>
-          </ScrollArea>
+          </div>
+          
+          {/* Footer fixe avec boutons */}
+          <div className="flex-shrink-0 p-4 border-t border-border/30 bg-background/50">
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
+                onClick={() => setIsCreateLinkModalOpen(true)}
+              >
+                <Link2 className="h-5 w-5 mr-2" />
+                Créer un lien
+              </Button>
+              <Button
+                className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
+                onClick={() => setIsCreateConversationModalOpen(true)}
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Nouvelle conversation
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Zone de messages */}
         <div className={cn(
-          "flex flex-col",
-          isMobile ? (showConversationList ? "hidden" : "w-full") : "flex-1"
+          "flex flex-col bg-transparent",
+          isMobile ? (showConversationList ? "hidden" : "w-full h-full") : "flex-1 h-full"
         )}>
           {selectedConversation ? (
             <>
-              {/* En-tête de la conversation */}
-              <CardHeader className="border-b">
+              {/* En-tête de la conversation - simplifié */}
+              <div className="p-4 border-b border-border/30">
                 <div className="flex items-center gap-3">
                   {isMobile && (
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={handleBackToList}
+                      className="rounded-full h-10 w-10 p-0 hover:bg-accent/50"
                     >
-                      <ArrowLeft className="h-4 w-4" />
+                      <ArrowLeft className="h-5 w-5" />
                     </Button>
                   )}
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage />
-                    <AvatarFallback>
-                      {selectedConversation.isGroup ? (
-                        <Users className="h-4 w-4" />
-                      ) : (
-                        (selectedConversation.name || selectedConversation.title || 'U').slice(0, 2).toUpperCase()
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <AvatarImage />
+                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                        {selectedConversation.isGroup ? (
+                          <Users className="h-5 w-5" />
+                        ) : (
+                          (selectedConversation.name || selectedConversation.title || 'U').slice(0, 2).toUpperCase()
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background"></div>
+                  </div>
                   <div className="flex-1">
-                    <CardTitle className="text-base">{selectedConversation.name || selectedConversation.title || 'Conversation sans nom'}</CardTitle>
+                    <h2 className="font-bold text-lg text-foreground">
+                      {selectedConversation.name || selectedConversation.title || 'Conversation sans nom'}
+                    </h2>
                     <p className="text-sm text-muted-foreground">
                       {selectedConversation.isGroup 
-                        ? `${selectedConversation.participants?.length || 0} participants`
+                        ? `${selectedConversation.participants?.length || 0} personnes`
                         : 'En ligne'
                       }
                     </p>
                   </div>
-                  <Button size="sm" variant="ghost">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
                 </div>
-              </CardHeader>
+              </div>
 
-              {/* Messages */}
+              {/* Messages - design enfant-friendly */}
               <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {translatedMessages.map((message) => (
-                    <MessageBubble
-                      key={message.id}
-                      message={message}
-                      currentUserId={user?.id || ''}
-                      currentUserLanguage={user?.systemLanguage || 'fr'}
-                      onTranslate={handleTranslate}
-                      onEdit={handleEdit}
-                      onToggleOriginal={handleToggleOriginal}
-                    />
-                  ))}
-                </div>
+                {isLoadingMessages ? (
+                  <div className="flex items-center justify-center h-full">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Chargement des messages...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {translatedMessages.map((message) => (
+                      <MessageBubble
+                        key={message.id}
+                        message={message}
+                        currentUserId={user?.id || ''}
+                        currentUserLanguage={user?.systemLanguage || 'fr'}
+                        onTranslate={handleTranslate}
+                        onEdit={handleEdit}
+                        onToggleOriginal={handleToggleOriginal}
+                      />
+                    ))}
+                  </div>
+                )}
               </ScrollArea>
 
-              {/* Zone de saisie */}
-              <div className="border-t p-4">
-                <div className="flex gap-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Tapez votre message..."
-                    disabled={isSending}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || isSending}
-                    size="sm"
-                  >
-                    {isSending ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
+              {/* Zone de saisie - simplifié et fun */}
+              <div className="p-4 border-t border-border/30">
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 relative">
+                    <Input
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Écris ton message..."
+                      disabled={isSending}
+                      className="rounded-2xl border-2 border-primary/20 bg-accent/30 h-12 text-base pr-12 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim() || isSending}
+                      className="absolute right-1 top-1 h-10 w-10 rounded-xl bg-primary hover:bg-primary/90 p-0"
+                    >
+                      {isSending ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                      ) : (
+                        <Send className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
           ) : (
-            // État vide (desktop uniquement)
+            // État vide - plus coloré et amical pour les enfants
             !isMobile && (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">Sélectionnez une conversation</h3>
-                  <p className="text-muted-foreground">
-                    Choisissez une conversation pour commencer à discuter
-                  </p>
+              <div className="flex-1 flex flex-col items-center justify-center p-8">
+                <div className="text-center mb-8 max-w-md mx-auto">
+                  <div className="relative mb-6">
+                    <MessageSquare className="h-16 w-16 text-primary/60 mx-auto" />
+                    <div className="absolute -top-2 -right-2 h-6 w-6 bg-yellow-400 rounded-full animate-bounce"></div>
+                  </div>
+                  {conversations.length > 0 ? (
+                    <>
+                      <h3 className="text-xl font-bold text-foreground mb-2 text-center">Choisis une conversation !</h3>
+                      <p className="text-muted-foreground text-base mb-6 text-center">
+                        Clique sur une conversation à gauche pour commencer à discuter
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-xl font-bold text-foreground mb-2 text-center">Bienvenue ! 🎉</h3>
+                      <p className="text-muted-foreground text-base mb-6 text-center">
+                        Tu n&apos;as pas encore de conversations. Commence par en créer une !
+                      </p>
+                    </>
+                  )}
+                </div>
+                
+                {/* Boutons d'action dans l'état vide */}
+                <div className="flex gap-4 justify-center">
+                  <Button
+                    onClick={() => setIsCreateConversationModalOpen(true)}
+                    className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Nouvelle conversation
+                  </Button>
+                  <Button
+                    onClick={() => setIsCreateLinkModalOpen(true)}
+                    variant="outline"
+                    className="rounded-2xl px-6 py-3 border-2 border-primary/20 hover:border-primary/40 font-semibold shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Link2 className="h-5 w-5 mr-2" />
+                    Créer un lien
+                  </Button>
                 </div>
               </div>
             )
