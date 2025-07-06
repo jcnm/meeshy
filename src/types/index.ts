@@ -464,3 +464,17 @@ export interface Notification {
   createdAt: Date;
   expiresAt?: Date;
 }
+
+// Request types for conversations
+export interface CreateConversationRequest {
+  name?: string;
+  participants: string[];
+  isGroup?: boolean;
+  description?: string;
+}
+
+export interface SendMessageRequest {
+  content: string;
+  originalLanguage?: string;
+  replyToId?: string;
+}

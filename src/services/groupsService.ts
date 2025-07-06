@@ -1,6 +1,9 @@
 import { apiService, ApiResponse } from './apiService';
 import { Group, GroupMember, User } from '@/types';
 
+// Re-export ApiResponse for use in tests and other modules
+export type { ApiResponse };
+
 export interface CreateGroupDto {
   name: string;
   description?: string;
