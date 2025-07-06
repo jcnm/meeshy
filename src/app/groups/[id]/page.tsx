@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { ArrowLeft, Users, Settings, UserPlus } from 'lucide-react';
 import { Group, User } from '@/types';
 import { useUser } from '@/context/AppContext';
 import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
+import { groupsService } from '@/services/groupsService';
 import { toast } from 'sonner';
 
 export default function GroupPage() {
@@ -25,59 +26,23 @@ export default function GroupPage() {
     if (groupId) {
       loadGroup();
     }
-  }, [groupId]);
+  }, [groupId, loadGroup]);
 
-  const loadGroup = async () => {
+  const loadGroup = useCallback(async () => {
     try {
       setLoading(true);
-      // TODO: Remplacer par un vrai appel API
-      // const response = await fetch(`/api/groups/${groupId}`);
-      // const groupData = await response.json();
       
-      // Mock data pour le développement
-      const mockGroup: Group = {
-        id: groupId,
-        name: 'Groupe de test',
-        description: 'Description du groupe de test',
-        isPrivate: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),          members: [
-            {
-              id: '1',
-              userId: user?.id || '1',
-              groupId: groupId,
-              role: 'ADMIN',
-              joinedAt: new Date(),
-              user: user || {
-              id: '1',
-              username: 'Admin',
-              email: 'admin@test.com',
-              phoneNumber: '',
-              firstName: 'Admin',
-              lastName: 'User',
-              systemLanguage: 'fr',
-              regionalLanguage: 'fr',
-              autoTranslateEnabled: true,
-              translateToSystemLanguage: true,
-              translateToRegionalLanguage: false,
-              useCustomDestination: false,
-              isOnline: true,
-              createdAt: new Date(),
-              lastActiveAt: new Date()
-            }
-          }
-        ],
-        conversations: []
-      };
+      // Appel API réel via le service
+      const response = await groupsService.getGroupById(groupId);
+      setGroup(response.data);
       
-      setGroup(mockGroup);
     } catch (error) {
       console.error('Erreur lors du chargement du groupe:', error);
       toast.error('Erreur lors du chargement du groupe');
     } finally {
       setLoading(false);
     }
-  };
+  }, [groupId]);
 
   const handleBack = () => {
     router.push('/groups');
@@ -105,7 +70,7 @@ export default function GroupPage() {
               <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-medium mb-2">Groupe non trouvé</h3>
               <p className="text-muted-foreground mb-4">
-                Le groupe demandé n'existe pas ou vous n'y avez pas accès.
+                Le groupe demandé n&apos;existe pas ou vous n&apos;y avez pas accès.
               </p>
               <Button onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
