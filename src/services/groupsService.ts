@@ -46,7 +46,7 @@ class GroupsService {
    * Récupère la liste des groupes avec filtres optionnels
    */
   async getGroups(filters?: GroupFilters): Promise<ApiResponse<GroupsResponse>> {
-    return apiService.get<GroupsResponse>(this.baseEndpoint, filters);
+    return apiService.get<GroupsResponse>(this.baseEndpoint, filters as Record<string, unknown>);
   }
 
   /**

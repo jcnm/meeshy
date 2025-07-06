@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useConversations } from '@/context/AppContext';
 import { useOptimizedWebSocket } from '@/hooks/optimized';
-import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { buildApiUrl } from '@/lib/config';
 import { Conversation, Message } from '@/types';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
@@ -70,31 +70,27 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [user, setConversations]);
 
-  // Gestionnaire de création de conversation
-  const handleCreateConversation = useCallback((newConversation: Conversation) => {
-    addConversation(newConversation);
-    setSelectedConversation(newConversation);
-    setIsCreateModalOpen(false);
-    toast.success('Conversation créée avec succès');
-  }, [addConversation]);
-
   // Gestionnaire WebSocket pour les nouveaux messages
   useEffect(() => {
     if (!isConnected) return;
 
-    const handleNewMessage = (message: Message) => {
-      const conversation = conversations.find(c => c.id === message.conversationId);
-      if (conversation) {
-        updateConversation({ 
-          ...conversation,
-          lastMessage: message,
-          updatedAt: new Date() 
-        });
+    const handleNewMessage = (data: unknown) => {
+      // Validation du type de données reçues
+      if (data && typeof data === 'object' && 'id' in data && 'conversationId' in data) {
+        const message = data as Message;
+        const conversation = conversations.find(c => c.id === message.conversationId);
+        if (conversation) {
+          updateConversation({ 
+            ...conversation,
+            lastMessage: message,
+            updatedAt: new Date() 
+          });
+        }
       }
     };
 
     on('message', handleNewMessage);
-    return () => off('message', handleNewMessage);
+    return () => off('message');
   }, [isConnected, on, off, updateConversation, conversations]);
 
   // Charger les conversations au montage
@@ -155,7 +151,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                       <ConversationList
                         conversations={conversations}
                         selectedConversation={selectedConversation}
-                        onSelectConversation={(conversation) => {
+                        expandedGroupId={null}
+                        groupConversations={{}}
+                        unreadCounts={{}}
+                        searchQuery=""
+                        onSearchChange={() => {}}
+                        onConversationClick={(conversation: Conversation) => {
                           setSelectedConversation(conversation);
                           if (selectedConversation?.id) {
                             leaveConversation(selectedConversation.id);
@@ -163,6 +164,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                           joinConversation(conversation.id);
                           router.push(`/conversations/${conversation.id}`);
                         }}
+                        onOpenConversation={(conversationId: string) => {
+                          router.push(`/conversations/${conversationId}`);
+                        }}
+                        currentUser={user!}
                       />
                     ) : (
                       <div className="p-6 text-center">
@@ -215,13 +220,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   <div className="flex-1 overflow-hidden">
                     <ConversationView 
                       conversation={selectedConversation}
-                      onMessageSent={(message) => {
-                        updateConversation({ 
-                          ...selectedConversation,
-                          lastMessage: message,
-                          updatedAt: new Date() 
-                        });
-                      }}
+                      messages={[]}
+                      newMessage=""
+                      onNewMessageChange={() => {}}
+                      onSendMessage={() => {}}
+                      onKeyPress={() => {}}
+                      currentUser={user!}
+                      isConnected={isConnected}
+                      typingUsers={[]}
                     />
                   </div>
                 </Card>
@@ -248,7 +254,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         <CreateConversationModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
-          onConversationCreated={handleCreateConversation}
+          currentUser={user!}
+          onConversationCreated={(conversationId: string) => {
+            // Recharger les conversations pour inclure la nouvelle
+            loadConversations();
+            // Fermer le modal
+            setIsCreateModalOpen(false);
+            // Rediriger vers la nouvelle conversation
+            router.push(`/conversations/${conversationId}`);
+          }}
         />
       </DashboardLayout>
     </ErrorBoundary>

@@ -10,6 +10,7 @@ interface AppState {
   groups: Group[];
   notifications: Notification[];
   isLoading: boolean;
+  isAuthChecking: boolean; // État pour indiquer si la vérification d'auth est en cours
   error: string | null;
   onlineUsers: string[];
   translationCache: Map<string, string>;
@@ -30,6 +31,7 @@ type AppAction =
   | { type: 'ADD_NOTIFICATION'; payload: Notification }
   | { type: 'REMOVE_NOTIFICATION'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_AUTH_CHECKING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_ONLINE_USERS'; payload: string[] }
   | { type: 'ADD_TRANSLATION_CACHE'; payload: { key: string; value: string } }
@@ -42,6 +44,7 @@ const initialState: AppState = {
   groups: [],
   notifications: [],
   isLoading: false,
+  isAuthChecking: true, // Initialement true car on va vérifier l'auth au démarrage
   error: null,
   onlineUsers: [],
   translationCache: new Map(),
@@ -108,6 +111,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     
+    case 'SET_AUTH_CHECKING':
+      return { ...state, isAuthChecking: action.payload };
+    
     case 'SET_ERROR':
       return { ...state, error: action.payload };
     
@@ -141,17 +147,53 @@ interface AppProviderProps {
 export function AppProvider({ children }: AppProviderProps) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Charger les données initiales depuis localStorage
+  // Charger les données initiales depuis localStorage ou API
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        dispatch({ type: 'SET_USER', payload: user });
-      } catch (error) {
-        console.error('Erreur lors du chargement de l\'utilisateur:', error);
+    const initializeUser = async () => {
+      dispatch({ type: 'SET_AUTH_CHECKING', payload: true });
+      
+      const savedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('auth_token');
+
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          dispatch({ type: 'SET_USER', payload: user });
+          dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
+        } catch (error) {
+          console.error('Erreur lors du chargement de l\'utilisateur:', error);
+          dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
+        }
+      } else if (token) {
+        // Si on a un token mais pas d'utilisateur en localStorage, 
+        // récupérer l'utilisateur depuis l'API
+        try {
+          const response = await fetch('http://localhost:3000/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            dispatch({ type: 'SET_USER', payload: userData });
+          } else {
+            // Token invalide, le supprimer
+            localStorage.removeItem('auth_token');
+          }
+        } catch (error) {
+          console.error('Erreur lors de la vérification du token:', error);
+          localStorage.removeItem('auth_token');
+        } finally {
+          dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
+        }
+      } else {
+        // Aucun token ni utilisateur sauvegardé
+        dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
       }
-    }
+    };
+
+    initializeUser();
 
     // Charger le cache de traduction
     const savedCache = localStorage.getItem('translationCache');
@@ -213,7 +255,12 @@ export function useUser() {
     // Redirection sera gérée par le composant appelant
   };
 
-  return { user: state.user, setUser, logout };
+  return { 
+    user: state.user, 
+    setUser, 
+    logout, 
+    isAuthChecking: state.isAuthChecking 
+  };
 }
 
 export function useConversations() {

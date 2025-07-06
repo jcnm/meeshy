@@ -12,7 +12,8 @@ import {
   Activity,
   TrendingUp,
   Globe2,
-  Zap
+  Zap,
+  Link2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User, Conversation, Group } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { CreateLinkModal } from '@/components/conversations/create-link-modal';
 
 interface DashboardStats {
   totalConversations: number;
@@ -43,6 +45,7 @@ export default function DashboardPage() {
   });
   const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
   const [recentGroups, setRecentGroups] = useState<Group[]>([]);
+  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
 
   // Vérification de l'authentification et chargement des données
   useEffect(() => {
@@ -240,6 +243,7 @@ export default function DashboardPage() {
           </div>
           
           <div className="mt-4 md:mt-0 flex space-x-3">
+            <Button className="bg-green-600 hover:bg-green-700" onClick={() => setIsCreateLinkModalOpen(true)}><Link2 className="h-4 w-4 mr-2" />Créer un lien</Button>
             <Button 
               onClick={() => router.push('/conversations?new=true')}
               className="bg-blue-600 hover:bg-blue-700"
@@ -500,7 +504,7 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Button 
                   variant="outline" 
                   className="h-20 flex-col space-y-2"
@@ -508,6 +512,15 @@ export default function DashboardPage() {
                 >
                   <MessageSquare className="h-6 w-6" />
                   <span>Nouvelle conversation</span>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="h-20 flex-col space-y-2"
+                  onClick={() => setIsCreateLinkModalOpen(true)}
+                >
+                  <Link2 className="h-6 w-6" />
+                  <span>Créer un lien</span>
                 </Button>
                 
                 <Button 
@@ -531,6 +544,16 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Modal de création de lien */}
+        <CreateLinkModal 
+          isOpen={isCreateLinkModalOpen} 
+          onClose={() => setIsCreateLinkModalOpen(false)} 
+          onLinkCreated={() => {
+            setIsCreateLinkModalOpen(false);
+            toast.success('Lien de conversation créé avec succès !');
+          }}
+        />
     </DashboardLayout>
   );
 }

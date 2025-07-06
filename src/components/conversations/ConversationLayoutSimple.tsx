@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useUser } from '@/context/AppContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,11 +14,17 @@ import {
   Users, 
   Plus, 
   Send,
-  MoreVertical
+  MoreVertical,
+  Link2,
+  ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { User, Conversation, Message } from '@/types';
-import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { Conversation, Message, TranslatedMessage } from '@/types';
+import { conversationsService } from '@/services/conversationsService';
+import { MessageBubble } from './message-bubble';
+import { useSimpleTranslation } from '@/hooks/use-simple-translation';
+import { CreateLinkModal } from './create-link-modal';
+import { CreateConversationModal } from './create-conversation-modal';
 
 interface ConversationLayoutProps {
   selectedConversationId?: string;
@@ -26,156 +33,242 @@ interface ConversationLayoutProps {
 export function ConversationLayout({ selectedConversationId }: ConversationLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useUser(); // Utiliser l'utilisateur du contexte
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
+  const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
+  
+  // Hook de traduction
+  const { translate } = useSimpleTranslation();
 
-  // Charger l'utilisateur et les conversations
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-          router.push('/');
-          return;
-        }
-
-        // Charger l'utilisateur
-        const userResponse = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!userResponse.ok) {
-          localStorage.removeItem('auth_token');
-          router.push('/');
-          return;
-        }
-
-        const userData = await userResponse.json();
-        setUser(userData);
-
-        // Mock conversations pour le moment
-        const mockConversations: Conversation[] = [
-          {
-            id: '1',
-            name: 'Marie Dubois',
-            type: 'DIRECT',
-            lastMessage: {
-              id: '1',
-              conversationId: '1',
-              senderId: 'user1',
-              content: 'Salut ! Comment ça va ?',
-              originalLanguage: 'fr',
-              isEdited: false,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              sender: {
-                id: 'user1',
-                username: 'marie',
-                firstName: 'Marie',
-                lastName: 'Dubois',
-                email: 'marie@example.com',
-                role: 'USER',
-                permissions: {
-                  canAccessAdmin: false,
-                  canManageUsers: false,
-                  canManageGroups: false,
-                  canManageConversations: false,
-                  canViewAnalytics: false,
-                  canModerateContent: false,
-                  canViewAuditLogs: false,
-                  canManageNotifications: false,
-                  canManageTranslations: false,
-                },
-                systemLanguage: 'fr',
-                regionalLanguage: 'fr',
-                autoTranslateEnabled: false,
-                translateToSystemLanguage: false,
-                translateToRegionalLanguage: false,
-                useCustomDestination: false,
-                isOnline: true,
-                createdAt: new Date(),
-                lastActiveAt: new Date(),
-              }
-            },
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: '2',
-            name: 'Équipe Design',
-            type: 'GROUP',
-            lastMessage: {
-              id: '2',
-              conversationId: '2',
-              senderId: 'user2',
-              content: 'Le nouveau mockup est prêt !',
-              originalLanguage: 'fr',
-              isEdited: false,
-              createdAt: new Date(Date.now() - 30 * 60 * 1000),
-              updatedAt: new Date(Date.now() - 30 * 60 * 1000),
-              sender: {
-                id: 'user2',
-                username: 'alex',
-                firstName: 'Alex',
-                lastName: 'Martin',
-                email: 'alex@example.com',
-                role: 'USER',
-                permissions: {
-                  canAccessAdmin: false,
-                  canManageUsers: false,
-                  canManageGroups: false,
-                  canManageConversations: false,
-                  canViewAnalytics: false,
-                  canModerateContent: false,
-                  canViewAuditLogs: false,
-                  canManageNotifications: false,
-                  canManageTranslations: false,
-                },
-                systemLanguage: 'fr',
-                regionalLanguage: 'fr',
-                autoTranslateEnabled: false,
-                translateToSystemLanguage: false,
-                translateToRegionalLanguage: false,
-                useCustomDestination: false,
-                isOnline: false,
-                createdAt: new Date(),
-                lastActiveAt: new Date(Date.now() - 60 * 60 * 1000),
-              }
-            },
-            isActive: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          }
-        ];
-
-        setConversations(mockConversations);
-
-        // Sélectionner conversation depuis URL
-        const conversationId = selectedConversationId || searchParams.get('id');
-        if (conversationId) {
-          const conversation = mockConversations.find(c => c.id === conversationId);
-          if (conversation) {
-            setSelectedConversation(conversation);
-            loadMessages(conversationId);
-          }
-        }
-
-      } catch (error) {
-        console.error('Erreur lors du chargement:', error);
-        toast.error('Erreur lors du chargement des conversations');
-      } finally {
-        setIsLoading(false);
+  // Fonction pour convertir Message en TranslatedMessage
+  const convertToTranslatedMessage = (message: Message): TranslatedMessage => {
+    return {
+      ...message,
+      originalContent: message.content,
+      translatedContent: undefined,
+      targetLanguage: undefined,
+      isTranslated: false,
+      isTranslating: false,
+      showingOriginal: true,
+      translationError: undefined,
+      translationFailed: false,
+      translations: [],
+      sender: message.sender || {
+        id: message.senderId,
+        username: 'unknown',
+        firstName: 'Utilisateur',
+        lastName: 'Inconnu',
+        email: 'unknown@example.com',
+        role: 'USER',
+        permissions: {
+          canAccessAdmin: false,
+          canManageUsers: false,
+          canManageGroups: false,
+          canManageConversations: false,
+          canViewAnalytics: false,
+          canModerateContent: false,
+          canViewAuditLogs: false,
+          canManageNotifications: false,
+          canManageTranslations: false,
+        },
+        systemLanguage: 'fr',
+        regionalLanguage: 'fr',
+        autoTranslateEnabled: false,
+        translateToSystemLanguage: false,
+        translateToRegionalLanguage: false,
+        useCustomDestination: false,
+        isOnline: false,
+        createdAt: new Date(),
+        lastActiveAt: new Date(),
       }
     };
+  };
 
+  // Handlers pour MessageBubble
+  const handleTranslate = async (messageId: string, targetLanguage: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message) return;
+    
+    try {
+      const translatedText = await translate(message.content, message.originalLanguage, targetLanguage);
+      if (translatedText && translatedText !== message.content) {
+        // Mettre à jour le message avec la traduction
+        setMessages(prev => prev.map(m => 
+          m.id === messageId ? {
+            ...m,
+            // On peut stocker la traduction dans les métadonnées du message
+          } : m
+        ));
+        toast.success('Message traduit');
+      } else {
+        toast.error('Échec de la traduction');
+      }
+    } catch (error) {
+      console.error('Erreur de traduction:', error);
+      toast.error('Erreur lors de la traduction');
+    }
+  };
+
+  const handleEdit = async (messageId: string, newContent: string) => {
+    // TODO: Implémenter l'édition de message
+    console.log('Edit message:', messageId, 'New content:', newContent);
+    toast.info('Édition de message bientôt disponible');
+  };
+
+  const handleToggleOriginal = (messageId: string) => {
+    // TODO: Implémenter le basculement original/traduit
+    console.log('Toggle original for message:', messageId);
+  };
+
+  // Charger les conversations (l'utilisateur est déjà géré par ProtectedRoute et AppContext)
+  const loadData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token || !user) {
+        // Si pas de token ou d'utilisateur, ne rien faire car ProtectedRoute s'en charge
+        setIsLoading(false);
+        return;
+      }
+
+      // Charger les conversations réelles depuis l'API
+      const realConversations = await conversationsService.getConversations();
+      setConversations(realConversations);
+
+      // Sélectionner conversation depuis URL
+      const conversationId = selectedConversationId || searchParams.get('id');
+      if (conversationId && realConversations.length > 0) {
+        const conversation = realConversations.find(c => c.id === conversationId);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          loadMessages(conversationId);
+        }
+      }
+
+    } catch (error) {
+      console.error('Erreur lors du chargement:', error);
+      toast.error('Erreur lors du chargement des conversations');
+      
+      // En cas d'erreur, afficher des données mockées pour le développement
+      const mockConversations: Conversation[] = [
+        {
+          id: '1',
+          name: 'Marie Dubois',
+          type: 'DIRECT',
+          lastMessage: {
+            id: '1',
+            conversationId: '1',
+            senderId: 'user1',
+            content: 'Salut ! Comment ça va ?',
+            originalLanguage: 'fr',
+            isEdited: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            sender: {
+              id: 'user1',
+              username: 'marie',
+              firstName: 'Marie',
+              lastName: 'Dubois',
+              email: 'marie@example.com',
+              role: 'USER',
+              permissions: {
+                canAccessAdmin: false,
+                canManageUsers: false,
+                canManageGroups: false,
+                canManageConversations: false,
+                canViewAnalytics: false,
+                canModerateContent: false,
+                canViewAuditLogs: false,
+                canManageNotifications: false,
+                canManageTranslations: false,
+              },
+              systemLanguage: 'fr',
+              regionalLanguage: 'fr',
+              autoTranslateEnabled: false,
+              translateToSystemLanguage: false,
+              translateToRegionalLanguage: false,
+              useCustomDestination: false,
+              isOnline: true,
+              createdAt: new Date(),
+              lastActiveAt: new Date(),
+            }
+          },
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: '2',
+          name: 'Équipe Design',
+          type: 'GROUP',
+          lastMessage: {
+            id: '2',
+            conversationId: '2',
+            senderId: 'user2',
+            content: 'Le nouveau mockup est prêt !',
+            originalLanguage: 'fr',
+            isEdited: false,
+            createdAt: new Date(Date.now() - 30 * 60 * 1000),
+            updatedAt: new Date(Date.now() - 30 * 60 * 1000),
+            sender: {
+              id: 'user2',
+              username: 'alex',
+              firstName: 'Alex',
+              lastName: 'Martin',
+              email: 'alex@example.com',
+              role: 'USER',
+              permissions: {
+                canAccessAdmin: false,
+                canManageUsers: false,
+                canManageGroups: false,
+                canManageConversations: false,
+                canViewAnalytics: false,
+                canModerateContent: false,
+                canViewAuditLogs: false,
+                canManageNotifications: false,
+                canManageTranslations: false,
+              },
+              systemLanguage: 'fr',
+              regionalLanguage: 'fr',
+              autoTranslateEnabled: false,
+              translateToSystemLanguage: false,
+              translateToRegionalLanguage: false,
+              useCustomDestination: false,
+              isOnline: false,
+              createdAt: new Date(),
+              lastActiveAt: new Date(Date.now() - 60 * 60 * 1000),
+            }
+          },
+          isActive: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      ];
+
+      setConversations(mockConversations);
+
+      // Sélectionner conversation depuis URL
+      const conversationId = selectedConversationId || searchParams.get('id');
+      if (conversationId) {
+        const conversation = mockConversations.find(c => c.id === conversationId);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          loadMessages(conversationId);
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedConversationId, searchParams, user]);
+
+  useEffect(() => {
     loadData();
-  }, [router, selectedConversationId, searchParams]);
+  }, [loadData]);
 
   const loadMessages = async (conversationId: string) => {
     // Mock messages
@@ -225,7 +318,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
     loadMessages(conversation.id);
-    router.push(`/conversations?id=${conversation.id}`);
+    router.push(`/conversations/${conversation.id}`);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -281,9 +374,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   return (
     <DashboardLayout title="Conversations">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[700px]">
-          {/* Liste des conversations */}
-          <div className="lg:col-span-1">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 h-screen lg:h-[700px]">
+          {/* Liste des conversations - toujours visible en desktop, conditionnelle en mobile */}
+          <div className={`lg:col-span-1 ${selectedConversation ? 'hidden lg:block' : 'block'}`}>
             <Card className="h-full">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -291,10 +384,16 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     <MessageSquare className="h-5 w-5" />
                     <span>Conversations</span>
                   </CardTitle>
-                  <Button size="sm" onClick={() => router.push('/search')}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nouvelle
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button size="sm" variant="outline" onClick={() => setIsCreateLinkModalOpen(true)}>
+                      <Link2 className="h-4 w-4 mr-2" />
+                      
+                    </Button>
+                    <Button size="sm" onClick={() => setIsCreateConversationModalOpen(true)}>
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-sm text-gray-600">
                   {conversations.length} conversation{conversations.length > 1 ? 's' : ''}
@@ -346,12 +445,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                       </div>
                     ))}
 
-                    {conversations.length === 0 && (
+                    {conversations.length === 0 && !isLoading && (
                       <div className="text-center py-8">
                         <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500 text-sm mb-4">Aucune conversation</p>
-                        <Button size="sm" onClick={() => router.push('/search')}>
-                          Créer une conversation
+                        <p className="text-gray-500 text-sm mb-2">Aucune conversation</p>
+                        <p className="text-gray-400 text-xs mb-4">Commencez une nouvelle conversation avec vos contacts</p>
+                        <Button size="sm" onClick={() => setIsCreateConversationModalOpen(true)}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Nouvelle conversation
                         </Button>
                       </div>
                     )}
@@ -362,12 +463,24 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           </div>
 
           {/* Zone de conversation */}
-          <div className="lg:col-span-2">
+          <div className={`w-full lg:col-span-2 ${selectedConversation ? 'block' : 'hidden lg:block'}`}>
             {selectedConversation ? (
               <Card className="h-full flex flex-col">
                 <CardHeader className="border-b">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
+                      {/* Bouton retour mobile */}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="lg:hidden"
+                        onClick={() => {
+                          setSelectedConversation(null);
+                          router.push('/conversations');
+                        }}
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                      </Button>
                       <Avatar className="h-10 w-10">
                         <AvatarImage src="" />
                         <AvatarFallback>
@@ -395,31 +508,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 <ScrollArea className="flex-1 p-4">
                   <div className="space-y-4">
                     {messages.map((message) => (
-                      <div
+                      <MessageBubble
                         key={message.id}
-                        className={`flex ${
-                          message.senderId === user?.id ? 'justify-end' : 'justify-start'
-                        }`}
-                      >
-                        <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            message.senderId === user?.id
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-900'
-                          }`}
-                        >
-                          <p className="text-sm">{message.content}</p>
-                          <p
-                            className={`text-xs mt-1 ${
-                              message.senderId === user?.id
-                                ? 'text-blue-200'
-                                : 'text-gray-500'
-                            }`}
-                          >
-                            {formatTime(new Date(message.createdAt))}
-                          </p>
-                        </div>
-                      </div>
+                        message={convertToTranslatedMessage(message)}
+                        currentUserId={user?.id || ''}
+                        currentUserLanguage={user?.systemLanguage || 'fr'}
+                        onTranslate={handleTranslate}
+                        onEdit={handleEdit}
+                        onToggleOriginal={handleToggleOriginal}
+                      />
                     ))}
                   </div>
                 </ScrollArea>
@@ -447,7 +544,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                     <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                     <h3 className="text-lg font-medium mb-2">Sélectionnez une conversation</h3>
                     <p className="mb-4">Choisissez une conversation dans la liste pour commencer à discuter</p>
-                    <Button onClick={() => router.push('/search')}>
+                    <Button onClick={() => setIsCreateConversationModalOpen(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Nouvelle conversation
                     </Button>
@@ -458,6 +555,34 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           </div>
         </div>
       </div>
+
+      {/* Modal de création de lien */}
+      <CreateLinkModal 
+        isOpen={isCreateLinkModalOpen} 
+        onClose={() => setIsCreateLinkModalOpen(false)} 
+        onLinkCreated={() => {
+          setIsCreateLinkModalOpen(false);
+          toast.success('Lien de conversation créé avec succès !');
+        }}
+      />
+
+      {/* Modal de création de conversation */}
+      {user && (
+        <CreateConversationModal 
+          isOpen={isCreateConversationModalOpen} 
+          onClose={() => setIsCreateConversationModalOpen(false)} 
+          currentUser={user}
+          onConversationCreated={(conversationId) => {
+            // Recharger les conversations pour inclure la nouvelle
+            loadData();
+            // Sélectionner la nouvelle conversation
+            setSelectedConversation(null);
+            router.push(`/conversations?id=${conversationId}`);
+            setIsCreateConversationModalOpen(false);
+            toast.success('Conversation créée avec succès !');
+          }}
+        />
+      )}
     </DashboardLayout>
   );
 }

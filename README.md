@@ -13,6 +13,10 @@ Meeshy est une application de messagerie innovante qui permet aux utilisateurs d
 - ✅ **WebSocket intégration** - Chat temps réel, typing indicators, online presence
 - ✅ **Système de traduction** - Hooks et services prêts (MT5/NLLB)
 - ✅ **Notifications** - Système de notifications temps réel intégré
+- ✅ **Interface responsive** - Optimisée mobile et desktop
+- ✅ **Modals de création** - Conversation et liens avec sélection participants
+- ✅ **Navigation mobile** - Pages séparées avec bouton retour
+- ✅ **Actions rapides dashboard** - Boutons d'accès direct aux fonctionnalités
 
 ### En Cours de Développement
 - 🔄 **Traduction active** - Intégration finale des modèles MT5/NLLB
@@ -101,6 +105,25 @@ Le frontend sera disponible sur http://localhost:3100
 4. **Liens d'invitation** : Générez des liens pour inviter d'autres utilisateurs
 5. **Chat temps réel** : Discutez avec notifications et indicateurs de frappe
 6. **Traduction automatique** : Les messages sont traduits selon vos paramètres (à finaliser)
+
+## 📱 Navigation Responsive
+
+### Mode Desktop (≥1024px)
+- **Vue en colonnes** : Liste des conversations à gauche, chat à droite
+- **Navigation directe** : Clic sur conversation → affichage immédiat
+- **Actions groupées** : Boutons "Nouvelle conversation" et "Créer un lien" dans l'en-tête
+
+### Mode Mobile (<1024px)  
+- **Navigation par pages** :
+  - `/conversations` → Liste des conversations en plein écran
+  - `/conversations/[id]` → Chat individuel en plein écran
+- **Bouton retour** : Flèche dans l'en-tête du chat pour revenir à la liste
+- **Interface tactile** : Boutons optimisés pour les écrans tactiles
+
+### Fonctionnalités Cross-Platform
+- **Modals unifiées** : Création de conversation et liens disponibles partout
+- **Actions rapides** : Dashboard avec boutons d'accès direct
+- **État synchronisé** : Navigation cohérente entre desktop et mobile
 
 ## 👥 Utilisateurs de Test
 

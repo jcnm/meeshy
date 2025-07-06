@@ -52,7 +52,7 @@ export const messagesService = {
    */
   async createMessage(messageData: CreateMessageDto): Promise<ApiResponse<Message>> {
     try {
-      const response = await apiService.post<Message>('/message', messageData);
+      const response = await apiService.post<Message>('/messages', messageData);
       return response;
     } catch (error) {
       console.error('Erreur lors de la création du message:', error);
@@ -70,7 +70,7 @@ export const messagesService = {
   ): Promise<ApiResponse<MessagesResponse>> {
     try {
       const response = await apiService.get<MessagesResponse>(
-        `/message/conversation/${conversationId}?page=${page}&limit=${limit}`
+        `/messages/conversation/${conversationId}?page=${page}&limit=${limit}`
       );
       return response;
     } catch (error) {
@@ -84,7 +84,7 @@ export const messagesService = {
    */
   async sendMessageToConversation(conversationId: string, content: string): Promise<ApiResponse<Message>> {
     try {
-      const response = await apiService.post<Message>(`/conversation/${conversationId}/messages`, {
+      const response = await apiService.post<Message>(`/conversations/${conversationId}/messages`, {
         content,
         conversationId,
       });
@@ -100,7 +100,7 @@ export const messagesService = {
    */
   async updateMessage(messageId: string, updateData: UpdateMessageDto): Promise<ApiResponse<Message>> {
     try {
-      const response = await apiService.patch<Message>(`/message/${messageId}`, updateData);
+      const response = await apiService.patch<Message>(`/messages/${messageId}`, updateData);
       return response;
     } catch (error) {
       console.error('Erreur lors de la mise à jour du message:', error);
@@ -113,7 +113,7 @@ export const messagesService = {
    */
   async deleteMessage(messageId: string): Promise<ApiResponse<{ message: string }>> {
     try {
-      const response = await apiService.delete<{ message: string }>(`/message/${messageId}`);
+      const response = await apiService.delete<{ message: string }>(`/messages/${messageId}`);
       return response;
     } catch (error) {
       console.error('Erreur lors de la suppression du message:', error);
@@ -127,7 +127,7 @@ export const messagesService = {
   async searchMessages(conversationId: string, query: string): Promise<ApiResponse<MessageSearchResponse>> {
     try {
       const response = await apiService.get<MessageSearchResponse>(
-        `/message/search/${conversationId}?q=${encodeURIComponent(query)}`
+        `/messages/search/${conversationId}?q=${encodeURIComponent(query)}`
       );
       return response;
     } catch (error) {

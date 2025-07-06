@@ -19,6 +19,4 @@ export * from './notifications';
 export * from './models';
 
 // Composants legacy à migrer (temporaire)
-export { DashboardLayout } from './dashboard-layout';
 export { NotFoundPage } from './not-found-page';
-export { MeeshyLogo } from './meeshy-logo';

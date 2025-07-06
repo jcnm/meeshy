@@ -6,6 +6,7 @@ import { translationModels, MODELS_CONFIG } from '@/lib/translation-models';
 
 interface UseSimpleTranslationReturn {
   translate: (text: string, sourceLang: string, targetLang: string) => Promise<string>;
+  translateWithModel: (text: string, sourceLang: string, targetLang: string, model: string) => Promise<string>;
   isTranslating: boolean;
   error: string | null;
   modelsStatus: Record<string, { loaded: boolean; loading: boolean }>;
@@ -53,6 +54,50 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
     }
   }, [updateModelsStatus]);
 
+  const translateWithModel = useCallback(async (
+    text: string,
+    sourceLang: string,
+    targetLang: string,
+    model: string
+  ): Promise<string> => {
+    // Vérifier si même langue
+    if (sourceLang === targetLang) {
+      return text;
+    }
+
+    setIsTranslating(true);
+    setError(null);
+
+    try {
+      // Vérifier le cache d'abord avec une clé incluant le modèle
+      const cacheKey = `${text}-${sourceLang}-${targetLang}-${model}`;
+      const cached = getCachedTranslation(cacheKey, sourceLang, targetLang);
+      if (cached) {
+        console.log(`📦 Traduction trouvée en cache pour le modèle ${model}`);
+        return cached;
+      }
+
+      console.log(`🔄 Traduction en cours avec ${model}: "${text}" (${sourceLang} → ${targetLang})`);
+      
+      // Utiliser le service de traduction avec un modèle spécifique
+      const translated = await translationModels.translateWithModel(text, sourceLang, targetLang, model);
+      
+      // Sauvegarder en cache avec la clé spécifique au modèle
+      setCachedTranslation(cacheKey, sourceLang, targetLang, translated);
+      
+      console.log(`✅ Traduction terminée avec ${model}: "${translated}"`);
+      return translated;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction inconnue';
+      console.error(`❌ Erreur de traduction avec ${model}:`, errorMessage);
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsTranslating(false);
+      updateModelsStatus();
+    }
+  }, [updateModelsStatus]);
+
   const translate = useCallback(async (
     text: string,
     sourceLang: string,
@@ -97,6 +142,7 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
 
   return {
     translate,
+    translateWithModel,
     isTranslating,
     error,
     modelsStatus,

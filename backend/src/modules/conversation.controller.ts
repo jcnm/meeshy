@@ -13,7 +13,7 @@ interface AuthenticatedRequest {
   };
 }
 
-@Controller('conversation')
+@Controller('conversations')
 export class ConversationController {
   constructor(
     private conversationService: ConversationService,

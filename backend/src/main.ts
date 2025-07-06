@@ -32,7 +32,7 @@ async function bootstrap() {
   });
 
   // Démarrage du serveur
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 3000;
   await app.listen(port);
   
   logger.log(`🚀 Serveur Meeshy démarré sur le port ${port}`);

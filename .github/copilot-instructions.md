@@ -14,7 +14,7 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 - **Base de données**: SQLite avec Prisma ORM pour le développement
 - **Authentification**: JWT avec NestJS Guards et stratégies Passport
 - **Sécurité**: Validation stricte, chiffrement des données sensibles, CORS configuré
-
+- **Routes API**: RESTful nomination pluriel pour les entités avec validation des DTOs via class-validator
 ### Spécificités Techniques
 
 #### Traduction
@@ -71,6 +71,7 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 - **Sécurité**: Chiffrement, validation, protection CSRF/XSS
 - **Tests**: Validation continue avec tests unitaires et d'intégration
 - **Documentation**: Code auto-documenté avec commentaires en français
+- **Versioning**: Utilisation de Git avec des commits clairs et descriptifs
 
 #### Développement
 - Toujours vérifier les interfaces et correspondances de types avant de proposer des modifications

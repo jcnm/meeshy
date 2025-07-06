@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { LoadingState } from '@/components/common';
@@ -16,11 +16,26 @@ export function ProtectedRoute({
   redirectTo = '/', 
   requireAuth = true 
 }: ProtectedRouteProps) {
-  const { user } = useUser();
+  const { user, isAuthChecking } = useUser();
   const router = useRouter();
+  const [timeoutReached, setTimeoutReached] = useState(false);
+
+  // Timeout de sécurité pour éviter le blocage infini
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimeoutReached(true);
+    }, 5000); // 5 secondes maximum
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token'); // Utiliser auth_token comme les autres composants
+    // Ne faire des redirections que si la vérification d'auth est terminée OU si le timeout est atteint
+    if (isAuthChecking && !timeoutReached) {
+      return;
+    }
+    
+    const token = localStorage.getItem('auth_token');
     
     if (requireAuth && !user && !token) {
       router.push(redirectTo);
@@ -31,10 +46,17 @@ export function ProtectedRoute({
       router.push('/dashboard');
       return;
     }
-  }, [user, router, redirectTo, requireAuth]);
+  }, [user, isAuthChecking, timeoutReached, router, redirectTo, requireAuth]);
 
-  // Afficher un état de chargement pendant la vérification
-  if (requireAuth && !user) {
+  // Afficher un état de chargement pendant la vérification d'authentification
+  if (isAuthChecking && !timeoutReached) {
+    return <LoadingState message="Vérification de l'authentification..." fullScreen />;
+  }
+
+  // Afficher un état de chargement si l'auth est requise mais l'utilisateur n'est pas encore chargé
+  // ET qu'il n'y a pas de token (sinon l'utilisateur devrait être chargé depuis l'API)
+  const token = localStorage.getItem('auth_token');
+  if (requireAuth && !user && !token) {
     return <LoadingState message="Vérification de l'authentification..." fullScreen />;
   }
 

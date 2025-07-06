@@ -17,7 +17,7 @@ import {
 import { User as UserType } from '@/types';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
-import { ModelSettings } from '@/components/models/model-settings';
+import { UnifiedModelSettings } from './unified-model-settings';
 import { CacheManager } from '@/components/models/cache-manager';
 import { ThemeSettings } from './theme-settings';
 import { PrivacySettings } from './privacy-settings';
@@ -58,7 +58,7 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
       id: 'models',
       label: 'Modèles IA',
       icon: <Brain className="h-4 w-4" />,
-      component: <ModelSettings />
+      component: <UnifiedModelSettings />
     },
     {
       id: 'cache',

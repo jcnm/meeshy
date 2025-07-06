@@ -37,17 +37,17 @@ export const API_ENDPOINTS = {
     LOGOUT: '/auth/logout'
   },
   CONVERSATION: {
-    LIST: '/conversation',
-    CREATE: '/conversation',
-    JOIN: '/conversation/join',
-    LINK: '/conversation/link',
-    CREATE_LINK: '/conversation/create-link',
-    MESSAGES: '/conversation/:id/messages',
-    GET_GROUP_CONVERSATIONS: (groupId: string) => `/conversation/group/${groupId}`
+    LIST: '/conversations',
+    CREATE: '/conversations',
+    JOIN: '/conversations/join',
+    LINK: '/conversations/link',
+    CREATE_LINK: '/conversations/create-link',
+    MESSAGES: '/conversations/:id/messages',
+    GET_GROUP_CONVERSATIONS: (groupId: string) => `/conversations/group/${groupId}`
   },
   MESSAGE: {
-    LIST: '/message/conversation',
-    SEND: '/message'
+    LIST: '/messages/conversation',
+    SEND: '/messages'
   },
   USER: {
     SEARCH: '/users/search'

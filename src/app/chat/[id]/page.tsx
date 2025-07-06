@@ -91,7 +91,7 @@ export default function ChatPage() {
         setConversation(conversationData);
 
         // Charger les messages
-        const messagesResponse = await fetch(`${buildApiUrl('/message/conversation')}/${conversationId}`, {
+        const messagesResponse = await fetch(`${buildApiUrl('/messages/conversation')}/${conversationId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -275,7 +275,7 @@ export default function ChatPage() {
   const handleEdit = async (messageId: string, newContent: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${buildApiUrl('/message')}/${messageId}`, {
+      const response = await fetch(`${buildApiUrl('/messages')}/${messageId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

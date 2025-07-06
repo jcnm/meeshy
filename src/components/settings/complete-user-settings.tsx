@@ -1,11 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User } from '@/types';
 import { 
@@ -16,14 +14,14 @@ import {
   User as UserIcon, 
   Palette, 
   Bell, 
-  BarChart3 
+  BarChart3,
+  HardDrive
 } from 'lucide-react';
-import { useSimpleTranslation } from '@/hooks/use-simple-translation';
-import { ModelsStatus } from '@/components/models/models-status';
 import { CacheManager } from '@/components/models/cache-manager';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
-import { ModelSettings } from '@/components/models/model-settings';
+import { UnifiedModelSettings } from './unified-model-settings';
+import { EnhancedSystemTestComponent } from './enhanced-system-test';
 import { ThemeSettings } from './theme-settings';
 import { NotificationSettings } from './notification-settings';
 import { TranslationStats } from '@/components/translation/translation-stats';
@@ -52,13 +50,12 @@ const LANGUAGES = [
 ];
 
 export function CompleteUserSettings({ user, localSettings, onSettingUpdate, onUserUpdate, children }: CompleteUserSettingsProps) {
-  const { modelsStatus, preloadModels } = useSimpleTranslation();
   const [activeTab, setActiveTab] = useState('user');
 
   // Gérer l'ancrage URL pour les tabs
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['user', 'languages', 'translation', 'models', 'cache', 'theme', 'notifications', 'stats'].includes(hash)) {
+    if (hash && ['user', 'languages', 'translation', 'models', 'system-test', 'cache', 'theme', 'notifications', 'stats'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -95,17 +92,17 @@ export function CompleteUserSettings({ user, localSettings, onSettingUpdate, onU
             <Zap className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden sm:inline">Modèles</span>
           </TabsTrigger>
-          <TabsTrigger value="cache" className="gap-1 lg:gap-2 text-xs lg:text-sm">
+          <TabsTrigger value="system-test" className="gap-1 lg:gap-2 text-xs lg:text-sm">
             <Database className="h-3 w-3 lg:h-4 lg:w-4" />
+            <span className="hidden sm:inline">Tests</span>
+          </TabsTrigger>
+          <TabsTrigger value="cache" className="gap-1 lg:gap-2 text-xs lg:text-sm">
+            <HardDrive className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden sm:inline">Cache</span>
           </TabsTrigger>
           <TabsTrigger value="theme" className="gap-1 lg:gap-2 text-xs lg:text-sm">
             <Palette className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden sm:inline">Thème</span>
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-1 lg:gap-2 text-xs lg:text-sm">
-            <Bell className="h-3 w-3 lg:h-4 lg:w-4" />
-            <span className="hidden sm:inline">Notifs</span>
           </TabsTrigger>
           <TabsTrigger value="stats" className="gap-1 lg:gap-2 text-xs lg:text-sm">
             <BarChart3 className="h-3 w-3 lg:h-4 lg:w-4" />
@@ -206,42 +203,11 @@ export function CompleteUserSettings({ user, localSettings, onSettingUpdate, onU
         </TabsContent>
 
         <TabsContent value="models" className="space-y-4">
-          <ModelSettings />
-          <ModelsStatus />
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">État des modèles</CardTitle>
-              <CardDescription>
-                Informations sur les modèles de traduction TensorFlow.js
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(modelsStatus).map(([modelName, status]) => (
-                  <div key={modelName} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{modelName.toUpperCase()}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {status?.loaded ? 'Modèle chargé et prêt' : 'Modèle non chargé'}
-                      </p>
-                    </div>
-                    <Badge variant={status?.loaded ? 'default' : 'secondary'}>
-                      {status?.loading ? 'Chargement...' : status?.loaded ? 'Prêt' : 'Arrêté'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+          <UnifiedModelSettings />
+        </TabsContent>
 
-              <Button
-                onClick={preloadModels}
-                className="w-full"
-                variant="outline"
-              >
-                Précharger tous les modèles
-              </Button>
-            </CardContent>
-          </Card>
+        <TabsContent value="system-test" className="space-y-4">
+          <EnhancedSystemTestComponent />
         </TabsContent>
 
         <TabsContent value="cache" className="space-y-4">

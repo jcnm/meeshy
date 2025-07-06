@@ -3,17 +3,85 @@ import type {
   Conversation, 
   Message, 
   User,
+  UserRole,
+  UserPermissions,
   CreateConversationRequest,
   SendMessageRequest 
 } from '../types';
 
 export class ConversationsService {
   /**
+   * Transforme les données de conversation du backend vers le format frontend
+   */
+  private transformConversationData(backendConversation: unknown): Conversation {
+    const conv = backendConversation as Record<string, unknown>;
+    
+    return {
+      id: String(conv.id),
+      type: String(conv.type)?.toUpperCase() || 'DIRECT',
+      title: conv.title as string,
+      name: (conv.name as string) || (conv.title as string),
+      description: conv.description as string,
+      isGroup: Boolean(conv.isGroup) || String(conv.type) === 'group',
+      isPrivate: Boolean(conv.isPrivate),
+      isActive: Boolean(conv.isActive),
+      createdAt: new Date(String(conv.createdAt)),
+      updatedAt: new Date(String(conv.updatedAt)),
+      participants: Array.isArray(conv.participants) ? conv.participants.map((p: unknown) => {
+        const participant = p as Record<string, unknown>;
+        const user = participant.user as Record<string, unknown>;
+        
+        return {
+          id: String(participant.id),
+          conversationId: String(participant.conversationId),
+          userId: String(participant.userId),
+          joinedAt: new Date(String(participant.joinedAt)),
+          role: (participant.role as 'ADMIN' | 'MEMBER') || 'MEMBER',
+          user: {
+            id: String(user.id),
+            username: String(user.username),
+            firstName: user.firstName as string,
+            lastName: user.lastName as string,
+            displayName: user.displayName as string,
+            email: String(user.email),
+            phoneNumber: user.phoneNumber as string,
+            role: (user.role as UserRole) || 'USER',
+            permissions: (user.permissions as UserPermissions) || {
+              canAccessAdmin: false,
+              canManageUsers: false,
+              canManageGroups: false,
+              canManageConversations: false,
+              canViewAnalytics: false,
+              canModerateContent: false,
+              canViewAuditLogs: false,
+              canManageNotifications: false,
+              canManageTranslations: false,
+            },
+            systemLanguage: String(user.systemLanguage) || 'fr',
+            regionalLanguage: String(user.regionalLanguage) || 'fr',
+            customDestinationLanguage: user.customDestinationLanguage as string,
+            autoTranslateEnabled: Boolean(user.autoTranslateEnabled),
+            translateToSystemLanguage: Boolean(user.translateToSystemLanguage),
+            translateToRegionalLanguage: Boolean(user.translateToRegionalLanguage),
+            useCustomDestination: Boolean(user.useCustomDestination),
+            isOnline: Boolean(user.isOnline),
+            avatar: user.avatar as string,
+            lastSeen: user.lastSeen ? new Date(String(user.lastSeen)) : undefined,
+            createdAt: new Date(String(user.createdAt)),
+            lastActiveAt: new Date(String(user.lastActiveAt)),
+          }
+        };
+      }) : [],
+      unreadCount: Number(conv.unreadCount) || 0
+    };
+  }
+
+  /**
    * Obtenir toutes les conversations de l'utilisateur
    */
   async getConversations(): Promise<Conversation[]> {
-    const response = await apiService.get<Conversation[]>('/conversations');
-    return response.data;
+    const response = await apiService.get<unknown[]>('/conversations');
+    return response.data.map(conv => this.transformConversationData(conv));
   }
 
   /**

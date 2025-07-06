@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { linkId } = await context.params;
     
-    const response = await fetch(`${BACKEND_URL}/conversation/link/${linkId}`, {
+    const response = await fetch(`${BACKEND_URL}/conversations/link/${linkId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

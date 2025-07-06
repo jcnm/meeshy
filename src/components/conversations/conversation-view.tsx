@@ -25,7 +25,8 @@ import {
   Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { User, Conversation, Message } from '@/types';
+import { User, Conversation, Message, TranslatedMessage } from '@/types';
+import { MessageBubble } from './message-bubble';
 
 interface ConversationViewProps {
   conversation: Conversation;
@@ -52,6 +53,65 @@ export function ConversationView({
 }: ConversationViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLInputElement>(null);
+
+  // Convertir Message en TranslatedMessage pour MessageBubble
+  const convertToTranslatedMessage = (message: Message): TranslatedMessage => {
+    const sender = conversation.participants?.find(p => p.userId === message.senderId)?.user;
+    return {
+      ...message,
+      showingOriginal: true, // Par défaut, montrer l'original
+      isTranslated: false,
+      isTranslating: false,
+      translations: [], // Pas de traductions initialement
+      translationFailed: false,
+      sender: sender || {
+        id: message.senderId,
+        username: 'Utilisateur inconnu',
+        email: '',
+        displayName: 'Utilisateur inconnu',
+        avatar: '',
+        isOnline: false,
+        systemLanguage: 'fr',
+        regionalLanguage: 'fr',
+        autoTranslateEnabled: false,
+        translateToSystemLanguage: false,
+        translateToRegionalLanguage: false,
+        useCustomDestination: false,
+        role: 'USER' as const,
+        permissions: {
+          canAccessAdmin: false,
+          canManageUsers: false,
+          canManageGroups: false,
+          canManageConversations: false,
+          canViewAnalytics: false,
+          canModerateContent: false,
+          canViewAuditLogs: false,
+          canManageNotifications: false,
+          canManageTranslations: false,
+        },
+        createdAt: new Date(),
+        lastActiveAt: new Date()
+      },
+    };
+  };
+
+  // Fonction pour gérer la traduction
+  const handleTranslate = async (messageId: string, targetLanguage: string, forceRetranslate?: boolean): Promise<void> => {
+    // TODO: Implémenter la traduction réelle
+    console.log('Traduire message:', messageId, 'vers', targetLanguage, 'force:', forceRetranslate);
+  };
+
+  // Fonction pour gérer l'édition
+  const handleEdit = async (messageId: string, newContent: string): Promise<void> => {
+    // TODO: Implémenter l'édition réelle
+    console.log('Éditer message:', messageId, 'nouveau contenu:', newContent);
+  };
+
+  // Fonction pour basculer entre original et traduction
+  const handleToggleOriginal = (messageId: string): void => {
+    // TODO: Implémenter le basculement
+    console.log('Basculer affichage pour message:', messageId);
+  };
 
   // Auto-scroll vers les nouveaux messages
   const scrollToBottom = () => {
@@ -240,30 +300,15 @@ export function ConversationView({
               </div>
             ) : (
               messages.map((message) => (
-                <div
+                <MessageBubble
                   key={message.id}
-                  className={cn(
-                    "flex",
-                    message.senderId === currentUser.id ? "justify-end" : "justify-start"
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "max-w-xs lg:max-w-md px-4 py-2 rounded-lg",
-                      message.senderId === currentUser.id
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-gray-900"
-                    )}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                    <p className="text-xs opacity-75 mt-1">
-                      {new Date(message.createdAt).toLocaleTimeString('fr-FR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-                </div>
+                  message={convertToTranslatedMessage(message)}
+                  currentUserId={currentUser.id}
+                  currentUserLanguage={currentUser.systemLanguage}
+                  onTranslate={handleTranslate}
+                  onEdit={handleEdit}
+                  onToggleOriginal={handleToggleOriginal}
+                />
               ))
             )}
 
