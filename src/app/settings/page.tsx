@@ -7,7 +7,7 @@ import { User } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { CompleteUserSettings } from '@/components/settings/complete-user-settings';
-import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -101,8 +101,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <ResponsiveLayout showNavigation={true}>
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <DashboardLayout title="Paramètres">
+      <div className="max-w-6xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Paramètres de {currentUser?.username}</h1>
@@ -125,6 +125,6 @@ export default function SettingsPage() {
           }}
         />
       </div>
-    </ResponsiveLayout>
+    </DashboardLayout>
   );
 }

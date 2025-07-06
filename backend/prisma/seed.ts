@@ -31,6 +31,8 @@ async function main() {
       translateToRegionalLanguage: false,
       useCustomDestination: false,
       isOnline: false,
+      role: 'BIGBOSS', // Rôle le plus élevé
+      isActive: true,
       createdAt: new Date('2024-01-01'),
       lastActiveAt: new Date(),
     },
@@ -49,6 +51,8 @@ async function main() {
       translateToRegionalLanguage: true,
       useCustomDestination: false,
       isOnline: false,
+      role: 'ADMIN', // Administrateur
+      isActive: true,
       createdAt: new Date('2024-01-02'),
       lastActiveAt: new Date(),
     },
@@ -67,6 +71,8 @@ async function main() {
       translateToRegionalLanguage: false,
       useCustomDestination: false,
       isOnline: false,
+      role: 'MODO', // Modérateur
+      isActive: true,
       createdAt: new Date('2024-01-03'),
       lastActiveAt: new Date(),
     },
@@ -85,6 +91,8 @@ async function main() {
       translateToRegionalLanguage: true,
       useCustomDestination: false,
       isOnline: false,
+      role: 'AUDIT', // Auditeur - limite pour l'administration
+      isActive: true,
       createdAt: new Date('2024-01-04'),
       lastActiveAt: new Date(),
     },
@@ -103,6 +111,8 @@ async function main() {
       translateToRegionalLanguage: true,
       useCustomDestination: false,
       isOnline: false,
+      role: 'USER', // Utilisateur standard
+      isActive: true,
       createdAt: new Date('2024-01-05'),
       lastActiveAt: new Date(),
     },

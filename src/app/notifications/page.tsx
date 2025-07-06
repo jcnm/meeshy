@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { 
   Bell, 
   BellOff, 
@@ -17,13 +17,11 @@ import {
   Settings,
   MessageSquare,
   Users,
-  UserPlus,
-  ArrowLeft
+  UserPlus
 } from 'lucide-react';
 import { notificationsService, type Notification, type NotificationPreferences } from '@/services';
 
 export default function NotificationsPage() {
-  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
   const [loading, setLoading] = useState(true);
@@ -154,29 +152,18 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <DashboardLayout title="Notifications">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Header avec actions */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.back()}
-              className="hover:bg-gray-100"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
-              <p className="text-gray-600 mt-1">
-                {notifications.length > 0 
-                  ? `${notifications.length} notification${notifications.length > 1 ? 's' : ''} non lue${notifications.length > 1 ? 's' : ''}`
-                  : 'Aucune notification'
-                }
-              </p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+            <p className="text-gray-600 mt-1">
+              {notifications.length > 0 
+                ? `${notifications.length} notification${notifications.length > 1 ? 's' : ''} non lue${notifications.length > 1 ? 's' : ''}`
+                : 'Aucune notification'
+              }
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -360,21 +347,11 @@ export default function NotificationsPage() {
                   <Bell className="h-4 w-4 mr-2" />
                   Test de notification
                 </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={() => router.push('/dashboard')}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Retour au tableau de bord
-                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

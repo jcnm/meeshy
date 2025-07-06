@@ -1,25 +1,5 @@
 import { apiService, ApiResponse } from './apiService';
-
-export interface User {
-  id: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber?: string;
-  displayName?: string;
-  avatar?: string;
-  systemLanguage: string;
-  regionalLanguage: string;
-  autoTranslateEnabled: boolean;
-  translateToSystemLanguage: boolean;
-  translateToRegionalLanguage: boolean;
-  useCustomDestination: boolean;
-  isOnline: boolean;
-  lastSeen: Date;
-  lastActiveAt: Date;
-  createdAt: Date;
-}
+import { User } from '@/types';
 
 export interface UserStats {
   messagesSent: number;
@@ -171,7 +151,7 @@ export const usersService = {
       return 'En ligne';
     }
     
-    const lastSeen = new Date(user.lastSeen);
+    const lastSeen = new Date(user.lastSeen || user.lastActiveAt);
     const now = new Date();
     const diffMs = now.getTime() - lastSeen.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));

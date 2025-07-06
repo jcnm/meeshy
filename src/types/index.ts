@@ -1,3 +1,17 @@
+export type UserRole = 'BIGBOSS' | 'ADMIN' | 'MODO' | 'AUDIT' | 'ANALYST' | 'USER';
+
+export interface UserPermissions {
+  canAccessAdmin: boolean;
+  canManageUsers: boolean;
+  canManageGroups: boolean;
+  canManageConversations: boolean;
+  canViewAnalytics: boolean;
+  canModerateContent: boolean;
+  canViewAuditLogs: boolean;
+  canManageNotifications: boolean;
+  canManageTranslations: boolean;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -6,6 +20,8 @@ export interface User {
   displayName?: string;
   email: string;
   phoneNumber?: string;
+  role: UserRole;
+  permissions: UserPermissions;
   systemLanguage: string;
   regionalLanguage: string;
   customDestinationLanguage?: string;
@@ -478,3 +494,132 @@ export interface SendMessageRequest {
   originalLanguage?: string;
   replyToId?: string;
 }
+
+// Types pour WebSocket temps réel
+export interface SocketEvent {
+  type: 'message' | 'typing' | 'presence' | 'notification' | 'conversation_update' | 'group_update';
+  data: unknown;
+  timestamp: string;
+  userId?: string;
+  conversationId?: string;
+  groupId?: string;
+}
+
+export interface TypingEvent {
+  userId: string;
+  conversationId: string;
+  isTyping: boolean;
+  username: string;
+  timestamp: string;
+}
+
+export interface PresenceEvent {
+  userId: string;
+  isOnline: boolean;
+  lastActiveAt: string;
+  username: string;
+}
+
+export interface MessageEvent {
+  message: Message;
+  conversationId: string;
+  senderId: string;
+  type: 'new' | 'updated' | 'deleted';
+}
+
+export interface NotificationEvent {
+  notification: Notification;
+  userId: string;
+  type: 'new' | 'read' | 'deleted';
+}
+
+export interface ConversationUpdateEvent {
+  conversationId: string;
+  type: 'member_added' | 'member_removed' | 'settings_updated' | 'deleted';
+  data: unknown;
+}
+
+export interface GroupUpdateEvent {
+  groupId: string;
+  type: 'member_added' | 'member_removed' | 'settings_updated' | 'deleted';
+  data: unknown;
+}
+
+// Utilitaires pour les rôles et permissions
+export const ROLE_HIERARCHY: Record<UserRole, number> = {
+  BIGBOSS: 6,
+  ADMIN: 5,
+  MODO: 4,
+  AUDIT: 3,
+  ANALYST: 2,
+  USER: 1,
+};
+
+export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
+  BIGBOSS: {
+    canAccessAdmin: true,
+    canManageUsers: true,
+    canManageGroups: true,
+    canManageConversations: true,
+    canViewAnalytics: true,
+    canModerateContent: true,
+    canViewAuditLogs: true,
+    canManageNotifications: true,
+    canManageTranslations: true,
+  },
+  ADMIN: {
+    canAccessAdmin: true,
+    canManageUsers: true,
+    canManageGroups: true,
+    canManageConversations: true,
+    canViewAnalytics: true,
+    canModerateContent: true,
+    canViewAuditLogs: true,
+    canManageNotifications: true,
+    canManageTranslations: false,
+  },
+  MODO: {
+    canAccessAdmin: true,
+    canManageUsers: false,
+    canManageGroups: true,
+    canManageConversations: true,
+    canViewAnalytics: false,
+    canModerateContent: true,
+    canViewAuditLogs: false,
+    canManageNotifications: false,
+    canManageTranslations: false,
+  },
+  AUDIT: {
+    canAccessAdmin: true,
+    canManageUsers: false,
+    canManageGroups: false,
+    canManageConversations: false,
+    canViewAnalytics: true,
+    canModerateContent: false,
+    canViewAuditLogs: true,
+    canManageNotifications: false,
+    canManageTranslations: false,
+  },
+  ANALYST: {
+    canAccessAdmin: false,
+    canManageUsers: false,
+    canManageGroups: false,
+    canManageConversations: false,
+    canViewAnalytics: true,
+    canModerateContent: false,
+    canViewAuditLogs: false,
+    canManageNotifications: false,
+    canManageTranslations: false,
+  },
+  USER: {
+    canAccessAdmin: false,
+    canManageUsers: false,
+    canManageGroups: false,
+    canManageConversations: false,
+    canViewAnalytics: false,
+    canModerateContent: false,
+    canViewAuditLogs: false,
+    canManageNotifications: false,
+    canManageTranslations: false,
+  },
+};

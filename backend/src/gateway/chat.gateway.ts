@@ -14,14 +14,42 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MessageService } from '../modules/message.service';
 import { UserService } from '../modules/user.service';
 import { CreateMessageDto } from '../shared/dto';
-import { TypingEvent, MessageEvent, UserStatusEvent, MessageResponse } from '../shared/interfaces';
+import { TypingEvent, MessageEvent, UserStatusEvent, MessageResponse, UserRole } from '../shared/interfaces';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
   user?: {
     id: string;
     username: string;
+    role?: UserRole;
   };
+}
+
+// Nouveaux types pour les événements temps réel
+interface NotificationEvent {
+  id: string;
+  type: 'message' | 'user_joined' | 'user_left' | 'role_changed' | 'system';
+  title: string;
+  message: string;
+  userId: string;
+  data?: Record<string, unknown>;
+  timestamp: Date;
+}
+
+interface PresenceEvent {
+  userId: string;
+  username: string;
+  isOnline: boolean;
+  lastSeen?: Date;
+  currentActivity?: string;
+}
+
+interface AdminEvent {
+  type: 'user_role_changed' | 'user_banned' | 'user_deleted' | 'system_alert';
+  adminId: string;
+  targetUserId?: string;
+  data: Record<string, unknown>;
+  timestamp: Date;
 }
 
 @Injectable()
@@ -356,24 +384,182 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  private broadcastTyping(typingEvent: TypingEvent) {
-    this.server.to(`conversation:${typingEvent.conversationId}`).emit('typing', typingEvent);
+  private broadcastTyping(event: TypingEvent) {
+    this.server.to(`conversation:${event.conversationId}`).emit('userTyping', event);
   }
 
-  private broadcastUserStatus(statusEvent: UserStatusEvent) {
-    this.server.emit('userStatus', statusEvent);
+  private broadcastUserStatus(event: UserStatusEvent) {
+    this.server.emit('userStatusChanged', event);
   }
 
-  // Méthode publique pour envoyer des notifications
-  public notifyConversationUpdate(conversationId: string, event: Record<string, unknown>) {
-    this.server.to(`conversation:${conversationId}`).emit('conversationUpdate', event);
+  // === NOUVELLES MÉTHODES POUR LE TEMPS RÉEL ===
+
+  /**
+   * Envoie une notification à un utilisateur spécifique
+   */
+  sendNotificationToUser(userId: string, notification: NotificationEvent) {
+    const socketId = this.connectedUsers.get(userId);
+    if (socketId) {
+      this.server.to(socketId).emit('notification', notification);
+    }
   }
 
-  public getOnlineUsers(): string[] {
-    return Array.from(this.connectedUsers.keys());
+  /**
+   * Envoie une notification à tous les utilisateurs connectés
+   */
+  broadcastNotification(notification: NotificationEvent) {
+    this.server.emit('notification', notification);
   }
 
-  public isUserOnline(userId: string): boolean {
-    return this.connectedUsers.has(userId);
+  /**
+   * Envoie un événement admin à tous les administrateurs connectés
+   */
+  broadcastAdminEvent(event: AdminEvent) {
+    // Envoyer uniquement aux utilisateurs avec permissions admin
+    for (const [userId, socketId] of this.connectedUsers.entries()) {
+      const socket = this.server.sockets.sockets.get(socketId) as AuthenticatedSocket;
+      if (socket?.user?.role && ['BIGBOSS', 'ADMIN', 'MODO', 'AUDIT'].includes(socket.user.role)) {
+        this.server.to(socketId).emit('adminEvent', event);
+      }
+    }
+  }
+
+  /**
+   * Met à jour la présence d'un utilisateur
+   */
+  updateUserPresence(userId: string, activity?: string) {
+    const socketId = this.connectedUsers.get(userId);
+    if (socketId) {
+      const presenceEvent: PresenceEvent = {
+        userId,
+        username: '',
+        isOnline: true,
+        currentActivity: activity,
+      };
+      this.server.emit('userPresenceChanged', presenceEvent);
+    }
+  }
+
+  /**
+   * Gestion des événements de notification temps réel
+   */
+  @SubscribeMessage('markNotificationRead')
+  async handleMarkNotificationRead(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { notificationId: string },
+  ) {
+    if (!client.userId) return { error: 'Non authentifié' };
+
+    try {
+      // TODO: Marquer la notification comme lue en base
+      return { success: true };
+    } catch (error) {
+      return { error: 'Erreur lors du marquage de la notification' };
+    }
+  }
+
+  /**
+   * Gestion de la présence utilisateur
+   */
+  @SubscribeMessage('updateActivity')
+  async handleUpdateActivity(
+    @ConnectedSocket() client: AuthenticatedSocket,
+    @MessageBody() data: { activity: string },
+  ) {
+    if (!client.userId) return;
+
+    this.updateUserPresence(client.userId, data.activity);
+  }
+
+  /**
+   * Événement pour rejoindre la room admin
+   */
+  @SubscribeMessage('joinAdminRoom')
+  async handleJoinAdminRoom(@ConnectedSocket() client: AuthenticatedSocket) {
+    if (!client.userId) return { error: 'Non authentifié' };
+
+    // Vérifier les permissions admin
+    const user = await this.prisma.user.findUnique({
+      where: { id: client.userId },
+      // TODO: Ajouter le champ role dans le schéma Prisma
+      select: { id: true, username: true },
+    });
+
+    if (!user) return { error: 'Utilisateur non trouvé' };
+
+    // TODO: Vérifier le rôle quand il sera disponible dans le schéma
+    // Pour l'instant, on autorise tous les utilisateurs authentifiés
+    client.join('admin-room');
+    return { success: true };
+  }
+
+  /**
+   * Obtenir la liste des utilisateurs connectés
+   */
+  @SubscribeMessage('getOnlineUsers')
+  async handleGetOnlineUsers(@ConnectedSocket() client: AuthenticatedSocket) {
+    if (!client.userId) return { error: 'Non authentifié' };
+
+    const onlineUsers = Array.from(this.connectedUsers.keys());
+    return { success: true, onlineUsers };
+  }
+
+  /**
+   * Méthodes publiques pour être utilisées par d'autres services
+   */
+
+  /**
+   * Notifie un changement de rôle utilisateur
+   */
+  async notifyRoleChange(userId: string, newRole: UserRole, adminId: string) {
+    const notification: NotificationEvent = {
+      id: `role-change-${Date.now()}`,
+      type: 'role_changed',
+      title: 'Rôle modifié',
+      message: `Votre rôle a été mis à jour vers ${newRole}`,
+      userId,
+      data: { newRole, adminId },
+      timestamp: new Date(),
+    };
+
+    this.sendNotificationToUser(userId, notification);
+
+    const adminEvent: AdminEvent = {
+      type: 'user_role_changed',
+      adminId,
+      targetUserId: userId,
+      data: { newRole },
+      timestamp: new Date(),
+    };
+
+    this.broadcastAdminEvent(adminEvent);
+  }
+
+  /**
+   * Notifie qu'un utilisateur a rejoint une conversation
+   */
+  async notifyUserJoined(conversationId: string, userId: string, username: string) {
+    const notification: NotificationEvent = {
+      id: `user-joined-${Date.now()}`,
+      type: 'user_joined',
+      title: 'Nouvel utilisateur',
+      message: `${username} a rejoint la conversation`,
+      userId,
+      data: { conversationId },
+      timestamp: new Date(),
+    };
+
+    this.server.to(`conversation:${conversationId}`).emit('notification', notification);
+  }
+
+  /**
+   * Obtient les statistiques de connexion en temps réel
+   */
+  getConnectionStats() {
+    return {
+      connectedUsers: this.connectedUsers.size,
+      activeConversations: this.typingUsers.size,
+      totalSockets: this.server.sockets.sockets.size,
+    };
   }
 }

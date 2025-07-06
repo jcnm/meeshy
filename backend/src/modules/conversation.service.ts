@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateConversationDto, JoinConversationDto, CreateConversationLinkDto } from '../shared/dto';
-import { ConversationResponse } from '../shared/interfaces';
+import { ConversationResponse, MessageResponse, ConversationType, ParticipantRole } from '../shared/interfaces';
 import { USER_SELECT_FIELDS } from '../shared/constants';
+import { mapPrismaUser } from '../common/user-mapper';
 
 @Injectable()
 export class ConversationService {
@@ -281,39 +282,25 @@ export class ConversationService {
           lastActiveAt: link.user.lastActiveAt,
         },
       })) || [],
-      lastMessage: conversation.messages?.[0] ? {
-        id: conversation.messages[0].id,
-        conversationId: conversation.id,
-        senderId: conversation.messages[0].senderId,
-        content: conversation.messages[0].content,
-        originalLanguage: conversation.messages[0].originalLanguage || 'fr',
-        isEdited: conversation.messages[0].isEdited || false,
-        editedAt: conversation.messages[0].editedAt,
-        createdAt: conversation.messages[0].createdAt,
-        updatedAt: conversation.messages[0].updatedAt,
-        sender: {
-          id: conversation.messages[0].sender?.id || conversation.messages[0].senderId,
-          username: conversation.messages[0].sender?.username || 'unknown',
-          firstName: conversation.messages[0].sender?.firstName || '',
-          lastName: conversation.messages[0].sender?.lastName || '',
-          displayName: conversation.messages[0].sender?.displayName,
-          email: conversation.messages[0].sender?.email || '',
-          phoneNumber: conversation.messages[0].sender?.phoneNumber,
-          systemLanguage: conversation.messages[0].sender?.systemLanguage || 'fr',
-          regionalLanguage: conversation.messages[0].sender?.regionalLanguage || 'fr',
-          customDestinationLanguage: conversation.messages[0].sender?.customDestinationLanguage,
-          autoTranslateEnabled: conversation.messages[0].sender?.autoTranslateEnabled || true,
-          translateToSystemLanguage: conversation.messages[0].sender?.translateToSystemLanguage || true,
-          translateToRegionalLanguage: conversation.messages[0].sender?.translateToRegionalLanguage || false,
-          useCustomDestination: conversation.messages[0].sender?.useCustomDestination || false,
-          isOnline: conversation.messages[0].sender?.isOnline || false,
-          avatar: conversation.messages[0].sender?.avatar,
-          lastSeen: conversation.messages[0].sender?.lastSeen,
-          createdAt: conversation.messages[0].sender?.createdAt || new Date(),
-          lastActiveAt: conversation.messages[0].sender?.lastActiveAt || new Date(),
-        },
-      } : undefined,
+      lastMessage: conversation.messages?.[0] ? this.formatMessageResponse(conversation.messages[0]) : undefined,
       unreadCount: 0, // TODO: Calculer le nombre de messages non lus
+    };
+  }
+
+  private formatMessageResponse(message: any): MessageResponse {
+    return {
+      id: message.id,
+      conversationId: message.conversationId,
+      senderId: message.senderId,
+      content: message.content,
+      originalLanguage: message.originalLanguage || 'fr',
+      isEdited: message.isEdited || false,
+      editedAt: message.editedAt || undefined,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt,
+      senderName: message.sender?.displayName || message.sender?.username || 'unknown',
+      senderAvatar: message.sender?.avatar || undefined,
+      isDeleted: message.isDeleted || false,
     };
   }
 
@@ -525,7 +512,6 @@ export class ConversationService {
         },
         links: {
           where: {
-            userId,
             leftAt: null,
           },
           include: {
@@ -549,9 +535,10 @@ export class ConversationService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // Mapper les conversations avec gestion correcte des types
     return conversations.map(conversation => ({
       id: conversation.id,
-      type: conversation.type as any,
+      type: conversation.type as ConversationType,
       title: conversation.title || undefined,
       description: conversation.description || undefined,
       isGroup: true,
@@ -559,18 +546,18 @@ export class ConversationService {
       isActive: conversation.isActive,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
-      lastMessage: conversation.messages[0] || null,
+      lastMessage: conversation.messages[0] ? this.formatMessageResponse(conversation.messages[0]) : undefined,
       unreadCount: 0, // TODO: Calculer le nombre de messages non lus
       participants: conversation.links.map(link => ({
         id: link.id,
         conversationId: link.conversationId,
         userId: link.userId,
-        role: link.role as any,
+        role: link.role as ParticipantRole,
         joinedAt: link.joinedAt,
-        leftAt: link.leftAt,
+        leftAt: link.leftAt || undefined,
         isAdmin: link.isAdmin,
         isModerator: link.isModerator,
-        user: link.user,
+        user: mapPrismaUser(link.user),
       })),
     }));
   }

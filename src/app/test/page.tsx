@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { TranslationTest } from '@/components/translation-test';
-import { ModelManagerModal } from '@/components/model-manager-modal';
+import { TranslationTest } from '@/components/translation/translation-test';
+import { ModelManagerModal } from '@/components/models/model-manager-modal';
 import { Settings } from 'lucide-react';
 
 export default function TestPage() {

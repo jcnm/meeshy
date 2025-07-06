@@ -1,6 +1,6 @@
 import { IsString, IsEmail, IsOptional, IsBoolean, MinLength, MaxLength, IsEnum, IsArray, IsNumber, Min, Max, Matches } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { ConversationType, ParticipantRole } from './interfaces';
+import { ConversationType, ParticipantRole, UserRole } from './interfaces';
 
 // Validateur pour les IDs Prisma (CUID ou IDs numériques du seed)
 // Accepte: CUID (format: c + 24 caractères) OU IDs numériques string (ex: "1", "2", "3")
@@ -96,6 +96,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   phoneNumber?: string;
+
+  @IsOptional()
+  @IsEnum(['BIGBOSS', 'ADMIN', 'MODO', 'AUDIT', 'ANALYST', 'USER'])
+  role?: UserRole;
 
   @IsOptional()
   @IsString()

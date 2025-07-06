@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -18,14 +19,14 @@ import {
   BarChart3 
 } from 'lucide-react';
 import { useSimpleTranslation } from '@/hooks/use-simple-translation';
-import { ModelsStatus } from './models-status';
-import { CacheManager } from './cache-manager';
+import { ModelsStatus } from '@/components/models/models-status';
+import { CacheManager } from '@/components/models/cache-manager';
 import { UserSettings } from './user-settings';
-import { LanguageSettings } from './language-settings';
-import { ModelSettings } from './model-settings';
+import { LanguageSettings } from '@/components/translation/language-settings';
+import { ModelSettings } from '@/components/models/model-settings';
 import { ThemeSettings } from './theme-settings';
 import { NotificationSettings } from './notification-settings';
-import { TranslationStats } from './translation-stats';
+import { TranslationStats } from '@/components/translation/translation-stats';
 
 interface CompleteUserSettingsProps {
   user: User | null;
@@ -52,6 +53,20 @@ const LANGUAGES = [
 
 export function CompleteUserSettings({ user, localSettings, onSettingUpdate, onUserUpdate, children }: CompleteUserSettingsProps) {
   const { modelsStatus, preloadModels } = useSimpleTranslation();
+  const [activeTab, setActiveTab] = useState('user');
+
+  // Gérer l'ancrage URL pour les tabs
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['user', 'languages', 'translation', 'models', 'cache', 'theme', 'notifications', 'stats'].includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, []);
+
+  // Mettre à jour l'URL quand l'onglet change
+  useEffect(() => {
+    window.history.replaceState(null, '', `#${activeTab}`);
+  }, [activeTab]);
 
   const getLanguageDisplay = (code: string) => {
     const lang = LANGUAGES.find(l => l.code === code);
@@ -62,7 +77,7 @@ export function CompleteUserSettings({ user, localSettings, onSettingUpdate, onU
 
   return (
     <div className="w-full">
-      <Tabs defaultValue="user" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1">
           <TabsTrigger value="user" className="gap-1 lg:gap-2 text-xs lg:text-sm">
             <UserIcon className="h-3 w-3 lg:h-4 lg:w-4" />

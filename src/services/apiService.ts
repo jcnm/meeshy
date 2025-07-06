@@ -91,7 +91,7 @@ class ApiService {
         throw error;
       }
 
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new ApiServiceError('Timeout de la requête', 408, 'TIMEOUT');
       }
 

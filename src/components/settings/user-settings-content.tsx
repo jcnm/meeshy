@@ -10,9 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User } from '@/types';
 import { Languages, Globe, Database, Zap } from 'lucide-react';
 import { useSimpleTranslation } from '@/hooks/use-simple-translation';
-import { LanguageSelector } from './language-selector';
-import { ModelsStatus } from './models-status';
-import { CacheManager } from './cache-manager';
+import { LanguageSelector } from '@/components/translation/language-selector';
+import { ModelsStatus } from '@/components/models/models-status';
+import { CacheManager } from '@/components/models/cache-manager';
 
 interface UserSettingsContentProps {
   user: User | null;

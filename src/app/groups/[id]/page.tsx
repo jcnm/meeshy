@@ -22,12 +22,6 @@ export default function GroupPage() {
 
   const groupId = params?.id as string;
 
-  useEffect(() => {
-    if (groupId) {
-      loadGroup();
-    }
-  }, [groupId, loadGroup]);
-
   const loadGroup = useCallback(async () => {
     try {
       setLoading(true);
@@ -43,6 +37,12 @@ export default function GroupPage() {
       setLoading(false);
     }
   }, [groupId]);
+
+  useEffect(() => {
+    if (groupId) {
+      loadGroup();
+    }
+  }, [groupId, loadGroup]);
 
   const handleBack = () => {
     router.push('/groups');

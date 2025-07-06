@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MessageBubble } from '@/components/message-bubble';
+import { MessageBubble } from '@/components/conversations';
 import { 
   Dialog, 
   DialogContent, 
@@ -24,8 +24,8 @@ import { User, Conversation, Message, TranslatedMessage } from '@/types';
 import { toast } from 'sonner';
 import { io, Socket } from 'socket.io-client';
 import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
-import { useMessageTranslation } from '@/hooks/useMessageTranslation';
-import { ModelSetupModal } from '@/components/model-setup-modal';
+import { useSimpleTranslation } from '@/hooks/use-simple-translation';
+import { ModelSetupModal } from '@/components/models/model-setup-modal';
 import { useModelStatus } from '@/hooks/useModelStatus';
 
 export default function ChatPage() {
@@ -46,11 +46,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hook de traduction avec persistance
-  const { translate } = useMessageTranslation(
-    messages,
-    setMessages,
-    currentUser?.systemLanguage || 'fr'
-  );
+  const { translate } = useSimpleTranslation();
 
   // Hook de vérification des modèles
   const { hasAnyModel, isLoading: isLoadingModels } = useModelStatus();
@@ -216,7 +212,64 @@ export default function ChatPage() {
 
   // Handlers for MessageBubble actions
   const handleTranslate = async (messageId: string, targetLanguage: string, forceRetranslate = false) => {
-    await translate(messageId, targetLanguage, forceRetranslate);
+    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1) return;
+
+    const message = messages[messageIndex];
+    
+    // Si déjà traduit et pas de force retranslate, basculer l'affichage
+    if (message.translatedContent && !forceRetranslate) {
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, showingOriginal: !msg.showingOriginal }
+          : msg
+      ));
+      return;
+    }
+
+    // Marquer comme en cours de traduction
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, isTranslating: true, translationError: undefined }
+        : msg
+    ));
+
+    try {
+      const translatedText = await translate(
+        message.content, 
+        message.originalLanguage || 'auto', 
+        targetLanguage
+      );
+
+      // Mettre à jour avec la traduction
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              translatedContent: translatedText,
+              targetLanguage,
+              isTranslated: true,
+              isTranslating: false,
+              showingOriginal: false,
+              translationError: undefined
+            }
+          : msg
+      ));
+    } catch (error) {
+      console.error('Erreur de traduction:', error);
+      
+      // Mettre à jour avec l'erreur
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              isTranslating: false,
+              translationError: 'Erreur lors de la traduction',
+              translationFailed: true
+            }
+          : msg
+      ));
+    }
   };
 
   const handleEdit = async (messageId: string, newContent: string) => {

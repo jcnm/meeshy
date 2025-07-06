@@ -56,10 +56,13 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 ### Bonnes Pratiques
 
 #### Cohérence de Conception
+- **Reflexion avant modification**: Toujours réfléchir aux implications avant de modifier le code
+- **Vérification des interfaces**: Toujours vérifier les interfaces et correspondances de types avant de proposer des modifications
+- **Cohérence des types**: Toujours vérifier la cohérence des types et données entre  le frontend et le backend
 - **Types partagés**: Source unique de vérité pour les interfaces entre frontend/backend
 - **Validation complète**: Validation stricte côté client ET serveur
 - **Gestion d'erreurs**: Middleware global avec messages utilisateur cohérents
-- **UX cohérente**: Interface intuitive, navigation fluide, feedback immédiat
+- **UX cohérente**: Interface intuitive, navigation fluide, accessible, simple avec feedback immédiat
 - **Performance**: Cache intelligent, lazy loading, optimisation des requêtes
 
 #### Standards Techniques

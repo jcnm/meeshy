@@ -206,7 +206,14 @@ export function useUser() {
     dispatch({ type: 'SET_USER', payload: user });
   };
 
-  return { user: state.user, setUser };
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('auth_token');
+    // Redirection sera gérée par le composant appelant
+  };
+
+  return { user: state.user, setUser, logout };
 }
 
 export function useConversations() {

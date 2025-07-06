@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto, LoginDto } from '../shared/dto';
-import { AuthResponse, JwtPayload } from '../shared/interfaces';
+import { AuthResponse, JwtPayload, UserRole } from '../shared/interfaces';
 import { USER_SELECT_FIELDS } from '../shared/constants';
 
 @Injectable()
@@ -170,6 +170,9 @@ export class AuthService {
     lastSeen: Date | null;
     createdAt: Date;
     lastActiveAt: Date;
+    role: string;
+    isActive: boolean;
+    deactivatedAt: Date | null;
   }) {
     return {
       id: user.id,
@@ -191,6 +194,9 @@ export class AuthService {
       lastSeen: user.lastSeen || undefined,
       createdAt: user.createdAt,
       lastActiveAt: user.lastActiveAt,
+      role: user.role as UserRole, // Cast car UserRole est un type strict
+      isActive: user.isActive,
+      deactivatedAt: user.deactivatedAt || undefined,
     };
   }
 }

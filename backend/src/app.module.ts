@@ -20,8 +20,10 @@ import { MessageServiceOptimized } from './common/message-optimized.service';
 
 // Advanced Services
 import { NotificationService } from './common/notification.service';
+import { PermissionsService } from './common/permissions.service';
 import { HealthController } from './common/health.controller';
 import { NotificationController } from './common/notification.controller';
+import { AdminController } from './common/admin.controller';
 
 // Controllers
 import { UserController } from './modules/user.controller';
@@ -72,6 +74,7 @@ import { globalValidationPipe } from './common/validation.pipe';
     MessageController,
     HealthController,
     NotificationController,
+    AdminController,
   ],
   providers: [
     // Services métier
@@ -90,6 +93,7 @@ import { globalValidationPipe } from './common/validation.pipe';
     
     // Advanced Services
     NotificationService,
+    PermissionsService,
     
     // Sécurité globale
     {

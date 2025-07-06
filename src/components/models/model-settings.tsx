@@ -12,8 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MODEL_FAMILIES, ModelVariant } from '@/lib/model-config';
 import { Brain, Download, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { ModelLegend } from '@/components/model-legend';
-import { SystemTest } from '@/components/system-test';
+import { ModelLegend } from './model-legend';
+import { SystemTest } from './system-test';
 
 interface ModelConfig {
   mt5Variant: string;

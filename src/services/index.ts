@@ -17,7 +17,7 @@ export type {
   GroupsResponse,
 } from './groupsService';
 export type { Notification, NotificationPreferences } from './notificationsService';
-export type { User, UserStats, UpdateUserDto } from './usersService';
+export type { UserStats, UpdateUserDto } from './usersService';
 export type { Message, CreateMessageDto, UpdateMessageDto } from './messagesService';
 export type { Translation, TranslationPreferences } from './translationService';
 

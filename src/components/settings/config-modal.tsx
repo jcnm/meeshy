@@ -15,14 +15,14 @@ import {
   BarChart3
 } from 'lucide-react';
 import { User as UserType } from '@/types';
-import { UserSettings } from '@/components/user-settings';
-import { LanguageSettings } from '@/components/language-settings';
-import { ModelSettings } from '@/components/model-settings';
-import { CacheManager } from '@/components/cache-manager';
-import { ThemeSettings } from '@/components/theme-settings';
-import { PrivacySettings } from '@/components/privacy-settings';
-import { NotificationSettings } from '@/components/notification-settings';
-import { TranslationStats } from '@/components/translation-stats';
+import { UserSettings } from './user-settings';
+import { LanguageSettings } from '@/components/translation/language-settings';
+import { ModelSettings } from '@/components/models/model-settings';
+import { CacheManager } from '@/components/models/cache-manager';
+import { ThemeSettings } from './theme-settings';
+import { PrivacySettings } from './privacy-settings';
+import { NotificationSettings } from './notification-settings';
+import { TranslationStats } from '@/components/translation/translation-stats';
 
 interface ConfigModalProps {
   isOpen: boolean;

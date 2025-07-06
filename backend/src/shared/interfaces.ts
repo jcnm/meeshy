@@ -1,5 +1,19 @@
 // ===== ENUMS ET CONSTANTES =====
 
+export type UserRole = 'BIGBOSS' | 'ADMIN' | 'MODO' | 'AUDIT' | 'ANALYST' | 'USER';
+
+export interface UserPermissions {
+  canAccessAdmin: boolean;
+  canManageUsers: boolean;
+  canManageGroups: boolean;
+  canManageConversations: boolean;
+  canViewAnalytics: boolean;
+  canModerateContent: boolean;
+  canViewAuditLogs: boolean;
+  canManageNotifications: boolean;
+  canManageTranslations: boolean;
+}
+
 export enum ConversationType {
   DIRECT = 'direct',
   GROUP = 'group'
@@ -39,6 +53,10 @@ export interface User {
   lastSeen?: Date | undefined;
   createdAt: Date;
   lastActiveAt: Date;
+  role: UserRole;
+  isActive: boolean;
+  deactivatedAt?: Date | undefined;
+  permissions?: UserPermissions; // Optionnel, calculé dynamiquement
 }
 
 // Version publique de User sans données sensibles
@@ -142,9 +160,9 @@ export interface ConversationResponse {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  lastMessage?: any; // Temporaire, à typer proprement plus tard
+  lastMessage?: MessageResponse;
   unreadCount: number;
-  participants: Array<any>; // Temporaire, à typer proprement plus tard
+  participants: ConversationParticipant[];
 }
 
 // ===== TYPES POUR WEBSOCKETS =====
@@ -222,4 +240,9 @@ export interface PaginatedResponse<T> {
     total: number;
     totalPages: number;
   };
+}
+
+// Interface pour l'utilisateur avec permissions calculées (utilisée dans les contrôleurs admin)
+export interface UserWithPermissions extends User {
+  permissions: UserPermissions;
 }

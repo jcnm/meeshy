@@ -6,20 +6,18 @@ import { useUser, useConversations } from '@/context/AppContext';
 import { useOptimizedWebSocket } from '@/hooks/optimized';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { Conversation, Message } from '@/types';
-import { 
-  ResponsiveLayout, 
-  PageHeader, 
-  PageContent 
-} from '@/components/layout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
   Button,
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
   LoadingState,
   ErrorBoundary
 } from '@/components/common';
 import { ConversationList, ConversationView, CreateConversationModal } from './index';
-import { Plus, MessageSquare } from 'lucide-react';
+import { Plus, MessageSquare, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ConversationLayoutProps {
@@ -49,88 +47,62 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
-      
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.LIST), {
-        headers: {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(buildApiUrl('/conversations'), {
+        headers: { 
           'Authorization': `Bearer ${token}`,
-        },
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
         const data = await response.json();
-        setConversations(Array.isArray(data) ? data : []);
+        setConversations(data.conversations || []);
       } else {
-        throw new Error('Erreur lors du chargement des conversations');
+        console.error('Erreur lors du chargement des conversations');
+        setConversations([]);
       }
     } catch (error) {
-      console.error('Erreur chargement conversations:', error);
-      toast.error('Impossible de charger les conversations');
+      console.error('Erreur:', error);
+      setConversations([]);
     } finally {
       setIsLoading(false);
     }
   }, [user, setConversations]);
 
-  // Sélectionner une conversation
-  const handleSelectConversation = useCallback((conversation: Conversation) => {
-    // Quitter l'ancienne conversation
-    if (selectedConversation) {
-      leaveConversation(selectedConversation.id);
-    }
-
-    // Rejoindre la nouvelle conversation
-    setSelectedConversation(conversation);
-    joinConversation(conversation.id);
-    
-    // Mettre à jour l'URL
-    router.push(`/conversations/${conversation.id}`);
-  }, [selectedConversation, leaveConversation, joinConversation, router]);
-
-  // Créer une nouvelle conversation
+  // Gestionnaire de création de conversation
   const handleCreateConversation = useCallback((newConversation: Conversation) => {
     addConversation(newConversation);
+    setSelectedConversation(newConversation);
     setIsCreateModalOpen(false);
-    handleSelectConversation(newConversation);
-    toast.success('Conversation créée avec succès !');
-  }, [addConversation, handleSelectConversation]);
+    toast.success('Conversation créée avec succès');
+  }, [addConversation]);
 
-  // Gérer les messages en temps réel
+  // Gestionnaire WebSocket pour les nouveaux messages
   useEffect(() => {
     if (!isConnected) return;
 
-    const handleNewMessage = (data: unknown) => {
-      const messageData = data as { conversationId: string; message: Message };
-      const conversation = conversations.find(c => c.id === messageData.conversationId);
+    const handleNewMessage = (message: Message) => {
+      const conversation = conversations.find(c => c.id === message.conversationId);
       if (conversation) {
-        const updatedConversation = {
+        updateConversation({ 
           ...conversation,
-          messages: [...(conversation.messages || []), messageData.message],
-          lastMessageAt: new Date(),
-        };
-        updateConversation(updatedConversation);
+          lastMessage: message,
+          updatedAt: new Date() 
+        });
       }
     };
 
-    const handleConversationUpdate = (data: unknown) => {
-      const updateData = data as { conversation: Conversation };
-      updateConversation(updateData.conversation);
-    };
+    on('message', handleNewMessage);
+    return () => off('message', handleNewMessage);
+  }, [isConnected, on, off, updateConversation, conversations]);
 
-    on('new-message', handleNewMessage);
-    on('conversation-updated', handleConversationUpdate);
-
-    return () => {
-      off('new-message');
-      off('conversation-updated');
-    };
-  }, [isConnected, conversations, updateConversation, on, off]);
-
-  // Charger les données initiales
+  // Charger les conversations au montage
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
 
-  // Sélectionner la conversation depuis l'URL
+  // Sélectionner conversation depuis URL
   useEffect(() => {
     if (selectedConversationId && conversations.length > 0) {
       const conversation = conversations.find(c => c.id === selectedConversationId);
@@ -143,118 +115,142 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
   if (isLoading) {
     return (
-      <ResponsiveLayout>
-        <LoadingState 
-          message="Chargement des conversations..." 
-          fullScreen 
-        />
-      </ResponsiveLayout>
+      <DashboardLayout title="Conversations">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <LoadingState message="Chargement des conversations..." />
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
     <ErrorBoundary>
-      <ResponsiveLayout>
-        <div className="flex h-full">
-          {/* Liste des conversations */}
-          <div className="w-80 border-r border-border flex flex-col">
-            <PageHeader
-              title="Conversations"
-              description={`${conversations.length} conversation${conversations.length > 1 ? 's' : ''}`}
-              actions={
-                <Button
-                  size="sm"
-                  onClick={() => setIsCreateModalOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nouvelle
-                </Button>
-              }
-            />
-            
-            <div className="flex-1 overflow-y-auto">
-              {conversations.length > 0 ? (
-                <ConversationList
-                  conversations={conversations}
-                  selectedConversation={selectedConversation}
-                  expandedGroupId={null}
-                  groupConversations={{}}
-                  unreadCounts={{}}
-                  searchQuery=""
-                  onSearchChange={() => {}}
-                  onConversationClick={handleSelectConversation}
-                  onOpenConversation={(id: string) => handleSelectConversation(conversations.find(c => c.id === id)!)}
-                  currentUser={user!}
-                />
+      <DashboardLayout title="Conversations">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Liste des conversations */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center space-x-2">
+                      <MessageSquare className="h-5 w-5" />
+                      <span>Conversations</span>
+                    </CardTitle>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsCreateModalOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nouvelle
+                    </Button>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {conversations.length} conversation{conversations.length > 1 ? 's' : ''}
+                  </p>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="max-h-[600px] overflow-y-auto">
+                    {conversations.length > 0 ? (
+                      <ConversationList
+                        conversations={conversations}
+                        selectedConversation={selectedConversation}
+                        onSelectConversation={(conversation) => {
+                          setSelectedConversation(conversation);
+                          if (selectedConversation?.id) {
+                            leaveConversation(selectedConversation.id);
+                          }
+                          joinConversation(conversation.id);
+                          router.push(`/conversations/${conversation.id}`);
+                        }}
+                      />
+                    ) : (
+                      <div className="p-6 text-center">
+                        <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500 text-sm mb-4">Aucune conversation</p>
+                        <Button 
+                          size="sm"
+                          onClick={() => setIsCreateModalOpen(true)}
+                        >
+                          Créer une conversation
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Zone de conversation */}
+            <div className="lg:col-span-2">
+              {selectedConversation ? (
+                <Card className="h-[700px] flex flex-col">
+                  <CardHeader className="border-b">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          {selectedConversation.type === 'GROUP' ? (
+                            <Users className="h-5 w-5 text-blue-600" />
+                          ) : (
+                            <MessageSquare className="h-5 w-5 text-blue-600" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{selectedConversation.name}</h3>
+                          <p className="text-sm text-gray-500">
+                            {selectedConversation.type === 'GROUP' ? 'Groupe' : 'Conversation privée'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="lg:hidden"
+                        onClick={() => setSelectedConversation(null)}
+                      >
+                        ← Retour
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <div className="flex-1 overflow-hidden">
+                    <ConversationView 
+                      conversation={selectedConversation}
+                      onMessageSent={(message) => {
+                        updateConversation({ 
+                          ...selectedConversation,
+                          lastMessage: message,
+                          updatedAt: new Date() 
+                        });
+                      }}
+                    />
+                  </div>
+                </Card>
               ) : (
-                <PageContent>
-                  <Card>
-                    <CardContent className="text-center py-8">
-                      <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-medium mb-2">
-                        Aucune conversation
-                      </h3>
-                      <p className="text-muted-foreground mb-4">
-                        Créez votre première conversation pour commencer à discuter
-                      </p>
+                <Card className="h-[700px]">
+                  <CardContent className="flex items-center justify-center h-full">
+                    <div className="text-center text-gray-500">
+                      <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                      <h3 className="text-lg font-medium mb-2">Sélectionnez une conversation</h3>
+                      <p className="mb-4">Choisissez une conversation dans la liste pour commencer à discuter</p>
                       <Button onClick={() => setIsCreateModalOpen(true)}>
                         <Plus className="h-4 w-4 mr-2" />
-                        Créer une conversation
+                        Nouvelle conversation
                       </Button>
-                    </CardContent>
-                  </Card>
-                </PageContent>
-              )}
-            </div>
-          </div>
-
-          {/* Vue de conversation */}
-          <div className="flex-1">
-            {selectedConversation && user ? (
-              <ConversationView
-                conversation={selectedConversation}
-                messages={selectedConversation.messages || []}
-                newMessage=""
-                onNewMessageChange={() => {}}
-                onSendMessage={() => {}}
-                onKeyPress={() => {}}
-                currentUser={user}
-                isConnected={true}
-                typingUsers={[]}
-              />
-            ) : (
-              <PageContent>
-                <Card className="h-full">
-                  <CardContent className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <MessageSquare className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-xl font-medium mb-2">
-                        Sélectionnez une conversation
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Choisissez une conversation dans la liste pour commencer à discuter
-                      </p>
                     </div>
                   </CardContent>
                 </Card>
-              </PageContent>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
         {/* Modal de création */}
-        {user && (
-          <CreateConversationModal
-            isOpen={isCreateModalOpen}
-            onClose={() => setIsCreateModalOpen(false)}
-            onConversationCreated={(conversationId: string) => {
-              setIsCreateModalOpen(false);
-              // TODO: Navigate to new conversation
-            }}
-            currentUser={user}
-          />
-        )}
-      </ResponsiveLayout>
+        <CreateConversationModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onConversationCreated={handleCreateConversation}
+        />
+      </DashboardLayout>
     </ErrorBoundary>
   );
 }

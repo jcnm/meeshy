@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,12 +8,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { toast } from 'sonner';
 import { 
   Search,
   Users,
   MessageSquare,
-  ArrowLeft,
   Clock,
   Hash,
   Globe,
@@ -24,10 +24,9 @@ import {
 import { 
   usersService, 
   groupsService, 
-  type User,
   type Message
 } from '@/services';
-import { type Group } from '@/types';
+import { type Group, type User } from '@/types';
 
 interface SearchResults {
   users: User[];
@@ -40,26 +39,13 @@ export default function SearchPage() {
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   
-  const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResults>({ users: [], groups: [], messages: [] });
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadRecentSearches();
-    
-    // Focus automatique sur l'input
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-
-    // Recherche automatique si query dans URL
-    if (query) {
-      handleSearch(query);
-    }
-  }, []); // Désactiver la règle car on veut seulement exécuter à l'initialisation
-
+  // Charger les recherches récentes
   const loadRecentSearches = () => {
     try {
       const saved = localStorage.getItem('meeshy_recent_searches');
@@ -71,19 +57,23 @@ export default function SearchPage() {
     }
   };
 
-  const saveRecentSearch = (searchQuery: string) => {
+  // Sauvegarder une recherche récente
+  const saveRecentSearch = useCallback((searchQuery: string) => {
     if (!searchQuery.trim()) return;
     
     try {
-      const updated = [searchQuery, ...recentSearches.filter(s => s !== searchQuery)].slice(0, 10);
-      setRecentSearches(updated);
-      localStorage.setItem('meeshy_recent_searches', JSON.stringify(updated));
+      setRecentSearches(prev => {
+        const updated = [searchQuery, ...prev.filter(s => s !== searchQuery)].slice(0, 10);
+        localStorage.setItem('meeshy_recent_searches', JSON.stringify(updated));
+        return updated;
+      });
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
     }
-  };
+  }, []);
 
-  const handleSearch = async (searchQuery: string) => {
+  // Effectuer la recherche
+  const handleSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults({ users: [], groups: [], messages: [] });
       return;
@@ -120,7 +110,43 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [saveRecentSearch]);
+
+  // Initialisation
+  useEffect(() => {
+    loadRecentSearches();
+    
+    // Focus automatique sur l'input
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+
+    // Recherche automatique si query dans URL
+    const urlQuery = searchParams.get('q');
+    if (urlQuery) {
+      setQuery(urlQuery);
+      handleSearch(urlQuery);
+    }
+  }, [searchParams, handleSearch]);
+
+  // Gestion des ancrages URL pour les tabs
+  useEffect(() => {
+    // Lire l'ancrage depuis l'URL au chargement
+    const hash = window.location.hash.slice(1); // Enlever le #
+    if (hash && ['all', 'users', 'groups'].includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, []);
+
+  // Mettre à jour l'URL quand l'onglet change
+  useEffect(() => {
+    if (activeTab !== 'all') {
+      window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}#${activeTab}`);
+    } else {
+      // Supprimer l'ancrage pour l'onglet "all"
+      window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+    }
+  }, [activeTab]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,28 +169,8 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <DashboardLayout title="Recherche" hideSearch={true}>
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center space-x-4 mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="hover:bg-gray-100"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour
-          </Button>
-          
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-900">Recherche</h1>
-            <p className="text-gray-600 mt-1">
-              Trouvez des utilisateurs, groupes et messages
-            </p>
-          </div>
-        </div>
-
         {/* Search Form */}
         <Card className="mb-6">
           <CardContent className="p-6">
@@ -505,6 +511,6 @@ export default function SearchPage() {
           </Tabs>
         )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

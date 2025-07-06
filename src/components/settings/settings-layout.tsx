@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ResponsiveLayout } from '@/components/responsive-layout';
+import { ResponsiveLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -391,17 +391,34 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
   const selectedSectionData = settingsSections.find(s => s.id === selectedSection);
 
   return (
-    <ResponsiveLayout
-      currentUser={currentUser}
-      sidebarTitle="Paramètres"
-      sidebarContent={sidebarContent}
-      showMainContent={true}
-      mainContentTitle={selectedSectionData?.title}
-      mainContentSubtitle={selectedSectionData?.description}
-      mainContent={mainContent}
-      onBackToList={() => setSelectedSection('profile')}
-    >
-      <div />
+    <ResponsiveLayout>
+      <div className="h-full flex bg-background">
+        {/* Sidebar */}
+        <div className="w-80 border-r bg-card/50 flex flex-col">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">Paramètres</h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {sidebarContent}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">{selectedSectionData?.title}</h1>
+                <p className="text-muted-foreground">{selectedSectionData?.description}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-6">
+            {mainContent}
+          </div>
+        </div>
+      </div>
     </ResponsiveLayout>
   );
 }

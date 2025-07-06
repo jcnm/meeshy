@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { 
   MessageSquare, 
   Users, 
   Settings, 
-  Bell, 
-  Search,
   Plus,
-  LogOut,
   User as UserIcon,
   Activity,
   TrendingUp,
@@ -19,9 +17,8 @@ import {
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { User, Conversation, Group } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
@@ -34,7 +31,9 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalConversations: 0,
     totalGroups: 0,
@@ -44,9 +43,6 @@ export default function DashboardPage() {
   });
   const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
   const [recentGroups, setRecentGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const router = useRouter();
 
   // Vérification de l'authentification et chargement des données
   useEffect(() => {
@@ -102,6 +98,18 @@ export default function DashboardPage() {
                 firstName: 'Marie',
                 lastName: 'Dubois',
                 email: 'marie@example.com',
+                role: 'USER' as const,
+                permissions: {
+                  canAccessAdmin: false,
+                  canManageUsers: false,
+                  canManageGroups: false,
+                  canManageConversations: false,
+                  canViewAnalytics: false,
+                  canModerateContent: false,
+                  canViewAuditLogs: false,
+                  canManageNotifications: false,
+                  canManageTranslations: false,
+                },
                 systemLanguage: 'fr',
                 regionalLanguage: 'fr',
                 autoTranslateEnabled: false,
@@ -136,6 +144,18 @@ export default function DashboardPage() {
                 firstName: 'Maria',
                 lastName: 'Garcia',
                 email: 'maria@example.com',
+                role: 'USER' as const,
+                permissions: {
+                  canAccessAdmin: false,
+                  canManageUsers: false,
+                  canManageGroups: false,
+                  canManageConversations: false,
+                  canViewAnalytics: false,
+                  canModerateContent: false,
+                  canViewAuditLogs: false,
+                  canManageNotifications: false,
+                  canManageTranslations: false,
+                },
                 systemLanguage: 'es',
                 regionalLanguage: 'es',
                 autoTranslateEnabled: true,
@@ -188,32 +208,16 @@ export default function DashboardPage() {
     checkAuthAndLoadData();
   }, [router]);
 
-  const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGOUT), {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }
-    } catch (error) {
-      console.error('Erreur déconnexion:', error);
-    } finally {
-      localStorage.removeItem('auth_token');
-      router.push('/');
-      toast.success('Déconnexion réussie');
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du tableau de bord...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Chargement du tableau de bord...</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -222,99 +226,37 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo et titre */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-900">Meeshy</h1>
-              </div>
-            </div>
-
-            {/* Barre de recherche */}
-            <div className="flex-1 max-w-lg mx-8">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Rechercher conversations, groupes, contacts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-full"
-                />
-              </div>
-            </div>
-
-            {/* Menu utilisateur */}
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-5 w-5" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500">
-                  3
-                </Badge>
-              </Button>
-              
-              <div className="flex items-center space-x-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar} alt={user.firstName} />
-                  <AvatarFallback>
-                    {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium text-gray-900">
-                    {user.firstName} {user.lastName}
-                  </p>
-                  <p className="text-xs text-gray-500">@{user.username}</p>
-                </div>
-              </div>
-
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
+    <DashboardLayout>
+      {/* Greeting et actions rapides */}
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Bonjour, {user.firstName} ! 👋
+            </h2>
+            <p className="text-gray-600">
+              Voici un aperçu de votre activité de messagerie aujourd&apos;hui.
+            </p>
+          </div>
+          
+          <div className="mt-4 md:mt-0 flex space-x-3">
+            <Button 
+              onClick={() => router.push('/conversations?new=true')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nouvelle conversation
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => router.push('/groups?new=true')}
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Créer un groupe
+            </Button>
           </div>
         </div>
-      </header>
-
-      {/* Contenu principal */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Greeting et actions rapides */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Bonjour, {user.firstName} ! 👋
-              </h2>
-              <p className="text-gray-600">
-                Voici un aperçu de votre activité de messagerie aujourd&apos;hui.
-              </p>
-            </div>
-            
-            <div className="mt-4 md:mt-0 flex space-x-3">
-              <Button 
-                onClick={() => router.push('/conversations?new=true')}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nouvelle conversation
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => router.push('/groups?new=true')}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Créer un groupe
-              </Button>
-            </div>
-          </div>
-        </div>
+      </div>
 
         {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
@@ -589,7 +531,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+    </DashboardLayout>
   );
 }

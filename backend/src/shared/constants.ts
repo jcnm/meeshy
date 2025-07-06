@@ -18,6 +18,9 @@ export const USER_SELECT_FIELDS = {
   avatar: true,
   isOnline: true,
   lastSeen: true,
+  role: true,
+  isActive: true,
+  deactivatedAt: true,
   createdAt: true,
   lastActiveAt: true,
 } as const;
@@ -38,6 +41,8 @@ export const USER_SAFE_SELECT_FIELDS = {
   translateToSystemLanguage: true,
   translateToRegionalLanguage: true,
   useCustomDestination: true,
+  role: true,
+  isActive: true,
   createdAt: true,
   lastActiveAt: true,
 } as const;

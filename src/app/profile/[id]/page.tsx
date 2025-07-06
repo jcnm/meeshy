@@ -26,9 +26,9 @@ import { usersService, conversationsService, type UserStats } from '@/services';
 import { type User } from '@/types';
 
 interface ProfilePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ProfilePage({ params }: ProfilePageProps) {
@@ -37,6 +37,24 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Résoudre les paramètres asynchrones
+  useEffect(() => {
+    const resolveParams = async () => {
+      const resolvedParams = await params;
+      const id = resolvedParams.id;
+      
+      // Si l'ID est "me" ou vide, rediriger vers la page profil simple
+      if (!id || id === 'me') {
+        router.push('/profile');
+        return;
+      }
+      
+      setUserId(id);
+    };
+    resolveParams();
+  }, [params, router]);
 
   const loadCurrentUser = async () => {
     try {
@@ -48,18 +66,20 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   };
 
   const loadUserProfile = useCallback(async () => {
+    if (!userId) return;
     try {
-      const response = await usersService.getUserProfile(params.id);
+      const response = await usersService.getUserProfile(userId);
       setUser(response.data);
     } catch (error) {
       console.error('Erreur lors du chargement du profil:', error);
       toast.error('Impossible de charger le profil utilisateur');
     }
-  }, [params.id]);
+  }, [userId]);
 
   const loadUserStats = useCallback(async () => {
+    if (!userId) return;
     try {
-      const response = await usersService.getUserStats(params.id);
+      const response = await usersService.getUserStats(userId);
       setStats(response.data);
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques:', error);
@@ -67,7 +87,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     } finally {
       setLoading(false);
     }
-  }, [params.id]);
+  }, [userId]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -79,7 +99,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     };
     
     loadData();
-  }, [params.id, loadUserProfile, loadUserStats]);
+  }, [userId, loadUserProfile, loadUserStats]);
 
   const handleStartConversation = async () => {
     if (!user || !currentUser) return;
@@ -135,7 +155,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
-  const isMyProfile = currentUser?.id === params.id;
+  const isMyProfile = currentUser?.id === userId;
 
   if (loading) {
     return (

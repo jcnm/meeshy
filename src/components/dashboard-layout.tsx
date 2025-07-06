@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ResponsiveLayout } from '@/components/responsive-layout';
+import { ResponsiveLayout } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -478,17 +478,32 @@ export function DashboardLayout({ currentUser }: DashboardLayoutProps) {
   );
 
   return (
-    <ResponsiveLayout
-      currentUser={currentUser}
-      sidebarTitle="Dashboard"
-      sidebarContent={sidebarContent}
-      showMainContent={true}
-      mainContentTitle="Vue d'ensemble"
-      mainContentSubtitle="Activité et statistiques de votre compte"
-      mainContent={mainContent}
-      onBackToList={() => {}}
-    >
-      <div />
+    <ResponsiveLayout>
+      <div className="h-full flex bg-background">
+        {/* Sidebar */}
+        <div className="w-80 border-r bg-card/50 flex flex-col">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">Dashboard</h2>
+          </div>
+          {sidebarContent}
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Vue d&apos;ensemble</h1>
+                <p className="text-muted-foreground">Activité et statistiques de votre compte</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-6">
+            {mainContent}
+          </div>
+        </div>
+      </div>
     </ResponsiveLayout>
   );
 }

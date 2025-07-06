@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ResponsiveLayout } from '@/components/responsive-layout';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -377,16 +377,60 @@ export function GroupsLayout({ currentUser, initialGroupId }: GroupsLayoutProps)
   );
 
   return (
-    <ResponsiveLayout
-      currentUser={currentUser}
-      sidebarTitle="Groupes"
-      sidebarContent={sidebarContent}
-      showMainContent={!!selectedGroup}
-      mainContentTitle={selectedGroup?.name}
-      mainContentSubtitle={selectedGroup?.description}
-      mainContent={mainContent}
-      onBackToList={() => setSelectedGroup(null)}
-    >
+    <DashboardLayout title="Groupes">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Mes Groupes</CardTitle>
+              </CardHeader>
+              <div className="px-6 pb-6">
+                {sidebarContent}
+              </div>
+            </Card>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {selectedGroup ? (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedGroup(null)}
+                        className="mb-2"
+                      >
+                        ← Retour aux groupes
+                      </Button>
+                      <CardTitle className="text-2xl">{selectedGroup.name}</CardTitle>
+                      <CardDescription>{selectedGroup.description}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {mainContent}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <div className="text-center text-muted-foreground">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <h3 className="text-lg font-medium mb-2">Sélectionnez un groupe</h3>
+                    <p>Choisissez un groupe dans la liste pour voir ses détails</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Modales */}
       
       {/* Modale membres */}
@@ -437,6 +481,6 @@ export function GroupsLayout({ currentUser, initialGroupId }: GroupsLayoutProps)
           </div>
         </DialogContent>
       </Dialog>
-    </ResponsiveLayout>
+    </DashboardLayout>
   );
 }
