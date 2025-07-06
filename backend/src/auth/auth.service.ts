@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { PermissionsService } from '../common/permissions.service';
+import { mapPrismaUser } from '../common/user-mapper';
 import * as bcrypt from 'bcryptjs';
 import { CreateUserDto, LoginDto } from '../shared/dto';
 import { AuthResponse, JwtPayload, UserRole } from '../shared/interfaces';
@@ -11,6 +13,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<AuthResponse> {
@@ -81,7 +84,7 @@ export class AuthService {
 
     return {
       access_token,
-      user: this.transformUserForResponse(user),
+      user: mapPrismaUser(user, this.permissionsService),
     };
   }
 
@@ -125,15 +128,21 @@ export class AuthService {
 
     return {
       access_token,
-      user: this.transformUserForResponse(updatedUser),
+      user: mapPrismaUser(updatedUser, this.permissionsService),
     };
   }
 
   async validateUser(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: USER_SELECT_FIELDS,
     });
+    
+    if (!user) {
+      return null;
+    }
+    
+    return mapPrismaUser(user, this.permissionsService);
   }
 
   async logout(userId: string): Promise<void> {

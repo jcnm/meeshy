@@ -1,4 +1,5 @@
 import { User, UserRole } from '../shared/interfaces';
+import { PermissionsService } from './permissions.service';
 
 /**
  * Type représentant un utilisateur tel que retourné par Prisma
@@ -33,8 +34,8 @@ export interface PrismaUser {
  * Convertit un utilisateur Prisma en interface User
  * Gère la conversion des types null vers undefined
  */
-export function mapPrismaUser(prismaUser: PrismaUser): User {
-  return {
+export function mapPrismaUser(prismaUser: PrismaUser, permissionsService?: PermissionsService): User {
+  const user: User = {
     id: prismaUser.id,
     username: prismaUser.username,
     firstName: prismaUser.firstName,
@@ -58,4 +59,11 @@ export function mapPrismaUser(prismaUser: PrismaUser): User {
     isActive: prismaUser.isActive,
     deactivatedAt: prismaUser.deactivatedAt || undefined,
   };
+
+  // Ajouter les permissions si le service est fourni
+  if (permissionsService) {
+    user.permissions = permissionsService.getRolePermissions(user.role);
+  }
+
+  return user;
 }

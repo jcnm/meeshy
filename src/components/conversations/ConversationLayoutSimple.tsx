@@ -7,14 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   MessageSquare, 
   Users, 
   Plus, 
   Send,
-  Search,
   MoreVertical
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -321,7 +319,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                             {conversation.type === 'GROUP' ? (
                               <Users className="h-5 w-5" />
                             ) : (
-                              conversation.name.slice(0, 2).toUpperCase()
+                              (conversation.name || 'C').slice(0, 2).toUpperCase()
                             )}
                           </AvatarFallback>
                         </Avatar>
@@ -376,7 +374,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                           {selectedConversation.type === 'GROUP' ? (
                             <Users className="h-5 w-5" />
                           ) : (
-                            selectedConversation.name.slice(0, 2).toUpperCase()
+                            (selectedConversation.name || 'C').slice(0, 2).toUpperCase()
                           )}
                         </AvatarFallback>
                       </Avatar>
