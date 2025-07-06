@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useConversations } from '@/context/AppContext';
-import { useOptimizedWebSocket } from '@/hooks/optimized';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { buildApiUrl } from '@/lib/config';
 import { Conversation, Message } from '@/types';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -36,10 +36,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const { 
     isConnected, 
     on, 
-    off, 
-    joinConversation, 
-    leaveConversation 
-  } = useOptimizedWebSocket();
+    off,
+    emit
+  } = useWebSocket();
 
   // Charger les conversations
   const loadConversations = useCallback(async () => {
@@ -104,10 +103,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       const conversation = conversations.find(c => c.id === selectedConversationId);
       if (conversation && conversation.id !== selectedConversation?.id) {
         setSelectedConversation(conversation);
-        joinConversation(conversation.id);
+        emit('join-conversation', conversation.id);
       }
     }
-  }, [selectedConversationId, conversations, selectedConversation?.id, joinConversation]);
+  }, [selectedConversationId, conversations, selectedConversation?.id, emit]);
 
   if (isLoading) {
     return (
@@ -159,9 +158,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                         onConversationClick={(conversation: Conversation) => {
                           setSelectedConversation(conversation);
                           if (selectedConversation?.id) {
-                            leaveConversation(selectedConversation.id);
+                            emit('leave-conversation', selectedConversation.id);
                           }
-                          joinConversation(conversation.id);
+                          emit('join-conversation', conversation.id);
                           router.push(`/conversations/${conversation.id}`);
                         }}
                         onOpenConversation={(conversationId: string) => {

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { translationModels, MODELS_CONFIG } from '@/lib/translation-models';
+import { translationModels } from '@/lib/translation-models';
 import { Loader2, Download, CheckCircle, AlertCircle, Globe, Cpu, Wifi } from 'lucide-react';
 
 interface ModelsStatusProps {
@@ -20,7 +20,17 @@ export function ModelsStatus({ className }: ModelsStatusProps) {
   // Vérifier l'état des modèles périodiquement
   useEffect(() => {
     const updateStatus = () => {
-      const status = translationModels.getModelsStatus();
+      const allModels = translationModels.getAllAvailableModels();
+      const status: Record<string, { loaded: boolean; loading: boolean }> = {};
+      
+      allModels.forEach(modelType => {
+        const modelKey = translationModels.getModelKey(modelType);
+        status[modelKey] = {
+          loaded: translationModels.isModelLoaded(modelKey),
+          loading: false // Nous n'avons plus de tracking des loading promises
+        };
+      });
+      
       setModelsStatus(status);
     };
 
@@ -125,9 +135,10 @@ export function ModelsStatus({ className }: ModelsStatusProps) {
   };
 
   const getOverallProgress = () => {
-    const totalModels = Object.keys(MODELS_CONFIG).length;
+    const allModels = translationModels.getAllAvailableModels();
+    const totalModels = allModels.length;
     const loadedModels = Object.values(modelsStatus).filter(s => s?.loaded).length;
-    return (loadedModels / totalModels) * 100;
+    return totalModels > 0 ? (loadedModels / totalModels) * 100 : 0;
   };
 
   const allModelsLoaded = Object.values(modelsStatus).every(s => s?.loaded);
@@ -187,29 +198,35 @@ export function ModelsStatus({ className }: ModelsStatusProps) {
 
         {/* Statut de chaque modèle */}
         <div className="space-y-3">
-          {Object.entries(MODELS_CONFIG).map(([modelKey, modelConfig]) => (
-            <div
-              key={modelKey}
-              className="flex items-center justify-between p-3 border rounded-lg"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium">{modelConfig.name}</h4>
-                  {getStatusBadge(modelKey)}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <div>Complexité: {modelConfig.complexity}</div>
-                  <div>Max tokens: {modelConfig.maxTokens}</div>
-                  <div>Langues: {modelConfig.languages.slice(0, 5).join(', ')}
-                    {modelConfig.languages.length > 5 && ` +${modelConfig.languages.length - 5} autres`}
+          {translationModels.getAllAvailableModels().map((modelType) => {
+            const modelKey = translationModels.getModelKey(modelType);
+            const modelMetrics = translationModels.getModelMetrics(modelType);
+            const modelConfig = modelMetrics.config;
+            
+            return (
+              <div
+                key={modelKey}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium">{modelConfig.displayName}</h4>
+                    {getStatusBadge(modelKey)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <div>Complexité: {modelConfig.complexity}</div>
+                    <div>Max tokens: {modelConfig.maxTokens}</div>
+                    <div>Langues: {modelConfig.languages.slice(0, 5).join(', ')}
+                      {modelConfig.languages.length > 5 && ` +${modelConfig.languages.length - 5} autres`}
+                    </div>
                   </div>
                 </div>
+                <div className="text-right">
+                  <Cpu className="h-6 w-6 text-muted-foreground" />
+                </div>
               </div>
-              <div className="text-right">
-                <Cpu className="h-6 w-6 text-muted-foreground" />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Informations supplémentaires */}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useOptimizedWebSocket } from './optimized';
+import { useWebSocket } from './use-websocket';
 
 interface TypingUser {
   userId: string;
@@ -12,7 +12,7 @@ interface TypingUser {
 
 export function useTypingIndicator(conversationId: string, currentUserId: string) {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const { on, off, emit, isConnected } = useOptimizedWebSocket();
+  const { on, off, emit, isConnected } = useWebSocket();
 
   // Nettoyer les anciens indicateurs de frappe
   useEffect(() => {

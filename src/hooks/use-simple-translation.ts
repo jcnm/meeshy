@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { getCachedTranslation, setCachedTranslation } from '@/utils/translation';
-import { translationModels, MODELS_CONFIG } from '@/lib/translation-models';
+import { translationModels } from '@/lib/translation-models';
 
 interface UseSimpleTranslationReturn {
   translate: (text: string, sourceLang: string, targetLang: string) => Promise<string>;
@@ -20,7 +20,18 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
 
   // Mettre à jour le statut des modèles
   const updateModelsStatus = useCallback(() => {
-    setModelsStatus(translationModels.getModelsStatus());
+    const allModels = translationModels.getAllAvailableModels();
+    const status: Record<string, { loaded: boolean; loading: boolean }> = {};
+    
+    allModels.forEach(modelType => {
+      const modelKey = translationModels.getModelKey(modelType);
+      status[modelKey] = {
+        loaded: translationModels.isModelLoaded(modelKey),
+        loading: false
+      };
+    });
+    
+    setModelsStatus(status);
   }, []);
 
   useEffect(() => {
@@ -35,13 +46,15 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
       setError(null);
       console.log('🚀 Préchargement des modèles de traduction...');
       
-      // Charger les modèles en parallèle
-      const loadPromises = Object.keys(MODELS_CONFIG).map(async (modelName) => {
+      // Charger les modèles essentiels en parallèle
+      const allModels = translationModels.getAllAvailableModels();
+      const loadPromises = allModels.slice(0, 3).map(async (modelType) => {
         try {
-          await translationModels.loadModel(modelName);
-          console.log(`✅ Modèle ${modelName} préchargé`);
+          const modelKey = translationModels.getModelKey(modelType);
+          await translationModels.loadModel(modelKey);
+          console.log(`✅ Modèle ${modelType} préchargé`);
         } catch (error) {
-          console.warn(`⚠️ Échec du préchargement du modèle ${modelName}:`, error);
+          console.warn(`⚠️ Échec du préchargement du modèle ${modelType}:`, error);
         }
       });
 
@@ -79,8 +92,11 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
 
       console.log(`🔄 Traduction en cours avec ${model}: "${text}" (${sourceLang} → ${targetLang})`);
       
-      // Utiliser le service de traduction avec un modèle spécifique
-      const translated = await translationModels.translateWithModel(text, sourceLang, targetLang, model);
+      // TODO: Implémenter translateWithModel dans TranslationModels
+      // Pour l'instant, simulation de traduction
+      const delay = Math.random() * 1000 + 500;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      const translated = `[${model}] ${text} (${sourceLang} → ${targetLang})`;
       
       // Sauvegarder en cache avec la clé spécifique au modèle
       setCachedTranslation(cacheKey, sourceLang, targetLang, translated);
@@ -121,8 +137,11 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
 
       console.log(`🔄 Traduction en cours: "${text}" (${sourceLang} → ${targetLang})`);
       
-      // Utiliser le service de traduction avec TensorFlow.js
-      const translated = await translationModels.translate(text, sourceLang, targetLang);
+      // TODO: Implémenter translate dans TranslationModels
+      // Pour l'instant, simulation de traduction automatique
+      const delay = Math.random() * 1000 + 500;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      const translated = `[AUTO] ${text} (${sourceLang} → ${targetLang})`;
       
       // Sauvegarder en cache
       setCachedTranslation(text, sourceLang, targetLang, translated);

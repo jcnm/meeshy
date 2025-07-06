@@ -1,15 +1,15 @@
-// Hooks React personnalisés organisés
+// Hooks React personnalisés pour Meeshy
 
-// Hooks optimisés (recommandés)
-export * from './optimized';
+// Hook de traduction optimisé (recommandé)
+export { useOptimizedMessageTranslation } from './use-optimized-message-translation';
 
-// Hooks spécialisés utiles
+// Hooks spécialisés
 export { useNotifications } from './use-notifications';
 export { useOnlinePresence } from './use-online-presence';
-export { useSimpleTranslation } from './use-simple-translation';
 export { useTranslationCache } from './use-translation-cache';
 export { useUserPreferences } from './use-user-preferences';
-export { useModelStatus } from './useModelStatus';
+export { useTypingIndicator } from './use-typing-indicator';
+export { useWebSocket } from './use-websocket';
 
-// Note: Les hooks legacy sont disponibles dans ./legacy/ mais déconseillés
-// Utiliser les hooks optimisés à la place pour de meilleures performances
+// Hook simple pour tests et cas spécifiques
+export { useSimpleTranslation } from './use-simple-translation';
