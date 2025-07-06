@@ -5,7 +5,6 @@ export { conversationsService, ConversationsService } from './conversationsServi
 export { notificationsService } from './notificationsService';
 export { usersService } from './usersService';
 export { messagesService } from './messagesService';
-export { translationService } from './translationService';
 
 // Export des types
 export type { ApiResponse, ApiError, ApiConfig } from './apiService';
@@ -19,7 +18,6 @@ export type {
 export type { Notification, NotificationPreferences } from './notificationsService';
 export type { UserStats, UpdateUserDto } from './usersService';
 export type { Message, CreateMessageDto, UpdateMessageDto } from './messagesService';
-export type { Translation, TranslationPreferences } from './translationService';
 
 // Service mock pour les tests
 export { mockApiService } from './mockApiService';

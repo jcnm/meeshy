@@ -1,30 +1,12 @@
 /**
- * Système de traduction avec modèles TensorFlow.js et fallback API
- * Supporte mT5 et NLLB avec différentes tailles selon les capacités machine
+ * Système de traduction unifié - Wrapper autour de TranslationModels
+ * Maintient la compatibilité avec l'API existante tout en utilisant la nouvelle architecture
  */
 
-import * as tf from '@tensorflow/tfjs';
-import { 
-  detectSystemCapabilities, 
-  recommendModelVariants, 
-  getModelConfig 
-} from '@/lib/model-config';
-import { modelCache } from '@/lib/model-cache';
-import { testModelService } from '@/lib/test-model-service';
+import { translationModels } from '@/lib/translation-models';
 
-// Mode de test (utilise le service de test au lieu du vrai cache)
-const TEST_MODE = true;
-
-// Configuration globale
-const systemCapabilities = detectSystemCapabilities();
-const recommendedVariants = recommendModelVariants(systemCapabilities);
-
-// Cache de traduction simple
+// Cache de traduction simple pour compatibilité
 const translationCache = new Map<string, string>();
-
-// Modèles TensorFlow.js chargés
-const loadedModels = new Map<string, tf.GraphModel>();
-const loadingPromises = new Map<string, Promise<tf.GraphModel | null>>();
 
 /**
  * Génère une clé de cache pour une traduction
@@ -98,228 +80,8 @@ export function detectLanguage(text: string): string {
 }
 
 /**
- * Sélectionne le modèle approprié selon le message
- */
-function selectModel(text: string): { family: string; variant: string } {
-  const length = text.length;
-  const hasComplexPunctuation = /[;:,!?(){}[\]"']/.test(text);
-  const wordCount = text.split(/\s+/).length;
-  const hasMultipleSentences = text.split(/[.!?]+/).length > 1;
-
-  // Utiliser mT5 pour les messages courts et simples
-  if (length <= 100 && wordCount <= 15 && !hasComplexPunctuation && !hasMultipleSentences) {
-    return { family: 'mt5', variant: recommendedVariants.mt5 };
-  }
-
-  // Utiliser NLLB pour les messages longs et complexes
-  return { family: 'nllb', variant: recommendedVariants.nllb };
-}
-
-/**
- * Charge un modèle TensorFlow.js depuis le cache ou télécharge-le
- */
-async function loadModel(family: string, variant: string): Promise<tf.GraphModel | null> {
-  const modelKey = `${family}-${variant}`;
-  
-  // Si déjà chargé en mémoire
-  if (loadedModels.has(modelKey)) {
-    return loadedModels.get(modelKey)!;
-  }
-  
-  // Si en cours de chargement
-  if (loadingPromises.has(modelKey)) {
-    return loadingPromises.get(modelKey)!;
-  }
-
-  const loadingPromise = (async (): Promise<tf.GraphModel | null> => {
-    try {
-      console.log(`🔄 Chargement du modèle ${family}-${variant}...`);
-
-      // Utiliser le service de test ou le vrai cache selon le mode
-      const cacheService = TEST_MODE ? testModelService : modelCache;
-      const cachedModel = await cacheService.getCachedModel(family, variant);
-      
-      if (cachedModel) {
-        console.log(`📦 Modèle ${family}-${variant} trouvé dans le cache`);
-        // En mode test, on simule un modèle "chargé" mais on utilisera l'API
-        if (TEST_MODE) {
-          console.log(`🧪 Mode test: simulation de chargement réussie pour ${family}-${variant}`);
-          // Retourner null pour forcer l'utilisation de l'API fallback
-          return null;
-        }
-        
-        // Charger depuis le blob en cache (mode réel)
-        const modelArrayBuffer = await cachedModel.modelBlob.arrayBuffer();
-        const model = await tf.loadGraphModel(tf.io.fromMemory(modelArrayBuffer));
-        loadedModels.set(modelKey, model);
-        return model;
-      }
-
-      // Si pas en cache, essayer de télécharger (uniquement en mode test pour l'instant)
-      if (TEST_MODE) {
-        console.log(`⚠️ Modèle ${family}-${variant} non trouvé en cache. Utilisation directe de l'API.`);
-        return null;
-      }
-
-      // Mode réel: télécharger depuis Hugging Face
-      const config = getModelConfig(family, variant);
-      if (!config) {
-        console.error(`❌ Configuration non trouvée pour ${family}-${variant}`);
-        return null;
-      }
-
-      console.log(`⬇️ Téléchargement du modèle ${family}-${variant} depuis ${config.variant.modelUrl}`);
-      
-      // Télécharger et mettre en cache
-      const downloadSuccess = await modelCache.downloadAndCacheModel(
-        family,
-        variant,
-        config.variant.modelUrl,
-        config.variant.tokenizerUrl
-      );
-
-      if (!downloadSuccess) {
-        console.error(`❌ Échec du téléchargement de ${family}-${variant}`);
-        return null;
-      }
-
-      // Recharger depuis le cache maintenant qu'il est téléchargé
-      const newCachedModel = await modelCache.getCachedModel(family, variant);
-      if (newCachedModel) {
-        const modelArrayBuffer = await newCachedModel.modelBlob.arrayBuffer();
-        const model = await tf.loadGraphModel(tf.io.fromMemory(modelArrayBuffer));
-        loadedModels.set(modelKey, model);
-        return model;
-      }
-
-      return null;
-    } catch (error) {
-      console.error(`❌ Erreur lors du chargement du modèle ${family}-${variant}:`, error);
-      return null;
-    }
-  })();
-
-  loadingPromises.set(modelKey, loadingPromise);
-  
-  try {
-    const result = await loadingPromise;
-    loadingPromises.delete(modelKey);
-    return result;
-  } catch (error) {
-    loadingPromises.delete(modelKey);
-    throw error;
-  }
-}
-
-/**
- * Traduit un texte avec les modèles TensorFlow.js
- */
-async function translateWithModels(text: string, sourceLang: string, targetLang: string): Promise<string> {
-  if (sourceLang === targetLang) {
-    return text;
-  }
-
-  try {
-    const { family, variant } = selectModel(text);
-    
-    console.log(`🤖 Tentative de traduction avec ${family}-${variant}: ${sourceLang} → ${targetLang}`);
-    
-    if (TEST_MODE) {
-      // En mode test, vérifier si le modèle est "téléchargé"
-      const isDownloaded = await testModelService.isModelCached(family, variant);
-      if (!isDownloaded) {
-        console.log(`⚠️ Modèle ${family}-${variant} non téléchargé en mode test`);
-        throw new Error(`Modèle ${family}-${variant} non téléchargé`);
-      }
-      
-      // En mode test avec modèle téléchargé, simuler une traduction réussie
-      console.log(`🧪 Mode test: simulation de traduction réussie avec ${family}-${variant}`);
-      
-      // Traduction simulée basique pour le test (remplacer par l'API dans le fallback)
-      const simulatedTranslations: Record<string, Record<string, string>> = {
-        'Hello': { 'fr': 'Bonjour', 'es': 'Hola', 'de': 'Hallo', 'it': 'Ciao', 'pt': 'Olá' },
-        'How are you?': { 'fr': 'Comment allez-vous ?', 'es': '¿Cómo estás?', 'de': 'Wie geht es dir?', 'it': 'Come stai?', 'pt': 'Como está?' },
-        'Thank you': { 'fr': 'Merci', 'es': 'Gracias', 'de': 'Danke', 'it': 'Grazie', 'pt': 'Obrigado' },
-        'Good morning': { 'fr': 'Bonjour', 'es': 'Buenos días', 'de': 'Guten Morgen', 'it': 'Buongiorno', 'pt': 'Bom dia' }
-      };
-      
-      const simpleTranslation = simulatedTranslations[text]?.[targetLang];
-      if (simpleTranslation) {
-        return simpleTranslation;
-      }
-      
-      // Si pas de traduction simple, utiliser l'API fallback
-      console.log(`🧪 Mode test: pas de traduction simulée, utilisation API fallback`);
-      throw new Error('Mode test: utiliser API fallback');
-    }
-    
-    const model = await loadModel(family, variant);
-    
-    if (!model) {
-      throw new Error(`Modèle ${family}-${variant} non disponible`);
-    }
-
-    // TODO: Implémentation réelle de la traduction avec TensorFlow.js
-    // Pour l'instant, nous simulons un échec pour utiliser le fallback API
-    // Dans une version complète, ici on ferait:
-    // 1. Tokenisation du texte source
-    // 2. Inférence avec le modèle
-    // 3. Décodage du résultat
-    
-    console.log(`⚠️ Traduction TensorFlow.js pas encore implémentée pour ${family}-${variant}`);
-    throw new Error('Traduction TensorFlow.js non implémentée');
-    
-  } catch (error) {
-    console.error('Erreur modèle TensorFlow.js:', error);
-    throw error;
-  }
-}
-
-/**
- * Traduit un texte avec l'API MyMemory (fallback)
- */
-async function translateWithAPI(text: string, sourceLang: string, targetLang: string): Promise<string> {
-  if (sourceLang === targetLang) {
-    return text;
-  }
-
-  try {
-    const url = new URL('https://api.mymemory.translated.net/get');
-    url.searchParams.set('q', text);
-    url.searchParams.set('langpair', `${sourceLang}|${targetLang}`);
-    
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.responseStatus === 200 && data.responseData) {
-      const translatedText = data.responseData.translatedText;
-      
-      // Vérifier que la traduction n'est pas identique (signe d'échec)
-      if (translatedText && translatedText.trim() !== text.trim()) {
-        return translatedText;
-      }
-    }
-    
-    throw new Error('Traduction API non disponible');
-  } catch (error) {
-    console.error('Erreur API de traduction:', error);
-    throw error;
-  }
-}
-
-/**
  * Fonction principale de traduction
- * Essaie d'abord les modèles TensorFlow.js, puis fallback vers l'API
+ * Utilise TranslationModels de manière transparente
  */
 export async function translateMessage(
   text: string, 
@@ -342,32 +104,20 @@ export async function translateMessage(
     return cached;
   }
 
-  let translatedText: string;
-
   try {
-    // Essayer d'abord les modèles TensorFlow.js
-    console.log(`🤖 Tentative de traduction avec modèles TensorFlow.js: ${sourceLang} → ${targetLang}`);
-    translatedText = await translateWithModels(text, sourceLang, targetLang);
-    console.log('✅ Traduction réussie avec modèles TensorFlow.js');
-  } catch {
-    console.log('⚠️ Échec des modèles TensorFlow.js, tentative avec API...');
+    // Utiliser TranslationModels pour la traduction
+    const translatedText = await translationModels.translate(text, sourceLang, targetLang);
     
-    try {
-      // Fallback vers l'API
-      translatedText = await translateWithAPI(text, sourceLang, targetLang);
-      console.log('✅ Traduction réussie avec API de fallback');
-    } catch {
-      console.error('❌ Échec de toutes les méthodes de traduction');
-      throw new Error('Échec de traduction');
+    // Mettre en cache le résultat
+    if (translatedText && translatedText !== text) {
+      translationCache.set(cacheKey, translatedText);
     }
+    
+    return translatedText;
+  } catch (error) {
+    console.error('❌ Erreur de traduction:', error);
+    throw new Error('Échec de traduction');
   }
-
-  // Mettre en cache le résultat
-  if (translatedText && translatedText !== text) {
-    translationCache.set(cacheKey, translatedText);
-  }
-
-  return translatedText;
 }
 
 /**

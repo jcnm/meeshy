@@ -4,7 +4,6 @@
  */
 
 import { ModelCacheEntry, CachedModelInfo } from './model-cache';
-import { MODEL_FAMILIES } from './model-config';
 
 export class TestModelService {
   private static instance: TestModelService;
@@ -54,10 +53,18 @@ export class TestModelService {
     onProgress?: (progress: number) => void
   ): Promise<boolean> {
     const key = `${family}-${variant}`;
-    const modelFamily = MODEL_FAMILIES[family];
-    const modelVariant = modelFamily?.variants[variant];
-
-    if (!modelVariant) {
+    
+    // Vérifier si le modèle existe dans la nouvelle configuration
+    try {
+      // Simple validation - si on peut créer une clé, le modèle existe conceptuellement
+      const isValidModel = ['mt5', 'nllb'].includes(family.toLowerCase()) && 
+                          ['small', 'base', 'large', '200m', '600m', '1_3b', '3_3b'].includes(variant.toLowerCase());
+      
+      if (!isValidModel) {
+        console.error(`❌ Configuration non trouvée pour ${family}-${variant}`);
+        return false;
+      }
+    } catch {
       console.error(`❌ Configuration non trouvée pour ${family}-${variant}`);
       return false;
     }
@@ -76,7 +83,7 @@ export class TestModelService {
       family,
       variant,
       downloadDate: Date.now(),
-      fileSize: modelVariant.downloadSize * 1024 * 1024, // Convert MB to bytes
+      fileSize: 100 * 1024 * 1024, // 100MB simulé
       version: '1.0.0-test',
     };
 

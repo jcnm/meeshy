@@ -160,21 +160,6 @@ export const useOptimizedMessageTranslation = (currentUser: User | null): UseOpt
     return { model: 'MT5_SMALL', reason: 'Aucun modèle disponible - utilisation par défaut' };
   }, []);
 
-  // Fonction de simulation temporaire pour la traduction
-  const simulateTranslation = useCallback(async (
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    modelType: TranslationModelType
-  ): Promise<string> => {
-    // Simulation de traduction avec un délai réaliste
-    const delay = Math.random() * 1000 + 500; // 500-1500ms
-    await new Promise(resolve => setTimeout(resolve, delay));
-    
-    // Retourner une traduction simulée
-    return `[${modelType}] ${text} (${sourceLanguage} → ${targetLanguage})`;
-  }, []);
-
   // Convertir un Message en TranslatedMessage de base
   const convertToTranslatedMessage = useCallback((message: Message): TranslatedMessage => {
     return {
@@ -272,8 +257,7 @@ export const useOptimizedMessageTranslation = (currentUser: User | null): UseOpt
       setIsTranslating(true);
 
       // Traduire avec le modèle choisi
-      // TODO: Utiliser la méthode translateWithModel une fois implémentée
-      const translatedText = await simulateTranslation(
+      const translatedText = await translationModels.translateWithModel(
         message.content,
         message.originalLanguage,
         targetLanguage,
@@ -322,7 +306,6 @@ export const useOptimizedMessageTranslation = (currentUser: User | null): UseOpt
     getTranslation, 
     setTranslation, 
     selectOptimalModel, 
-    simulateTranslation,
     updateModelsStatus
   ]);
 

@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, CheckCircle, Download, AlertTriangle, Brain, Cpu, HardDrive, Wifi } from 'lucide-react';
 import { SystemSpecs, ModelRecommendation, systemDetection } from '@/lib/system-detection';
-import { MODEL_FAMILIES } from '@/lib/model-config';
 import { toast } from 'sonner';
 
 interface ModelSetupModalProps {
@@ -60,8 +59,6 @@ export function ModelSetupModal({ isOpen, onOpenChange, onComplete }: ModelSetup
   };
 
   const mapModelToVariant = (family: 'mt5' | 'nllb', modelName: string): string => {
-    const variants = MODEL_FAMILIES[family].variants;
-    
     // Mapping des noms de modèles vers les variantes
     const mappings: Record<string, Record<string, string>> = {
       mt5: {
@@ -77,11 +74,24 @@ export function ModelSetupModal({ isOpen, onOpenChange, onComplete }: ModelSetup
       }
     };
 
-    return mappings[family][modelName] || Object.keys(variants)[0];
+    return mappings[family][modelName] || 'small';
   };
 
   const getModelVariant = (family: 'mt5' | 'nllb', variant: string) => {
-    return MODEL_FAMILIES[family].variants[variant];
+    // Configuration simplifiée pour les variantes
+    const variants: Record<string, Record<string, { downloadSize: number; description: string; size: string; memoryRequirement: number }>> = {
+      mt5: {
+        small: { downloadSize: 100, description: 'Petit modèle MT5', size: 'small', memoryRequirement: 512 },
+        base: { downloadSize: 300, description: 'Modèle MT5 de base', size: 'base', memoryRequirement: 1024 },
+        large: { downloadSize: 800, description: 'Grand modèle MT5', size: 'large', memoryRequirement: 2048 }
+      },
+      nllb: {
+        'distilled-600M': { downloadSize: 600, description: 'Modèle NLLB distillé', size: 'distilled-600M', memoryRequirement: 1024 },
+        '1.3B': { downloadSize: 1300, description: 'Modèle NLLB 1.3B', size: '1.3B', memoryRequirement: 2048 }
+      }
+    };
+    
+    return variants[family]?.[variant] || { downloadSize: 100, description: 'Modèle par défaut', size: 'default', memoryRequirement: 512 };
   };
 
   const formatFileSize = (bytes: number): string => {

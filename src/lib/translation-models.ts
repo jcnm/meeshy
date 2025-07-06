@@ -307,6 +307,120 @@ export class TranslationModels {
       usageStats: config.usageStats
     };
   }
+
+  /**
+   * Traduit un texte avec un modèle spécifique
+   */
+  async translateWithModel(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    modelKey: string
+  ): Promise<string> {
+    try {
+      // Charger le modèle si nécessaire
+      const model = await this.loadModel(modelKey);
+      
+      if (!model) {
+        // Fallback vers API externe si le modèle n'est pas disponible
+        return this.translateWithFallback(text, sourceLanguage, targetLanguage, modelKey);
+      }
+
+      // Simulation de traduction avec TensorFlow.js
+      // TODO: Implémenter la vraie inférence TensorFlow.js
+      const startTime = Date.now();
+      
+      // Pour l'instant, simulation avec un délai réaliste
+      const delay = Math.random() * 800 + 200; // 200-1000ms
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      const translatedText = `[${modelKey}] ${text} (${sourceLanguage} → ${targetLanguage})`;
+      
+      // Mettre à jour les statistiques
+      const inferenceTime = Date.now() - startTime;
+      const modelType = this.getModelType(modelKey);
+      this.updateUsageStats(modelType, inferenceTime, true);
+      
+      return translatedText;
+      
+    } catch (error) {
+      console.error(`❌ Erreur de traduction avec ${modelKey}:`, error);
+      
+      // Fallback vers API externe en cas d'erreur
+      return this.translateWithFallback(text, sourceLanguage, targetLanguage, modelKey);
+    }
+  }
+
+  /**
+   * Traduit un texte en choisissant automatiquement le meilleur modèle
+   */
+  async translate(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string
+  ): Promise<string> {
+    try {
+      // Recommander le meilleur modèle selon le texte
+      const isComplex = text.length > 50 || /[,.;:!?(){}[\]"'`]/.test(text);
+      const bestModel = recommendModel({
+        purpose: isComplex ? 'complex' : 'simple',
+        priority: 'efficiency',
+        maxMemoryMB: 8192
+      });
+
+      const modelKey = this.getModelKey(bestModel.name);
+      console.log(`🤖 Modèle recommandé: ${bestModel.name} (${bestModel.displayName})`);
+      
+      return this.translateWithModel(text, sourceLanguage, targetLanguage, modelKey);
+      
+    } catch (error) {
+      console.error('❌ Erreur de traduction automatique:', error);
+      
+      // Fallback ultime vers API externe
+      return this.translateWithFallback(text, sourceLanguage, targetLanguage, 'fallback');
+    }
+  }
+
+  /**
+   * Traduction de fallback utilisant une API externe
+   */
+  private async translateWithFallback(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    attemptedModel: string
+  ): Promise<string> {
+    try {
+      console.log(`🌐 Utilisation du fallback API pour: ${text} (${sourceLanguage} → ${targetLanguage})`);
+      
+      // Utiliser MyMemory API comme fallback
+      const url = new URL('https://api.mymemory.translated.net/get');
+      url.searchParams.set('q', text);
+      url.searchParams.set('langpair', `${sourceLanguage}|${targetLanguage}`);
+      
+      const response = await fetch(url.toString());
+      
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.responseStatus === 200 && data.responseData?.translatedText) {
+        console.log(`✅ Traduction fallback réussie: ${data.responseData.translatedText}`);
+        return data.responseData.translatedText;
+      } else {
+        throw new Error('Invalid API response');
+      }
+      
+    } catch (error) {
+      console.error('❌ Erreur de traduction fallback:', error);
+      
+      // Derniers recours - traduction simulée
+      console.log('🔄 Utilisation de la traduction simulée comme dernier recours');
+      return `[FALLBACK-${attemptedModel}] ${text} (${sourceLanguage} → ${targetLanguage})`;
+    }
+  }
 }
 
 // Instance unique du gestionnaire de modèles

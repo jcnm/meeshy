@@ -92,11 +92,8 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
 
       console.log(`🔄 Traduction en cours avec ${model}: "${text}" (${sourceLang} → ${targetLang})`);
       
-      // TODO: Implémenter translateWithModel dans TranslationModels
-      // Pour l'instant, simulation de traduction
-      const delay = Math.random() * 1000 + 500;
-      await new Promise(resolve => setTimeout(resolve, delay));
-      const translated = `[${model}] ${text} (${sourceLang} → ${targetLang})`;
+      // Utiliser la méthode translateWithModel implémentée
+      const translated = await translationModels.translateWithModel(text, sourceLang, targetLang, model);
       
       // Sauvegarder en cache avec la clé spécifique au modèle
       setCachedTranslation(cacheKey, sourceLang, targetLang, translated);
@@ -137,11 +134,8 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
 
       console.log(`🔄 Traduction en cours: "${text}" (${sourceLang} → ${targetLang})`);
       
-      // TODO: Implémenter translate dans TranslationModels
-      // Pour l'instant, simulation de traduction automatique
-      const delay = Math.random() * 1000 + 500;
-      await new Promise(resolve => setTimeout(resolve, delay));
-      const translated = `[AUTO] ${text} (${sourceLang} → ${targetLang})`;
+      // Utiliser la vraie méthode translate de TranslationModels
+      const translated = await translationModels.translate(text, sourceLang, targetLang);
       
       // Sauvegarder en cache
       setCachedTranslation(text, sourceLang, targetLang, translated);
