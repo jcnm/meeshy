@@ -63,12 +63,15 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         <Input
           id="username"
           type="text"
-          placeholder="Votre nom d'utilisateur"
+          placeholder="testuser ou alice.martin@email.com"
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           disabled={isLoading}
           required
         />
+        <p className="text-xs text-gray-500">
+          Comptes de test : testuser, alice.martin@email.com, bob.johnson@email.com
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -76,12 +79,15 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         <Input
           id="password"
           type="password"
-          placeholder="Votre mot de passe"
+          placeholder="password123"
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           disabled={isLoading}
           required
         />
+        <p className="text-xs text-gray-500">
+          Mot de passe pour tous les comptes : <code className="bg-gray-100 px-1 rounded">password123</code>
+        </p>
       </div>
 
       <Button 

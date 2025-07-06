@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { 
@@ -90,7 +90,7 @@ export default function LandingPage() {
       const result = await response.json();
 
       if (response.ok && result.user && result.access_token) {
-        toast.success(`Connecté en tant que ${username} !`);
+        toast.success(`Connecté en tant que ${result.user.firstName} !`);
         handleAuthSuccess(result.user, result.access_token);
       } else {
         toast.error(result.message || 'Erreur de connexion');
@@ -133,7 +133,7 @@ export default function LandingPage() {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => quickLogin('Alice Martin')}
+                  onClick={() => quickLogin('alice.martin@email.com')}
                   className="text-xs px-2 py-1 h-6"
                 >
                   Alice
@@ -141,7 +141,7 @@ export default function LandingPage() {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => quickLogin('Bob Johnson')}
+                  onClick={() => quickLogin('bob.johnson@email.com')}
                   className="text-xs px-2 py-1 h-6"
                 >
                   Bob
@@ -149,7 +149,7 @@ export default function LandingPage() {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => quickLogin('Carlos Rodriguez')}
+                  onClick={() => quickLogin('carlos.rodriguez@email.com')}
                   className="text-xs px-2 py-1 h-6"
                 >
                   Carlos
