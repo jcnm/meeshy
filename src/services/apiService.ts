@@ -49,7 +49,7 @@ class ApiService {
     const url = `${this.config.baseUrl}${endpoint}`;
     
     // Get token from localStorage
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     
     const headers = {
       ...this.config.headers,
@@ -154,7 +154,7 @@ class ApiService {
       });
     }
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     
     return this.request<T>(endpoint, {
       method: 'POST',
@@ -172,14 +172,14 @@ class ApiService {
       if (token) {
         localStorage.setItem('token', token);
       } else {
-        localStorage.removeItem('token');
+        localStorage.removeItem('auth_token');
       }
     }
   }
 
   getAuthToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('token');
+      return localStorage.getItem('auth_token');
     }
     return null;
   }

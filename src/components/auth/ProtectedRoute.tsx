@@ -20,7 +20,7 @@ export function ProtectedRoute({
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token'); // Utiliser auth_token comme les autres composants
     
     if (requireAuth && !user && !token) {
       router.push(redirectTo);

@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -33,9 +32,15 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Vérifier l'accès admin
+  // Vérifier l'accès admin avec useEffect pour éviter setState pendant render
+  useEffect(() => {
+    if (!user || !PermissionsService.canAccessAdmin(user)) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
+
+  // Ne pas rendre le contenu si l'utilisateur n'a pas les permissions
   if (!user || !PermissionsService.canAccessAdmin(user)) {
-    router.push('/dashboard');
     return null;
   }
 
@@ -45,6 +50,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
       toast.success('Déconnexion réussie');
       router.push('/login');
     } catch (error) {
+      console.error('Erreur déconnexion:', error);
       toast.error('Erreur lors de la déconnexion');
     }
   };
@@ -226,7 +232,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
                 {currentPage === '/admin/settings' && 'Paramètres système'}
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Administration Meeshy - Niveau d'accès: {PermissionsService.getRoleDisplayName(user.role)}
+                Administration Meeshy - Niveau d&apos;accès: {PermissionsService.getRoleDisplayName(user.role)}
               </p>
             </div>
             

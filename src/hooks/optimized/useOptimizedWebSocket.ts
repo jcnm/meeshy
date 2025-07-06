@@ -36,7 +36,7 @@ export function useOptimizedWebSocket(options: UseOptimizedWebSocketOptions = {}
         timeout: 5000,
         auth: {
           userId: user?.id,
-          token: localStorage.getItem('token'),
+          token: localStorage.getItem('auth_token'),
         },
       });
 

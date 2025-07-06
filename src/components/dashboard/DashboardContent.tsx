@@ -94,7 +94,7 @@ export function DashboardContent() {
 
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       
       // Charger les conversations
       const conversationsResponse = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.LIST), {
