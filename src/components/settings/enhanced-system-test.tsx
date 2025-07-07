@@ -13,8 +13,21 @@ import { PlayCircle, RotateCcw, Globe, Clock, Zap, CheckCircle, AlertTriangle, D
 import { toast } from 'sonner';
 import { detectLanguageWithConfidence } from '@/utils/translation';
 import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
-import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/unified-model-config';
+import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType as UnifiedModelType } from '@/lib/unified-model-config';
+import { type TranslationModelType as HuggingFaceModelType } from '@/lib/simplified-model-config';
 import { useModelSync, diagnoseModelState, convertModelNameToLocalStorageKey } from '@/utils/model-sync';
+
+// Fonction de mapping pour convertir les types unifiés vers HuggingFace
+const mapToHFModelType = (modelType: UnifiedModelType): HuggingFaceModelType | null => {
+  switch (modelType) {
+    case 'MT5_SMALL':
+      return 'MT5_BASE' as HuggingFaceModelType;
+    case 'NLLB_DISTILLED_600M':
+      return 'NLLB_DISTILLED_600M' as HuggingFaceModelType;
+    default:
+      return null;
+  }
+};
 
 // Configuration des couleurs et noms de modèles
 const MODEL_COLORS: Record<string, string> = {
@@ -202,11 +215,17 @@ export function EnhancedSystemTestComponent() {
       
       console.log(`🔄 Utilisation du modèle: ${translationModelType} pour ${srcLang} → ${targetLanguage}`);
       
+      // Mapper vers le type HuggingFace
+      const hfModelType = mapToHFModelType(translationModelType as UnifiedModelType);
+      if (!hfModelType) {
+        throw new Error(`Modèle non supporté: ${translationModelType}`);
+      }
+      
       const translationResult = await huggingFaceService.translateText(
         text, 
         srcLang, 
         targetLanguage, 
-        translationModelType as TranslationModelType,
+        hfModelType,
         (progress) => {
           console.log(`📊 Progression traduction: ${progress.progress}% - ${progress.status}`);
         }

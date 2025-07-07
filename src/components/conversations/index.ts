@@ -1,4 +1,5 @@
 // Composants de conversations
+export { ConversationLayout } from './ConversationLayout';
 export { ConversationList } from './conversation-list';
 export { ConversationView } from './conversation-view';
 export { MessageBubble } from './message-bubble';

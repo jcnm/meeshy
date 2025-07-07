@@ -19,24 +19,39 @@ import {
 } from '@/services/huggingface-translation';
 import { 
   UNIFIED_TRANSLATION_MODELS,
-  type TranslationModelType,
+  type TranslationModelType as UnifiedModelType,
   estimateSystemCapabilities 
 } from '@/lib/unified-model-config';
+import { 
+  type TranslationModelType as HuggingFaceModelType 
+} from '@/lib/simplified-model-config';
 
 const translationService = HuggingFaceTranslationService.getInstance();
+
+// Fonction de mapping pour convertir les types unifiés vers HuggingFace
+const mapToHFModelType = (modelType: UnifiedModelType): HuggingFaceModelType | null => {
+  switch (modelType) {
+    case 'MT5_SMALL':
+      return 'MT5_BASE' as HuggingFaceModelType;
+    case 'NLLB_DISTILLED_600M':
+      return 'NLLB_DISTILLED_600M' as HuggingFaceModelType;
+    default:
+      return null;
+  }
+};
 
 // Types pour éviter 'any'
 interface ModelStats {
   loaded: number;
   total: number;
-  loadedModels: TranslationModelType[];
-  persistedModels: TranslationModelType[];
-  availableModels: TranslationModelType[];
-  inMemoryModels: TranslationModelType[];
+  loadedModels: UnifiedModelType[];
+  persistedModels: UnifiedModelType[];
+  availableModels: UnifiedModelType[];
+  inMemoryModels: UnifiedModelType[];
 }
 
 interface SystemCapabilities {
-  recommendedModels: { mt5: TranslationModelType; nllb: TranslationModelType };
+  recommendedModels: { mt5: UnifiedModelType; nllb: UnifiedModelType };
   maxMemoryMB: number;
   reasoning: string;
 }
@@ -61,7 +76,7 @@ export function HuggingFaceTranslationTest() {
   const [inputText, setInputText] = useState('Hello, this is a test message for translation.');
   const [sourceLanguage, setSourceLanguage] = useState('en');
   const [targetLanguage, setTargetLanguage] = useState('fr');
-  const [selectedModel, setSelectedModel] = useState<TranslationModelType>('NLLB_DISTILLED_600M');
+  const [selectedModel, setSelectedModel] = useState<UnifiedModelType>('NLLB_DISTILLED_600M');
   const [translationResult, setTranslationResult] = useState<TranslationResult | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState<TranslationProgress | null>(null);
@@ -83,7 +98,12 @@ export function HuggingFaceTranslationTest() {
   // Mettre à jour les statistiques des modèles
   const updateModelStats = () => {
     const stats = translationService.getModelStats();
-    setModelStats(stats);
+    // Adapter les données aux types attendus
+    setModelStats({
+      ...stats,
+      persistedModels: [],
+      inMemoryModels: []
+    });
   };
 
   // Gestionnaire de progression
@@ -110,11 +130,17 @@ export function HuggingFaceTranslationTest() {
     setLoadingProgress(null);
 
     try {
+      // Mapper le type unifié vers HuggingFace
+      const hfModelType = mapToHFModelType(selectedModel);
+      if (!hfModelType) {
+        throw new Error(`Modèle non supporté: ${selectedModel}`);
+      }
+
       const result = await translationService.translateText(
         inputText,
         sourceLanguage,
         targetLanguage,
-        selectedModel,
+        hfModelType,
         handleProgress
       );
       
@@ -250,7 +276,7 @@ export function HuggingFaceTranslationTest() {
           {/* Sélection du modèle */}
           <div>
             <Label htmlFor="model-select">Modèle de Traduction</Label>
-            <Select value={selectedModel} onValueChange={(value) => setSelectedModel(value as TranslationModelType)}>
+            <Select value={selectedModel} onValueChange={(value) => setSelectedModel(value as UnifiedModelType)}>
               <SelectTrigger>
                 <SelectValue placeholder="Choisir un modèle" />
               </SelectTrigger>

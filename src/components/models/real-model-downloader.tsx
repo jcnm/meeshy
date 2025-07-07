@@ -14,10 +14,25 @@ import {
 import { 
   UNIFIED_TRANSLATION_MODELS, 
   type UnifiedModelConfig,
-  type TranslationModelType,
+  type TranslationModelType as UnifiedModelType,
   getCompatibleModels,
   estimateSystemCapabilities 
 } from '@/lib/unified-model-config';
+import { 
+  type TranslationModelType as HuggingFaceModelType 
+} from '@/lib/simplified-model-config';
+
+// Fonction de mapping pour convertir les types unifiés vers HuggingFace
+const mapToHFModelType = (modelType: UnifiedModelType): HuggingFaceModelType | null => {
+  switch (modelType) {
+    case 'MT5_SMALL':
+      return 'MT5_BASE' as HuggingFaceModelType;
+    case 'NLLB_DISTILLED_600M':
+      return 'NLLB_DISTILLED_600M' as HuggingFaceModelType;
+    default:
+      return null;
+  }
+};
 
 /**
  * Formate une taille en octets de manière lisible
@@ -39,7 +54,7 @@ function formatBytes(bytes: number): string {
  */
 export function RealModelDownloader() {
   const [downloadProgress, setDownloadProgress] = useState<Record<string, TranslationProgress>>({});
-  const [loadedModels, setLoadedModels] = useState<TranslationModelType[]>([]);
+  const [loadedModels, setLoadedModels] = useState<UnifiedModelType[]>([]);
   const [systemCapabilities] = useState(() => estimateSystemCapabilities());
 
   const modelService = HuggingFaceTranslationService.getInstance();
@@ -61,11 +76,17 @@ export function RealModelDownloader() {
   /**
    * Télécharge un modèle spécifique
    */
-  const downloadModel = async (modelName: TranslationModelType) => {
+  const downloadModel = async (modelName: UnifiedModelType) => {
     try {
       console.log(`🔄 Démarrage téléchargement: ${modelName}`);
       
-      await modelService.loadModel(modelName, (progress: TranslationProgress) => {
+      // Mapper vers le type HuggingFace
+      const hfModelType = mapToHFModelType(modelName);
+      if (!hfModelType) {
+        throw new Error(`Modèle non supporté: ${modelName}`);
+      }
+      
+      await modelService.loadModel(hfModelType, (progress: TranslationProgress) => {
         setDownloadProgress(prev => ({
           ...prev,
           [modelName]: progress
@@ -104,8 +125,15 @@ export function RealModelDownloader() {
   /**
    * Décharge un modèle de la mémoire
    */
-  const unloadModel = async (modelName: TranslationModelType) => {
-    const success = await modelService.unloadModel(modelName);
+  const unloadModel = async (modelName: UnifiedModelType) => {
+    // Mapper vers le type HuggingFace
+    const hfModelType = mapToHFModelType(modelName);
+    if (!hfModelType) {
+      toast.error(`Modèle non supporté: ${modelName}`);
+      return;
+    }
+    
+    const success = await modelService.unloadModel(hfModelType);
     if (success) {
       const stats = modelService.getModelStats();
       setLoadedModels(stats.loadedModels);
@@ -118,7 +146,7 @@ export function RealModelDownloader() {
   /**
    * Obtient le statut d'un modèle
    */
-  const getModelStatus = (modelName: TranslationModelType) => {
+  const getModelStatus = (modelName: UnifiedModelType) => {
     if (loadedModels.includes(modelName)) return 'loaded';
     if (downloadProgress[modelName]) return downloadProgress[modelName].status;
     return 'not-downloaded';
@@ -340,7 +368,7 @@ function ModelCard({
 }: {
   config: UnifiedModelConfig;
   status: string;
-  progress?: DownloadProgress;
+  progress?: TranslationProgress;
   onDownload: () => void;
   onUnload: () => void;
   isRecommended?: boolean;
@@ -430,17 +458,18 @@ function ModelCard({
         {/* Barre de progression */}
         {progress && isDownloading && (
           <div className="space-y-1">
-            <Progress value={progress.progress} className="h-2" />
+            <Progress value={progress.progress || 0} className="h-2" />
             <div className="flex justify-between text-xs text-gray-600">
               <span>{progress.status === 'downloading' ? 'Téléchargement' : 'Chargement'}</span>
-              <span>{Math.round(progress.progress)}%</span>
+              <span>{Math.round(progress.progress || 0)}%</span>
             </div>
-            {/* Affichage des octets téléchargés */}
+            {/* Affichage des octets téléchargés - non disponible dans TranslationProgress
             {progress.bytesLoaded !== undefined && progress.bytesTotal !== undefined && progress.bytesTotal > 0 && (
               <div className="text-xs text-gray-500 text-center">
                 {formatBytes(progress.bytesLoaded)} / {formatBytes(progress.bytesTotal)}
               </div>
             )}
+            */}
           </div>
         )}
 
