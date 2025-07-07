@@ -36,6 +36,7 @@ export function MessageBubble({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
   
   const isOwnMessage = message.senderId === currentUserId;
   const isReceivedMessage = !isOwnMessage;
@@ -96,6 +97,8 @@ export function MessageBubble({
     try {
       setIsTranslating(true);
       await onTranslate(message.id, targetLanguage, forceRetranslate);
+      // Fermer le popover après traduction réussie
+      setIsTranslationPopoverOpen(false);
     } catch (error) {
       console.error('Erreur de traduction:', error);
     } finally {
@@ -273,7 +276,7 @@ export function MessageBubble({
             
             {/* Translation icon */}
             {!isEditing && availableLanguages.length > 0 && (
-              <Popover>
+              <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="ghost"

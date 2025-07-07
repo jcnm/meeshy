@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -121,6 +122,25 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
+  // Informations à masquer pour les autres utilisateurs
+  const shouldShowPrivateInfo = (field: 'email' | 'phone' | 'stats' | 'preferences') => {
+    if (isMyProfile) return true;
+    
+    // Pour l'instant, on masque toutes les infos privées pour les autres utilisateurs
+    // Plus tard, on pourra ajouter des paramètres de confidentialité par utilisateur
+    switch (field) {
+      case 'email':
+      case 'phone':
+        return false; // Masquer les infos de contact
+      case 'stats':
+        return true; // Garder les stats visibles (activité publique)
+      case 'preferences':
+        return false; // Masquer les préférences linguistiques
+      default:
+        return true;
+    }
+  };
+
   const getUserDisplayName = (userData: User): string => {
     if (userData.displayName) return userData.displayName;
     return `${userData.firstName} ${userData.lastName}`.trim() || userData.username;
@@ -159,7 +179,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <DashboardLayout title="Profil utilisateur" hideSearch>
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center space-x-4 mb-8">
             <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
@@ -176,13 +196,13 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             </div>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <DashboardLayout title="Profil utilisateur" hideSearch>
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center space-x-4 mb-8">
             <Button
@@ -211,12 +231,15 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <DashboardLayout 
+      title={isMyProfile ? 'Mon profil' : `Profil de ${getUserDisplayName(user)}`} 
+      hideSearch
+    >
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -295,102 +318,133 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               </CardContent>
             </Card>
 
-            {/* Contact Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Informations de contact</CardTitle>
-                <CardDescription>
-                  {isMyProfile ? 'Vos informations de contact' : 'Informations publiques'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-600">{user.email}</span>
-                </div>
-                
-                {user.phoneNumber && (
+            {/* Contact Info - Masqué pour les autres utilisateurs */}
+            {shouldShowPrivateInfo('email') && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informations de contact</CardTitle>
+                  <CardDescription>
+                    Vos informations de contact privées
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">{user.phoneNumber}</span>
-                  </div>
-                )}
-                
-                <div className="flex items-center space-x-3">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-600">
-                    Membre depuis le {user.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue'}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Language Preferences */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Languages className="h-5 w-5" />
-                  <span>Préférences linguistiques</span>
-                </CardTitle>
-                <CardDescription>
-                  Configuration de traduction automatique
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Globe className="h-4 w-4 text-blue-500" />
-                      <span className="font-medium">Langue système</span>
-                    </div>
-                    <Badge variant="secondary">{user.systemLanguage}</Badge>
+                    <Mail className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">{user.email}</span>
                   </div>
                   
-                  <div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Languages className="h-4 w-4 text-green-500" />
-                      <span className="font-medium">Langue régionale</span>
+                  {user.phoneNumber && (
+                    <div className="flex items-center space-x-3">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-600">{user.phoneNumber}</span>
                     </div>
-                    <Badge variant="secondary">{user.regionalLanguage}</Badge>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Traduction automatique</span>
-                    <Badge variant={user.autoTranslateEnabled ? "default" : "secondary"}>
-                      {user.autoTranslateEnabled ? 'Activée' : 'Désactivée'}
-                    </Badge>
-                  </div>
-                  
-                  {user.autoTranslateEnabled && (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Vers langue système</span>
-                        <Badge variant={user.translateToSystemLanguage ? "default" : "secondary"}>
-                          {user.translateToSystemLanguage ? 'Oui' : 'Non'}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Vers langue régionale</span>
-                        <Badge variant={user.translateToRegionalLanguage ? "default" : "secondary"}>
-                          {user.translateToRegionalLanguage ? 'Oui' : 'Non'}
-                        </Badge>
-                      </div>
-                    </>
                   )}
-                </div>
-              </CardContent>
-            </Card>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">
+                      Membre depuis le {user.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Informations publiques de base */}
+            {!shouldShowPrivateInfo('email') && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informations publiques</CardTitle>
+                  <CardDescription>
+                    Informations visibles par tous les utilisateurs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">
+                      Membre depuis le {user.createdAt ? new Date(user.createdAt).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <Globe className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-600">
+                      Utilisateur actif de Meeshy
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Language Preferences - Masqué pour les autres utilisateurs */}
+            {shouldShowPrivateInfo('preferences') && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Languages className="h-5 w-5" />
+                    <span>Préférences linguistiques</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Configuration de traduction automatique
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Globe className="h-4 w-4 text-blue-500" />
+                        <span className="font-medium">Langue système</span>
+                      </div>
+                      <Badge variant="secondary">{user.systemLanguage}</Badge>
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Languages className="h-4 w-4 text-green-500" />
+                        <span className="font-medium">Langue régionale</span>
+                      </div>
+                      <Badge variant="secondary">{user.regionalLanguage}</Badge>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Traduction automatique</span>
+                      <Badge variant={user.autoTranslateEnabled ? "default" : "secondary"}>
+                        {user.autoTranslateEnabled ? 'Activée' : 'Désactivée'}
+                      </Badge>
+                    </div>
+                    
+                    {user.autoTranslateEnabled && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Vers langue système</span>
+                          <Badge variant={user.translateToSystemLanguage ? "default" : "secondary"}>
+                            {user.translateToSystemLanguage ? 'Oui' : 'Non'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Vers langue régionale</span>
+                          <Badge variant={user.translateToRegionalLanguage ? "default" : "secondary"}>
+                            {user.translateToRegionalLanguage ? 'Oui' : 'Non'}
+                          </Badge>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Stats Sidebar */}
           <div className="space-y-6">
             {/* Activity Stats */}
-            {stats && (
+            {stats && shouldShowPrivateInfo('stats') && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -504,6 +558,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

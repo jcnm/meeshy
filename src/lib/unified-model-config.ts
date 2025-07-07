@@ -92,8 +92,8 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
     },
     color: '#22c55e', // Vert - très efficace
     huggingFaceId: 'Xenova/mt5-small',
-    modelUrl: 'https://huggingface.co/google/mt5-small',
-    tokenizerUrl: 'https://huggingface.co/google/mt5-small',
+    modelUrl: 'https://huggingface.co/Xenova/mt5-small',
+    tokenizerUrl: 'https://huggingface.co/Xenova/mt5-small',
     maxTokens: 100,
     purpose: 'simple',
     description: 'Modèle léger et rapide, idéal pour machines avec ressources limitées'
@@ -121,11 +121,11 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
     },
     color: '#84cc16', // Vert clair - efficace
     huggingFaceId: 'Xenova/mt5-base',
-    modelUrl: 'https://huggingface.co/google/mt5-base',
-    tokenizerUrl: 'https://huggingface.co/google/mt5-base',
+    modelUrl: 'https://huggingface.co/Xenova/mt5-base',
+    tokenizerUrl: 'https://huggingface.co/Xenova/mt5-base',
     maxTokens: 100,
     purpose: 'simple',
-    description: 'Modèle équilibré entre performance et qualité'
+    description: 'Modèle équilibré entre performance et qualité (TensorFlow.js optimisé)'
   },
 
   MT5_LARGE: {
