@@ -44,15 +44,21 @@ export function MessageBubble({
   const hasTranslations = message.translations && message.translations.length > 0;
   const hasFailedTranslation = message.translationFailed;
   
+  // Debug : afficher les informations du message
+  console.log(`📋 Message ${message.id.slice(0, 8)}:`, {
+    hasTranslations,
+    translationsCount: message.translations?.length || 0,
+    showingOriginal: message.showingOriginal,
+    canToggleView: hasTranslations
+  });
+  
   // Languages already translated
   const translatedLanguages = hasTranslations 
     ? message.translations!.map(t => t.language) 
     : [];
   
-  // Available languages for new translations
-  const availableLanguages = SUPPORTED_LANGUAGES.filter(lang => 
-    !translatedLanguages.includes(lang.code) || lang.code === currentUserLanguage
-  );
+  // Available languages for new translations (TOUTES les langues supportées)
+  const availableLanguages = SUPPORTED_LANGUAGES;
   
   // Checks
   const canToggleView = hasTranslations;
@@ -248,7 +254,7 @@ export function MessageBubble({
           }`}>
             
             {/* Eye icon - toggle between showing original/translations */}
-            {isReceivedMessage && canToggleView && (
+            {canToggleView && (
               <Button
                 variant="ghost"
                 size="sm"
