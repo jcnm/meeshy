@@ -183,7 +183,6 @@ export class SimplifiedTranslationService {
       });
 
       const pipelinePromise = pipeline('translation', config.huggingFaceId, {
-        quantized: true, // Optimisation mémoire
         revision: 'main'
       });
 

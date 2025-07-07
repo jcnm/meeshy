@@ -88,6 +88,7 @@ export interface TranslatedMessage extends Message {
   translationError?: string;
   translationFailed?: boolean;
   translations?: Translation[];
+  modelUsed?: TranslationModelType;
 }
 
 export interface ChatRoom {

@@ -25,7 +25,7 @@ import {
   Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { User, Conversation, Message, TranslatedMessage } from '@/types';
+import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
 import { MessageBubble } from './message-bubble';
 import { useMessageTranslation } from '@/hooks/use-message-translation';
 import { SocketService } from '@/lib/socket.service';
@@ -120,20 +120,72 @@ export function ConversationView({
         return;
       }
 
-      // Si déjà traduit et pas de force-retranslation, basculer l'affichage
-      if (translatedMessages.has(messageId) && !forceRetranslate) {
+      const currentTranslated = translatedMessages.get(messageId);
+      
+      // Si déjà traduit dans cette langue et pas de force-retranslation, basculer l'affichage
+      if (currentTranslated?.translations?.some(t => t.language === targetLanguage) && !forceRetranslate) {
         setShowingOriginal(prev => new Map(prev.set(messageId, !prev.get(messageId))));
         return;
       }
 
+      // Marquer comme en cours de traduction
+      if (currentTranslated) {
+        setTranslatedMessages(prev => new Map(prev.set(messageId, {
+          ...currentTranslated,
+          isTranslating: true
+        })));
+      } else {
+        setTranslatedMessages(prev => new Map(prev.set(messageId, {
+          ...message,
+          isTranslating: true,
+          translations: []
+        } as TranslatedMessage)));
+      }
+
       // Effectuer la traduction
       const translatedMessage = await translateMessage(message, targetLanguage);
-      setTranslatedMessages(prev => new Map(prev.set(messageId, translatedMessage)));
+      
+      // Ajouter ou mettre à jour la traduction dans la liste
+      const existingTranslated = translatedMessages.get(messageId);
+      const existingTranslations = existingTranslated?.translations || [];
+      
+      // Retirer l'ancienne traduction dans cette langue si elle existe
+      const filteredTranslations = existingTranslations.filter(t => t.language !== targetLanguage);
+      
+      // Ajouter la nouvelle traduction avec drapeau
+      const flag = SUPPORTED_LANGUAGES.find(lang => lang.code === targetLanguage)?.flag || '🌐';
+      const newTranslation: Translation = {
+        language: targetLanguage,
+        content: translatedMessage.translatedContent || message.content,
+        flag,
+        createdAt: new Date(),
+        modelUsed: translatedMessage.modelUsed
+      };
+      
+      const updatedTranslatedMessage: TranslatedMessage = {
+        ...message,
+        ...translatedMessage,
+        translations: [...filteredTranslations, newTranslation],
+        isTranslating: false
+      };
+
+      setTranslatedMessages(prev => new Map(prev.set(messageId, updatedTranslatedMessage)));
       setShowingOriginal(prev => new Map(prev.set(messageId, false)));
       
       toast.success('Message traduit avec succès');
     } catch (error) {
       console.error('Erreur lors de la traduction:', error);
+      
+      // Retirer l'état de traduction en cas d'erreur
+      const currentTranslated = translatedMessages.get(messageId);
+      if (currentTranslated) {
+        setTranslatedMessages(prev => new Map(prev.set(messageId, {
+          ...currentTranslated,
+          isTranslating: false,
+          translationFailed: true
+        })));
+      }
+      
       toast.error('Erreur lors de la traduction du message');
     }
   };

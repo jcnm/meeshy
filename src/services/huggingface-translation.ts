@@ -561,15 +561,23 @@ export class HuggingFaceTranslationService {
    */
   async preloadRecommendedModels(onProgress?: (progress: TranslationProgress) => void): Promise<void> {
     try {
-      const capabilities = estimateSystemCapabilities();
+      const activeModels = getAllActiveModels();
+      const basicModel = activeModels.find(m => m.type === 'basic')?.config.name;
+      const highModel = activeModels.find(m => m.type === 'high')?.config.name;
       
-      console.log(`🚀 Préchargement du modèle recommandé: ${capabilities.recommendedModel}`);
-      console.log(`🔄 Raison: ${capabilities.reasoning}`);
+      if (!basicModel || !highModel) {
+        throw new Error('Modèles actifs non configurés');
+      }
       
-      // Précharger le modèle recommandé
-      await this.loadModel(capabilities.recommendedModel, onProgress);
+      console.log(`🚀 Préchargement des modèles actifs: ${basicModel}, ${highModel}`);
       
-      console.log(`✅ Modèle recommandé préchargé: ${capabilities.recommendedModel}`);
+      // Précharger le modèle de base d'abord (plus léger)
+      await this.loadModel(basicModel, onProgress);
+      console.log(`✅ Modèle de base préchargé: ${basicModel}`);
+      
+      // Puis le modèle avancé
+      await this.loadModel(highModel, onProgress);
+      console.log(`✅ Modèle avancé préchargé: ${highModel}`);
     } catch (error) {
       console.error('❌ Erreur lors du préchargement du modèle:', error);
       throw error;
@@ -612,14 +620,19 @@ export class HuggingFaceTranslationService {
       }
     }
 
-    // En dernier recours, charger un modèle recommandé selon les capacités système
+    // En dernier recours, charger un modèle recommandé selon la configuration
     try {
-      const capabilities = estimateSystemCapabilities();
-      const modelType = capabilities.recommendedModel;
-      const pipeline = await this.loadModel(modelType, onProgress);
+      const activeModels = getAllActiveModels();
+      const basicModel = activeModels.find(m => m.type === 'basic')?.config.name;
       
-      console.log(`✅ Modèle recommandé chargé: ${modelType}`);
-      return { modelType, pipeline };
+      if (!basicModel) {
+        throw new Error('Aucun modèle actif configuré');
+      }
+      
+      const pipeline = await this.loadModel(basicModel, onProgress);
+      
+      console.log(`✅ Modèle de base chargé: ${basicModel}`);
+      return { modelType: basicModel, pipeline };
     } catch (error) {
       console.error('❌ Impossible de charger un modèle:', error);
       throw new Error('Aucun modèle de traduction disponible');

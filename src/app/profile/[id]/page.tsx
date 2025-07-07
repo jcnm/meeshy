@@ -517,7 +517,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                       onClick={() => router.push('/search')}
                     >
                       <Users className="h-4 w-4 mr-2" />
-                      D&apos;autres utilisateurs
+                      Chercher d&apos;autres utilisateurs
                     </Button>
                   </>
                 ) : (

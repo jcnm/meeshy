@@ -35,9 +35,10 @@ export function MessageBubble({
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
-  const [isTranslating, setIsTranslating] = useState(false);
+  const [isLocalTranslating, setIsLocalTranslating] = useState(false);
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
   
+  const isTranslating = message.isTranslating || isLocalTranslating;
   const isOwnMessage = message.senderId === currentUserId;
   const isReceivedMessage = !isOwnMessage;
   const hasTranslations = message.translations && message.translations.length > 0;
@@ -95,14 +96,14 @@ export function MessageBubble({
 
   const handleTranslate = async (targetLanguage: string, forceRetranslate: boolean = false) => {
     try {
-      setIsTranslating(true);
+      setIsLocalTranslating(true);
       await onTranslate(message.id, targetLanguage, forceRetranslate);
       // Fermer le popover après traduction réussie
       setIsTranslationPopoverOpen(false);
     } catch (error) {
       console.error('Erreur de traduction:', error);
     } finally {
-      setIsTranslating(false);
+      setIsLocalTranslating(false);
     }
   };
 
