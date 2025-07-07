@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { detectLanguage } from '@/utils/translation';
 import { TranslationPerformanceTips } from '@/components/translation/translation-performance-tips';
+import { SystemPerformanceMonitor } from '@/components/translation/system-performance-monitor';
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -693,6 +694,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {/* Moniteur de performance système */}
+                <SystemPerformanceMonitor />
                 
                 {/* Conseils de performance */}
                 <div className="mt-2">
