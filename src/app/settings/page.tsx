@@ -7,6 +7,7 @@ import { User } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { CompleteUserSettings } from '@/components/settings/complete-user-settings';
+import { RealModelDownloader } from '@/components/models/real-model-downloader';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 export default function SettingsPage() {

@@ -17,7 +17,7 @@ import {
 import { User as UserType } from '@/types';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
-import { UnifiedModelSettings } from './unified-model-settings';
+import { UnifiedModelSettings } from './real-unified-model-settings';
 import { CacheManager } from '@/components/models/cache-manager';
 import { ThemeSettings } from './theme-settings';
 import { PrivacySettings } from './privacy-settings';

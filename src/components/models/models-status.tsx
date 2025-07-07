@@ -66,8 +66,8 @@ export function ModelsStatus({ className }: ModelsStatusProps) {
     setIsPreloading(true);
     try {
       await Promise.all([
-        translationModels.loadModel('mt5'),
-        translationModels.loadModel('nllb')
+        translationModels.loadModel('MT5_SMALL'),
+        translationModels.loadModel('NLLB_DISTILLED_600M')
       ]);
     } catch (error) {
       console.error('Erreur lors du préchargement:', error);

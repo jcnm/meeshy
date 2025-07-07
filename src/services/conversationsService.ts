@@ -10,6 +10,120 @@ import type {
 } from '../types';
 
 export class ConversationsService {
+  // Cache simple pour les conversations
+  private conversationsCache: { data: Conversation[], timestamp: number } | null = null;
+  private readonly CACHE_DURATION = 30000; // 30 secondes
+  
+  // Gestion des requêtes en cours pour éviter les race conditions
+  private pendingRequests: Map<string, AbortController> = new Map();
+
+  /**
+   * Vérifie si le cache des conversations est valide
+   */
+  private isCacheValid(): boolean {
+    if (!this.conversationsCache) return false;
+    return (Date.now() - this.conversationsCache.timestamp) < this.CACHE_DURATION;
+  }
+
+  /**
+   * Met en cache les conversations
+   */
+  private setCacheConversations(conversations: Conversation[]): void {
+    this.conversationsCache = {
+      data: conversations,
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * Transforme les données d'un message du backend vers le format frontend
+   */
+  private transformMessageData(backendMessage: unknown): Message {
+    const msg = backendMessage as Record<string, unknown>;
+    const sender = msg.sender as Record<string, unknown> | undefined;
+    
+    // Créer un sender par défaut si non fourni
+    const defaultSender: User = {
+      id: String(msg.senderId) || 'unknown',
+      username: 'Unknown User',
+      firstName: '',
+      lastName: '',
+      displayName: 'Utilisateur Inconnu',
+      email: 'unknown@example.com',
+      phoneNumber: '',
+      role: 'USER',
+      permissions: {
+        canAccessAdmin: false,
+        canManageUsers: false,
+        canManageGroups: false,
+        canManageConversations: false,
+        canViewAnalytics: false,
+        canModerateContent: false,
+        canViewAuditLogs: false,
+        canManageNotifications: false,
+        canManageTranslations: false,
+      },
+      systemLanguage: 'fr',
+      regionalLanguage: 'fr',
+      customDestinationLanguage: undefined,
+      autoTranslateEnabled: false,
+      translateToSystemLanguage: false,
+      translateToRegionalLanguage: false,
+      useCustomDestination: false,
+      isOnline: false,
+      avatar: undefined,
+      lastSeen: undefined,
+      createdAt: new Date(),
+      lastActiveAt: new Date(),
+    };
+    
+    return {
+      id: String(msg.id),
+      content: String(msg.content),
+      senderId: String(msg.senderId),
+      conversationId: String(msg.conversationId),
+      originalLanguage: String(msg.originalLanguage) || 'fr',
+      isEdited: Boolean(msg.isEdited),
+      isDeleted: Boolean(msg.isDeleted),
+      editedAt: msg.editedAt ? new Date(String(msg.editedAt)) : undefined,
+      createdAt: new Date(String(msg.createdAt)),
+      updatedAt: new Date(String(msg.updatedAt)),
+      sender: sender ? {
+        id: String(sender.id),
+        username: String(sender.username),
+        firstName: sender.firstName as string,
+        lastName: sender.lastName as string,
+        displayName: sender.displayName as string,
+        email: String(sender.email),
+        phoneNumber: sender.phoneNumber as string,
+        role: (sender.role as UserRole) || 'USER',
+        permissions: (sender.permissions as UserPermissions) || {
+          canAccessAdmin: false,
+          canManageUsers: false,
+          canManageGroups: false,
+          canManageConversations: false,
+          canViewAnalytics: false,
+          canModerateContent: false,
+          canViewAuditLogs: false,
+          canManageNotifications: false,
+          canManageTranslations: false,
+        },
+        systemLanguage: String(sender.systemLanguage) || 'fr',
+        regionalLanguage: String(sender.regionalLanguage) || 'fr',
+        customDestinationLanguage: sender.customDestinationLanguage as string,
+        autoTranslateEnabled: Boolean(sender.autoTranslateEnabled),
+        translateToSystemLanguage: Boolean(sender.translateToSystemLanguage),
+        translateToRegionalLanguage: Boolean(sender.translateToRegionalLanguage),
+        useCustomDestination: Boolean(sender.useCustomDestination),
+        isOnline: Boolean(sender.isOnline),
+        avatar: sender.avatar as string,
+        lastSeen: sender.lastSeen ? new Date(String(sender.lastSeen)) : undefined,
+        createdAt: new Date(String(sender.createdAt)),
+        lastActiveAt: new Date(String(sender.lastActiveAt)),
+      } : defaultSender
+    };
+  }
+
   /**
    * Transforme les données de conversation du backend vers le format frontend
    */
@@ -72,6 +186,7 @@ export class ConversationsService {
           }
         };
       }) : [],
+      lastMessage: conv.lastMessage ? this.transformMessageData(conv.lastMessage) : undefined,
       unreadCount: Number(conv.unreadCount) || 0
     };
   }
@@ -80,8 +195,19 @@ export class ConversationsService {
    * Obtenir toutes les conversations de l'utilisateur
    */
   async getConversations(): Promise<Conversation[]> {
+    // Vérifier le cache
+    if (this.isCacheValid()) {
+      console.log('🔄 Utilisation du cache pour les conversations');
+      return this.conversationsCache!.data;
+    }
+    
     const response = await apiService.get<unknown[]>('/conversations');
-    return response.data.map(conv => this.transformConversationData(conv));
+    const conversations = response.data.map(conv => this.transformConversationData(conv));
+    
+    // Mettre en cache les conversations
+    this.setCacheConversations(conversations);
+    
+    return conversations;
   }
 
   /**
@@ -115,12 +241,47 @@ export class ConversationsService {
     total: number;
     hasMore: boolean;
   }> {
-    const response = await apiService.get<{
-      messages: Message[];
-      total: number;
-      hasMore: boolean;
-    }>(`/conversations/${conversationId}/messages`, { page, limit });
-    return response.data;
+    try {
+      // Créer un controller pour annuler les requêtes précédentes
+      const requestKey = `messages-${conversationId}`;
+      const controller = this.createRequestController(requestKey);
+      
+      const response = await apiService.get<{
+        messages: unknown[];
+        total: number;
+        hasMore: boolean;
+      }>(`/conversations/${conversationId}/messages`, { page, limit }, {
+        signal: controller.signal
+      });
+      
+      // Nettoyer le controller une fois la requête terminée
+      this.pendingRequests.delete(requestKey);
+      
+      // Transformer les messages du backend vers le format frontend
+      const transformedMessages = (response.data?.messages || []).map(msg => this.transformMessageData(msg));
+      
+      // Vérification de sécurité pour éviter les erreurs undefined
+      return {
+        messages: transformedMessages,
+        total: response.data?.total || 0,
+        hasMore: response.data?.hasMore || false,
+      };
+    } catch (error) {
+      // Vérifier si l'erreur est due à l'annulation
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('🚫 Requête getMessages annulée pour:', conversationId);
+        // Retourner une erreur spéciale pour indiquer l'annulation
+        throw new Error('REQUEST_CANCELLED');
+      }
+      
+      console.error('❌ Erreur lors du chargement des messages:', error);
+      // Retourner des données par défaut en cas d'erreur
+      return {
+        messages: [],
+        total: 0,
+        hasMore: false,
+      };
+    }
   }
 
   /**
@@ -174,6 +335,27 @@ export class ConversationsService {
   async updateConversation(id: string, data: Partial<Conversation>): Promise<Conversation> {
     const response = await apiService.patch<Conversation>(`/conversations/${id}`, data);
     return response.data;
+  }
+
+  /**
+   * Annule toutes les requêtes en cours pour un type donné
+   */
+  private cancelPendingRequest(key: string): void {
+    const controller = this.pendingRequests.get(key);
+    if (controller) {
+      controller.abort();
+      this.pendingRequests.delete(key);
+    }
+  }
+
+  /**
+   * Crée un nouveau controller pour une requête
+   */
+  private createRequestController(key: string): AbortController {
+    this.cancelPendingRequest(key);
+    const controller = new AbortController();
+    this.pendingRequests.set(key, controller);
+    return controller;
   }
 }
 

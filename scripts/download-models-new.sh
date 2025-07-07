@@ -16,9 +16,13 @@ mkdir -p "$MODELS_DIR"
 mkdir -p "$TEMP_DIR"
 
 # Configuration des modèles à télécharger
-declare -A MODELS
-MODELS["mt5-small"]="https://huggingface.co/Xenova/mt5-small/resolve/main"
-MODELS["nllb-200-distilled-600M"]="https://huggingface.co/Xenova/nllb-200-distilled-600M/resolve/main"
+declare -A MODELS=(
+    # Modèles mT5 (plus petits, optimisés pour les messages courts)
+    ["mt5-small"]="https://huggingface.co/Xenova/mt5-small/resolve/main"
+    
+    # Modèles NLLB (multilingues, optimisés pour les langues rares)  
+    ["nllb-200-distilled-600M"]="https://huggingface.co/Xenova/nllb-200-distilled-600M/resolve/main"
+)
 
 # Fonction pour télécharger un fichier avec retry
 download_with_retry() {

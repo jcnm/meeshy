@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { getCachedTranslation, setCachedTranslation } from '@/utils/translation';
-import { translationModels } from '@/lib/translation-models';
+import { translationModels, type TranslationModelType } from '@/lib/translation-models';
 
 interface UseSimpleTranslationReturn {
   translate: (text: string, sourceLang: string, targetLang: string) => Promise<string>;
@@ -50,8 +50,7 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
       const allModels = translationModels.getAllAvailableModels();
       const loadPromises = allModels.slice(0, 3).map(async (modelType) => {
         try {
-          const modelKey = translationModels.getModelKey(modelType);
-          await translationModels.loadModel(modelKey);
+          await translationModels.loadModel(modelType);
           console.log(`✅ Modèle ${modelType} préchargé`);
         } catch (error) {
           console.warn(`⚠️ Échec du préchargement du modèle ${modelType}:`, error);
@@ -93,7 +92,7 @@ export const useSimpleTranslation = (): UseSimpleTranslationReturn => {
       console.log(`🔄 Traduction en cours avec ${model}: "${text}" (${sourceLang} → ${targetLang})`);
       
       // Utiliser la méthode translateWithModel implémentée
-      const translated = await translationModels.translateWithModel(text, sourceLang, targetLang, model);
+      const translated = await translationModels.translateWithModel(text, sourceLang, targetLang, model as TranslationModelType);
       
       // Sauvegarder en cache avec la clé spécifique au modèle
       setCachedTranslation(cacheKey, sourceLang, targetLang, translated);

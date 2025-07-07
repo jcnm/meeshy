@@ -10,12 +10,10 @@ export type TranslationModelType =
   | 'MT5_LARGE' 
   | 'MT5_XL' 
   | 'MT5_XXL'
-  | 'NLLB_200M' 
   | 'NLLB_DISTILLED_600M' 
   | 'NLLB_DISTILLED_1_3B'
   | 'NLLB_1_3B' 
-  | 'NLLB_3_3B'
-  | 'NLLB_54B';
+  | 'NLLB_3_3B';
 
 export type ModelFamily = 'MT5' | 'NLLB';
 export type ModelQuality = 'basic' | 'good' | 'high' | 'excellent' | 'premium';
@@ -54,9 +52,10 @@ export interface UnifiedModelConfig {
   cost: ModelCost;
   color: string; // Couleur pour l'UI
   
-  // URLs et ressources
-  modelUrl: string;
-  tokenizerUrl?: string;
+  // URLs et ressources - Utilisant les IDs Hugging Face officiels
+  huggingFaceId: string; // ID officiel Hugging Face (ex: "facebook/nllb-200-distilled-600M")
+  modelUrl?: string; // URL Hugging Face du modèle (pour référence)
+  tokenizerUrl?: string; // URL Hugging Face du tokenizer (pour référence)
   
   // Métadonnées de configuration
   maxTokens: number;
@@ -92,8 +91,9 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 150 // 150ms
     },
     color: '#22c55e', // Vert - très efficace
-    modelUrl: 'https://huggingface.co/google/mt5-small/resolve/main/tf_model.h5',
-    tokenizerUrl: 'https://huggingface.co/google/mt5-small/resolve/main/tokenizer.json',
+    huggingFaceId: 'Xenova/mt5-small',
+    modelUrl: 'https://huggingface.co/google/mt5-small',
+    tokenizerUrl: 'https://huggingface.co/google/mt5-small',
     maxTokens: 100,
     purpose: 'simple',
     description: 'Modèle léger et rapide, idéal pour machines avec ressources limitées'
@@ -120,8 +120,9 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 250 // 250ms
     },
     color: '#84cc16', // Vert clair - efficace
-    modelUrl: 'https://huggingface.co/google/mt5-base/resolve/main/tf_model.h5',
-    tokenizerUrl: 'https://huggingface.co/google/mt5-base/resolve/main/tokenizer.json',
+    huggingFaceId: 'Xenova/mt5-base',
+    modelUrl: 'https://huggingface.co/google/mt5-base',
+    tokenizerUrl: 'https://huggingface.co/google/mt5-base',
     maxTokens: 100,
     purpose: 'simple',
     description: 'Modèle équilibré entre performance et qualité'
@@ -148,8 +149,9 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 400 // 400ms
     },
     color: '#eab308', // Jaune - moyen
-    modelUrl: 'https://huggingface.co/google/mt5-large/resolve/main/tf_model.h5',
-    tokenizerUrl: 'https://huggingface.co/google/mt5-large/resolve/main/tokenizer.json',
+    huggingFaceId: 'google/mt5-large',
+    modelUrl: 'https://huggingface.co/google/mt5-large',
+    tokenizerUrl: 'https://huggingface.co/google/mt5-large',
     maxTokens: 100,
     purpose: 'simple',
     description: 'Modèle précis pour traductions de haute qualité'
@@ -176,8 +178,9 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 800 // 800ms
     },
     color: '#f97316', // Orange - coûteux
-    modelUrl: 'https://huggingface.co/google/mt5-xl/resolve/main/tf_model.h5',
-    tokenizerUrl: 'https://huggingface.co/google/mt5-xl/resolve/main/tokenizer.json',
+    huggingFaceId: 'google/mt5-xl',
+    modelUrl: 'https://huggingface.co/google/mt5-xl',
+    tokenizerUrl: 'https://huggingface.co/google/mt5-xl',
     maxTokens: 100,
     purpose: 'simple',
     description: 'Modèle très précis pour traductions professionnelles'
@@ -204,42 +207,15 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 1500 // 1.5s
     },
     color: '#dc2626', // Rouge - très coûteux
-    modelUrl: 'https://huggingface.co/google/mt5-xxl/resolve/main/tf_model.h5',
-    tokenizerUrl: 'https://huggingface.co/google/mt5-xxl/resolve/main/tokenizer.json',
+    huggingFaceId: 'google/mt5-xxl',
+    modelUrl: 'https://huggingface.co/google/mt5-xxl',
+    tokenizerUrl: 'https://huggingface.co/google/mt5-xxl',
     maxTokens: 100,
     purpose: 'simple',
     description: 'Modèle de précision maximale pour usage professionnel intensif'
   },
 
   // ===== FAMILLE NLLB - Meta's No Language Left Behind =====
-  NLLB_200M: {
-    name: 'NLLB_200M',
-    displayName: 'NLLB 200M',
-    family: 'NLLB',
-    size: '200M',
-    parameters: '200M',
-    memoryRequirement: 1536, // 1.5GB
-    downloadSize: 200, // 200MB
-    performance: 'fast',
-    quality: 'basic',
-    qualityScore: 5,
-    speedScore: 10,
-    cost: {
-      energyConsumption: 0.03, // 0.03 Wh par traduction
-      computationalCost: 2,
-      co2Equivalent: 0.015, // 15 milligrammes
-      monetaryEquivalent: 0.008, // 0.008 centime
-      memoryUsage: 800, // 800 MB
-      inferenceTime: 200 // 200ms
-    },
-    color: '#16a34a', // Vert foncé - ultra efficace
-    modelUrl: 'https://huggingface.co/facebook/nllb-200-200M/resolve/main/model.json',
-    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-200M/resolve/main/tokenizer.json',
-    maxTokens: 1000,
-    purpose: 'complex',
-    description: 'Modèle ultra-léger pour appareils mobiles et faibles ressources'
-  },
-
   NLLB_DISTILLED_600M: {
     name: 'NLLB_DISTILLED_600M',
     displayName: 'NLLB Distilled 600M',
@@ -261,8 +237,9 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 200 // 200ms
     },
     color: '#22c55e', // Vert - très efficace
-    modelUrl: 'https://huggingface.co/facebook/nllb-200-distilled-600M/resolve/main/model.json',
-    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-distilled-600M/resolve/main/tokenizer.json',
+    huggingFaceId: 'Xenova/nllb-200-distilled-600M',
+    modelUrl: 'https://huggingface.co/facebook/nllb-200-distilled-600M',
+    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-distilled-600M',
     maxTokens: 1000,
     purpose: 'complex',
     description: 'Version distillée et optimisée, excellent rapport qualité/performance'
@@ -289,8 +266,9 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 300 // 300ms
     },
     color: '#84cc16', // Vert clair - efficace
-    modelUrl: 'https://huggingface.co/facebook/nllb-200-distilled-1.3B/resolve/main/model.json',
-    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-distilled-1.3B/resolve/main/tokenizer.json',
+    huggingFaceId: 'facebook/nllb-200-distilled-1.3B',
+    modelUrl: 'https://huggingface.co/facebook/nllb-200-distilled-1.3B',
+    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-distilled-1.3B',
     maxTokens: 1000,
     purpose: 'complex',
     description: 'Version distillée avec qualité élevée et performance optimisée'
@@ -317,8 +295,9 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 600 // 600ms
     },
     color: '#a3a3a3', // Gris - neutre
-    modelUrl: 'https://huggingface.co/facebook/nllb-200-1.3B/resolve/main/model.json',
-    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-1.3B/resolve/main/tokenizer.json',
+    huggingFaceId: 'facebook/nllb-200-1.3B',
+    modelUrl: 'https://huggingface.co/facebook/nllb-200-1.3B',
+    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-1.3B',
     maxTokens: 1000,
     purpose: 'complex',
     description: 'Modèle standard avec bonne précision pour usage général'
@@ -345,39 +324,12 @@ export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedMod
       inferenceTime: 1200 // 1.2s
     },
     color: '#f59e0b', // Orange - coûteux
-    modelUrl: 'https://huggingface.co/facebook/nllb-200-3.3B/resolve/main/model.json',
-    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-3.3B/resolve/main/tokenizer.json',
+    huggingFaceId: 'facebook/nllb-200-3.3B',
+    modelUrl: 'https://huggingface.co/facebook/nllb-200-3.3B',
+    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-3.3B',
     maxTokens: 1000,
     purpose: 'complex',
     description: 'Modèle haute précision pour traductions professionnelles complexes'
-  },
-
-  NLLB_54B: {
-    name: 'NLLB_54B',
-    displayName: 'NLLB 54B',
-    family: 'NLLB',
-    size: '54B',
-    parameters: '54B',
-    memoryRequirement: 65536, // 64GB
-    downloadSize: 54000, // 54GB
-    performance: 'premium',
-    quality: 'premium',
-    qualityScore: 10,
-    speedScore: 1,
-    cost: {
-      energyConsumption: 1.2, // 1.2 Wh par traduction
-      computationalCost: 10,
-      co2Equivalent: 0.624, // 624 milligrammes
-      monetaryEquivalent: 0.45, // 0.45 centime
-      memoryUsage: 54000, // 54 GB
-      inferenceTime: 5000 // 5s
-    },
-    color: '#991b1b', // Rouge foncé - extrêmement coûteux
-    modelUrl: 'https://huggingface.co/facebook/nllb-200-54B/resolve/main/model.json',
-    tokenizerUrl: 'https://huggingface.co/facebook/nllb-200-54B/resolve/main/tokenizer.json',
-    maxTokens: 1000,
-    purpose: 'complex',
-    description: 'Modèle de recherche ultra-précis, réservé aux serveurs haute performance'
   }
 };
 
@@ -524,7 +476,7 @@ export function estimateSystemCapabilities(): {
 
   // Recommandations basées sur la RAM disponible
   let mt5Model: TranslationModelType = 'MT5_SMALL';
-  let nllbModel: TranslationModelType = 'NLLB_200M';
+  let nllbModel: TranslationModelType = 'NLLB_DISTILLED_600M';
   let reasoning = '';
 
   if (estimatedRAM >= 32768) {
@@ -545,7 +497,7 @@ export function estimateSystemCapabilities(): {
     reasoning = 'Machine modeste (4GB) - modèles légers';
   } else {
     mt5Model = 'MT5_SMALL';
-    nllbModel = 'NLLB_200M';
+    nllbModel = 'NLLB_DISTILLED_600M';
     reasoning = 'Machine limitée (<4GB) - modèles minimaux';
   }
 

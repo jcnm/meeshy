@@ -1,9 +1,13 @@
 /**
- * Système de traduction unifié - Wrapper autour de TranslationModels
+ * Système de traduction unifié - Intégration avec HuggingFaceTranslationService
  * Maintient la compatibilité avec l'API existante tout en utilisant la nouvelle architecture
  */
 
-import { translationModels } from '@/lib/translation-models';
+import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
+import { selectBestModel } from '@/lib/simplified-model-config';
+
+// Service de traduction global
+const translationService = HuggingFaceTranslationService.getInstance();
 
 // Cache de traduction simple pour compatibilité
 const translationCache = new Map<string, string>();
@@ -16,14 +20,37 @@ function getCacheKey(text: string, sourceLang: string, targetLang: string): stri
 }
 
 /**
+ * Résultat de la détection de langue avec score de confiance
+ */
+export interface LanguageDetectionResult {
+  language: string;
+  confidence: number; // Pourcentage de confiance (0-100)
+  scores: Record<string, number>; // Scores détaillés par langue
+}
+
+/**
  * Détecte la langue d'un texte avec des patterns simples
+ * Version simplifiée pour compatibilité
  */
 export function detectLanguage(text: string): string {
+  const result = detectLanguageWithConfidence(text);
+  return result.language;
+}
+
+/**
+ * Détecte la langue d'un texte avec des patterns simples et retourne le score de confiance
+ */
+export function detectLanguageWithConfidence(text: string): LanguageDetectionResult {
   if (!text || text.trim().length === 0) {
-    return 'en'; // Langue par défaut
+    return {
+      language: 'en',
+      confidence: 0,
+      scores: {}
+    };
   }
 
   const cleanText = text.toLowerCase().trim();
+  const words = cleanText.split(/\s+/).length;
 
   // Patterns de détection basiques
   const patterns: Record<string, RegExp[]> = {
@@ -72,11 +99,28 @@ export function detectLanguage(text: string): string {
     .sort(([, a], [, b]) => b - a);
 
   if (sortedScores.length > 0 && sortedScores[0][1] > 1) {
-    return sortedScores[0][0];
+    const bestScore = sortedScores[0][1];
+    const totalMatches = Object.values(scores).reduce((sum, score) => sum + score, 0);
+    
+    // Calculer la confiance basée sur le ratio du meilleur score
+    // et le nombre de mots analysés
+    const confidence = Math.min(100, Math.round(
+      (bestScore / Math.max(totalMatches, 1)) * 100 * Math.min(1, words / 5)
+    ));
+
+    return {
+      language: sortedScores[0][0],
+      confidence,
+      scores
+    };
   }
 
-  // Fallback à l'anglais
-  return 'en';
+  // Fallback à l'anglais avec confiance faible
+  return {
+    language: 'en',
+    confidence: 10,
+    scores
+  };
 }
 
 /**
@@ -105,18 +149,55 @@ export async function translateMessage(
   }
 
   try {
-    // Utiliser TranslationModels pour la traduction
-    const translatedText = await translationModels.translate(text, sourceLang, targetLang);
+    // Sélectionner le meilleur modèle selon la longueur du message
+    const modelType = selectBestModel(text.length);
+    console.log(`🤖 Utilisation du modèle: ${modelType} pour "${text.substring(0, 50)}..."`);
+    
+    // Utiliser le service HuggingFace pour la traduction
+    const result = await translationService.translateText(
+      text, 
+      sourceLang, 
+      targetLang, 
+      modelType
+    );
+    
+    const translatedText = result.translatedText;
     
     // Mettre en cache le résultat
     if (translatedText && translatedText !== text) {
       translationCache.set(cacheKey, translatedText);
+      console.log(`✅ Traduction mise en cache: "${text}" → "${translatedText}"`);
     }
     
     return translatedText;
   } catch (error) {
     console.error('❌ Erreur de traduction:', error);
-    throw new Error('Échec de traduction');
+    
+    // En cas d'erreur, essayer de charger automatiquement un modèle de base
+    try {
+      console.log('🔄 Tentative de chargement automatique d\'un modèle...');
+      const { modelType } = await translationService.loadBestAvailableModel();
+      
+      const result = await translationService.translateText(
+        text, 
+        sourceLang, 
+        targetLang, 
+        modelType
+      );
+      
+      const translatedText = result.translatedText;
+      
+      // Mettre en cache le résultat
+      if (translatedText && translatedText !== text) {
+        translationCache.set(cacheKey, translatedText);
+        console.log(`✅ Traduction de secours réussie: "${translatedText}"`);
+      }
+      
+      return translatedText;
+    } catch (fallbackError) {
+      console.error('❌ Échec de la traduction de secours:', fallbackError);
+      throw new Error('Aucun modèle de traduction disponible');
+    }
   }
 }
 

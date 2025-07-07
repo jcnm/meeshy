@@ -5,4 +5,5 @@ export { ModelSetupModal } from './model-setup-modal';
 export { ModelLegend } from './model-legend';
 export { ModelsStatus } from './models-status';
 export { CacheManager } from './cache-manager';
+export { RealModelDownloader } from './real-model-downloader';
 // export { SystemTest } from './system-test'; // Temporairement désactivé

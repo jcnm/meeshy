@@ -112,6 +112,7 @@ export interface MessageResponse {
   senderId: string;
   senderName: string;
   senderAvatar?: string;
+  sender?: User; // Ajout de l'objet sender complet
   originalLanguage: string;
   isEdited: boolean;
   editedAt?: Date;

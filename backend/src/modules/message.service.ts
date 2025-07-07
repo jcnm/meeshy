@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto, UpdateMessageDto } from '../shared/dto';
-import { MessageResponse } from '../shared/interfaces';
+import { MessageResponse, User } from '../shared/interfaces';
 import { USER_SELECT_FIELDS } from '../shared/constants';
 
 @Injectable()
@@ -269,11 +269,7 @@ export class MessageService {
     isDeleted: boolean;
     createdAt: Date;
     updatedAt: Date;
-    sender: {
-      username: string;
-      displayName: string | null;
-      avatar: string | null;
-    };
+    sender: Record<string, unknown>; // Type plus sûr que any
     replyTo?: {
       id: string;
       content: string;
@@ -288,8 +284,9 @@ export class MessageService {
       content: message.content,
       senderId: message.senderId,
       conversationId: message.conversationId,
-      senderName: message.sender.displayName || message.sender.username,
-      senderAvatar: message.sender.avatar || undefined,
+      senderName: (message.sender?.displayName as string) || (message.sender?.username as string) || 'Unknown',
+      senderAvatar: (message.sender?.avatar as string) || undefined,
+      sender: message.sender as unknown as User, // Cast vers User (l'objet sender vient de Prisma avec la bonne structure)
       originalLanguage: message.originalLanguage,
       isEdited: message.isEdited,
       editedAt: message.editedAt || undefined,

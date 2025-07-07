@@ -19,5 +19,10 @@ export type { Notification, NotificationPreferences } from './notificationsServi
 export type { UserStats, UpdateUserDto } from './usersService';
 export type { Message, CreateMessageDto, UpdateMessageDto } from './messagesService';
 
+// Services de modèles de traduction (Production Ready)
+export { HuggingFaceTranslationService } from './huggingface-translation';
+export { RealTranslationService } from './real-translation-service';
+export { AutoModelLoader, useAutoModelLoader } from './auto-model-loader';
+
 // Service mock pour les tests
 export { mockApiService } from './mockApiService';

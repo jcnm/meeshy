@@ -19,14 +19,10 @@ import { toast } from 'sonner';
 import { Conversation, Message, TranslatedMessage } from '@/types';
 import { conversationsService } from '@/services/conversationsService';
 import { MessageBubble } from './message-bubble';
-import { useOptimizedMessageTranslation } from '@/hooks/use-optimized-message-translation-simple';
+import { useOptimizedMessageTranslation } from '@/hooks/use-optimized-message-translation';
 import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { cn } from '@/lib/utils';
-import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
-import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/simplified-model-config';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -55,45 +51,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
   
-  // États de traduction
-  const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>('NLLB_DISTILLED_600M');
-  const [translationService] = useState(() => HuggingFaceTranslationService.getInstance());
-  
   // Hook de traduction
   const { translateMessages, translateMessage } = useOptimizedMessageTranslation(user);
-
-  // Fonction utilitaire pour obtenir le nom d'affichage d'une conversation
-  const getConversationDisplayName = useCallback((conversation: Conversation): string => {
-    if (conversation.isGroup) {
-      return conversation.name || conversation.title || 'Groupe sans nom';
-    } else {
-      // Pour les conversations privées, afficher le nom de l'autre participant
-      const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
-      if (otherParticipant?.user) {
-        return otherParticipant.user.displayName || 
-               `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}` ||
-               otherParticipant.user.username;
-      }
-      return conversation.name || conversation.title || 'Conversation privée';
-    }
-  }, [user]);
-
-  // Fonction utilitaire pour obtenir l'avatar d'une conversation
-  const getConversationAvatar = useCallback((conversation: Conversation): string => {
-    if (conversation.isGroup) {
-      return (conversation.name || conversation.title || 'G').slice(0, 2).toUpperCase();
-    } else {
-      // Pour les conversations privées, utiliser l'initiale de l'autre participant
-      const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
-      if (otherParticipant?.user) {
-        const displayName = otherParticipant.user.displayName || 
-                           `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}` ||
-                           otherParticipant.user.username;
-        return displayName.slice(0, 2).toUpperCase();
-      }
-      return 'C';
-    }
-  }, [user]);
 
   // Détecter si on est sur mobile
   useEffect(() => {
@@ -116,30 +75,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setShowConversationList(true);
     }
   }, [isMobile, selectedConversation]);
-
-  // Charger automatiquement le modèle de traduction AU BESOIN UNIQUEMENT
-  useEffect(() => {
-    const prepareTranslationService = async () => {
-      try {
-        // Vérifier si des modèles sont déjà chargés ou persistés
-        const persistedModels = translationService.getPersistedLoadedModels();
-        if (persistedModels.length > 0) {
-          console.log(`✅ Modèles persistés trouvés: ${persistedModels.join(', ')}`);
-          return; // Ne pas charger automatiquement si des modèles sont déjà disponibles
-        }
-
-        // Sinon, juste préparer le service mais NE PAS charger de modèle automatiquement
-        console.log('🤗 Service de traduction prêt - chargement à la demande');
-        
-      } catch (error) {
-        console.warn('⚠️ Avertissement préparation traduction:', error);
-        // Ne pas bloquer l'interface pour les erreurs de traduction
-      }
-    };
-
-    // Préparer sans délai pour ne pas ralentir l'UI
-    prepareTranslationService();
-  }, [translationService]);
 
   // Handlers pour MessageBubble
   const handleTranslate = async (messageId: string, targetLanguage: string) => {
@@ -232,77 +167,33 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   }, [user]);
 
   // Charger les messages d'une conversation
-  const loadMessages = useCallback(async (conversationId: string, isNewConversation = false) => {
+  const loadMessages = useCallback(async (conversationId: string) => {
     if (!user) return;
-
-    // Pour une nouvelle conversation, toujours charger
-    // Pour une conversation existante, vérifier si c'est déjà chargé
-    if (!isNewConversation && selectedConversation?.id === conversationId && messages.length > 0) {
-      console.log('📬 Messages déjà chargés pour cette conversation');
-      return;
-    }
 
     try {
       setIsLoadingMessages(true);
       console.log(`📬 Chargement des messages pour la conversation ${conversationId}`);
-      
       const messagesData = await conversationsService.getMessages(conversationId);
+      const rawMessages = messagesData.messages;
       
-      // Vérifier si la conversation sélectionnée n'a pas changé
-      if (selectedConversation?.id !== conversationId) {
-        console.log('🚫 Conversation changée pendant le chargement, abandon');
-        return;
-      }
-      
-      const rawMessages = messagesData?.messages || [];
-      
-      // Trier les messages par date de création
-      const sortedMessages = rawMessages.sort((a, b) => 
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-      
-      // Mettre à jour les messages APRÈS avoir vérifié la cohérence
-      setMessages(sortedMessages);
+      setMessages(rawMessages);
 
-      // NE TRADUIRE QUE SI L'UTILISATEUR A ACTIVÉ LA TRADUCTION AUTO
-      // Sinon, juste convertir sans traduire pour gagner du temps
-      if (user.autoTranslateEnabled && sortedMessages.length > 0) {
-        console.log('🔄 Traduction automatique activée, traduction en arrière-plan...');
-        // Convertir d'abord sans traduction pour affichage immédiat
-        const convertedMessages = sortedMessages.map(msg => convertToTranslatedMessage(msg));
-        setTranslatedMessages(convertedMessages);
-        
-        // Puis traduire en arrière-plan
-        setTimeout(async () => {
-          try {
-            // Vérifier encore une fois si la conversation n'a pas changé
-            if (selectedConversation?.id !== conversationId) {
-              console.log('🚫 Conversation changée pendant la traduction, abandon');
-              return;
-            }
-            
-            const translated = await translateMessages(sortedMessages, user.systemLanguage);
-            setTranslatedMessages(translated);
-            console.log('✅ Traduction automatique terminée');
-          } catch (error) {
-            console.warn('⚠️ Erreur traduction automatique:', error);
-            // Garder les messages non traduits
-          }
-        }, 500); // Délai pour ne pas bloquer l'UI
+      if (user.autoTranslateEnabled && rawMessages.length > 0) {
+        try {
+          const translated = await translateMessages(rawMessages, user.systemLanguage);
+          setTranslatedMessages(translated);
+        } catch (error) {
+          console.error('❌ Erreur lors de la traduction des messages:', error);
+          const convertedMessages = rawMessages.map(msg => convertToTranslatedMessage(msg));
+          setTranslatedMessages(convertedMessages);
+        }
       } else {
-        // Pas de traduction automatique, affichage direct
-        const convertedMessages = sortedMessages.map(msg => convertToTranslatedMessage(msg));
+        const convertedMessages = rawMessages.map(msg => convertToTranslatedMessage(msg));
         setTranslatedMessages(convertedMessages);
       }
     } catch (error) {
       console.error('❌ Erreur lors du chargement des messages:', error);
       console.log('🔄 Utilisation des messages mock pour le développement');
-      
-      // Vérifier si cette conversation est toujours celle demandée
-      if (selectedConversation?.id !== conversationId) {
-        console.log('🚫 Conversation changée pendant l\'erreur, abandon');
-        return;
-      }
       
       // Messages mock pour le développement - ne pas afficher d'erreur
       const mockMessages = createMockMessages(conversationId);
@@ -312,9 +203,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [user, translateMessages, convertToTranslatedMessage, createMockMessages, selectedConversation?.id, messages.length]);
+  }, [user, translateMessages, convertToTranslatedMessage, createMockMessages]);
 
-  // Charger les données initiales avec optimisations
+  // Charger les données initiales
   const loadData = useCallback(async () => {
     if (!user) return;
 
@@ -322,11 +213,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setIsLoading(true);
       console.log('🔄 Chargement des conversations...');
       
-      // Démarrer le chargement des conversations immédiatement
-      const conversationsPromise = conversationsService.getConversations();
-      
-      // Attendre les conversations
-      const conversationsData = await conversationsPromise;
+      const conversationsData = await conversationsService.getConversations();
       
       setConversations(conversationsData);
       console.log(`✅ ${conversationsData.length} conversations chargées`);
@@ -337,56 +224,94 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         const conversation = conversationsData.find(c => c.id === conversationIdFromUrl);
         if (conversation) {
           setSelectedConversation(conversation);
-          // Le chargement des messages sera géré par l'effet useEffect
-        } else {
-          // ID non trouvé, désélectionner
-          setSelectedConversation(null);
+          await loadMessages(conversation.id);
         }
-      } else {
-        // Aucun ID dans l'URL, s'assurer qu'aucune conversation n'est sélectionnée
-        setSelectedConversation(null);
       }
-      
-      // Mettre fin au loading principal immédiatement après les conversations
-      setIsLoading(false);
-      
+      // Ne plus sélectionner automatiquement la première conversation
     } catch (error) {
       console.error('❌ Erreur lors du chargement des conversations:', error);
+      toast.error('Erreur lors du chargement des conversations');
       
-      // Pas de toast d'erreur pour ne pas ralentir l'UI, juste les données mock
-      console.log('🔄 Utilisation des données mock pour le développement');
-      
-      // Conversations mock pour le développement (plus rapide)
+      // Conversations mock pour le développement
       const mockConversations: Conversation[] = [
         {
           id: '1',
-          name: 'Conversation de test',
+          name: 'Marie Dubois',
           type: 'PRIVATE',
           isGroup: false,
           isActive: true,
-          participants: [],
+          participants: [
+            { 
+              id: 'p1',
+              conversationId: '1',
+              userId: 'user1', 
+              joinedAt: new Date(), 
+              role: 'MEMBER',
+              user: {
+                id: 'user1',
+                username: 'marie',
+                displayName: 'Marie Dubois',
+                email: 'marie@example.com',
+                role: 'USER',
+                permissions: { canAccessAdmin: false, canManageUsers: false, canManageGroups: false, canManageConversations: false, canViewAnalytics: false, canModerateContent: false, canViewAuditLogs: false, canManageNotifications: false, canManageTranslations: false },
+                systemLanguage: 'fr',
+                regionalLanguage: 'fr',
+                autoTranslateEnabled: true,
+                translateToSystemLanguage: true,
+                translateToRegionalLanguage: false,
+                useCustomDestination: false,
+                isOnline: true,
+                createdAt: new Date(),
+                lastActiveAt: new Date()
+              }
+            },
+            { 
+              id: 'p2',
+              conversationId: '1',
+              userId: user?.id || 'current-user', 
+              joinedAt: new Date(), 
+              role: 'MEMBER',
+              user: user || {
+                id: 'current-user',
+                username: 'moi',
+                displayName: 'Moi',
+                email: 'moi@example.com',
+                role: 'USER',
+                permissions: { canAccessAdmin: false, canManageUsers: false, canManageGroups: false, canManageConversations: false, canViewAnalytics: false, canModerateContent: false, canViewAuditLogs: false, canManageNotifications: false, canManageTranslations: false },
+                systemLanguage: 'fr',
+                regionalLanguage: 'fr',
+                autoTranslateEnabled: true,
+                translateToSystemLanguage: true,
+                translateToRegionalLanguage: false,
+                useCustomDestination: false,
+                isOnline: true,
+                createdAt: new Date(),
+                lastActiveAt: new Date()
+              }
+            }
+          ],
           createdAt: new Date(),
           updatedAt: new Date(),
           lastMessage: {
             id: 'last-msg-1',
-            content: 'Message de test',
+            content: 'Salut ! Comment ça va ?',
             senderId: 'user1',
             conversationId: '1',
             originalLanguage: 'fr',
             isEdited: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: new Date(Date.now() - 3600000),
+            updatedAt: new Date(Date.now() - 3600000),
             sender: {
               id: 'user1',
-              username: 'testuser',
-              displayName: 'Utilisateur Test',
-              email: 'test@example.com',
+              username: 'marie',
+              displayName: 'Marie Dubois',
+              email: 'marie@example.com',
               role: 'USER',
               permissions: { canAccessAdmin: false, canManageUsers: false, canManageGroups: false, canManageConversations: false, canViewAnalytics: false, canModerateContent: false, canViewAuditLogs: false, canManageNotifications: false, canManageTranslations: false },
               systemLanguage: 'fr',
               regionalLanguage: 'fr',
-              autoTranslateEnabled: false,
-              translateToSystemLanguage: false,
+              autoTranslateEnabled: true,
+              translateToSystemLanguage: true,
               translateToRegionalLanguage: false,
               useCustomDestination: false,
               isOnline: true,
@@ -394,14 +319,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               lastActiveAt: new Date()
             }
           },
-          unreadCount: 0
+          unreadCount: 1
         }
       ];
-      
       setConversations(mockConversations);
+    } finally {
       setIsLoading(false);
     }
-  }, [user, searchParams, selectedConversationId]);
+  }, [user, searchParams, selectedConversationId, loadMessages]);
 
   useEffect(() => {
     loadData();
@@ -409,14 +334,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Sélectionner une conversation
   const handleSelectConversation = (conversation: Conversation) => {
-    // Si c'est la même conversation, ne rien faire
-    if (selectedConversation?.id === conversation.id) {
-      console.log('📬 Conversation déjà sélectionnée');
-      return;
-    }
-
-    // Simplement sélectionner la conversation, l'effet se chargera du reste
     setSelectedConversation(conversation);
+    loadMessages(conversation.id);
     
     // Sur mobile, masquer la liste pour afficher les messages
     if (isMobile) {
@@ -455,63 +374,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       });
 
       console.log('✅ Message envoyé:', response);
-      
-      // Créer un message temporaire pour l'affichage immédiat
-      const newMessageObj: Message = {
-        id: response.id || `temp-${Date.now()}`,
-        content: newMessage.trim(),
-        conversationId: selectedConversation.id,
-        senderId: user.id,
-        sender: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          displayName: user.displayName || `${user.firstName} ${user.lastName}`,
-          avatar: user.avatar,
-          username: user.username,
-          email: user.email,
-          systemLanguage: user.systemLanguage,
-          regionalLanguage: user.regionalLanguage || user.systemLanguage,
-          autoTranslateEnabled: user.autoTranslateEnabled,
-          translateToSystemLanguage: user.translateToSystemLanguage,
-          translateToRegionalLanguage: user.translateToRegionalLanguage,
-          useCustomDestination: user.useCustomDestination,
-          customDestinationLanguage: user.customDestinationLanguage,
-          isOnline: user.isOnline,
-          lastSeen: user.lastSeen,
-          role: user.role,
-          permissions: user.permissions,
-          createdAt: user.createdAt,
-          lastActiveAt: user.lastActiveAt
-        },
-        originalLanguage: user.systemLanguage,
-        isEdited: false,
-        isDeleted: false,
-        editedAt: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      // Ajouter le message à la liste locale immédiatement (trié par date)
-      setMessages(prev => {
-        const filtered = prev.filter(m => m.id !== newMessageObj.id); // Éviter les doublons
-        const newList = [...filtered, newMessageObj];
-        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      });
-      
-      // Ajouter aussi à la liste traduite
-      const translatedMsg = convertToTranslatedMessage(newMessageObj);
-      setTranslatedMessages(prev => {
-        const filtered = prev.filter(m => m.id !== translatedMsg.id); // Éviter les doublons
-        const newList = [...filtered, translatedMsg];
-        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      });
-      
       setNewMessage('');
       
-      // Ne pas recharger automatiquement pour éviter que le message disparaisse
-      // setTimeout(() => loadMessages(selectedConversation.id), 1000);
-      
+      // Recharger les messages
+      await loadMessages(selectedConversation.id);
       toast.success('Message envoyé !');
     } catch (error) {
       console.error('❌ Erreur lors de l\'envoi du message:', error);
@@ -520,22 +386,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setIsSending(false);
     }
   };
-
-  // Effet pour gérer le changement de conversation
-  useEffect(() => {
-    // Si on a une conversation sélectionnée, charger ses messages
-    if (selectedConversation?.id) {
-      // Ne pas vider immédiatement les messages pour éviter le scintillement
-      // Les messages seront remplacés une fois les nouveaux chargés
-      setIsLoadingMessages(true);
-      loadMessages(selectedConversation.id, true);
-    } else {
-      // Aucune conversation sélectionnée, vider les messages
-      setMessages([]);
-      setTranslatedMessages([]);
-      setIsLoadingMessages(false);
-    }
-  }, [selectedConversation?.id, loadMessages]);
 
   if (!user) {
     return null;
@@ -560,9 +410,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             {/* Header fixe */}
             <div className="flex-shrink-0 p-4 border-b border-border/30">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-foreground">Conversations</h2>
-                </div>
+                <h2 className="text-xl font-bold text-foreground">Conversations</h2>
                 <div className="relative">
                   <MessageSquare className="h-6 w-6 text-primary" />
                   {conversations.filter(c => (c.unreadCount || 0) > 0).length > 0 && (
@@ -571,42 +419,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     </div>
                   )}
                 </div>
-              </div>
-              
-              {/* Sélecteur de modèle de traduction */}
-              <div className="mb-2">
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Modèle de traduction
-                </label>
-                <Select 
-                  value={selectedTranslationModel} 
-                  onValueChange={(value) => setSelectedTranslationModel(value as TranslationModelType)}
-                >
-                  <SelectTrigger className="w-full h-8 text-sm">
-                    <SelectValue placeholder="Choisir un modèle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(UNIFIED_TRANSLATION_MODELS).map((model) => (
-                      <SelectItem key={model.name} value={model.name}>
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ backgroundColor: model.color }}
-                          />
-                          <span className="text-sm">{model.displayName}</span>
-                          <Badge variant="outline" className="text-xs px-1 py-0">
-                            {model.parameters}
-                          </Badge>
-                          {translationService.isModelLoaded(model.name) && (
-                            <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
-                              ✓
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
             
@@ -640,7 +452,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                             {conversation.isGroup ? (
                               <Users className="h-6 w-6" />
                             ) : (
-                              getConversationAvatar(conversation)
+                              (conversation.name || conversation.title || 'U').slice(0, 2).toUpperCase()
                             )}
                           </AvatarFallback>
                         </Avatar>
@@ -650,7 +462,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       <div className="ml-4 flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <h3 className="font-bold text-foreground truncate">
-                            {getConversationDisplayName(conversation)}
+                            {conversation.name || conversation.title || 'Conversation sans nom'}
                           </h3>
                           {conversation.lastMessage && (
                             <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
@@ -727,7 +539,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           {selectedConversation.isGroup ? (
                             <Users className="h-5 w-5" />
                           ) : (
-                            getConversationAvatar(selectedConversation)
+                            (selectedConversation.name || selectedConversation.title || 'U').slice(0, 2).toUpperCase()
                           )}
                         </AvatarFallback>
                       </Avatar>
@@ -735,7 +547,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     </div>
                     <div className="flex-1">
                       <h2 className="font-bold text-lg text-foreground">
-                        {getConversationDisplayName(selectedConversation)}
+                        {selectedConversation.name || selectedConversation.title || 'Conversation sans nom'}
                       </h2>
                       <p className="text-sm text-muted-foreground">
                         {selectedConversation.isGroup 

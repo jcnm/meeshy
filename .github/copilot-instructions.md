@@ -15,7 +15,9 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 - **Authentification**: JWT avec NestJS Guards et stratégies Passport
 - **Sécurité**: Validation stricte, chiffrement des données sensibles, CORS configuré
 - **Routes API**: RESTful nomination pluriel pour les entités avec validation des DTOs via class-validator
-### Spécificités Techniques
+
+### Spécificités de Conception
+- **Avant chaque création** de code, réfléchir aux implications de la modification, s'il n'est pas possible de reutiliser l'existant
 
 #### Traduction
 - Utiliser MT5 pour les messages courts (≤50 caractères, faible complexité)

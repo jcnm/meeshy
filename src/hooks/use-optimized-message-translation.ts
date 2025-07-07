@@ -76,8 +76,7 @@ export const useOptimizedMessageTranslation = (currentUser: User | null): UseOpt
       const allModels = translationModels.getAllAvailableModels();
       const loadPromises = allModels.slice(0, 3).map(async (modelType) => {
         try {
-          const modelKey = translationModels.getModelKey(modelType);
-          await translationModels.loadModel(modelKey);
+          await translationModels.loadModel(modelType);
           console.log(`✅ Modèle ${modelType} préchargé`);
         } catch (error) {
           console.warn(`⚠️ Échec du préchargement du modèle ${modelType}:`, error);

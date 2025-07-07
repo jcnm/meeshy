@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppProvider } from "@/context/AppContext";
 import { ErrorBoundary } from "@/components/common";
+import { DebugModelsScript } from "@/components/debug/debug-models-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
           </ErrorBoundary>
         </AppProvider>
         <Toaster />
+        <DebugModelsScript />
       </body>
     </html>
   );

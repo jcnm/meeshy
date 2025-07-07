@@ -1,4 +1,3 @@
-import * as tf from '@tensorflow/tfjs';
 import { 
   type TranslationModelType, 
   type ModelCost, 
@@ -8,6 +7,8 @@ import {
   getCompatibleModels,
   recommendModel
 } from '@/lib/unified-model-config';
+import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
+import { RealTranslationService } from '@/services/real-translation-service';
 
 // Interface pour la configuration des modèles avec statistiques d'usage
 export interface ModelConfig {
@@ -33,7 +34,6 @@ export interface ModelConfig {
 }
 
 // Configuration complète de tous les modèles supportés
-// Maintenant basée sur UNIFIED_TRANSLATION_MODELS avec des ajouts spécifiques
 export const MODELS_CONFIG: Record<TranslationModelType, ModelConfig> = Object.keys(TRANSLATION_MODELS).reduce((acc, key) => {
   const modelType = key as TranslationModelType;
   const unifiedConfig = TRANSLATION_MODELS[modelType];
@@ -50,407 +50,226 @@ export const MODELS_CONFIG: Record<TranslationModelType, ModelConfig> = Object.k
       ['en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'zh'] :
       ['en', 'fr', 'es', 'de', 'it', 'pt', 'ru', 'ja', 'ko', 'zh', 'ar', 'hi', 'tr', 'pl', 'nl'],
     modelUrl: unifiedConfig.modelUrl,
-    tokenizer: `${unifiedConfig.family.toLowerCase()}-${unifiedConfig.size.toLowerCase()}`,
+    tokenizer: unifiedConfig.tokenizerUrl || `/models/${unifiedConfig.name.toLowerCase()}/tokenizer.json`,
     cost: unifiedConfig.cost,
-    color: unifiedConfig.color,
-    quality: unifiedConfig.quality,
+    color: unifiedConfig.family === 'MT5' ? '#4F46E5' : '#059669',
+    quality: unifiedConfig.size === 'small' ? 'good' : 'excellent',
     usageStats: {
       totalUsage: 0,
       lastUsed: null,
-      averageInferenceTime: unifiedConfig.cost.inferenceTime,
-      successRate: 0.95
+      averageInferenceTime: 0,
+      successRate: 0
     }
   };
   
   return acc;
 }, {} as Record<TranslationModelType, ModelConfig>);
 
-/**
- * Service de gestion des modèles de traduction
- * Utilise la configuration unifiée pour une source unique de vérité
- */
-export class TranslationModels {
-  private models = new Map<string, tf.GraphModel>();
-  private loadingPromises = new Map<string, Promise<tf.GraphModel | null>>();
-  private initializationAttempted = new Map<string, boolean>();
+// Cache des modèles chargés en mémoire
+class TranslationModelsManager {
+  private loadedModels: Map<TranslationModelType, tf.GraphModel> = new Map();
+  private loadingPromises: Map<TranslationModelType, Promise<tf.GraphModel | null>> = new Map();
 
   /**
-   * Charge un modèle de traduction
+   * Vérifie si un modèle est chargé en mémoire
    */
-  async loadModel(modelName: string): Promise<tf.GraphModel | null> {
-    // Si le modèle est déjà chargé, le retourner
-    const cachedModel = this.models.get(modelName);
-    if (cachedModel) {
-      return cachedModel;
+  isModelLoaded(modelType: TranslationModelType): boolean;
+  isModelLoaded(modelName: string): boolean;
+  isModelLoaded(model: TranslationModelType | string): boolean {
+    return this.loadedModels.has(model as TranslationModelType);
+  }
+
+  /**
+   * Obtient la liste des modèles chargés (compatibilité debug)
+   */
+  getLoadedModels(): string[] {
+    return Array.from(this.loadedModels.keys());
+  }
+
+  /**
+   * Obtient un modèle chargé
+   */
+  getLoadedModel(modelType: TranslationModelType): tf.GraphModel | null {
+    return this.loadedModels.get(modelType) || null;
+  }
+
+  /**
+   * Charge un modèle (PRODUCTION - utilise le RealModelDownloadService)
+   */
+  async loadModel(modelType: TranslationModelType): Promise<tf.GraphModel | null> {
+    if (this.loadedModels.has(modelType)) {
+      return this.loadedModels.get(modelType)!;
     }
 
-    // Si le modèle est en cours de chargement, attendre
-    const loadingPromise = this.loadingPromises.get(modelName);
-    if (loadingPromise) {
-      return loadingPromise;
+    if (this.loadingPromises.has(modelType)) {
+      return this.loadingPromises.get(modelType)!;
     }
 
-    // Éviter les tentatives répétées de chargement d'un modèle qui a échoué
-    if (this.initializationAttempted.get(modelName)) {
-      console.log(`⚠️ Modèle ${modelName} déjà tenté, utilisation du fallback`);
+    const config = MODELS_CONFIG[modelType];
+    if (!config) {
+      console.error(`Configuration non trouvée pour le modèle: ${modelType}`);
       return null;
     }
 
-    // Commencer le chargement du modèle
-    const promise = this.loadModelFromPath(modelName);
-    this.loadingPromises.set(modelName, promise);
-    this.initializationAttempted.set(modelName, true);
-
+    console.log(`🔄 Chargement RÉEL du modèle ${modelType} via RealModelDownloadService...`);
+    
+    // Utiliser le RealModelDownloadService pour télécharger et charger le modèle
+    const loadingPromise = this.loadModelWithRealService(modelType);
+    this.loadingPromises.set(modelType, loadingPromise);
+    
     try {
-      const model = await promise;
-      if (model) {
-        this.models.set(modelName, model);
-      }
-      this.loadingPromises.delete(modelName);
+      const model = await loadingPromise;
+      this.loadingPromises.delete(modelType);
       
       if (model) {
-        console.log(`✅ Modèle ${modelName} chargé avec succès`);
-      } else {
-        console.log(`⚠️ Modèle ${modelName} non disponible, utilisation du fallback`);
+        this.loadedModels.set(modelType, model);
+        console.log(`✅ Modèle ${modelType} chargé et mis en cache`);
       }
       
       return model;
-    } catch (loadError) {
-      this.loadingPromises.delete(modelName);
-      console.error(`❌ Erreur lors du chargement du modèle ${modelName}:`, loadError);
-      return null;
-    }
-  }
-
-  /**
-   * Charge le modèle depuis le système de fichiers ou URL
-   */
-  private async loadModelFromPath(modelName: string): Promise<tf.GraphModel | null> {
-    const config = MODELS_CONFIG[modelName as TranslationModelType];
-    if (!config) {
-      throw new Error(`Configuration pour le modèle ${modelName} non trouvée`);
-    }
-
-    try {
-      // Vérifier d'abord en local
-      const localPath = `/models/${modelName}/model.json`;
-      let model: tf.GraphModel;
-      
-      try {
-        model = await tf.loadGraphModel(localPath);
-        console.log(`📁 Modèle ${modelName} chargé depuis le cache local`);
-        return model;
-      } catch {
-        console.log(`📂 Modèle ${modelName} non trouvé en local, téléchargement depuis l'URL...`);
-        
-        // Fallback vers l'URL externe
-        if (config.modelUrl) {
-          model = await tf.loadGraphModel(config.modelUrl);
-          console.log(`🌐 Modèle ${modelName} téléchargé depuis ${config.modelUrl}`);
-          return model;
-        } else {
-          throw new Error(`Aucune URL de modèle disponible pour ${modelName}`);
-        }
-      }
     } catch (error) {
-      console.error(`❌ Impossible de charger le modèle ${modelName}:`, error);
-      return null;
+      this.loadingPromises.delete(modelType);
+      console.error(`❌ Erreur chargement ${modelType}:`, error);
+      throw error;
     }
   }
 
   /**
-   * Obtient le nom du modèle approprié pour un type TranslationModelType
+   * Charge un modèle avec le RealModelDownloadService
    */
-  getModelKey(modelType: TranslationModelType): string {
-    const config = getModelConfig(modelType);
-    return `${config.family.toLowerCase()}_${config.size.toLowerCase()}`;
+  private async loadModelWithRealService(modelType: TranslationModelType): Promise<tf.GraphModel | null> {
+    const modelService = RealModelDownloadService.getInstance();
+    
+    // Mapper le modelType vers le nom utilisé par RealModelDownloadService
+    let modelName: string;
+    switch (modelType) {
+      case 'MT5_SMALL':
+        modelName = 'MT5_SMALL';
+        break;
+      case 'NLLB_DISTILLED_600M':
+        modelName = 'NLLB_DISTILLED_600M';
+        break;
+      default:
+        console.warn(`Modèle non supporté par RealModelDownloadService: ${modelType}`);
+        return null;
+    }
+    
+    return await modelService.downloadAndLoadModel(modelName);
   }
 
   /**
-   * Convertit un nom de modèle vers TranslationModelType
+   * Décharge un modèle de la mémoire
    */
-  getModelType(modelName: string): TranslationModelType {
-    // Conversion du format ancien vers le nouveau
-    const mapping: Record<string, TranslationModelType> = {
-      'mt5': 'MT5_SMALL',
-      'mt5_small': 'MT5_SMALL',
-      'mt5_base': 'MT5_BASE',
-      'mt5_large': 'MT5_LARGE',
-      'mt5_xl': 'MT5_XL',
-      'mt5_xxl': 'MT5_XXL',
-      'nllb': 'NLLB_200M',
-      'nllb_200m': 'NLLB_200M',
-      'nllb_distilled_600m': 'NLLB_DISTILLED_600M',
-      'nllb_distilled_1_3b': 'NLLB_DISTILLED_1_3B',
-      'nllb_1_3b': 'NLLB_1_3B',
-      'nllb_3_3b': 'NLLB_3_3B',
-      'nllb_54b': 'NLLB_54B'
-    };
-
-    return mapping[modelName.toLowerCase()] || 'MT5_SMALL';
-  }
-
-  /**
-   * Vérifie si un modèle est disponible
-   */
-  isModelLoaded(modelName: string): boolean {
-    return this.models.has(modelName);
-  }
-
-  /**
-   * Obtient la liste des modèles chargés
-   */
-  getLoadedModels(): string[] {
-    return Array.from(this.models.keys());
-  }
-
-  /**
-   * Libère un modèle de la mémoire
-   */
-  unloadModel(modelName: string): boolean {
-    const model = this.models.get(modelName);
+  unloadModel(modelType: TranslationModelType): void {
+    const model = this.loadedModels.get(modelType);
     if (model) {
       model.dispose();
-      this.models.delete(modelName);
-      this.initializationAttempted.delete(modelName);
-      console.log(`🗑️ Modèle ${modelName} déchargé de la mémoire`);
-      return true;
+      this.loadedModels.delete(modelType);
+      console.log(`♻️ Modèle ${modelType} déchargé de la mémoire`);
     }
-    return false;
   }
 
   /**
-   * Libère tous les modèles de la mémoire
+   * Obtient les statistiques de mémoire
+   */
+  getMemoryStats() {
+    const loadedModels = Array.from(this.loadedModels.keys());
+    const memoryInfo = tf.memory();
+    
+    return {
+      loadedModels,
+      modelCount: loadedModels.length,
+      tensors: memoryInfo.numTensors,
+      memoryBytes: memoryInfo.numBytes,
+      memoryMB: Math.round(memoryInfo.numBytes / (1024 * 1024))
+    };
+  }
+
+  /**
+   * Décharge tous les modèles (compatibilité debug)
    */
   unloadAllModels(): void {
-    for (const [modelName, model] of this.models.entries()) {
-      model.dispose();
-      console.log(`🗑️ Modèle ${modelName} déchargé`);
+    for (const modelType of this.loadedModels.keys()) {
+      this.unloadModel(modelType);
     }
-    this.models.clear();
-    this.initializationAttempted.clear();
     this.loadingPromises.clear();
-  }
-
-  /**
-   * Met à jour les statistiques d'usage d'un modèle
-   */
-  updateUsageStats(modelType: TranslationModelType, inferenceTime: number, success: boolean): void {
-    const config = MODELS_CONFIG[modelType];
-    if (config && config.usageStats) {
-      config.usageStats.totalUsage++;
-      config.usageStats.lastUsed = new Date();
-      
-      // Moyenne mobile de temps d'inférence
-      const currentAvg = config.usageStats.averageInferenceTime;
-      const totalUsage = config.usageStats.totalUsage;
-      config.usageStats.averageInferenceTime = 
-        (currentAvg * (totalUsage - 1) + inferenceTime) / totalUsage;
-      
-      // Taux de succès avec moyenne mobile
-      const currentRate = config.usageStats.successRate;
-      config.usageStats.successRate = 
-        (currentRate * (totalUsage - 1) + (success ? 1 : 0)) / totalUsage;
-    }
-  }
-
-  /**
-   * Obtient les modèles disponibles pour une famille donnée
-   * Utilise la nouvelle configuration unifiée
-   */
-  getAvailableModelsByFamily(family: 'MT5' | 'NLLB'): TranslationModelType[] {
-    return getModelsByFamily(family).map(config => config.name);
   }
 
   /**
    * Obtient tous les modèles disponibles
    */
   getAllAvailableModels(): TranslationModelType[] {
-    return Object.keys(TRANSLATION_MODELS) as TranslationModelType[];
+    return Object.keys(MODELS_CONFIG) as TranslationModelType[];
   }
 
   /**
-   * Vérifie si un modèle est disponible selon les capacités système
+   * Obtient la clé d'un modèle (compatibilité)
    */
-  isModelAvailable(modelType: TranslationModelType): boolean {
-    const compatibleModels = getCompatibleModels(8192); // 8GB par défaut
-    return compatibleModels.some(model => model.name === modelType);
+  getModelKey(modelType: TranslationModelType): string {
+    return modelType;
   }
 
   /**
-   * Recommande le meilleur modèle selon les critères
+   * Obtient les métriques d'un modèle
    */
-  recommendBestModel(options: {
-    purpose: 'simple' | 'complex';
-    priority: 'speed' | 'quality' | 'efficiency';
-    maxMemoryMB?: number;
-    family?: 'MT5' | 'NLLB';
-  }): TranslationModelType {
-    const recommended = recommendModel(options);
-    return recommended.name;
-  }
-
-  /**
-   * Obtient les métriques de performance d'un modèle
-   */
-  getModelMetrics(modelType: TranslationModelType): {
-    config: ModelConfig;
-    isLoaded: boolean;
-    usageStats?: ModelConfig['usageStats'];
-  } {
+  getModelMetrics(modelType: TranslationModelType) {
     const config = MODELS_CONFIG[modelType];
-    const modelKey = this.getModelKey(modelType);
+    if (!config) {
+      throw new Error(`Configuration non trouvée pour le modèle: ${modelType}`);
+    }
     
     return {
       config,
-      isLoaded: this.isModelLoaded(modelKey),
-      usageStats: config.usageStats
+      isLoaded: this.isModelLoaded(modelType),
+      memoryUsage: config.cost.memoryUsage,
+      lastUsed: config.usageStats?.lastUsed || null,
+      successRate: config.usageStats?.successRate || 0
     };
   }
 
   /**
-   * Traduit un texte avec un modèle spécifique
+   * Obtient les modèles disponibles par famille
+   */
+  getAvailableModelsByFamily(family: 'MT5' | 'NLLB'): TranslationModelType[] {
+    return Object.keys(MODELS_CONFIG).filter(key => {
+      const config = MODELS_CONFIG[key as TranslationModelType];
+      return config.family === family;
+    }) as TranslationModelType[];
+  }
+
+  /**
+   * Traduit un texte avec un modèle spécifique (PRODUCTION)
    */
   async translateWithModel(
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    modelKey: string
+    text: string, 
+    sourceLanguage: string, 
+    targetLanguage: string, 
+    modelType: TranslationModelType
   ): Promise<string> {
-    try {
-      // Charger le modèle si nécessaire
-      const model = await this.loadModel(modelKey);
-      
-      if (!model) {
-        // Fallback vers API externe si le modèle n'est pas disponible
-        return this.translateWithFallback(text, sourceLanguage, targetLanguage, modelKey);
-      }
-
-      // Simulation de traduction avec TensorFlow.js
-      // TODO: Implémenter la vraie inférence TensorFlow.js
-      const startTime = Date.now();
-      
-      // Pour l'instant, simulation avec un délai réaliste
-      const delay = Math.random() * 800 + 200; // 200-1000ms
-      await new Promise(resolve => setTimeout(resolve, delay));
-      
-      const translatedText = `[${modelKey}] ${text} (${sourceLanguage} → ${targetLanguage})`;
-      
-      // Mettre à jour les statistiques
-      const inferenceTime = Date.now() - startTime;
-      const modelType = this.getModelType(modelKey);
-      this.updateUsageStats(modelType, inferenceTime, true);
-      
-      return translatedText;
-      
-    } catch (error) {
-      console.error(`❌ Erreur de traduction avec ${modelKey}:`, error);
-      
-      // Fallback vers API externe en cas d'erreur
-      return this.translateWithFallback(text, sourceLanguage, targetLanguage, modelKey);
-    }
+    console.log(`🔄 Traduction RÉELLE via RealTranslationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage}, ${modelType})`);
+    
+    const translationService = RealTranslationService.getInstance();
+    return await translationService.translateMessage(text, sourceLanguage, targetLanguage);
   }
 
   /**
-   * Traduit un texte en choisissant automatiquement le meilleur modèle
+   * Traduit un texte avec sélection automatique de modèle (PRODUCTION)
    */
   async translate(
-    text: string,
-    sourceLanguage: string,
+    text: string, 
+    sourceLanguage: string, 
     targetLanguage: string
   ): Promise<string> {
-    try {
-      // Recommander le meilleur modèle selon le texte
-      const isComplex = text.length > 50 || /[,.;:!?(){}[\]"'`]/.test(text);
-      const bestModel = recommendModel({
-        purpose: isComplex ? 'complex' : 'simple',
-        priority: 'efficiency',
-        maxMemoryMB: 8192
-      });
-
-      const modelKey = this.getModelKey(bestModel.name);
-      console.log(`🤖 Modèle recommandé: ${bestModel.name} (${bestModel.displayName})`);
-      
-      return this.translateWithModel(text, sourceLanguage, targetLanguage, modelKey);
-      
-    } catch (error) {
-      console.error('❌ Erreur de traduction automatique:', error);
-      
-      // Fallback ultime vers API externe
-      return this.translateWithFallback(text, sourceLanguage, targetLanguage, 'fallback');
-    }
-  }
-
-  /**
-   * Traduction de fallback utilisant une API externe
-   */
-  private async translateWithFallback(
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    attemptedModel: string
-  ): Promise<string> {
-    try {
-      console.log(`🌐 Utilisation du fallback API pour: ${text} (${sourceLanguage} → ${targetLanguage})`);
-      
-      // Utiliser MyMemory API comme fallback
-      const url = new URL('https://api.mymemory.translated.net/get');
-      url.searchParams.set('q', text);
-      url.searchParams.set('langpair', `${sourceLanguage}|${targetLanguage}`);
-      
-      const response = await fetch(url.toString());
-      
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.responseStatus === 200 && data.responseData?.translatedText) {
-        console.log(`✅ Traduction fallback réussie: ${data.responseData.translatedText}`);
-        return data.responseData.translatedText;
-      } else {
-        throw new Error('Invalid API response');
-      }
-      
-    } catch (error) {
-      console.error('❌ Erreur de traduction fallback:', error);
-      
-      // Derniers recours - traduction simulée
-      console.log('🔄 Utilisation de la traduction simulée comme dernier recours');
-      return `[FALLBACK-${attemptedModel}] ${text} (${sourceLanguage} → ${targetLanguage})`;
-    }
+    console.log(`🔄 Traduction automatique RÉELLE via RealTranslationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage})`);
+    
+    const translationService = RealTranslationService.getInstance();
+    return await translationService.translateMessage(text, sourceLanguage, targetLanguage);
   }
 }
 
-// Instance unique du gestionnaire de modèles
-export const translationModels = new TranslationModels();
+// Instance singleton
+export const translationModels = new TranslationModelsManager();
 
-// Fonction utilitaire pour obtenir le coût total d'une liste de traductions
-export function calculateTranslationCost(translations: Array<{
-  modelType: TranslationModelType;
-  count: number;
-}>): {
-  totalEnergy: number;
-  totalCO2: number;
-  totalCost: number;
-  totalTime: number;
-} {
-  return translations.reduce((acc, { modelType, count }) => {
-    const config = MODELS_CONFIG[modelType];
-    if (config) {
-      acc.totalEnergy += config.cost.energyConsumption * count;
-      acc.totalCO2 += config.cost.co2Equivalent * count;
-      acc.totalCost += config.cost.monetaryEquivalent * count;
-      acc.totalTime += config.cost.inferenceTime * count;
-    }
-    return acc;
-  }, {
-    totalEnergy: 0,
-    totalCO2: 0,
-    totalCost: 0,
-    totalTime: 0
-  });
-}
-
-export default translationModels;
+// Exports de compatibilité
+export { TRANSLATION_MODELS, getModelConfig, getModelsByFamily, getCompatibleModels, recommendModel };
+export type { TranslationModelType };

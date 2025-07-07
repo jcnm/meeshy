@@ -86,7 +86,14 @@ export class ConversationController {
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.messageService.findByConversation(id, req.user.id);
+    const messages = await this.messageService.findByConversation(id, req.user.id);
+    
+    // Retourner dans le format attendu par le frontend
+    return {
+      messages,
+      total: messages.length,
+      hasMore: false, // TODO: Implémenter la pagination
+    };
   }
 
   @Post(':id/messages')
