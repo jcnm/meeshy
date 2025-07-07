@@ -1,5 +1,5 @@
 import { 
-  type TranslationModelType, 
+  type TranslationModelType as UnifiedTranslationModelType, 
   type ModelCost, 
   UNIFIED_TRANSLATION_MODELS as TRANSLATION_MODELS,
   getModelConfig,
@@ -7,8 +7,11 @@ import {
   getCompatibleModels,
   recommendModel
 } from '@/lib/unified-model-config';
+import { type TranslationModelType as HFTranslationModelType } from '@/lib/simplified-model-config';
 import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
-import { RealTranslationService } from '@/services/real-translation-service';
+
+// Type unifié pour compatibilité
+export type TranslationModelType = UnifiedTranslationModelType;
 
 // Interface pour la configuration des modèles avec statistiques d'usage
 export interface ModelConfig {
@@ -67,8 +70,8 @@ export const MODELS_CONFIG: Record<TranslationModelType, ModelConfig> = Object.k
 
 // Cache des modèles chargés en mémoire
 class TranslationModelsManager {
-  private loadedModels: Map<TranslationModelType, tf.GraphModel> = new Map();
-  private loadingPromises: Map<TranslationModelType, Promise<tf.GraphModel | null>> = new Map();
+  private loadedModels: Map<TranslationModelType, boolean> = new Map();
+  private loadingPromises: Map<TranslationModelType, Promise<boolean>> = new Map();
 
   /**
    * Vérifie si un modèle est chargé en mémoire
@@ -89,16 +92,16 @@ class TranslationModelsManager {
   /**
    * Obtient un modèle chargé
    */
-  getLoadedModel(modelType: TranslationModelType): tf.GraphModel | null {
+  getLoadedModel(modelType: TranslationModelType): boolean | null {
     return this.loadedModels.get(modelType) || null;
   }
 
   /**
-   * Charge un modèle (PRODUCTION - utilise le RealModelDownloadService)
+   * Charge un modèle via HuggingFaceTranslationService
    */
-  async loadModel(modelType: TranslationModelType): Promise<tf.GraphModel | null> {
+  async loadModel(modelType: TranslationModelType): Promise<boolean> {
     if (this.loadedModels.has(modelType)) {
-      return this.loadedModels.get(modelType)!;
+      return true;
     }
 
     if (this.loadingPromises.has(modelType)) {
@@ -108,25 +111,24 @@ class TranslationModelsManager {
     const config = MODELS_CONFIG[modelType];
     if (!config) {
       console.error(`Configuration non trouvée pour le modèle: ${modelType}`);
-      return null;
+      return false;
     }
 
-    console.log(`🔄 Chargement RÉEL du modèle ${modelType} via RealModelDownloadService...`);
+    console.log(`🔄 Chargement du modèle ${modelType} via HuggingFaceTranslationService...`);
     
-    // Utiliser le RealModelDownloadService pour télécharger et charger le modèle
-    const loadingPromise = this.loadModelWithRealService(modelType);
+    const loadingPromise = this.loadModelWithHuggingFace(modelType);
     this.loadingPromises.set(modelType, loadingPromise);
     
     try {
-      const model = await loadingPromise;
+      const success = await loadingPromise;
       this.loadingPromises.delete(modelType);
       
-      if (model) {
-        this.loadedModels.set(modelType, model);
+      if (success) {
+        this.loadedModels.set(modelType, true);
         console.log(`✅ Modèle ${modelType} chargé et mis en cache`);
       }
       
-      return model;
+      return success;
     } catch (error) {
       this.loadingPromises.delete(modelType);
       console.error(`❌ Erreur chargement ${modelType}:`, error);
@@ -135,35 +137,47 @@ class TranslationModelsManager {
   }
 
   /**
-   * Charge un modèle avec le RealModelDownloadService
+   * Charge un modèle avec HuggingFaceTranslationService
    */
-  private async loadModelWithRealService(modelType: TranslationModelType): Promise<tf.GraphModel | null> {
-    const modelService = RealModelDownloadService.getInstance();
+  private async loadModelWithHuggingFace(modelType: TranslationModelType): Promise<boolean> {
+    const translationService = HuggingFaceTranslationService.getInstance();
     
-    // Mapper le modelType vers le nom utilisé par RealModelDownloadService
-    let modelName: string;
+    try {
+      // Mapper vers le type HuggingFace
+      const hfModelType = this.mapToHFModelType(modelType);
+      if (!hfModelType) {
+        console.warn(`Modèle non supporté par HuggingFaceTranslationService: ${modelType}`);
+        return false;
+      }
+      
+      // Utiliser la méthode loadModel du service HuggingFace
+      await translationService.loadModel(hfModelType);
+      return true;
+    } catch (error) {
+      console.error(`Erreur lors du chargement du modèle ${modelType}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Mapper les types de modèles vers HuggingFace
+   */
+  private mapToHFModelType(modelType: TranslationModelType): HFTranslationModelType | null {
     switch (modelType) {
       case 'MT5_SMALL':
-        modelName = 'MT5_SMALL';
-        break;
+        return 'MT5_BASE' as HFTranslationModelType;
       case 'NLLB_DISTILLED_600M':
-        modelName = 'NLLB_DISTILLED_600M';
-        break;
+        return 'NLLB_DISTILLED_600M' as HFTranslationModelType;
       default:
-        console.warn(`Modèle non supporté par RealModelDownloadService: ${modelType}`);
         return null;
     }
-    
-    return await modelService.downloadAndLoadModel(modelName);
   }
 
   /**
    * Décharge un modèle de la mémoire
    */
   unloadModel(modelType: TranslationModelType): void {
-    const model = this.loadedModels.get(modelType);
-    if (model) {
-      model.dispose();
+    if (this.loadedModels.has(modelType)) {
       this.loadedModels.delete(modelType);
       console.log(`♻️ Modèle ${modelType} déchargé de la mémoire`);
     }
@@ -174,14 +188,11 @@ class TranslationModelsManager {
    */
   getMemoryStats() {
     const loadedModels = Array.from(this.loadedModels.keys());
-    const memoryInfo = tf.memory();
     
     return {
       loadedModels,
       modelCount: loadedModels.length,
-      tensors: memoryInfo.numTensors,
-      memoryBytes: memoryInfo.numBytes,
-      memoryMB: Math.round(memoryInfo.numBytes / (1024 * 1024))
+      memoryMB: loadedModels.length * 100 // Estimation approximative
     };
   }
 
@@ -238,7 +249,7 @@ class TranslationModelsManager {
   }
 
   /**
-   * Traduit un texte avec un modèle spécifique (PRODUCTION)
+   * Traduit un texte avec un modèle spécifique via HuggingFaceTranslationService
    */
   async translateWithModel(
     text: string, 
@@ -246,24 +257,33 @@ class TranslationModelsManager {
     targetLanguage: string, 
     modelType: TranslationModelType
   ): Promise<string> {
-    console.log(`🔄 Traduction RÉELLE via RealTranslationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage}, ${modelType})`);
+    console.log(`🔄 Traduction via HuggingFaceTranslationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage}, ${modelType})`);
     
-    const translationService = RealTranslationService.getInstance();
-    return await translationService.translateMessage(text, sourceLanguage, targetLanguage);
+    const translationService = HuggingFaceTranslationService.getInstance();
+    
+    // Mapper vers le type HuggingFace
+    const hfModelType = this.mapToHFModelType(modelType);
+    if (!hfModelType) {
+      throw new Error(`Modèle non supporté: ${modelType}`);
+    }
+    
+    const result = await translationService.translateText(text, sourceLanguage, targetLanguage, hfModelType);
+    return result.translatedText;
   }
 
   /**
-   * Traduit un texte avec sélection automatique de modèle (PRODUCTION)
+   * Traduit un texte avec sélection automatique de modèle
    */
   async translate(
     text: string, 
     sourceLanguage: string, 
     targetLanguage: string
   ): Promise<string> {
-    console.log(`🔄 Traduction automatique RÉELLE via RealTranslationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage})`);
+    console.log(`🔄 Traduction automatique via HuggingFaceTranslationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage})`);
     
-    const translationService = RealTranslationService.getInstance();
-    return await translationService.translateMessage(text, sourceLanguage, targetLanguage);
+    // Sélectionner le meilleur modèle automatiquement
+    const modelType = text.length < 50 ? 'MT5_SMALL' : 'NLLB_DISTILLED_600M';
+    return await this.translateWithModel(text, sourceLanguage, targetLanguage, modelType as TranslationModelType);
   }
 }
 
@@ -272,4 +292,3 @@ export const translationModels = new TranslationModelsManager();
 
 // Exports de compatibilité
 export { TRANSLATION_MODELS, getModelConfig, getModelsByFamily, getCompatibleModels, recommendModel };
-export type { TranslationModelType };

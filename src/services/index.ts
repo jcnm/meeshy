@@ -21,8 +21,5 @@ export type { Message, CreateMessageDto, UpdateMessageDto } from './messagesServ
 
 // Services de modèles de traduction (Production Ready)
 export { HuggingFaceTranslationService } from './huggingface-translation';
-export { RealTranslationService } from './real-translation-service';
-export { AutoModelLoader, useAutoModelLoader } from './auto-model-loader';
-
 // Service mock pour les tests
 export { mockApiService } from './mockApiService';

@@ -1,7 +1,7 @@
 // Hooks React personnalisés pour Meeshy
 
 // Hook de traduction optimisé (recommandé)
-export { useOptimizedMessageTranslation } from './use-optimized-message-translation';
+export { useOptimizedMessageTranslation } from './use-optimized-message-translation-simple';
 
 // Hooks spécialisés
 export { useNotifications } from './use-notifications';
