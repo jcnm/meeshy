@@ -190,53 +190,30 @@ export function MessageBubble({
               <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                 {getDisplayContent()}
               </p>
-              
-              {/* Translation quality indicator */}
-              {!message.showingOriginal && message.translatedContent && (
-                <div className="mt-2 text-xs opacity-60">
-                  {message.translatedContent !== message.content && (
-                    <span className="bg-black bg-opacity-10 px-2 py-1 rounded">
-                      Traduit
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Show all translations when viewing original */}
             {message.showingOriginal && hasTranslations && (
               <div className="space-y-2 mt-3 pt-3 border-t border-gray-200 border-opacity-30">
                 <p className="text-xs font-medium opacity-70">Traductions disponibles :</p>
-                {message.translations!.map((translation, index) => {
-                  const cleanedTranslation = cleanTranslationContent(translation.content);
-                  const displayTranslation = cleanedTranslation || 'Traduction non disponible';
-                  
-                  return (
-                    <div 
-                      key={index} 
-                      className={`p-3 rounded-lg text-sm bg-black bg-opacity-10 border-l-4`}
-                      style={{
-                        borderLeftColor: translation.modelUsed && TRANSLATION_MODELS[translation.modelUsed]
-                          ? TRANSLATION_MODELS[translation.modelUsed].color
-                          : '#ccc'
-                      }}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-lg">{translation.flag}</span>
-                        <div className="flex-1">
-                          <p className="text-sm leading-relaxed">
-                            {displayTranslation}
-                          </p>
-                          {translation.modelUsed && (
-                            <span className="text-xs opacity-60 mt-1 block">
-                              via {TRANSLATION_MODELS[translation.modelUsed].displayName}
-                            </span>
-                          )}
-                        </div>
+                <div className="space-y-1">
+                  {message.translations!.map((translation, index) => {
+                    const cleanedTranslation = cleanTranslationContent(translation.content);
+                    const displayTranslation = cleanedTranslation || 'Traduction non disponible';
+                    
+                    return (
+                      <div 
+                        key={index} 
+                        className="text-sm opacity-80 flex items-start gap-2"
+                      >
+                        <span className="text-base">{translation.flag}</span>
+                        <span className="flex-1 leading-relaxed">
+                          {displayTranslation}
+                        </span>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             )}
           </>
@@ -266,9 +243,9 @@ export function MessageBubble({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200"
+                className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200 cursor-pointer"
                 onClick={() => onToggleOriginal(message.id)}
-                title={message.showingOriginal ? 'Voir uniquement la traduction' : 'Voir l\'original et toutes les traductions'}
+                title={message.showingOriginal ? 'Voir la traduction' : 'Voir le message original'}
               >
                 <Eye className="h-4 w-4" />
               </Button>
@@ -281,7 +258,7 @@ export function MessageBubble({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200"
+                    className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200 cursor-pointer"
                     disabled={isTranslating}
                     title="Traduire vers une autre langue"
                   >
@@ -328,7 +305,7 @@ export function MessageBubble({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200"
+                className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200 cursor-pointer"
                 onClick={() => setIsEditing(true)}
                 title="Modifier le message"
               >
@@ -341,7 +318,7 @@ export function MessageBubble({
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 w-8 p-0 transition-all duration-200 ${
+                className={`h-8 w-8 p-0 transition-all duration-200 cursor-pointer ${
                   hasFailedTranslation 
                     ? 'text-red-500 hover:bg-red-50' 
                     : 'text-current hover:bg-black hover:bg-opacity-10'

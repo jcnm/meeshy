@@ -23,7 +23,8 @@ import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { cn } from '@/lib/utils';
 import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
-import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/unified-model-config';
+import { type TranslationModelType } from '@/lib/unified-model-config';
+import { getAllActiveModels, ACTIVE_MODELS } from '@/lib/simple-model-config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { detectLanguage } from '@/utils/translation';
@@ -58,7 +59,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
   
   // États de traduction
-  const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>('NLLB_DISTILLED_600M');
+  const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>(ACTIVE_MODELS.highModel);
   const [translationService] = useState(() => HuggingFaceTranslationService.getInstance());
   
   // Hook de traduction
@@ -672,18 +673,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     <SelectValue placeholder="Choisir un modèle" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.values(UNIFIED_TRANSLATION_MODELS).map((model) => (
-                      <SelectItem key={model.name} value={model.name}>
+                    {getAllActiveModels().map(({ config }) => (
+                      <SelectItem key={config.name} value={config.name}>
                         <div className="flex items-center gap-2">
                           <div 
                             className="w-2 h-2 rounded-full" 
-                            style={{ backgroundColor: model.color }}
+                            style={{ backgroundColor: config.color }}
                           />
-                          <span className="text-sm">{model.displayName}</span>
+                          <span className="text-sm">{config.displayName}</span>
                           <Badge variant="outline" className="text-xs px-1 py-0">
-                            {model.parameters}
+                            {config.parameters}
                           </Badge>
-                          {translationService.isModelLoaded(model.name) && (
+                          {translationService.isModelLoaded(config.name) && (
                             <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
                               ✓
                             </Badge>
