@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,6 +27,9 @@ import {
 import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage } from '@/types';
 import { MessageBubble } from './message-bubble';
+import { useMessageTranslation } from '@/hooks/use-message-translation';
+import { SocketService } from '@/lib/socket.service';
+import { toast } from 'sonner';
 
 interface ConversationViewProps {
   conversation: Conversation;
@@ -54,16 +57,29 @@ export function ConversationView({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLInputElement>(null);
 
+  // États pour la gestion des traductions et affichages
+  const [translatedMessages, setTranslatedMessages] = useState<Map<string, TranslatedMessage>>(new Map());
+  const [showingOriginal, setShowingOriginal] = useState<Map<string, boolean>>(new Map());
+
+  // Hooks pour la traduction et services
+  const { translateMessage } = useMessageTranslation(currentUser);
+  const socketService = SocketService.getInstance();
+
   // Convertir Message en TranslatedMessage pour MessageBubble
   const convertToTranslatedMessage = (message: Message): TranslatedMessage => {
     const sender = conversation.participants?.find(p => p.userId === message.senderId)?.user;
+    const translated = translatedMessages.get(message.id);
+    const isShowingOriginal = showingOriginal.get(message.id) ?? true;
+    
     return {
       ...message,
-      showingOriginal: true, // Par défaut, montrer l'original
-      isTranslated: false,
-      isTranslating: false,
-      translations: [], // Pas de traductions initialement
-      translationFailed: false,
+      showingOriginal: isShowingOriginal,
+      isTranslated: translated?.isTranslated ?? false,
+      isTranslating: translated?.isTranslating ?? false,
+      translatedContent: translated?.translatedContent,
+      targetLanguage: translated?.targetLanguage,
+      translations: translated?.translations ?? [],
+      translationFailed: translated?.translationFailed ?? false,
       sender: sender || {
         id: message.senderId,
         username: 'Utilisateur inconnu',
@@ -97,20 +113,52 @@ export function ConversationView({
 
   // Fonction pour gérer la traduction
   const handleTranslate = async (messageId: string, targetLanguage: string, forceRetranslate?: boolean): Promise<void> => {
-    // TODO: Implémenter la traduction réelle
-    console.log('Traduire message:', messageId, 'vers', targetLanguage, 'force:', forceRetranslate);
+    try {
+      const message = messages.find(m => m.id === messageId);
+      if (!message) {
+        toast.error('Message introuvable');
+        return;
+      }
+
+      // Si déjà traduit et pas de force-retranslation, basculer l'affichage
+      if (translatedMessages.has(messageId) && !forceRetranslate) {
+        setShowingOriginal(prev => new Map(prev.set(messageId, !prev.get(messageId))));
+        return;
+      }
+
+      // Effectuer la traduction
+      const translatedMessage = await translateMessage(message, targetLanguage);
+      setTranslatedMessages(prev => new Map(prev.set(messageId, translatedMessage)));
+      setShowingOriginal(prev => new Map(prev.set(messageId, false)));
+      
+      toast.success('Message traduit avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la traduction:', error);
+      toast.error('Erreur lors de la traduction du message');
+    }
   };
 
   // Fonction pour gérer l'édition
   const handleEdit = async (messageId: string, newContent: string): Promise<void> => {
-    // TODO: Implémenter l'édition réelle
-    console.log('Éditer message:', messageId, 'nouveau contenu:', newContent);
+    try {
+      if (!newContent.trim()) {
+        toast.error('Le contenu du message ne peut pas être vide');
+        return;
+      }
+
+      await socketService.editMessage(messageId, newContent.trim());
+      toast.success('Message modifié avec succès');
+    } catch (error) {
+      console.error('Erreur lors de l\'édition:', error);
+      toast.error('Erreur lors de la modification du message');
+    }
   };
 
   // Fonction pour basculer entre original et traduction
   const handleToggleOriginal = (messageId: string): void => {
-    // TODO: Implémenter le basculement
-    console.log('Basculer affichage pour message:', messageId);
+    if (translatedMessages.has(messageId)) {
+      setShowingOriginal(prev => new Map(prev.set(messageId, !prev.get(messageId))));
+    }
   };
 
   // Auto-scroll vers les nouveaux messages

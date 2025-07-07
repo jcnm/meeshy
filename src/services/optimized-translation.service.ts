@@ -306,7 +306,10 @@ export class OptimizedTranslationService {
 
   // ================= EXÉCUTION DES TRADUCTIONS =================
 
-  private async executeTranslationTask(task: TranslationTask): Promise<string> {
+  /**
+   * Exécuter directement une tâche de traduction (API publique)
+   */
+  async executeTranslationTask(task: TranslationTask): Promise<string> {
     const startTime = performance.now();
     
     try {

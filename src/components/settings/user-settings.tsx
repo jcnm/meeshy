@@ -51,22 +51,32 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
 
     setIsLoading(true);
     try {
-      // TODO: Appel API pour sauvegarder les modifications
-      // const response = await fetch(`/api/users/${user.id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      // Appel API pour sauvegarder les modifications
+      const response = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assurez-vous que le token est disponible
+        },
+        body: JSON.stringify(formData)
+      });
 
-      // Simulation de la mise à jour
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour du profil');
+      }
+
+      const updatedUserData = await response.json();
+      
+      // Mettre à jour l'utilisateur avec les données retournées par l'API
       const updatedUser: UserType = {
         ...user,
-        ...formData
+        ...updatedUserData
       };
       
       onUserUpdate(updatedUser);
       toast.success('Profil mis à jour avec succès');
     } catch (error) {
+      console.error('Erreur lors de la mise à jour:', error);
       toast.error('Erreur lors de la mise à jour du profil');
     } finally {
       setIsLoading(false);

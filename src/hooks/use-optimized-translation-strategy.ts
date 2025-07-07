@@ -16,6 +16,7 @@ import type {
 } from '@/types/translation-optimization';
 import type { TranslatedMessage } from '@/types';
 import { hierarchicalCache } from '@/services/hierarchical-cache.service';
+import { OptimizedTranslationService } from '@/services/optimized-translation.service';
 import { ConversationsService } from '@/services/conversationsService';
 
 interface OptimizedTranslationState {
@@ -52,6 +53,7 @@ interface UseOptimizedTranslationOptions {
 export function useOptimizedTranslationStrategy(options: UseOptimizedTranslationOptions) {
   // Service instances
   const conversationsService = useRef(new ConversationsService()).current;
+  const optimizedTranslationService = useRef(OptimizedTranslationService.getInstance()).current;
   
   // État principal
   const [state, setState] = useState<OptimizedTranslationState>({
@@ -194,18 +196,28 @@ export function useOptimizedTranslationStrategy(options: UseOptimizedTranslation
 
   const translateMessageWithCache = useCallback(async (task: TranslationTask): Promise<string | null> => {
     try {
-      // Vérifier le cache d'abord
-      // TODO: Intégrer avec le service de traduction réel et le cache
+      // 1. Vérifier le cache hiérarchique d'abord
+      const cacheKey = `${task.content}-${task.sourceLanguage}-${task.targetLanguage}`;
+      const cached = hierarchicalCache.getCachedValue(cacheKey);
       
-      // Simuler la traduction pour l'instant
-      await new Promise(resolve => setTimeout(resolve, task.estimatedTime));
+      if (cached) {
+        console.log(`✅ Traduction trouvée en cache: ${task.messageId}`);
+        return cached as string;
+      }
       
-      return `[TRADUIT] ${task.content}`;
+      // 2. Appel direct à executeTranslationTask (évite la double création de tâche)
+      const result = await optimizedTranslationService.executeTranslationTask(task);
+      
+      // 3. Mettre en cache le résultat
+      hierarchicalCache.setCachedValue(cacheKey, result);
+      
+      console.log(`✅ Traduction réussie: ${task.messageId} -> ${result.substring(0, 50)}...`);
+      return result;
     } catch (error) {
       console.error(`❌ Erreur traduction message ${task.messageId}:`, error);
       return null;
     }
-  }, []);
+  }, [optimizedTranslationService]);
 
   const updateConversationMetadataWithTranslation = useCallback((task: TranslationTask, translation: string) => {
     setState(prev => ({

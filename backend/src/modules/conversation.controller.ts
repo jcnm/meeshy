@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Request, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request, Delete, Query } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { MessageService } from './message.service';
 import { CreateConversationDto, JoinConversationDto, CreateMessageDto, CreateConversationLinkDto } from '../shared/dto';
@@ -85,14 +85,26 @@ export class ConversationController {
   async getMessages(
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '50',
   ) {
-    const messages = await this.messageService.findByConversation(id, req.user.id);
+    const pageNumber = parseInt(page, 10) || 1;
+    const limitNumber = parseInt(limit, 10) || 50;
+    const offset = (pageNumber - 1) * limitNumber;
+
+    const messages = await this.messageService.findByConversation(id, req.user.id, pageNumber, limitNumber);
+    
+    // Compter le total des messages pour calculer hasMore
+    const totalMessages = await this.messageService.countByConversation(id, req.user.id);
+    const hasMore = offset + messages.length < totalMessages;
     
     // Retourner dans le format attendu par le frontend
     return {
       messages,
-      total: messages.length,
-      hasMore: false, // TODO: Implémenter la pagination
+      total: totalMessages,
+      hasMore,
+      page: pageNumber,
+      limit: limitNumber,
     };
   }
 

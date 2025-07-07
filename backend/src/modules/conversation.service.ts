@@ -88,7 +88,13 @@ export class ConversationService {
       },
     });
 
-    return conversationsWithLinks.map(link => this.formatConversationResponse(link.conversation));
+    const conversations = await Promise.all(
+      conversationsWithLinks.map(async (link) => 
+        await this.formatConversationResponse(link.conversation, userId)
+      )
+    );
+    
+    return conversations;
   }
 
   async findOne(id: string, userId: string) {
@@ -198,7 +204,7 @@ export class ConversationService {
     });
   }
 
-  private async getConversationWithDetails(conversationId: string) {
+  private async getConversationWithDetails(conversationId: string, viewerId?: string) {
     const conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
       include: {
@@ -239,10 +245,12 @@ export class ConversationService {
       },
     });
 
-    return conversation ? this.formatConversationResponse(conversation) : null;
+    return conversation ? await this.formatConversationResponse(conversation, viewerId || 'system') : null;
   }
 
-  private formatConversationResponse(conversation: any): ConversationResponse {
+  private async formatConversationResponse(conversation: any, userId: string): Promise<ConversationResponse> {
+    const unreadCount = await this.calculateUnreadCount(conversation.id, userId);
+    
     return {
       id: conversation.id,
       type: conversation.type,
@@ -283,7 +291,7 @@ export class ConversationService {
         },
       })) || [],
       lastMessage: conversation.messages?.[0] ? this.formatMessageResponse(conversation.messages[0]) : undefined,
-      unreadCount: 0, // TODO: Calculer le nombre de messages non lus
+      unreadCount,
     };
   }
 
@@ -474,7 +482,7 @@ export class ConversationService {
       maxUses: shareLink.maxUses,
       expiresAt: shareLink.expiresAt,
       createdAt: shareLink.createdAt,
-      conversation: this.formatConversationResponse(shareLink.conversation),
+      conversation: await this.formatConversationResponse(shareLink.conversation, 'system'),
       creator: shareLink.creator,
     };
   }
@@ -535,30 +543,64 @@ export class ConversationService {
       orderBy: { createdAt: 'asc' },
     });
 
-    // Mapper les conversations avec gestion correcte des types
-    return conversations.map(conversation => ({
-      id: conversation.id,
-      type: conversation.type as ConversationType,
-      title: conversation.title || undefined,
-      description: conversation.description || undefined,
-      isGroup: true,
-      isPrivate: false,
-      isActive: conversation.isActive,
-      createdAt: conversation.createdAt,
-      updatedAt: conversation.updatedAt,
-      lastMessage: conversation.messages[0] ? this.formatMessageResponse(conversation.messages[0]) : undefined,
-      unreadCount: 0, // TODO: Calculer le nombre de messages non lus
-      participants: conversation.links.map(link => ({
-        id: link.id,
-        conversationId: link.conversationId,
-        userId: link.userId,
-        role: link.role as ParticipantRole,
-        joinedAt: link.joinedAt,
-        leftAt: link.leftAt || undefined,
-        isAdmin: link.isAdmin,
-        isModerator: link.isModerator,
-        user: mapPrismaUser(link.user),
-      })),
+    // Mapper les conversations avec gestion correcte des types et calcul des messages non lus
+    return Promise.all(conversations.map(async (conversation) => {
+      const unreadCount = await this.calculateUnreadCount(conversation.id, userId);
+      
+      return {
+        id: conversation.id,
+        type: conversation.type as ConversationType,
+        title: conversation.title || undefined,
+        description: conversation.description || undefined,
+        isGroup: true,
+        isPrivate: false,
+        isActive: conversation.isActive,
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt,
+        lastMessage: conversation.messages[0] ? this.formatMessageResponse(conversation.messages[0]) : undefined,
+        unreadCount,
+        participants: conversation.links.map(link => ({
+          id: link.id,
+          conversationId: link.conversationId,
+          userId: link.userId,
+          role: link.role as ParticipantRole,
+          joinedAt: link.joinedAt,
+          leftAt: link.leftAt || undefined,
+          isAdmin: link.isAdmin,
+          isModerator: link.isModerator,
+          user: mapPrismaUser(link.user),
+        })),
+      };
     }));
+  }
+
+  /**
+   * Calcule le nombre de messages non lus dans une conversation pour un utilisateur
+   */
+  private async calculateUnreadCount(conversationId: string, userId: string): Promise<number> {
+    // Récupérer le lien de conversation pour obtenir les infos de lecture
+    const link = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+      },
+    });
+
+    if (!link) {
+      return 0;
+    }
+
+    // Compter les messages créés après que l'utilisateur ait rejoint la conversation
+    // et qui ne sont pas envoyés par l'utilisateur lui-même
+    const where = {
+      conversationId,
+      isDeleted: false,
+      senderId: { not: userId }, // Ne pas compter ses propres messages
+      createdAt: { gt: link.joinedAt }
+    };
+
+    return this.prisma.message.count({ where });
   }
 }

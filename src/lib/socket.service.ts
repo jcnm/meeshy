@@ -240,4 +240,27 @@ export class SocketService {
   public isConnected(): boolean {
     return this.socket?.connected || false;
   }
+
+  /**
+   * Édite un message existant
+   */
+  public async editMessage(messageId: string, content: string): Promise<Message> {
+    if (!this.socket) {
+      throw new Error('Socket non connecté');
+    }
+
+    return new Promise((resolve, reject) => {
+      this.socket!.emit(
+        'editMessage',
+        { messageId, content },
+        (response: SocketResponse<{ success: boolean; message: Message }>) => {
+          if (response.success && response.data?.success && response.data.message) {
+            resolve(response.data.message);
+          } else {
+            reject(new Error(response.error || 'Erreur d\'édition du message'));
+          }
+        }
+      );
+    });
+  }
 }

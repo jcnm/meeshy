@@ -54,10 +54,26 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
 
     setIsLoading(true);
     try {
-      // TODO: Appel API pour sauvegarder les modifications
+      // Appel API pour sauvegarder les modifications des paramètres de langue
+      const response = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assurez-vous que le token est disponible
+        },
+        body: JSON.stringify(settings)
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour des paramètres de langue');
+      }
+
+      const updatedUserData = await response.json();
+      
+      // Mettre à jour l'utilisateur avec les données retournées par l'API
       const updatedUser: UserType = {
         ...user,
-        ...settings
+        ...updatedUserData
       };
       
       onUserUpdate(updatedUser);

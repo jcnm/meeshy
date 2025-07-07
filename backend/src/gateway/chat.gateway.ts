@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessageService } from '../modules/message.service';
 import { UserService } from '../modules/user.service';
+import { NotificationService } from '../common/notification.service';
 import { CreateMessageDto } from '../shared/dto';
 import { TypingEvent, MessageEvent, UserStatusEvent, MessageResponse, UserRole } from '../shared/interfaces';
 
@@ -73,6 +74,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private prisma: PrismaService,
     private messageService: MessageService,
     private userService: UserService,
+    private notificationService: NotificationService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -451,9 +453,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client.userId) return { error: 'Non authentifié' };
 
     try {
-      // TODO: Marquer la notification comme lue en base
+      // Marquer la notification comme lue en supprimant de la base
+      await this.notificationService.markAsRead(data.notificationId, client.userId);
       return { success: true };
     } catch (error) {
+      console.error('Erreur lors du marquage de la notification:', error);
       return { error: 'Erreur lors du marquage de la notification' };
     }
   }
@@ -481,16 +485,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Vérifier les permissions admin
     const user = await this.prisma.user.findUnique({
       where: { id: client.userId },
-      // TODO: Ajouter le champ role dans le schéma Prisma
-      select: { id: true, username: true },
+      select: { id: true, username: true, role: true },
     });
 
     if (!user) return { error: 'Utilisateur non trouvé' };
 
-    // TODO: Vérifier le rôle quand il sera disponible dans le schéma
-    // Pour l'instant, on autorise tous les utilisateurs authentifiés
+    // Vérifier le rôle pour autoriser l'accès à la room admin
+    const allowedRoles = ['BIGBOSS', 'ADMIN', 'MODO', 'AUDIT', 'ANALYST'];
+    if (!allowedRoles.includes(user.role)) {
+      return { error: 'Permissions insuffisantes pour accéder à la room admin' };
+    }
+
     client.join('admin-room');
-    return { success: true };
+    return { success: true, role: user.role };
   }
 
   /**

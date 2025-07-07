@@ -106,6 +106,30 @@ export class MessageService {
     return messages.reverse().map(message => this.formatMessageResponse(message));
   }
 
+  async countByConversation(conversationId: string, userId: string): Promise<number> {
+    // Vérifier que l'utilisateur a accès à la conversation
+    const link = await this.prisma.conversationLink.findUnique({
+      where: {
+        conversationId_userId: {
+          conversationId,
+          userId,
+        },
+        leftAt: null,
+      },
+    });
+
+    if (!link) {
+      throw new ForbiddenException('Accès refusé à cette conversation');
+    }
+
+    return this.prisma.message.count({
+      where: {
+        conversationId,
+        isDeleted: false,
+      },
+    });
+  }
+
   async update(messageId: string, updateMessageDto: UpdateMessageDto, userId: string): Promise<MessageResponse> {
     // Vérifier que le message existe et appartient à l'utilisateur
     const message = await this.prisma.message.findUnique({
