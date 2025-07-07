@@ -10,60 +10,33 @@ import { toast } from 'sonner';
 import { 
   HuggingFaceTranslationService, 
   type TranslationProgress 
-} from '@/services/huggingface-translation';
+} from '@/services/simplified-translation.service';
 import { 
-  UNIFIED_TRANSLATION_MODELS, 
-  type UnifiedModelConfig,
-  type TranslationModelType as UnifiedModelType,
-  getCompatibleModels,
-  estimateSystemCapabilities 
+  getAllActiveModels,
+  getActiveModelConfig,
+  ACTIVE_MODELS,
+  type AllowedModelType 
+} from '@/lib/simple-model-config';
+import { 
+  type UnifiedModelConfig 
 } from '@/lib/unified-model-config';
-import { 
-  type TranslationModelType as HuggingFaceModelType 
-} from '@/lib/simplified-model-config';
 
-// Fonction de mapping pour convertir les types unifiés vers HuggingFace
-const mapToHFModelType = (modelType: UnifiedModelType): HuggingFaceModelType | null => {
-  switch (modelType) {
-    case 'MT5_SMALL':
-      return 'MT5_BASE' as HuggingFaceModelType;
-    case 'MT5_BASE':
-      return 'MT5_BASE' as HuggingFaceModelType;
-    case 'NLLB_DISTILLED_600M':
-      return 'NLLB_DISTILLED_600M' as HuggingFaceModelType;
-    default:
-      return null;
-  }
-};
+// Plus besoin de mapping - utilisation directe des types AllowedModelType
 
 /**
- * Formate une taille en octets de manière lisible
- */
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
-/**
- * Composant pour le téléchargement RÉEL des modèles TensorFlow.js
- * Plus de mocks - Téléchargement et stockage réels dans le navigateur
- * Affiche TOUS les modèles disponibles (11 modèles) avec leurs caractéristiques
+ * Composant pour le téléchargement des 2 modèles actifs configurés
+ * Plus de liste infinie - Seulement les modèles basique et haute performance
  */
 export function RealModelDownloader() {
   const [downloadProgress, setDownloadProgress] = useState<Record<string, TranslationProgress>>({});
-  const [loadedModels, setLoadedModels] = useState<UnifiedModelType[]>([]);
-  const [systemCapabilities] = useState(() => estimateSystemCapabilities());
+  const [loadedModels, setLoadedModels] = useState<AllowedModelType[]>([]);
 
   const modelService = HuggingFaceTranslationService.getInstance();
   
-  // Convertir la configuration unifiée en liste utilisable
-  const availableModels = Object.values(UNIFIED_TRANSLATION_MODELS);
-  const compatibleModels = getCompatibleModels(systemCapabilities.maxMemoryMB);
+  // Récupérer les 2 modèles actifs
+  const activeModels = getAllActiveModels();
+  const basicModelConfig = getActiveModelConfig('basic');
+  const highModelConfig = getActiveModelConfig('high');
 
   useEffect(() => {
     // Charger l'état initial des modèles
@@ -78,17 +51,11 @@ export function RealModelDownloader() {
   /**
    * Télécharge un modèle spécifique
    */
-  const downloadModel = async (modelName: UnifiedModelType) => {
+  const downloadModel = async (modelName: AllowedModelType) => {
     try {
       console.log(`🔄 Démarrage téléchargement: ${modelName}`);
       
-      // Mapper vers le type HuggingFace
-      const hfModelType = mapToHFModelType(modelName);
-      if (!hfModelType) {
-        throw new Error(`Modèle non supporté: ${modelName}`);
-      }
-      
-      await modelService.loadModel(hfModelType, (progress: TranslationProgress) => {
+      await modelService.loadModel(modelName, (progress: TranslationProgress) => {
         setDownloadProgress(prev => ({
           ...prev,
           [modelName]: progress
@@ -127,15 +94,8 @@ export function RealModelDownloader() {
   /**
    * Décharge un modèle de la mémoire
    */
-  const unloadModel = async (modelName: UnifiedModelType) => {
-    // Mapper vers le type HuggingFace
-    const hfModelType = mapToHFModelType(modelName);
-    if (!hfModelType) {
-      toast.error(`Modèle non supporté: ${modelName}`);
-      return;
-    }
-    
-    const success = await modelService.unloadModel(hfModelType);
+  const unloadModel = async (modelName: AllowedModelType) => {
+    const success = await modelService.unloadModel(modelName);
     if (success) {
       const stats = modelService.getModelStats();
       setLoadedModels(stats.loadedModels);
@@ -148,7 +108,7 @@ export function RealModelDownloader() {
   /**
    * Obtient le statut d'un modèle
    */
-  const getModelStatus = (modelName: UnifiedModelType) => {
+  const getModelStatus = (modelName: AllowedModelType) => {
     if (loadedModels.includes(modelName)) return 'loaded';
     if (downloadProgress[modelName]) return downloadProgress[modelName].status;
     return 'not-downloaded';
@@ -161,190 +121,106 @@ export function RealModelDownloader() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Download className="h-5 w-5" />
-            Téléchargement des modèles TensorFlow.js
+            Modèles de traduction actifs
           </CardTitle>
           <CardDescription>
-            Téléchargement et stockage réels des modèles de traduction dans votre navigateur
+            Configuration simplifiée : 2 modèles configurés via les variables d&apos;environnement
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{loadedModels.length}</div>
               <div className="text-sm text-muted-foreground">Modèles chargés</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{availableModels.length}</div>
-              <div className="text-sm text-muted-foreground">Modèles disponibles</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {Object.values(downloadProgress).filter(p => p.status === 'downloading').length}
-              </div>
-              <div className="text-sm text-muted-foreground">En téléchargement</div>
+              <div className="text-2xl font-bold text-blue-600">2</div>
+              <div className="text-sm text-muted-foreground">Modèles configurés</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Recommandations système */}
+      {/* Configuration actuelle */}
       <Card className="border-blue-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-blue-700">
             <Zap className="h-5 w-5" />
-            Recommandations pour votre système
+            Configuration active
           </CardTitle>
           <CardDescription>
-            {systemCapabilities.reasoning}
+            Modèles configurés pour cette instance de Meeshy
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <div className="font-medium text-sm">Modèle MT5 recommandé :</div>
+              <div className="font-medium text-sm">Modèle basique (messages courts) :</div>
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                {systemCapabilities.recommendedModels.mt5}
+                {ACTIVE_MODELS.basicModel}
               </Badge>
+              <div className="text-xs text-gray-600">{basicModelConfig.description}</div>
             </div>
             <div className="space-y-2">
-              <div className="font-medium text-sm">Modèle NLLB recommandé :</div>
+              <div className="font-medium text-sm">Modèle haute performance (messages complexes) :</div>
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                {systemCapabilities.recommendedModels.nllb}
+                {ACTIVE_MODELS.highModel}
               </Badge>
-            </div>
-          </div>
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <div className="text-sm text-gray-600">
-              <strong>Mémoire estimée :</strong> {Math.round(systemCapabilities.maxMemoryMB / 1024)}GB
-              <br />
-              <strong>Modèles compatibles :</strong> {compatibleModels.length} sur {availableModels.length}
+              <div className="text-xs text-gray-600">{highModelConfig.description}</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Liste des modèles */}
-      <div className="space-y-6">
-        {/* Recommandations système */}
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="text-blue-900">Recommandations pour votre système</CardTitle>
-            <CardDescription className="text-blue-700">
-              {systemCapabilities.reasoning}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
-                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">MT5</Badge>
-                <div>
-                  <div className="font-medium">{systemCapabilities.recommendedModels.mt5}</div>
-                  <div className="text-sm text-gray-600">Recommandé pour messages courts</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-white rounded-lg border">
-                <Badge className="bg-orange-100 text-orange-800 border-orange-200">NLLB</Badge>
-                <div>
-                  <div className="font-medium">{systemCapabilities.recommendedModels.nllb}</div>
-                  <div className="text-sm text-gray-600">Recommandé pour messages complexes</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Modèles compatibles */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-green-700">
-            Modèles compatibles avec votre système ({compatibleModels.length})
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {compatibleModels.map((config) => (
-              <ModelCard 
+      {/* Modèles actifs */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-700">
+          Modèles disponibles (2)
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {activeModels.map(({ config }) => (              <ModelCard 
                 key={config.name} 
                 config={config} 
                 status={getModelStatus(config.name)}
                 progress={downloadProgress[config.name]}
                 onDownload={() => downloadModel(config.name)}
                 onUnload={() => unloadModel(config.name)}
-                isRecommended={
-                  config.name === systemCapabilities.recommendedModels.mt5 ||
-                  config.name === systemCapabilities.recommendedModels.nllb
-                }
+                isRecommended={true}
+                isCompatible={true}
               />
-            ))}
-          </div>
-        </div>
-
-        {/* Tous les modèles */}
-        <div>
-          <h3 className="text-lg font-semibold mb-4 text-gray-700">
-            Tous les modèles disponibles ({availableModels.length})
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {availableModels.map((config) => (
-              <ModelCard 
-                key={config.name} 
-                config={config} 
-                status={getModelStatus(config.name)}
-                progress={downloadProgress[config.name]}
-                onDownload={() => downloadModel(config.name)}
-                onUnload={() => unloadModel(config.name)}
-                isCompatible={compatibleModels.some(m => m.name === config.name)}
-              />
-            ))}
-          </div>
+          ))}
         </div>
       </div>
 
       {/* Guide de sélection des modèles */}
       <Card className="border-gray-200">
         <CardHeader>
-          <CardTitle className="text-gray-700">Guide de sélection des modèles</CardTitle>
+          <CardTitle className="text-gray-700">Configuration simplifiée</CardTitle>
           <CardDescription>
-            Comment choisir le bon modèle selon vos besoins et votre système
+            Meeshy utilise uniquement 2 modèles configurables pour optimiser les performances
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium text-sm mb-2">💡 Recommandations générales :</h4>
+              <h4 className="font-medium text-sm mb-2">💡 Fonctionnement :</h4>
               <ul className="text-sm text-gray-600 space-y-1">
-                <li>• <strong>Commencez par les modèles recommandés</strong> - Ils sont optimisés pour votre système</li>
-                <li>• <strong>MT5 pour messages courts</strong> - Meilleur pour phrases simples (≤50 caractères)</li>
-                <li>• <strong>NLLB pour messages longs</strong> - Excellent pour textes complexes et paragraphes</li>
-                <li>• <strong>Modèles &quot;Distilled&quot;</strong> - Version optimisée avec moins d&apos;espace de stockage</li>
+                <li>• <strong>Modèle basique :</strong> Utilisé pour les messages courts (≤50 caractères) et simples</li>
+                <li>• <strong>Modèle haute performance :</strong> Utilisé pour les messages longs et complexes</li>
+                <li>• <strong>Sélection automatique :</strong> L&apos;application choisit le bon modèle selon le contexte</li>
+                <li>• <strong>Configuration via .env :</strong> NEXT_PUBLIC_BASIC_MODEL et NEXT_PUBLIC_HIGH_MODEL</li>
               </ul>
             </div>
 
-            <div>
-              <h4 className="font-medium text-sm mb-2">⚡ Selon la performance souhaitée :</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="p-3 bg-green-50 rounded border border-green-200">
-                  <div className="font-medium text-green-700 mb-1">Vitesse maximale</div>
-                  <div className="text-gray-600">MT5_SMALL, NLLB_200M</div>
-                </div>
-                <div className="p-3 bg-blue-50 rounded border border-blue-200">
-                  <div className="font-medium text-blue-700 mb-1">Équilibre optimal</div>
-                  <div className="text-gray-600">MT5_BASE, NLLB_DISTILLED_600M</div>
-                </div>
-                <div className="p-3 bg-purple-50 rounded border border-purple-200">
-                  <div className="font-medium text-purple-700 mb-1">Qualité maximale</div>
-                  <div className="text-gray-600">MT5_LARGE, NLLB_DISTILLED_1_3B</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div>
-                  <div className="font-medium text-amber-800 mb-1">Important :</div>
-                  <ul className="text-sm text-amber-700 space-y-1">
-                    <li>• Les modèles sont stockés localement dans votre navigateur</li>
-                    <li>• Le téléchargement initial peut prendre plusieurs minutes</li>
-                    <li>• Vous pouvez télécharger plusieurs modèles et les utiliser selon vos besoins</li>
-                    <li>• Les modèles non compatibles avec votre système sont marqués en rouge</li>
+                  <div className="font-medium text-blue-800 mb-1">Configuration actuelle :</div>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• Basique : <strong>{ACTIVE_MODELS.basicModel}</strong></li>
+                    <li>• Haute performance : <strong>{ACTIVE_MODELS.highModel}</strong></li>
+                    <li>• Pour changer, modifiez les variables dans .env.local et redémarrez</li>
                   </ul>
                 </div>
               </div>

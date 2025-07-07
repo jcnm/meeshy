@@ -20,6 +20,6 @@ export type { UserStats, UpdateUserDto } from './usersService';
 export type { Message, CreateMessageDto, UpdateMessageDto } from './messagesService';
 
 // Services de modèles de traduction (Production Ready)
-export { HuggingFaceTranslationService } from './huggingface-translation';
+export { HuggingFaceTranslationService } from './simplified-translation.service';
 // Service mock pour les tests
 export { mockApiService } from './mockApiService';

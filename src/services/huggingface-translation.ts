@@ -5,12 +5,14 @@
 
 import { pipeline } from '@huggingface/transformers';
 import { 
-  UNIFIED_TRANSLATION_MODELS, 
-  type UnifiedModelConfig,
-  type TranslationModelType,
-  estimateSystemCapabilities,
-  selectBestModel
-} from '@/lib/simplified-model-config';
+  getAllActiveModels,
+  selectModelForMessage,
+  getActiveModelConfig,
+  type AllowedModelType 
+} from '@/lib/simple-model-config';
+import { 
+  type UnifiedModelConfig 
+} from '@/lib/unified-model-config';
 
 export interface TranslationProgress {
   modelName: string;
