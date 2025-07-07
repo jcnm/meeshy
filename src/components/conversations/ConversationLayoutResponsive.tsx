@@ -28,6 +28,7 @@ import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/sim
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { detectLanguage } from '@/utils/translation';
+import { TranslationPerformanceTips } from '@/components/translation/translation-performance-tips';
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -150,8 +151,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     try {
       console.log(`🔄 Traduction avec modèle sélectionné: ${selectedTranslationModel}`);
       
+      // Afficher un indicateur de traduction en cours
+      toast.loading('Traduction en cours...', { id: `translate-${messageId}` });
+      
       // Utiliser directement le service de traduction avec le modèle sélectionné
       const sourceLanguage = message.originalLanguage || detectLanguage(message.content);
+      
+      // Ajouter un délai pour permettre à l'interface de se mettre à jour
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       const translationResult = await translationService.translateText(
         message.content,
@@ -160,6 +167,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         selectedTranslationModel,
         (progress) => {
           console.log(`📊 Progression traduction: ${progress.progress}% - ${progress.status}`);
+          // Mettre à jour le toast avec la progression
+          if (progress.status === 'downloading') {
+            toast.loading(`Téléchargement du modèle: ${progress.progress || 0}%`, { id: `translate-${messageId}` });
+          } else if (progress.status === 'loading') {
+            toast.loading('Chargement du modèle...', { id: `translate-${messageId}` });
+          }
         }
       );
 
@@ -220,10 +233,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       });
       
       console.log(`✅ Message traduit avec ${selectedTranslationModel}: ${translationResult.translatedText}`);
-      toast.success(`Message traduit avec ${selectedTranslationModel}`);
+      toast.success(`Message traduit avec ${selectedTranslationModel}`, { id: `translate-${messageId}` });
     } catch (error) {
       console.error('❌ Erreur lors de la traduction:', error);
-      toast.error('Erreur lors de la traduction du message');
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la traduction du message';
+      toast.error(errorMessage, { id: `translate-${messageId}` });
     }
   };
 
@@ -679,6 +693,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {/* Conseils de performance */}
+                <div className="mt-2">
+                  <TranslationPerformanceTips 
+                    currentModel={selectedTranslationModel}
+                    textLength={newMessage.length}
+                  />
+                </div>
               </div>
             </div>
             

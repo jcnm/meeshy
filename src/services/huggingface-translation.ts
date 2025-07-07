@@ -265,9 +265,9 @@ export class HuggingFaceTranslationService {
       throw new Error('Le texte à traduire ne peut pas être vide');
     }
 
-    // Limiter la taille du texte pour éviter les erreurs de mémoire
-    if (text.length > 500) {
-      throw new Error('Texte trop long (maximum 500 caractères)');
+    // Limiter la taille du texte pour éviter les erreurs de mémoire et le gel
+    if (text.length > 200) {
+      throw new Error('Texte trop long (maximum 200 caractères). Réduisez la taille pour éviter le gel de l\'interface.');
     }
 
     const config = UNIFIED_TRANSLATION_MODELS[modelType];
@@ -281,37 +281,14 @@ export class HuggingFaceTranslationService {
       // Charger le modèle si nécessaire
       const translationPipeline = await this.loadModel(modelType, onProgress);
 
-      // Approche différente selon la famille de modèle
-      let result: any;
-      
-      if (config.family === 'MT5') {
-        // Pour MT5 : utiliser le format text2text-generation
-        const prompt = `translate ${sourceLanguage} to ${targetLanguage}: ${text}`;
-        console.log(`🔄 MT5 prompt: "${prompt}"`);
-        
-        result = await translationPipeline(prompt, {
-          max_length: Math.min(200, text.length * 2), // Limiter la longueur
-          do_sample: false,
-          temperature: 0.3,
-          num_return_sequences: 1
-        });
-        
-      } else if (config.family === 'NLLB') {
-        // Pour NLLB : utiliser les codes de langue spécifiques
-        const srcLangCode = this.convertToNLLBCode(sourceLanguage);
-        const tgtLangCode = this.convertToNLLBCode(targetLanguage);
-        
-        console.log(`🔄 NLLB codes: ${srcLangCode} → ${tgtLangCode}`);
-        
-        result = await translationPipeline(text, {
-          src_lang: srcLangCode,
-          tgt_lang: tgtLangCode,
-          max_length: Math.min(200, text.length * 2) // Limiter la longueur
-        });
-        
-      } else {
-        throw new Error(`Famille de modèle non supportée: ${config.family}`);
-      }
+      // Utiliser setTimeout pour éviter de bloquer l'interface utilisateur
+      const result = await this.executeTranslationWithTimeout(
+        translationPipeline,
+        text,
+        sourceLanguage,
+        targetLanguage,
+        config
+      );
 
       // Extraire le texte traduit
       let translatedText: string;
@@ -339,10 +316,16 @@ export class HuggingFaceTranslationService {
       // Nettoyer le texte traduit de manière plus robuste
       translatedText = this.cleanTranslationText(translatedText.trim());
 
-      // Si la traduction est vide ou identique, essayer un fallback
-      if (!translatedText || translatedText === text) {
-        console.warn(`⚠️ Traduction vide ou identique, utilisation du texte original`);
-        translatedText = text;
+      // Validation du résultat - détecter les résultats corrompus
+      if (!translatedText || translatedText === text || this.isCorruptedResult(translatedText)) {
+        console.warn(`⚠️ Traduction corrompue ou vide détectée: "${translatedText}"`);
+        
+        // Essayer une stratégie de fallback plus simple
+        if (config.family === 'MT5') {
+          throw new Error('Traduction MT5 corrompue. Essayez un texte plus simple ou utilisez le modèle NLLB.');
+        } else {
+          translatedText = text; // Garder le texte original en dernier recours
+        }
       }
 
       console.log(`✅ Traduction réussie: "${translatedText}"`);
@@ -371,6 +354,91 @@ export class HuggingFaceTranslationService {
       
       throw new Error(`Échec de traduction: ${errorMsg}`);
     }
+  }
+
+  /**
+   * Exécute la traduction avec un timeout pour éviter le gel
+   */
+  private async executeTranslationWithTimeout(
+    translationPipeline: any,
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    config: any
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      // Timeout de 30 secondes pour éviter le gel infini
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Timeout: La traduction prend trop de temps. Essayez un texte plus court.'));
+      }, 30000);
+
+      // Exécuter la traduction de manière asynchrone
+      const executeTranslation = async () => {
+        try {
+          let result: any;
+          
+          if (config.family === 'MT5') {
+            // Pour MT5 : utiliser le format text2text-generation avec des paramètres optimisés
+            const prompt = `translate ${sourceLanguage} to ${targetLanguage}: ${text}`;
+            console.log(`🔄 MT5 prompt: "${prompt}"`);
+            
+            result = await translationPipeline(prompt, {
+              max_length: Math.min(100, text.length + 20), // Plus conservateur pour éviter le gel
+              do_sample: false,
+              temperature: 0.1, // Plus déterministe
+              num_return_sequences: 1,
+              early_stopping: true,
+              num_beams: 1 // Simplifier pour plus de rapidité
+            });
+            
+          } else if (config.family === 'NLLB') {
+            // Pour NLLB : utiliser les codes de langue spécifiques
+            const srcLangCode = this.convertToNLLBCode(sourceLanguage);
+            const tgtLangCode = this.convertToNLLBCode(targetLanguage);
+            
+            console.log(`🔄 NLLB codes: ${srcLangCode} → ${tgtLangCode}`);
+            
+            result = await translationPipeline(text, {
+              src_lang: srcLangCode,
+              tgt_lang: tgtLangCode,
+              max_length: Math.min(100, text.length + 20), // Plus conservateur
+              num_beams: 1, // Simplifier pour plus de rapidité
+              early_stopping: true
+            });
+            
+          } else {
+            throw new Error(`Famille de modèle non supportée: ${config.family}`);
+          }
+
+          clearTimeout(timeoutId);
+          resolve(result);
+        } catch (error) {
+          clearTimeout(timeoutId);
+          reject(error);
+        }
+      };
+
+      // Utiliser setTimeout pour permettre à l'interface de respirer
+      setTimeout(executeTranslation, 10);
+    });
+  }
+
+  /**
+   * Détecte si un résultat de traduction est corrompu
+   */
+  private isCorruptedResult(text: string): boolean {
+    if (!text || text.length === 0) return true;
+    
+    // Détecter les patterns de corruption courants
+    const corruptionPatterns = [
+      /^[:.\s\-n]+$/, // Seulement des caractères de ponctuation et 'n'
+      /^[:\s]+$/, // Seulement des deux-points et espaces
+      /^[-\s]+$/, // Seulement des tirets et espaces
+      /^\s*n\s*n\s*n/, // Répétition de 'n'
+      /^[^a-zA-Z]*$/ // Aucune lettre
+    ];
+    
+    return corruptionPatterns.some(pattern => pattern.test(text.trim()));
   }
 
   /**
