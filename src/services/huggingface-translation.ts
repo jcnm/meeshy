@@ -11,7 +11,9 @@ import {
   type AllowedModelType 
 } from '@/lib/simple-model-config';
 import { 
-  type UnifiedModelConfig 
+  type UnifiedModelConfig,
+  UNIFIED_TRANSLATION_MODELS,
+  type TranslationModelType 
 } from '@/lib/unified-model-config';
 
 export interface TranslationProgress {
