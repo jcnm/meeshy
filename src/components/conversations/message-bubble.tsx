@@ -55,7 +55,7 @@ export function MessageBubble({
   );
   
   // Checks
-  const canToggleView = hasTranslations || message.showingOriginal !== undefined;
+  const canToggleView = hasTranslations;
   
   // Get model color for border
   const modelBorderColor = message.translations && message.translations.length > 0 && message.translations[0].modelUsed
@@ -193,27 +193,35 @@ export function MessageBubble({
               </p>
             </div>
 
-            {/* Show all translations when viewing original */}
+            {/* Show all available translations ONLY when viewing original */}
             {message.showingOriginal && hasTranslations && (
               <div className="space-y-2 mt-3 pt-3 border-t border-gray-200 border-opacity-30">
-                <p className="text-xs font-medium opacity-70">Traductions disponibles :</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium opacity-70">
+                    Traductions disponibles ({message.translations!.length}) :
+                  </p>
+                  {message.translations!.length > 3 && (
+                    <span className="text-xs text-gray-400">+{message.translations!.length - 3} autres</span>
+                  )}
+                </div>
                 <div className="space-y-1">
                   {message.translations!.map((translation, index) => {
-                    const cleanedTranslation = cleanTranslationContent(translation.content);
-                    const displayTranslation = cleanedTranslation || 'Traduction non disponible';
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className="text-sm opacity-80 flex items-start gap-2"
-                      >
-                        <span className="text-base">{translation.flag}</span>
-                        <span className="flex-1 leading-relaxed">
-                          {displayTranslation}
-                        </span>
-                      </div>
-                    );
-                  })}
+                      const cleanedTranslation = cleanTranslationContent(translation.content);
+                      const displayTranslation = cleanedTranslation || 'Traduction non disponible';
+                      
+                      return (
+                        <div 
+                          key={`${translation.language}-${index}`}
+                          className="text-sm opacity-80 flex items-start gap-2"
+                        >
+                          <span className="text-base">{translation.flag}:</span>
+                          <span className="flex-1 leading-relaxed">
+                            {displayTranslation}
+                          </span>
+                        </div>
+                      );
+                    })
+                  }
                 </div>
               </div>
             )}

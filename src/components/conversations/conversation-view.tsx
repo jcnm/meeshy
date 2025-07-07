@@ -30,6 +30,11 @@ import { MessageBubble } from './message-bubble';
 import { useMessageTranslation } from '@/hooks/use-message-translation';
 import { SocketService } from '@/lib/socket.service';
 import { toast } from 'sonner';
+import { 
+  saveMessageTranslations, 
+  loadAllMessageTranslations,
+  cleanupExpiredTranslations 
+} from '@/utils/translation-persistence';
 
 interface ConversationViewProps {
   conversation: Conversation;
@@ -111,6 +116,76 @@ export function ConversationView({
     };
   };
 
+  // Charger les traductions persistées au démarrage
+  useEffect(() => {
+    if (messages.length === 0) return;
+    
+    // Nettoyer les traductions expirées
+    cleanupExpiredTranslations();
+    
+    // Charger toutes les traductions persistées pour les messages actuels
+    const messageIds = messages.map(m => m.id);
+    const persistedData = loadAllMessageTranslations(messageIds);
+    
+    if (persistedData.size > 0) {
+      const newTranslatedMessages = new Map<string, TranslatedMessage>();
+      const newShowingOriginal = new Map<string, boolean>();
+      
+      persistedData.forEach((data, messageId) => {
+        const message = messages.find(m => m.id === messageId);
+        if (message && data.translations.length > 0) {
+          // Reconstituer le TranslatedMessage avec les traductions persistées
+          const translatedMessage: TranslatedMessage = {
+            ...message,
+            translations: data.translations,
+            isTranslated: true,
+            showingOriginal: data.showingOriginal,
+            // Utiliser la première traduction comme traduction principale par défaut
+            translatedContent: data.translations[0]?.content,
+            targetLanguage: data.translations[0]?.language,
+            sender: message.sender || {
+              id: message.senderId,
+              username: 'Utilisateur inconnu',
+              email: '',
+              displayName: 'Utilisateur inconnu',
+              avatar: '',
+              isOnline: false,
+              systemLanguage: 'fr',
+              regionalLanguage: 'fr',
+              autoTranslateEnabled: false,
+              translateToSystemLanguage: false,
+              translateToRegionalLanguage: false,
+              useCustomDestination: false,
+              role: 'USER' as const,
+              permissions: {
+                canAccessAdmin: false,
+                canManageUsers: false,
+                canManageGroups: false,
+                canManageConversations: false,
+                canViewAnalytics: false,
+                canModerateContent: false,
+                canViewAuditLogs: false,
+                canManageNotifications: false,
+                canManageTranslations: false,
+              },
+              createdAt: new Date(),
+              lastActiveAt: new Date()
+            }
+          };
+          
+          newTranslatedMessages.set(messageId, translatedMessage);
+          newShowingOriginal.set(messageId, data.showingOriginal);
+        }
+      });
+      
+      if (newTranslatedMessages.size > 0) {
+        setTranslatedMessages(newTranslatedMessages);
+        setShowingOriginal(newShowingOriginal);
+        console.log(`🔄 ${newTranslatedMessages.size} traductions rechargées depuis la persistance`);
+      }
+    }
+  }, [messages]);
+
   // Fonction pour gérer la traduction
   const handleTranslate = async (messageId: string, targetLanguage: string, forceRetranslate?: boolean): Promise<void> => {
     try {
@@ -124,7 +199,9 @@ export function ConversationView({
       
       // Si déjà traduit dans cette langue et pas de force-retranslation, basculer l'affichage
       if (currentTranslated?.translations?.some(t => t.language === targetLanguage) && !forceRetranslate) {
-        setShowingOriginal(prev => new Map(prev.set(messageId, !prev.get(messageId))));
+        // Basculer entre original et traduction
+        const currentlyShowingOriginal = showingOriginal.get(messageId) ?? true;
+        setShowingOriginal(prev => new Map(prev.set(messageId, !currentlyShowingOriginal)));
         return;
       }
 
@@ -172,6 +249,9 @@ export function ConversationView({
       setTranslatedMessages(prev => new Map(prev.set(messageId, updatedTranslatedMessage)));
       setShowingOriginal(prev => new Map(prev.set(messageId, false)));
       
+      // Sauvegarder les traductions dans la persistance
+      saveMessageTranslations(messageId, updatedTranslatedMessage.translations!, false);
+      
       toast.success('Message traduit avec succès');
     } catch (error) {
       console.error('Erreur lors de la traduction:', error);
@@ -208,8 +288,16 @@ export function ConversationView({
 
   // Fonction pour basculer entre original et traduction
   const handleToggleOriginal = (messageId: string): void => {
-    if (translatedMessages.has(messageId)) {
-      setShowingOriginal(prev => new Map(prev.set(messageId, !prev.get(messageId))));
+    // On peut basculer s'il y a des traductions disponibles
+    const currentTranslated = translatedMessages.get(messageId);
+    if (currentTranslated && currentTranslated.translations && currentTranslated.translations.length > 0) {
+      const currentlyShowingOriginal = showingOriginal.get(messageId) ?? true;
+      const newShowingOriginal = !currentlyShowingOriginal;
+      
+      setShowingOriginal(prev => new Map(prev.set(messageId, newShowingOriginal)));
+      
+      // Sauvegarder l'état d'affichage dans la persistance
+      saveMessageTranslations(messageId, currentTranslated.translations!, newShowingOriginal);
     }
   };
 
