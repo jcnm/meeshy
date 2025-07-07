@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useConversations } from '@/context/AppContext';
 import { useWebSocket } from '@/hooks/use-websocket';
+import { useWebSocketMessages } from '@/hooks/use-websocket-messages';
 import { buildApiUrl } from '@/lib/config';
 import { Conversation, Message } from '@/types';
+import { conversationsService } from '@/services/conversationsService';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
   Button,
@@ -26,10 +28,14 @@ interface ConversationLayoutProps {
 
 export function ConversationLayout({ selectedConversationId }: ConversationLayoutProps) {
   const { user } = useUser();
-  const { conversations, setConversations, addConversation, updateConversation } = useConversations();
+  const { conversations, setConversations, updateConversation } = useConversations();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const router = useRouter();
 
   // WebSocket pour les mises à jour temps réel
@@ -39,6 +45,131 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     off,
     emit
   } = useWebSocket();
+
+  // Hook WebSocket pour la gestion automatique des messages et persistance
+  const webSocketMessages = useWebSocketMessages({
+    conversationId: selectedConversation?.id,
+    onNewMessage: (message: Message) => {
+      // Ajouter le nouveau message à la liste
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.id !== message.id); // Éviter les doublons
+        const newList = [...filtered, message];
+        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      });
+      
+      // Mettre à jour la conversation avec le dernier message
+      const conversation = conversations.find(c => c.id === message.conversationId);
+      if (conversation) {
+        updateConversation({ 
+          ...conversation,
+          lastMessage: message,
+          updatedAt: new Date() 
+        });
+      }
+    },
+    autoEnrichWithTranslations: true
+  });
+
+  // Charger les messages d'une conversation
+  const loadMessages = useCallback(async (conversationId: string) => {
+    if (!user) return;
+    
+    try {
+      setIsLoadingMessages(true);
+      console.log(`📥 Chargement des messages pour la conversation ${conversationId}`);
+      
+      const response = await conversationsService.getMessages(conversationId);
+      setMessages(response.messages || []);
+      
+      console.log(`✅ ${response.messages?.length || 0} messages chargés`);
+    } catch (error) {
+      console.error('Erreur lors du chargement des messages:', error);
+      setMessages([]);
+      toast.error('Erreur lors du chargement des messages');
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [user]);
+
+  // Envoyer un message
+  const handleSendMessage = useCallback(async () => {
+    if (!newMessage.trim() || !selectedConversation || !user || isSending) {
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      console.log('📤 Envoi du message:', newMessage);
+      
+      const response = await conversationsService.sendMessage(selectedConversation.id, {
+        content: newMessage.trim(),
+        originalLanguage: user.systemLanguage,
+      });
+
+      console.log('✅ Message envoyé:', response);
+      
+      // Créer un message temporaire pour l'affichage immédiat
+      const newMessageObj: Message = {
+        id: response.id || `temp-${Date.now()}`,
+        content: newMessage.trim(),
+        conversationId: selectedConversation.id,
+        senderId: user.id,
+        sender: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          displayName: user.displayName || `${user.firstName} ${user.lastName}`,
+          avatar: user.avatar,
+          username: user.username,
+          email: user.email,
+          systemLanguage: user.systemLanguage,
+          regionalLanguage: user.regionalLanguage || user.systemLanguage,
+          autoTranslateEnabled: user.autoTranslateEnabled,
+          translateToSystemLanguage: user.translateToSystemLanguage,
+          translateToRegionalLanguage: user.translateToRegionalLanguage,
+          useCustomDestination: user.useCustomDestination,
+          customDestinationLanguage: user.customDestinationLanguage,
+          isOnline: user.isOnline,
+          lastSeen: user.lastSeen,
+          role: user.role,
+          permissions: user.permissions,
+          createdAt: user.createdAt,
+          lastActiveAt: user.lastActiveAt
+        },
+        originalLanguage: user.systemLanguage,
+        isEdited: false,
+        isDeleted: false,
+        editedAt: undefined,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Ajouter le message à la liste locale immédiatement
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.id !== newMessageObj.id); // Éviter les doublons
+        const newList = [...filtered, newMessageObj];
+        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      });
+      
+      setNewMessage('');
+      toast.success('Message envoyé');
+      
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error);
+      toast.error('Erreur lors de l\'envoi du message');
+    } finally {
+      setIsSending(false);
+    }
+  }, [newMessage, selectedConversation, user, isSending]);
+
+  // Gérer la touche Entrée
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  }, [handleSendMessage]);
 
   // Charger les conversations
   const loadConversations = useCallback(async () => {
@@ -104,9 +235,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       if (conversation && conversation.id !== selectedConversation?.id) {
         setSelectedConversation(conversation);
         emit('join-conversation', conversation.id);
+        // Charger les messages de cette conversation
+        loadMessages(conversation.id);
       }
     }
-  }, [selectedConversationId, conversations, selectedConversation?.id, emit]);
+  }, [selectedConversationId, conversations, selectedConversation?.id, emit, loadMessages]);
 
   if (isLoading) {
     return (
@@ -161,6 +294,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                             emit('leave-conversation', selectedConversation.id);
                           }
                           emit('join-conversation', conversation.id);
+                          // Charger les messages de cette conversation
+                          loadMessages(conversation.id);
                           router.push(`/conversations/${conversation.id}`);
                         }}
                         onOpenConversation={(conversationId: string) => {
@@ -219,13 +354,12 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   <div className="flex-1 overflow-hidden">
                     <ConversationView 
                       conversation={selectedConversation}
-                      messages={[]}
-                      newMessage=""
-                      onNewMessageChange={() => {}}
-                      onSendMessage={() => {}}
-                      onKeyPress={() => {}}
+                      messages={messages}
+                      newMessage={newMessage}
+                      onNewMessageChange={setNewMessage}
+                      onSendMessage={handleSendMessage}
+                      onKeyPress={handleKeyPress}
                       currentUser={user!}
-                      isConnected={isConnected}
                       typingUsers={[]}
                     />
                   </div>

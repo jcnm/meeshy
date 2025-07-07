@@ -3,7 +3,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSimpleTranslation } from './use-simple-translation';
 import { getCachedTranslation, setCachedTranslation } from '@/utils/translation';
-import type { Message, TranslatedMessage, User, TranslationModelType } from '@/types';
+import { translationPersistenceService } from '@/services/translation-persistence.service';
+import type { Message, TranslatedMessage, User, TranslationModelType, Translation } from '@/types';
+import { SUPPORTED_LANGUAGES } from '@/types';
 
 interface UseMessageTranslationReturn {
   translateMessage: (message: Message, targetLanguage: string) => Promise<TranslatedMessage>;
@@ -142,6 +144,20 @@ export const useMessageTranslation = (currentUser: User | null): UseMessageTrans
 
       console.log(`✅ Message ${message.id} traduit: "${translatedText}"`);
 
+      // Créer l'objet Translation avec le drapeau approprié
+      const flag = SUPPORTED_LANGUAGES.find(lang => lang.code === targetLanguage)?.flag || '🌍';
+      const newTranslation: Translation = {
+        language: targetLanguage,
+        content: translatedText,
+        flag,
+        createdAt: new Date(),
+        modelUsed: getModelType(optimalModel),
+      };
+
+      // Sauvegarder la traduction via le service de persistance
+      const allTranslations = translationPersistenceService.addTranslation(message.id, newTranslation, false);
+      console.log(`💾 Traduction persistée pour le message ${message.id} en ${targetLanguage}`);
+
       return {
         ...translatedMessage,
         translatedContent: translatedText,
@@ -149,13 +165,8 @@ export const useMessageTranslation = (currentUser: User | null): UseMessageTrans
         isTranslated: true,
         isTranslating: false,
         showingOriginal: false,
-        translations: [{
-          language: targetLanguage,
-          content: translatedText,
-          flag: '🌍', // Flag générique, pourrait être amélioré
-          createdAt: new Date(),
-          modelUsed: getModelType(optimalModel),
-        }],
+        translations: allTranslations,
+        modelUsed: getModelType(optimalModel),
       };
 
     } catch (err) {

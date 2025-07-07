@@ -129,7 +129,10 @@ export function DashboardLayout({
           <div className="flex justify-between items-center h-16">
             {/* Logo et titre */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
+              <div 
+                className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => router.push('/')}
+              >
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <MessageSquare className="h-5 w-5 text-white" />
                 </div>

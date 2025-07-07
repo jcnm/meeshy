@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -28,13 +28,10 @@ import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
 import { MessageBubble } from './message-bubble';
 import { useMessageTranslation } from '@/hooks/use-message-translation';
+import { useWebSocketMessages } from '@/hooks/use-websocket-messages';
 import { SocketService } from '@/lib/socket.service';
 import { toast } from 'sonner';
-import { 
-  saveMessageTranslations, 
-  loadAllMessageTranslations,
-  cleanupExpiredTranslations 
-} from '@/utils/translation-persistence';
+import { translationPersistenceService } from '@/services/translation-persistence.service';
 
 interface ConversationViewProps {
   conversation: Conversation;
@@ -44,8 +41,8 @@ interface ConversationViewProps {
   onSendMessage: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   currentUser: User;
-  isConnected: boolean;
   typingUsers: string[];
+  onNewMessage?: (message: Message) => void; // Nouveau callback pour les nouveaux messages
 }
 
 export function ConversationView({
@@ -56,8 +53,8 @@ export function ConversationView({
   onSendMessage,
   onKeyPress,
   currentUser,
-  isConnected,
-  typingUsers
+  typingUsers,
+  onNewMessage
 }: ConversationViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +62,7 @@ export function ConversationView({
   // États pour la gestion des traductions et affichages
   const [translatedMessages, setTranslatedMessages] = useState<Map<string, TranslatedMessage>>(new Map());
   const [showingOriginal, setShowingOriginal] = useState<Map<string, boolean>>(new Map());
+  const processedMessageIds = useRef<Set<string>>(new Set());
 
   // Hooks pour la traduction et services
   const { translateMessage } = useMessageTranslation(currentUser);
@@ -120,12 +118,12 @@ export function ConversationView({
   useEffect(() => {
     if (messages.length === 0) return;
     
-    // Nettoyer les traductions expirées
-    cleanupExpiredTranslations();
+    // Initialiser le service de persistance (nettoie les traductions expirées)
+    translationPersistenceService.initialize();
     
     // Charger toutes les traductions persistées pour les messages actuels
     const messageIds = messages.map(m => m.id);
-    const persistedData = loadAllMessageTranslations(messageIds);
+    const persistedData = translationPersistenceService.loadAllTranslations(messageIds);
     
     if (persistedData.size > 0) {
       const newTranslatedMessages = new Map<string, TranslatedMessage>();
@@ -249,9 +247,10 @@ export function ConversationView({
       setTranslatedMessages(prev => new Map(prev.set(messageId, updatedTranslatedMessage)));
       setShowingOriginal(prev => new Map(prev.set(messageId, false)));
       
-      // Sauvegarder les traductions dans la persistance
-      saveMessageTranslations(messageId, updatedTranslatedMessage.translations!, false);
+      // Sauvegarder les traductions dans la persistance via le service centralisé
+      translationPersistenceService.saveTranslations(messageId, updatedTranslatedMessage.translations!, false);
       
+      console.log(`💾 Traduction sauvegardée pour le message ${messageId} en ${targetLanguage}`);
       toast.success('Message traduit avec succès');
     } catch (error) {
       console.error('Erreur lors de la traduction:', error);
@@ -297,10 +296,54 @@ export function ConversationView({
       
       setShowingOriginal(prev => new Map(prev.set(messageId, newShowingOriginal)));
       
-      // Sauvegarder l'état d'affichage dans la persistance
-      saveMessageTranslations(messageId, currentTranslated.translations!, newShowingOriginal);
+      // Sauvegarder l'état d'affichage dans la persistance via le service centralisé
+      translationPersistenceService.updateShowingOriginal(messageId, newShowingOriginal);
+      
+      console.log(`👁️ État d'affichage mis à jour pour le message ${messageId}: ${newShowingOriginal ? 'original' : 'traduit'}`);
     }
   };
+
+  // Fonction pour traiter les nouveaux messages reçus (WebSocket)
+  const handleNewMessageReceived = useCallback((newIncomingMessage: Message) => {
+    console.log(`📨 Nouveau message reçu: ${newIncomingMessage.id} de ${newIncomingMessage.senderId}`);
+    
+    // Enrichir le message avec les traductions existantes (s'il y en a)
+    const enrichedMessage = translationPersistenceService.enrichMessageWithTranslations(newIncomingMessage);
+    
+    // Si le message a déjà des traductions persistées, les intégrer dans l'état
+    if (enrichedMessage.translations && enrichedMessage.translations.length > 0) {
+      setTranslatedMessages(prev => new Map(prev.set(newIncomingMessage.id, enrichedMessage)));
+      setShowingOriginal(prev => new Map(prev.set(newIncomingMessage.id, enrichedMessage.showingOriginal ?? true)));
+      console.log(`🔄 Message ${newIncomingMessage.id} enrichi avec ${enrichedMessage.translations.length} traductions persistées`);
+    }
+    
+    // Déclencher le callback parent s'il existe
+    if (onNewMessage) {
+      onNewMessage(newIncomingMessage);
+    }
+  }, [onNewMessage]);
+
+  // Hook WebSocket pour la gestion automatique des messages et persistance
+  const webSocketMessages = useWebSocketMessages({
+    conversationId: conversation.id,
+    onNewMessage: handleNewMessageReceived,
+    autoEnrichWithTranslations: true
+  });
+
+  // Effet pour surveiller les changements dans la liste des messages 
+  // et traiter les nouveaux messages
+  useEffect(() => {
+    // Détecter les nouveaux messages ajoutés (pas encore traités)
+    const newMessages = messages.filter(m => !processedMessageIds.current.has(m.id));
+    
+    if (newMessages.length > 0) {
+      console.log(`📨 ${newMessages.length} nouveaux messages détectés`);
+      newMessages.forEach(message => {
+        processedMessageIds.current.add(message.id);
+        handleNewMessageReceived(message);
+      });
+    }
+  }, [messages, handleNewMessageReceived]);
 
   // Auto-scroll vers les nouveaux messages
   const scrollToBottom = () => {
@@ -524,20 +567,20 @@ export function ConversationView({
               value={newMessage}
               onChange={(e) => onNewMessageChange(e.target.value)}
               onKeyPress={onKeyPress}
-              disabled={!isConnected}
+              disabled={!webSocketMessages.isConnected}
               className="bg-white"
             />
           </div>
           <Button 
             onClick={onSendMessage} 
-            disabled={!newMessage.trim() || !isConnected}
+            disabled={!newMessage.trim() || !webSocketMessages.isConnected}
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Statut connexion */}
-        {!isConnected && (
+        {!webSocketMessages.isConnected && (
           <div className="flex items-center space-x-2 text-xs text-red-500 mt-2">
             <div className="h-2 w-2 rounded-full bg-red-500" />
             <span>Connexion perdue, reconnexion en cours...</span>
