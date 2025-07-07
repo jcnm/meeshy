@@ -27,6 +27,7 @@ import { HuggingFaceTranslationService } from '@/services/huggingface-translatio
 import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/simplified-model-config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { detectLanguage } from '@/utils/translation';
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -60,7 +61,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [translationService] = useState(() => HuggingFaceTranslationService.getInstance());
   
   // Hook de traduction
-  const { translateMessages, translateMessage } = useOptimizedMessageTranslation(user);
+  // const { translateMessages, translateMessage } = useOptimizedMessageTranslation(user);
 
   // Fonction utilitaire pour obtenir le nom d'affichage d'une conversation
   const getConversationDisplayName = useCallback((conversation: Conversation): string => {
@@ -147,14 +148,82 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     if (!message) return;
     
     try {
-      const translatedMessage = await translateMessage(message, targetLanguage);
-      setTranslatedMessages(prev => prev.map(m => 
-        m.id === messageId ? translatedMessage : m
-      ));
-      toast.success('Message traduit');
+      console.log(`🔄 Traduction avec modèle sélectionné: ${selectedTranslationModel}`);
+      
+      // Utiliser directement le service de traduction avec le modèle sélectionné
+      const sourceLanguage = message.originalLanguage || detectLanguage(message.content);
+      
+      const translationResult = await translationService.translateText(
+        message.content,
+        sourceLanguage,
+        targetLanguage,
+        selectedTranslationModel,
+        (progress) => {
+          console.log(`📊 Progression traduction: ${progress.progress}% - ${progress.status}`);
+        }
+      );
+
+      // Créer le message traduit avec toutes les propriétés requises
+      const translatedMsg: TranslatedMessage = {
+        ...message,
+        originalContent: message.content,
+        translatedContent: translationResult.translatedText,
+        targetLanguage,
+        isTranslated: true,
+        isTranslating: false,
+        showingOriginal: false,
+        translationError: undefined,
+        translationFailed: false,
+        translations: [{
+          language: targetLanguage,
+          content: translationResult.translatedText,
+          flag: '🌍', // Drapeau par défaut
+          modelUsed: selectedTranslationModel,
+          createdAt: new Date()
+        }],
+        sender: message.sender || {
+          id: message.senderId,
+          username: 'unknown',
+          firstName: 'Utilisateur',
+          lastName: 'Inconnu',
+          email: 'unknown@example.com',
+          role: 'USER',
+          permissions: {
+            canAccessAdmin: false,
+            canManageUsers: false,
+            canManageGroups: false,
+            canManageConversations: false,
+            canViewAnalytics: false,
+            canModerateContent: false,
+            canViewAuditLogs: false,
+            canManageNotifications: false,
+            canManageTranslations: false,
+          },
+          systemLanguage: 'fr',
+          regionalLanguage: 'fr',
+          autoTranslateEnabled: false,
+          translateToSystemLanguage: false,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isOnline: false,
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+        }
+      };
+      
+      // Mettre à jour le message traduit dans la liste
+      setTranslatedMessages(prev => {
+        const filtered = prev.filter(m => m.id !== messageId);
+        return [...filtered, translatedMsg].sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      });
+      
+      console.log(`✅ Message traduit avec ${selectedTranslationModel}: ${translationResult.translatedText}`);
+      toast.success(`Message traduit avec ${selectedTranslationModel}`);
     } catch (error) {
-      console.error('Erreur de traduction:', error);
-      toast.error('Erreur lors de la traduction');
+      console.error('❌ Erreur lors de la traduction:', error);
+      toast.error('Erreur lors de la traduction du message');
     }
   };
 
@@ -281,9 +350,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               return;
             }
             
-            const translated = await translateMessages(sortedMessages, user.systemLanguage);
-            setTranslatedMessages(translated);
-            console.log('✅ Traduction automatique terminée');
+            // Pas de traduction automatique pour l'instant - TODO: implémenter avec le modèle sélectionné
+            // const translated = await translateMessages(sortedMessages, user.systemLanguage);
+            // setTranslatedMessages(translated);
+            const convertedMessages = sortedMessages.map(msg => convertToTranslatedMessage(msg));
+            setTranslatedMessages(convertedMessages);
+            console.log('✅ Messages chargés sans traduction automatique');
           } catch (error) {
             console.warn('⚠️ Erreur traduction automatique:', error);
             // Garder les messages non traduits
@@ -312,7 +384,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [user, translateMessages, convertToTranslatedMessage, createMockMessages, selectedConversation?.id, messages.length]);
+  }, [user, convertToTranslatedMessage, createMockMessages, selectedConversation?.id, messages.length]);
 
   // Charger les données initiales avec optimisations
   const loadData = useCallback(async () => {

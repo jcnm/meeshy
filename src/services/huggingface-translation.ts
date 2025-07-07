@@ -265,6 +265,11 @@ export class HuggingFaceTranslationService {
       throw new Error('Le texte à traduire ne peut pas être vide');
     }
 
+    // Limiter la taille du texte pour éviter les erreurs de mémoire
+    if (text.length > 500) {
+      throw new Error('Texte trop long (maximum 500 caractères)');
+    }
+
     const config = UNIFIED_TRANSLATION_MODELS[modelType];
     if (!config) {
       throw new Error(`Modèle ${modelType} non supporté`);
@@ -276,27 +281,39 @@ export class HuggingFaceTranslationService {
       // Charger le modèle si nécessaire
       const translationPipeline = await this.loadModel(modelType, onProgress);
 
-      // Préparer les options de traduction selon la famille de modèle
-      let translationOptions: Record<string, string> = {};
-
-      if (config.family === 'NLLB') {
-        // Pour NLLB, utiliser les codes de langue spécifiques
-        translationOptions = {
-          src_lang: this.convertToNLLBCode(sourceLanguage),
-          tgt_lang: this.convertToNLLBCode(targetLanguage)
-        };
-      } else if (config.family === 'MT5') {
-        // Pour MT5, format différent
-        translationOptions = {
-          source_language: sourceLanguage,
-          target_language: targetLanguage
-        };
+      // Approche différente selon la famille de modèle
+      let result: any;
+      
+      if (config.family === 'MT5') {
+        // Pour MT5 : utiliser le format text2text-generation
+        const prompt = `translate ${sourceLanguage} to ${targetLanguage}: ${text}`;
+        console.log(`🔄 MT5 prompt: "${prompt}"`);
+        
+        result = await translationPipeline(prompt, {
+          max_length: Math.min(200, text.length * 2), // Limiter la longueur
+          do_sample: false,
+          temperature: 0.3,
+          num_return_sequences: 1
+        });
+        
+      } else if (config.family === 'NLLB') {
+        // Pour NLLB : utiliser les codes de langue spécifiques
+        const srcLangCode = this.convertToNLLBCode(sourceLanguage);
+        const tgtLangCode = this.convertToNLLBCode(targetLanguage);
+        
+        console.log(`🔄 NLLB codes: ${srcLangCode} → ${tgtLangCode}`);
+        
+        result = await translationPipeline(text, {
+          src_lang: srcLangCode,
+          tgt_lang: tgtLangCode,
+          max_length: Math.min(200, text.length * 2) // Limiter la longueur
+        });
+        
+      } else {
+        throw new Error(`Famille de modèle non supportée: ${config.family}`);
       }
 
-      // Effectuer la traduction
-      const result = await translationPipeline(text, translationOptions);
-      
-      // Extraire le texte traduit (gestion flexible du format de retour)
+      // Extraire le texte traduit
       let translatedText: string;
       
       if (Array.isArray(result) && result.length > 0) {
@@ -322,6 +339,12 @@ export class HuggingFaceTranslationService {
       // Nettoyer le texte traduit de manière plus robuste
       translatedText = this.cleanTranslationText(translatedText.trim());
 
+      // Si la traduction est vide ou identique, essayer un fallback
+      if (!translatedText || translatedText === text) {
+        console.warn(`⚠️ Traduction vide ou identique, utilisation du texte original`);
+        translatedText = text;
+      }
+
       console.log(`✅ Traduction réussie: "${translatedText}"`);
 
       return {
@@ -334,7 +357,19 @@ export class HuggingFaceTranslationService {
 
     } catch (error) {
       console.error(`❌ Erreur traduction avec ${modelType}:`, error);
-      throw new Error(`Échec de traduction: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      
+      // Gestion spécifique des erreurs de mémoire et de tokenisation
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      
+      if (errorMsg.includes('522819016')) {
+        throw new Error('Erreur de tokenisation: Le texte contient des caractères incompatibles avec ce modèle. Essayez de simplifier le texte ou d\'utiliser un autre modèle.');
+      }
+      
+      if (errorMsg.includes('out of memory') || errorMsg.includes('OOM')) {
+        throw new Error('Mémoire insuffisante: Essayez un texte plus court ou déchargez d\'autres modèles.');
+      }
+      
+      throw new Error(`Échec de traduction: ${errorMsg}`);
     }
   }
 

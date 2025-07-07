@@ -27,6 +27,8 @@ const mapToHFModelType = (modelType: UnifiedModelType): HuggingFaceModelType | n
   switch (modelType) {
     case 'MT5_SMALL':
       return 'MT5_BASE' as HuggingFaceModelType;
+    case 'MT5_BASE':
+      return 'MT5_BASE' as HuggingFaceModelType;
     case 'NLLB_DISTILLED_600M':
       return 'NLLB_DISTILLED_600M' as HuggingFaceModelType;
     default:

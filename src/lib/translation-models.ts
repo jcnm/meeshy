@@ -166,9 +166,12 @@ class TranslationModelsManager {
     switch (modelType) {
       case 'MT5_SMALL':
         return 'MT5_BASE' as HFTranslationModelType;
+      case 'MT5_BASE':
+        return 'MT5_BASE' as HFTranslationModelType;
       case 'NLLB_DISTILLED_600M':
         return 'NLLB_DISTILLED_600M' as HFTranslationModelType;
       default:
+        console.warn(`Modèle non supporté: ${modelType}`);
         return null;
     }
   }
