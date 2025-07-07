@@ -44,14 +44,6 @@ export function MessageBubble({
   const hasTranslations = message.translations && message.translations.length > 0;
   const hasFailedTranslation = message.translationFailed;
   
-  // Debug : afficher les informations du message
-  console.log(`📋 Message ${message.id.slice(0, 8)}:`, {
-    hasTranslations,
-    translationsCount: message.translations?.length || 0,
-    showingOriginal: message.showingOriginal,
-    canToggleView: hasTranslations
-  });
-  
   // Languages already translated
   const translatedLanguages = hasTranslations 
     ? message.translations!.map(t => t.language) 

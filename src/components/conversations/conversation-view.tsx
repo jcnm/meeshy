@@ -120,16 +120,12 @@ export function ConversationView({
   useEffect(() => {
     if (messages.length === 0) return;
     
-    console.log('🔄 Chargement des traductions pour', messages.length, 'messages');
-    
     // Nettoyer les traductions expirées
     cleanupExpiredTranslations();
     
     // Charger toutes les traductions persistées pour les messages actuels
     const messageIds = messages.map(m => m.id);
     const persistedData = loadAllMessageTranslations(messageIds);
-    
-    console.log('💾 Traductions persistées trouvées:', persistedData.size);
     
     if (persistedData.size > 0) {
       const newTranslatedMessages = new Map<string, TranslatedMessage>();
@@ -292,29 +288,17 @@ export function ConversationView({
 
   // Fonction pour basculer entre original et traduction
   const handleToggleOriginal = (messageId: string): void => {
-    console.log('🔄 Toggle original pour message:', messageId);
-    
     // On peut basculer s'il y a des traductions disponibles
     const currentTranslated = translatedMessages.get(messageId);
-    console.log('📊 Message traduit actuel:', currentTranslated);
     
     if (currentTranslated && currentTranslated.translations && currentTranslated.translations.length > 0) {
       const currentlyShowingOriginal = showingOriginal.get(messageId) ?? true;
       const newShowingOriginal = !currentlyShowingOriginal;
       
-      console.log(`👁️ Basculement: ${currentlyShowingOriginal} → ${newShowingOriginal}`);
-      console.log('📝 Traductions disponibles:', currentTranslated.translations.length);
-      
       setShowingOriginal(prev => new Map(prev.set(messageId, newShowingOriginal)));
       
       // Sauvegarder l'état d'affichage dans la persistance
       saveMessageTranslations(messageId, currentTranslated.translations!, newShowingOriginal);
-    } else {
-      console.log('❌ Aucune traduction disponible pour ce message');
-      console.log('🔍 Détails:', {
-        hasCurrentTranslated: !!currentTranslated,
-        hasTranslations: currentTranslated?.translations?.length || 0
-      });
     }
   };
 
