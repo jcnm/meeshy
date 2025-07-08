@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useConversations } from '@/context/AppContext';
 import { useWebSocket } from '@/hooks/use-websocket';
@@ -28,68 +28,44 @@ interface ConversationLayoutProps {
 
 export function ConversationLayout({ selectedConversationId }: ConversationLayoutProps) {
   const { user } = useUser();
-  const { conversations, setConversations, updateConversation } = useConversations();
+  const { conversations, setConversations } = useConversations();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const lastLoadTimeRef = useRef<number>(0); // Utiliser useRef pour éviter les dépendances circulaires
+  const shouldScrollToBottomRef = useRef<boolean>(false); // Flag pour indiquer si on doit scroller après envoi
   const router = useRouter();
 
-  // WebSocket pour les mises à jour temps réel
-  const { 
-    isConnected, 
-    on, 
-    off,
-    emit
-  } = useWebSocket();
+  // WebSocket pour les mises à jour temps réel (simplifié)
+  const { emit } = useWebSocket();
 
   // Hook WebSocket pour la gestion automatique des messages et persistance
-  const webSocketMessages = useWebSocketMessages({
+  useWebSocketMessages({
     conversationId: selectedConversation?.id,
     onNewMessage: (message: Message) => {
-      // Ajouter le nouveau message à la liste
+      // Ajouter le nouveau message à la liste - optimisé pour éviter les re-rendus
       setMessages(prev => {
-        const filtered = prev.filter(m => m.id !== message.id); // Éviter les doublons
-        const newList = [...filtered, message];
-        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        // Vérifier si le message existe déjà
+        if (prev.some(m => m.id === message.id)) {
+          return prev;
+        }
+        // Ajouter le message et maintenir l'ordre chronologique
+        return [...prev, message].sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
       });
       
-      // Mettre à jour la conversation avec le dernier message
-      const conversation = conversations.find(c => c.id === message.conversationId);
-      if (conversation) {
-        updateConversation({ 
-          ...conversation,
-          lastMessage: message,
-          updatedAt: new Date() 
-        });
+      // Forcer le scroll si c'est notre propre message ou si on vient d'envoyer
+      if (message.senderId === user?.id || shouldScrollToBottomRef.current) {
+        shouldScrollToBottomRef.current = false; // Reset le flag
+        console.log('🔽 Scroll forcé vers le bas après nouveau message WebSocket');
       }
     },
     autoEnrichWithTranslations: true
   });
-
-  // Charger les messages d'une conversation
-  const loadMessages = useCallback(async (conversationId: string) => {
-    if (!user) return;
-    
-    try {
-      setIsLoadingMessages(true);
-      console.log(`📥 Chargement des messages pour la conversation ${conversationId}`);
-      
-      const response = await conversationsService.getMessages(conversationId);
-      setMessages(response.messages || []);
-      
-      console.log(`✅ ${response.messages?.length || 0} messages chargés`);
-    } catch (error) {
-      console.error('Erreur lors du chargement des messages:', error);
-      setMessages([]);
-      toast.error('Erreur lors du chargement des messages');
-    } finally {
-      setIsLoadingMessages(false);
-    }
-  }, [user]);
 
   // Envoyer un message
   const handleSendMessage = useCallback(async () => {
@@ -98,6 +74,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
 
     setIsSending(true);
+    shouldScrollToBottomRef.current = true; // Marquer qu'on vient d'envoyer un message
 
     try {
       console.log('📤 Envoi du message:', newMessage);
@@ -145,11 +122,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         updatedAt: new Date()
       };
 
-      // Ajouter le message à la liste locale immédiatement
+      // Ajouter le message à la liste locale immédiatement (optimisé)
       setMessages(prev => {
-        const filtered = prev.filter(m => m.id !== newMessageObj.id); // Éviter les doublons
-        const newList = [...filtered, newMessageObj];
-        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        // Vérifier si le message existe déjà
+        if (prev.some(m => m.id === newMessageObj.id)) {
+          return prev;
+        }
+        // Ajouter le message à la fin (plus récent)
+        return [...prev, newMessageObj];
       });
       
       setNewMessage('');
@@ -171,12 +151,21 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [handleSendMessage]);
 
-  // Charger les conversations
+  // Charger les conversations (optimisé pour éviter les boucles)
   const loadConversations = useCallback(async () => {
     if (!user) return;
 
+    // Protection contre les requêtes trop fréquentes (debounce)
+    const now = Date.now();
+    if (now - lastLoadTimeRef.current < 2000) { // Minimum 2 secondes entre les appels
+      console.log('⏳ Requête ignorée (trop récente)');
+      return;
+    }
+    lastLoadTimeRef.current = now;
+
     try {
       setIsLoading(true);
+      console.log('📥 Chargement des conversations...');
       const token = localStorage.getItem('auth_token');
       const response = await fetch(buildApiUrl('/conversations'), {
         headers: { 
@@ -187,9 +176,11 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
       if (response.ok) {
         const data = await response.json();
+        // Utiliser une référence stable pour setConversations
         setConversations(data.conversations || []);
+        console.log(`✅ ${data.conversations?.length || 0} conversations chargées`);
       } else {
-        console.error('Erreur lors du chargement des conversations');
+        console.error('Erreur lors du chargement des conversations:', response.status);
         setConversations([]);
       }
     } catch (error) {
@@ -200,46 +191,45 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [user, setConversations]);
 
-  // Gestionnaire WebSocket pour les nouveaux messages
+  // Gestionnaire WebSocket pour les nouveaux messages (supprimé car doublonné avec useWebSocketMessages)
+  // L'utilisation d'useWebSocketMessages rend ce useEffect redondant et source de conflits
+  
+  // Sélectionner conversation depuis URL (optimisé pour éviter les re-rendus)
   useEffect(() => {
-    if (!isConnected) return;
-
-    const handleNewMessage = (data: unknown) => {
-      // Validation du type de données reçues
-      if (data && typeof data === 'object' && 'id' in data && 'conversationId' in data) {
-        const message = data as Message;
-        const conversation = conversations.find(c => c.id === message.conversationId);
-        if (conversation) {
-          updateConversation({ 
-            ...conversation,
-            lastMessage: message,
-            updatedAt: new Date() 
-          });
+    if (selectedConversationId && conversations.length > 0) {
+      const conversation = conversations.find(c => c.id === selectedConversationId);
+      if (conversation && conversation.id !== selectedConversation?.id) {
+        console.log(`🔄 Changement de conversation vers ${conversation.id}`);
+        setSelectedConversation(conversation);
+        // Charger les messages directement sans dépendance sur loadMessages
+        if (user && conversation.id) {
+          conversationsService.getMessages(conversation.id)
+            .then(response => {
+              const newMessages = response.messages || [];
+              setMessages(newMessages);
+              console.log(`✅ ${newMessages.length} messages chargés pour ${conversation.id}`);
+            })
+            .catch(error => {
+              console.error('Erreur lors du chargement des messages:', error);
+              setMessages([]);
+            });
         }
+      } else if (!conversation && conversations.length > 0) {
+        // ID de conversation non trouvé, rediriger vers /conversations
+        console.log(`❌ Conversation ${selectedConversationId} non trouvée, redirection vers /conversations`);
+        router.push('/conversations');
       }
-    };
-
-    on('message', handleNewMessage);
-    return () => off('message');
-  }, [isConnected, on, off, updateConversation, conversations]);
+    } else if (!selectedConversationId && conversations.length > 0) {
+      // Pas d'ID fourni, rediriger vers /conversations
+      console.log(`❌ Aucun ID de conversation fourni, redirection vers /conversations`);
+      router.push('/conversations');
+    }
+  }, [selectedConversationId, conversations, selectedConversation?.id, user, router]);
 
   // Charger les conversations au montage
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
-
-  // Sélectionner conversation depuis URL
-  useEffect(() => {
-    if (selectedConversationId && conversations.length > 0) {
-      const conversation = conversations.find(c => c.id === selectedConversationId);
-      if (conversation && conversation.id !== selectedConversation?.id) {
-        setSelectedConversation(conversation);
-        emit('join-conversation', conversation.id);
-        // Charger les messages de cette conversation
-        loadMessages(conversation.id);
-      }
-    }
-  }, [selectedConversationId, conversations, selectedConversation?.id, emit, loadMessages]);
 
   if (isLoading) {
     return (
@@ -289,14 +279,27 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                         searchQuery=""
                         onSearchChange={() => {}}
                         onConversationClick={(conversation: Conversation) => {
-                          setSelectedConversation(conversation);
-                          if (selectedConversation?.id) {
-                            emit('leave-conversation', selectedConversation.id);
+                          // Éviter de naviguer si on est déjà sur cette conversation
+                          if (conversation.id === selectedConversation?.id) {
+                            return;
                           }
-                          emit('join-conversation', conversation.id);
-                          // Charger les messages de cette conversation
-                          loadMessages(conversation.id);
-                          router.push(`/conversations/${conversation.id}`);
+                          
+                          console.log(`👆 Clic sur conversation ${conversation.id}`);
+                          setSelectedConversation(conversation);
+                          
+                          // Gérer les événements WebSocket de manière optimisée
+                          if (selectedConversation?.id && selectedConversation.id !== conversation.id) {
+                            emit('leaveConversation', { conversationId: selectedConversation.id });
+                          }
+                          emit('joinConversation', { conversationId: conversation.id });
+                          
+                          // NE PAS charger les messages ici - c'est fait dans useEffect
+                          
+                          // Naviguer seulement si nécessaire
+                          const currentPath = `/conversations/${conversation.id}`;
+                          if (window.location.pathname !== currentPath) {
+                            router.push(currentPath);
+                          }
                         }}
                         onOpenConversation={(conversationId: string) => {
                           router.push(`/conversations/${conversationId}`);
@@ -361,6 +364,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                       onKeyPress={handleKeyPress}
                       currentUser={user!}
                       typingUsers={[]}
+                      onNewMessage={(message: Message) => {
+                        // Callback appelé quand un nouveau message est détecté
+                        // Forcer le scroll si c'est notre propre message ou si on vient d'envoyer
+                        if (message.senderId === user?.id || shouldScrollToBottomRef.current) {
+                          shouldScrollToBottomRef.current = false; // Reset le flag
+                          console.log('🔽 Scroll forcé vers le bas après nouveau message');
+                        }
+                      }}
                     />
                   </div>
                 </Card>

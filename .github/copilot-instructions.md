@@ -63,6 +63,8 @@ Ce projet est une application de messagerie avec traduction automatique côté c
 ### Bonnes Pratiques
 
 #### Cohérence de Conception
+- **Réutilisation du code**: Toujours réutiliser le code existant avant de créer de nouvelles fonctionnalités
+- **Preference approches**: Toujours préférer les approches réactives et hooks React pour la logique métier
 - **Reflexion avant modification**: Toujours réfléchir aux implications avant de modifier le code
 - **Vérification des interfaces**: Toujours vérifier les interfaces et correspondances de types avant de proposer des modifications
 - **Cohérence des types**: Toujours vérifier la cohérence des types et données entre  le frontend et le backend

@@ -569,4 +569,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       totalSockets: this.server.sockets.sockets.size,
     };
   }
+
+  /**
+   * Diffuse un événement à tous les participants d'une conversation
+   * Utilisé par les contrôleurs REST pour déclencher des événements WebSocket
+   */
+  broadcastToConversation(room: string, event: string, data: MessageEvent | TypingEvent | NotificationEvent | Record<string, unknown>) {
+    console.log(`📡 Diffusion WebSocket - Room: ${room}, Event: ${event}`, data);
+    this.server.to(room).emit(event, data);
+  }
 }

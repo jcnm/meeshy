@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
 import { MessageBubble } from './message-bubble';
 import { useMessageTranslation } from '@/hooks/use-message-translation';
-import { useWebSocketMessages } from '@/hooks/use-websocket-messages';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { SocketService } from '@/lib/socket.service';
 import { toast } from 'sonner';
 import { translationPersistenceService } from '@/services/translation-persistence.service';
@@ -42,7 +42,7 @@ interface ConversationViewProps {
   onKeyPress: (e: React.KeyboardEvent) => void;
   currentUser: User;
   typingUsers: string[];
-  onNewMessage?: (message: Message) => void; // Nouveau callback pour les nouveaux messages
+  onNewMessage?: (message: Message) => void; // Callback pour les nouveaux messages
 }
 
 export function ConversationView({
@@ -66,6 +66,7 @@ export function ConversationView({
 
   // Hooks pour la traduction et services
   const { translateMessage } = useMessageTranslation(currentUser);
+  const { isConnected } = useWebSocket();
   const socketService = SocketService.getInstance();
 
   // Convertir Message en TranslatedMessage pour MessageBubble
@@ -323,13 +324,6 @@ export function ConversationView({
     }
   }, [onNewMessage]);
 
-  // Hook WebSocket pour la gestion automatique des messages et persistance
-  const webSocketMessages = useWebSocketMessages({
-    conversationId: conversation.id,
-    onNewMessage: handleNewMessageReceived,
-    autoEnrichWithTranslations: true
-  });
-
   // Effet pour surveiller les changements dans la liste des messages 
   // et traiter les nouveaux messages
   useEffect(() => {
@@ -345,14 +339,40 @@ export function ConversationView({
     }
   }, [messages, handleNewMessageReceived]);
 
-  // Auto-scroll vers les nouveaux messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Auto-scroll vers les nouveaux messages (amélioré)
+  const scrollToBottom = useCallback((force = false) => {
+    // Utiliser setTimeout pour s'assurer que le DOM est mis à jour
+    const delay = force ? 50 : 100; // Délai plus court pour les messages envoyés
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ 
+        behavior: force ? 'auto' : 'smooth', // Scroll immédiat pour nos propres messages
+        block: 'end'
+      });
+    }, delay);
+  }, []);
 
+  // Scroll vers le bas quand les messages changent (avec priorité pour nos propres messages)
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const lastMessage = messages[messages.length - 1];
+    
+    // Si c'est notre propre message, forcer le scroll immédiatement
+    if (lastMessage && lastMessage.senderId === currentUser.id) {
+      console.log('🔽 Scroll forcé vers le bas (message envoyé)');
+      // Scroll immédiat pour nos propres messages
+      scrollToBottom(true);
+      
+      // Double scroll pour s'assurer que ça fonctionne
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ 
+          behavior: 'auto',
+          block: 'end'
+        });
+      }, 200);
+    } else {
+      // Scroll normal pour les autres messages
+      scrollToBottom();
+    }
+  }, [messages, currentUser.id, scrollToBottom]);
 
   // Titre de la conversation
   const conversationTitle = conversation.title || 
@@ -567,20 +587,20 @@ export function ConversationView({
               value={newMessage}
               onChange={(e) => onNewMessageChange(e.target.value)}
               onKeyPress={onKeyPress}
-              disabled={!webSocketMessages.isConnected}
+              disabled={!isConnected}
               className="bg-white"
             />
           </div>
           <Button 
             onClick={onSendMessage} 
-            disabled={!newMessage.trim() || !webSocketMessages.isConnected}
+            disabled={!newMessage.trim() || !isConnected}
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Statut connexion */}
-        {!webSocketMessages.isConnected && (
+        {!isConnected && (
           <div className="flex items-center space-x-2 text-xs text-red-500 mt-2">
             <div className="h-2 w-2 rounded-full bg-red-500" />
             <span>Connexion perdue, reconnexion en cours...</span>

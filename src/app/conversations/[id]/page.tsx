@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { ProtectedRoute } from '@/components/auth';
-import { ConversationLayout } from '@/components/conversations';
+import { ConversationLayoutResponsive } from '@/components/conversations/ConversationLayoutResponsive';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -10,7 +10,7 @@ export default function ConversationPage() {
 
   return (
     <ProtectedRoute>
-      <ConversationLayout selectedConversationId={conversationId} />
+      <ConversationLayoutResponsive selectedConversationId={conversationId} />
     </ProtectedRoute>
   );
 }

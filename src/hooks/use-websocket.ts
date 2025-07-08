@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import io, { Socket } from 'socket.io-client';
 
 interface UseWebSocketReturn {
@@ -15,10 +15,21 @@ export function useWebSocket(): UseWebSocketReturn {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Créer la connexion socket
-    const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3001', {
+    // Récupérer le token JWT depuis localStorage
+    const token = localStorage.getItem('auth_token');
+
+    if (!token) {
+      console.warn('⚠️ Aucun token JWT trouvé, connexion WebSocket refusée');
+      return;
+    }
+
+    // Créer la connexion socket avec authentification
+    const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3000', {
       transports: ['websocket', 'polling'],
       autoConnect: true,
+      auth: {
+        token: token,
+      },
     });
 
     socketRef.current = socket;
@@ -44,13 +55,13 @@ export function useWebSocket(): UseWebSocketReturn {
     };
   }, []);
 
-  const on = (event: string, callback: (...args: unknown[]) => void) => {
+  const on = useCallback((event: string, callback: (...args: unknown[]) => void) => {
     if (socketRef.current) {
       socketRef.current.on(event, callback);
     }
-  };
+  }, []);
 
-  const off = (event: string, callback?: (...args: unknown[]) => void) => {
+  const off = useCallback((event: string, callback?: (...args: unknown[]) => void) => {
     if (socketRef.current) {
       if (callback) {
         socketRef.current.off(event, callback);
@@ -58,13 +69,13 @@ export function useWebSocket(): UseWebSocketReturn {
         socketRef.current.off(event);
       }
     }
-  };
+  }, []);
 
-  const emit = (event: string, ...args: unknown[]) => {
+  const emit = useCallback((event: string, ...args: unknown[]) => {
     if (socketRef.current && isConnected) {
       socketRef.current.emit(event, ...args);
     }
-  };
+  }, [isConnected]);
 
   return {
     on,

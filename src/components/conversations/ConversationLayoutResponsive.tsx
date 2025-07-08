@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,6 +62,48 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>(ACTIVE_MODELS.highModel);
   const [translationService] = useState(() => HuggingFaceTranslationService.getInstance());
+  
+  // Hook WebSocket pour les mises à jour temps réel
+  const { emit, on, off } = useWebSocket();
+  
+  // Gestionnaire des nouveaux messages WebSocket
+  useEffect(() => {
+    const handleNewMessage = (messageEvent: unknown) => {
+      const event = messageEvent as { message: Message; conversationId: string };
+      const message = event.message;
+      
+      // Vérifier que le message appartient à la conversation active
+      if (selectedConversation?.id && event.conversationId !== selectedConversation.id) {
+        return;
+      }
+      
+      // Ajouter le nouveau message à la liste
+      setMessages(prev => {
+        // Vérifier si le message existe déjà
+        if (prev.some(m => m.id === message.id)) {
+          return prev;
+        }
+        // Ajouter le message et maintenir l'ordre chronologique
+        return [...prev, message].sort((a, b) => 
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      });
+      
+      // Mettre à jour la conversation avec le dernier message
+      setConversations(prev => prev.map(conv => 
+        conv.id === message.conversationId 
+          ? { ...conv, lastMessage: message, updatedAt: new Date() }
+          : conv
+      ));
+    };
+
+    // Écouter les événements WebSocket
+    on('newMessage', handleNewMessage);
+
+    return () => {
+      off('newMessage', handleNewMessage);
+    };
+  }, [selectedConversation?.id, on, off]);
   
   // Hook de traduction
   // const { translateMessages, translateMessage } = useOptimizedMessageTranslation(user);
@@ -424,6 +467,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         const conversation = conversationsData.find(c => c.id === conversationIdFromUrl);
         if (conversation) {
           setSelectedConversation(conversation);
+          // NOTE: La gestion WebSocket sera faite dans un useEffect séparé
           // Le chargement des messages sera géré par l'effet useEffect
         } else {
           // ID non trouvé, désélectionner
@@ -494,6 +538,19 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     loadData();
   }, [loadData]);
 
+  // Effet séparé pour gérer les WebSocket quand la conversation change
+  useEffect(() => {
+    if (selectedConversation?.id) {
+      console.log(`🔌 Rejoindre la conversation WebSocket: ${selectedConversation.id}`);
+      emit('joinConversation', { conversationId: selectedConversation.id });
+      
+      return () => {
+        console.log(`🔌 Quitter la conversation WebSocket: ${selectedConversation.id}`);
+        emit('leaveConversation', { conversationId: selectedConversation.id });
+      };
+    }
+  }, [selectedConversation?.id, emit]);
+
   // Sélectionner une conversation
   const handleSelectConversation = (conversation: Conversation) => {
     // Si c'est la même conversation, ne rien faire
@@ -502,6 +559,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       return;
     }
 
+    // NOTE: La gestion WebSocket se fait dans l'useEffect séparé
     // Simplement sélectionner la conversation, l'effet se chargera du reste
     setSelectedConversation(conversation);
     

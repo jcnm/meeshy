@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { 
@@ -13,219 +12,69 @@ import {
   TrendingUp,
   Globe2,
   Zap,
-  Link2
+  Link2,
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Conversation, Group } from '@/types';
-import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { CreateLinkModal } from '@/components/conversations/create-link-modal';
-
-interface DashboardStats {
-  totalConversations: number;
-  totalGroups: number;
-  totalMessages: number;
-  activeConversations: number;
-  translationsToday: number;
-}
+import { useState, useEffect } from 'react';
+import { conversationsService } from '@/services/conversationsService';
+import { usersService } from '@/services/usersService';
+import { User, Conversation } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState<DashboardStats>({
+  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
+  
+  // Utilisation du hook de cache dashboard
+  const { data: dashboardData, isLoading, error, refresh } = useDashboardCache();
+
+  // Extraction des données du cache
+  const user = dashboardData?.user;
+  const stats = dashboardData?.stats || {
     totalConversations: 0,
     totalGroups: 0,
     totalMessages: 0,
     activeConversations: 0,
     translationsToday: 0,
-  });
-  const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
-  const [recentGroups, setRecentGroups] = useState<Group[]>([]);
-  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
+    onlineUsers: 0,
+    lastUpdated: new Date(),
+  };
+  const recentConversations = dashboardData?.recentConversations || [];
+  const recentGroups = dashboardData?.recentGroups || [];
 
-  // Vérification de l'authentification et chargement des données
-  useEffect(() => {
-    const checkAuthAndLoadData = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-          router.push('/');
-          return;
-        }
-
-        // Vérifier l'utilisateur actuel
-        const userResponse = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!userResponse.ok) {
-          localStorage.removeItem('auth_token');
-          router.push('/');
-          return;
-        }
-
-        const userData = await userResponse.json();
-        setUser(userData);
-
-        // Charger les statistiques (mock pour l'instant)
-        setStats({
-          totalConversations: 12,
-          totalGroups: 5,
-          totalMessages: 234,
-          activeConversations: 3,
-          translationsToday: 45,
-        });
-
-        // Mock des conversations récentes
-        setRecentConversations([
-          {
-            id: '1',
-            name: 'Équipe Design',
-            type: 'GROUP',
-            lastMessage: {
-              id: '1',
-              conversationId: '1',
-              senderId: 'user1',
-              content: 'Nouveau design prêt pour review',
-              originalLanguage: 'fr',
-              isEdited: false,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              sender: {
-                id: 'user1',
-                username: 'designer',
-                firstName: 'Marie',
-                lastName: 'Dubois',
-                email: 'marie@example.com',
-                role: 'USER' as const,
-                permissions: {
-                  canAccessAdmin: false,
-                  canManageUsers: false,
-                  canManageGroups: false,
-                  canManageConversations: false,
-                  canViewAnalytics: false,
-                  canModerateContent: false,
-                  canViewAuditLogs: false,
-                  canManageNotifications: false,
-                  canManageTranslations: false,
-                },
-                systemLanguage: 'fr',
-                regionalLanguage: 'fr',
-                autoTranslateEnabled: false,
-                translateToSystemLanguage: false,
-                translateToRegionalLanguage: false,
-                useCustomDestination: false,
-                isOnline: true,
-                createdAt: new Date(),
-                lastActiveAt: new Date(),
-              }
-            },
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          {
-            id: '2',
-            name: 'Maria Garcia',
-            type: 'DIRECT',
-            lastMessage: {
-              id: '2',
-              conversationId: '2',
-              senderId: 'user2',
-              content: 'Gracias por la información',
-              originalLanguage: 'es',
-              isEdited: false,
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-              updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-              sender: {
-                id: 'user2',
-                username: 'maria',
-                firstName: 'Maria',
-                lastName: 'Garcia',
-                email: 'maria@example.com',
-                role: 'USER' as const,
-                permissions: {
-                  canAccessAdmin: false,
-                  canManageUsers: false,
-                  canManageGroups: false,
-                  canManageConversations: false,
-                  canViewAnalytics: false,
-                  canModerateContent: false,
-                  canViewAuditLogs: false,
-                  canManageNotifications: false,
-                  canManageTranslations: false,
-                },
-                systemLanguage: 'es',
-                regionalLanguage: 'es',
-                autoTranslateEnabled: true,
-                translateToSystemLanguage: true,
-                translateToRegionalLanguage: false,
-                useCustomDestination: false,
-                isOnline: false,
-                createdAt: new Date(),
-                lastActiveAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-              }
-            },
-            isActive: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ]);
-
-        // Mock des groupes récents
-        setRecentGroups([
-          {
-            id: '1',
-            name: 'Équipe développement',
-            description: 'Discussions techniques quotidiennes',
-            isPrivate: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            members: [],
-            conversations: [],
-          },
-          {
-            id: '2',
-            name: 'Support client',
-            description: 'Coordination support',
-            isPrivate: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            members: [],
-            conversations: [],
-          },
-        ]);
-
-      } catch (error) {
-        console.error('Erreur lors du chargement:', error);
-        toast.error('Erreur lors du chargement des données');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuthAndLoadData();
-  }, [router]);
-
-  if (isLoading) {
+  // Gestion de l'erreur et du chargement
+  if (error) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Chargement du tableau de bord...</p>
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+          <div className="text-red-500">
+            ❌ Erreur de chargement : {error.message}
           </div>
+          <Button onClick={refresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Réessayer
+          </Button>
         </div>
       </DashboardLayout>
     );
   }
 
-  if (!user) {
-    return null;
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-2">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-muted-foreground">Chargement du dashboard...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -235,7 +84,7 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Bonjour, {user.firstName} ! 👋
+              Bonjour, {user?.firstName || user?.username || 'Utilisateur'} ! 👋
             </h2>
             <p className="text-gray-600">
               Voici un aperçu de votre activité de messagerie aujourd&apos;hui.

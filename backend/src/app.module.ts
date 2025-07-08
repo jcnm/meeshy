@@ -16,7 +16,6 @@ import { GroupService } from './modules/group.service';
 
 // Optimized Services
 import { ConversationServiceOptimized } from './common/conversation-optimized.service';
-import { MessageServiceOptimized } from './common/message-optimized.service';
 
 // Advanced Services
 import { NotificationService } from './common/notification.service';
@@ -89,7 +88,6 @@ import { globalValidationPipe } from './common/validation.pipe';
     
     // Optimized Services
     ConversationServiceOptimized,
-    MessageServiceOptimized,
     
     // Advanced Services
     NotificationService,

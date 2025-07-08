@@ -4,6 +4,8 @@ import { MessageService } from './message.service';
 import { CreateConversationDto, JoinConversationDto, CreateMessageDto, CreateConversationLinkDto } from '../shared/dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import { ChatGateway } from '../gateway/chat.gateway';
+import { MessageEvent } from '../shared/interfaces';
 
 interface AuthenticatedRequest {
   user: {
@@ -19,6 +21,7 @@ export class ConversationController {
     private conversationService: ConversationService,
     private messageService: MessageService,
     private prisma: PrismaService,
+    private chatGateway: ChatGateway,
   ) {}
 
   @Post()
@@ -116,7 +119,21 @@ export class ConversationController {
     @Request() req: AuthenticatedRequest,
   ) {
     createMessageDto.conversationId = conversationId;
-    return this.messageService.create(createMessageDto, req.user.id);
+    
+    // Créer le message via le service
+    const message = await this.messageService.create(createMessageDto, req.user.id);
+
+    // Diffuser le message à tous les participants de la conversation via WebSocket
+    const messageEvent: MessageEvent = {
+      type: 'new_message',
+      message,
+      conversationId,
+    };
+
+    // Utiliser le ChatGateway pour diffuser l'événement
+    this.chatGateway.broadcastToConversation(`conversation:${conversationId}`, 'newMessage', messageEvent);
+
+    return message;
   }
 
   @Get('user/:userId')

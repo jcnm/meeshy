@@ -2,8 +2,14 @@
 
 import { useEffect, useCallback } from 'react';
 import { translationPersistenceService } from '@/services/translation-persistence.service';
-import realtimeService, { MessageEvent } from '@/services/realtimeService';
+import { useWebSocket } from './use-websocket';
 import type { Message } from '@/types';
+
+interface MessageEvent {
+  type: 'new_message' | 'message_edited' | 'message_deleted';
+  message: Message;
+  conversationId: string;
+}
 
 interface UseWebSocketMessagesOptions {
   conversationId?: string;
@@ -25,6 +31,8 @@ export const useWebSocketMessages = (options: UseWebSocketMessagesOptions = {}) 
     onMessageDeleted,
     autoEnrichWithTranslations = true
   } = options;
+
+  const { on, off, emit, isConnected } = useWebSocket();
 
   // Gestionnaire pour les nouveaux messages reçus
   const handleNewMessage = useCallback((messageEvent: MessageEvent) => {
@@ -60,10 +68,6 @@ export const useWebSocketMessages = (options: UseWebSocketMessagesOptions = {}) 
 
     const message = messageEvent.message as Message;
 
-    // Lors de l'édition d'un message, nous pourrions vouloir 
-    // réinitialiser ses traductions ou les conserver
-    // Pour l'instant, on conserve les traductions existantes
-
     // Déclencher le callback
     if (onMessageEdited) {
       onMessageEdited(message);
@@ -93,10 +97,10 @@ export const useWebSocketMessages = (options: UseWebSocketMessagesOptions = {}) 
 
   // Configurer les écouteurs WebSocket
   useEffect(() => {
-    if (!realtimeService.isSocketConnected()) return;
+    if (!isConnected) return;
 
-    // S'abonner aux événements de messages
-    const unsubscribeMessage = realtimeService.onMessage((messageEvent: MessageEvent) => {
+    const handleMessage = (...args: unknown[]) => {
+      const messageEvent = args[0] as MessageEvent;
       if (messageEvent.type === 'new_message') {
         handleNewMessage(messageEvent);
       } else if (messageEvent.type === 'message_edited') {
@@ -104,29 +108,36 @@ export const useWebSocketMessages = (options: UseWebSocketMessagesOptions = {}) 
       } else if (messageEvent.type === 'message_deleted') {
         handleMessageDeleted(messageEvent);
       }
-    });
+    };
+
+    // Écouter les événements selon les conventions du backend
+    on('newMessage', handleMessage);
+    on('messageEdited', handleMessage);
+    on('messageDeleted', handleMessage);
 
     return () => {
-      unsubscribeMessage();
+      off('newMessage', handleMessage);
+      off('messageEdited', handleMessage);
+      off('messageDeleted', handleMessage);
     };
-  }, [handleNewMessage, handleMessageEdited, handleMessageDeleted]);
+  }, [isConnected, handleNewMessage, handleMessageEdited, handleMessageDeleted, on, off]);
 
   // Auto-join/leave conversation
   useEffect(() => {
-    if (conversationId && realtimeService.isSocketConnected()) {
-      realtimeService.joinConversation(conversationId);
+    if (conversationId && isConnected) {
+      emit('joinConversation', { conversationId });
       
       return () => {
-        realtimeService.leaveConversation(conversationId);
+        emit('leaveConversation', { conversationId });
       };
     }
-  }, [conversationId]);
+  }, [conversationId, isConnected, emit]);
 
   return {
-    isConnected: realtimeService.isSocketConnected(),
-    joinConversation: (id: string) => realtimeService.joinConversation(id),
-    leaveConversation: (id: string) => realtimeService.leaveConversation(id),
-    startTyping: (id: string) => realtimeService.startTyping(id),
-    stopTyping: (id: string) => realtimeService.stopTyping(id),
+    isConnected,
+    joinConversation: (id: string) => emit('joinConversation', { conversationId: id }),
+    leaveConversation: (id: string) => emit('leaveConversation', { conversationId: id }),
+    startTyping: (id: string) => emit('startTyping', { conversationId: id }),
+    stopTyping: (id: string) => emit('stopTyping', { conversationId: id }),
   };
 };

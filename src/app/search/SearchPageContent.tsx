@@ -96,14 +96,14 @@ export function SearchPageContent() {
       }
 
       // Rechercher les utilisateurs
-      const usersResponse = await fetch(`http://localhost:3001/users/search?q=${encodeURIComponent(searchQuery)}`, {
+      const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/users/search?q=${encodeURIComponent(searchQuery)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       // Rechercher les groupes
-      const groupsResponse = await fetch(`http://localhost:3001/groups/search?q=${encodeURIComponent(searchQuery)}`, {
+      const groupsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/groups/search?q=${encodeURIComponent(searchQuery)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -194,7 +194,7 @@ export function SearchPageContent() {
   const handleJoinGroup = async (groupId: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`http://localhost:3001/groups/${groupId}/join`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/groups/${groupId}/join`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -219,7 +219,7 @@ export function SearchPageContent() {
   const handleStartConversation = async (userId: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch('http://localhost:3001/conversation', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/conversation`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
