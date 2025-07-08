@@ -1,4 +1,4 @@
-import { apiService, ApiResponse } from './apiService';
+import { apiService, ApiResponse } from './api.service';
 import { Group, GroupMember, User } from '@/types';
 
 // Re-export ApiResponse for use in tests and other modules

@@ -1,4 +1,4 @@
-import { ApiResponse } from './apiService';
+import { ApiResponse } from './api.service';
 import { Group, GroupMember, User } from '@/types';
 
 // Données mock pour les tests

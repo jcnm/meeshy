@@ -517,3 +517,6 @@ export class TranslationService {
     }
   }
 }
+
+// Export de l'instance singleton
+export const translationService = TranslationService.getInstance();

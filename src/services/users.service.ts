@@ -1,4 +1,4 @@
-import { apiService, ApiResponse } from './apiService';
+import { apiService, ApiResponse } from './api.service';
 import { User } from '@/types';
 
 export interface UserStats {
