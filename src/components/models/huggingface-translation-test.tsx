@@ -16,7 +16,7 @@ import {
   HuggingFaceTranslationService, 
   type TranslationProgress, 
   type TranslationResult 
-} from '@/services/huggingface-translation';
+} from '@/services/translation.service';
 import { 
   UNIFIED_TRANSLATION_MODELS,
   type TranslationModelType as UnifiedModelType,
@@ -26,7 +26,7 @@ import {
   type TranslationModelType as HuggingFaceModelType 
 } from '@/lib/unified-model-config';
 
-const translationService = HuggingFaceTranslationService.getInstance();
+// const translationService = translationService; // Déjà importé en tant qu'instance
 
 // Fonction de mapping pour convertir les types unifiés vers HuggingFace
 const mapToHFModelType = (modelType: UnifiedModelType): HuggingFaceModelType | null => {

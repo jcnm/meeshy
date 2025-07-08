@@ -31,7 +31,7 @@ import { useMessageTranslation } from '@/hooks/use-message-translation';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { SocketService } from '@/lib/socket.service';
 import { toast } from 'sonner';
-import { translationPersistenceService } from '@/services/translation-persistence.service';
+import { translationService } from '@/services/translation.service';
 
 interface ConversationViewProps {
   conversation: Conversation;

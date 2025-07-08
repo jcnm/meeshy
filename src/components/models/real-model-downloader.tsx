@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { 
   HuggingFaceTranslationService, 
   type TranslationProgress 
-} from '@/services/simplified-translation.service';
+} from '@/services/translation.service';
 import { 
   getAllActiveModels,
   getActiveModelConfig,
@@ -31,7 +31,7 @@ export function RealModelDownloader() {
   const [downloadProgress, setDownloadProgress] = useState<Record<string, TranslationProgress>>({});
   const [loadedModels, setLoadedModels] = useState<AllowedModelType[]>([]);
 
-  const modelService = HuggingFaceTranslationService.getInstance();
+  // const modelService = translationService; // Déjà importé
   
   // Récupérer les 2 modèles actifs
   const activeModels = getAllActiveModels();

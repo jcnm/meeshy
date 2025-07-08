@@ -23,7 +23,7 @@ import { MessageBubble } from './message-bubble';
 import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { cn } from '@/lib/utils';
-import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
+import { translationService } from '@/services/translation.service';
 import { type TranslationModelType } from '@/lib/unified-model-config';
 import { getAllActiveModels, ACTIVE_MODELS, getModelConfig } from '@/lib/unified-model-config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -61,7 +61,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>(ACTIVE_MODELS.highModel);
-  const [translationService] = useState(() => HuggingFaceTranslationService.getInstance());
+  // const [translationService] = useState(() => translationService); // Déjà importé
   
   // Hook WebSocket pour les mises à jour temps réel
   const { emit, on, off } = useWebSocket();

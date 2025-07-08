@@ -3,11 +3,11 @@
  * Maintient la compatibilité avec l'API existante tout en utilisant la nouvelle architecture
  */
 
-import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
+import { translationService } from '@/services/translation.service';
 import { selectBestModel } from '@/lib/unified-model-config';
 
 // Service de traduction global
-const translationService = HuggingFaceTranslationService.getInstance();
+// const translationService = translationService; // Déjà importé
 
 // Cache de traduction simple pour compatibilité
 const translationCache = new Map<string, string>();

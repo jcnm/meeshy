@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Download, Check, Trash2, HardDrive } from 'lucide-react';
-import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
+import { translationService } from '@/services/translation.service';
 import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/unified-model-config';
 import { toast } from 'sonner';
 
@@ -15,7 +15,7 @@ import { toast } from 'sonner';
  * PRODUCTION READY - Utilise @huggingface/transformers !
  */
 export function ProductionModelDownloader() {
-  const [translationService] = useState(() => HuggingFaceTranslationService.getInstance());
+  // const [translationService] = useState(() => translationService); // Déjà importé
   const [loadedModels, setLoadedModels] = useState<Set<string>>(new Set());
   const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
   const [loadingModels, setLoadingModels] = useState<Set<string>>(new Set());

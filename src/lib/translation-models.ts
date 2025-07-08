@@ -8,7 +8,7 @@ import {
   recommendModel
 } from '@/lib/unified-model-config';
 import { type TranslationModelType as HFTranslationModelType } from '@/lib/unified-model-config';
-import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
+import { translationService } from '@/services/translation.service';
 
 // Type unifié pour compatibilité
 export type TranslationModelType = UnifiedTranslationModelType;
@@ -140,7 +140,7 @@ class TranslationModelsManager {
    * Charge un modèle avec HuggingFaceTranslationService
    */
   private async loadModelWithHuggingFace(modelType: TranslationModelType): Promise<boolean> {
-    const translationService = HuggingFaceTranslationService.getInstance();
+    // const translationService = translationService; // Déjà importé
     
     try {
       // Mapper vers le type HuggingFace
@@ -260,9 +260,9 @@ class TranslationModelsManager {
     targetLanguage: string, 
     modelType: TranslationModelType
   ): Promise<string> {
-    console.log(`🔄 Traduction via HuggingFaceTranslationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage}, ${modelType})`);
+    console.log(`🔄 Traduction via translationService: ${text.substring(0, 50)}... (${sourceLanguage} -> ${targetLanguage}, ${modelType})`);
     
-    const translationService = HuggingFaceTranslationService.getInstance();
+    // const translationService = translationService; // Déjà importé
     
     // Mapper vers le type HuggingFace
     const hfModelType = this.mapToHFModelType(modelType);
