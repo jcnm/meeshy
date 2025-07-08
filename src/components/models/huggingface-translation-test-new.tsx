@@ -27,9 +27,10 @@ import {
 // Types simplifiés
 interface ModelStats {
   loadedModels: AllowedModelType[];
+  totalModels: number;
   cacheSize: number;
   totalTranslations: number;
-  cacheHitRate: number;
+  cacheHitRate?: number; // Optionnel
 }
 
 interface Language {
@@ -190,7 +191,7 @@ export default function HuggingFaceTranslationTest() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {modelStats?.cacheHitRate.toFixed(1) || 0}%
+                {modelStats?.cacheHitRate?.toFixed(1) || '0'}%
               </div>
               <div className="text-sm text-muted-foreground">Cache hit</div>
             </div>

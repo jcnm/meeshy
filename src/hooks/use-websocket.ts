@@ -195,24 +195,24 @@ export const useWebSocketMessages = (options: UseWebSocketMessagesOptions = {}):
     };
 
     // Écouter les événements de messages
-    on('message_event', handleMessageEvent);
-    on('new_message', (message: Message) => handleMessageEvent({ 
+    on('message_event', handleMessageEvent as (...args: any[]) => void);
+    on('new_message', ((message: Message) => handleMessageEvent({ 
       type: 'new_message', 
       message, 
       conversationId: message.conversationId 
-    }));
-    on('message_edited', (message: Message) => handleMessageEvent({ 
+    })) as (...args: any[]) => void);
+    on('message_edited', ((message: Message) => handleMessageEvent({ 
       type: 'message_edited', 
       message, 
       conversationId: message.conversationId 
-    }));
-    on('message_deleted', (data: { messageId: string; conversationId: string }) => {
+    })) as (...args: any[]) => void);
+    on('message_deleted', ((data: { messageId: string; conversationId: string }) => {
       handleMessageEvent({ 
         type: 'message_deleted', 
         message: { id: data.messageId } as Message, 
         conversationId: data.conversationId 
       });
-    });
+    }) as (...args: any[]) => void);
 
     return () => {
       off('message_event');

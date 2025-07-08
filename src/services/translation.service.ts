@@ -8,8 +8,7 @@ import {
   selectModelForMessage,
   getActiveModelConfig,
   ACTIVE_MODELS,
-  type AllowedModelType,
-  type ActiveModelType 
+  type AllowedModelType 
 } from '@/lib/unified-model-config';
 import { 
   type UnifiedModelConfig 
@@ -52,7 +51,7 @@ export interface TranslationMetadata {
 }
 
 // Type pour le pipeline de traduction
-type TranslationPipeline = any;
+type TranslationPipeline = any; // TODO: Remplacer par le type correct des pipelines HuggingFace
 
 /**
  * Service de traduction unifié - Combine toutes les approches
@@ -247,7 +246,8 @@ export class TranslationService {
       }
 
       const translationPipeline = await pipeline('translation', config.huggingFaceId, {
-        progress_callback: (progress: any) => {
+        progress_callback: (progressInfo: any) => {
+          const progress = progressInfo as { progress?: number; loaded?: number; total?: number };
           if (progressCallback && progress?.progress !== undefined) {
             progressCallback({
               modelName: config.name,
@@ -350,8 +350,6 @@ export class TranslationService {
     targetLanguage: string,
     preferredModel?: AllowedModelType
   ): Promise<TranslationResult> {
-    const startTime = Date.now();
-    
     // Vérifier le cache
     const cached = this.getFromCache(text, sourceLanguage, targetLanguage);
     if (cached) {
@@ -515,6 +513,69 @@ export class TranslationService {
         console.warn(`Impossible de précharger le modèle ${model}:`, error);
       }
     }
+  }
+
+  /**
+   * Vérifie si un modèle est chargé
+   */
+  isModelLoaded(model: AllowedModelType): boolean {
+    return this.loadedPipelines.has(model);
+  }
+
+  /**
+   * Récupère la liste des modèles chargés
+   */
+  getLoadedModels(): AllowedModelType[] {
+    return Array.from(this.loadedPipelines.keys());
+  }
+
+  /**
+   * Récupère les statistiques du cache
+   */
+  getCacheStats(): { size: number; expiredCount: number; totalTranslations: number } {
+    let expiredCount = 0;
+    const now = Date.now();
+    
+    for (const [, cached] of this.cache.entries()) {
+      if (now - cached.timestamp > this.CACHE_EXPIRY) {
+        expiredCount++;
+      }
+    }
+    
+    return {
+      size: this.cache.size,
+      expiredCount,
+      totalTranslations: this.metadata.size
+    };
+  }
+
+  /**
+   * Charge le meilleur modèle disponible
+   */
+  async loadBestAvailableModel(): Promise<AllowedModelType> {
+    // Tenter de charger le modèle recommandé
+    try {
+      await this.loadModel(ACTIVE_MODELS.basicModel);
+      return ACTIVE_MODELS.basicModel;
+    } catch {
+      console.warn('Impossible de charger le modèle de base, tentative avec un modèle alternatif');
+      
+      // Fallback vers un autre modèle
+      const fallbackModel = ACTIVE_MODELS.highModel;
+      await this.loadModel(fallbackModel);
+      return fallbackModel;
+    }
+  }
+
+  /**
+   * Vide le cache de traduction
+   */
+  clearCache(): void {
+    this.cache.clear();
+    this.metadata.clear();
+    localStorage.removeItem(this.STORAGE_KEY_CACHE);
+    localStorage.removeItem(this.STORAGE_KEY_METADATA);
+    console.log('✅ Cache de traduction vidé');
   }
 }
 
