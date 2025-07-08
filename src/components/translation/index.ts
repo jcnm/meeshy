@@ -2,4 +2,4 @@
 export { LanguageSelector } from './language-selector';
 export { LanguageSettings } from './language-settings';
 export { TranslationStats } from './translation-stats';
-export { TranslationTest } from './translation-test';
+// export { TranslationTest } from './translation-test'; // Supprimé - obsolète

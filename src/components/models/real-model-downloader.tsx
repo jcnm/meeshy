@@ -16,7 +16,7 @@ import {
   getActiveModelConfig,
   ACTIVE_MODELS,
   type AllowedModelType 
-} from '@/lib/simple-model-config';
+} from '@/lib/unified-model-config';
 import { 
   type UnifiedModelConfig 
 } from '@/lib/unified-model-config';

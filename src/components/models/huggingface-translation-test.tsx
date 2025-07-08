@@ -24,7 +24,7 @@ import {
 } from '@/lib/unified-model-config';
 import { 
   type TranslationModelType as HuggingFaceModelType 
-} from '@/lib/simplified-model-config';
+} from '@/lib/unified-model-config';
 
 const translationService = HuggingFaceTranslationService.getInstance();
 

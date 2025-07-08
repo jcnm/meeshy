@@ -5,13 +5,12 @@
 
 import { pipeline } from '@huggingface/transformers';
 import { 
-  getAllActiveModels,
   selectModelForMessage,
   getActiveModelConfig,
   ACTIVE_MODELS,
   type AllowedModelType,
   type ActiveModelType 
-} from '@/lib/simple-model-config';
+} from '@/lib/unified-model-config';
 import { 
   type UnifiedModelConfig 
 } from '@/lib/unified-model-config';

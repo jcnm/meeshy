@@ -18,14 +18,14 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Conversation, Message, TranslatedMessage } from '@/types';
-import { conversationsService } from '@/services/conversationsService';
+import { conversationsService } from '@/services/conversations.service';
 import { MessageBubble } from './message-bubble';
 import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { cn } from '@/lib/utils';
 import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
 import { type TranslationModelType } from '@/lib/unified-model-config';
-import { getAllActiveModels, ACTIVE_MODELS } from '@/lib/simple-model-config';
+import { getAllActiveModels, ACTIVE_MODELS, getModelConfig } from '@/lib/unified-model-config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { detectLanguage } from '@/utils/translation';
@@ -731,7 +731,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     <SelectValue placeholder="Choisir un modèle" />
                   </SelectTrigger>
                   <SelectContent>
-                    {getAllActiveModels().map(({ config }) => (
+                    {getAllActiveModels().map((modelType) => {
+                      const config = getModelConfig(modelType);
+                      return (
                       <SelectItem key={config.name} value={config.name}>
                         <div className="flex items-center gap-2">
                           <div 
@@ -749,7 +751,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           )}
                         </div>
                       </SelectItem>
-                    ))}
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 

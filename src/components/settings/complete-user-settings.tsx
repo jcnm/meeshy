@@ -22,7 +22,7 @@ import { CacheManager } from '@/components/models/cache-manager';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
 import { UnifiedModelSettings } from './real-unified-model-settings';
-import { EnhancedSystemTestComponent } from './enhanced-system-test';
+// import { EnhancedSystemTestComponent } from './enhanced-system-test'; // Supprimé - obsolète
 import { ThemeSettings } from './theme-settings';
 import { NotificationSettings } from './notification-settings';
 import { TranslationStats } from '@/components/translation/translation-stats';
@@ -185,7 +185,7 @@ export function CompleteUserSettings({ user, localSettings, onSettingUpdate, onU
       value: "system-test",
       label: "Tests",
       icon: <Database className="h-3 w-3 lg:h-4 lg:w-4" />,
-      content: <EnhancedSystemTestComponent />
+      content: <div>Fonctionnalité de test système temporairement désactivée</div>
     },
     {
       value: "cache",
@@ -314,7 +314,7 @@ export function CompleteUserSettings({ user, localSettings, onSettingUpdate, onU
         </TabsContent>
 
         <TabsContent value="system-test" className="space-y-4">
-          <EnhancedSystemTestComponent />
+          <div>Fonctionnalité de test système temporairement désactivée</div>
         </TabsContent>
 
         <TabsContent value="cache" className="space-y-4">

@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Download, Check, Trash2, HardDrive } from 'lucide-react';
 import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
-import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/simplified-model-config';
+import { UNIFIED_TRANSLATION_MODELS, type TranslationModelType } from '@/lib/unified-model-config';
 import { toast } from 'sonner';
 
 /**

@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreateLinkModal } from '@/components/conversations/create-link-modal';
 import { useState, useEffect } from 'react';
-import { conversationsService } from '@/services/conversationsService';
+import { conversationsService } from '@/services/conversations.service';
 import { usersService } from '@/services/usersService';
 import { User, Conversation } from '@/types';
 

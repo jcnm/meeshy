@@ -9,7 +9,7 @@ import {
   selectModelForMessage,
   getActiveModelConfig,
   type AllowedModelType 
-} from '@/lib/simple-model-config';
+} from '@/lib/unified-model-config';
 import { 
   type UnifiedModelConfig,
   UNIFIED_TRANSLATION_MODELS,

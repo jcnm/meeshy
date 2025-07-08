@@ -1,25 +1,25 @@
 // Export des services principaux
-export { apiService, ApiService, ApiServiceError } from './apiService';
-export { groupsService, GroupsService } from './groupsService';
-export { conversationsService, ConversationsService } from './conversationsService';
-export { notificationsService } from './notificationsService';
-export { usersService } from './usersService';
-export { messagesService } from './messagesService';
+export { apiService, ApiService, ApiServiceError } from './api.service';
+export { groupsService, GroupsService } from './groups.service';
+export { conversationsService, ConversationsService } from './conversations.service';
+export { notificationsService } from './notifications.service';
+export { usersService } from './users.service';
+export { messagesService } from './messages.service';
 
 // Export des types
-export type { ApiResponse, ApiError, ApiConfig } from './apiService';
+export type { ApiResponse, ApiError, ApiConfig } from './api.service';
 export type {
   CreateGroupDto,
   UpdateGroupDto,
   InviteMemberDto,
   GroupFilters,
   GroupsResponse,
-} from './groupsService';
-export type { Notification, NotificationPreferences } from './notificationsService';
-export type { UserStats, UpdateUserDto } from './usersService';
-export type { Message, CreateMessageDto, UpdateMessageDto } from './messagesService';
+} from './groups.service';
+export type { Notification, NotificationPreferences } from './notifications.service';
+export type { UserStats, UpdateUserDto } from './users.service';
+export type { Message, CreateMessageDto, UpdateMessageDto } from './messages.service';
 
 // Services de modèles de traduction (Production Ready)
 export { HuggingFaceTranslationService } from './simplified-translation.service';
 // Service mock pour les tests
-export { mockApiService } from './mockApiService';
+export { mockApiService } from './mock-api.service';

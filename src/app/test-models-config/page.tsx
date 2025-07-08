@@ -1,6 +1,6 @@
 'use client';
 
-import { getAllActiveModels, ACTIVE_MODELS } from '@/lib/simple-model-config';
+import { getAllActiveModels, ACTIVE_MODELS } from '@/lib/unified-model-config';
 
 export default function TestModelsPage() {
   const activeModels = getAllActiveModels();

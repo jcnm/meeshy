@@ -4,7 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppProvider } from "@/context/AppContext";
 import { ErrorBoundary } from "@/components/common";
-import { DebugModelsScript } from "@/components/debug/debug-models-script";
+// import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +37,7 @@ export default function RootLayout({
           </ErrorBoundary>
         </AppProvider>
         <Toaster />
-        <DebugModelsScript />
+        {/* <DebugModelsScript /> Supprimé - obsolète */}
       </body>
     </html>
   );

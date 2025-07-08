@@ -7,7 +7,7 @@ import {
   getCompatibleModels,
   recommendModel
 } from '@/lib/unified-model-config';
-import { type TranslationModelType as HFTranslationModelType } from '@/lib/simplified-model-config';
+import { type TranslationModelType as HFTranslationModelType } from '@/lib/unified-model-config';
 import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
 
 // Type unifié pour compatibilité

@@ -1,9 +1,9 @@
-import { conversationsService } from '../../services/conversationsService';
-import { apiService } from '../../services/apiService';
+import { conversationsService } from '../../services/conversations.service';
+import { apiService } from '../../services/api.service';
 import type { Conversation, Message } from '../../types';
 
 // Mock the apiService
-jest.mock('../../services/apiService', () => ({
+jest.mock('../../services/api.service', () => ({
   apiService: {
     get: jest.fn(),
     post: jest.fn(),

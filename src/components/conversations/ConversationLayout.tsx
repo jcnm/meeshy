@@ -7,7 +7,7 @@ import { useWebSocket } from '@/hooks/use-websocket';
 import { useWebSocketMessages } from '@/hooks/use-websocket-messages';
 import { buildApiUrl } from '@/lib/config';
 import { Conversation, Message } from '@/types';
-import { conversationsService } from '@/services/conversationsService';
+import { conversationsService } from '@/services/conversations.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import {
   Button,

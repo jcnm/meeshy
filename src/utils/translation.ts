@@ -4,7 +4,7 @@
  */
 
 import { HuggingFaceTranslationService } from '@/services/huggingface-translation';
-import { selectBestModel } from '@/lib/simplified-model-config';
+import { selectBestModel } from '@/lib/unified-model-config';
 
 // Service de traduction global
 const translationService = HuggingFaceTranslationService.getInstance();

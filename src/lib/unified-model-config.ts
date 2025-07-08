@@ -348,19 +348,7 @@ export const MODEL_SUPPORTED_LANGUAGES = {
   ]
 } as const;
 
-/**
- * Obtient la configuration d'un modèle par son type
- */
-export function getModelConfig(modelType: TranslationModelType): UnifiedModelConfig {
-  return UNIFIED_TRANSLATION_MODELS[modelType];
-}
-
-/**
- * Obtient tous les modèles d'une famille donnée
- */
-export function getModelsByFamily(family: ModelFamily): UnifiedModelConfig[] {
-  return Object.values(UNIFIED_TRANSLATION_MODELS).filter(model => model.family === family);
-}
+// Fonctions supprimées - remplacées par les versions unifiées en fin de fichier
 
 /**
  * Obtient les modèles triés par efficacité (rapport qualité/coût)
@@ -510,3 +498,108 @@ export function estimateSystemCapabilities(): {
 
 // Export de compatibilité pour l'existant
 export const TRANSLATION_MODELS = UNIFIED_TRANSLATION_MODELS;
+
+// === Fonctions utilitaires unifiées ===
+
+/**
+ * Configuration des modèles actifs (2 modèles essentiels)
+ */
+export interface ActiveModelConfig {
+  basicModel: TranslationModelType;
+  highModel: TranslationModelType;
+}
+
+/**
+ * Récupère la configuration des modèles actifs depuis l'environnement
+ */
+function getActiveModelsFromEnv(): ActiveModelConfig {
+  // Modèles par défaut recommandés
+  const defaultBasic: TranslationModelType = 'MT5_SMALL';
+  const defaultHigh: TranslationModelType = 'NLLB_DISTILLED_600M';
+
+  // Lecture depuis les variables d'environnement si disponibles
+  const basicModel = (process.env.NEXT_PUBLIC_BASIC_MODEL as TranslationModelType) || defaultBasic;
+  const highModel = (process.env.NEXT_PUBLIC_HIGH_MODEL as TranslationModelType) || defaultHigh;
+
+  return { basicModel, highModel };
+}
+
+// Configuration active des modèles
+export const ACTIVE_MODELS: ActiveModelConfig = getActiveModelsFromEnv();
+
+/**
+ * Récupère tous les modèles actifs
+ */
+export function getAllActiveModels(): TranslationModelType[] {
+  return [ACTIVE_MODELS.basicModel, ACTIVE_MODELS.highModel];
+}
+
+/**
+ * Récupère la configuration d'un modèle actif
+ */
+export function getActiveModelConfig(type: 'basic' | 'high'): UnifiedModelConfig {
+  const modelType = type === 'basic' ? ACTIVE_MODELS.basicModel : ACTIVE_MODELS.highModel;
+  return UNIFIED_TRANSLATION_MODELS[modelType];
+}
+
+/**
+ * Sélectionne automatiquement le meilleur modèle selon le contexte
+ */
+export function selectBestModel(messageLength: number, complexity: 'simple' | 'complex' = 'simple'): TranslationModelType {
+  // Messages courts (< 50 caractères) et simples -> modèle basique
+  if (messageLength <= 50 && complexity === 'simple') {
+    return ACTIVE_MODELS.basicModel;
+  }
+  
+  // Messages longs ou complexes -> modèle haute performance
+  return ACTIVE_MODELS.highModel;
+}
+
+/**
+ * Détermine quel modèle utiliser selon les critères du message
+ */
+export function selectModelForMessage(messageLength: number, complexity: 'simple' | 'complex'): {
+  type: 'basic' | 'high';
+  config: UnifiedModelConfig;
+} {
+  if (messageLength <= 50 && complexity === 'simple') {
+    return { type: 'basic', config: getActiveModelConfig('basic') };
+  } else {
+    return { type: 'high', config: getActiveModelConfig('high') };
+  }
+}
+
+/**
+ * Vérifie si un modèle est actuellement actif
+ */
+export function isModelActive(modelType: TranslationModelType): boolean {
+  return modelType === ACTIVE_MODELS.basicModel || modelType === ACTIVE_MODELS.highModel;
+}
+
+/**
+ * Récupère les modèles disponibles par famille
+ */
+export function getModelsByFamily(family: ModelFamily): TranslationModelType[] {
+  return Object.values(UNIFIED_TRANSLATION_MODELS)
+    .filter(config => config.family === family)
+    .map(config => config.name);
+}
+
+/**
+ * Récupère la configuration d'un modèle spécifique
+ */
+export function getModelConfig(modelType: TranslationModelType): UnifiedModelConfig {
+  return UNIFIED_TRANSLATION_MODELS[modelType];
+}
+
+/**
+ * Récupère la liste de tous les modèles disponibles
+ */
+export function getAvailableModels(): TranslationModelType[] {
+  return Object.keys(UNIFIED_TRANSLATION_MODELS) as TranslationModelType[];
+}
+
+// Types pour l'usage externe
+export type ActiveModelType = 'basic' | 'high';
+export type SimpleModelConfig = UnifiedModelConfig;
+export type AllowedModelType = TranslationModelType; // Alias pour compatibilité
