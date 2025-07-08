@@ -19,7 +19,9 @@ export type { Notification, NotificationPreferences } from './notifications.serv
 export type { UserStats, UpdateUserDto } from './users.service';
 export type { Message, CreateMessageDto, UpdateMessageDto } from './messages.service';
 
-// Services de modèles de traduction (Production Ready)
-export { HuggingFaceTranslationService } from './simplified-translation.service';
+// Service de traduction unifié
+export { translationService, TranslationService } from './translation.service';
+export type { TranslationResult, TranslationProgress } from './translation.service';
+
 // Service mock pour les tests
 export { mockApiService } from './mock-api.service';
