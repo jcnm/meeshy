@@ -27,7 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
 import { MessageBubble } from './message-bubble';
-import { useMessageTranslation } from '@/hooks/use-message-translation';
+import { useTranslation } from '@/hooks/use-translation';
 import { useWebSocket } from '@/hooks/use-websocket';
 import { SocketService } from '@/lib/socket.service';
 import { toast } from 'sonner';
@@ -65,7 +65,7 @@ export function ConversationView({
   const processedMessageIds = useRef<Set<string>>(new Set());
 
   // Hooks pour la traduction et services
-  const { translateMessage } = useMessageTranslation(currentUser);
+  const { translateMessage } = useTranslation(currentUser);
   const { isConnected } = useWebSocket();
   const socketService = SocketService.getInstance();
 

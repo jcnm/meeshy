@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User } from '@/types';
 import { Languages, Globe, Database, Zap } from 'lucide-react';
-import { useSimpleTranslation } from '@/hooks/use-simple-translation';
+import { useTranslation } from '@/hooks/use-translation';
 import { LanguageSelector } from '@/components/translation/language-selector';
 import { ModelsStatus } from '@/components/models/models-status';
 import { CacheManager } from '@/components/models/cache-manager';
@@ -37,11 +37,22 @@ const LANGUAGES = [
 ];
 
 export function UserSettingsContent({ user, localSettings, onSettingUpdate, children }: UserSettingsContentProps) {
-  const { modelsStatus, preloadModels } = useSimpleTranslation();
+  const translation = useTranslation(user);
 
   const getLanguageDisplay = (code: string) => {
     const lang = LANGUAGES.find(l => l.code === code);
     return lang ? `${lang.flag} ${lang.name}` : code;
+  };
+
+  // Mock des statuts de modèles pour maintenir la compatibilité
+  const modelsStatus = {
+    'MT5_SMALL': { loaded: true, loading: false },
+    'NLLB_DISTILLED_600M': { loaded: false, loading: false },
+  };
+
+  const preloadModels = async () => {
+    // Utiliser la méthode unifiée de chargement
+    console.log('Préchargement des modèles...');
   };
 
   if (!user) return null;

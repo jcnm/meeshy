@@ -24,7 +24,7 @@ import { User, Conversation, Message, TranslatedMessage } from '@/types';
 import { toast } from 'sonner';
 import { io, Socket } from 'socket.io-client';
 import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
-import { useSimpleTranslation } from '@/hooks/use-simple-translation';
+import { useTranslation } from '@/hooks/use-translation';
 import { ModelSetupModal } from '@/components/models/model-setup-modal';
 import { useModelStatus } from '@/hooks/useModelStatus';
 
@@ -46,7 +46,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hook de traduction avec persistance
-  const { translate } = useSimpleTranslation();
+  const { translate } = useTranslation(null); // currentUser sera passé depuis le contexte
 
   // Hook de vérification des modèles
   const { hasAnyModel, isLoading: isLoadingModels } = useModelStatus();

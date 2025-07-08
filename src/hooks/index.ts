@@ -5,7 +5,8 @@ export { useWebSocket, useWebSocketMessages } from './use-websocket';
 export { useTypingIndicator } from './use-typing-indicator';
 
 // Traduction unifiée
-export { useTranslation, useMessageTranslation, useSimpleTranslation, useTranslationCache } from './use-translation';
+export { useTranslation, useMessageTranslation, useSimpleTranslation } from './use-translation';
+export { useTranslationCache } from './use-translation-cache';
 
 // Interface utilisateur et notifications
 export { useNotifications } from './use-notifications';
