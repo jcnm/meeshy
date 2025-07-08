@@ -138,9 +138,8 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
     return {
       ...message,
       originalContent: message.content,
-      translations: new Map(),
-      isTranslated: false,
-      preferredLanguage: currentUser?.preferredLanguage || 'fr'
+      translations: [],
+      isTranslated: false
     };
   }, [currentUser]);
 
@@ -152,27 +151,32 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
       const translatedMessage = convertToTranslatedMessage(message);
       
       // Éviter la traduction si c'est déjà dans la langue cible
-      if (message.language === targetLanguage) {
+      if (message.originalLanguage === targetLanguage) {
         return translatedMessage;
       }
       
       const result = await translationService.translateSimple(
         message.content,
-        message.language,
+        message.originalLanguage,
         targetLanguage
       );
       
       // Ajouter la traduction
-      translatedMessage.translations.set(targetLanguage, {
-        text: result.translatedText,
-        sourceLanguage: message.language,
-        targetLanguage,
-        modelUsed: result.modelUsed,
-        timestamp: Date.now(),
-        confidence: result.confidence || 0.9
+      if (!translatedMessage.translations) {
+        translatedMessage.translations = [];
+      }
+      
+      translatedMessage.translations.push({
+        language: targetLanguage,
+        content: result.translatedText,
+        flag: '', // À définir selon la langue
+        createdAt: new Date(),
+        modelUsed: result.modelUsed as TranslationModelType
       });
       
       translatedMessage.isTranslated = true;
+      translatedMessage.translatedContent = result.translatedText;
+      translatedMessage.targetLanguage = targetLanguage;
       
       return translatedMessage;
     } catch (err) {

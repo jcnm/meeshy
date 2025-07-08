@@ -422,50 +422,98 @@ export class TranslationService {
 
   // === MÉTHODES UTILITAIRES ===
 
-  isModelLoaded(modelType: AllowedModelType): boolean {
-    return this.loadedPipelines.has(modelType);
-  }
-
-  getLoadedModels(): AllowedModelType[] {
-    return Array.from(this.loadedPipelines.keys());
-  }
-
-  getCacheSize(): number {
-    return this.cache.size;
-  }
-
-  getMetadataCount(): number {
-    return this.metadata.size;
-  }
-
-  clearCache(): void {
-    this.cache.clear();
-    this.metadata.clear();
-    localStorage.removeItem(this.STORAGE_KEY_CACHE);
-    localStorage.removeItem(this.STORAGE_KEY_METADATA);
-  }
-
-  getCacheStats(): { size: number; expiredCount: number; totalTranslations: number } {
-    const now = Date.now();
-    let expiredCount = 0;
-    
-    for (const cached of this.cache.values()) {
-      if (now - cached.timestamp > this.CACHE_EXPIRY) {
-        expiredCount++;
-      }
-    }
-    
+  // === MÉTHODES DE COMPATIBILITÉ AVEC L'ANCIEN API ===
+  
+  /**
+   * Méthode de compatibilité pour translateText (ancienne API)
+   */
+  async translateText(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    modelType?: AllowedModelType
+  ): Promise<{ translatedText: string; modelUsed: string; confidence?: number }> {
+    const result = await this.translateOptimized(text, sourceLanguage, targetLanguage, modelType);
     return {
-      size: this.cache.size,
-      expiredCount,
+      translatedText: result.translatedText,
+      modelUsed: result.modelUsed,
+      confidence: result.confidence
+    };
+  }
+
+  /**
+   * Méthode pour décharger un modèle
+   */
+  async unloadModel(modelType: AllowedModelType): Promise<boolean> {
+    try {
+      if (this.loadedPipelines.has(modelType)) {
+        this.loadedPipelines.delete(modelType);
+        this.saveLoadedModelsToStorage();
+        console.log(`✅ Modèle ${modelType} déchargé`);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error(`❌ Erreur lors du déchargement du modèle ${modelType}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Méthode pour décharger tous les modèles
+   */
+  async unloadAllModels(): Promise<void> {
+    this.loadedPipelines.clear();
+    this.loadingPromises.clear();
+    this.progressCallbacks.clear();
+    this.saveLoadedModelsToStorage();
+    console.log('✅ Tous les modèles ont été déchargés');
+  }
+
+  /**
+   * Récupère les statistiques des modèles
+   */
+  getModelStats(): {
+    loadedModels: AllowedModelType[];
+    totalModels: number;
+    cacheSize: number;
+    totalTranslations: number;
+  } {
+    return {
+      loadedModels: Array.from(this.loadedPipelines.keys()),
+      totalModels: this.loadedPipelines.size,
+      cacheSize: this.cache.size,
       totalTranslations: this.metadata.size
     };
   }
+
+  /**
+   * Récupère les modèles persistés depuis le localStorage
+   */
+  getPersistedLoadedModels(): AllowedModelType[] {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY_LOADED_MODELS);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.warn('Erreur lors de la récupération des modèles persistés:', error);
+    }
+    return [];
+  }
+
+  /**
+   * Précharge les modèles recommandés
+   */
+  async preloadRecommendedModels(onProgress?: (progress: TranslationProgress) => void): Promise<void> {
+    const recommendedModels = [ACTIVE_MODELS.basicModel, ACTIVE_MODELS.highModel];
+    
+    for (const model of recommendedModels) {
+      try {
+        await this.loadModel(model, onProgress);
+      } catch (error) {
+        console.warn(`Impossible de précharger le modèle ${model}:`, error);
+      }
+    }
+  }
 }
-
-// Export de l'instance singleton
-export const translationService = TranslationService.getInstance();
-
-// Export pour compatibilité
-export { TranslationService as SimplifiedTranslationService };
-export { translationService as HuggingFaceTranslationService };

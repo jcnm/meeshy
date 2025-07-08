@@ -1,10 +1,10 @@
 /**
- * Composant de test pour le service de traduction Hugging Face
+ * Composant de test pour le service de traduction unifié
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,406 +12,391 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Download, Trash2, Brain, Zap, CheckCircle } from 'lucide-react';
 import { 
-  HuggingFaceTranslationService, 
+  translationService, 
   type TranslationProgress, 
   type TranslationResult 
-} from '@/services/translation.service';
+} from '@/services';
 import { 
-  UNIFIED_TRANSLATION_MODELS,
-  type TranslationModelType as UnifiedModelType,
-  estimateSystemCapabilities 
-} from '@/lib/unified-model-config';
-import { 
-  type TranslationModelType as HuggingFaceModelType 
+  ACTIVE_MODELS,
+  type AllowedModelType 
 } from '@/lib/unified-model-config';
 
-// const translationService = translationService; // Déjà importé en tant qu'instance
-
-// Fonction de mapping pour convertir les types unifiés vers HuggingFace
-const mapToHFModelType = (modelType: UnifiedModelType): HuggingFaceModelType | null => {
-  switch (modelType) {
-    case 'MT5_SMALL':
-      return 'MT5_BASE' as HuggingFaceModelType;
-    case 'NLLB_DISTILLED_600M':
-      return 'NLLB_DISTILLED_600M' as HuggingFaceModelType;
-    default:
-      return null;
-  }
-};
-
-// Types pour éviter 'any'
+// Types simplifiés
 interface ModelStats {
-  loaded: number;
-  total: number;
-  loadedModels: UnifiedModelType[];
-  persistedModels: UnifiedModelType[];
-  availableModels: UnifiedModelType[];
-  inMemoryModels: UnifiedModelType[];
+  loadedModels: AllowedModelType[];
+  cacheSize: number;
+  totalTranslations: number;
+  cacheHitRate: number;
 }
 
-interface SystemCapabilities {
-  recommendedModels: { mt5: UnifiedModelType; nllb: UnifiedModelType };
-  maxMemoryMB: number;
-  reasoning: string;
+interface Language {
+  code: string;
+  name: string;
+  flag: string;
 }
 
-// Langues supportées avec leurs codes
-const SUPPORTED_LANGUAGES = [
-  { code: 'en', name: 'Anglais', flag: '🇺🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'es', name: 'Espagnol', flag: '🇪🇸' },
-  { code: 'de', name: 'Allemand', flag: '🇩🇪' },
-  { code: 'it', name: 'Italien', flag: '🇮🇹' },
-  { code: 'pt', name: 'Portugais', flag: '🇵🇹' },
-  { code: 'ru', name: 'Russe', flag: '🇷🇺' },
-  { code: 'ja', name: 'Japonais', flag: '🇯🇵' },
-  { code: 'ko', name: 'Coréen', flag: '🇰🇷' },
-  { code: 'zh', name: 'Chinois', flag: '🇨🇳' },
-  { code: 'ar', name: 'Arabe', flag: '🇸🇦' },
-  { code: 'hi', name: 'Hindi', flag: '🇮🇳' },
+const LANGUAGES: Language[] = [
+  { code: 'fra_Latn', name: 'Français', flag: '🇫🇷' },
+  { code: 'eng_Latn', name: 'Anglais', flag: '🇺🇸' },
+  { code: 'spa_Latn', name: 'Espagnol', flag: '🇪🇸' },
+  { code: 'deu_Latn', name: 'Allemand', flag: '🇩🇪' },
+  { code: 'ita_Latn', name: 'Italien', flag: '🇮🇹' },
+  { code: 'por_Latn', name: 'Portugais', flag: '🇵🇹' },
+  { code: 'rus_Cyrl', name: 'Russe', flag: '🇷🇺' },
+  { code: 'zho_Hans', name: 'Chinois (Simplifié)', flag: '🇨🇳' },
+  { code: 'jpn_Jpan', name: 'Japonais', flag: '🇯🇵' },
+  { code: 'ara_Arab', name: 'Arabe', flag: '🇸🇦' }
 ];
 
-export function HuggingFaceTranslationTest() {
-  const [inputText, setInputText] = useState('Hello, this is a test message for translation.');
-  const [sourceLanguage, setSourceLanguage] = useState('en');
-  const [targetLanguage, setTargetLanguage] = useState('fr');
-  const [selectedModel, setSelectedModel] = useState<UnifiedModelType>('NLLB_DISTILLED_600M');
-  const [translationResult, setTranslationResult] = useState<TranslationResult | null>(null);
+export default function HuggingFaceTranslationTest() {
+  // États pour l'interface
+  const [inputText, setInputText] = useState('Bonjour, comment allez-vous ?');
+  const [sourceLanguage, setSourceLanguage] = useState('fra_Latn');
+  const [targetLanguage, setTargetLanguage] = useState('eng_Latn');
+  const [translatedText, setTranslatedText] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState<TranslationProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // États pour les modèles
   const [modelStats, setModelStats] = useState<ModelStats | null>(null);
-  const [systemCapabilities, setSystemCapabilities] = useState<SystemCapabilities | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<TranslationProgress | null>(null);
+  const [isPreloading, setIsPreloading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<AllowedModelType>(ACTIVE_MODELS.basicModel);
 
-  // Initialisation
+  // Charger l'état initial
   useEffect(() => {
-    const capabilities = estimateSystemCapabilities();
-    setSystemCapabilities(capabilities);
-    setSelectedModel(capabilities.recommendedModels.nllb);
-    updateModelStats();
-    
-    // Afficher les modèles persistés au démarrage
     console.log('📂 Modèles persistés au démarrage:', translationService.getPersistedLoadedModels());
+    updateModelStats();
   }, []);
 
   // Mettre à jour les statistiques des modèles
-  const updateModelStats = () => {
+  const updateModelStats = useCallback(() => {
     const stats = translationService.getModelStats();
-    // Adapter les données aux types attendus
-    setModelStats({
-      ...stats,
-      persistedModels: [],
-      inMemoryModels: []
-    });
-  };
+    setModelStats(stats);
+  }, []);
 
   // Gestionnaire de progression
-  const handleProgress = (progress: TranslationProgress) => {
-    setLoadingProgress(progress);
-    if (progress.status === 'error') {
-      setError(progress.error || 'Erreur inconnue');
-    } else if (progress.status === 'ready') {
-      setLoadingProgress(null);
-      updateModelStats();
-    }
-  };
+  const handleProgress = useCallback((progress: TranslationProgress) => {
+    setDownloadProgress(progress);
+    console.log('📥 Progression:', progress);
+  }, []);
 
-  // Effectuer la traduction
-  const handleTranslate = async () => {
+  // Test de traduction
+  const handleTranslate = useCallback(async () => {
     if (!inputText.trim()) {
-      setError('Veuillez saisir un texte à traduire');
+      setError('Veuillez saisir du texte à traduire');
       return;
     }
 
     setIsTranslating(true);
     setError(null);
-    setTranslationResult(null);
-    setLoadingProgress(null);
+    setTranslatedText('');
 
     try {
-      // Mapper le type unifié vers HuggingFace
-      const hfModelType = mapToHFModelType(selectedModel);
-      if (!hfModelType) {
-        throw new Error(`Modèle non supporté: ${selectedModel}`);
-      }
-
       const result = await translationService.translateText(
         inputText,
         sourceLanguage,
         targetLanguage,
-        hfModelType,
-        handleProgress
+        selectedModel
       );
       
-      setTranslationResult(result);
+      setTranslatedText(result.translatedText);
       updateModelStats();
+      console.log('✅ Traduction réussie:', result);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction';
+      const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction inconnue';
       setError(errorMessage);
+      console.error('❌ Erreur de traduction:', err);
     } finally {
       setIsTranslating(false);
-      setLoadingProgress(null);
     }
-  };
+  }, [inputText, sourceLanguage, targetLanguage, selectedModel, updateModelStats]);
 
   // Précharger les modèles recommandés
-  const handlePreloadRecommended = async () => {
-    setError(null);
+  const handlePreloadModels = useCallback(async () => {
+    setIsPreloading(true);
+    setDownloadProgress(null);
+    
     try {
       await translationService.preloadRecommendedModels(handleProgress);
       updateModelStats();
+      console.log('✅ Préchargement terminé');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de préchargement');
+      console.error('❌ Erreur de préchargement:', err);
+    } finally {
+      setIsPreloading(false);
+      setDownloadProgress(null);
     }
-  };
+  }, [handleProgress, updateModelStats]);
 
-  // Décharger tous les modèles
-  const handleUnloadAll = async () => {
-    await translationService.unloadAllModels();
+  // Vider tous les modèles
+  const handleClearModels = useCallback(async () => {
+    try {
+      await translationService.unloadAllModels();
+      updateModelStats();
+      setDownloadProgress(null);
+      console.log('🗑️ Tous les modèles ont été supprimés');
+    } catch (err) {
+      console.error('❌ Erreur lors du nettoyage:', err);
+    }
+  }, [updateModelStats]);
+
+  // Vider le cache
+  const handleClearCache = useCallback(() => {
+    translationService.clearCache();
     updateModelStats();
-  };
+    console.log('🗑️ Cache vidé');
+  }, [updateModelStats]);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">🤗 Test de Traduction Hugging Face</h1>
+        <h1 className="text-3xl font-bold mb-2">🌐 Test de Traduction Unifié</h1>
         <p className="text-muted-foreground">
-          Service de traduction utilisant les modèles officiels MT5 et NLLB
+          Interface de test pour le service de traduction Meeshy
         </p>
       </div>
 
-      {/* Informations système */}
-      {systemCapabilities && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              💻 Capacités Système
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="font-semibold">RAM Estimée</Label>
-                <p>{Math.round(systemCapabilities.maxMemoryMB / 1024)} GB</p>
-              </div>
-              <div>
-                <Label className="font-semibold">Recommandations</Label>
-                <p className="text-sm text-muted-foreground">{systemCapabilities.reasoning}</p>
-              </div>
-              <div>
-                <Label className="font-semibold">MT5 Recommandé</Label>
-                <Badge variant="secondary">{systemCapabilities.recommendedModels.mt5}</Badge>
-              </div>
-              <div>
-                <Label className="font-semibold">NLLB Recommandé</Label>
-                <Badge variant="secondary">{systemCapabilities.recommendedModels.nllb}</Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Statistiques des modèles */}
-      {modelStats && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              📊 Statistiques des Modèles
-              <Button onClick={updateModelStats} variant="outline" size="sm">
-                Actualiser
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{modelStats.loaded}</div>
-                <div className="text-sm text-muted-foreground">Modèles Chargés</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{modelStats.total}</div>
-                <div className="text-sm text-muted-foreground">Modèles Disponibles</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {Math.round((modelStats.loaded / modelStats.total) * 100)}%
-                </div>
-                <div className="text-sm text-muted-foreground">Taux de Chargement</div>
-              </div>
-            </div>
-            
-            {modelStats.loadedModels.length > 0 && (
-              <div>
-                <Label className="font-semibold">Modèles Chargés:</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {modelStats.loadedModels.map((model: string) => (
-                    <Badge key={model} variant="default">{model}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handlePreloadRecommended} variant="outline" size="sm">
-                Précharger Recommandés
-              </Button>
-              <Button onClick={handleUnloadAll} variant="outline" size="sm">
-                Décharger Tout
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Interface de traduction */}
       <Card>
         <CardHeader>
-          <CardTitle>🔄 Interface de Traduction</CardTitle>
-          <CardDescription>
-            Testez la traduction avec les modèles Hugging Face officiels
-          </CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Brain className="h-5 w-5" />
+            Statistiques des Modèles
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Sélection du modèle */}
-          <div>
-            <Label htmlFor="model-select">Modèle de Traduction</Label>
-            <Select value={selectedModel} onValueChange={(value) => setSelectedModel(value as UnifiedModelType)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choisir un modèle" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(UNIFIED_TRANSLATION_MODELS).map((model) => (
-                  <SelectItem key={model.name} value={model.name}>
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: model.color }}
-                      />
-                      <span>{model.displayName}</span>
-                      <Badge variant="outline" style={{ fontSize: '10px' }}>
-                        {model.parameters}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Sélection des langues */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="source-lang">Langue Source</Label>
-              <Select value={sourceLanguage} onValueChange={setSourceLanguage}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORTED_LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.code} value={lang.code}>
-                      {lang.flag} {lang.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="target-lang">Langue Cible</Label>
-              <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORTED_LANGUAGES.map((lang) => (
-                    <SelectItem key={lang.code} value={lang.code}>
-                      {lang.flag} {lang.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Texte à traduire */}
-          <div>
-            <Label htmlFor="input-text">Texte à Traduire</Label>
-            <Textarea
-              id="input-text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Saisissez votre texte ici..."
-              rows={3}
-            />
-          </div>
-
-          {/* Bouton de traduction */}
-          <Button 
-            onClick={handleTranslate} 
-            disabled={isTranslating || !!loadingProgress}
-            className="w-full"
-          >
-            {isTranslating || loadingProgress ? 'Traduction en cours...' : 'Traduire'}
-          </Button>
-
-          {/* Progression */}
-          {loadingProgress && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Statut: {loadingProgress.status}</span>
-                {loadingProgress.progress && (
-                  <span>{loadingProgress.progress}%</span>
-                )}
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {modelStats?.loadedModels.length || 0}
               </div>
-              {loadingProgress.progress && (
-                <Progress value={loadingProgress.progress} className="w-full" />
-              )}
+              <div className="text-sm text-muted-foreground">Modèles chargés</div>
             </div>
-          )}
-
-          {/* Erreur */}
-          {error && (
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="pt-6">
-                <div className="text-red-800">{error}</div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Résultat */}
-          {translationResult && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">✅ Résultat de la Traduction</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div>
-                    <Label className="font-semibold">Texte Traduit:</Label>
-                    <p className="text-lg bg-muted p-3 rounded-md mt-1">
-                      {translationResult.translatedText}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <Label className="font-semibold">Modèle:</Label>
-                      <p>{translationResult.modelUsed}</p>
-                    </div>
-                    <div>
-                      <Label className="font-semibold">Direction:</Label>
-                      <p>{translationResult.sourceLanguage} → {translationResult.targetLanguage}</p>
-                    </div>
-                    <div>
-                      <Label className="font-semibold">Confiance:</Label>
-                      <p>{Math.round((translationResult.confidence || 0) * 100)}%</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {modelStats?.cacheSize || 0}
+              </div>
+              <div className="text-sm text-muted-foreground">Cache</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {modelStats?.totalTranslations || 0}
+              </div>
+              <div className="text-sm text-muted-foreground">Traductions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">
+                {modelStats?.cacheHitRate.toFixed(1) || 0}%
+              </div>
+              <div className="text-sm text-muted-foreground">Cache hit</div>
+            </div>
+          </div>
+          
+          {modelStats?.loadedModels && modelStats.loadedModels.length > 0 && (
+            <div className="mt-4">
+              <Label className="text-sm font-medium">Modèles en mémoire:</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {modelStats.loadedModels.map((model) => (
+                  <Badge key={model} variant="secondary">
+                    {model}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Progression des téléchargements */}
+      {downloadProgress && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>📥 {downloadProgress.modelName}</span>
+                <span>{downloadProgress.status}</span>
+              </div>
+              {downloadProgress.progress !== undefined && (
+                <Progress value={downloadProgress.progress} className="w-full" />
+              )}
+              {downloadProgress.error && (
+                <Alert>
+                  <AlertDescription>{downloadProgress.error}</AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Interface de test */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Configuration */}
+        <Card>
+          <CardHeader>
+            <CardTitle>⚙️ Configuration</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Sélection du modèle */}
+            <div className="space-y-2">
+              <Label>Modèle de traduction</Label>
+              <Select value={selectedModel} onValueChange={(value) => setSelectedModel(value as AllowedModelType)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ACTIVE_MODELS.basicModel}>
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      Modèle de base (rapide)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={ACTIVE_MODELS.highModel}>
+                    <div className="flex items-center gap-2">
+                      <Brain className="h-4 w-4" />
+                      Modèle avancé (précis)
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Langues */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Langue source</Label>
+                <Select value={sourceLanguage} onValueChange={setSourceLanguage}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code}>
+                        {lang.flag} {lang.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Langue cible</Label>
+                <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LANGUAGES.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code}>
+                        {lang.flag} {lang.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Actions de gestion */}
+            <div className="space-y-2">
+              <Button
+                onClick={handlePreloadModels}
+                disabled={isPreloading}
+                className="w-full"
+                variant="outline"
+              >
+                {isPreloading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Préchargement...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Précharger les modèles
+                  </>
+                )}
+              </Button>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={handleClearModels}
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Vider modèles
+                </Button>
+                <Button
+                  onClick={handleClearCache}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Vider cache
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Test de traduction */}
+        <Card>
+          <CardHeader>
+            <CardTitle>🧪 Test de Traduction</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Texte à traduire</Label>
+              <Textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Saisissez votre texte ici..."
+                rows={3}
+              />
+            </div>
+
+            <Button
+              onClick={handleTranslate}
+              disabled={isTranslating || !inputText.trim()}
+              className="w-full"
+            >
+              {isTranslating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Traduction...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-4 w-4" />
+                  Traduire
+                </>
+              )}
+            </Button>
+
+            {error && (
+              <Alert>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {translatedText && (
+              <div className="space-y-2">
+                <Label>Résultat</Label>
+                <div className="p-3 bg-secondary rounded-md">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-medium">Traduction réussie</span>
+                  </div>
+                  <p className="text-sm">{translatedText}</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
