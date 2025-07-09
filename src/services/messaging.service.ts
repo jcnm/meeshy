@@ -44,6 +44,12 @@ class MessagingService {
   }
 
   private initializeConnection() {
+    // Vérification côté client uniquement
+    if (typeof window === 'undefined') {
+      console.log('🔒 MessagingService: Côté serveur - connexion différée');
+      return;
+    }
+    
     const token = localStorage.getItem('auth_token');
     if (!token) {
       console.warn('🔒 MessagingService: Aucun token JWT trouvé');

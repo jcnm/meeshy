@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Download, CheckCircle, AlertTriangle, Loader2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
-  HuggingFaceTranslationService, 
+  translationService, 
   type TranslationProgress 
 } from '@/services/translation.service';
 import { 
@@ -30,8 +30,6 @@ import {
 export function RealModelDownloader() {
   const [downloadProgress, setDownloadProgress] = useState<Record<string, TranslationProgress>>({});
   const [loadedModels, setLoadedModels] = useState<AllowedModelType[]>([]);
-
-  // const modelService = translationService; // Déjà importé
   
   // Récupérer les 2 modèles actifs
   const activeModels = getAllActiveModels();
@@ -41,12 +39,12 @@ export function RealModelDownloader() {
   useEffect(() => {
     // Charger l'état initial des modèles
     const updateLoadedModels = () => {
-      const stats = modelService.getModelStats();
-      setLoadedModels(stats.loadedModels);
+      const loadedModelsList = translationService.getLoadedModels();
+      setLoadedModels(loadedModelsList);
     };
 
     updateLoadedModels();
-  }, [modelService]);
+  }, []);
 
   /**
    * Télécharge un modèle spécifique
@@ -55,7 +53,7 @@ export function RealModelDownloader() {
     try {
       console.log(`🔄 Démarrage téléchargement: ${modelName}`);
       
-      await modelService.loadModel(modelName, (progress: TranslationProgress) => {
+      await translationService.loadModel(modelName, (progress: TranslationProgress) => {
         setDownloadProgress(prev => ({
           ...prev,
           [modelName]: progress
@@ -63,8 +61,8 @@ export function RealModelDownloader() {
       });
 
       // Mettre à jour la liste des modèles chargés
-      const stats = modelService.getModelStats();
-      setLoadedModels(stats.loadedModels);
+      const loadedModelsList = translationService.getLoadedModels();
+      setLoadedModels(loadedModelsList);
       
       // Supprimer la progression une fois terminé
       setDownloadProgress(prev => {
@@ -95,12 +93,12 @@ export function RealModelDownloader() {
    * Décharge un modèle de la mémoire
    */
   const unloadModel = async (modelName: AllowedModelType) => {
-    const success = await modelService.unloadModel(modelName);
-    if (success) {
-      const stats = modelService.getModelStats();
-      setLoadedModels(stats.loadedModels);
+    try {
+      await translationService.unloadModel(modelName);
+      const loadedModelsList = translationService.getLoadedModels();
+      setLoadedModels(loadedModelsList);
       toast.success(`Modèle ${modelName} déchargé`);
-    } else {
+    } catch {
       toast.error(`Erreur lors du déchargement de ${modelName}`);
     }
   };
@@ -178,17 +176,21 @@ export function RealModelDownloader() {
           Modèles disponibles (2)
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {activeModels.map(({ config }) => (              <ModelCard 
-                key={config.name} 
+          {activeModels.map((modelName) => {
+            const config = getActiveModelConfig(modelName === ACTIVE_MODELS.basicModel ? 'basic' : 'high');
+            return (
+              <ModelCard 
+                key={modelName} 
                 config={config} 
-                status={getModelStatus(config.name)}
-                progress={downloadProgress[config.name]}
-                onDownload={() => downloadModel(config.name)}
-                onUnload={() => unloadModel(config.name)}
+                status={getModelStatus(modelName)}
+                progress={downloadProgress[modelName]}
+                onDownload={() => downloadModel(modelName)}
+                onUnload={() => unloadModel(modelName)}
                 isRecommended={true}
                 isCompatible={true}
               />
-          ))}
+            );
+          })}
         </div>
       </div>
 

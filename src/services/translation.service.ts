@@ -3,7 +3,7 @@
  * Combine toutes les fonctionnalités de traduction en un seul service
  */
 
-import { pipeline } from '@huggingface/transformers';
+import { pipeline, type TranslationPipeline } from '@huggingface/transformers';
 import { 
   selectModelForMessage,
   getActiveModelConfig,
@@ -50,9 +50,6 @@ export interface TranslationMetadata {
   translationTime: number;
 }
 
-// Type pour le pipeline de traduction
-type TranslationPipeline = any; // TODO: Remplacer par le type correct des pipelines HuggingFace
-
 /**
  * Service de traduction unifié - Combine toutes les approches
  */
@@ -95,6 +92,8 @@ export class TranslationService {
 
   private loadCacheFromStorage(): void {
     try {
+      if (typeof window === 'undefined') return; // SSR protection
+      
       const stored = localStorage.getItem(this.STORAGE_KEY_CACHE);
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -108,6 +107,8 @@ export class TranslationService {
 
   private saveCacheToStorage(): void {
     try {
+      if (typeof window === 'undefined') return; // SSR protection
+      
       const cacheObject = Object.fromEntries(this.cache);
       localStorage.setItem(this.STORAGE_KEY_CACHE, JSON.stringify(cacheObject));
     } catch (error) {
@@ -117,6 +118,8 @@ export class TranslationService {
 
   private loadMetadataFromStorage(): void {
     try {
+      if (typeof window === 'undefined') return; // SSR protection
+      
       const stored = localStorage.getItem(this.STORAGE_KEY_METADATA);
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -129,6 +132,8 @@ export class TranslationService {
 
   private saveMetadataToStorage(): void {
     try {
+      if (typeof window === 'undefined') return; // SSR protection
+      
       const metadataObject = Object.fromEntries(this.metadata);
       localStorage.setItem(this.STORAGE_KEY_METADATA, JSON.stringify(metadataObject));
     } catch (error) {
@@ -246,7 +251,7 @@ export class TranslationService {
       }
 
       const translationPipeline = await pipeline('translation', config.huggingFaceId, {
-        progress_callback: (progressInfo: any) => {
+        progress_callback: (progressInfo: { progress?: number; loaded?: number; total?: number; status?: string; file?: string }) => {
           const progress = progressInfo as { progress?: number; loaded?: number; total?: number };
           if (progressCallback && progress?.progress !== undefined) {
             progressCallback({
@@ -281,6 +286,8 @@ export class TranslationService {
 
   private saveLoadedModelsToStorage(): void {
     try {
+      if (typeof window === 'undefined') return; // SSR protection
+      
       const loadedModels = Array.from(this.loadedPipelines.keys());
       localStorage.setItem(this.STORAGE_KEY_LOADED_MODELS, JSON.stringify(loadedModels));
     } catch (error) {
@@ -384,22 +391,21 @@ export class TranslationService {
     config: UnifiedModelConfig
   ): Promise<TranslationResult> {
     try {
-      const result = await pipeline(text, {
-        src_lang: sourceLanguage,
-        tgt_lang: targetLanguage
-      });
+      // Utiliser la nouvelle API de HuggingFace sans options obsolètes
+      const result = await pipeline(text);
 
       let translatedText = '';
       if (Array.isArray(result) && result.length > 0) {
-        const firstResult = result[0];
+        const firstResult = result[0] as { translation_text?: string; generated_text?: string; text?: string };
         translatedText = firstResult.translation_text || 
                         firstResult.generated_text || 
                         firstResult.text || 
                         String(firstResult);
       } else if (result && typeof result === 'object') {
-        translatedText = result.translation_text ||
-                        result.generated_text ||
-                        result.text ||
+        const resultObj = result as { translation_text?: string; generated_text?: string; text?: string };
+        translatedText = resultObj.translation_text ||
+                        resultObj.generated_text ||
+                        resultObj.text ||
                         String(result);
       } else {
         translatedText = String(result);
@@ -490,6 +496,8 @@ export class TranslationService {
    */
   getPersistedLoadedModels(): AllowedModelType[] {
     try {
+      if (typeof window === 'undefined') return []; // SSR protection
+      
       const stored = localStorage.getItem(this.STORAGE_KEY_LOADED_MODELS);
       if (stored) {
         return JSON.parse(stored);

@@ -22,16 +22,51 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreateLinkModal } from '@/components/conversations/create-link-modal';
 import { useState, useEffect } from 'react';
-import { conversationsService } from '@/services/conversations.service';
-import { usersService } from '@/services/usersService';
-import { User, Conversation } from '@/types';
+import type { User, Conversation } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   
-  // Utilisation du hook de cache dashboard
-  const { data: dashboardData, isLoading, error, refresh } = useDashboardCache();
+  // Données simulées pour le dashboard
+  const dashboardData = {
+    user: null as User | null, // Sera récupéré du contexte d'auth
+    stats: {
+      totalConversations: 5,
+      totalGroups: 3,
+      totalMessages: 127,
+      activeConversations: 2,
+      translationsToday: 45,
+      onlineUsers: 8,
+      lastUpdated: new Date(),
+    },
+    recentConversations: [] as Conversation[],
+    recentGroups: [] as Array<{ 
+      id: string; 
+      name: string; 
+      memberCount: number;
+      isPrivate?: boolean;
+      members: Array<unknown>;
+      description?: string;
+    }>,
+  };
+
+  const refresh = () => {
+    setIsLoading(true);
+    // Simuler un rechargement
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    // Simuler le chargement initial
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+  }, []);
 
   // Extraction des données du cache
   const user = dashboardData?.user;

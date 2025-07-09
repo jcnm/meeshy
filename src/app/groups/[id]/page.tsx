@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Users, Settings, UserPlus } from 'lucide-react';
-import { Group, User } from '@/types';
+import { Group } from '@/types';
 import { useUser } from '@/context/AppContext';
 import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
-import { groupsService } from '@/services/groupsService';
+import { groupsService } from '@/services/groups.service';
 import { toast } from 'sonner';
 
 export default function GroupPage() {

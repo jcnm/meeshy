@@ -2,12 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useMessaging } from './use-messaging';
+import { messagingService } from '@/services/messaging.service';
 
 interface TypingUser {
   userId: string;
   username: string;
   conversationId: string;
   timestamp: number;
+}
+
+interface TypingEvent {
+  userId: string;
+  username: string;
+  conversationId: string;
+  isTyping: boolean;
 }
 
 export function useTypingIndicator(conversationId: string, currentUserId: string) {
@@ -19,7 +27,48 @@ export function useTypingIndicator(conversationId: string, currentUserId: string
     currentUser: undefined, // sera récupéré du contexte par le hook
   });
 
-  // Nettoyer les anciens indicateurs de frappe
+  // Écouter les événements de frappe via le service de messagerie
+  useEffect(() => {
+    console.log('🔄 TypingIndicator: Initialisation pour conversation', conversationId, 'utilisateur', currentUserId);
+    
+    const unsubscribeTyping = messagingService.onTyping((event: TypingEvent) => {
+      // Filtrer pour la conversation actuelle et exclure l'utilisateur actuel
+      if (event.conversationId === conversationId && event.userId !== currentUserId) {
+        if (event.isTyping) {
+          // Ajouter l'utilisateur en train de taper
+          setTypingUsers(prev => {
+            const existingIndex = prev.findIndex(user => user.userId === event.userId);
+            const typingUser: TypingUser = {
+              userId: event.userId,
+              username: event.username,
+              conversationId: event.conversationId,
+              timestamp: Date.now()
+            };
+            
+            if (existingIndex >= 0) {
+              // Mettre à jour le timestamp
+              const updated = [...prev];
+              updated[existingIndex] = typingUser;
+              return updated;
+            } else {
+              // Ajouter un nouveau utilisateur
+              return [...prev, typingUser];
+            }
+          });
+        } else {
+          // Retirer l'utilisateur qui a arrêté de taper
+          setTypingUsers(prev => prev.filter(user => user.userId !== event.userId));
+        }
+      }
+    });
+    
+    return () => {
+      console.log('🔄 TypingIndicator: Nettoyage pour conversation', conversationId);
+      unsubscribeTyping();
+    };
+  }, [conversationId, currentUserId]);
+
+  // Nettoyer les anciens indicateurs de frappe (timeout automatique)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -31,12 +80,10 @@ export function useTypingIndicator(conversationId: string, currentUserId: string
     return () => clearInterval(interval);
   }, []);
 
-  // TODO: Implémenter l'écoute des événements de frappe via useMessaging
-  // En attendant, on garde une interface compatible mais sans fonctionnalité
-  
   return {
     typingUsers,
     startTyping: messaging.startTyping,
-    stopTyping: messaging.stopTyping
+    stopTyping: messaging.stopTyping,
+    isTypingActive: typingUsers.length > 0
   };
 }

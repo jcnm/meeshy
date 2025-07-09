@@ -43,8 +43,19 @@ export function ModelsSettings() {
   const [models, setModels] = useState<ModelDisplayInfo[]>([]);
   const [loadingModels, setLoadingModels] = useState<Set<string>>(new Set());
   const [loadProgress, setLoadProgress] = useState<{ [key: string]: number }>({});
+  const [modelStats, setModelStats] = useState<{
+    totalMemoryUsed: number;
+    totalDiskUsed: number;
+    translationsToday: number;
+    modelsLoaded: number;
+  }>({
+    totalMemoryUsed: 0,
+    totalDiskUsed: 0,
+    translationsToday: 0,
+    modelsLoaded: 0
+  });
 
-  // Charger les informations des modèles
+  // Charger les informations des modèles et calculer les statistiques
   useEffect(() => {
     const updateModelsInfo = () => {
       const loadedModels = translationService.getLoadedModels();
@@ -88,6 +99,27 @@ export function ModelsSettings() {
     return () => clearInterval(interval);
   }, []);
 
+  // Calculer les statistiques d'utilisation
+  useEffect(() => {
+    const calculateStats = () => {
+      const totalMemoryUsed = models.reduce((sum, model) => sum + model.memoryUsage, 0);
+      const totalDiskUsed = models.reduce((sum, model) => sum + (model.isDownloaded ? model.diskSize : 0), 0);
+      const modelsLoaded = models.filter(model => model.isLoaded).length;
+      
+      // Simuler les traductions d'aujourd'hui (pourrait être récupéré du cache)
+      const translationsToday = translationService.getCacheStats?.()?.totalTranslations || 0;
+
+      setModelStats({
+        totalMemoryUsed,
+        totalDiskUsed,
+        translationsToday,
+        modelsLoaded
+      });
+    };
+
+    calculateStats();
+  }, [models]);
+
   const handleLoadModel = async (modelId: AllowedModelType) => {
     setLoadingModels(prev => new Set(prev).add(modelId));
     setLoadProgress(prev => ({ ...prev, [modelId]: 0 }));
@@ -118,16 +150,8 @@ export function ModelsSettings() {
     }
   };
 
-  const handleDownloadModel = async (modelId: AllowedModelType) => {
-    // Simuler le téléchargement dans le cache navigateur
-    // Dans une vraie implémentation, cela vérifierait et téléchargerait les fichiers
-    toast.info(`Téléchargement de ${modelId} dans le cache navigateur...`);
-    
-    setTimeout(() => {
-      toast.success(`Modèle ${modelId} téléchargé dans le cache navigateur`);
-      // Mettre à jour l'état isDownloaded pour ce modèle
-    }, 2000);
-  };
+  // Note: handleDownloadModel supprimé car non utilisé pour l'instant
+  // Les modèles sont automatiquement téléchargés lors du premier chargement
 
   const handleDeleteFromCache = async (modelId: AllowedModelType) => {
     // Simuler la suppression du cache navigateur
@@ -189,9 +213,31 @@ export function ModelsSettings() {
     }
   };
 
+  // Fonction pour vider automatiquement la mémoire si nécessaire
+  const handleMemoryOptimization = async () => {
+    const threshold = 500 * 1024 * 1024; // 500 MB
+    if (modelStats.totalMemoryUsed > threshold) {
+      toast.info('Optimisation automatique de la mémoire...');
+      
+      // Décharger le modèle le moins récemment utilisé
+      const sortedModels = models
+        .filter(m => m.isLoaded && !m.isDefault)
+        .sort((a, b) => {
+          const timeA = a.lastUsed?.getTime() || 0;
+          const timeB = b.lastUsed?.getTime() || 0;
+          return timeA - timeB;
+        });
+
+      if (sortedModels.length > 0) {
+        await handleUnloadModel(sortedModels[0].id);
+        toast.success('Mémoire optimisée avec succès');
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Vue d'ensemble */}
+      {/* Vue d'ensemble avec statistiques avancées */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -199,221 +245,275 @@ export function ModelsSettings() {
             Vue d&apos;ensemble des modèles
           </CardTitle>
           <CardDescription>
-            Gestion des modèles de traduction TensorFlow.js stockés dans le navigateur
+            Gérez vos modèles de traduction et optimisez les performances
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
-            <p><strong>Note:</strong> Les modèles sont téléchargés et stockés dans le cache du navigateur, puis chargés en mémoire RAM lors de l&apos;utilisation. Le chargement est automatique selon la complexité du texte.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Cpu className="h-5 w-5 text-blue-600" />
+                <span className="font-medium text-blue-900">RAM Utilisée</span>
+              </div>
+              <div className="text-2xl font-bold text-blue-600">
+                {formatSize(modelStats.totalMemoryUsed)}
+              </div>
+              <div className="text-sm text-blue-700">
+                {modelStats.modelsLoaded} modèle{modelStats.modelsLoaded !== 1 ? 's' : ''} actif{modelStats.modelsLoaded !== 1 ? 's' : ''}
+              </div>
+            </div>
+            
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <HardDrive className="h-5 w-5 text-green-600" />
+                <span className="font-medium text-green-900">Cache Navigateur</span>
+              </div>
+              <div className="text-2xl font-bold text-green-600">
+                {formatSize(modelStats.totalDiskUsed)}
+              </div>
+              <div className="text-sm text-green-700">
+                Modèles téléchargés
+              </div>
+            </div>
+            
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Globe className="h-5 w-5 text-purple-600" />
+                <span className="font-medium text-purple-900">Traductions</span>
+              </div>
+              <div className="text-2xl font-bold text-purple-600">
+                {modelStats.translationsToday}
+              </div>
+              <div className="text-sm text-purple-700">
+                Aujourd&apos;hui
+              </div>
+            </div>
+            
+            <div className="text-center p-4 bg-orange-50 rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Zap className="h-5 w-5 text-orange-600" />
+                <span className="font-medium text-orange-900">Performance</span>
+              </div>
+              <div className="text-2xl font-bold text-orange-600">
+                {modelStats.totalMemoryUsed > 500 * 1024 * 1024 ? 'Élevée' : 'Optimale'}
+              </div>
+              <div className="text-sm text-orange-700">
+                Utilisation mémoire
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-blue-500" />
-              <div>
-                <p className="text-sm font-medium">Modèles chargés</p>
-                <p className="text-2xl font-bold">{models.filter(m => m.isLoaded).length}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <HardDrive className="h-4 w-4 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Cache navigateur</p>
-                <p className="text-2xl font-bold">{formatSize(models.reduce((acc, m) => acc + m.diskSize, 0))}</p>
-                <p className="text-xs text-gray-500">Téléchargés localement</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-purple-500" />
-              <div>
-                <p className="text-sm font-medium">RAM active</p>
-                <p className="text-2xl font-bold">{formatSize(models.reduce((acc, m) => acc + m.memoryUsage, 0))}</p>
-                <p className="text-xs text-gray-500">Chargés en mémoire</p>
-              </div>
-            </div>
+          
+          {/* Actions d'optimisation */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMemoryOptimization}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <Zap className="h-4 w-4 mr-1" />
+              Optimiser la mémoire
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                models.filter(m => m.isLoaded && !m.isDefault).forEach(m => handleUnloadModel(m.id));
+                toast.success('Tous les modèles non-essentiels ont été déchargés');
+              }}
+              className="text-yellow-600 hover:text-yellow-700"
+            >
+              <Database className="h-4 w-4 mr-1" />
+              Décharger tout
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Liste des modèles */}
-      {models.map((model) => (
-        <Card key={model.id} className={model.isDefault ? 'border-blue-200 bg-blue-50/50' : ''}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${getCacheStatusColor(model.cacheStatus)}`} />
-                <CardTitle className="text-lg">{model.name}</CardTitle>
-                {model.isDefault && (
-                  <Badge variant="default" className="text-xs">
-                    <Zap className="h-3 w-3 mr-1" />
-                    Par défaut
-                  </Badge>
-                )}
-                {model.isLoaded && (
-                  <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
-                    <Cpu className="h-3 w-3 mr-1" />
-                    Chargé en RAM
-                  </Badge>
-                )}
-                {model.isDownloaded && !model.isLoaded && (
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                    <HardDrive className="h-3 w-3 mr-1" />
-                    En cache navigateur
-                  </Badge>
-                )}
-              </div>
-              <div className="flex gap-2">
-                {/* Actions de gestion de la RAM */}
-                {model.isLoaded ? (
-                  <>
+      {/* Section modèles détaillée */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Modèles disponibles</h3>
+        {models.map((model) => (
+          <Card key={model.id} className={`${model.isLoaded ? 'ring-2 ring-blue-200' : ''}`}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${getCacheStatusColor(model.cacheStatus)}`} />
+                  <CardTitle className="text-lg">{model.name}</CardTitle>
+                  {model.isDefault && (
+                    <Badge variant="default" className="text-xs">
+                      <Zap className="h-3 w-3 mr-1" />
+                      Par défaut
+                    </Badge>
+                  )}
+                  {model.isLoaded && (
+                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                      <Cpu className="h-3 w-3 mr-1" />
+                      Chargé en RAM
+                    </Badge>
+                  )}
+                  {model.isDownloaded && !model.isLoaded && (
+                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                      <HardDrive className="h-3 w-3 mr-1" />
+                      En cache navigateur
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {/* Actions de gestion de la RAM */}
+                  {model.isLoaded ? (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => testModel(model.id)}
+                      >
+                        <Globe className="h-4 w-4 mr-1" />
+                        Tester
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUnloadModel(model.id)}
+                        className="text-orange-600 hover:text-orange-700"
+                      >
+                        <Cpu className="h-4 w-4 mr-1" />
+                        Décharger RAM
+                      </Button>
+                    </>
+                  ) : model.isDownloaded ? (
                     <Button
                       size="sm"
-                      variant="outline"
-                      onClick={() => testModel(model.id)}
-                    >
-                      <Globe className="h-4 w-4 mr-1" />
-                      Tester
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleUnloadModel(model.id)}
-                      className="text-orange-600 hover:text-orange-700"
+                      onClick={() => handleLoadModel(model.id)}
+                      disabled={loadingModels.has(model.id)}
+                      className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Cpu className="h-4 w-4 mr-1" />
-                      Décharger RAM
+                      {loadingModels.has(model.id) ? 'Chargement RAM...' : 'Charger en RAM'}
                     </Button>
-                  </>
-                ) : model.isDownloaded ? (
-                  <Button
-                    size="sm"
-                    onClick={() => handleLoadModel(model.id)}
-                    disabled={loadingModels.has(model.id)}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Cpu className="h-4 w-4 mr-1" />
-                    {loadingModels.has(model.id) ? 'Chargement RAM...' : 'Charger en RAM'}
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => handleLoadModel(model.id)}
-                    disabled={loadingModels.has(model.id)}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    {loadingModels.has(model.id) ? 'Téléchargement...' : 'Télécharger + Charger'}
-                  </Button>
-                )}
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => handleLoadModel(model.id)}
+                      disabled={loadingModels.has(model.id)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      {loadingModels.has(model.id) ? 'Téléchargement...' : 'Télécharger + Charger'}
+                    </Button>
+                  )}
 
-                {/* Actions de gestion du cache navigateur */}
-                {model.isDownloaded && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDeleteFromCache(model.id)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <HardDrive className="h-4 w-4 mr-1" />
-                    Supprimer Cache
-                  </Button>
-                )}
-              </div>
-            </div>
-            <CardDescription>
-              {model.useCase}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loadingModels.has(model.id) && (
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm">
-                    {model.isDownloaded ? 'Chargement en RAM...' : 'Téléchargement + Chargement en RAM...'}
-                  </span>
-                  <span className="text-sm">{loadProgress[model.id] || 0}%</span>
+                  {/* Actions de gestion du cache navigateur */}
+                  {model.isDownloaded && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteFromCache(model.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <HardDrive className="h-4 w-4 mr-1" />
+                      Supprimer Cache
+                    </Button>
+                  )}
                 </div>
-                <Progress value={loadProgress[model.id] || 0} className="w-full" />
-                <p className="text-xs text-gray-500 mt-1">
-                  {model.isDownloaded 
-                    ? 'Chargement des fichiers depuis le cache navigateur vers la mémoire RAM'
-                    : 'Téléchargement des fichiers dans le cache navigateur puis chargement en mémoire RAM'
-                  }
-                </p>
               </div>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Informations techniques */}
-              <div className="space-y-3">
-                <h4 className="font-medium flex items-center gap-2">
-                  <Cpu className="h-4 w-4" />
-                  Informations techniques
-                </h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Cache navigateur:</span>
-                    <span className="font-medium">{formatSize(model.diskSize)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>RAM active:</span>
-                    <span className="font-medium">{formatSize(model.memoryUsage)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>État:</span>
-                    <div className="flex flex-col gap-1 items-end">
-                      {model.isLoaded && (
-                        <Badge variant="default" className="text-xs bg-blue-100 text-blue-800">
-                          <Cpu className="h-3 w-3 mr-1" />
-                          Chargé en RAM
-                        </Badge>
-                      )}
-                      {model.isDownloaded && (
-                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                          <HardDrive className="h-3 w-3 mr-1" />
-                          En cache navigateur
-                        </Badge>
-                      )}
-                      {!model.isDownloaded && !model.isLoaded && (
-                        <Badge variant="outline" className="text-xs">
-                          Non téléchargé
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Dernière utilisation:</span>
-                    <span className="font-medium">
-                      {model.lastUsed ? model.lastUsed.toLocaleDateString() : 'Jamais utilisé'}
+              <CardDescription>
+                {model.useCase}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingModels.has(model.id) && (
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm">
+                      {model.isDownloaded ? 'Chargement en RAM...' : 'Téléchargement + Chargement en RAM...'}
                     </span>
+                    <span className="text-sm">{loadProgress[model.id] || 0}%</span>
+                  </div>
+                  <Progress value={loadProgress[model.id] || 0} className="w-full" />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {model.isDownloaded 
+                      ? 'Chargement des fichiers depuis le cache navigateur vers la mémoire RAM'
+                      : 'Téléchargement des fichiers dans le cache navigateur puis chargement en mémoire RAM'
+                    }
+                  </p>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Informations techniques */}
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Cpu className="h-4 w-4" />
+                    Informations techniques
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Cache navigateur:</span>
+                      <span className="font-medium">{formatSize(model.diskSize)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>RAM active:</span>
+                      <span className="font-medium">{formatSize(model.memoryUsage)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>État:</span>
+                      <div className="flex flex-col gap-1 items-end">
+                        {model.isLoaded && (
+                          <Badge variant="default" className="text-xs bg-blue-100 text-blue-800">
+                            <Cpu className="h-3 w-3 mr-1" />
+                            Chargé en RAM
+                          </Badge>
+                        )}
+                        {model.isDownloaded && (
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                            <HardDrive className="h-3 w-3 mr-1" />
+                            En cache navigateur
+                          </Badge>
+                        )}
+                        {!model.isDownloaded && !model.isLoaded && (
+                          <Badge variant="outline" className="text-xs">
+                            Non téléchargé
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Dernière utilisation:</span>
+                      <span className="font-medium">
+                        {model.lastUsed ? model.lastUsed.toLocaleDateString() : 'Jamais utilisé'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fichiers du modèle */}
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Fichiers du modèle
+                  </h4>
+                  <div className="space-y-1">
+                    {model.files.map((file, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm">
+                        <FileText className="h-3 w-3 text-gray-400" />
+                        <span className="font-mono text-xs">{file}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Configuration du modèle */}
+                  <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
+                    <strong>Config:</strong> {model.config?.family || 'N/A'} - 
+                    {model.config?.parameters || 'N/A'} paramètres
                   </div>
                 </div>
               </div>
-
-              {/* Fichiers du modèle */}
-              <div className="space-y-3">
-                <h4 className="font-medium flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Fichiers du modèle
-                </h4>
-                <div className="space-y-1">
-                  {model.files.map((file, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <FileText className="h-3 w-3 text-gray-400" />
-                      <span className="font-mono text-xs">{file}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* Configuration du modèle */}
-                <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
-                  <strong>Config:</strong> {model.config?.family || 'N/A'} - 
-                  {model.config?.parameters || 'N/A'} paramètres
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

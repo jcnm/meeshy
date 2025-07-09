@@ -115,75 +115,19 @@ export function ConversationView({
     };
   };
 
-  // Charger les traductions persistées au démarrage
+  // Initialiser l'état de traduction pour les nouveaux messages
   useEffect(() => {
     if (messages.length === 0) return;
     
-    // Initialiser le service de persistance (nettoie les traductions expirées)
-    translationPersistenceService.initialize();
+    console.log('📝 ConversationView: Initialisation des états de traduction');
     
-    // Charger toutes les traductions persistées pour les messages actuels
-    const messageIds = messages.map(m => m.id);
-    const persistedData = translationPersistenceService.loadAllTranslations(messageIds);
-    
-    if (persistedData.size > 0) {
-      const newTranslatedMessages = new Map<string, TranslatedMessage>();
-      const newShowingOriginal = new Map<string, boolean>();
-      
-      persistedData.forEach((data, messageId) => {
-        const message = messages.find(m => m.id === messageId);
-        if (message && data.translations.length > 0) {
-          // Reconstituer le TranslatedMessage avec les traductions persistées
-          const translatedMessage: TranslatedMessage = {
-            ...message,
-            translations: data.translations,
-            isTranslated: true,
-            showingOriginal: data.showingOriginal,
-            // Utiliser la première traduction comme traduction principale par défaut
-            translatedContent: data.translations[0]?.content,
-            targetLanguage: data.translations[0]?.language,
-            sender: message.sender || {
-              id: message.senderId,
-              username: 'Utilisateur inconnu',
-              email: '',
-              displayName: 'Utilisateur inconnu',
-              avatar: '',
-              isOnline: false,
-              systemLanguage: 'fr',
-              regionalLanguage: 'fr',
-              autoTranslateEnabled: false,
-              translateToSystemLanguage: false,
-              translateToRegionalLanguage: false,
-              useCustomDestination: false,
-              role: 'USER' as const,
-              permissions: {
-                canAccessAdmin: false,
-                canManageUsers: false,
-                canManageGroups: false,
-                canManageConversations: false,
-                canViewAnalytics: false,
-                canModerateContent: false,
-                canViewAuditLogs: false,
-                canManageNotifications: false,
-                canManageTranslations: false,
-              },
-              createdAt: new Date(),
-              lastActiveAt: new Date()
-            }
-          };
-          
-          newTranslatedMessages.set(messageId, translatedMessage);
-          newShowingOriginal.set(messageId, data.showingOriginal);
-        }
-      });
-      
-      if (newTranslatedMessages.size > 0) {
-        setTranslatedMessages(newTranslatedMessages);
-        setShowingOriginal(newShowingOriginal);
-        console.log(`🔄 ${newTranslatedMessages.size} traductions rechargées depuis la persistance`);
+    messages.forEach(message => {
+      // Initialiser l'état seulement si le message n'est pas déjà traité
+      if (!translatedMessages.has(message.id)) {
+        setShowingOriginal(prev => new Map(prev.set(message.id, true)));
       }
-    }
-  }, [messages]);
+    });
+  }, [messages, translatedMessages]);
 
   // Fonction pour gérer la traduction
   const handleTranslate = async (messageId: string, targetLanguage: string, forceRetranslate?: boolean): Promise<void> => {
@@ -248,10 +192,8 @@ export function ConversationView({
       setTranslatedMessages(prev => new Map(prev.set(messageId, updatedTranslatedMessage)));
       setShowingOriginal(prev => new Map(prev.set(messageId, false)));
       
-      // Sauvegarder les traductions dans la persistance via le service centralisé
-      translationPersistenceService.saveTranslations(messageId, updatedTranslatedMessage.translations!, false);
-      
-      console.log(`💾 Traduction sauvegardée pour le message ${messageId} en ${targetLanguage}`);
+      // TODO: Réimplémenter la persistance des traductions
+      console.log(`💾 Traduction effectuée pour le message ${messageId} en ${targetLanguage}`);
       toast.success('Message traduit avec succès');
     } catch (error) {
       console.error('Erreur lors de la traduction:', error);
@@ -278,7 +220,8 @@ export function ConversationView({
         return;
       }
 
-      await socketService.editMessage(messageId, newContent.trim());
+      // Utiliser le service de messagerie unifié pour l'édition
+      await messaging.editMessage(messageId, newContent.trim());
       toast.success('Message modifié avec succès');
     } catch (error) {
       console.error('Erreur lors de l\'édition:', error);
@@ -297,9 +240,7 @@ export function ConversationView({
       
       setShowingOriginal(prev => new Map(prev.set(messageId, newShowingOriginal)));
       
-      // Sauvegarder l'état d'affichage dans la persistance via le service centralisé
-      translationPersistenceService.updateShowingOriginal(messageId, newShowingOriginal);
-      
+      // TODO: Réimplémenter la persistance de l'état d'affichage
       console.log(`👁️ État d'affichage mis à jour pour le message ${messageId}: ${newShowingOriginal ? 'original' : 'traduit'}`);
     }
   };
@@ -308,15 +249,9 @@ export function ConversationView({
   const handleNewMessageReceived = useCallback((newIncomingMessage: Message) => {
     console.log(`📨 Nouveau message reçu: ${newIncomingMessage.id} de ${newIncomingMessage.senderId}`);
     
-    // Enrichir le message avec les traductions existantes (s'il y en a)
-    const enrichedMessage = translationPersistenceService.enrichMessageWithTranslations(newIncomingMessage);
-    
-    // Si le message a déjà des traductions persistées, les intégrer dans l'état
-    if (enrichedMessage.translations && enrichedMessage.translations.length > 0) {
-      setTranslatedMessages(prev => new Map(prev.set(newIncomingMessage.id, enrichedMessage)));
-      setShowingOriginal(prev => new Map(prev.set(newIncomingMessage.id, enrichedMessage.showingOriginal ?? true)));
-      console.log(`🔄 Message ${newIncomingMessage.id} enrichi avec ${enrichedMessage.translations.length} traductions persistées`);
-    }
+    // Initialiser l'état d'affichage pour le nouveau message
+    setShowingOriginal(prev => new Map(prev.set(newIncomingMessage.id, true)));
+    console.log(`🆕 Nouvel état d'affichage initialisé pour le message ${newIncomingMessage.id}`);
     
     // Déclencher le callback parent s'il existe
     if (onNewMessage) {

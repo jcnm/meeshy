@@ -4,7 +4,7 @@
  */
 
 import { translationService } from '@/services/translation.service';
-import { selectBestModel } from '@/lib/unified-model-config';
+import { selectBestModel, ACTIVE_MODELS } from '@/lib/unified-model-config';
 
 // Service de traduction global
 // const translationService = translationService; // Déjà importé
@@ -176,13 +176,12 @@ export async function translateMessage(
     // En cas d'erreur, essayer de charger automatiquement un modèle de base
     try {
       console.log('🔄 Tentative de chargement automatique d\'un modèle...');
-      const { modelType } = await translationService.loadBestAvailableModel();
+      await translationService.loadModel(ACTIVE_MODELS.basicModel);
       
-      const result = await translationService.translateText(
+      const result = await translationService.translateSimple(
         text, 
         sourceLang, 
-        targetLang, 
-        modelType
+        targetLang
       );
       
       const translatedText = result.translatedText;
