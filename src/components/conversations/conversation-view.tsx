@@ -28,10 +28,8 @@ import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
 import { MessageBubble } from './message-bubble';
 import { useTranslation } from '@/hooks/use-translation';
-import { useWebSocket } from '@/hooks/use-websocket';
-import { SocketService } from '@/lib/socket.service';
+import { useMessaging } from '@/hooks/use-messaging';
 import { toast } from 'sonner';
-import { translationService } from '@/services/translation.service';
 
 interface ConversationViewProps {
   conversation: Conversation;
@@ -66,8 +64,10 @@ export function ConversationView({
 
   // Hooks pour la traduction et services
   const { translateMessage } = useTranslation(currentUser);
-  const { isConnected } = useWebSocket();
-  const socketService = SocketService.getInstance();
+  const messaging = useMessaging({
+    conversationId: conversation.id,
+    currentUser: currentUser || undefined
+  });
 
   // Convertir Message en TranslatedMessage pour MessageBubble
   const convertToTranslatedMessage = (message: Message): TranslatedMessage => {
@@ -587,20 +587,20 @@ export function ConversationView({
               value={newMessage}
               onChange={(e) => onNewMessageChange(e.target.value)}
               onKeyPress={onKeyPress}
-              disabled={!isConnected}
+              disabled={!messaging.connectionStatus.isConnected}
               className="bg-white"
             />
           </div>
           <Button 
             onClick={onSendMessage} 
-            disabled={!newMessage.trim() || !isConnected}
+            disabled={!newMessage.trim() || !messaging.connectionStatus.isConnected}
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Statut connexion */}
-        {!isConnected && (
+        {!messaging.connectionStatus.isConnected && (
           <div className="flex items-center space-x-2 text-xs text-red-500 mt-2">
             <div className="h-2 w-2 rounded-full bg-red-500" />
             <span>Connexion perdue, reconnexion en cours...</span>

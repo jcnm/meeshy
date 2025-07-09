@@ -1,11 +1,8 @@
 // Hooks React personnalisés pour Meeshy
 
-// WebSocket unifié
-export { useWebSocket, useWebSocketMessages } from './use-websocket';
-export { useTypingIndicator } from './use-typing-indicator';
-
-// Hook de messaging unifié (NOUVEAU - point unique de messagerie)
+// Hook de messaging unifié (POINT UNIQUE de messagerie)
 export { useMessaging } from './use-messaging';
+export { useTypingIndicator } from './use-typing-indicator';
 
 // Traduction unifiée
 export { useTranslation } from './use-translation';

@@ -3,8 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useConversations } from '@/context/AppContext';
-import { useWebSocket } from '@/hooks/use-websocket';
-import { useWebSocketMessages } from '@/hooks/use-websocket-messages';
+import { useMessaging } from '@/hooks/use-messaging';
 import { buildApiUrl } from '@/lib/config';
 import { Conversation, Message } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
@@ -39,12 +38,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const shouldScrollToBottomRef = useRef<boolean>(false); // Flag pour indiquer si on doit scroller après envoi
   const router = useRouter();
 
-  // WebSocket pour les mises à jour temps réel (simplifié)
-  const { emit } = useWebSocket();
-
-  // Hook WebSocket pour la gestion automatique des messages et persistance
-  useWebSocketMessages({
+  // Hook de messagerie unifié
+  const messaging = useMessaging({
     conversationId: selectedConversation?.id,
+    currentUser: user || undefined,
     onNewMessage: (message: Message) => {
       // Ajouter le nouveau message à la liste - optimisé pour éviter les re-rendus
       setMessages(prev => {
@@ -63,8 +60,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         shouldScrollToBottomRef.current = false; // Reset le flag
         console.log('🔽 Scroll forcé vers le bas après nouveau message WebSocket');
       }
-    },
-    autoEnrichWithTranslations: true
+    }
   });
 
   // Envoyer un message
@@ -77,71 +73,26 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     shouldScrollToBottomRef.current = true; // Marquer qu'on vient d'envoyer un message
 
     try {
-      console.log('📤 Envoi du message:', newMessage);
+      console.log('📤 ConversationLayout: Envoi du message via hook unifié:', newMessage);
       
-      const response = await conversationsService.sendMessage(selectedConversation.id, {
-        content: newMessage.trim(),
-        originalLanguage: user.systemLanguage,
-      });
-
-      console.log('✅ Message envoyé:', response);
+      // Utiliser le hook unifié pour envoyer le message
+      const success = await messaging.sendMessage(newMessage.trim());
       
-      // Créer un message temporaire pour l'affichage immédiat
-      const newMessageObj: Message = {
-        id: response.id || `temp-${Date.now()}`,
-        content: newMessage.trim(),
-        conversationId: selectedConversation.id,
-        senderId: user.id,
-        sender: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          displayName: user.displayName || `${user.firstName} ${user.lastName}`,
-          avatar: user.avatar,
-          username: user.username,
-          email: user.email,
-          systemLanguage: user.systemLanguage,
-          regionalLanguage: user.regionalLanguage || user.systemLanguage,
-          autoTranslateEnabled: user.autoTranslateEnabled,
-          translateToSystemLanguage: user.translateToSystemLanguage,
-          translateToRegionalLanguage: user.translateToRegionalLanguage,
-          useCustomDestination: user.useCustomDestination,
-          customDestinationLanguage: user.customDestinationLanguage,
-          isOnline: user.isOnline,
-          lastSeen: user.lastSeen,
-          role: user.role,
-          permissions: user.permissions,
-          createdAt: user.createdAt,
-          lastActiveAt: user.lastActiveAt
-        },
-        originalLanguage: user.systemLanguage,
-        isEdited: false,
-        isDeleted: false,
-        editedAt: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      // Ajouter le message à la liste locale immédiatement (optimisé)
-      setMessages(prev => {
-        // Vérifier si le message existe déjà
-        if (prev.some(m => m.id === newMessageObj.id)) {
-          return prev;
-        }
-        // Ajouter le message à la fin (plus récent)
-        return [...prev, newMessageObj];
-      });
-      
-      setNewMessage('');
-      toast.success('Message envoyé');
+      if (success) {
+        setNewMessage('');
+        toast.success('Message envoyé');
+        console.log('✅ ConversationLayout: Message envoyé avec succès');
+      } else {
+        throw new Error('Échec de l\'envoi du message');
+      }
       
     } catch (error) {
-      console.error('Erreur lors de l\'envoi du message:', error);
+      console.error('❌ ConversationLayout: Erreur lors de l\'envoi du message:', error);
       toast.error('Erreur lors de l\'envoi du message');
     } finally {
       setIsSending(false);
     }
-  }, [newMessage, selectedConversation, user, isSending]);
+  }, [newMessage, selectedConversation, user, isSending, messaging]);
 
   // Gérer la touche Entrée
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
@@ -190,9 +141,6 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
       setIsLoading(false);
     }
   }, [user, setConversations]);
-
-  // Gestionnaire WebSocket pour les nouveaux messages (supprimé car doublonné avec useWebSocketMessages)
-  // L'utilisation d'useWebSocketMessages rend ce useEffect redondant et source de conflits
   
   // Sélectionner conversation depuis URL (optimisé pour éviter les re-rendus)
   useEffect(() => {
@@ -287,11 +235,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                           console.log(`👆 Clic sur conversation ${conversation.id}`);
                           setSelectedConversation(conversation);
                           
-                          // Gérer les événements WebSocket de manière optimisée
-                          if (selectedConversation?.id && selectedConversation.id !== conversation.id) {
-                            emit('leaveConversation', { conversationId: selectedConversation.id });
-                          }
-                          emit('joinConversation', { conversationId: conversation.id });
+                          // La gestion des join/leave est automatique via useMessaging
                           
                           // NE PAS charger les messages ici - c'est fait dans useEffect
                           
