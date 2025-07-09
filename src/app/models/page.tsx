@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,13 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Download, 
   Trash2, 
-  RefreshCw, 
   HardDrive,
   Cpu,
   Globe,
-  Brain,
-  Settings,
-  BarChart3
+  Brain
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -35,7 +31,6 @@ interface ModelInfo {
 }
 
 export default function ModelsPage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState('available');
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [downloadingModels, setDownloadingModels] = useState<Set<string>>(new Set());
@@ -50,7 +45,7 @@ export default function ModelsPage() {
   useEffect(() => {
     // Lire l'ancrage depuis l'URL au chargement
     const hash = window.location.hash.slice(1); // Enlever le #
-    if (hash && ['available', 'downloaded', 'settings'].includes(hash)) {
+    if (hash && ['available', 'downloaded'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -243,7 +238,7 @@ export default function ModelsPage() {
 
         {/* Tabs avec gestion d'ancrages */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="available" className="flex items-center space-x-2">
               <Download className="h-4 w-4" />
               <span>Disponibles ({availableModels.length})</span>
@@ -251,10 +246,6 @@ export default function ModelsPage() {
             <TabsTrigger value="downloaded" className="flex items-center space-x-2">
               <HardDrive className="h-4 w-4" />
               <span>Téléchargés ({downloadedModels.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2">
-              <Settings className="h-4 w-4" />
-              <span>Paramètres</span>
             </TabsTrigger>
           </TabsList>
 
@@ -361,38 +352,6 @@ export default function ModelsPage() {
                     </Button>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Paramètres */}
-          <TabsContent value="settings" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Paramètres des modèles</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <h4 className="font-medium">Gestion du cache</h4>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Vider le cache</p>
-                      <p className="text-sm text-gray-600">Libère l&apos;espace utilisé par les données temporaires</p>
-                    </div>
-                    <Button variant="outline">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Vider
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-medium">Statistiques d&apos;utilisation</h4>
-                  <Button variant="outline" onClick={() => router.push('/admin/analytics')}>
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Voir les statistiques
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

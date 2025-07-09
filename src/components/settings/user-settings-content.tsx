@@ -1,18 +1,13 @@
 'use client';
 
-
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User } from '@/types';
-import { Languages, Globe, Database, Zap } from 'lucide-react';
-import { useTranslation } from '@/hooks/use-translation';
+import { Globe, Brain } from 'lucide-react';
 import { LanguageSelector } from '@/components/translation/language-selector';
-import { ModelsStatus } from '@/components/models/models-status';
-import { CacheManager } from '@/components/models/cache-manager';
+import { ModelsSettings } from './models-settings';
 
 interface UserSettingsContentProps {
   user: User | null;
@@ -37,49 +32,29 @@ const LANGUAGES = [
 ];
 
 export function UserSettingsContent({ user, localSettings, onSettingUpdate, children }: UserSettingsContentProps) {
-  const translation = useTranslation(user);
-
   const getLanguageDisplay = (code: string) => {
     const lang = LANGUAGES.find(l => l.code === code);
     return lang ? `${lang.flag} ${lang.name}` : code;
-  };
-
-  // Mock des statuts de modèles pour maintenir la compatibilité
-  const modelsStatus = {
-    'MT5_SMALL': { loaded: true, loading: false },
-    'NLLB_DISTILLED_600M': { loaded: false, loading: false },
-  };
-
-  const preloadModels = async () => {
-    // Utiliser la méthode unifiée de chargement
-    console.log('Préchargement des modèles...');
   };
 
   if (!user) return null;
 
   return (
     <div className="w-full">
-      <Tabs defaultValue="languages" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="languages" className="gap-2">
-            <Languages className="h-4 w-4" />
-            Langues
-          </TabsTrigger>
+      <Tabs defaultValue="translation" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="translation" className="gap-2">
             <Globe className="h-4 w-4" />
             Traduction
           </TabsTrigger>
           <TabsTrigger value="models" className="gap-2">
-            <Zap className="h-4 w-4" />
+            <Brain className="h-4 w-4" />
             Modèles
-          </TabsTrigger>
-          <TabsTrigger value="cache" className="gap-2">
-            <Database className="h-4 w-4" />
-            Cache
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="languages" className="space-y-4">
+        <TabsContent value="translation" className="space-y-4">
+          {/* Configuration des langues */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Configuration des langues</CardTitle>
@@ -118,9 +93,8 @@ export function UserSettingsContent({ user, localSettings, onSettingUpdate, chil
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
 
-        <TabsContent value="translation" className="space-y-4">
+          {/* Paramètres de traduction */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Paramètres de traduction</CardTitle>
@@ -205,45 +179,7 @@ export function UserSettingsContent({ user, localSettings, onSettingUpdate, chil
         </TabsContent>
 
         <TabsContent value="models" className="space-y-4">
-          <ModelsStatus />
-          
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">État des modèles</CardTitle>
-              <CardDescription>
-                Informations sur les modèles de traduction TensorFlow.js
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(modelsStatus).map(([modelName, status]) => (
-                  <div key={modelName} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{modelName.toUpperCase()}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {status?.loaded ? 'Modèle chargé et prêt' : 'Modèle non chargé'}
-                      </p>
-                    </div>
-                    <Badge variant={status?.loaded ? 'default' : 'secondary'}>
-                      {status?.loading ? 'Chargement...' : status?.loaded ? 'Prêt' : 'Arrêté'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-
-              <Button
-                onClick={preloadModels}
-                className="w-full"
-                variant="outline"
-              >
-                Précharger tous les modèles
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="cache" className="space-y-4">
-          <CacheManager />
+          <ModelsSettings />
         </TabsContent>
       </Tabs>
 

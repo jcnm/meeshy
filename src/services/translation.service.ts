@@ -506,11 +506,9 @@ export class TranslationService {
   async preloadRecommendedModels(onProgress?: (progress: TranslationProgress) => void): Promise<void> {
     const recommendedModels = [ACTIVE_MODELS.basicModel, ACTIVE_MODELS.highModel];
     
-    for (const model of recommendedModels) {
-      try {
-        await this.loadModel(model, onProgress);
-      } catch (error) {
-        console.warn(`Impossible de précharger le modèle ${model}:`, error);
+    for (const modelId of recommendedModels) {
+      if (!this.loadedPipelines.has(modelId)) {
+        await this.loadModel(modelId, onProgress);
       }
     }
   }
@@ -550,34 +548,15 @@ export class TranslationService {
   }
 
   /**
-   * Charge le meilleur modèle disponible
-   */
-  async loadBestAvailableModel(): Promise<AllowedModelType> {
-    // Tenter de charger le modèle recommandé
-    try {
-      await this.loadModel(ACTIVE_MODELS.basicModel);
-      return ACTIVE_MODELS.basicModel;
-    } catch {
-      console.warn('Impossible de charger le modèle de base, tentative avec un modèle alternatif');
-      
-      // Fallback vers un autre modèle
-      const fallbackModel = ACTIVE_MODELS.highModel;
-      await this.loadModel(fallbackModel);
-      return fallbackModel;
-    }
-  }
-
-  /**
-   * Vide le cache de traduction
+   * Vide complètement le cache
    */
   clearCache(): void {
     this.cache.clear();
     this.metadata.clear();
-    localStorage.removeItem(this.STORAGE_KEY_CACHE);
-    localStorage.removeItem(this.STORAGE_KEY_METADATA);
-    console.log('✅ Cache de traduction vidé');
+    this.saveCacheToStorage();
+    this.saveMetadataToStorage();
   }
 }
 
-// Export de l'instance singleton
+// Export de l'instance unique pour utilisation dans l'application
 export const translationService = TranslationService.getInstance();

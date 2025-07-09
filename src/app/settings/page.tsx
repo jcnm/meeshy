@@ -7,7 +7,6 @@ import { User } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { CompleteUserSettings } from '@/components/settings/complete-user-settings';
-import { RealModelDownloader } from '@/components/models/real-model-downloader';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 export default function SettingsPage() {
@@ -85,10 +84,6 @@ export default function SettingsPage() {
     }
   };
 
-  const updateSetting = (key: keyof User, value: string | boolean) => {
-    setLocalSettings(prev => ({ ...prev, [key]: value }));
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -118,8 +113,6 @@ export default function SettingsPage() {
         
         <CompleteUserSettings 
           user={currentUser}
-          localSettings={localSettings}
-          onSettingUpdate={updateSetting}
           onUserUpdate={(updatedUser: Partial<User>) => {
             setCurrentUser({ ...currentUser, ...updatedUser });
             setLocalSettings({ ...localSettings, ...updatedUser });

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
-import { useWebSocket } from '@/hooks/use-websocket';
+import { useMessaging } from '@/hooks/use-messaging';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,17 +63,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>(ACTIVE_MODELS.highModel);
   // const [translationService] = useState(() => translationService); // Déjà importé
   
-  // Hook WebSocket pour les mises à jour temps réel
-  const { emit, on, off } = useWebSocket();
-  
-  // Gestionnaire des nouveaux messages WebSocket
-  useEffect(() => {
-    const handleNewMessage = (messageEvent: unknown) => {
-      const event = messageEvent as { message: Message; conversationId: string };
-      const message = event.message;
-      
+  // Hook de messagerie unifié pour la gestion WebSocket
+  const messaging = useMessaging({
+    conversationId: selectedConversation?.id,
+    currentUser: user || undefined,
+    onNewMessage: (message: Message) => {
       // Vérifier que le message appartient à la conversation active
-      if (selectedConversation?.id && event.conversationId !== selectedConversation.id) {
+      if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
         return;
       }
       
@@ -95,15 +91,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           ? { ...conv, lastMessage: message, updatedAt: new Date() }
           : conv
       ));
-    };
-
-    // Écouter les événements WebSocket
-    on('newMessage', handleNewMessage);
-
-    return () => {
-      off('newMessage', handleNewMessage);
-    };
-  }, [selectedConversation?.id, on, off]);
+    }
+  });
   
   // Hook de traduction
   // const { translateMessages, translateMessage } = useOptimizedMessageTranslation(user);
@@ -185,7 +174,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
     // Préparer sans délai pour ne pas ralentir l'UI
     prepareTranslationService();
-  }, [translationService]);
+  }, []);
 
   // Handlers pour MessageBubble
   const handleTranslate = async (messageId: string, targetLanguage: string) => {
@@ -208,16 +197,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         message.content,
         sourceLanguage,
         targetLanguage,
-        selectedTranslationModel,
-        (progress) => {
-          console.log(`📊 Progression traduction: ${progress.progress}% - ${progress.status}`);
-          // Mettre à jour le toast avec la progression
-          if (progress.status === 'downloading') {
-            toast.loading(`Téléchargement du modèle: ${progress.progress || 0}%`, { id: `translate-${messageId}` });
-          } else if (progress.status === 'loading') {
-            toast.loading('Chargement du modèle...', { id: `translate-${messageId}` });
-          }
-        }
+        selectedTranslationModel
       );
 
       // Créer le message traduit avec toutes les propriétés requises
@@ -538,19 +518,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     loadData();
   }, [loadData]);
 
-  // Effet séparé pour gérer les WebSocket quand la conversation change
-  useEffect(() => {
-    if (selectedConversation?.id) {
-      console.log(`🔌 Rejoindre la conversation WebSocket: ${selectedConversation.id}`);
-      emit('joinConversation', { conversationId: selectedConversation.id });
-      
-      return () => {
-        console.log(`🔌 Quitter la conversation WebSocket: ${selectedConversation.id}`);
-        emit('leaveConversation', { conversationId: selectedConversation.id });
-      };
-    }
-  }, [selectedConversation?.id, emit]);
-
   // Sélectionner une conversation
   const handleSelectConversation = (conversation: Conversation) => {
     // Si c'est la même conversation, ne rien faire
@@ -594,70 +561,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     try {
       console.log('📤 Envoi du message:', newMessage);
       
-      const response = await conversationsService.sendMessage(selectedConversation.id, {
-        content: newMessage.trim(),
-        originalLanguage: user.systemLanguage,
-      });
-
-      console.log('✅ Message envoyé:', response);
+      // Utiliser le hook unifié pour envoyer le message
+      const success = await messaging.sendMessage(newMessage.trim());
       
-      // Créer un message temporaire pour l'affichage immédiat
-      const newMessageObj: Message = {
-        id: response.id || `temp-${Date.now()}`,
-        content: newMessage.trim(),
-        conversationId: selectedConversation.id,
-        senderId: user.id,
-        sender: {
-          id: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          displayName: user.displayName || `${user.firstName} ${user.lastName}`,
-          avatar: user.avatar,
-          username: user.username,
-          email: user.email,
-          systemLanguage: user.systemLanguage,
-          regionalLanguage: user.regionalLanguage || user.systemLanguage,
-          autoTranslateEnabled: user.autoTranslateEnabled,
-          translateToSystemLanguage: user.translateToSystemLanguage,
-          translateToRegionalLanguage: user.translateToRegionalLanguage,
-          useCustomDestination: user.useCustomDestination,
-          customDestinationLanguage: user.customDestinationLanguage,
-          isOnline: user.isOnline,
-          lastSeen: user.lastSeen,
-          role: user.role,
-          permissions: user.permissions,
-          createdAt: user.createdAt,
-          lastActiveAt: user.lastActiveAt
-        },
-        originalLanguage: user.systemLanguage,
-        isEdited: false,
-        isDeleted: false,
-        editedAt: undefined,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      // Ajouter le message à la liste locale immédiatement (trié par date)
-      setMessages(prev => {
-        const filtered = prev.filter(m => m.id !== newMessageObj.id); // Éviter les doublons
-        const newList = [...filtered, newMessageObj];
-        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      });
-      
-      // Ajouter aussi à la liste traduite
-      const translatedMsg = convertToTranslatedMessage(newMessageObj);
-      setTranslatedMessages(prev => {
-        const filtered = prev.filter(m => m.id !== translatedMsg.id); // Éviter les doublons
-        const newList = [...filtered, translatedMsg];
-        return newList.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      });
-      
-      setNewMessage('');
-      
-      // Ne pas recharger automatiquement pour éviter que le message disparaisse
-      // setTimeout(() => loadMessages(selectedConversation.id), 1000);
-      
-      toast.success('Message envoyé !');
+      if (success) {
+        setNewMessage('');
+        toast.success('Message envoyé !');
+        console.log('✅ Message envoyé avec succès');
+      } else {
+        throw new Error('Échec de l\'envoi du message');
+      }
     } catch (error) {
       console.error('❌ Erreur lors de l\'envoi du message:', error);
       toast.error('Erreur lors de l\'envoi du message');

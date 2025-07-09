@@ -22,9 +22,9 @@ import {
 } from 'lucide-react';
 import { User, Conversation, Message, TranslatedMessage } from '@/types';
 import { toast } from 'sonner';
-import { io, Socket } from 'socket.io-client';
-import { buildApiUrl, API_ENDPOINTS, APP_CONFIG } from '@/lib/config';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useTranslation } from '@/hooks/use-translation';
+import { useMessaging } from '@/hooks/use-messaging';
 import { ModelSetupModal } from '@/components/models/model-setup-modal';
 import { useModelStatus } from '@/hooks/useModelStatus';
 
@@ -40,9 +40,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isConnectedUsers, setIsConnectedUsers] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   
-  const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hook de traduction avec persistance
@@ -52,6 +50,34 @@ export default function ChatPage() {
   const { hasAnyModel, isLoading: isLoadingModels } = useModelStatus();
   const [showModelSetup, setShowModelSetup] = useState(false);
   const [hasCheckedModels, setHasCheckedModels] = useState(false);
+
+  // Hook messaging unifié
+  const { 
+    sendMessage: sendMessageUnified, 
+    connectionStatus 
+  } = useMessaging({
+    conversationId,
+    currentUser: currentUser || undefined,
+    onNewMessage: (message) => {
+      console.log('📨 ChatPage: Nouveau message reçu via hook unifié', message);
+      setMessages(prev => [...prev, {
+        ...message,
+        isTranslated: false,
+        showingOriginal: true,
+      }]);
+      scrollToBottom();
+    },
+    onMessageEdited: (message) => {
+      console.log('✏️ ChatPage: Message modifié via hook unifié', message);
+      setMessages(prev => prev.map(m => 
+        m.id === message.id ? { ...message, isTranslated: false, showingOriginal: true } : m
+      ));
+    },
+    onMessageDeleted: (messageId) => {
+      console.log('🗑️ ChatPage: Message supprimé via hook unifié', messageId);
+      setMessages(prev => prev.filter(m => m.id !== messageId));
+    }
+  });
 
   useEffect(() => {
     const initializeChat = async () => {
@@ -75,6 +101,7 @@ export default function ChatPage() {
 
         const userData = await authResponse.json();
         setCurrentUser(userData);
+        console.log('👤 ChatPage: Utilisateur chargé', { userId: userData.id, username: userData.username });
 
         // Charger la conversation
         const conversationResponse = await fetch(`${buildApiUrl('/conversation')}/${conversationId}`, {
@@ -89,6 +116,7 @@ export default function ChatPage() {
 
         const conversationData = await conversationResponse.json();
         setConversation(conversationData);
+        console.log('💬 ChatPage: Conversation chargée', { conversationId: conversationData.id, title: conversationData.title });
 
         // Charger les messages
         const messagesResponse = await fetch(`${buildApiUrl('/messages/conversation')}/${conversationId}`, {
@@ -102,50 +130,11 @@ export default function ChatPage() {
             isTranslated: false,
             showingOriginal: true,
           })));
+          console.log('📋 ChatPage: Messages chargés', { count: messagesData.length });
         }
 
-        // Initialiser WebSocket
-        const initializeWebSocket = (userId: string, token: string) => {
-          socketRef.current = io(APP_CONFIG.getBackendUrl(), {
-            auth: { token }
-          });
-
-          socketRef.current.on('connect', () => {
-            console.log('Connected to WebSocket');
-            socketRef.current?.emit('join-conversation', { conversationId, userId });
-          });
-
-          socketRef.current.on('new-message', (message: Message) => {
-            setMessages(prev => [...prev, {
-              ...message,
-              isTranslated: false,
-              showingOriginal: true,
-            }]);
-            scrollToBottom();
-          });
-
-          socketRef.current.on('user-typing', ({ userId: typingUserId }: { userId: string }) => {
-            if (typingUserId !== userId) {
-              setTypingUsers(prev => [...prev.filter(id => id !== typingUserId), typingUserId]);
-              setTimeout(() => {
-                setTypingUsers(prev => prev.filter(id => id !== typingUserId));
-              }, 3000);
-            }
-          });
-
-          socketRef.current.on('user-joined', () => {
-            // Users joined, could be used for presence indicators
-          });
-
-          socketRef.current.on('disconnect', () => {
-            console.log('Disconnected from WebSocket');
-          });
-        };
-
-        initializeWebSocket(userData.id, token);
-
       } catch (error) {
-        console.error('Erreur initialisation chat:', error);
+        console.error('❌ ChatPage: Erreur initialisation chat:', error);
         router.push('/dashboard');
       } finally {
         setIsLoading(false);
@@ -155,12 +144,6 @@ export default function ChatPage() {
     if (conversationId) {
       initializeChat();
     }
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
-    };
   }, [conversationId, router]);
 
   const scrollToBottom = () => {
@@ -176,38 +159,29 @@ export default function ChatPage() {
 
     setIsSending(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.MESSAGE.SEND), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          conversationId,
-          content: newMessage.trim(),
-          originalLanguage: currentUser.systemLanguage,
-        }),
+      console.log('📤 ChatPage: Envoi message via service unifié', {
+        conversationId,
+        contentLength: newMessage.trim().length
       });
 
-      if (response.ok) {
+      const success = await sendMessageUnified(newMessage.trim());
+      
+      if (success) {
         setNewMessage('');
-        // Le message sera ajouté via WebSocket
+        console.log('✅ ChatPage: Message envoyé avec succès');
       } else {
         toast.error('Erreur lors de l\'envoi du message');
       }
     } catch (error) {
-      console.error('Erreur envoi message:', error);
-      toast.error('Erreur de connexion');
+      console.error('❌ ChatPage: Erreur envoi message:', error);
+      toast.error('Erreur lors de l\'envoi du message');
     } finally {
       setIsSending(false);
     }
   };
 
   const handleTyping = () => {
-    if (socketRef.current && currentUser) {
-      socketRef.current.emit('typing', { conversationId, userId: currentUser.id });
-    }
+    // La gestion du typing sera ajoutée via le hook unifié plus tard
   };
 
   // Handlers for MessageBubble actions
@@ -370,8 +344,8 @@ export default function ChatPage() {
                 </h1>
                 <p className="text-sm text-gray-500">
                   {conversation.participants?.length || 0} participant(s)
-                  {typingUsers.length > 0 && (
-                    <span className="ml-2 text-blue-600">• En train d&apos;écrire...</span>
+                  {connectionStatus.isConnected && (
+                    <span className="ml-2 text-green-600">• Connecté</span>
                   )}
                 </p>
               </div>

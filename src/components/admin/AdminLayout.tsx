@@ -19,7 +19,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { PermissionsService } from '@/services/permissionsService';
+import { PermissionsService } from '@/services/permissions.service';
 import { toast } from 'sonner';
 
 interface AdminLayoutProps {
