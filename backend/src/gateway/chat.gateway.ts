@@ -189,11 +189,45 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     try {
       if (!client.userId) {
+        console.log('❌ BACKEND: Tentative d\'envoi sans authentification');
         return { error: 'Non authentifié' };
       }
 
+      console.log('📤 BACKEND: Réception message', {
+        userId: client.userId,
+        username: client.user?.username,
+        conversationId: data.conversationId,
+        contentLength: data.content?.length || 0,
+        content: data.content?.substring(0, 50) + '...'
+      });
+
       // Créer le message via le service
       const message = await this.messageService.create(data, client.userId);
+
+      console.log('💾 BACKEND: Message créé en DB', {
+        messageId: message.id,
+        conversationId: message.conversationId,
+        senderId: message.senderId
+      });
+
+      // Récupérer les participants de la conversation
+      const participants = await this.prisma.conversationLink.findMany({
+        where: {
+          conversationId: data.conversationId,
+          leftAt: null,
+        },
+        include: {
+          user: {
+            select: { id: true, username: true, displayName: true }
+          }
+        }
+      });
+
+      console.log('👥 BACKEND: Participants conversation', {
+        conversationId: data.conversationId,
+        participantCount: participants.length,
+        participants: participants.map(p => ({ id: p.user.id, name: p.user.displayName || p.user.username }))
+      });
 
       // Diffuser le message à tous les participants de la conversation
       const messageEvent: MessageEvent = {
@@ -202,14 +236,31 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         conversationId: data.conversationId,
       };
 
-      this.server.to(`conversation:${data.conversationId}`).emit('newMessage', messageEvent);
+      const roomName = `conversation:${data.conversationId}`;
+      console.log('📡 BACKEND: Diffusion message', {
+        event: 'newMessage',
+        roomName,
+        messageId: message.id,
+        participantCount: participants.length
+      });
+
+      this.server.to(roomName).emit('newMessage', messageEvent);
+
+      // Compter les sockets connectés dans cette room
+      const roomSockets = await this.server.in(roomName).fetchSockets();
+      console.log('🔌 BACKEND: Sockets connectés dans la room', {
+        roomName,
+        connectedSockets: roomSockets.length,
+        socketIds: roomSockets.map(s => s.id)
+      });
 
       // Arrêter l'indicateur de frappe pour cet utilisateur
       this.stopTyping(data.conversationId, client.userId, client.user?.username || 'Utilisateur');
 
+      console.log('✅ BACKEND: Message envoyé avec succès', { messageId: message.id });
       return { success: true, message };
     } catch (error) {
-      console.error('Erreur lors de l\'envoi du message:', error);
+      console.error('❌ BACKEND: Erreur lors de l\'envoi du message:', error);
       return { error: error instanceof Error ? error.message : 'Erreur inconnue' };
     }
   }
