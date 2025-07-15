@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test de Traduction et Nettoyage Meeshy</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    h1, h2 {
+      color: #2563eb;
+    }
+    .test-case {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: #f9fafb;
+    }
+    .test-input {
+      background-color: #f3f4f6;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+    }
+    .test-output {
+      background-color: #dbeafe;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      margin-bottom: 10px;
+    }
+    .test-output.raw {
+      background-color: #fee2e2;
+    }
+    .test-output.cleaned {
+      background-color: #d1fae5;
+    }
+    .success {
+      color: #16a34a;
+      font-weight: bold;
+    }
+    .error {
+      color: #dc2626;
+      font-weight: bold;
+    }
+    .buttons {
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    button:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+    .token {
+      background-color: #fecaca;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 14px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test de Traduction et Nettoyage Meeshy</h1>
+  
+  <div class="buttons">
+    <button id="runAllTests">Exécuter tous les tests</button>
+    <button id="runCleaningTests">Tester le nettoyage de tokens</button>
+    <button id="clearResults">Effacer les résultats</button>
+  </div>
+  
+  <h2>Résultats des tests</h2>
+  <div id="results">
+    <p>Cliquez sur un bouton pour lancer les tests.</p>
+  </div>
+  
+  <div class="footer">
+    <p>Cette page permet de tester le nettoyage des tokens spéciaux dans les traductions Meeshy.</p>
+    <p>Les tokens comme <span class="token">&lt;extra_id_0&gt;</span> doivent être correctement supprimés.</p>
+  </div>
+
+  <script>
+    // Fonction pour le nettoyage basique
+    function cleanTranslationOutput(text) {
+      if (!text) return '';
+      
+      return text
+        .replace(/<extra_id_\d+>/g, '')
+        .replace(/▁/g, ' ')
+        .replace(/<pad>|<\/pad>/g, '')
+        .replace(/<unk>|<\/unk>/g, '')
+        .replace(/<\/s>|<s>/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+    
+    // Fonction pour le nettoyage avancé
+    function deepCleanTranslationOutput(text) {
+      if (!text) return '';
+      
+      let cleaned = cleanTranslationOutput(text);
+      
+      cleaned = cleaned
+        .replace(/([.,!?;:])([A-Za-zÀ-ÖØ-öø-ÿ])/g, '$1 $2')
+        .replace(/["']([^"']*?)["']/g, '"$1"')
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+        .replace(/\s+([.,!?;:])/g, '$1');
+    
+      return cleaned.trim();
+    }
+    
+    // Cas de test pour le nettoyage des tokens
+    const cleaningTestCases = [
+      {
+        name: 'Tokens MT5 - extra_id',
+        input: 'Hello <extra_id_0> world <extra_id_1>',
+        expected: 'Hello world'
+      },
+      {
+        name: 'Tokens NLLB - underscores',
+        input: 'Bonjour▁le▁monde',
+        expected: 'Bonjour le monde'
+      },
+      {
+        name: 'Tokens start/end',
+        input: '<s>This is a test</s>',
+        expected: 'This is a test'
+      },
+      {
+        name: 'Tokens pad',
+        input: '<pad>Testing tokens</pad>',
+        expected: 'Testing tokens'
+      },
+      {
+        name: 'Tokens multiples',
+        input: '<s><pad>Multiple <extra_id_0> tokens▁test</pad></s>',
+        expected: 'Multiple tokens test'
+      },
+      {
+        name: 'Ponctuation',
+        input: 'Hello,world! How are you?',
+        expected: 'Hello, world! How are you?',
+        useDeepCleaning: true
+      }
+    ];
+    
+    // Fonction pour exécuter les tests de nettoyage
+    function runCleaningTests() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<h3>Tests de nettoyage</h3>';
+      
+      cleaningTestCases.forEach((testCase, index) => {
+        const cleaningFn = testCase.useDeepCleaning ? deepCleanTranslationOutput : cleanTranslationOutput;
+        const cleaned = cleaningFn(testCase.input);
+        const success = cleaned === testCase.expected;
+        
+        const testDiv = document.createElement('div');
+        testDiv.className = 'test-case';
+        
+        testDiv.innerHTML = `
+          <h4>Test ${index + 1}: ${testCase.name}</h4>
+          <div><strong>Input:</strong></div>
+          <div class="test-input">${testCase.input}</div>
+          <div><strong>Output (${testCase.useDeepCleaning ? 'deep clean' : 'basic clean'}):</strong></div>
+          <div class="test-output cleaned">${cleaned}</div>
+          <div><strong>Expected:</strong></div>
+          <div class="test-output">${testCase.expected}</div>
+          <div><strong>Résultat:</strong> <span class="${success ? 'success' : 'error'}">${success ? '✅ SUCCÈS' : '❌ ÉCHEC'}</span></div>
+        `;
+        
+        resultsDiv.appendChild(testDiv);
+      });
+    }
+    
+    // Initialisation
+    document.getElementById('runCleaningTests').addEventListener('click', runCleaningTests);
+    
+    document.getElementById('runAllTests').addEventListener('click', function() {
+      runCleaningTests();
+    });
+    
+    document.getElementById('clearResults').addEventListener('click', function() {
+      document.getElementById('results').innerHTML = '<p>Résultats effacés.</p>';
+    });
+  </script>
+</body>
+</html>

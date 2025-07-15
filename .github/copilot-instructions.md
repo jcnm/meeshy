@@ -128,7 +128,7 @@ backend/                 # Application NestJS production-ready
 - **Consistance visuelle**: Composants shadcn/ui uniformes, palette couleurs cohérente
 - **Navigation intuitive**: Breadcrumbs clairs, état actuel visible, retour facile
 - **Feedback utilisateur**: Loading states, confirmations, messages d'erreur explicites
-- **Responsivité**: Interface adaptée mobile/desktop avec même logique
+- **Responsivité **: Interface adaptée mobile/desktop avec même logique
 
 #### Gestion des Données
 - **État synchronisé**: Cohérence temps réel entre tous les clients connectés

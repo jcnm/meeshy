@@ -208,7 +208,23 @@ export function ConversationView({
         })));
       }
       
-      toast.error('Erreur lors de la traduction du message');
+      // Formater le message d'erreur pour l'utilisateur
+      let errorMessage = 'Erreur lors de la traduction du message';
+      if (error instanceof Error) {
+        const message = error.message;
+        if (message.includes('not supported') || message.includes('non supporté')) {
+          errorMessage = `Langue "${targetLanguage}" non supportée par le modèle`;
+        } else if (message.includes('not loaded') || message.includes('non chargé')) {
+          errorMessage = 'Modèle de traduction non disponible. Veuillez télécharger les modèles.';
+        } else if (message.includes('network') || message.includes('fetch')) {
+          errorMessage = 'Erreur de connexion lors de la traduction';
+        } else if (message.length < 150) {
+          // Si le message est court et lisible, l'afficher
+          errorMessage = message;
+        }
+      }
+      
+      toast.error(errorMessage);
     }
   };
 

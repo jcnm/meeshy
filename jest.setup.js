@@ -104,3 +104,6 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError;
 });
+
+// Augmenter les timeouts pour les tests d'IA
+jest.setTimeout(300000);

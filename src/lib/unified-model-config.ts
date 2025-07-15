@@ -5,6 +5,7 @@
 
 // Types de base - compatible avec l'existant
 export type TranslationModelType = 
+  | 'M2M100_418M'
   | 'MT5_SMALL' 
   | 'MT5_BASE' 
   | 'MT5_LARGE' 
@@ -15,7 +16,7 @@ export type TranslationModelType =
   | 'NLLB_1_3B' 
   | 'NLLB_3_3B';
 
-export type ModelFamily = 'MT5' | 'NLLB';
+export type ModelFamily = 'M2M100' | 'MT5' | 'NLLB';
 export type ModelQuality = 'basic' | 'good' | 'high' | 'excellent' | 'premium';
 export type ModelPerformance = 'fast' | 'balanced' | 'accurate' | 'premium';
 
@@ -69,6 +70,35 @@ export interface UnifiedModelConfig {
 
 // Configuration complète et unifiée de tous les modèles
 export const UNIFIED_TRANSLATION_MODELS: Record<TranslationModelType, UnifiedModelConfig> = {
+  // ===== FAMILLE M2M100 - Google's Multilingual T5 =====
+  M2M100_418M: {
+    name: 'M2M100_418M',
+    displayName: 'M2M100 418M',
+    family: 'M2M100',
+    size: 'Small',
+    parameters: '418M',
+    memoryRequirement: 2048, // 2GB
+    downloadSize: 300, // 300MB
+    performance: 'fast',
+    quality: 'basic',
+    qualityScore: 6,
+    speedScore: 9,
+    cost: {
+      energyConsumption: 0.02, // 0.02 Wh par traduction
+      computationalCost: 1,
+      co2Equivalent: 0.01, // 10 milligrammes
+      monetaryEquivalent: 0.004, // 0.004 centime
+      memoryUsage: 900, // 900MB
+      inferenceTime: 100 // 100ms
+    },
+    color: '#22c55e', // Vert - très efficace
+    huggingFaceId: 'Xenova/mt5-small',
+    modelUrl: 'https://huggingface.co/Xenova/mt5-small',
+    tokenizerUrl: 'https://huggingface.co/Xenova/mt5-small',
+    maxTokens: 100,
+    purpose: 'simple',
+    description: 'Modèle léger et rapide, idéal pour machines avec ressources limitées'
+  },
   // ===== FAMILLE MT5 - Google's Multilingual T5 =====
   MT5_SMALL: {
     name: 'MT5_SMALL',
@@ -514,7 +544,7 @@ export interface ActiveModelConfig {
  */
 function getActiveModelsFromEnv(): ActiveModelConfig {
   // Modèles par défaut recommandés
-  const defaultBasic: TranslationModelType = 'MT5_SMALL';
+  const defaultBasic: TranslationModelType = 'M2M100_418M';
   const defaultHigh: TranslationModelType = 'NLLB_DISTILLED_600M';
 
   // Lecture depuis les variables d'environnement si disponibles
@@ -562,11 +592,11 @@ export function selectModelForMessage(messageLength: number, complexity: 'simple
   type: 'basic' | 'high';
   config: UnifiedModelConfig;
 } {
-  if (messageLength <= 50 && complexity === 'simple') {
-    return { type: 'basic', config: getActiveModelConfig('basic') };
-  } else {
+  // if (messageLength <= 50 && complexity === 'simple') {
+  //   return { type: 'basic', config: getActiveModelConfig('basic') };
+  // } else {
     return { type: 'high', config: getActiveModelConfig('high') };
-  }
+  // }
 }
 
 /**

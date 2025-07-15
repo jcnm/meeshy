@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -8,10 +9,10 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  MessageSquare, 
-  Users, 
-  Plus, 
+import {
+  MessageSquare,
+  Users,
+  Plus,
   Send,
   ArrowLeft,
   Link2
@@ -28,9 +29,10 @@ import { type TranslationModelType } from '@/lib/unified-model-config';
 import { getAllActiveModels, ACTIVE_MODELS, getModelConfig } from '@/lib/unified-model-config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { detectLanguage } from '@/utils/translation';
+import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
 import { TranslationPerformanceTips } from '@/components/translation/translation-performance-tips';
 import { SystemPerformanceMonitor } from '@/components/translation/system-performance-monitor';
+import { cleanTranslationOutput } from '@/utils/translation-cleaner';
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -40,7 +42,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useUser();
-  
+
   // États principaux
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -50,19 +52,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  
+
   // États UI responsive
   const [showConversationList, setShowConversationList] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // États modaux
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
-  
+
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>(ACTIVE_MODELS.highModel);
-  // const [translationService] = useState(() => translationService); // Déjà importé
-  
+
   // Hook de messagerie unifié pour la gestion WebSocket
   const messaging = useMessaging({
     conversationId: selectedConversation?.id,
@@ -72,7 +73,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
         return;
       }
-      
+
       // Ajouter le nouveau message à la liste
       setMessages(prev => {
         // Vérifier si le message existe déjà
@@ -80,22 +81,19 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           return prev;
         }
         // Ajouter le message et maintenir l'ordre chronologique
-        return [...prev, message].sort((a, b) => 
+        return [...prev, message].sort((a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
       });
-      
+
       // Mettre à jour la conversation avec le dernier message
-      setConversations(prev => prev.map(conv => 
-        conv.id === message.conversationId 
+      setConversations(prev => prev.map(
+        conv => conv.id === message.conversationId
           ? { ...conv, lastMessage: message, updatedAt: new Date() }
           : conv
       ));
     }
   });
-  
-  // Hook de traduction
-  // const { translateMessages, translateMessage } = useOptimizedMessageTranslation(user);
 
   // Fonction utilitaire pour obtenir le nom d'affichage d'une conversation
   const getConversationDisplayName = useCallback((conversation: Conversation): string => {
@@ -105,7 +103,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Pour les conversations privées, afficher le nom de l'autre participant
       const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
       if (otherParticipant?.user) {
-        return otherParticipant.user.displayName || 
+        return otherParticipant.user.displayName ||
                `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}` ||
                otherParticipant.user.username;
       }
@@ -121,7 +119,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Pour les conversations privées, utiliser l'initiale de l'autre participant
       const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
       if (otherParticipant?.user) {
-        const displayName = otherParticipant.user.displayName || 
+        const displayName = otherParticipant.user.displayName ||
                            `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}` ||
                            otherParticipant.user.username;
         return displayName.slice(0, 2).toUpperCase();
@@ -135,7 +133,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkIsMobile();
     window.addEventListener('resize', checkIsMobile);
     return () => window.removeEventListener('resize', checkIsMobile);
@@ -152,59 +150,52 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [isMobile, selectedConversation]);
 
-  // Charger automatiquement le modèle de traduction AU BESOIN UNIQUEMENT
-  useEffect(() => {
-    const prepareTranslationService = async () => {
-      try {
-        // Vérifier si des modèles sont déjà chargés ou persistés
-        const persistedModels = translationService.getPersistedLoadedModels();
-        if (persistedModels.length > 0) {
-          console.log(`✅ Modèles persistés trouvés: ${persistedModels.join(', ')}`);
-          return; // Ne pas charger automatiquement si des modèles sont déjà disponibles
-        }
-
-        // Sinon, juste préparer le service mais NE PAS charger de modèle automatiquement
-        console.log('🤗 Service de traduction prêt - chargement à la demande');
-        
-      } catch (error) {
-        console.warn('⚠️ Avertissement préparation traduction:', error);
-        // Ne pas bloquer l'interface pour les erreurs de traduction
-      }
-    };
-
-    // Préparer sans délai pour ne pas ralentir l'UI
-    prepareTranslationService();
-  }, []);
 
   // Handlers pour MessageBubble
-  const handleTranslate = async (messageId: string, targetLanguage: string) => {
+  const handleTranslate = async (
+    messageId: string,
+    targetLanguage: string,
+    forceRetranslate: boolean = false,
+    forcedSourceLanguage?: string
+  ) => {
     const message = messages.find(m => m.id === messageId);
     if (!message) return;
-    
+
     try {
       console.log(`🔄 Traduction avec modèle sélectionné: ${selectedTranslationModel}`);
-      
+
       // Afficher un indicateur de traduction en cours
       toast.loading('Traduction en cours...', { id: `translate-${messageId}` });
-      
-      // Utiliser directement le service de traduction avec le modèle sélectionné
-      const sourceLanguage = message.originalLanguage || detectLanguage(message.content);
-      
+
+      // Détecter la langue source si non fournie ou 'unknown'
+      let sourceLanguage = forcedSourceLanguage || message.originalLanguage;
+      if (!sourceLanguage || sourceLanguage === 'unknown') {
+        const detections = detectAll(message.content);
+        sourceLanguage = detections.length > 0 ? detections[0].lang : 'en'; // Fallback à 'en'
+      }
+
       // Ajouter un délai pour permettre à l'interface de se mettre à jour
       await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const translationResult = await translationService.translateText(
+
+      // Si forceRetranslate est true, afficher un message spécifique
+      if (forceRetranslate) {
+        console.log('🔄 Forcer la retraduction du message');
+        toast.loading('Retraduction forcée en cours...', { id: `retranslate-${messageId}` });
+      }
+
+      const translationResult = await translationService.translate(
         message.content,
-        sourceLanguage,
         targetLanguage,
-        selectedTranslationModel
+        sourceLanguage,
+        { preferredModel: selectedTranslationModel }
       );
 
       // Créer le message traduit avec toutes les propriétés requises
       const translatedMsg: TranslatedMessage = {
         ...message,
+        originalLanguage: sourceLanguage, // Mettre à jour avec la langue détectée si applicable
         originalContent: message.content,
-        translatedContent: translationResult.translatedText,
+        translatedContent: cleanTranslationOutput(translationResult.translatedText),
         targetLanguage,
         isTranslated: true,
         isTranslating: false,
@@ -213,8 +204,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         translationFailed: false,
         translations: [{
           language: targetLanguage,
-          content: translationResult.translatedText,
-          flag: '🌍', // Drapeau par défaut
+          content: cleanTranslationOutput(translationResult.translatedText),
+          flag: '', // Drapeau par défaut
           modelUsed: selectedTranslationModel,
           createdAt: new Date()
         }],
@@ -247,17 +238,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           lastActiveAt: new Date(),
         }
       };
-      
+
       // Mettre à jour le message traduit dans la liste
       setTranslatedMessages(prev => {
         const filtered = prev.filter(m => m.id !== messageId);
-        return [...filtered, translatedMsg].sort((a, b) => 
+        return [...filtered, translatedMsg].sort((a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
         );
       });
-      
+
       console.log(`✅ Message traduit avec ${selectedTranslationModel}: ${translationResult.translatedText}`);
       toast.success(`Message traduit avec ${selectedTranslationModel}`, { id: `translate-${messageId}` });
+
     } catch (error) {
       console.error('❌ Erreur lors de la traduction:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la traduction du message';
@@ -352,22 +344,22 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     try {
       setIsLoadingMessages(true);
       console.log(`📬 Chargement des messages pour la conversation ${conversationId}`);
-      
+
       const messagesData = await conversationsService.getMessages(conversationId);
-      
+
       // Vérifier si la conversation sélectionnée n'a pas changé
       if (selectedConversation?.id !== conversationId) {
         console.log('🚫 Conversation changée pendant le chargement, abandon');
         return;
       }
-      
+
       const rawMessages = messagesData?.messages || [];
-      
+
       // Trier les messages par date de création
-      const sortedMessages = rawMessages.sort((a, b) => 
+      const sortedMessages = rawMessages.sort((a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
-      
+
       // Mettre à jour les messages APRÈS avoir vérifié la cohérence
       setMessages(sortedMessages);
 
@@ -378,7 +370,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         // Convertir d'abord sans traduction pour affichage immédiat
         const convertedMessages = sortedMessages.map(msg => convertToTranslatedMessage(msg));
         setTranslatedMessages(convertedMessages);
-        
+
         // Puis traduire en arrière-plan
         setTimeout(async () => {
           try {
@@ -387,7 +379,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               console.log('🚫 Conversation changée pendant la traduction, abandon');
               return;
             }
-            
+
             // Pas de traduction automatique pour l'instant - TODO: implémenter avec le modèle sélectionné
             // const translated = await translateMessages(sortedMessages, user.systemLanguage);
             // setTranslatedMessages(translated);
@@ -407,13 +399,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     } catch (error) {
       console.error('❌ Erreur lors du chargement des messages:', error);
       console.log('🔄 Utilisation des messages mock pour le développement');
-      
+
       // Vérifier si cette conversation est toujours celle demandée
       if (selectedConversation?.id !== conversationId) {
         console.log('🚫 Conversation changée pendant l\'erreur, abandon');
         return;
       }
-      
+
       // Messages mock pour le développement - ne pas afficher d'erreur
       const mockMessages = createMockMessages(conversationId);
       setMessages(mockMessages);
@@ -431,13 +423,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     try {
       setIsLoading(true);
       console.log('🔄 Chargement des conversations...');
-      
+
       // Démarrer le chargement des conversations immédiatement
       const conversationsPromise = conversationsService.getConversations();
-      
+
       // Attendre les conversations
       const conversationsData = await conversationsPromise;
-      
+
       setConversations(conversationsData);
       console.log(`✅ ${conversationsData.length} conversations chargées`);
 
@@ -457,16 +449,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         // Aucun ID dans l'URL, s'assurer qu'aucune conversation n'est sélectionnée
         setSelectedConversation(null);
       }
-      
+
       // Mettre fin au loading principal immédiatement après les conversations
       setIsLoading(false);
-      
+
     } catch (error) {
       console.error('❌ Erreur lors du chargement des conversations:', error);
-      
+
       // Pas de toast d'erreur pour ne pas ralentir l'UI, juste les données mock
       console.log('🔄 Utilisation des données mock pour le développement');
-      
+
       // Conversations mock pour le développement (plus rapide)
       const mockConversations: Conversation[] = [
         {
@@ -508,7 +500,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           unreadCount: 0
         }
       ];
-      
+
       setConversations(mockConversations);
       setIsLoading(false);
     }
@@ -529,12 +521,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     // NOTE: La gestion WebSocket se fait dans l'useEffect séparé
     // Simplement sélectionner la conversation, l'effet se chargera du reste
     setSelectedConversation(conversation);
-    
+
     // Sur mobile, masquer la liste pour afficher les messages
     if (isMobile) {
       setShowConversationList(false);
     }
-    
+
     // Mettre à jour l'URL
     router.push(`/conversations?id=${conversation.id}`, { scroll: false });
   };
@@ -551,7 +543,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // Envoyer un message
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newMessage.trim() || !selectedConversation || !user) {
       return;
     }
@@ -560,10 +552,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
     try {
       console.log('📤 Envoi du message:', newMessage);
-      
+
       // Utiliser le hook unifié pour envoyer le message
       const success = await messaging.sendMessage(newMessage.trim());
-      
+
       if (success) {
         setNewMessage('');
         toast.success('Message envoyé !');
@@ -630,14 +622,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                   )}
                 </div>
               </div>
-              
+
               {/* Sélecteur de modèle de traduction */}
               <div className="mb-2">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
                   Modèle de traduction
                 </label>
-                <Select 
-                  value={selectedTranslationModel} 
+                <Select
+                  value={selectedTranslationModel}
                   onValueChange={(value) => setSelectedTranslationModel(value as TranslationModelType)}
                 >
                   <SelectTrigger className="w-full h-8 text-sm">
@@ -649,8 +641,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       return (
                       <SelectItem key={config.name} value={config.name}>
                         <div className="flex items-center gap-2">
-                          <div 
-                            className="w-2 h-2 rounded-full" 
+                          <div
+                            className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: config.color }}
                           />
                           <span className="text-sm">{config.displayName}</span>
@@ -668,20 +660,20 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     })}
                   </SelectContent>
                 </Select>
-                
+
                 {/* Moniteur de performance système */}
                 <SystemPerformanceMonitor />
-                
+
                 {/* Conseils de performance */}
                 <div className="mt-2">
-                  <TranslationPerformanceTips 
+                  <TranslationPerformanceTips
                     currentModel={selectedTranslationModel}
                     textLength={newMessage.length}
                   />
                 </div>
               </div>
             </div>
-            
+
             {/* Liste scrollable */}
             <div className="flex-1 overflow-y-auto">
               {conversations.length === 0 ? (
@@ -718,7 +710,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         </Avatar>
                         <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
                       </div>
-                      
+
                       <div className="ml-4 flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <h3 className="font-bold text-foreground truncate">
@@ -726,9 +718,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           </h3>
                           {conversation.lastMessage && (
                             <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                              {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
+                              {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
+                                hour: '2-digit',
+                                minute: '2-digit'
                               })}
                             </span>
                           )}
@@ -739,7 +731,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           </p>
                         )}
                       </div>
-                      
+
                       {(conversation.unreadCount || 0) > 0 && (
                         <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
                           {conversation.unreadCount}
@@ -750,7 +742,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
               )}
             </div>
-            
+
             {/* Footer fixe avec boutons */}
             <div className="flex-shrink-0 p-4 border-t border-border/30 bg-background/50">
               <div className="flex gap-3">
@@ -810,7 +802,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         {getConversationDisplayName(selectedConversation)}
                       </h2>
                       <p className="text-sm text-muted-foreground">
-                        {selectedConversation.isGroup 
+                        {selectedConversation.isGroup
                           ? `${selectedConversation.participants?.length || 0} personnes`
                           : 'En ligne'
                         }
@@ -857,7 +849,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       className="flex-1 rounded-2xl h-12 px-4 border-2 border-border/30 focus:border-primary/50 bg-background/50"
                       disabled={isSending}
                     />
-                    <Button 
+                    <Button
                       type="submit"
                       size="sm"
                       disabled={!newMessage.trim() || isSending}
@@ -878,7 +870,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                   <div className="w-24 h-24 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
                     <MessageSquare className="h-12 w-12 text-primary" />
                   </div>
-                  
+
                   {conversations.length > 0 ? (
                     <>
                       <h3 className="text-xl font-bold text-foreground mb-2 text-center">Choisis une conversation !</h3>
@@ -895,7 +887,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     </>
                   )}
                 </div>
-                
+
                 {/* Boutons d'action dans l'état vide */}
                 <div className="flex gap-4 justify-center">
                   <Button
@@ -929,7 +921,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           loadData();
         }}
       />
-      
+
       <CreateConversationModal
         isOpen={isCreateConversationModalOpen}
         onClose={() => setIsCreateConversationModalOpen(false)}
@@ -942,3 +934,5 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     </DashboardLayout>
   );
 }
+
+

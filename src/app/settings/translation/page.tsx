@@ -25,7 +25,7 @@ import {
 import { toast } from 'sonner';
 import { ModelSelector } from '@/components/translation/model-selector';
 import { translationService } from '@/services/translation.service';
-import { SUPPORTED_LANGUAGES, TranslationModelType } from '@/types';
+import { SUPPORTED_LANGUAGES, type TranslationModelType } from '@/types';
 
 export default function TranslationSettingsPage() {
   // Pour l'instant, utilisons des valeurs par défaut
@@ -57,8 +57,8 @@ export default function TranslationSettingsPage() {
   useEffect(() => {
     const loadCacheStats = () => {
       try {
-        const stats = translationService.getCacheStats();
-        setCacheStats(stats);
+        const stats = translationService.getStats();
+        console.log('🔍 Statistiques du cache de traduction:', JSON.stringify(stats, null, 2));
       } catch (error) {
         console.error('Erreur lors du chargement des statistiques:', error);
       }
@@ -113,17 +113,17 @@ export default function TranslationSettingsPage() {
     try {
       toast.loading('Diagnostic en cours...', { id: 'diagnostics' });
       
-      // Vérifier les modèles
-      const loadedModels = translationService.getLoadedModels();
-      const persistedModels = translationService.getPersistedLoadedModels();
+      // // Vérifier les modèles
+      // const loadedModels = translationService();
+      // const persistedModels = translationService.getPersistedLoadedModels();
       
       // Tester la mémoire disponible
       const memoryInfo = (performance as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory;
       const hasWebGPU = 'gpu' in navigator;
       
       const results = {
-        modelsLoaded: loadedModels.length,
-        modelsPersisted: persistedModels.length,
+        // modelsLoaded: loadedModels.length,
+        // modelsPersisted: persistedModels.length,
         memoryUsed: memoryInfo ? Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024) : 'Non disponible',
         memoryTotal: memoryInfo ? Math.round(memoryInfo.totalJSHeapSize / 1024 / 1024) : 'Non disponible',
         webGPUSupport: hasWebGPU,
@@ -132,9 +132,9 @@ export default function TranslationSettingsPage() {
 
       console.log('🔍 Diagnostic du système de traduction:', results);
       
-      toast.success(`Diagnostic terminé: ${results.modelsLoaded} modèles chargés, ${results.memoryUsed} MB utilisés`, { 
-        id: 'diagnostics' 
-      });
+      // toast.success(`Diagnostic terminé: ${results.modelsLoaded} modèles chargés, ${results.memoryUsed} MB utilisés`, { 
+      //   id: 'diagnostics' 
+      // });
     } catch (error) {
       console.error('Erreur lors du diagnostic:', error);
       toast.error('Erreur lors du diagnostic', { id: 'diagnostics' });

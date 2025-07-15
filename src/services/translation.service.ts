@@ -1,20 +1,21 @@
 /**
- * Service de traduction unifié pour Meeshy
- * Combine toutes les fonctionnalités de traduction en un seul service
+ * Service de traduction utilisant @huggingface/transformers
+ * Gestion RÉELLE des modèles MT5 et NLLB avec téléchargement et cache automatique
  */
 
-import { pipeline, type TranslationPipeline } from '@huggingface/transformers';
+import { pipeline } from '@huggingface/transformers';
 import { 
+  getAllActiveModels,
   selectModelForMessage,
   getActiveModelConfig,
-  ACTIVE_MODELS,
   type AllowedModelType 
 } from '@/lib/unified-model-config';
 import { 
-  type UnifiedModelConfig 
+  type UnifiedModelConfig,
+  UNIFIED_TRANSLATION_MODELS,
+  type TranslationModelType 
 } from '@/lib/unified-model-config';
 
-// Types unifiés
 export interface TranslationProgress {
   modelName: string;
   status: 'downloading' | 'loading' | 'ready' | 'error';
@@ -30,47 +31,21 @@ export interface TranslationResult {
   confidence?: number;
 }
 
-export interface CachedTranslation {
-  original: string;
-  translated: string;
-  sourceLanguage: string;
-  targetLanguage: string;
-  timestamp: number;
-  modelUsed: string;
-}
-
-export interface TranslationMetadata {
-  messageId: string;
-  originalText: string;
-  sourceLanguage: string;
-  targetLanguage: string;
-  timestamp: number;
-  modelUsed: string;
-  cacheHit: boolean;
-  translationTime: number;
-}
+// Type pour le pipeline de traduction (simplifié)
+type TranslationPipeline = any;
 
 /**
- * Service de traduction unifié - Combine toutes les approches
+ * Service de traduction utilisant Hugging Face Transformers
  */
 export class TranslationService {
   private static instance: TranslationService;
-  private loadedPipelines = new Map<AllowedModelType, TranslationPipeline>();
-  private loadingPromises = new Map<AllowedModelType, Promise<TranslationPipeline>>();
-  private progressCallbacks = new Map<AllowedModelType, (progress: TranslationProgress) => void>();
-  
-  // Cache et persistance
-  private cache = new Map<string, CachedTranslation>();
-  private metadata = new Map<string, TranslationMetadata>();
+  private loadedPipelines = new Map<string, TranslationPipeline>();
+  private loadingPromises = new Map<string, Promise<TranslationPipeline>>();
+  private progressCallbacks = new Map<string, (progress: TranslationProgress) => void>();
   
   // Clés pour la persistance localStorage
   private readonly STORAGE_KEY_LOADED_MODELS = 'meeshy_loaded_models';
-  private readonly STORAGE_KEY_CACHE = 'meeshy_translation_cache';
-  private readonly STORAGE_KEY_METADATA = 'meeshy_translation_metadata';
-  
-  // Configuration
-  private readonly CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 jours
-  private readonly MAX_CACHE_SIZE = 1000; // Limite du cache
+  private readonly STORAGE_KEY_MODEL_CACHE = 'meeshy_model_cache_metadata';
 
   static getInstance(): TranslationService {
     if (!TranslationService.instance) {
@@ -80,491 +55,663 @@ export class TranslationService {
   }
 
   private constructor() {
-    this.loadCacheFromStorage();
-    this.loadMetadataFromStorage();
+    console.log('🤗 Service de traduction Hugging Face initialisé');
+    this.loadPersistedState();
+    
+    // Recharger automatiquement les modèles persistés en arrière-plan
+    this.autoReloadPersistedModels();
   }
 
-  // === MÉTHODES DE CACHE ET PERSISTANCE ===
-  
-  private generateCacheKey(text: string, sourceLanguage: string, targetLanguage: string): string {
-    return `${text}|${sourceLanguage}|${targetLanguage}`;
-  }
-
-  private loadCacheFromStorage(): void {
+  /**
+   * Charge l'état persisté depuis localStorage
+   */
+  private loadPersistedState(): void {
     try {
-      if (typeof window === 'undefined') return; // SSR protection
-      
-      const stored = localStorage.getItem(this.STORAGE_KEY_CACHE);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        this.cache = new Map(Object.entries(parsed));
-        this.cleanExpiredCache();
+      const savedModels = localStorage.getItem(this.STORAGE_KEY_LOADED_MODELS);
+      if (savedModels) {
+        const modelIds: string[] = JSON.parse(savedModels);
+        console.log(`📂 Modèles persistés trouvés: ${modelIds.join(', ')}`);
       }
     } catch (error) {
-      console.warn('Erreur lors du chargement du cache:', error);
+      console.warn('⚠️ Erreur lors du chargement de l\'état persisté:', error);
     }
   }
 
-  private saveCacheToStorage(): void {
-    try {
-      if (typeof window === 'undefined') return; // SSR protection
+  /**
+   * Recharge automatiquement les modèles persistés en arrière-plan
+   */
+  private async autoReloadPersistedModels(): Promise<void> {
+    const persistedModels = this.getPersistedLoadedModels();
+    
+    if (persistedModels.length > 0) {
+      console.log(`🔄 Rechargement automatique de ${persistedModels.length} modèles persistés...`);
       
-      const cacheObject = Object.fromEntries(this.cache);
-      localStorage.setItem(this.STORAGE_KEY_CACHE, JSON.stringify(cacheObject));
-    } catch (error) {
-      console.warn('Erreur lors de la sauvegarde du cache:', error);
-    }
-  }
-
-  private loadMetadataFromStorage(): void {
-    try {
-      if (typeof window === 'undefined') return; // SSR protection
-      
-      const stored = localStorage.getItem(this.STORAGE_KEY_METADATA);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        this.metadata = new Map(Object.entries(parsed));
-      }
-    } catch (error) {
-      console.warn('Erreur lors du chargement des métadonnées:', error);
-    }
-  }
-
-  private saveMetadataToStorage(): void {
-    try {
-      if (typeof window === 'undefined') return; // SSR protection
-      
-      const metadataObject = Object.fromEntries(this.metadata);
-      localStorage.setItem(this.STORAGE_KEY_METADATA, JSON.stringify(metadataObject));
-    } catch (error) {
-      console.warn('Erreur lors de la sauvegarde des métadonnées:', error);
-    }
-  }
-
-  private cleanExpiredCache(): void {
-    const now = Date.now();
-    for (const [key, cached] of this.cache.entries()) {
-      if (now - cached.timestamp > this.CACHE_EXPIRY) {
-        this.cache.delete(key);
-      }
-    }
-    
-    // Limiter la taille du cache
-    if (this.cache.size > this.MAX_CACHE_SIZE) {
-      const entries = Array.from(this.cache.entries());
-      entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-      const toDelete = entries.slice(0, this.cache.size - this.MAX_CACHE_SIZE);
-      toDelete.forEach(([key]) => this.cache.delete(key));
-    }
-  }
-
-  private addToCache(
-    text: string,
-    translated: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    modelUsed: string
-  ): void {
-    const cacheKey = this.generateCacheKey(text, sourceLanguage, targetLanguage);
-    const cached: CachedTranslation = {
-      original: text,
-      translated,
-      sourceLanguage,
-      targetLanguage,
-      timestamp: Date.now(),
-      modelUsed
-    };
-    
-    this.cache.set(cacheKey, cached);
-    this.cleanExpiredCache();
-    this.saveCacheToStorage();
-  }
-
-  private getFromCache(
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string
-  ): CachedTranslation | null {
-    const cacheKey = this.generateCacheKey(text, sourceLanguage, targetLanguage);
-    const cached = this.cache.get(cacheKey);
-    
-    if (cached && Date.now() - cached.timestamp < this.CACHE_EXPIRY) {
-      return cached;
-    }
-    
-    if (cached) {
-      this.cache.delete(cacheKey);
-    }
-    
-    return null;
-  }
-
-  // === MÉTHODES DE GESTION DES MODÈLES ===
-
-  async loadModel(modelType: AllowedModelType, onProgress?: (progress: TranslationProgress) => void): Promise<TranslationPipeline> {
-    // Si déjà chargé
-    if (this.loadedPipelines.has(modelType)) {
-      return this.loadedPipelines.get(modelType)!;
-    }
-
-    // Si en cours de chargement
-    if (this.loadingPromises.has(modelType)) {
-      return this.loadingPromises.get(modelType)!;
-    }
-
-    const config = getActiveModelConfig(modelType === ACTIVE_MODELS.basicModel ? 'basic' : 'high');
-    
-    if (onProgress) {
-      this.progressCallbacks.set(modelType, onProgress);
-    }
-
-    const loadingPromise = this.doLoadModel(modelType, config);
-    this.loadingPromises.set(modelType, loadingPromise);
-
-    try {
-      const pipeline = await loadingPromise;
-      this.loadedPipelines.set(modelType, pipeline);
-      this.loadingPromises.delete(modelType);
-      this.progressCallbacks.delete(modelType);
-      
-      // Sauvegarder l'état
-      this.saveLoadedModelsToStorage();
-      
-      return pipeline;
-    } catch (error) {
-      this.loadingPromises.delete(modelType);
-      this.progressCallbacks.delete(modelType);
-      throw error;
-    }
-  }
-
-  private async doLoadModel(modelType: AllowedModelType, config: UnifiedModelConfig): Promise<TranslationPipeline> {
-    const progressCallback = this.progressCallbacks.get(modelType);
-    
-    try {
-      if (progressCallback) {
-        progressCallback({
-          modelName: config.name,
-          status: 'downloading',
-          progress: 0
-        });
-      }
-
-      const translationPipeline = await pipeline('translation', config.huggingFaceId, {
-        progress_callback: (progressInfo: { progress?: number; loaded?: number; total?: number; status?: string; file?: string }) => {
-          const progress = progressInfo as { progress?: number; loaded?: number; total?: number };
-          if (progressCallback && progress?.progress !== undefined) {
-            progressCallback({
-              modelName: config.name,
-              status: 'downloading',
-              progress: Math.round(progress.progress * 100)
-            });
-          }
+      // Recharger les modèles un par un pour éviter de surcharger la mémoire
+      for (const modelType of persistedModels) {
+        try {
+          // Rechargement silencieux (sans callback de progression)
+          await this.loadModel(modelType);
+          console.log(`✅ Modèle ${modelType} rechargé automatiquement`);
+        } catch (error) {
+          console.warn(`⚠️ Échec du rechargement automatique de ${modelType}:`, error);
+          // Retirer le modèle défaillant de la persistance
+          this.removeFromPersistence(modelType);
         }
-      });
-
-      if (progressCallback) {
-        progressCallback({
-          modelName: config.name,
-          status: 'ready',
-          progress: 100
-        });
       }
-
-      return translationPipeline;
-    } catch (error) {
-      if (progressCallback) {
-        progressCallback({
-          modelName: config.name,
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Erreur inconnue'
-        });
-      }
-      throw error;
     }
   }
 
-  private saveLoadedModelsToStorage(): void {
+  /**
+   * Retire un modèle de la persistance s'il ne peut pas être rechargé
+   */
+  private removeFromPersistence(modelType: TranslationModelType): void {
     try {
-      if (typeof window === 'undefined') return; // SSR protection
-      
-      const loadedModels = Array.from(this.loadedPipelines.keys());
-      localStorage.setItem(this.STORAGE_KEY_LOADED_MODELS, JSON.stringify(loadedModels));
-    } catch (error) {
-      console.warn('Erreur lors de la sauvegarde des modèles chargés:', error);
-    }
-  }
+      const config = UNIFIED_TRANSLATION_MODELS[modelType];
+      if (!config) return;
 
-  // === MÉTHODES DE TRADUCTION ===
-
-  /**
-   * Traduction simple avec sélection automatique du modèle
-   */
-  async translateSimple(
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string
-  ): Promise<TranslationResult> {
-    const startTime = Date.now();
-    
-    // Vérifier le cache
-    const cached = this.getFromCache(text, sourceLanguage, targetLanguage);
-    if (cached) {
-      return {
-        translatedText: cached.translated,
-        sourceLanguage,
-        targetLanguage,
-        modelUsed: cached.modelUsed,
-        confidence: 1.0
-      };
-    }
-
-    // Sélectionner le modèle automatiquement
-    const modelSelection = selectModelForMessage(text.length, text.length > 100 ? 'complex' : 'simple');
-    const modelType = modelSelection.type === 'basic' ? ACTIVE_MODELS.basicModel : ACTIVE_MODELS.highModel;
-    
-    // Charger et utiliser le modèle
-    const pipeline = await this.loadModel(modelType);
-    const result = await this.performTranslation(pipeline, text, sourceLanguage, targetLanguage, modelSelection.config);
-    
-    // Ajouter au cache
-    this.addToCache(text, result.translatedText, sourceLanguage, targetLanguage, result.modelUsed);
-    
-    // Ajouter les métadonnées
-    const metadata: TranslationMetadata = {
-      messageId: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      originalText: text,
-      sourceLanguage,
-      targetLanguage,
-      timestamp: Date.now(),
-      modelUsed: result.modelUsed,
-      cacheHit: false,
-      translationTime: Date.now() - startTime
-    };
-    
-    this.metadata.set(metadata.messageId, metadata);
-    this.saveMetadataToStorage();
-    
-    return result;
-  }
-
-  /**
-   * Traduction optimisée avec modèle spécifique
-   */
-  async translateOptimized(
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    preferredModel?: AllowedModelType
-  ): Promise<TranslationResult> {
-    // Vérifier le cache
-    const cached = this.getFromCache(text, sourceLanguage, targetLanguage);
-    if (cached) {
-      return {
-        translatedText: cached.translated,
-        sourceLanguage,
-        targetLanguage,
-        modelUsed: cached.modelUsed,
-        confidence: 1.0
-      };
-    }
-
-    // Utiliser le modèle préféré ou sélectionner automatiquement
-    const modelType = preferredModel || 
-      (text.length > 50 ? ACTIVE_MODELS.highModel : ACTIVE_MODELS.basicModel);
-    
-    const config = getActiveModelConfig(modelType === ACTIVE_MODELS.basicModel ? 'basic' : 'high');
-    const pipeline = await this.loadModel(modelType);
-    const result = await this.performTranslation(pipeline, text, sourceLanguage, targetLanguage, config);
-    
-    // Ajouter au cache
-    this.addToCache(text, result.translatedText, sourceLanguage, targetLanguage, result.modelUsed);
-    
-    return result;
-  }
-
-  private async performTranslation(
-    pipeline: TranslationPipeline,
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    config: UnifiedModelConfig
-  ): Promise<TranslationResult> {
-    try {
-      // Utiliser la nouvelle API de HuggingFace sans options obsolètes
-      const result = await pipeline(text);
-
-      let translatedText = '';
-      if (Array.isArray(result) && result.length > 0) {
-        const firstResult = result[0] as { translation_text?: string; generated_text?: string; text?: string };
-        translatedText = firstResult.translation_text || 
-                        firstResult.generated_text || 
-                        firstResult.text || 
-                        String(firstResult);
-      } else if (result && typeof result === 'object') {
-        const resultObj = result as { translation_text?: string; generated_text?: string; text?: string };
-        translatedText = resultObj.translation_text ||
-                        resultObj.generated_text ||
-                        resultObj.text ||
-                        String(result);
-      } else {
-        translatedText = String(result);
-      }
-
-      return {
-        translatedText: translatedText.trim(),
-        sourceLanguage,
-        targetLanguage,
-        modelUsed: config.name,
-        confidence: 0.9
-      };
-    } catch (error) {
-      console.error('Erreur lors de la traduction:', error);
-      throw new Error(`Échec de la traduction: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
-    }
-  }
-
-  // === MÉTHODES UTILITAIRES ===
-
-  // === MÉTHODES DE COMPATIBILITÉ AVEC L'ANCIEN API ===
-  
-  /**
-   * Méthode de compatibilité pour translateText (ancienne API)
-   */
-  async translateText(
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    modelType?: AllowedModelType
-  ): Promise<{ translatedText: string; modelUsed: string; confidence?: number }> {
-    const result = await this.translateOptimized(text, sourceLanguage, targetLanguage, modelType);
-    return {
-      translatedText: result.translatedText,
-      modelUsed: result.modelUsed,
-      confidence: result.confidence
-    };
-  }
-
-  /**
-   * Méthode pour décharger un modèle
-   */
-  async unloadModel(modelType: AllowedModelType): Promise<boolean> {
-    try {
-      if (this.loadedPipelines.has(modelType)) {
-        this.loadedPipelines.delete(modelType);
-        this.saveLoadedModelsToStorage();
-        console.log(`✅ Modèle ${modelType} déchargé`);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error(`❌ Erreur lors du déchargement du modèle ${modelType}:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * Méthode pour décharger tous les modèles
-   */
-  async unloadAllModels(): Promise<void> {
-    this.loadedPipelines.clear();
-    this.loadingPromises.clear();
-    this.progressCallbacks.clear();
-    this.saveLoadedModelsToStorage();
-    console.log('✅ Tous les modèles ont été déchargés');
-  }
-
-  /**
-   * Récupère les statistiques des modèles
-   */
-  getModelStats(): {
-    loadedModels: AllowedModelType[];
-    totalModels: number;
-    cacheSize: number;
-    totalTranslations: number;
-  } {
-    return {
-      loadedModels: Array.from(this.loadedPipelines.keys()),
-      totalModels: this.loadedPipelines.size,
-      cacheSize: this.cache.size,
-      totalTranslations: this.metadata.size
-    };
-  }
-
-  /**
-   * Récupère les modèles persistés depuis le localStorage
-   */
-  getPersistedLoadedModels(): AllowedModelType[] {
-    try {
-      if (typeof window === 'undefined') return []; // SSR protection
-      
-      const stored = localStorage.getItem(this.STORAGE_KEY_LOADED_MODELS);
-      if (stored) {
-        return JSON.parse(stored);
+      const savedModels = localStorage.getItem(this.STORAGE_KEY_LOADED_MODELS);
+      if (savedModels) {
+        const modelIds: string[] = JSON.parse(savedModels);
+        const filteredIds = modelIds.filter(id => id !== config.huggingFaceId);
+        localStorage.setItem(this.STORAGE_KEY_LOADED_MODELS, JSON.stringify(filteredIds));
+        console.log(`🗑️ Modèle ${modelType} retiré de la persistance`);
       }
     } catch (error) {
-      console.warn('Erreur lors de la récupération des modèles persistés:', error);
+      console.warn('⚠️ Erreur lors de la suppression de persistance:', error);
+    }
+  }
+
+  /**
+   * Obtient les modèles marqués comme chargés (incluant ceux persistés)
+   */
+  getPersistedLoadedModels(): TranslationModelType[] {
+    try {
+      const savedModels = localStorage.getItem(this.STORAGE_KEY_LOADED_MODELS);
+      if (savedModels) {
+        const modelIds: string[] = JSON.parse(savedModels);
+        return Object.values(UNIFIED_TRANSLATION_MODELS)
+          .filter(config => modelIds.includes(config.huggingFaceId))
+          .map(config => config.name);
+      }
+    } catch (error) {
+      console.warn('⚠️ Erreur lors de la lecture des modèles persistés:', error);
     }
     return [];
   }
 
   /**
-   * Précharge les modèles recommandés
+   * Sauvegarde l'état dans localStorage
    */
-  async preloadRecommendedModels(onProgress?: (progress: TranslationProgress) => void): Promise<void> {
-    const recommendedModels = [ACTIVE_MODELS.basicModel, ACTIVE_MODELS.highModel];
+  private persistState(): void {
+    try {
+      const loadedModelIds = Array.from(this.loadedPipelines.keys());
+      localStorage.setItem(this.STORAGE_KEY_LOADED_MODELS, JSON.stringify(loadedModelIds));
+      
+      // Sauvegarder aussi les métadonnées pour affichage
+      const modelMetadata = loadedModelIds.map(modelId => {
+        const config = Object.values(UNIFIED_TRANSLATION_MODELS).find(c => c.huggingFaceId === modelId);
+        return {
+          modelId,
+          modelType: config?.name,
+          displayName: config?.displayName,
+          family: config?.family,
+          loadedAt: new Date().toISOString()
+        };
+      });
+      
+      localStorage.setItem(this.STORAGE_KEY_MODEL_CACHE, JSON.stringify(modelMetadata));
+      console.log(`💾 État persisté: ${loadedModelIds.length} modèles`);
+    } catch (error) {
+      console.warn('⚠️ Erreur lors de la sauvegarde de l\'état:', error);
+    }
+  }
+
+  /**
+   * Charge un modèle de traduction
+   */
+  async loadModel(
+    modelType: TranslationModelType,
+    onProgress?: (progress: TranslationProgress) => void
+  ): Promise<TranslationPipeline> {
+    const config = UNIFIED_TRANSLATION_MODELS[modelType];
+    if (!config) {
+      throw new Error(`Modèle ${modelType} non trouvé dans la configuration`);
+    }
+
+    const modelId = config.huggingFaceId;
     
-    for (const modelId of recommendedModels) {
-      if (!this.loadedPipelines.has(modelId)) {
-        await this.loadModel(modelId, onProgress);
+    // Vérifier si déjà chargé
+    if (this.loadedPipelines.has(modelId)) {
+      console.log(`✅ Modèle ${modelType} déjà chargé`);
+      return this.loadedPipelines.get(modelId)!;
+    }
+
+    // Vérifier si en cours de chargement
+    if (this.loadingPromises.has(modelId)) {
+      return this.loadingPromises.get(modelId)!;
+    }
+
+    // Enregistrer le callback de progression
+    if (onProgress) {
+      this.progressCallbacks.set(modelId, onProgress);
+    }
+
+    // Démarrer le chargement
+    const loadingPromise = this.performModelLoading(config);
+    this.loadingPromises.set(modelId, loadingPromise);
+
+    try {
+      const translationPipeline = await loadingPromise;
+      this.loadedPipelines.set(modelId, translationPipeline);
+      this.loadingPromises.delete(modelId);
+      
+      // Persister l'état après chargement réussi
+      this.persistState();
+      
+      this.notifyProgress(modelId, {
+        modelName: modelType,
+        status: 'ready',
+        progress: 100
+      });
+
+      return translationPipeline;
+    } catch (error) {
+      this.loadingPromises.delete(modelId);
+      this.notifyProgress(modelId, {
+        modelName: modelType,
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Erreur de chargement'
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Effectue le chargement réel du modèle
+   */
+  private async performModelLoading(config: UnifiedModelConfig): Promise<TranslationPipeline> {
+    console.log(`🔄 Chargement du modèle: ${config.huggingFaceId}`);
+    
+    this.notifyProgress(config.huggingFaceId, {
+      modelName: config.name,
+      status: 'downloading',
+      progress: 0
+    });
+
+    try {
+      // Charger le pipeline approprié selon le type de modèle
+      // MT5 utilise text2text-generation, NLLB peut utiliser translation
+      const taskType = config.family === 'MT5' ? 'text2text-generation' : 'translation';
+      
+      // @huggingface/transformers gère automatiquement le téléchargement et le cache
+      const translationPipeline = await pipeline(taskType, config.huggingFaceId);
+
+      console.log(`✅ Modèle ${config.huggingFaceId} chargé avec succès`);
+      return translationPipeline;
+
+    } catch (error) {
+      console.error(`❌ Erreur chargement ${config.huggingFaceId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Traduit un texte avec un modèle spécifique
+   */
+  async translate(
+    text: string,
+    targetLanguage: string,
+    sourceLanguage: string,
+    options: {
+      modelType: TranslationModelType,
+      onProgress?: (progress: TranslationProgress) => void
+    }
+  ): Promise<TranslationResult> {
+    if (!text.trim()) {
+      throw new Error('Le texte à traduire ne peut pas être vide');
+    }
+
+    // Limiter la taille du texte pour éviter les erreurs de mémoire et le gel
+    if (text.length > 200) {
+      throw new Error('Texte trop long (maximum 200 caractères). Réduisez la taille pour éviter le gel de l\'interface.');
+    }
+
+    const config = UNIFIED_TRANSLATION_MODELS[modelType];
+    if (!config) {
+      throw new Error(`Modèle ${modelType} non supporté`);
+    }
+
+    console.log(`🔄 Traduction: "${text}" (${sourceLanguage} → ${targetLanguage}) avec ${modelType}`);
+
+    try {
+      // Charger le modèle si nécessaire
+      const translationPipeline = await this.loadModel(modelType, onProgress);
+
+      // Utiliser setTimeout pour éviter de bloquer l'interface utilisateur
+      const result = await this.executeTranslationWithTimeout(
+        translationPipeline,
+        text,
+        sourceLanguage,
+        targetLanguage,
+        config
+      );
+
+      // Extraire le texte traduit
+      let translatedText: string;
+      
+      if (Array.isArray(result) && result.length > 0) {
+        const firstResult = result[0];
+        if (typeof firstResult === 'object' && firstResult !== null) {
+          // Essayer différentes propriétés possibles
+          translatedText = (firstResult as any).translation_text || 
+                          (firstResult as any).generated_text || 
+                          (firstResult as any).text ||
+                          String(firstResult);
+        } else {
+          translatedText = String(firstResult);
+        }
+      } else if (typeof result === 'object' && result !== null) {
+        translatedText = (result as any).translation_text || 
+                        (result as any).generated_text || 
+                        (result as any).text ||
+                        String(result);
+      } else {
+        translatedText = String(result);
       }
+
+      // Nettoyer le texte traduit de manière plus robuste
+      translatedText = this.cleanTranslationText(translatedText.trim());
+
+      // Validation du résultat - détecter les résultats corrompus
+      if (!translatedText || translatedText === text || this.isCorruptedResult(translatedText)) {
+        console.warn(`⚠️ Traduction corrompue ou vide détectée: "${translatedText}"`);
+        
+        // Essayer une stratégie de fallback plus simple
+        if (config.family === 'MT5') {
+          throw new Error('Traduction MT5 corrompue. Essayez un texte plus simple ou utilisez le modèle NLLB.');
+        } else {
+          translatedText = text; // Garder le texte original en dernier recours
+        }
+      }
+
+      console.log(`✅ Traduction réussie: "${translatedText}"`);
+
+      return {
+        translatedText,
+        sourceLanguage,
+        targetLanguage,
+        modelUsed: config.displayName,
+        confidence: 0.95 // Valeur par défaut, pourrait être extraite du résultat
+      };
+
+    } catch (error) {
+      console.error(`❌ Erreur traduction avec ${modelType}:`, error);
+      
+      // Gestion spécifique des erreurs de mémoire et de tokenisation
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      
+      if (errorMsg.includes('522819016')) {
+        throw new Error('Erreur de tokenisation: Le texte contient des caractères incompatibles avec ce modèle. Essayez de simplifier le texte ou d\'utiliser un autre modèle.');
+      }
+      
+      if (errorMsg.includes('out of memory') || errorMsg.includes('OOM')) {
+        throw new Error('Mémoire insuffisante: Essayez un texte plus court ou déchargez d\'autres modèles.');
+      }
+      
+      throw new Error(`Échec de traduction: ${errorMsg}`);
+    }
+  }
+
+  /**
+   * Exécute la traduction avec un timeout pour éviter le gel
+   */
+  private async executeTranslationWithTimeout(
+    translationPipeline: any,
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string,
+    config: any
+  ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      // Timeout de 30 secondes pour éviter le gel infini
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Timeout: La traduction prend trop de temps. Essayez un texte plus court.'));
+      }, 30000);
+
+      // Exécuter la traduction de manière asynchrone
+      const executeTranslation = async () => {
+        try {
+          let result: any;
+          
+          if (config.family === 'MT5') {
+            // Pour MT5 : utiliser le format text2text-generation avec des paramètres optimisés
+            const prompt = `translate ${sourceLanguage} to ${targetLanguage}: ${text}`;
+            console.log(`🔄 MT5 prompt: "${prompt}"`);
+            
+            result = await translationPipeline(prompt, {
+              max_length: Math.min(100, text.length + 20), // Plus conservateur pour éviter le gel
+              do_sample: false,
+              temperature: 0.1, // Plus déterministe
+              num_return_sequences: 1,
+              early_stopping: true,
+              num_beams: 1 // Simplifier pour plus de rapidité
+            });
+            
+          } else if (config.family === 'NLLB') {
+            // Pour NLLB : utiliser les codes de langue spécifiques
+            const srcLangCode = this.convertToNLLBCode(sourceLanguage);
+            const tgtLangCode = this.convertToNLLBCode(targetLanguage);
+            
+            console.log(`🔄 NLLB codes: ${srcLangCode} → ${tgtLangCode}`);
+            
+            result = await translationPipeline(text, {
+              src_lang: srcLangCode,
+              tgt_lang: tgtLangCode,
+              max_length: Math.min(100, text.length + 20), // Plus conservateur
+              num_beams: 1, // Simplifier pour plus de rapidité
+              early_stopping: true
+            });
+            
+          } else {
+            throw new Error(`Famille de modèle non supportée: ${config.family}`);
+          }
+
+          clearTimeout(timeoutId);
+          resolve(result);
+        } catch (error) {
+          clearTimeout(timeoutId);
+          reject(error);
+        }
+      };
+
+      // Utiliser setTimeout pour permettre à l'interface de respirer
+      setTimeout(executeTranslation, 10);
+    });
+  }
+
+  /**
+   * Détecte si un résultat de traduction est corrompu
+   */
+  private isCorruptedResult(text: string): boolean {
+    if (!text || text.length === 0) return true;
+    
+    // Détecter les patterns de corruption courants
+    const corruptionPatterns = [
+      /^[:.\s\-n]+$/, // Seulement des caractères de ponctuation et 'n'
+      /^[:\s]+$/, // Seulement des deux-points et espaces
+      /^[-\s]+$/, // Seulement des tirets et espaces
+      /^\s*n\s*n\s*n/, // Répétition de 'n'
+      /^[^a-zA-Z]*$/ // Aucune lettre
+    ];
+    
+    return corruptionPatterns.some(pattern => pattern.test(text.trim()));
+  }
+
+  /**
+   * Convertit un code de langue ISO en code NLLB
+   */
+  private convertToNLLBCode(languageCode: string): string {
+    const nllbCodes: Record<string, string> = {
+      'en': 'eng_Latn',
+      'fr': 'fra_Latn',
+      'es': 'spa_Latn',
+      'de': 'deu_Latn',
+      'it': 'ita_Latn',
+      'pt': 'por_Latn',
+      'ru': 'rus_Cyrl',
+      'ja': 'jpn_Jpan',
+      'ko': 'kor_Hang',
+      'zh': 'zho_Hans',
+      'ar': 'arb_Arab',
+      'hi': 'hin_Deva',
+      'tr': 'tur_Latn',
+      'pl': 'pol_Latn',
+      'nl': 'nld_Latn',
+      'sv': 'swe_Latn',
+      'da': 'dan_Latn',
+      'no': 'nor_Latn',
+      'fi': 'fin_Latn',
+      'cs': 'ces_Latn'
+    };
+
+    return nllbCodes[languageCode] || languageCode;
+  }
+
+  /**
+   * Notifie la progression
+   */
+  private notifyProgress(modelId: string, progress: TranslationProgress): void {
+    const callback = this.progressCallbacks.get(modelId);
+    if (callback) {
+      callback(progress);
     }
   }
 
   /**
    * Vérifie si un modèle est chargé
    */
-  isModelLoaded(model: AllowedModelType): boolean {
-    return this.loadedPipelines.has(model);
+  isModelLoaded(modelType: TranslationModelType): boolean {
+    const config = UNIFIED_TRANSLATION_MODELS[modelType];
+    return config ? this.loadedPipelines.has(config.huggingFaceId) : false;
   }
 
   /**
-   * Récupère la liste des modèles chargés
+   * Obtient la liste des modèles chargés
    */
-  getLoadedModels(): AllowedModelType[] {
-    return Array.from(this.loadedPipelines.keys());
+  getLoadedModels(): TranslationModelType[] {
+    const loadedIds = Array.from(this.loadedPipelines.keys());
+    return Object.values(UNIFIED_TRANSLATION_MODELS)
+      .filter(config => loadedIds.includes(config.huggingFaceId))
+      .map(config => config.name);
   }
 
   /**
-   * Récupère les statistiques du cache
+   * Décharge un modèle de la mémoire
    */
-  getCacheStats(): { size: number; expiredCount: number; totalTranslations: number } {
-    let expiredCount = 0;
-    const now = Date.now();
-    
-    for (const [, cached] of this.cache.entries()) {
-      if (now - cached.timestamp > this.CACHE_EXPIRY) {
-        expiredCount++;
-      }
+  async unloadModel(modelType: TranslationModelType): Promise<boolean> {
+    const config = UNIFIED_TRANSLATION_MODELS[modelType];
+    if (!config) return false;
+
+    const modelId = config.huggingFaceId;
+    if (this.loadedPipelines.has(modelId)) {
+      // Note: @huggingface/transformers ne fournit pas de méthode dispose explicite
+      // mais la suppression de la référence permettra au garbage collector de faire son travail
+      this.loadedPipelines.delete(modelId);
+      this.progressCallbacks.delete(modelId);
+      
+      // Persister l'état après déchargement
+      this.persistState();
+      
+      console.log(`🗑️ Modèle ${modelType} déchargé`);
+      return true;
     }
-    
+    return false;
+  }
+
+  /**
+   * Décharge tous les modèles
+   */
+  async unloadAllModels(): Promise<void> {
+    for (const modelType of this.getLoadedModels()) {
+      await this.unloadModel(modelType);
+    }
+    console.log(`🧹 Tous les modèles déchargés`);
+  }
+
+  /**
+   * Obtient des statistiques sur les modèles
+   */
+  getModelStats(): { 
+    loaded: number; 
+    total: number; 
+    loadedModels: TranslationModelType[];
+    availableModels: TranslationModelType[];
+  } {
+    const availableModels = Object.keys(UNIFIED_TRANSLATION_MODELS) as TranslationModelType[];
+    const loadedModels = this.getLoadedModels();
+
     return {
-      size: this.cache.size,
-      expiredCount,
-      totalTranslations: this.metadata.size
+      loaded: loadedModels.length,
+      total: availableModels.length,
+      loadedModels,
+      availableModels
     };
   }
 
   /**
-   * Vide complètement le cache
+   * Précharge les modèles recommandés pour le système
    */
-  clearCache(): void {
-    this.cache.clear();
-    this.metadata.clear();
-    this.saveCacheToStorage();
-    this.saveMetadataToStorage();
+  async preloadRecommendedModels(onProgress?: (progress: TranslationProgress) => void): Promise<void> {
+    try {
+      const activeModels = getAllActiveModels();
+      const basicModel = activeModels.find(m => m.type === 'basic')?.config.name;
+      const highModel = activeModels.find(m => m.type === 'high')?.config.name;
+      
+      if (!basicModel || !highModel) {
+        throw new Error('Modèles actifs non configurés');
+      }
+      
+      console.log(`🚀 Préchargement des modèles actifs: ${basicModel}, ${highModel}`);
+      
+      // Précharger le modèle de base d'abord (plus léger)
+      await this.loadModel(basicModel, onProgress);
+      console.log(`✅ Modèle de base préchargé: ${basicModel}`);
+      
+      // Puis le modèle avancé
+      await this.loadModel(highModel, onProgress);
+      console.log(`✅ Modèle avancé préchargé: ${highModel}`);
+    } catch (error) {
+      console.error('❌ Erreur lors du préchargement du modèle:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Charge automatiquement le meilleur modèle disponible pour une tâche de traduction
+   */
+  /**
+   * Charge automatiquement le meilleur modèle disponible pour une tâche de traduction
+   */
+  async loadBestAvailableModel(
+    onProgress?: (progress: TranslationProgress) => void
+  ): Promise<{ modelType: TranslationModelType; pipeline: TranslationPipeline }> {
+    // D'abord, vérifier s'il y a des modèles déjà chargés
+    const loadedModels = this.getLoadedModels();
+    if (loadedModels.length > 0) {
+      // Prendre le premier modèle chargé
+      const bestLoaded = loadedModels[0];
+      const config = UNIFIED_TRANSLATION_MODELS[bestLoaded];
+      const pipeline = this.loadedPipelines.get(config.huggingFaceId);
+      
+      if (pipeline) {
+        console.log(`✅ Utilisation du modèle déjà chargé: ${bestLoaded}`);
+        return { modelType: bestLoaded, pipeline };
+      }
+    }
+
+    // Sinon, vérifier les modèles persistés
+    const persistedModels = this.getPersistedLoadedModels();
+    if (persistedModels.length > 0) {
+      const bestPersisted = persistedModels[0];
+      try {
+        const pipeline = await this.loadModel(bestPersisted, onProgress);
+        console.log(`✅ Modèle rechargé depuis la persistance: ${bestPersisted}`);
+        return { modelType: bestPersisted, pipeline };
+      } catch {
+        console.warn(`⚠️ Échec du rechargement de ${bestPersisted}, essai du modèle recommandé`);
+      }
+    }
+
+    // En dernier recours, charger un modèle recommandé selon la configuration
+    try {
+      const activeModels = getAllActiveModels();
+      const basicModel = activeModels.find(m => m.type === 'basic')?.config.name;
+      
+      if (!basicModel) {
+        throw new Error('Aucun modèle actif configuré');
+      }
+      
+      const pipeline = await this.loadModel(basicModel, onProgress);
+      
+      console.log(`✅ Modèle de base chargé: ${basicModel}`);
+      return { modelType: basicModel, pipeline };
+    } catch (error) {
+      console.error('❌ Impossible de charger un modèle:', error);
+      throw new Error('Aucun modèle de traduction disponible');
+    }
+  }
+
+  /**
+   * Vérifie si un modèle est marqué comme chargé (en mémoire OU persisté)
+   */
+  isModelLoadedOrPersisted(modelType: TranslationModelType): boolean {
+    const config = UNIFIED_TRANSLATION_MODELS[modelType];
+    if (!config) return false;
+    
+    // Vérifier d'abord la mémoire
+    if (this.loadedPipelines.has(config.huggingFaceId)) {
+      return true;
+    }
+    
+    // Puis vérifier la persistance
+    const persistedModels = this.getPersistedLoadedModels();
+    return persistedModels.includes(modelType);
+  }
+
+  /**
+   * Force le rechargement d'un modèle même s'il est déjà chargé
+   */
+  async reloadModel(
+    modelType: TranslationModelType,
+    onProgress?: (progress: TranslationProgress) => void
+  ): Promise<TranslationPipeline> {
+    // Décharger d'abord s'il est chargé
+    await this.unloadModel(modelType);
+    
+    // Puis recharger
+    return this.loadModel(modelType, onProgress);
+  }
+
+  /**
+   * Nettoie complètement le cache et la persistance
+   */
+  async clearAllCache(): Promise<void> {
+    // Décharger tous les modèles de la mémoire
+    await this.unloadAllModels();
+    
+    // Nettoyer le localStorage
+    localStorage.removeItem(this.STORAGE_KEY_LOADED_MODELS);
+    localStorage.removeItem(this.STORAGE_KEY_MODEL_CACHE);
+    
+    console.log(`🧹 Cache et persistance nettoyés complètement`);
+  }
+
+  /**
+   * Nettoie le texte traduit des tokens et artefacts indésirables
+   */
+  private cleanTranslationText(text: string): string {
+    if (!text) return '';
+    
+    return text
+      // Supprimer les tokens extra_id problématiques
+      .replace(/<extra_id_\d+>/g, '')
+      // Supprimer les tokens de sous-mot
+      .replace(/▁/g, ' ')
+      // Supprimer les tokens de début/fin
+      .replace(/<s>|<\/s>/g, '')
+      // Supprimer les tokens de padding
+      .replace(/<pad>/g, '')
+      // Supprimer les tokens inconnus
+      .replace(/<unk>/g, '')
+      // Supprimer les tokens de masquage
+      .replace(/<mask>/g, '')
+      // Normaliser les espaces multiples
+      .replace(/\s+/g, ' ')
+      // Supprimer les espaces en début et fin
+      .trim();
   }
 }
 
-// Export de l'instance unique pour utilisation dans l'application
+// Export par défaut pour faciliter l'utilisation
 export const translationService = TranslationService.getInstance();
+export default TranslationService;

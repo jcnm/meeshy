@@ -44,9 +44,9 @@ class MessagingService {
   }
 
   private initializeConnection() {
-    // Vérification côté client uniquement
+    // Vérifier si le code s'exécute côté client (navigateur)
     if (typeof window === 'undefined') {
-      console.log('🔒 MessagingService: Côté serveur - connexion différée');
+      console.warn('🔒 MessagingService: Exécution côté serveur, connexion ignorée');
       return;
     }
     

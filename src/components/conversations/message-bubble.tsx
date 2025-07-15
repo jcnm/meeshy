@@ -19,7 +19,7 @@ interface MessageBubbleProps {
   message: TranslatedMessage;
   currentUserId: string;
   currentUserLanguage: string;
-  onTranslate: (messageId: string, targetLanguage: string, forceRetranslate?: boolean) => Promise<void>;
+  onTranslate: (messageId: string, targetLanguage: string, forceRetranslate?: boolean, sourceLanguage?: string) => Promise<{detectedLanguage?: string} | void>;
   onEdit: (messageId: string, newContent: string) => Promise<void>;
   onToggleOriginal: (messageId: string) => void;
 }
@@ -37,6 +37,9 @@ export function MessageBubble({
   const [editContent, setEditContent] = useState(message.content);
   const [isLocalTranslating, setIsLocalTranslating] = useState(false);
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
+  const [isSourceLanguagePopoverOpen, setIsSourceLanguagePopoverOpen] = useState(false);
+  const [selectedSourceLanguage, setSelectedSourceLanguage] = useState<string>(message.originalLanguage || 'auto');
+  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
   
   const isTranslating = message.isTranslating || isLocalTranslating;
   const isOwnMessage = message.senderId === currentUserId;
@@ -66,18 +69,23 @@ export function MessageBubble({
     
     return content
       .replace(/<extra_id_\d+>/g, '') // Supprimer les tokens extra_id
-      .replace(/▁/g, '') // Supprimer les tokens de sous-mot
+      .replace(/▁/g, ' ') // Remplacer les tokens de sous-mot par des espaces
+      .replace(/\<pad\>/g, '') // Supprimer les tokens pad
+      .replace(/\<unk\>/g, '') // Supprimer les tokens unk
+      .replace(/\<\/s\>/g, '') // Supprimer les tokens de fin de séquence
+      .replace(/\<s\>/g, '') // Supprimer les tokens de début de séquence
       .replace(/\s+/g, ' ') // Normaliser les espaces
       .trim();
   };
 
   // Get the display content
   const getDisplayContent = (): string => {
+    // Déterminer quel contenu afficher (original ou traduit)
     const content = message.showingOriginal 
       ? message.content 
       : (message.translatedContent || message.content);
     
-    // Nettoyer le contenu
+    // Toujours nettoyer le contenu pour éviter les tokens spéciaux
     const cleanedContent = cleanTranslationContent(content);
     
     // Si le contenu est vide après nettoyage, utiliser l'original
@@ -95,7 +103,17 @@ export function MessageBubble({
   const handleTranslate = async (targetLanguage: string, forceRetranslate: boolean = false) => {
     try {
       setIsLocalTranslating(true);
-      await onTranslate(message.id, targetLanguage, forceRetranslate);
+      
+      // Utiliser la langue source sélectionnée
+      const sourceLanguage = selectedSourceLanguage;
+      
+      // Si la traduction s'effectue et renvoie une langue détectée (quand sourceLanguage='auto')
+      // la stocker pour l'afficher à l'utilisateur
+      const result = await onTranslate(message.id, targetLanguage, forceRetranslate, sourceLanguage);
+      if (result && result.detectedLanguage) {
+        setDetectedLanguage(result.detectedLanguage);
+      }
+      
       // Fermer le popover après traduction réussie
       setIsTranslationPopoverOpen(false);
     } catch (error) {
@@ -189,6 +207,25 @@ export function MessageBubble({
               <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                 {getDisplayContent()}
               </p>
+              
+              {/* Indicateur de traduction avec langue source */}
+              {!message.showingOriginal && hasTranslations && (
+                <div className="mt-2 text-xs flex items-center space-x-1 opacity-70">
+                  {detectedLanguage ? (
+                    <>
+                      <span>De: {SUPPORTED_LANGUAGES.find(l => l.code === detectedLanguage)?.flag || '🔍'}</span>
+                      <span>•</span>
+                      <span>Vers: {SUPPORTED_LANGUAGES.find(l => l.code === message.translations![0].language)?.flag || '?'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>De: {SUPPORTED_LANGUAGES.find(l => l.code === message.originalLanguage)?.flag || '?'}</span>
+                      <span>•</span>
+                      <span>Vers: {SUPPORTED_LANGUAGES.find(l => l.code === message.translations![0].language)?.flag || '?'}</span>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Show all available translations ONLY when viewing original */}
@@ -258,6 +295,70 @@ export function MessageBubble({
               </Button>
             )}
             
+            {/* Source Language Selection - Flag Icon */}
+            {!isEditing && (
+              <Popover 
+                open={isSourceLanguagePopoverOpen} 
+                onOpenChange={setIsSourceLanguagePopoverOpen}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200 cursor-pointer"
+                    disabled={isTranslating}
+                    title="Sélectionner la langue source"
+                  >
+                    {detectedLanguage ? (
+                      <span className="text-sm font-medium">
+                        {SUPPORTED_LANGUAGES.find(l => l.code === detectedLanguage)?.flag || '🔍'}
+                      </span>
+                    ) : (
+                      <span className="text-sm font-medium">
+                        {SUPPORTED_LANGUAGES.find(l => l.code === selectedSourceLanguage)?.flag || '🔍'}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-3">
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Sélectionner la langue source :</p>
+                    <div className="grid grid-cols-1 gap-1 max-h-60 overflow-y-auto">
+                      {SUPPORTED_LANGUAGES.map(lang => {
+                        const isSelected = selectedSourceLanguage === lang.code;
+                        return (
+                          <Button
+                            key={`source-${lang.code}`}
+                            variant="ghost"
+                            size="sm"
+                            className={`justify-between h-10 px-3 ${
+                              isSelected ? 'bg-blue-50 border border-blue-200' : ''
+                            }`}
+                            onClick={() => {
+                              setSelectedSourceLanguage(lang.code);
+                              setDetectedLanguage(null); // Réinitialiser la langue détectée
+                              setIsSourceLanguagePopoverOpen(false);
+                            }}
+                            disabled={isTranslating}
+                          >
+                            <span className="flex items-center gap-3">
+                              <span className="text-lg">{lang.flag}</span>
+                              <span className="text-sm">{lang.name}</span>
+                            </span>
+                            {isSelected && (
+                              <span className="text-xs text-blue-600 font-medium">
+                                ✓ Sélectionnée
+                              </span>
+                            )}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+            
             {/* Translation icon */}
             {!isEditing && availableLanguages.length > 0 && (
               <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
@@ -275,8 +376,30 @@ export function MessageBubble({
                 <PopoverContent className="w-72 p-3">
                   <div className="space-y-3">
                     <p className="text-sm font-medium">Traduire vers :</p>
+                    
+                    {/* Si langue source est 'auto', afficher un message */}
+                    {selectedSourceLanguage === 'auto' && !detectedLanguage && (
+                      <div className="p-2 bg-blue-50 rounded-md mb-2">
+                        <p className="text-xs text-blue-800">
+                          La langue source sera détectée automatiquement lors de la traduction.
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Si langue détectée, afficher l'information */}
+                    {detectedLanguage && selectedSourceLanguage === 'auto' && (
+                      <div className="p-2 bg-blue-50 rounded-md mb-2">
+                        <p className="text-xs text-blue-800">
+                          Langue détectée: {SUPPORTED_LANGUAGES.find(l => l.code === detectedLanguage)?.name || detectedLanguage}
+                          {' '}{SUPPORTED_LANGUAGES.find(l => l.code === detectedLanguage)?.flag || ''}
+                        </p>
+                      </div>
+                    )}
+                    
                     <div className="grid grid-cols-1 gap-1 max-h-60 overflow-y-auto">
-                      {availableLanguages.map(lang => {
+                      {availableLanguages
+                        .filter(lang => lang.code !== 'auto') // Ne pas montrer 'auto' dans le menu de langues cibles
+                        .map(lang => {
                         const isAlreadyTranslated = getLanguageStatus(lang.code) === 'translated';
                         return (
                           <Button

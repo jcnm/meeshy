@@ -14,14 +14,13 @@ import {
 import { 
   getAllActiveModels,
   getActiveModelConfig,
+  getModelConfig,
   ACTIVE_MODELS,
   type AllowedModelType 
 } from '@/lib/unified-model-config';
 import { 
   type UnifiedModelConfig 
 } from '@/lib/unified-model-config';
-
-// Plus besoin de mapping - utilisation directe des types AllowedModelType
 
 /**
  * Composant pour le téléchargement des 2 modèles actifs configurés
@@ -39,8 +38,8 @@ export function RealModelDownloader() {
   useEffect(() => {
     // Charger l'état initial des modèles
     const updateLoadedModels = () => {
-      const loadedModelsList = translationService.getLoadedModels();
-      setLoadedModels(loadedModelsList);
+      const stats = translationService.getStats();
+      setLoadedModels(stats.loadedPipelines);
     };
 
     updateLoadedModels();
@@ -53,7 +52,7 @@ export function RealModelDownloader() {
     try {
       console.log(`🔄 Démarrage téléchargement: ${modelName}`);
       
-      await translationService.loadModel(modelName, (progress: TranslationProgress) => {
+      await translationService.loadTranslationPipeline(modelName, (progress: TranslationProgress) => {
         setDownloadProgress(prev => ({
           ...prev,
           [modelName]: progress
@@ -61,8 +60,8 @@ export function RealModelDownloader() {
       });
 
       // Mettre à jour la liste des modèles chargés
-      const loadedModelsList = translationService.getLoadedModels();
-      setLoadedModels(loadedModelsList);
+      const stats = translationService.getStats();
+      setLoadedModels(stats.loadedPipelines);
       
       // Supprimer la progression une fois terminé
       setDownloadProgress(prev => {
@@ -93,12 +92,12 @@ export function RealModelDownloader() {
    * Décharge un modèle de la mémoire
    */
   const unloadModel = async (modelName: AllowedModelType) => {
-    try {
-      await translationService.unloadModel(modelName);
-      const loadedModelsList = translationService.getLoadedModels();
-      setLoadedModels(loadedModelsList);
+    const success = translationService.unloadPipeline(modelName);
+    if (success) {
+      const stats = translationService.getStats();
+      setLoadedModels(stats.loadedPipelines);
       toast.success(`Modèle ${modelName} déchargé`);
-    } catch {
+    } else {
       toast.error(`Erreur lors du déchargement de ${modelName}`);
     }
   };
@@ -107,8 +106,24 @@ export function RealModelDownloader() {
    * Obtient le statut d'un modèle
    */
   const getModelStatus = (modelName: AllowedModelType) => {
-    if (loadedModels.includes(modelName)) return 'loaded';
-    if (downloadProgress[modelName]) return downloadProgress[modelName].status;
+    // Vérifier si le modèle est actuellement en cours de chargement
+    const isLoading = downloadProgress[modelName]?.status === 'downloading' || 
+                     downloadProgress[modelName]?.status === 'loading';
+    
+    if (isLoading) {
+      return downloadProgress[modelName].status;
+    }
+    
+    // Vérifier si le modèle est chargé
+    if (translationService.isModelLoaded(modelName)) {
+      return 'loaded';
+    }
+    
+    // Vérifier s'il y a une erreur
+    if (downloadProgress[modelName]?.status === 'error') {
+      return 'error';
+    }
+    
     return 'not-downloaded';
   };
 
@@ -176,16 +191,16 @@ export function RealModelDownloader() {
           Modèles disponibles (2)
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {activeModels.map((modelName) => {
-            const config = getActiveModelConfig(modelName === ACTIVE_MODELS.basicModel ? 'basic' : 'high');
+          {activeModels.map(modelType => {
+            const modelConfig = getModelConfig(modelType);
             return (
               <ModelCard 
-                key={modelName} 
-                config={config} 
-                status={getModelStatus(modelName)}
-                progress={downloadProgress[modelName]}
-                onDownload={() => downloadModel(modelName)}
-                onUnload={() => unloadModel(modelName)}
+                key={modelConfig.name} 
+                config={modelConfig} 
+                status={getModelStatus(modelConfig.name)}
+                progress={downloadProgress[modelConfig.name]}
+                onDownload={() => downloadModel(modelConfig.name)}
+                onUnload={() => unloadModel(modelConfig.name)}
                 isRecommended={true}
                 isCompatible={true}
               />
@@ -343,13 +358,6 @@ function ModelCard({
               <span>{progress.status === 'downloading' ? 'Téléchargement' : 'Chargement'}</span>
               <span>{Math.round(progress.progress || 0)}%</span>
             </div>
-            {/* Affichage des octets téléchargés - non disponible dans TranslationProgress
-            {progress.bytesLoaded !== undefined && progress.bytesTotal !== undefined && progress.bytesTotal > 0 && (
-              <div className="text-xs text-gray-500 text-center">
-                {formatBytes(progress.bytesLoaded)} / {formatBytes(progress.bytesTotal)}
-              </div>
-            )}
-            */}
           </div>
         )}
 

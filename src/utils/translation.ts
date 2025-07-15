@@ -4,7 +4,7 @@
  */
 
 import { translationService } from '@/services/translation.service';
-import { selectBestModel, ACTIVE_MODELS } from '@/lib/unified-model-config';
+import { selectBestModel } from '@/lib/unified-model-config';
 
 // Service de traduction global
 // const translationService = translationService; // Déjà importé
@@ -154,11 +154,11 @@ export async function translateMessage(
     console.log(`🤖 Utilisation du modèle: ${modelType} pour "${text.substring(0, 50)}..."`);
     
     // Utiliser le service HuggingFace pour la traduction
-    const result = await translationService.translateText(
+    const result = await translationService.translate(
       text, 
+      targetLang,
       sourceLang, 
-      targetLang, 
-      modelType
+      { forceRefresh: true, preferredModel: modelType }
     );
     
     const translatedText = result.translatedText;
@@ -176,12 +176,13 @@ export async function translateMessage(
     // En cas d'erreur, essayer de charger automatiquement un modèle de base
     try {
       console.log('🔄 Tentative de chargement automatique d\'un modèle...');
-      await translationService.loadModel(ACTIVE_MODELS.basicModel);
+      const modelType = translationService.getLoadedModels().pop() || 'NLLB_DISTILLED_600M';
       
-      const result = await translationService.translateSimple(
-        text, 
-        sourceLang, 
-        targetLang
+      const result = await translationService.translate(
+        text,
+        targetLang,
+        sourceLang,
+        { forceRefresh: true, preferredModel: modelType }
       );
       
       const translatedText = result.translatedText;

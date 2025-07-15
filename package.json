@@ -15,7 +15,9 @@
     "models:download": "./scripts/download-models.sh",
     "models:verify": "./scripts/verify-model-cache.sh",
     "start:with-models": "./scripts/start-with-models.sh",
-    "setup": "npm install && npm run models:download"
+    "setup": "npm install && npm run models:download",
+    "test:translation": "node scripts/test-translation-cleaning.js",
+    "test:translation:models": "node --experimental-modules scripts/test-translation-models.js"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.6.1",
@@ -50,7 +52,8 @@
     "react-dom": "^19.0.0",
     "socket.io-client": "^4.8.1",
     "sonner": "^2.0.6",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "tinyld": "^1.3.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

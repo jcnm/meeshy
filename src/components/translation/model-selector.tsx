@@ -107,12 +107,9 @@ export function ModelSelector({
         ];
 
         // Vérifier l'état actuel des modèles
-        const loadedModels = translationService.getLoadedModels();
-        const persistedModels = translationService.getPersistedLoadedModels();
-
         const updatedModels = modelInfos.map(model => ({
           ...model,
-          isLoaded: loadedModels.includes(model.id) || persistedModels.includes(model.id)
+          isLoaded: translationService.isModelLoaded(model.id) 
         }));
 
         setModels(updatedModels);
@@ -155,7 +152,7 @@ export function ModelSelector({
       }, 200);
 
       // Charger le modèle
-      await translationService.loadModel(modelId);
+      translationService.isModelLoaded(modelId);
 
       clearInterval(progressInterval);
 
@@ -190,7 +187,7 @@ export function ModelSelector({
   // Gérer la suppression d'un modèle du cache
   const handleRemoveModel = async (modelId: TranslationModelType) => {
     try {
-      await translationService.unloadModel(modelId);
+      await translationService.unloadPipeline(modelId);
       
       setModels(prev => prev.map(model => 
         model.id === modelId 

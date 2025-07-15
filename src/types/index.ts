@@ -131,6 +131,7 @@ export interface LanguageCode {
 }
 
 export const SUPPORTED_LANGUAGES: LanguageCode[] = [
+  { code: 'auto', name: 'Détection automatique', flag: '🔍' },
   { code: 'en', name: 'English', flag: '🇺🇸' },
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },

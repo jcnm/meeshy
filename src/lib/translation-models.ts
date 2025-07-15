@@ -5,7 +5,8 @@ import {
   getModelConfig,
   getModelsByFamily,
   getCompatibleModels,
-  recommendModel
+  recommendModel,
+  ModelFamily
 } from '@/lib/unified-model-config';
 import { type TranslationModelType as HFTranslationModelType } from '@/lib/unified-model-config';
 import { translationService } from '@/services/translation.service';
@@ -17,7 +18,7 @@ export type TranslationModelType = UnifiedTranslationModelType;
 export interface ModelConfig {
   modelType: TranslationModelType;
   displayName: string;
-  family: 'MT5' | 'NLLB';
+  family: ModelFamily;
   size: string;
   parameters: string;
   maxTokens: number;
@@ -151,7 +152,7 @@ class TranslationModelsManager {
       }
       
       // Utiliser la méthode loadModel du service HuggingFace
-      await translationService.loadModel(hfModelType);
+      // await translationService.loadModel(hfModelType);
       return true;
     } catch (error) {
       console.error(`Erreur lors du chargement du modèle ${modelType}:`, error);
@@ -270,7 +271,7 @@ class TranslationModelsManager {
       throw new Error(`Modèle non supporté: ${modelType}`);
     }
     
-    const result = await translationService.translateText(text, sourceLanguage, targetLanguage, hfModelType);
+    const result = await translationService.translate(text, targetLanguage, sourceLanguage, {forceRefresh: true, preferredModel: hfModelType});
     return result.translatedText;
   }
 

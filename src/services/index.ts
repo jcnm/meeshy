@@ -21,7 +21,7 @@ export type { Message, CreateMessageDto, UpdateMessageDto } from './messages.ser
 
 // Service de traduction unifié
 export { translationService, TranslationService } from './translation.service';
-export type { TranslationResult, TranslationProgress } from './translation.service';
+export type { TranslationResult, TranslationProgress, LanguageDetectionResult } from './translation.service';
 
 // Service mock pour les tests
 export { mockApiService } from './mock-api.service';

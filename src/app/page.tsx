@@ -282,6 +282,21 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
             
+              <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Languages className="h-12 w-12 text-violet-600 mb-4" />
+                <CardTitle>Détection Automatique</CardTitle>
+                <CardDescription>
+                  Détecte automatiquement la langue des messages pour une traduction plus précise.
+                </CardDescription>
+              </CardHeader>
+              <div className="px-6 pb-6">
+                <Button asChild variant="outline" className="w-full">
+                  <a href="/demo-auto-detection">Tester la détection auto</a>
+                </Button>
+              </div>
+            </Card>
+            
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Shield className="h-12 w-12 text-green-600 mb-4" />

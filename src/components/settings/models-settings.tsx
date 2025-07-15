@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Download, 
+import {
+  Download,
   HardDrive,
   Cpu,
   Globe,
@@ -18,10 +19,10 @@ import {
 import { toast } from 'sonner';
 import { translationService } from '@/services/translation.service';
 import { ACTIVE_MODELS } from '@/lib/unified-model-config';
-import type { AllowedModelType } from '@/lib/unified-model-config';
+import type { TranslationModelType } from '@/lib/unified-model-config';
 
 interface ModelDisplayInfo {
-  id: AllowedModelType;
+  id: TranslationModelType;
   name: string;
   config: {
     family: string;
@@ -120,12 +121,12 @@ export function ModelsSettings() {
     calculateStats();
   }, [models]);
 
-  const handleLoadModel = async (modelId: AllowedModelType) => {
+  const handleLoadModel = async (modelId: TranslationModelType) => {
     setLoadingModels(prev => new Set(prev).add(modelId));
     setLoadProgress(prev => ({ ...prev, [modelId]: 0 }));
 
     try {
-      await translationService.loadModel(modelId, (progress: { progress?: number }) => {
+      await translationService.loadTranslationPipeline(modelId, (progress: { progress?: number }) => {
         setLoadProgress(prev => ({ 
           ...prev, 
           [modelId]: Math.round((progress.progress || 0) * 100) 
@@ -153,7 +154,7 @@ export function ModelsSettings() {
   // Note: handleDownloadModel supprimé car non utilisé pour l'instant
   // Les modèles sont automatiquement téléchargés lors du premier chargement
 
-  const handleDeleteFromCache = async (modelId: AllowedModelType) => {
+  const handleDeleteFromCache = async (modelId: TranslationModelType) => {
     // Simuler la suppression du cache navigateur
     toast.info(`Suppression de ${modelId} du cache navigateur...`);
     
@@ -163,9 +164,9 @@ export function ModelsSettings() {
     }, 1000);
   };
 
-  const handleUnloadModel = async (modelId: AllowedModelType) => {
+  const handleUnloadModel = async (modelId: TranslationModelType) => {
     try {
-      await translationService.unloadModel(modelId);
+      await translationService.unloadPipeline(modelId);
       toast.success(`Modèle ${modelId} déchargé de la RAM`);
     } catch (error) {
       toast.error(`Erreur lors du déchargement RAM de ${modelId}`);
@@ -173,19 +174,20 @@ export function ModelsSettings() {
     }
   };
 
-  const testModel = async (modelId: AllowedModelType) => {
+  const testModel = async (modelId: TranslationModelType) => {
     try {
       // D'abord s'assurer que le modèle est chargé
-      if (!translationService.getLoadedModels().includes(modelId)) {
+      if (!translationService.isModelLoaded(modelId)) {
         toast.info(`Chargement du modèle ${modelId} pour le test...`);
         await handleLoadModel(modelId);
       }
       
       const testText = "Hello, how are you today?";
       const targetLang = 'fr';
+      const sourceLang = 'en';
       
       // Test de traduction simple
-      const result = await translationService.translateSimple(testText, 'en', targetLang);
+      const result = await translationService.translate(testText, targetLang, sourceLang, { preferredModel: modelId });
       
       if (result && result.translatedText && result.translatedText !== testText && !result.translatedText.includes('<extra_id_')) {
         toast.success(`Test réussi: "${result.translatedText}" (modèle: ${result.modelUsed || modelId})`);
@@ -517,3 +519,5 @@ export function ModelsSettings() {
     </div>
   );
 }
+
+

@@ -1,0 +1,500 @@
+/**
+ * Test HTML pour vérifier le fonctionnement de la traduction dans le navigateur
+ * Ce fichier permet de tester directement le service de traduction avec les bulles de messages
+ */
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Traduction - Meeshy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #4361ee;
+            margin-bottom: 10px;
+        }
+        .test-panel {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        select, textarea, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4361ee;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #3a56d4;
+        }
+        button:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .message-bubble {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            position: relative;
+            line-height: 1.5;
+        }
+        .message-sender {
+            background-color: #4361ee;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .message-receiver {
+            background-color: white;
+            color: #333;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+        .message-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+        .translation-info {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 13px;
+        }
+        .language-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background-color: rgba(0,0,0,0.1);
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .model-badge {
+            background-color: #fca311;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .log-container {
+            margin-top: 30px;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        .log-error {
+            color: #fc8181;
+        }
+        .log-success {
+            color: #68d391;
+        }
+        .log-warning {
+            color: #f6e05e;
+        }
+        .log-info {
+            color: #63b3ed;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .flags {
+            font-size: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .flag {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .flag:hover {
+            transform: scale(1.2);
+        }
+        .active-flag {
+            border-bottom: 2px solid #4361ee;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Test de Traduction - Meeshy</h1>
+        <p>Testez le fonctionnement des services de traduction avec des bulles de messages</p>
+    </div>
+
+    <div class="test-panel">
+        <div class="controls">
+            <div class="control-group">
+                <label for="sourceLanguage">Langue source</label>
+                <select id="sourceLanguage">
+                    <option value="auto">🔍 Détection automatique</option>
+                    <option value="en">🇺🇸 Anglais</option>
+                    <option value="fr" selected>🇫🇷 Français</option>
+                    <option value="es">🇪🇸 Espagnol</option>
+                    <option value="de">🇩🇪 Allemand</option>
+                    <option value="it">🇮🇹 Italien</option>
+                    <option value="pt">🇵🇹 Portugais</option>
+                    <option value="ru">🇷🇺 Russe</option>
+                    <option value="zh">🇨🇳 Chinois</option>
+                    <option value="ja">🇯🇵 Japonais</option>
+                    <option value="ar">🇸🇦 Arabe</option>
+                </select>
+
+                <label for="targetLanguage" style="margin-top: 15px;">Langue cible</label>
+                <select id="targetLanguage">
+                    <option value="en" selected>🇺🇸 Anglais</option>
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="es">🇪🇸 Espagnol</option>
+                    <option value="de">🇩🇪 Allemand</option>
+                    <option value="it">🇮🇹 Italien</option>
+                    <option value="pt">🇵🇹 Portugais</option>
+                    <option value="ru">🇷🇺 Russe</option>
+                    <option value="zh">🇨🇳 Chinois</option>
+                    <option value="ja">🇯🇵 Japonais</option>
+                    <option value="ar">🇸🇦 Arabe</option>
+                </select>
+
+                <label for="translationModel" style="margin-top: 15px;">Modèle de traduction</label>
+                <select id="translationModel">
+                    <option value="MT5_SMALL">MT5 Small (messages courts)</option>
+                    <option value="NLLB_DISTILLED_600M" selected>NLLB Distilled 600M (messages longs)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="messageText">Texte du message</label>
+                <textarea id="messageText" placeholder="Entrez votre message ici...">Bonjour, comment allez-vous aujourd'hui? J'espère que vous passez une excellente journée. Parlons de Meeshy, une application de messagerie incroyable!</textarea>
+            </div>
+        </div>
+
+        <button id="translateBtn" onclick="performTranslation()">Traduire le message</button>
+        
+        <div style="margin-top: 20px;">
+            <label>Tests rapides:</label>
+            <div class="flags">
+                <span class="flag" onclick="setQuickTest('short-fr')">🇫🇷 Court</span>
+                <span class="flag" onclick="setQuickTest('long-fr')">🇫🇷 Long</span>
+                <span class="flag" onclick="setQuickTest('short-en')">🇺🇸 Court</span>
+                <span class="flag" onclick="setQuickTest('long-en')">🇺🇸 Long</span>
+                <span class="flag" onclick="setQuickTest('short-es')">🇪🇸 Court</span>
+                <span class="flag" onclick="setQuickTest('long-es')">🇪🇸 Long</span>
+                <span class="flag" onclick="setQuickTest('auto')">🔍 Auto</span>
+                <span class="flag" onclick="setQuickTest('code')">💻 Code</span>
+                <span class="flag" onclick="setQuickTest('mixed')">🌐 Mixte</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="results">
+        <h2>Résultats de traduction</h2>
+        <div id="originalMessage" class="message-bubble message-sender">
+            <div id="originalContent">Votre message apparaîtra ici...</div>
+            <div class="message-meta">
+                <span>Envoyé à 12:00</span>
+                <span class="language-badge">🇫🇷 FR</span>
+            </div>
+        </div>
+
+        <div id="translatedMessage" class="message-bubble message-receiver" style="display: none;">
+            <div id="translatedContent"></div>
+            <div class="translation-info">
+                <span>Traduit de <span id="detectedSource">🇫🇷 FR</span> vers <span id="targetLang">🇺🇸 EN</span></span>
+                <span class="model-badge" id="modelUsed">MT5</span>
+            </div>
+            <div class="message-meta">
+                <span>Reçu à 12:01</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="log-container" id="logContainer">
+        <div class="log-entry log-info">Prêt à tester la traduction...</div>
+    </div>
+
+    <script>
+        // Simule l'importation des services de traduction
+        // Dans un environnement réel, ces fonctions seraient importées du code de l'application
+        
+        // Données pour les tests rapides
+        const quickTests = {
+            'short-fr': {
+                text: "Bonjour, comment allez-vous aujourd'hui?",
+                source: "fr",
+                target: "en"
+            },
+            'long-fr': {
+                text: "Le développement web moderne est en constante évolution avec de nouveaux frameworks et bibliothèques apparaissant régulièrement. React, Angular et Vue.js sont parmi les plus populaires pour créer des interfaces utilisateur interactives. L'écosystème JavaScript s'est considérablement développé ces dernières années, offrant aux développeurs de nombreux outils pour créer des applications performantes et réactives.",
+                source: "fr",
+                target: "en"
+            },
+            'short-en': {
+                text: "Hello, how are you doing today?",
+                source: "en",
+                target: "fr"
+            },
+            'long-en': {
+                text: "Modern web development is constantly evolving with new frameworks and libraries appearing regularly. React, Angular, and Vue.js are among the most popular for creating interactive user interfaces. The JavaScript ecosystem has grown significantly in recent years, providing developers with many tools to create performant and reactive applications.",
+                source: "en",
+                target: "fr"
+            },
+            'short-es': {
+                text: "Hola, ¿cómo estás hoy?",
+                source: "es",
+                target: "en"
+            },
+            'long-es': {
+                text: "El desarrollo web moderno está en constante evolución con nuevos frameworks y bibliotecas que aparecen regularmente. React, Angular y Vue.js se encuentran entre los más populares para crear interfaces de usuario interactivas. El ecosistema de JavaScript ha crecido significativamente en los últimos años, proporcionando a los desarrolladores muchas herramientas para crear aplicaciones de alto rendimiento y reactivas.",
+                source: "es",
+                target: "fr"
+            },
+            'auto': {
+                text: "こんにちは、元気ですか？今日はいい天気ですね。",
+                source: "auto",
+                target: "en"
+            },
+            'code': {
+                text: "function translateText(text, sourceLanguage, targetLanguage) {\n  // Check if text is empty\n  if (!text.trim()) return '';\n  \n  // Use the translation service\n  return translationService.translate(text, sourceLanguage, targetLanguage);\n}",
+                source: "en",
+                target: "fr"
+            },
+            'mixed': {
+                text: "Hello! Je parle un peu français et también español. Das ist sehr interessant!",
+                source: "auto",
+                target: "fr"
+            }
+        };
+
+        // Fonction pour définir un test rapide
+        function setQuickTest(testKey) {
+            const test = quickTests[testKey];
+            if (test) {
+                document.getElementById('messageText').value = test.text;
+                document.getElementById('sourceLanguage').value = test.source;
+                document.getElementById('targetLanguage').value = test.target;
+                
+                // Sélectionner le bon modèle basé sur la longueur du texte
+                if (test.text.length > 100) {
+                    document.getElementById('translationModel').value = 'NLLB_DISTILLED_600M';
+                } else {
+                    document.getElementById('translationModel').value = 'MT5_SMALL';
+                }
+                
+                // Log
+                addLog(`Test rapide défini: ${testKey}`, 'info');
+            }
+        }
+
+        // Fonction pour simuler la traduction
+        async function performTranslation() {
+            const sourceLanguage = document.getElementById('sourceLanguage').value;
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            const messageText = document.getElementById('messageText').value;
+            const modelType = document.getElementById('translationModel').value;
+            
+            if (!messageText.trim()) {
+                addLog("Erreur: Le message est vide", "error");
+                return;
+            }
+            
+            // Afficher le message original
+            document.getElementById('originalContent').textContent = messageText;
+            document.getElementById('originalMessage').style.display = 'block';
+            
+            // Mettre à jour le badge de langue source
+            const sourceLangBadge = sourceLanguage === 'auto' ? '🔍 AUTO' : getLanguageFlag(sourceLanguage) + ' ' + sourceLanguage.toUpperCase();
+            document.querySelector('#originalMessage .language-badge').textContent = sourceLangBadge;
+            
+            // Simuler le chargement
+            document.getElementById('translateBtn').disabled = true;
+            document.getElementById('translateBtn').innerHTML = '<span class="loading"></span> Traduction en cours...';
+            document.getElementById('translatedMessage').style.display = 'none';
+            
+            addLog(`Début de la traduction: ${sourceLanguage} → ${targetLanguage} avec ${modelType}`, "info");
+            
+            try {
+                // Simuler un délai de traduction
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Simuler une détection de langue si auto est sélectionné
+                let detectedLanguage = sourceLanguage;
+                if (sourceLanguage === 'auto') {
+                    // Simuler la détection basée sur le contenu
+                    if (messageText.includes('こんにちは')) {
+                        detectedLanguage = 'ja';
+                    } else if (messageText.includes('Bonjour') || messageText.includes('Comment')) {
+                        detectedLanguage = 'fr';
+                    } else if (messageText.includes('Hello') || messageText.includes('how are')) {
+                        detectedLanguage = 'en';
+                    } else if (messageText.includes('Hola') || messageText.includes('cómo estás')) {
+                        detectedLanguage = 'es';
+                    } else if (messageText.includes('Das ist')) {
+                        detectedLanguage = 'de';
+                    } else {
+                        // Détection aléatoire pour les autres cas
+                        const potentialLangs = ['en', 'fr', 'es', 'de'];
+                        detectedLanguage = potentialLangs[Math.floor(Math.random() * potentialLangs.length)];
+                    }
+                    
+                    addLog(`Langue détectée: ${detectedLanguage}`, "success");
+                }
+                
+                // Simuler une traduction
+                let translatedText = '';
+                
+                // Génération d'une "traduction" de démonstration
+                if (targetLanguage === 'en') {
+                    if (detectedLanguage === 'fr') {
+                        if (messageText.includes('Bonjour')) translatedText = messageText.replace('Bonjour', 'Hello');
+                        else if (messageText.includes('Comment')) translatedText = messageText.replace('Comment', 'How');
+                        else translatedText = "<extra_id_0>Hello, how are you today? I hope you are having a great day. Let's talk about Meeshy, an amazing messaging app!</extra_id_0>";
+                    } else if (detectedLanguage === 'es') {
+                        translatedText = "<extra_id_0>Hello, how are you today?</extra_id_0>";
+                    } else if (detectedLanguage === 'ja') {
+                        translatedText = "<extra_id_0>Hello, how are you? The weather is nice today.</extra_id_0>";
+                    } else {
+                        translatedText = "Translation not available for this language pair";
+                    }
+                } else if (targetLanguage === 'fr') {
+                    if (detectedLanguage === 'en') {
+                        translatedText = "<extra_id_0>Bonjour, comment allez-vous aujourd'hui? J'espère que vous passez une excellente journée. Parlons de Meeshy, une application de messagerie incroyable!</extra_id_0>";
+                    } else {
+                        translatedText = "Traduction non disponible pour cette paire de langues";
+                    }
+                } else {
+                    translatedText = `<extra_id_0>This is a simulated translation from ${detectedLanguage} to ${targetLanguage}. In a real app, this would be generated by MT5 or NLLB.</extra_id_0>`;
+                }
+                
+                // Si c'est du code, simuler une traduction qui préserve le format
+                if (messageText.includes('function') && messageText.includes('{') && messageText.includes('}')) {
+                    if (targetLanguage === 'fr') {
+                        translatedText = "fonction traduireTexte(texte, langueSource, langueCible) {\n  // Vérifier si le texte est vide\n  if (!texte.trim()) return '';\n  \n  // Utiliser le service de traduction\n  return serviceTraduction.traduire(texte, langueSource, langueCible);\n}";
+                    }
+                }
+                
+                // Nettoyer la traduction simulée (enlever les tokens spéciaux)
+                translatedText = translatedText.replace(/<extra_id_\d+>/g, '').replace(/<\/extra_id_\d+>/g, '');
+                
+                // Afficher la traduction
+                document.getElementById('translatedContent').textContent = translatedText;
+                document.getElementById('translatedMessage').style.display = 'block';
+                
+                // Mettre à jour les badges
+                document.getElementById('detectedSource').textContent = `${getLanguageFlag(detectedLanguage)} ${detectedLanguage.toUpperCase()}`;
+                document.getElementById('targetLang').textContent = `${getLanguageFlag(targetLanguage)} ${targetLanguage.toUpperCase()}`;
+                document.getElementById('modelUsed').textContent = modelType;
+                
+                addLog(`Traduction réussie avec ${modelType}`, "success");
+            } catch (error) {
+                addLog(`Erreur de traduction: ${error.message}`, "error");
+            } finally {
+                // Réinitialiser le bouton
+                document.getElementById('translateBtn').disabled = false;
+                document.getElementById('translateBtn').textContent = "Traduire le message";
+            }
+        }
+        
+        // Fonction utilitaire pour obtenir le drapeau d'une langue
+        function getLanguageFlag(langCode) {
+            const flags = {
+                'en': '🇺🇸',
+                'fr': '🇫🇷',
+                'es': '🇪🇸',
+                'de': '🇩🇪',
+                'it': '🇮🇹',
+                'pt': '🇵🇹',
+                'ru': '🇷🇺',
+                'zh': '🇨🇳',
+                'ja': '🇯🇵',
+                'ar': '🇸🇦',
+                'auto': '🔍'
+            };
+            return flags[langCode] || '🌐';
+        }
+        
+        // Fonction pour ajouter des entrées au journal
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // Initialisation
+        window.onload = function() {
+            addLog("Page chargée. Prêt pour les tests de traduction.", "info");
+            addLog("Ce test simule la traduction pour diagnostiquer l'affichage des bulles de message", "info");
+            addLog("IMPORTANT: Vérifiez que la bulle de message traduite s'affiche correctement", "warning");
+        };
+    </script>
+</body>
+</html>

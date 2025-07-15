@@ -5,23 +5,19 @@
 
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { translationService, type TranslationResult, type TranslationProgress } from '@/services/translation.service';
 import { ACTIVE_MODELS } from '@/lib/unified-model-config';
-import type { Message, TranslatedMessage, User, TranslationModelType, Translation } from '@/types';
-import { SUPPORTED_LANGUAGES } from '@/types';
+import type { Message, TranslatedMessage, User, TranslationModelType } from '@/types';
 
 // Types unifiés
 interface UseTranslationReturn {
   // Traduction simple
-  translate: (text: string, sourceLanguage: string, targetLanguage: string) => Promise<string>;
+  translate: (text: string, sourceLanguage: string, targetLanguage: string, preferredModel?: TranslationModelType) => Promise<string>;
   
   // Traduction de messages
   translateMessage: (message: Message, targetLanguage: string) => Promise<TranslatedMessage>;
   translateMessages: (messages: Message[], targetLanguage: string) => Promise<TranslatedMessage[]>;
-  
-  // Traduction avec modèle spécifique
-  translateWithModel: (text: string, sourceLanguage: string, targetLanguage: string, model?: TranslationModelType) => Promise<TranslationResult>;
   
   // Gestion des modèles
   loadModel: (model: TranslationModelType) => Promise<void>;
@@ -74,7 +70,8 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
   const translate = useCallback(async (
     text: string,
     sourceLanguage: string,
-    targetLanguage: string
+    targetLanguage: string,
+    preferredModel?: TranslationModelType
   ): Promise<string> => {
     if (!text.trim()) return text;
     
@@ -82,47 +79,8 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
       setIsTranslating(true);
       setError(null);
       
-      const result = await translationService.translateSimple(text, sourceLanguage, targetLanguage);
+      const result = await translationService.translate(text, targetLanguage, sourceLanguage, { preferredModel });
       return result.translatedText;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction inconnue';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsTranslating(false);
-    }
-  }, []);
-
-  // === MÉTHODES DE TRADUCTION AVEC MODÈLE SPÉCIFIQUE ===
-
-  const translateWithModel = useCallback(async (
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    model?: TranslationModelType
-  ): Promise<TranslationResult> => {
-    if (!text.trim()) {
-      return {
-        translatedText: text,
-        sourceLanguage,
-        targetLanguage,
-        modelUsed: model || ACTIVE_MODELS.basicModel,
-        confidence: 1.0
-      };
-    }
-    
-    try {
-      setIsTranslating(true);
-      setError(null);
-      
-      const result = await translationService.translateOptimized(
-        text,
-        sourceLanguage,
-        targetLanguage,
-        model
-      );
-      
-      return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction inconnue';
       setError(errorMessage);
@@ -141,7 +99,7 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
       translations: [],
       isTranslated: false
     };
-  }, [currentUser]);
+  }, []);
 
   const translateMessage = useCallback(async (
     message: Message,
@@ -155,10 +113,19 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
         return translatedMessage;
       }
       
-      const result = await translationService.translateSimple(
+      // Vérifier que les langues sont supportées (cette logique pourrait être déplacée ou améliorée)
+      const supportedLanguages = ['en', 'fr', 'es', 'de', 'ru', 'zh', 'ja', 'ar', 'hi', 'pt', 'it', 'sv'];
+      if (!supportedLanguages.includes(message.originalLanguage)) {
+        throw new Error(`Langue source "${message.originalLanguage}" non supportée`);
+      }
+      if (!supportedLanguages.includes(targetLanguage)) {
+        throw new Error(`Langue cible "${targetLanguage}" non supportée`);
+      }
+      
+      const result = await translationService.translate(
         message.content,
-        message.originalLanguage,
-        targetLanguage
+        targetLanguage,
+        message.originalLanguage
       );
       
       // Ajouter la traduction
@@ -224,7 +191,7 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
       setIsLoading(true);
       setError(null);
       
-      await translationService.loadModel(model, (progressData) => {
+      await translationService.loadTranslationPipeline(model, (progressData) => {
         setProgress(progressData);
       });
       
@@ -256,31 +223,6 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
     translationService.clearCache();
   }, []);
 
-  // === MÉTHODES UTILITAIRES ===
-
-  // Détection automatique de la complexité pour choisir le modèle
-  const getOptimalModel = useCallback((text: string): TranslationModelType => {
-    const isShort = text.length <= 50;
-    const hasComplexSyntax = /[,.;:!?(){}[\]"'`]/.test(text) || text.split(' ').length > 10;
-    
-    // MT5 pour messages courts et simples, NLLB pour le reste
-    if (isShort && !hasComplexSyntax) {
-      return ACTIVE_MODELS.basicModel; // MT5
-    }
-    return ACTIVE_MODELS.highModel; // NLLB
-  }, []);
-
-  // Traduction optimisée automatique (choisit le bon modèle)
-  const translateOptimal = useCallback(async (
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string
-  ): Promise<string> => {
-    const optimalModel = getOptimalModel(text);
-    const result = await translateWithModel(text, sourceLanguage, targetLanguage, optimalModel);
-    return result.translatedText;
-  }, [getOptimalModel, translateWithModel]);
-
   return {
     // Traduction simple
     translate,
@@ -288,9 +230,6 @@ export const useTranslation = (currentUser: User | null): UseTranslationReturn =
     // Traduction de messages
     translateMessage,
     translateMessages,
-    
-    // Traduction avec modèle spécifique
-    translateWithModel,
     
     // Gestion des modèles
     loadModel,
@@ -326,11 +265,10 @@ export const useMessageTranslation = (currentUser: User | null) => {
 };
 
 export const useSimpleTranslation = () => {
-  const { translate, translateWithModel, isTranslating, error, clearError } = useTranslation(null);
+  const { translate, isTranslating, error, clearError } = useTranslation(null);
   
   return {
     translate,
-    translateWithModel,
     isTranslating,
     error,
     clearError
@@ -345,3 +283,5 @@ export const useTranslationCache = () => {
     clearCache
   };
 };
+
+

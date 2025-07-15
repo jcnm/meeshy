@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +23,8 @@ import {
   Info,
   MessageSquare
 } from 'lucide-react';
-import { User, Conversation, Message, TranslatedMessage } from '@/types';
+import { cn } from '@/lib/utils';
+import { User, Conversation, Message, TranslatedMessage, TranslationModelType } from '@/types';
 import { MessageBubble } from './message-bubble';
 import { useTranslation } from '@/hooks/use-translation';
 import { useMessaging } from '@/hooks/use-messaging';
@@ -47,7 +49,9 @@ export function ConversationViewSimple({
   onNewMessageChange,
   onSendMessage,
   onKeyPress,
-  currentUser
+  currentUser,
+  typingUsers,
+  onNewMessage
 }: ConversationViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLInputElement>(null);
@@ -57,14 +61,14 @@ export function ConversationViewSimple({
   const [showingOriginal, setShowingOriginal] = useState<Map<string, boolean>>(new Map());
 
   // Hooks pour la traduction et services
-  const { translateMessage } = useTranslation(currentUser);
+  const { translate } = useTranslation(currentUser);
   const messaging = useMessaging({
     conversationId: conversation.id,
     currentUser: currentUser || undefined
   });
 
   // Convertir Message en TranslatedMessage pour MessageBubble
-  const convertToTranslatedMessage = useCallback((message: Message): TranslatedMessage => {
+  const convertToTranslatedMessage = (message: Message): TranslatedMessage => {
     const sender = conversation.participants?.find(p => p.userId === message.senderId)?.user;
     const translated = translatedMessages.get(message.id);
     const isShowingOriginal = showingOriginal.get(message.id) ?? true;
@@ -110,7 +114,7 @@ export function ConversationViewSimple({
         lastActiveAt: new Date()
       }
     };
-  }, [conversation.participants, translatedMessages, showingOriginal, currentUser]);
+  };
 
   // Auto-convertir les messages
   useEffect(() => {
@@ -122,7 +126,7 @@ export function ConversationViewSimple({
     });
     
     setTranslatedMessages(converted);
-  }, [messages, convertToTranslatedMessage]);
+  }, [messages, conversation.participants, showingOriginal]);
 
   // Auto-scroll vers le bas
   const scrollToBottom = () => {
@@ -156,12 +160,35 @@ export function ConversationViewSimple({
     setTranslatedMessages(prev => new Map(prev.set(messageId, translatingMessage)));
 
     try {
-      const translatedMessage = await translateMessage(
-        message, 
+      // Valider et utiliser une langue source par défaut valide
+      const sourceLanguage = message.originalLanguage && message.originalLanguage !== 'auto' 
+        ? message.originalLanguage 
+        : 'fr'; // langue par défaut
+        
+      const translatedText = await translate(
+        message.content, 
+        sourceLanguage, 
         targetLanguage
       );
 
       // Mettre à jour avec la traduction
+      const translatedMessage: TranslatedMessage = {
+        ...convertToTranslatedMessage(message),
+        translatedContent: translatedText,
+        targetLanguage,
+        isTranslated: true,
+        isTranslating: false,
+        showingOriginal: false,
+        translationError: undefined,
+        translations: [{
+          language: targetLanguage,
+          content: translatedText,
+          flag: '🌍',
+          modelUsed: 'MT5_SMALL' as TranslationModelType,
+          createdAt: new Date()
+        }]
+      };
+
       setTranslatedMessages(prev => new Map(prev.set(messageId, translatedMessage)));
       setShowingOriginal(prev => new Map(prev.set(messageId, false)));
       
