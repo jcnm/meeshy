@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  # Service Fastify (Backend API)
+  fastify-service:
+    build:
+      context: ./fastify-service
+      dockerfile: Dockerfile.dev
+    container_name: meeshy-fastify
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - FASTIFY_PORT=3001
+      - FASTIFY_HOST=0.0.0.0
+      - JWT_SECRET=your-super-secret-jwt-key-development
+      - DATABASE_URL=file:../shared/prisma/dev.db
+      - GRPC_TRANSLATION_HOST=translation-service
+      - GRPC_TRANSLATION_PORT=50051
+    volumes:
+      - ./fastify-service:/app
+      - ./shared:/app/shared
+      - /app/node_modules
+      - fastify-logs:/app/logs
+    depends_on:
+      - translation-service
+      - postgres
+    networks:
+      - meeshy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Service de traduction gRPC
+  translation-service:
+    build:
+      context: ./translation-service
+      dockerfile: Dockerfile
+    container_name: meeshy-translation
+    ports:
+      - "50051:50051"
+    environment:
+      - PYTHONPATH=/app/src
+      - GRPC_PORT=50051
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./translation-service:/app
+      - translation-models:/app/models
+    networks:
+      - meeshy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import grpc; import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: meeshy-postgres
+    environment:
+      POSTGRES_DB: meeshy_db
+      POSTGRES_USER: meeshy
+      POSTGRES_PASSWORD: meeshy_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./shared/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - meeshy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meeshy -d meeshy_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis pour le cache
+  redis:
+    image: redis:7-alpine
+    container_name: meeshy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - meeshy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: meeshy-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - fastify-service
+    networks:
+      - meeshy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  translation-models:
+    driver: local
+  fastify-logs:
+    driver: local
+
+networks:
+  meeshy-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

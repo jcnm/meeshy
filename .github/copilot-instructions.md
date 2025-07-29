@@ -1,206 +1,416 @@
-# Copilot Instructions pour Meeshy
+```md
+# Copilot Instructions for Meeshy
 
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization #_use-a-githubcopilotinstructionsmd-file -->
-## Ton fonctionnement
-Tu es un assistant de développement pour le projet Meeshy, une application de messagerie avec traduction automatique.
-Lorsque tu proposes du code, tu dois toujours respecter les spécifications du projet et les bonnes pratiques de développement.
-Tu dois toujours vérifier la cohérence des types et des données entre le frontend et le backend avant de proposer des modifications.
-Tu dois toujours réfléchir aux implications de la modification avant de proposer du code.
-Tu dois t'arrêter et me demander de l'aide quand tu cherches des informations ou des clarifications voir même des solutions mais bote en touche depuis plus de deux ou trois minutes.
-## Contexte du Projet
+<!-- High-performance messaging with multi-language backend translation system -->
 
-Ce projet est une application de messagerie avec traduction automatique côté client appelée "Meeshy".
+## 🎯 Core Behavioral Rules (CRITICAL - Always Follow)
 
-### Architecture Générale
-- **Frontend**: Next.js 15 avec TypeScript, Tailwind CSS, et shadcn/ui
-- **Backend**: NestJS avec WebSockets pour la messagerie temps réel
-- **Traduction**: Modèles MT5 et NLLB via TensorFlow.js (côté client uniquement)
-- **Cache**: localStorage du navigateur pour les traductions
-- **Base de données**: SQLite avec Prisma ORM pour le développement
-- **Authentification**: JWT avec NestJS Guards et stratégies Passport
-- **Sécurité**: Validation stricte, chiffrement des données sensibles, CORS configuré
-- **Routes API**: RESTful nomination pluriel pour les entités avec validation des DTOs via class-validator
+1. **Performance First**: Always consider 10k messages/second throughput in design decisions
+2. **Multi-language Aware**: Consider that each message gets translated to multiple target languages simultaneously
+3. **Type Safety**: Verify type consistency across Fastify/FastAPI/Frontend stack with Prisma schema
+4. **Think Before Code**: Consider implications on real-time performance before changes
+5. **Ask for Help**: Stop and ask for clarification if stuck for 2-3 minutes
+6. **Reference Precisely**: Always include line numbers and filenames when referencing code
 
-### Spécificités de Conception
-- **Avant chaque création** de code, réfléchir aux implications de la modification, s'il n'est pas possible de reutiliser l'existant
+## 🏗️ System Architecture
 
-#### Traduction
-- Utiliser MT5 pour les messages courts (≤50 caractères, faible complexité)
-- Utiliser NLLB pour les messages longs et complexes
-- Cache obligatoire avec clé: `hash(message_original + langue_source + langue_destination)`
-- Traduction côté client uniquement, aucune API externe
+**Meeshy**: High-performance real-time messaging with multi-language backend translation (100k msg/sec)
 
-#### Frontend (Next.js)
-- App Router avec structure src/
-- TypeScript strict
-- Tailwind CSS pour le styling
-- shadcn/ui pour les composants
-- Gestion d'état avec React hooks
-- WebSocket client pour la messagerie temps réel
-
-#### Backend (NestJS)
-- **Structure modulaire**: Modules organisés par domaine métier (auth, users, conversations, groups)
-- **API REST**: Endpoints sécurisés avec validation class-validator
-- **WebSocket Gateway**: Messagerie temps réel avec gestion des rooms
-- **Base de données**: Prisma avec SQLite, migrations gérées
-- **Authentification**: JWT avec refresh tokens, rate limiting
-- **Validation**: DTOs strictement typés avec class-validator/class-transformer
-- **Sécurité**: Chiffrement bcrypt, secrets sécurisés, CORS configuré
-- **Utilisateurs prédéfinis**: 5 utilisateurs de test avec données seed
-- **Gestion des erreurs**: Middleware global pour les erreurs, logging structuré
-- **Documentation**: Swagger pour l'API REST
-- **Tests**: Tests unitaires et d'intégration avec Jest
-- **Notifications**: Système de notifications temps réel avec Sonner
-- **Système de présence**: Indicateurs en ligne/hors ligne, indicateurs de frappe, et notifications de lecture
-
-#### Flux de Données
-1. Message envoyé dans la langue native de l'utilisateur
-2. Transmission directe au serveur sans modification
-3. Réception par le destinataire dans la langue originale
-4. Traduction côté client selon les paramètres du destinataire
-5. Affichage avec option de basculement original/traduit
-
-### Bonnes Pratiques
-
-#### Cohérence de Conception
-- **Réutilisation du code**: Toujours réutiliser le code existant avant de créer de nouvelles fonctionnalités
-- **Preference approches**: Toujours préférer les approches réactives et hooks React pour la logique métier
-- **Reflexion avant modification**: Toujours réfléchir aux implications avant de modifier le code
-- **Vérification des interfaces**: Toujours vérifier les interfaces et correspondances de types avant de proposer des modifications
-- **Cohérence des types**: Toujours vérifier la cohérence des types et données entre  le frontend et le backend
-- **Types partagés**: Source unique de vérité pour les interfaces entre frontend/backend
-- **Validation complète**: Validation stricte côté client ET serveur
-- **Gestion d'erreurs**: Middleware global avec messages utilisateur cohérents
-- **UX cohérente**: Interface intuitive, navigation fluide, accessible, simple avec feedback immédiat
-- **Performance**: Cache intelligent, lazy loading, optimisation des requêtes
-
-#### Standards Techniques
-- **TypeScript strict**: Configuration stricte avec validation complète
-- **Architecture modulaire**: Séparation claire des responsabilités
-- **Sécurité**: Chiffrement, validation, protection CSRF/XSS
-- **Tests**: Validation continue avec tests unitaires et d'intégration
-- **Documentation**: Code auto-documenté avec commentaires en français
-- **Versioning**: Utilisation de Git avec des commits clairs et descriptifs
-
-#### Développement
-- Toujours vérifier les interfaces et correspondances de types avant de proposer des modifications
-- Toujours vérifier la cohérence des types et données entre le frontend et le backend
-- Toujours valider les inputs côté client et serveur
-- Utiliser des types TypeScript stricts
-- Implémenter le lazy loading pour les modèles de traduction
-- Gérer les erreurs de traduction avec fallback
-- Optimiser les performances avec le cache localStorage
-- Interface responsive pour mobile et desktop
-- Utilise les hooks React pour la logique métier
-- Fortement utiliser l'approche SWR (state fetching with revalidation) pour les données dynamiques
-- Utiliser des notifications pour les erreurs et succès (Sonner)
-- Utiliser des WebSockets pour la messagerie en temps réel
-- Commit lorsqu'un travail est terminé ou qu'une fonctionnalité est implémentée
-- Commit lorsqu'un long travail va être effectué
-
-### Structure des Dossiers
+### Distributed Architecture
 ```
-src/
-├── app/                 # Pages Next.js (App Router)
-├── components/          # Composants React réutilisables
-├── lib/                 # Utilitaires et configuration
-├── hooks/               # Hooks React personnalisés
-├── types/               # Types TypeScript
-└── utils/               # Fonctions utilitaires
+Frontend (Next.js) 
+    ↓ WebSocket/HTTP
+Gateway (Fastify + WebSocket)
+    ↓ gRPC/ZMQ/RabbitMQ + Protobuf
+Translator (FastAPI + Transformers)
+    ↓ Shared Database (PostgreSQL + Prisma)
+Cache Layer (Redis) + Database
+```
 
-backend/                 # Application NestJS production-ready
+### Service Responsibilities
+
+#### Gateway Service (Fastify)
+- **Read**: Messages (display only)
+- **CRUD**: Users, conversations, groups, preferences, presence
+- **Real-time**: WebSocket connections, message routing
+- **Language Filtering**: Send only messages in user's configured language
+- **Database**: Uses Prisma Client for all operations except message creation
+
+#### Translator Service (FastAPI)  
+- **CRUD**: Messages and MessageTranslations (create, update, delete, read)
+- **Read**: Conversations, user preferences via Prisma
+- **Translation**: MT5/NLLB via Transformers - translates to ALL required languages
+- **Cache**: Robust translation caching system per language pair
+- **Database**: Uses Prisma Client with full message management rights
+
+### Communication Patterns
+- **Synchronous**: gRPC with Protobuf (real-time message flow)
+- **Asynchronous**: ZMQ or RabbitMQ with Protobuf (batch operations)
+- **Database**: Shared PostgreSQL with Prisma ORM
+
+## 🌐 Multi-Language Translation Flow
+
+### Translation Request/Response Schema
+```protobuf
+message TranslationRequest {
+  string message_id = 1;
+  string text = 2;
+  string source_language = 3;
+  string target_language = 4;  // Can be "ALL" for all supported languages
+  int64 timestamp = 5;
+}
+
+message Translation {
+  string tgt_lang = 1;
+  string translated_text = 2;
+  bool from_cache = 3;
+  int32 processing_time_ms = 4;
+}
+
+message TranslationResponse {
+  string message_id = 1;
+  repeated Translation translations = 2;  // Multiple language translations
+  string src_lang = 3;
+  string original_text = 4;
+}
+```
+
+### User Language Configuration (Based on Prisma Schema)
+```typescript
+interface UserLanguageConfig {
+  systemLanguage: string;              // Default: "fr"
+  regionalLanguage: string;            // Default: "fr" 
+  customDestinationLanguage?: string;  // Optional custom language
+  autoTranslateEnabled: boolean;       // Default: true
+  translateToSystemLanguage: boolean;  // Default: true
+  translateToRegionalLanguage: boolean; // Default: false
+  useCustomDestination: boolean;       // Default: false
+}
+```
+
+### Multi-Language Processing Logic
+```
+1. Gateway receives message from User A (French)
+2. Gateway determines conversation participants and their language preferences
+3. Gateway → Translator: TranslationRequest with target_language="ALL"
+4. Translator processes:
+   - Determines required languages from conversation members
+   - Checks MessageTranslation table for existing translations
+   - Translates missing languages using MT5 for basic, NLLB for medium (600M) and premium (1.3B)
+   - Creates MessageTranslation records with cacheKey
+5. Translator → Gateway: TranslationResponse with all translations
+6. Gateway broadcasts to users based on their language configuration:
+   - User B (systemLanguage: "en") → receives English translation
+   - User C (regionalLanguage: "es") → receives Spanish translation  
+   - User D (systemLanguage: "fr") → receives original French text
+```
+
+## 🔧 Tech Stack Details
+
+### Frontend
+- **Framework**: Next.js 15 + TypeScript + Tailwind CSS + shadcn/ui
+- **Real-time**: WebSocket client with reconnection logic
+- **State**: React hooks with SWR for data fetching
+- **Language**: Receives messages only in user's configured language
+
+### Gateway (Fastify)
+- **Framework**: Fastify (high-performance Node.js)
+- **ORM**: Prisma Client (read messages, CRUD everything else)
+- **WebSocket**: Real-time message routing with language filtering
+- **Protocols**: gRPC client, ZMQ/RabbitMQ publisher/consumer
+- **Logic**: Filter and send messages based on user language preferences
+
+### Translator (FastAPI)
+- **Framework**: FastAPI (high-performance Python)
+- **ML**: Transformers library (MT5 + NLLB)
+- **ORM**: Prisma Client (full CRUD on messages and translations)
+- **Cache**: Redis + MessageTranslation table with cacheKey
+- **Protocols**: gRPC server, ZMQ/RabbitMQ consumer/publisher
+- **Logic**: Translate single message to multiple target languages
+
+### Database Layer
+- **Database**: PostgreSQL (production) / SQLite (development)
+- **ORM**: Prisma with shared schema
+- **Cache**: Redis for hot translations + MessageTranslation table
+- **Schema**: Normalized with separate MessageTranslation table
+
+## 📊 Enhanced Data Flow Patterns
+
+### Real-time Multi-Language Message Flow
+```
+1. User A sends "Bonjour" (French) → Gateway (WebSocket) 
+3. Gateway determines conversation participants and their languages
+4. Gateway → Translator (gRPC+Protobuf): 
+   TranslationRequest {
+     message_id: "msg_123",
+     text: "Bonjour",
+     source_language: "fr",
+     timestamp: 1700000000,
+   }
+5. Translator creates MessageTranslation records
+6. Translator processes message (Transformers, Redis cache, Prisma CRUD):
+   - Checks MessageTranslation table for existing fr→en, fr→es, fr→de
+   - ML inference for missing translations
+   - Creates MessageTranslation records:
+     * {messageId: "msg_123", targetLanguage: "en", translatedContent: "Hello", 
+        translationModel: "basic", cacheKey: "hash_fr_en_bonjour"}
+     * {messageId: "msg_123", targetLanguage: "es", translatedContent: "Hola", 
+        translationModel: "basic", cacheKey: "hash_fr_es_bonjour"}
+6. Translator → Gateway: TranslationResponse with all translations
+7. Gateway broadcasts to recipients based on their language config:
+   - User B (systemLanguage: "en") receives: "Hello"
+   - User C (regionalLanguage: "es") receives: "Hola"  
+   - User D (systemLanguage: "fr") receives: "Bonjour" (original)
+```
+
+### Language Resolution Logic
+```typescript
+function resolveUserLanguage(user: User): string {
+  if (user.useCustomDestination && user.customDestinationLanguage) {
+    return user.customDestinationLanguage;
+  }
+  
+  if (user.translateToSystemLanguage) {
+    return user.systemLanguage;
+  }
+  
+  if (user.translateToRegionalLanguage) {
+    return user.regionalLanguage;
+  }
+  
+  return user.systemLanguage; // fallback
+}
+```
+
+## 🏗️ Project Structure
+
+```
+frontend/
 ├── src/
-│   ├── shared/         # Types unifiés, DTOs validés, constantes
-│   ├── common/         # Services transversaux (cache, notifications, health, sécurité)
-│   ├── auth/           # Authentification JWT sécurisée avec bcrypt
-│   ├── modules/        # Modules métier optimisés (users, conversations, groups, messages)
-│   ├── gateway/        # WebSocket Gateway temps réel
-│   ├── prisma/         # Service Prisma avec requêtes optimisées
-│   └── main.ts         # Bootstrap avec sécurité enterprise (CORS, Helmet, Rate limiting)
-├── prisma/             # Schéma et migrations
-├── dist/               # Build de production
-└── package.json        # Dépendances de sécurité et performance
+│   ├── app/           # Next.js App Router
+│   ├── components/    # React components
+│   ├── hooks/         # WebSocket, SWR hooks
+│   └── types/         # Shared TypeScript types (match Prisma)
+
+gateway/               # Fastify service
+├── src/
+│   ├── routes/        # HTTP endpoints
+│   ├── websocket/     # WebSocket handlers with language filtering
+│   ├── grpc/          # gRPC client for translation requests
+│   ├── queue/         # ZMQ/RabbitMQ client
+│   ├── services/      # Language preference management
+│   ├── prisma/        # Prisma client instance (read messages, CRUD rest)
+│   └── types/         # TypeScript types matching Prisma schema
+
+translator/            # FastAPI service  
+├── src/
+│   ├── api/           # HTTP endpoints
+│   ├── grpc/          # gRPC server for multi-language translation
+│   ├── queue/         # ZMQ/RabbitMQ consumer
+│   ├── models/        # ML model loading (MT5 + NLLB)
+│   ├── cache/         # Translation cache logic
+│   ├── services/      # Language detection and translation logic
+│   ├── prisma/        # Prisma client (CRUD messages & translations)
+│   └── database/      # Database utilities
+
+shared/
+├── proto/             # Protocol Buffer definitions
+├── prisma/            # Shared Prisma schema
+│   └── schema.prisma  # Single source of truth for database schema
+├── types/             # Generated Prisma types + custom types
+└── config/            # Environment configuration
 ```
 
-### Règles de Cohérence UX
+## ⚡ Development Priorities
 
-#### Navigation et Interface
-- **Consistance visuelle**: Composants shadcn/ui uniformes, palette couleurs cohérente
-- **Navigation intuitive**: Breadcrumbs clairs, état actuel visible, retour facile
-- **Feedback utilisateur**: Loading states, confirmations, messages d'erreur explicites
-- **Responsivité **: Interface adaptée mobile/desktop avec même logique
+### Priority 1: Prisma Schema Consistency
+- **Type Generation**: Use `prisma generate` for consistent types
+- **Database Operations**: Respect service boundaries (Gateway vs Translator)
+- **Migrations**: Coordinate schema changes across services
+- **Performance**: Optimize Prisma queries for 10k msg/sec
 
-#### Gestion des Données
-- **État synchronisé**: Cohérence temps réel entre tous les clients connectés
-- **Cache intelligent**: Mise à jour optimiste avec rollback en cas d'erreur
-- **Offline graceful**: Gestion des états de connexion avec retry automatique
+### Priority 2: Multi-Language Performance
+- **Translation Cache**: Leverage MessageTranslation table + Redis
+- **Language Detection**: Automatic source language identification
+- **Model Management**: Efficient loading of MT5/NLLB models
+- **Batch Processing**: Group translation operations
 
-#### Sécurité Utilisateur
-- **Données au repos**: Chiffrement transparent avec bcrypt pour les mots de passe
-- **Validation stricte**: Input sanitization côté client ET serveur
-- **Sessions sécurisées**: JWT avec expiration, refresh tokens, rate limiting
+### Priority 3: Real-time Language Filtering
+- **User Preferences**: Fast lookup using Prisma with proper indexing
+- **Message Routing**: Language-aware WebSocket message distribution
+- **Translation Strategy**: Smart caching with cacheKey optimization
+- **Error Handling**: Graceful fallbacks for translation failures
 
-### Conventions de Code
-- Utiliser des noms de composants en PascalCase
-- Utiliser des noms de fichiers en kebab-case
-- Préfixer les hooks personnalisés avec "use"
-- Utiliser des interfaces TypeScript pour tous les objets de données
-- Commenter les fonctions complexes en français
+## 🛡️ Production Configuration
 
-### Backend Architecture Production-Ready
-
-#### Services Transversaux Optimisés
-- **CacheService**: Cache intelligent en mémoire avec TTL, cleanup automatique, statistiques temps réel
-- **ConversationServiceOptimized**: Requêtes groupées, cache conversations, réduction 70-90% des DB queries
-- **MessageServiceOptimized**: Pagination efficace, cache messages, invalidation intelligente
-- **NotificationService**: Système complet avec queue, préférences utilisateur, 9 types de notifications
-- **HealthController**: Monitoring production avec 5 endpoints (basic, detailed, ready, live, metrics)
-- **CacheCleanupService**: Maintenance automatique programmée toutes les heures
-
-#### Sécurité Enterprise
-- **JWT sécurisé**: Tokens avec expiration 1h, secrets configurables via ENV
-- **Bcrypt renforcé**: 12 rounds par défaut (configurable), gestion sécurisée des mots de passe
-- **Rate limiting**: 100 req/min par défaut (configurable), protection anti-spam
-- **CORS strict**: Domaines autorisés configurés pour production et développement
-- **Validation globale**: class-validator sur tous les DTOs, pipe de validation strict
-- **Exception filter**: Gestion d'erreurs avec logging, protection contre les fuites d'information
-- **Helmet**: Headers sécurisés pour protection contre XSS, clickjacking, etc.
-
-#### Performance & Observabilité
-- **Cache intelligent**: Réduction drastique des requêtes DB, invalidation automatique
-- **Requêtes optimisées**: Remplacement des N+1 queries par des requêtes groupées
-- **Monitoring temps réel**: Métriques memory, uptime, cache, database response times
-- **Health checks**: Endpoints pour load balancers, Kubernetes probes, monitoring externe
-- **Notifications avancées**: Queue avec TTL, limite par utilisateur, nettoyage automatique
-
-#### Endpoints API Production
-**Health & Monitoring:**
-- `GET /health` - Check basique pour load balancers
-- `GET /health/detailed` - Status complet de tous les services
-- `GET /health/ready` - Kubernetes readiness probe
-- `GET /health/live` - Kubernetes liveness probe
-- `GET /health/metrics` - Métriques système (memory, cache, uptime)
-
-**Notifications (authentifiées):**
-- `GET /notifications` - Liste des notifications utilisateur
-- `DELETE /notifications/:id` - Suppression notification spécifique
-- `DELETE /notifications` - Nettoyage complet utilisateur
-- `GET/POST /notifications/preferences` - Gestion des préférences
-- `POST /notifications/test` - Test notification pour debugging
-- `GET /notifications/stats` - Statistiques d'usage notifications
-
-#### Variables d'Environnement Sécurisées
+### Database Configuration
 ```env
-# Sécurité JWT
-JWT_SECRET=secret-key-meeshy-production
-JWT_EXPIRES_IN=1h
-BCRYPT_ROUNDS=12
+# Production Database
+DATABASE_URL=postgresql://user:password@postgres:5432/meeshy
 
-# Rate Limiting
-RATE_LIMIT_TTL=60
-RATE_LIMIT_LIMIT=100
+# Development Database  
+DATABASE_URL=file:./dev.db
 
-# Cache Performance
-CACHE_TTL=3600
-CACHE_MAX_SIZE=1000
+# Prisma Configuration
+PRISMA_GENERATE_CLIENT=true
+DATABASE_POOL_SIZE=20
+```
+
+### Performance Tuning
+```env
+# Gateway (Fastify)
+FASTIFY_PORT=3000
+WS_MAX_CONNECTIONS=100000
+PRISMA_POOL_SIZE=10
+GRPC_MAX_CONNECTIONS=100
+
+# Translator (FastAPI)  
+FASTAPI_PORT=8000
+ML_BATCH_SIZE=32
+PRISMA_POOL_SIZE=15
+TRANSLATION_CACHE_TTL=3600
+WORKERS=4
+GPU_MEMORY_FRACTION=0.8
+
+# Language Support
+SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
+DEFAULT_LANGUAGE=fr
+AUTO_DETECT_LANGUAGE=true
+```
+
+## 🔄 Database Schema Insights (Prisma-based)
+
+### Key Models
+```typescript
+// From Prisma schema - User language configuration
+model User {
+  systemLanguage: string              // Default: "fr"
+  regionalLanguage: string            // Default: "fr"
+  customDestinationLanguage?: string  // Optional
+  autoTranslateEnabled: boolean       // Default: true
+  translateToSystemLanguage: boolean  // Default: true
+  translateToRegionalLanguage: boolean // Default: false
+  useCustomDestination: boolean       // Default: false
+}
+
+// Message with original content
+model Message {
+  id: string
+  content: string
+  originalLanguage: string            // Source language
+  translations: MessageTranslation[]  // Related translations
+}
+
+// Normalized translation storage
+model MessageTranslation {
+  messageId: string
+  sourceLanguage: string
+  targetLanguage: string
+  translatedContent: string
+  translationModel: "basic" | "medium" | "premium"
+  cacheKey: string          // Unique cache identifier
+}
+```
+
+### Service Database Permissions
+```typescript
+// Gateway Service (Fastify) - Prisma Operations
+interface GatewayDBOperations {
+  Messages: {
+    read: true,
+    create: false,  // Only Translator creates messages
+    update: false,
+    delete: false
+  },
+  Users: { read: true, create: true, update: true, delete: true },
+  Conversations: { read: true, create: true, update: true, delete: true },
+  MessageTranslations: { read: true, create: false, update: false, delete: false }
+}
+
+// Translator Service (FastAPI) - Prisma Operations
+interface TranslatorDBOperations {
+  Messages: { read: true, create: true, update: true, delete: true },
+  MessageTranslations: { read: true, create: true, update: true, delete: true },
+  Users: { read: true, create: false, update: false, delete: false },
+  Conversations: { read: true, create: false, update: false, delete: false }
+}
+```
+
+## 📋 Quick Decision Matrix
+
+**Database Provider**: PostgreSQL (production), SQLite (development)
+**ORM**: Prisma Client in both Gateway and Translator services
+**Message Creation**: Only Translator service creates Message records
+**Translation Storage**: MessageTranslation table + Redis cache
+**Language Resolution**: Based on user's language configuration flags
+**Cache Key Format**: `hash(sourceText + sourceLanguage + targetLanguage)`
+**Type Safety**: Use Prisma generated types throughout the application
+
+## 🎯 Success Metrics
+
+- **Database Performance**: <10ms average Prisma query time
+- **Multi-language Throughput**: 10k messages/second with translations
+- **Translation Cache Hit**: >80% using MessageTranslation table + Redis
+- **Language Accuracy**: Correct language delivery based on user preferences
+- **Schema Consistency**: Zero type mismatches between services
+- **Real-time Performance**: <50ms end-to-end message delivery with translation
+
+## 🔧 Critical Implementation Notes
+
+### Prisma Client Usage
+```typescript
+// Gateway Service - Read-only messages
+const messages = await prisma.message.findMany({
+  where: { conversationId },
+  include: { 
+    translations: {
+      where: { targetLanguage: userLanguage }
+    }
+  }
+});
+
+// Translator Service - Full message management
+const message = await prisma.message.create({
+  data: {
+    content: originalText,
+    originalLanguage: sourceLanguage,
+    senderId,
+    conversationId
+  }
+});
+
+const translation = await prisma.messageTranslation.create({
+  data: {
+    messageId: message.id,
+    sourceLanguage,
+    targetLanguage,
+    translatedContent,
+    translationModel: "basic",
+    cacheKey: generateCacheKey(originalText, sourceLanguage, targetLanguage)
+  }
+});
+```
+
+### Language Configuration Logic
+```typescript
+function getRequiredLanguages(conversationMembers: User[]): string[] {
+  const languages = new Set<string>();
+  
+  conversationMembers.forEach(user => {
+    if (user.useCustomDestination && user.customDestinationLanguage) {
+      languages.add(user.customDestinationLanguage);
+    } else if (user.translateToSystemLanguage) {
+      languages.add(user.systemLanguage);
+    } else if (user.translateToRegionalLanguage) {
+      languages.add(user.regionalLanguage);
+    }
+  });
+  
+  return Array.from(languages);
+}
+```
+
+---
+
+*Remember: Always use Prisma-generated types and respect service database boundaries. Each message gets translated to multiple languages simultaneously, stored in MessageTranslation table, but users only receive messages in their configured language preference.*
 ```

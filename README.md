@@ -1,266 +1,409 @@
-# Meeshy - Messagerie avec Traduction Automatique Côté Client
+# Meeshy - High-Performance Multilingual Messaging Platform
 
-Meeshy est une application de messagerie innovante qui permet aux utilisateurs de communiquer dans leurs langues natives respectives grâce à un système de traduction automatique côté client.
+Meeshy is a real-time messaging application with backend translation system designed for high throughput (10,000 messages/second) using advanced ML models.
 
-## ✅ Statut du Développement
+## 📋 Architecture
 
-### Fonctionnalités Implémentées
-- ✅ **Authentification complète** - Registration, login, JWT auth
-- ✅ **Base de données** - Prisma + SQLite avec modèles complets
-- ✅ **Conversations et groupes** - Création, gestion, participation
-- ✅ **Liens de conversation** - Génération, partage, jointure avec validation
-- ✅ **Interface utilisateur** - Landing, dashboard, chat, auth forms
-- ✅ **WebSocket intégration** - Chat temps réel, typing indicators, online presence
-- ✅ **Système de traduction** - Hooks et services prêts (MT5/NLLB)
-- ✅ **Notifications** - Système de notifications temps réel intégré
-- ✅ **Interface responsive** - Optimisée mobile et desktop
-- ✅ **Modals de création** - Conversation et liens avec sélection participants
-- ✅ **Navigation mobile** - Pages séparées avec bouton retour
-- ✅ **Actions rapides dashboard** - Boutons d'accès direct aux fonctionnalités
-
-### En Cours de Développement
-- 🔄 **Traduction active** - Intégration finale des modèles MT5/NLLB
-- 🔄 **Tests** - Ajout de tests unitaires et d'intégration
-- 🔄 **Optimisations** - Performance et UX améliorées
-
-## 🌟 Fonctionnalités Principales
-
-- **Traduction côté client uniquement** - Aucune dépendance aux API externes
-- **Modèles de traduction edge** - MT5 et NLLB via TensorFlow.js
-- **Cache intelligent** - Stockage local des traductions pour une performance optimale
-- **Messagerie temps réel** - WebSocket pour une communication instantanée
-- **Liens d'invitation** - Partage facile de conversations avec validation
-- **Présence en ligne** - Statut temps réel des utilisateurs connectés
-- **Interface moderne** - UI responsive avec shadcn/ui et Tailwind CSS
-
-## 🏗️ Architecture
-
-### Frontend (Next.js 15)
-- **Framework** : Next.js 15 avec App Router et TypeScript
-- **Styling** : Tailwind CSS + shadcn/ui components
-- **State Management** : React hooks personnalisés
-- **WebSocket Client** : Socket.io-client pour temps réel
-- **Traduction** : TensorFlow.js (MT5 + NLLB) côté client
-- **Notifications** : Sonner pour les toasts et notifications
-
-### Backend (NestJS)
-- **Framework** : NestJS avec TypeScript
-- **Base de données** : Prisma + SQLite
-- **WebSocket** : Socket.io pour la messagerie temps réel
-- **API REST** : Gestion complète des utilisateurs, conversations, groupes
-- **Authentification** : JWT avec bcryptjs
-
-## 🚀 Installation et Démarrage
-
-### Prérequis
-- Node.js 18+ 
-- npm ou yarn
-
-### 1. Cloner le repository
-```bash
-git clone <repository-url>
-cd meeshy
+### System Overview
+```
+Frontend (Next.js) 
+    ↓ WebSocket/HTTP
+Gateway Service (Fastify)
+    ↓ gRPC/ZMQ/RabbitMQ + Protobuf
+Translation Service (FastAPI + Transformers)
+    ↓ Shared Database
+PostgreSQL + Redis Cache
 ```
 
-### 2. Installer les dépendances du frontend
-```bash
-npm install
-```
+### Service Responsibilities
 
-### 3. Installer les dépendances du backend
-```bash
-cd backend
-npm install
-cd ..
-```
+#### Gateway Service (Fastify)
+- **Read**: Messages (display only)
+- **CRUD**: Users, conversations, groups, preferences, presence
+- **Real-time**: WebSocket connections, message routing
+- **Communication**: gRPC client, ZMQ/RabbitMQ consumer/publisher
 
-### 4. Initialiser la base de données
-```bash
-cd backend
-npx prisma migrate reset --force  # Recrée la DB avec les données de test
-cd ..
-```
+#### Translation Service (FastAPI)
+- **CRUD**: Messages (create, update, delete, read)
+- **Read**: Conversations, user preferences
+- **Translation**: MT5/NLLB via Transformers library
+- **Cache**: Robust Redis-based translation caching
+- **Communication**: gRPC server, ZMQ/RabbitMQ consumer/publisher
 
-### 5. Démarrer le backend
-```bash
-cd backend
-npm run start:dev
-```
+### Communication Protocols
+- **Synchronous**: gRPC with Protocol Buffers (real-time message flow)
+- **Asynchronous**: ZMQ or RabbitMQ with Protocol Buffers (batch operations)
+- **Serialization**: Protocol Buffers for all inter-service communication
 
-Le backend sera disponible sur http://localhost:3000
+## 🚀 Performance Targets
 
-### 6. Démarrer le frontend
-```bash
-# Dans un nouveau terminal, depuis la racine du projet
-npm run dev
-```
+### Key Metrics
+- **Throughput**: 10,000 messages/second sustained
+- **Latency**: <50ms end-to-end message delivery
+- **Translation**: <100ms per message
+- **Cache Hit Rate**: >80% for translations
+- **Uptime**: 99.9% service availability
 
-Le frontend sera disponible sur http://localhost:3100
+### Infrastructure
+- **Database**: PostgreSQL cluster (shared between services)
+- **Cache**: Redis cluster for translation cache
+- **Message Queue**: RabbitMQ or ZeroMQ for async operations
+- **Monitoring**: Prometheus + Grafana
+- **Load Balancing**: Nginx reverse proxy
 
-## 🎯 Utilisation
-
-1. **Inscription/Connexion** : Créez un compte ou connectez-vous avec un utilisateur existant
-2. **Dashboard** : Accédez à vos conversations et créez-en de nouvelles
-3. **Création de conversation** : Sélectionnez des participants et créez une conversation
-4. **Liens d'invitation** : Générez des liens pour inviter d'autres utilisateurs
-5. **Chat temps réel** : Discutez avec notifications et indicateurs de frappe
-6. **Traduction automatique** : Les messages sont traduits selon vos paramètres (à finaliser)
-
-## 📱 Navigation Responsive
-
-### Mode Desktop (≥1024px)
-- **Vue en colonnes** : Liste des conversations à gauche, chat à droite
-- **Navigation directe** : Clic sur conversation → affichage immédiat
-- **Actions groupées** : Boutons "Nouvelle conversation" et "Créer un lien" dans l'en-tête
-
-### Mode Mobile (<1024px)  
-- **Navigation par pages** :
-  - `/conversations` → Liste des conversations en plein écran
-  - `/conversations/[id]` → Chat individuel en plein écran
-- **Bouton retour** : Flèche dans l'en-tête du chat pour revenir à la liste
-- **Interface tactile** : Boutons optimisés pour les écrans tactiles
-
-### Fonctionnalités Cross-Platform
-- **Modals unifiées** : Création de conversation et liens disponibles partout
-- **Actions rapides** : Dashboard avec boutons d'accès direct
-- **État synchronisé** : Navigation cohérente entre desktop et mobile
-
-## 👥 Utilisateurs de Test
-
-Comptes prêts à utiliser (mot de passe: `password123`) :
-- **alice.martin@email.com** (Alice Martin) - Français
-- **bob.johnson@email.com** (Bob Johnson) - Anglais/Russe  
-- **carlos.rodriguez@email.com** (Carlos Rodriguez) - Espagnol
-- **diana.chen@email.com** (Diana Chen) - Chinois
-- **emma.schmidt@email.com** (Emma Schmidt) - Allemand
-
-## 🔗 Test des Liens de Conversation
-
-1. Connectez-vous en tant qu'Alice et créez une conversation
-2. Générez un lien d'invitation depuis le dashboard
-3. Copiez le lien généré (format: `/join/[linkId]`)
-4. Ouvrez le lien dans un nouvel onglet ou partagez-le
-5. Connectez-vous avec un autre utilisateur pour rejoindre la conversation
-- **Diana** (Allemand) - Traduction désactivée
-- **Erik** (Suédois) - Traduction vers la langue système
-
-## 🔧 Configuration de la Traduction
-
-### Paramètres par utilisateur
-- **Langue système** : Langue de l'interface
-- **Langue régionale** : Langue native de l'utilisateur
-- **Langue de destination personnalisée** : Langue spécifique pour certains contacts
-- **Mode de traduction automatique** : Activé/Désactivé
-
-### Logique de sélection du modèle
-```
-Si (longueur_message <= 50 caractères ET complexité_syntaxique == faible)
-    Utiliser MT5
-Sinon
-    Utiliser NLLB
-```
-
-## 🗂️ Structure du Projet
-
-```
-meeshy/
-├── src/
-│   ├── app/                 # Pages Next.js (App Router)
-│   ├── components/          # Composants React
-│   ├── hooks/               # Hooks React personnalisés
-│   ├── lib/                 # Utilitaires et services
-│   ├── types/               # Types TypeScript
-│   └── utils/               # Fonctions utilitaires
-├── backend/
-│   └── src/
-│       ├── gateway/         # WebSocket Gateway
-│       ├── modules/         # Modules NestJS
-│       └── types/           # Types partagés
-└── public/                  # Assets statiques
-```
-
-## 📦 Technologies Utilisées
+## 🛠️ Tech Stack
 
 ### Frontend
-- Next.js 15
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- Socket.io-client
-- TensorFlow.js
-- Sonner (notifications)
+- **Framework**: Next.js 15 with TypeScript
+- **UI**: Tailwind CSS + shadcn/ui components
+- **Real-time**: WebSocket client with reconnection logic
+- **State Management**: React hooks with SWR for data fetching
 
-### Backend
-- NestJS
-- TypeScript
-- Socket.io
-- Reflect-metadata
-- Class-validator
+### Backend Services
+- **Gateway**: Fastify with TypeScript (high-performance Node.js)
+- **Translation**: FastAPI with Python + Transformers
+- **Database**: PostgreSQL with connection pooling
+- **Cache**: Redis with intelligent TTL management
+- **Authentication**: JWT with bcrypt hashing
 
-## 🔄 Flux de Traduction
+## 🏗️ Project Structure
 
-1. **Envoi** : Message envoyé dans la langue native
-2. **Transmission** : Message transmis tel quel au serveur
-3. **Réception** : Destinataire reçoit le message original
-4. **Traduction** : Traduction côté client selon les paramètres
-5. **Affichage** : Possibilité de basculer entre original et traduit
+```
+├── frontend/                     # Next.js application
+│   ├── src/
+│   │   ├── app/                  # App Router pages
+│   │   ├── components/           # React components
+│   │   ├── hooks/                # WebSocket & SWR hooks
+│   │   └── types/                # TypeScript interfaces
+│
+├── backend/
+│   ├── gateway-service/          # Fastify service
+│   │   ├── src/
+│   │   │   ├── routes/           # HTTP endpoints
+│   │   │   ├── websocket/        # WebSocket handlers
+│   │   │   ├── grpc/             # gRPC client
+│   │   │   ├── queue/            # ZMQ/RabbitMQ client
+│   │   │   └── database/         # DB connection
+│   │
+│   ├── translation-service/      # FastAPI service
+│   │   ├── src/
+│   │   │   ├── api/              # HTTP endpoints
+│   │   │   ├── grpc/             # gRPC server
+│   │   │   ├── queue/            # Message queue consumer
+│   │   │   ├── models/           # ML model management
+│   │   │   ├── cache/            # Translation cache
+│   │   │   └── database/         # DB connection
+│   │
+│   └── shared/                   # Shared resources
+│       ├── proto/                # Protocol Buffer definitions
+│       ├── types/                # Shared TypeScript types
+│       └── config/               # Environment configuration
+│
+├── docker/                       # Docker configurations
+├── monitoring/                   # Prometheus & Grafana configs
+└── scripts/                      # Deployment & management scripts
+```
 
-## 🚀 Développement
+## 🚀 Quick Start
 
-### Scripts disponibles
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for local development)
+- 8GB RAM minimum (for ML models)
+- Python 3.9+ (for translation service)
 
-#### Frontend
+### Installation
+
 ```bash
-npm run dev          # Démarrer en mode développement
-npm run build        # Construire pour la production
-npm run start        # Démarrer en mode production
-npm run lint         # Vérifier le code avec ESLint
+# Clone repository
+git clone <repo-url>
+cd meeshy
+
+# Start all services
+./start-backend.sh
+
+# Or manually with Docker Compose
+docker-compose up -d
 ```
 
-#### Backend
+### Services Available
+- **Frontend**: http://localhost:3000
+- **Gateway API**: http://localhost:3001
+- **Translation Service**: http://localhost:8000
+- **WebSocket**: ws://localhost:3001/ws
+- **Health Checks**: http://localhost:3001/health
+- **Grafana**: http://localhost:3003 (admin/admin)
+- **Prometheus**: http://localhost:9090
+
+## 🔄 Translation Flow
+
+### Real-time Message Flow (Synchronous)
+```
+1. User sends message → Gateway (WebSocket)
+2. Gateway → Translator (gRPC + Protobuf): translation request
+3. Translator: cache check → model inference → cache store
+4. Translator → Gateway (gRPC + Protobuf): translated message
+5. Gateway broadcasts to recipients (WebSocket)
+```
+
+### Translation Logic
+```
+Message Analysis:
+├── Cache lookup: hash(text + source_lang + target_lang)
+├── If cache hit: Return cached translation
+└── If cache miss:
+    ├── Short/simple (≤50 chars) → MT5 model
+    ├── Long/complex → NLLB model
+    └── Store result in cache with TTL
+```
+
+### Batch Operations (Asynchronous)
+```
+1. Gateway publishes to queue (ZMQ/RabbitMQ + Protobuf)
+2. Translator consumes from queue
+3. Batch processing with database operations
+4. Results published back to Gateway queue
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+**Gateway Service** (`.env.gateway`):
+```env
+NODE_ENV=production
+PORT=3001
+DATABASE_URL=postgresql://user:password@postgres:5432/meeshy
+REDIS_URL=redis://redis:6379
+JWT_SECRET=your-production-secret
+GRPC_TRANSLATION_HOST=translation-service
+GRPC_TRANSLATION_PORT=50051
+WS_MAX_CONNECTIONS=10000
+DB_POOL_SIZE=20
+```
+
+**Translation Service** (`.env.translator`):
+```env
+FASTAPI_PORT=8000
+DATABASE_URL=postgresql://user:password@postgres:5432/meeshy
+REDIS_URL=redis://redis:6379
+GRPC_PORT=50051
+ML_BATCH_SIZE=32
+CACHE_TTL=3600
+WORKERS=4
+GPU_MEMORY_FRACTION=0.8
+```
+
+**Message Queue** (`.env.queue`):
+```env
+RABBITMQ_URL=amqp://user:password@rabbitmq:5672
+# OR for ZeroMQ
+ZMQ_GATEWAY_PORT=5555
+ZMQ_TRANSLATOR_PORT=5556
+```
+
+## 🌐 Translation Features
+
+### Supported Languages
+- **Primary**: French, English, Spanish, German
+- **Extended**: Portuguese, Chinese, Japanese, Arabic
+- **Models**: MT5 (short messages), NLLB (complex messages)
+- **Cache**: Intelligent Redis caching with 80%+ hit rate
+
+### Performance Optimizations
+- **Model Loading**: Lazy loading with memory optimization
+- **Batch Processing**: Group translation requests
+- **GPU Utilization**: CUDA acceleration when available
+- **Connection Pooling**: Database and Redis connections
+- **Async Processing**: Non-blocking I/O throughout
+
+## 📈 Monitoring & Health Checks
+
+### Health Endpoints
 ```bash
-npm run start:dev    # Démarrer en mode développement avec hot-reload
-npm run build        # Construire le projet TypeScript
-npm run start        # Démarrer en mode production
+# Gateway Service Health
+GET /health/gateway           # Basic health check
+GET /health/detailed         # Complete service status
+GET /health/ready           # Kubernetes readiness probe
+GET /health/live            # Kubernetes liveness probe
+
+# Translation Service Health  
+GET /translate/health        # Translation service status
+GET /translate/models        # Model loading status
+GET /translate/cache/stats   # Cache performance metrics
+
+# System Metrics
+GET /metrics/performance     # Throughput, latency metrics
+GET /metrics/queue          # Queue depth, processing rates
+GET /metrics/database       # DB connection, query performance
 ```
 
-## 🎨 Personnalisation
+### Grafana Dashboards
+- **System Performance**: CPU, memory, network, disk I/O
+- **Application Metrics**: Message throughput, translation speed
+- **Service Health**: Uptime, error rates, response times
+- **Business Intelligence**: User activity, language usage patterns
 
-### Ajouter de nouvelles langues
-Modifiez le fichier `src/types/index.ts` :
+## 🛡️ Production Deployment
 
-```typescript
-export const SUPPORTED_LANGUAGES: LanguageCode[] = [
-  { code: 'xx', name: 'Nouvelle Langue', flag: '🏳️' },
-  // ...
-];
+### Performance Tuning
+```yaml
+# docker-compose.prod.yml
+services:
+  gateway:
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+    environment:
+      - NODE_ENV=production
+      - WS_MAX_CONNECTIONS=10000
+      
+  translator:
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 8G
+          cpus: '2.0'
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 ```
 
-### Modifier les utilisateurs prédéfinis
-Éditez `backend/src/modules/user.service.ts` dans la méthode `initializeUsers()`.
+### Load Testing
+```bash
+# Test message throughput
+./scripts/load-test.sh --messages 10000 --concurrent 100
 
-## 🤝 Contribution
+# Test translation performance  
+./scripts/translation-benchmark.sh --batch-size 32
 
-1. Fork le projet
-2. Créez votre branche feature (`git checkout -b feature/nouvelle-fonctionnalite`)
-3. Committez vos changements (`git commit -m 'Ajouter nouvelle fonctionnalité'`)
-4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
-5. Ouvrez une Pull Request
+# WebSocket stress test
+./scripts/websocket-stress.sh --connections 1000
+```
 
-## 📝 TODO
+## 🔍 Development
 
-- [ ] Implémenter les vrais modèles MT5 et NLLB
-- [ ] Ajouter le dialogue des paramètres utilisateur
-- [ ] Système de persistance des données
-- [ ] Tests unitaires et d'intégration
-- [ ] Support des fichiers média
-- [ ] Notifications push
-- [ ] Mode hors ligne
+### Local Development Setup
+```bash
+# Install dependencies
+npm install          # Frontend
+cd backend/gateway-service && npm install
+cd ../translation-service && pip install -r requirements.txt
 
-## 📄 Licence
+# Start services individually
+npm run dev:frontend        # Frontend development server
+npm run dev:gateway         # Gateway with hot-reload
+python -m uvicorn main:app --reload  # Translation service
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+# Protocol Buffer compilation
+./scripts/compile-proto.sh
+```
+
+### Debugging
+```bash
+# View service logs
+docker-compose logs gateway-service
+docker-compose logs translation-service
+
+# Monitor message queue
+docker exec -it rabbitmq rabbitmqctl list_queues
+
+# Check Redis cache
+docker exec -it redis redis-cli monitor
+```
+
+## 🚀 Deployment Scripts
+
+### Production Deployment
+```bash
+# Deploy all services
+./scripts/deploy-prod.sh
+
+# Scale services
+./scripts/scale-services.sh --gateway 5 --translator 3
+
+# Database migration
+./scripts/migrate-db.sh
+
+# Health check
+./scripts/health-check.sh
+```
+
+### Backup & Recovery
+```bash
+# Backup database
+./scripts/backup-db.sh
+
+# Backup Redis cache
+./scripts/backup-cache.sh
+
+# Restore from backup
+./scripts/restore-backup.sh --date 2024-01-15
+```
+
+## 🔄 API Documentation
+
+### Gateway REST API
+- **Authentication**: `POST /auth/login`, `POST /auth/refresh`
+- **Users**: `GET /users`, `POST /users`, `PUT /users/:id`
+- **Conversations**: `GET /conversations`, `POST /conversations`
+- **Messages**: `GET /conversations/:id/messages`
+
+### Translation gRPC API
+```protobuf
+service TranslationService {
+  rpc TranslateMessage(TranslationRequest) returns (TranslationResponse);
+  rpc BatchTranslate(BatchTranslationRequest) returns (BatchTranslationResponse);
+  rpc GetCacheStats(Empty) returns (CacheStatsResponse);
+}
+```
+
+### WebSocket Events
+- **Connection**: `connection`, `disconnect`
+- **Messages**: `message:send`, `message:receive`, `message:typing`
+- **Presence**: `user:online`, `user:offline`
+
+## 📊 Performance Benchmarks
+
+### Expected Performance
+- **Message Processing**: 10,000+ messages/second
+- **Translation Speed**: 50-100ms average
+- **WebSocket Connections**: 10,000+ concurrent
+- **Database Queries**: <10ms average response time
+- **Cache Hit Rate**: 80-90% for translations
+
+### Scalability Targets
+- **Horizontal Scaling**: Add gateway/translator instances
+- **Database Sharding**: Support for multiple database clusters  
+- **Geographic Distribution**: Multi-region deployment support
+- **Auto-scaling**: Based on CPU, memory, and queue depth
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/new-feature`)
+3. Follow performance guidelines (10k msg/sec target)
+4. Ensure type safety across services
+5. Add tests for new functionality
+6. Submit pull request with performance benchmarks
+
+## 📝 License
+
+This project is licensed under the MIT License. See `LICENSE` file for details.
 
 ## 📞 Support
 
-Pour toute question ou problème, ouvrez une issue sur GitHub ou contactez l'équipe de développement.
+- **Issues**: Create GitHub issue with performance impact assessment
+- **Documentation**: Check `/docs` folder for detailed guides
+- **Performance**: Include benchmark results with bug reports
+- **Architecture**: Contact development team for system design questions
+
+---
+
+**Built for Scale**: Designed to handle 100,000+ messages/second with real-time translation and sub-50ms latency.

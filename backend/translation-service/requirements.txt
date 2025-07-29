@@ -1,0 +1,16 @@
+fastapi==0.104.1
+grpcio==1.59.3
+grpcio-tools==1.59.3
+prisma==0.11.0
+transformers==4.35.2
+torch==2.1.1
+sentencepiece==0.1.99
+accelerate==0.24.1
+psutil==5.9.6
+uvicorn==0.24.0
+python-dotenv==1.0.0
+pydantic==2.5.0
+asyncio==3.4.3
+aiofiles==23.2.1
+hashlib-compat==1.0.1
+logging-config==1.0.3

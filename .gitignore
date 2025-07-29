@@ -58,3 +58,6 @@ public/models/
 # Logs
 *.log
 logs/
+venv/
+test_venv/
+test_env/

@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package translation;
+
+// Service de traduction principal
+service TranslationService {
+    // Traduit un texte d'une langue source vers une langue cible
+    rpc TranslateText(TranslateRequest) returns (TranslateResponse);
+    
+    // Détecte la langue d'un texte
+    rpc DetectLanguage(DetectLanguageRequest) returns (DetectLanguageResponse);
+    
+    // Vérifie la santé du service
+    rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// Requête de traduction
+message TranslateRequest {
+    string text = 1;                    // Texte à traduire
+    string source_language = 2;          // Langue source (ex: "en")
+    string target_language = 3;          // Langue cible (ex: "fr")
+    bool force_model = 4;               // Forcer un modèle spécifique
+    string model_type = 5;              // Type de modèle ("normal" ou "premium")
+}
+
+// Réponse de traduction
+message TranslateResponse {
+    string translated_text = 1;         // Texte traduit
+    string source_language = 2;         // Langue source détectée/confirmée
+    string target_language = 3;         // Langue cible utilisée
+    bool cached = 4;                    // Si la traduction vient du cache
+    string model_used = 5;              // Modèle utilisé ("normal" ou "premium")
+    float confidence = 6;               // Confiance de la traduction (0-1)
+    TranslationMetadata metadata = 7;    // Métadonnées supplémentaires
+}
+
+// Métadonnées de traduction
+message TranslationMetadata {
+    int32 input_length = 1;             // Longueur du texte d'entrée
+    int32 output_length = 2;            // Longueur du texte de sortie
+    int32 word_count = 3;               // Nombre de mots
+    float processing_time = 4;          // Temps de traitement en secondes
+    string device = 5;                  // Device utilisé (cpu/cuda)
+}
+
+// Requête de détection de langue
+message DetectLanguageRequest {
+    string text = 1;                    // Texte à analyser
+    float confidence_threshold = 2;      // Seuil de confiance minimum
+}
+
+// Réponse de détection de langue
+message DetectLanguageResponse {
+    string language = 1;                // Langue détectée (code ISO)
+    float confidence = 2;               // Confiance de la détection (0-1)
+    repeated LanguageScore alternatives = 3; // Langues alternatives
+}
+
+// Score de langue pour les alternatives
+message LanguageScore {
+    string language = 1;                // Code de langue
+    float score = 2;                    // Score de confiance
+}
+
+// Requête de santé
+message HealthCheckRequest {
+    string component = 1;               // Composant à vérifier (optionnel)
+}
+
+// Réponse de santé
+message HealthCheckResponse {
+    string status = 1;                  // "OK", "WARNING", "ERROR"
+    string details = 2;                 // Détails JSON sur l'état du service
+    repeated ServiceStatus services = 3; // État des sous-services
+}
+
+// État d'un service
+message ServiceStatus {
+    string name = 1;                    // Nom du service
+    string status = 2;                  // État du service
+    string message = 3;                 // Message descriptif
+}
