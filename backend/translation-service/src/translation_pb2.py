@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11translation.proto\x12\x0btranslation\"{\n\x10TranslateRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x17\n\x0fsource_language\x18\x02 \x01(\t\x12\x17\n\x0ftarget_language\x18\x03 \x01(\t\x12\x13\n\x0b\x66orce_model\x18\x04 \x01(\x08\x12\x12\n\nmodel_type\x18\x05 \x01(\t\"\xca\x01\n\x11TranslateResponse\x12\x17\n\x0ftranslated_text\x18\x01 \x01(\t\x12\x17\n\x0fsource_language\x18\x02 \x01(\t\x12\x17\n\x0ftarget_language\x18\x03 \x01(\t\x12\x0e\n\x06\x63\x61\x63hed\x18\x04 \x01(\x08\x12\x12\n\nmodel_used\x18\x05 \x01(\t\x12\x12\n\nconfidence\x18\x06 \x01(\x02\x12\x32\n\x08metadata\x18\x07 \x01(\x0b\x32 .translation.TranslationMetadata\"\x7f\n\x13TranslationMetadata\x12\x14\n\x0cinput_length\x18\x01 \x01(\x05\x12\x15\n\routput_length\x18\x02 \x01(\x05\x12\x12\n\nword_count\x18\x03 \x01(\x05\x12\x17\n\x0fprocessing_time\x18\x04 \x01(\x02\x12\x0e\n\x06\x64\x65vice\x18\x05 \x01(\t\"C\n\x15\x44\x65tectLanguageRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x1c\n\x14\x63onfidence_threshold\x18\x02 \x01(\x02\"p\n\x16\x44\x65tectLanguageResponse\x12\x10\n\x08language\x18\x01 \x01(\t\x12\x12\n\nconfidence\x18\x02 \x01(\x02\x12\x30\n\x0c\x61lternatives\x18\x03 \x03(\x0b\x32\x1a.translation.LanguageScore\"0\n\rLanguageScore\x12\x10\n\x08language\x18\x01 \x01(\t\x12\r\n\x05score\x18\x02 \x01(\x02\"\'\n\x12HealthCheckRequest\x12\x11\n\tcomponent\x18\x01 \x01(\t\"d\n\x13HealthCheckResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0f\n\x07\x64\x65tails\x18\x02 \x01(\t\x12,\n\x08services\x18\x03 \x03(\x0b\x32\x1a.translation.ServiceStatus\">\n\rServiceStatus\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07message\x18\x03 \x01(\t2\x91\x02\n\x12TranslationService\x12N\n\rTranslateText\x12\x1d.translation.TranslateRequest\x1a\x1e.translation.TranslateResponse\x12Y\n\x0e\x44\x65tectLanguage\x12\".translation.DetectLanguageRequest\x1a#.translation.DetectLanguageResponse\x12P\n\x0bHealthCheck\x12\x1f.translation.HealthCheckRequest\x1a .translation.HealthCheckResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11translation.proto\x12\x0btranslation\"R\n\x10TranslateRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x17\n\x0fsource_language\x18\x02 \x01(\t\x12\x17\n\x0ftarget_language\x18\x03 \x01(\t\"[\n\x18TranslateMultipleRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x17\n\x0fsource_language\x18\x02 \x01(\t\x12\x18\n\x10target_languages\x18\x03 \x03(\t\"%\n\x15\x44\x65tectLanguageRequest\x12\x0c\n\x04text\x18\x01 \x01(\t\"\x1b\n\x19SupportedLanguagesRequest\"\x15\n\x13ServiceStatsRequest\"%\n\x12HealthCheckRequest\x12\x0f\n\x07service\x18\x01 \x01(\t\"\xac\x01\n\x11TranslateResponse\x12\x17\n\x0ftranslated_text\x18\x01 \x01(\t\x12 \n\x18\x64\x65tected_source_language\x18\x02 \x01(\t\x12\x18\n\x10\x63onfidence_score\x18\x03 \x01(\x02\x12\x12\n\nmodel_tier\x18\x04 \x01(\t\x12\x1a\n\x12processing_time_ms\x18\x05 \x01(\x05\x12\x12\n\nfrom_cache\x18\x06 \x01(\x08\"s\n\x19TranslateMultipleResponse\x12\x34\n\x0ctranslations\x18\x01 \x03(\x0b\x32\x1e.translation.TranslationResult\x12 \n\x18\x64\x65tected_source_language\x18\x02 \x01(\t\"\xa3\x01\n\x11TranslationResult\x12\x17\n\x0ftarget_language\x18\x01 \x01(\t\x12\x17\n\x0ftranslated_text\x18\x02 \x01(\t\x12\x18\n\x10\x63onfidence_score\x18\x03 \x01(\x02\x12\x12\n\nmodel_tier\x18\x04 \x01(\t\x12\x1a\n\x12processing_time_ms\x18\x05 \x01(\x05\x12\x12\n\nfrom_cache\x18\x06 \x01(\x08\"\x87\x01\n\x16\x44\x65tectLanguageResponse\x12\x19\n\x11\x64\x65tected_language\x18\x01 \x01(\t\x12\x18\n\x10\x63onfidence_score\x18\x02 \x01(\x02\x12\x18\n\x10\x63omplexity_score\x18\x03 \x01(\x02\x12\x1e\n\x16recommended_model_tier\x18\x04 \x01(\t\"/\n\x1aSupportedLanguagesResponse\x12\x11\n\tlanguages\x18\x01 \x03(\t\"\x96\x01\n\x14ServiceStatsResponse\x12\x12\n\ncache_size\x18\x01 \x01(\x05\x12!\n\x19supported_languages_count\x18\x02 \x01(\x05\x12\x1b\n\x13models_loaded_count\x18\x03 \x01(\x05\x12\x13\n\x0b\x64\x65vice_info\x18\x04 \x01(\t\x12\x15\n\rservice_ready\x18\x05 \x01(\x08\"\xb7\x01\n\x13HealthCheckResponse\x12>\n\x06status\x18\x01 \x01(\x0e\x32..translation.HealthCheckResponse.ServingStatus\x12\x0f\n\x07message\x18\x02 \x01(\t\"O\n\rServingStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07SERVING\x10\x01\x12\x0f\n\x0bNOT_SERVING\x10\x02\x12\x13\n\x0fSERVICE_UNKNOWN\x10\x03\x32\xe5\x03\n\x12TranslationService\x12N\n\rTranslateText\x12\x1d.translation.TranslateRequest\x1a\x1e.translation.TranslateResponse\x12\x62\n\x11TranslateMultiple\x12%.translation.TranslateMultipleRequest\x1a&.translation.TranslateMultipleResponse\x12Y\n\x0e\x44\x65tectLanguage\x12\".translation.DetectLanguageRequest\x1a#.translation.DetectLanguageResponse\x12h\n\x15GetSupportedLanguages\x12&.translation.SupportedLanguagesRequest\x1a\'.translation.SupportedLanguagesResponse\x12V\n\x0fGetServiceStats\x12 .translation.ServiceStatsRequest\x1a!.translation.ServiceStatsResponse2Y\n\x0bHealthCheck\x12J\n\x05\x43heck\x12\x1f.translation.HealthCheckRequest\x1a .translation.HealthCheckResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,23 +32,35 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'translation_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_TRANSLATEREQUEST']._serialized_start=34
-  _globals['_TRANSLATEREQUEST']._serialized_end=157
-  _globals['_TRANSLATERESPONSE']._serialized_start=160
-  _globals['_TRANSLATERESPONSE']._serialized_end=362
-  _globals['_TRANSLATIONMETADATA']._serialized_start=364
-  _globals['_TRANSLATIONMETADATA']._serialized_end=491
-  _globals['_DETECTLANGUAGEREQUEST']._serialized_start=493
-  _globals['_DETECTLANGUAGEREQUEST']._serialized_end=560
-  _globals['_DETECTLANGUAGERESPONSE']._serialized_start=562
-  _globals['_DETECTLANGUAGERESPONSE']._serialized_end=674
-  _globals['_LANGUAGESCORE']._serialized_start=676
-  _globals['_LANGUAGESCORE']._serialized_end=724
-  _globals['_HEALTHCHECKREQUEST']._serialized_start=726
-  _globals['_HEALTHCHECKREQUEST']._serialized_end=765
-  _globals['_HEALTHCHECKRESPONSE']._serialized_start=767
-  _globals['_HEALTHCHECKRESPONSE']._serialized_end=867
-  _globals['_SERVICESTATUS']._serialized_start=869
-  _globals['_SERVICESTATUS']._serialized_end=931
-  _globals['_TRANSLATIONSERVICE']._serialized_start=934
-  _globals['_TRANSLATIONSERVICE']._serialized_end=1207
+  _globals['_TRANSLATEREQUEST']._serialized_end=116
+  _globals['_TRANSLATEMULTIPLEREQUEST']._serialized_start=118
+  _globals['_TRANSLATEMULTIPLEREQUEST']._serialized_end=209
+  _globals['_DETECTLANGUAGEREQUEST']._serialized_start=211
+  _globals['_DETECTLANGUAGEREQUEST']._serialized_end=248
+  _globals['_SUPPORTEDLANGUAGESREQUEST']._serialized_start=250
+  _globals['_SUPPORTEDLANGUAGESREQUEST']._serialized_end=277
+  _globals['_SERVICESTATSREQUEST']._serialized_start=279
+  _globals['_SERVICESTATSREQUEST']._serialized_end=300
+  _globals['_HEALTHCHECKREQUEST']._serialized_start=302
+  _globals['_HEALTHCHECKREQUEST']._serialized_end=339
+  _globals['_TRANSLATERESPONSE']._serialized_start=342
+  _globals['_TRANSLATERESPONSE']._serialized_end=514
+  _globals['_TRANSLATEMULTIPLERESPONSE']._serialized_start=516
+  _globals['_TRANSLATEMULTIPLERESPONSE']._serialized_end=631
+  _globals['_TRANSLATIONRESULT']._serialized_start=634
+  _globals['_TRANSLATIONRESULT']._serialized_end=797
+  _globals['_DETECTLANGUAGERESPONSE']._serialized_start=800
+  _globals['_DETECTLANGUAGERESPONSE']._serialized_end=935
+  _globals['_SUPPORTEDLANGUAGESRESPONSE']._serialized_start=937
+  _globals['_SUPPORTEDLANGUAGESRESPONSE']._serialized_end=984
+  _globals['_SERVICESTATSRESPONSE']._serialized_start=987
+  _globals['_SERVICESTATSRESPONSE']._serialized_end=1137
+  _globals['_HEALTHCHECKRESPONSE']._serialized_start=1140
+  _globals['_HEALTHCHECKRESPONSE']._serialized_end=1323
+  _globals['_HEALTHCHECKRESPONSE_SERVINGSTATUS']._serialized_start=1244
+  _globals['_HEALTHCHECKRESPONSE_SERVINGSTATUS']._serialized_end=1323
+  _globals['_TRANSLATIONSERVICE']._serialized_start=1326
+  _globals['_TRANSLATIONSERVICE']._serialized_end=1811
+  _globals['_HEALTHCHECK']._serialized_start=1813
+  _globals['_HEALTHCHECK']._serialized_end=1902
 # @@protoc_insertion_point(module_scope)

@@ -40,15 +40,25 @@ class TranslationServiceStub(object):
                 request_serializer=translation__pb2.TranslateRequest.SerializeToString,
                 response_deserializer=translation__pb2.TranslateResponse.FromString,
                 _registered_method=True)
+        self.TranslateMultiple = channel.unary_unary(
+                '/translation.TranslationService/TranslateMultiple',
+                request_serializer=translation__pb2.TranslateMultipleRequest.SerializeToString,
+                response_deserializer=translation__pb2.TranslateMultipleResponse.FromString,
+                _registered_method=True)
         self.DetectLanguage = channel.unary_unary(
                 '/translation.TranslationService/DetectLanguage',
                 request_serializer=translation__pb2.DetectLanguageRequest.SerializeToString,
                 response_deserializer=translation__pb2.DetectLanguageResponse.FromString,
                 _registered_method=True)
-        self.HealthCheck = channel.unary_unary(
-                '/translation.TranslationService/HealthCheck',
-                request_serializer=translation__pb2.HealthCheckRequest.SerializeToString,
-                response_deserializer=translation__pb2.HealthCheckResponse.FromString,
+        self.GetSupportedLanguages = channel.unary_unary(
+                '/translation.TranslationService/GetSupportedLanguages',
+                request_serializer=translation__pb2.SupportedLanguagesRequest.SerializeToString,
+                response_deserializer=translation__pb2.SupportedLanguagesResponse.FromString,
+                _registered_method=True)
+        self.GetServiceStats = channel.unary_unary(
+                '/translation.TranslationService/GetServiceStats',
+                request_serializer=translation__pb2.ServiceStatsRequest.SerializeToString,
+                response_deserializer=translation__pb2.ServiceStatsResponse.FromString,
                 _registered_method=True)
 
 
@@ -57,21 +67,35 @@ class TranslationServiceServicer(object):
     """
 
     def TranslateText(self, request, context):
-        """Traduit un texte d'une langue source vers une langue cible
+        """Traduction simple vers une langue
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def TranslateMultiple(self, request, context):
+        """Traduction vers plusieurs langues en parallèle
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def DetectLanguage(self, request, context):
-        """Détecte la langue d'un texte
+        """Détection de langue avec analyse de complexité
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def HealthCheck(self, request, context):
-        """Vérifie la santé du service
+    def GetSupportedLanguages(self, request, context):
+        """Liste des langues supportées
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetServiceStats(self, request, context):
+        """Statistiques du service
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -85,15 +109,25 @@ def add_TranslationServiceServicer_to_server(servicer, server):
                     request_deserializer=translation__pb2.TranslateRequest.FromString,
                     response_serializer=translation__pb2.TranslateResponse.SerializeToString,
             ),
+            'TranslateMultiple': grpc.unary_unary_rpc_method_handler(
+                    servicer.TranslateMultiple,
+                    request_deserializer=translation__pb2.TranslateMultipleRequest.FromString,
+                    response_serializer=translation__pb2.TranslateMultipleResponse.SerializeToString,
+            ),
             'DetectLanguage': grpc.unary_unary_rpc_method_handler(
                     servicer.DetectLanguage,
                     request_deserializer=translation__pb2.DetectLanguageRequest.FromString,
                     response_serializer=translation__pb2.DetectLanguageResponse.SerializeToString,
             ),
-            'HealthCheck': grpc.unary_unary_rpc_method_handler(
-                    servicer.HealthCheck,
-                    request_deserializer=translation__pb2.HealthCheckRequest.FromString,
-                    response_serializer=translation__pb2.HealthCheckResponse.SerializeToString,
+            'GetSupportedLanguages': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetSupportedLanguages,
+                    request_deserializer=translation__pb2.SupportedLanguagesRequest.FromString,
+                    response_serializer=translation__pb2.SupportedLanguagesResponse.SerializeToString,
+            ),
+            'GetServiceStats': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetServiceStats,
+                    request_deserializer=translation__pb2.ServiceStatsRequest.FromString,
+                    response_serializer=translation__pb2.ServiceStatsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -135,6 +169,33 @@ class TranslationService(object):
             _registered_method=True)
 
     @staticmethod
+    def TranslateMultiple(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/translation.TranslationService/TranslateMultiple',
+            translation__pb2.TranslateMultipleRequest.SerializeToString,
+            translation__pb2.TranslateMultipleResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def DetectLanguage(request,
             target,
             options=(),
@@ -162,7 +223,7 @@ class TranslationService(object):
             _registered_method=True)
 
     @staticmethod
-    def HealthCheck(request,
+    def GetSupportedLanguages(request,
             target,
             options=(),
             channel_credentials=None,
@@ -175,7 +236,109 @@ class TranslationService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/translation.TranslationService/HealthCheck',
+            '/translation.TranslationService/GetSupportedLanguages',
+            translation__pb2.SupportedLanguagesRequest.SerializeToString,
+            translation__pb2.SupportedLanguagesResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetServiceStats(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/translation.TranslationService/GetServiceStats',
+            translation__pb2.ServiceStatsRequest.SerializeToString,
+            translation__pb2.ServiceStatsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+
+class HealthCheckStub(object):
+    """Service de vérification de santé
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.Check = channel.unary_unary(
+                '/translation.HealthCheck/Check',
+                request_serializer=translation__pb2.HealthCheckRequest.SerializeToString,
+                response_deserializer=translation__pb2.HealthCheckResponse.FromString,
+                _registered_method=True)
+
+
+class HealthCheckServicer(object):
+    """Service de vérification de santé
+    """
+
+    def Check(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_HealthCheckServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'Check': grpc.unary_unary_rpc_method_handler(
+                    servicer.Check,
+                    request_deserializer=translation__pb2.HealthCheckRequest.FromString,
+                    response_serializer=translation__pb2.HealthCheckResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'translation.HealthCheck', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+    server.add_registered_method_handlers('translation.HealthCheck', rpc_method_handlers)
+
+
+ # This class is part of an EXPERIMENTAL API.
+class HealthCheck(object):
+    """Service de vérification de santé
+    """
+
+    @staticmethod
+    def Check(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/translation.HealthCheck/Check',
             translation__pb2.HealthCheckRequest.SerializeToString,
             translation__pb2.HealthCheckResponse.FromString,
             options,
