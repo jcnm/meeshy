@@ -1,5 +1,8 @@
 # Service de traduction Meeshy - Dépendances Python optimisées
 
+# Configuration d'environnement
+python-dotenv==1.0.0
+
 # Framework web
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
