@@ -24,7 +24,7 @@ export class GrpcClient {
   }
 
   private initialize() {
-    const protoPath = path.join(__dirname, '../../shared/proto/messaging.proto');
+    const protoPath = path.join(__dirname, '../../../shared/proto/messaging.proto');
     
     const packageDefinition = protoLoader.loadSync(protoPath, {
       keepCase: true,

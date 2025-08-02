@@ -1,502 +1,534 @@
-import type { WebSocket } from 'ws';
-import type { FastifyRequest } from 'fastify';
-import * as jwt from 'jsonwebtoken';
-import { AuthenticatedUser } from '../middleware/auth';
+/**
+ * Gestionnaire WebSocket simplifié pour Meeshy
+ * Version fonctionnelle avec gestion complète des événements temps réel
+ */
 
-interface WebSocketConnection {
-  socket: WebSocket;
-  request: FastifyRequest;
-}
+import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '../../../shared/generated';
+import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 
-interface WebSocketMessage {
-  type: string;
-  data: any;
-  messageId?: string;
-}
-
-interface ConnectedUser {
+// Interface pour une connexion WebSocket authentifiée
+interface AuthenticatedWebSocket {
+  id: string;
   userId: string;
   username: string;
-  socket: WebSocket;
-  request: FastifyRequest;
+  socket: any;
+  connectedAt: Date;
+  subscriptions: Set<string>; // IDs des conversations
 }
 
-// Map des utilisateurs connectés
-const connectedUsers = new Map<string, ConnectedUser>();
-// Map des conversations et leurs utilisateurs
-const conversationUsers = new Map<string, Set<string>>();
+// Gestionnaire WebSocket principal
+export class MeeshyWebSocketHandler {
+  private connections: Map<string, AuthenticatedWebSocket> = new Map();
+  private userConnections: Map<string, Set<string>> = new Map(); // userId -> Set<connectionId>
+  private conversationMembers: Map<string, Set<string>> = new Map(); // conversationId -> Set<userId>
+  private typingUsers: Map<string, Map<string, NodeJS.Timeout>> = new Map(); // conversationId -> Map<userId, timeout>
 
-export async function websocketHandler(connection: any, request: FastifyRequest) {
-  let authenticatedUser: ConnectedUser | null = null;
-  
-  const token = (request.query as any)?.token;
-  
-  if (!token) {
-    connection.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'Token requis pour WebSocket' }
-    }));
-    connection.close();
-    return;
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly jwtSecret: string
+  ) {}
+
+  /**
+   * Configure le WebSocket sur l'instance Fastify
+   */
+  public setupWebSocket(fastify: FastifyInstance): void {
+    const self = this;
+
+    fastify.register(async function (fastify) {
+      fastify.get('/ws', { websocket: true }, (connection, request) => {
+        self.handleConnection(connection, request);
+      });
+    });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
-    
-    const user = await request.server.prisma.user.findUnique({
-      where: { id: decoded.userId }
+  /**
+   * Gère une nouvelle connexion WebSocket
+   */
+  private async handleConnection(connection: any, request: any): Promise<void> {
+    const connectionId = uuidv4();
+    let authenticatedConnection: AuthenticatedWebSocket | null = null;
+
+    // Timeout d'authentification (30 secondes)
+    const authTimeout = setTimeout(() => {
+      if (!authenticatedConnection) {
+        connection.socket.close(1008, 'Authentication timeout');
+      }
+    }, 30000);
+
+    // Gestionnaire de messages
+    connection.socket.on('message', async (message: Buffer) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        if (data.type === 'authenticate' && !authenticatedConnection) {
+          authenticatedConnection = await this.authenticateConnection(
+            connectionId, 
+            connection, 
+            data.token
+          );
+          
+          if (authenticatedConnection) {
+            clearTimeout(authTimeout);
+            this.connections.set(connectionId, authenticatedConnection);
+            
+            // Ajouter à la map des connexions utilisateur
+            if (!this.userConnections.has(authenticatedConnection.userId)) {
+              this.userConnections.set(authenticatedConnection.userId, new Set());
+            }
+            this.userConnections.get(authenticatedConnection.userId)!.add(connectionId);
+
+            // Confirmer l'authentification
+            connection.socket.send(JSON.stringify({
+              type: 'authenticated',
+              data: {
+                userId: authenticatedConnection.userId,
+                username: authenticatedConnection.username
+              }
+            }));
+
+            // Mettre à jour le statut en ligne
+            await this.updateUserOnlineStatus(authenticatedConnection.userId, true);
+          }
+        } else if (authenticatedConnection) {
+          await this.handleMessage(authenticatedConnection, data);
+        } else {
+          connection.socket.send(JSON.stringify({
+            type: 'error',
+            data: { message: 'Authentication required' }
+          }));
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+        connection.socket.send(JSON.stringify({
+          type: 'error',
+          data: { message: 'Invalid message format' }
+        }));
+      }
     });
 
-    if (!user) {
-      connection.send(JSON.stringify({
+    // Gestionnaire de fermeture
+    connection.socket.on('close', async () => {
+      clearTimeout(authTimeout);
+      if (authenticatedConnection) {
+        await this.handleDisconnection(authenticatedConnection);
+      }
+    });
+
+    // Gestionnaire d'erreur
+    connection.socket.on('error', (error: Error) => {
+      console.error('WebSocket error:', error);
+    });
+  }
+
+  /**
+   * Authentifie une connexion WebSocket
+   */
+  private async authenticateConnection(
+    connectionId: string, 
+    connection: any, 
+    token: string
+  ): Promise<AuthenticatedWebSocket | null> {
+    try {
+      const payload = jwt.verify(token, this.jwtSecret) as any;
+      const userId = payload.userId || payload.sub;
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true
+        }
+      });
+
+      if (!user) {
+        connection.socket.send(JSON.stringify({
+          type: 'error',
+          data: { message: 'User not found' }
+        }));
+        return null;
+      }
+
+      return {
+        id: connectionId,
+        userId: user.id,
+        username: user.username,
+        socket: connection.socket,
+        connectedAt: new Date(),
+        subscriptions: new Set()
+      };
+
+    } catch (error) {
+      connection.socket.send(JSON.stringify({
         type: 'error',
-        data: { message: 'Utilisateur non trouvé' }
+        data: { message: 'Invalid authentication token' }
       }));
-      connection.close();
+      return null;
+    }
+  }
+
+  /**
+   * Gère les messages WebSocket authentifiés
+   */
+  private async handleMessage(connection: AuthenticatedWebSocket, data: any): Promise<void> {
+    switch (data.type) {
+      case 'join_conversation':
+        await this.handleJoinConversation(connection, data.conversationId);
+        break;
+        
+      case 'leave_conversation':
+        await this.handleLeaveConversation(connection, data.conversationId);
+        break;
+        
+      case 'send_message':
+        await this.handleSendMessage(connection, data);
+        break;
+        
+      case 'typing_start':
+        await this.handleTypingStart(connection, data.conversationId);
+        break;
+        
+      case 'typing_stop':
+        await this.handleTypingStop(connection, data.conversationId);
+        break;
+        
+      case 'mark_read':
+        await this.handleMarkRead(connection, data);
+        break;
+        
+      default:
+        connection.socket.send(JSON.stringify({
+          type: 'error',
+          data: { message: `Unknown message type: ${data.type}` }
+        }));
+    }
+  }
+
+  /**
+   * Rejoindre une conversation
+   */
+  private async handleJoinConversation(connection: AuthenticatedWebSocket, conversationId: string): Promise<void> {
+    // Vérifier l'accès à la conversation
+    const member = await this.prisma.conversationMember.findFirst({
+      where: {
+        conversationId,
+        userId: connection.userId
+      }
+    });
+
+    if (!member) {
+      connection.socket.send(JSON.stringify({
+        type: 'error',
+        data: { message: 'Access denied to conversation' }
+      }));
       return;
     }
 
-    // Création de l'utilisateur connecté
-    authenticatedUser = {
-      userId: user.id,
-      username: user.username,
-      socket: connection,
-      request: request
-    };
-
-    // Ajouter l'utilisateur à la map des utilisateurs connectés
-    connectedUsers.set(user.id, authenticatedUser);
-
-    // Déconnecter l'ancien socket s'il existe
-    const existingUser = connectedUsers.get(user.id);
-    if (existingUser && existingUser.socket !== connection) {
-      existingUser.socket.close();
+    // Ajouter à la conversation
+    connection.subscriptions.add(conversationId);
+    
+    if (!this.conversationMembers.has(conversationId)) {
+      this.conversationMembers.set(conversationId, new Set());
     }
+    this.conversationMembers.get(conversationId)!.add(connection.userId);
 
-    console.log(`Utilisateur ${user.username} connecté via WebSocket`);
-
-    // Envoyer confirmation de connexion
-    connection.send(JSON.stringify({
-      type: 'connected',
-      data: {
-        userId: user.id,
-        username: user.username,
-        message: 'Connexion établie'
-      }
+    connection.socket.send(JSON.stringify({
+      type: 'conversation_joined',
+      data: { conversationId }
     }));
-
-    // Récupérer les conversations de l'utilisateur
-    const conversations = await request.server.prisma.conversation.findMany({
-      where: {
-        members: {
-          some: {
-            userId: user.id,
-            isActive: true
-          }
-        }
-      },
-      include: {
-        messages: {
-          orderBy: {
-            createdAt: 'desc'
-          },
-          take: 1
-        }
-      }
-    });
-
-    // Envoyer la liste des conversations
-    connection.send(JSON.stringify({
-      type: 'conversations_list',
-      data: conversations
-    }));
-
-  } catch (error) {
-    console.error('Erreur d\'authentification WebSocket:', error);
-    connection.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'Token invalide' }
-    }));
-    connection.close();
-    return;
   }
 
-  // Gestion des messages
-  connection.on('message', async (rawMessage: string) => {
-    try {
-      const message: WebSocketMessage = JSON.parse(rawMessage);
-      
-      switch (message.type) {
-        case 'join_conversation':
-          await handleJoinConversation(message, authenticatedUser!, request);
-          break;
-        
-        case 'leave_conversation':
-          await handleLeaveConversation(message, authenticatedUser!);
-          break;
-        
-        case 'send_message':
-          await handleSendMessage(message, authenticatedUser!, request);
-          break;
-        
-        case 'typing_start':
-        case 'typing_stop':
-          await handleTypingIndicator(message, authenticatedUser!);
-          break;
-        
-        case 'message_read':
-          await handleMessageRead(message, authenticatedUser!, request);
-          break;
-        
-        default:
-          connection.send(JSON.stringify({
-            type: 'error',
-            data: { message: `Type de message non supporté: ${message.type}` }
-          }));
-      }
-    } catch (error) {
-      console.error('Erreur traitement message WebSocket:', error);
-      connection.send(JSON.stringify({
+  /**
+   * Quitter une conversation
+   */
+  private async handleLeaveConversation(connection: AuthenticatedWebSocket, conversationId: string): Promise<void> {
+    connection.subscriptions.delete(conversationId);
+    
+    const members = this.conversationMembers.get(conversationId);
+    if (members) {
+      members.delete(connection.userId);
+    }
+
+    // Arrêter l'indicateur de frappe
+    await this.stopTyping(connection.userId, conversationId);
+
+    connection.socket.send(JSON.stringify({
+      type: 'conversation_left',
+      data: { conversationId }
+    }));
+  }
+
+  /**
+   * Envoyer un message
+   */
+  private async handleSendMessage(connection: AuthenticatedWebSocket, data: any): Promise<void> {
+    const { conversationId, content, tempId } = data;
+
+    // Vérifier l'accès
+    if (!connection.subscriptions.has(conversationId)) {
+      connection.socket.send(JSON.stringify({
         type: 'error',
-        data: { message: 'Erreur traitement du message' }
+        data: { message: 'Not subscribed to conversation' }
+      }));
+      return;
+    }
+
+    try {
+      // Créer le message en base
+      const message = await this.prisma.message.create({
+        data: {
+          content,
+          senderId: connection.userId,
+          conversationId,
+          originalLanguage: 'fr' // TODO: Détecter automatiquement
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      // Broadcaster aux membres de la conversation
+      this.broadcastToConversation(conversationId, {
+        type: 'message_received',
+        data: {
+          id: message.id,
+          content: message.content,
+          sender: message.sender,
+          conversationId: message.conversationId,
+          createdAt: message.createdAt,
+          tempId
+        }
+      });
+
+      // TODO: Envoyer au service de traduction via gRPC
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      connection.socket.send(JSON.stringify({
+        type: 'error',
+        data: { message: 'Failed to send message' }
       }));
     }
-  });
-
-  // Gestion de la déconnexion
-  connection.on('close', async () => {
-    if (authenticatedUser) {
-      console.log(`Utilisateur ${authenticatedUser.username} déconnecté`);
-      
-      // Retirer l'utilisateur de toutes les conversations
-      conversationUsers.forEach((users, conversationId) => {
-        users.delete(authenticatedUser!.userId);
-        if (users.size === 0) {
-          conversationUsers.delete(conversationId);
-        }
-      });
-      
-      // Retirer l'utilisateur de la map des connectés
-      connectedUsers.delete(authenticatedUser.userId);
-      
-      // Notifier les autres utilisateurs
-      broadcastToConversationUsers(authenticatedUser.userId, {
-        type: 'user_disconnected',
-        data: {
-          userId: authenticatedUser.userId,
-          username: authenticatedUser.username
-        }
-      });
-    }
-  });
-
-  connection.on('error', (error: any) => {
-    console.error('Erreur WebSocket:', error);
-  });
-}
-
-async function handleJoinConversation(message: WebSocketMessage, user: ConnectedUser, request: FastifyRequest) {
-  const { conversationId } = message.data;
-  
-  if (!conversationId) {
-    user.socket.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'ID de conversation requis' }
-    }));
-    return;
   }
 
-  try {
-    // Vérifier que l'utilisateur a accès à cette conversation
-    const conversation = await request.server.prisma.conversation.findFirst({
-      where: {
-        id: conversationId,
-        members: {
-          some: {
-            userId: user.userId,
-            isActive: true
+  /**
+   * Début d'indicateur de frappe
+   */
+  private async handleTypingStart(connection: AuthenticatedWebSocket, conversationId: string): Promise<void> {
+    if (!connection.subscriptions.has(conversationId)) return;
+
+    // Initialiser la map si nécessaire
+    if (!this.typingUsers.has(conversationId)) {
+      this.typingUsers.set(conversationId, new Map());
+    }
+
+    const conversationTyping = this.typingUsers.get(conversationId)!;
+    
+    // Annuler le timeout précédent
+    const existingTimeout = conversationTyping.get(connection.userId);
+    if (existingTimeout) {
+      clearTimeout(existingTimeout);
+    }
+
+    // Programmer l'arrêt automatique après 5 secondes
+    const timeout = setTimeout(() => {
+      this.stopTyping(connection.userId, conversationId);
+    }, 5000);
+
+    conversationTyping.set(connection.userId, timeout);
+
+    // Notifier les autres membres
+    this.broadcastToConversation(conversationId, {
+      type: 'typing_status',
+      data: {
+        conversationId,
+        userId: connection.userId,
+        username: connection.username,
+        isTyping: true
+      }
+    }, connection.userId);
+  }
+
+  /**
+   * Arrêt d'indicateur de frappe
+   */
+  private async handleTypingStop(connection: AuthenticatedWebSocket, conversationId: string): Promise<void> {
+    await this.stopTyping(connection.userId, conversationId);
+  }
+
+  /**
+   * Marquer un message comme lu
+   */
+  private async handleMarkRead(connection: AuthenticatedWebSocket, data: any): Promise<void> {
+    const { messageId, conversationId } = data;
+
+    try {
+      await this.prisma.messageReadStatus.upsert({
+        where: {
+          messageId_userId: {
+            messageId,
+            userId: connection.userId
           }
+        },
+        update: { readAt: new Date() },
+        create: {
+          messageId,
+          userId: connection.userId,
+          readAt: new Date()
         }
-      },
-      include: {
-        messages: {
-          orderBy: {
-            createdAt: 'desc'
-          },
-          take: 50,
-          include: {
-            sender: {
-              select: {
-                id: true,
-                username: true
-              }
+      });
+
+      // Notifier les autres membres
+      this.broadcastToConversation(conversationId, {
+        type: 'message_read',
+        data: {
+          messageId,
+          conversationId,
+          userId: connection.userId,
+          username: connection.username,
+          readAt: new Date()
+        }
+      }, connection.userId);
+
+    } catch (error) {
+      console.error('Error marking message as read:', error);
+    }
+  }
+
+  /**
+   * Gère la déconnexion d'un utilisateur
+   */
+  private async handleDisconnection(connection: AuthenticatedWebSocket): Promise<void> {
+    console.log(`User ${connection.username} disconnected`);
+
+    // Supprimer de toutes les structures
+    this.connections.delete(connection.id);
+    
+    const userConns = this.userConnections.get(connection.userId);
+    if (userConns) {
+      userConns.delete(connection.id);
+      if (userConns.size === 0) {
+        this.userConnections.delete(connection.userId);
+        // Mettre à jour le statut hors ligne seulement si plus de connexions
+        await this.updateUserOnlineStatus(connection.userId, false);
+      }
+    }
+
+    // Supprimer des conversations
+    for (const conversationId of connection.subscriptions) {
+      const members = this.conversationMembers.get(conversationId);
+      if (members) {
+        members.delete(connection.userId);
+      }
+      await this.stopTyping(connection.userId, conversationId);
+    }
+  }
+
+  /**
+   * Arrêter l'indicateur de frappe
+   */
+  private async stopTyping(userId: string, conversationId: string): Promise<void> {
+    const conversationTyping = this.typingUsers.get(conversationId);
+    if (conversationTyping) {
+      const timeout = conversationTyping.get(userId);
+      if (timeout) {
+        clearTimeout(timeout);
+        conversationTyping.delete(userId);
+      }
+    }
+
+    // Notifier les autres membres
+    this.broadcastToConversation(conversationId, {
+      type: 'typing_status',
+      data: {
+        conversationId,
+        userId,
+        isTyping: false
+      }
+    }, userId);
+  }
+
+  /**
+   * Broadcaster un message à tous les membres d'une conversation
+   */
+  private broadcastToConversation(conversationId: string, message: any, excludeUserId?: string): void {
+    const members = this.conversationMembers.get(conversationId);
+    if (!members) return;
+
+    for (const memberId of members) {
+      if (excludeUserId && memberId === excludeUserId) continue;
+      
+      const userConns = this.userConnections.get(memberId);
+      if (userConns) {
+        for (const connId of userConns) {
+          const connection = this.connections.get(connId);
+          if (connection && connection.subscriptions.has(conversationId)) {
+            try {
+              connection.socket.send(JSON.stringify(message));
+            } catch (error) {
+              console.error(`Error sending to connection ${connId}:`, error);
             }
           }
         }
       }
-    });
-
-    if (!conversation) {
-      user.socket.send(JSON.stringify({
-        type: 'error',
-        data: { message: 'Conversation non trouvée ou accès refusé' }
-      }));
-      return;
-    }
-
-    // Ajouter l'utilisateur à la conversation
-    if (!conversationUsers.has(conversationId)) {
-      conversationUsers.set(conversationId, new Set());
-    }
-    conversationUsers.get(conversationId)!.add(user.userId);
-
-    // Confirmer la jointure
-    user.socket.send(JSON.stringify({
-      type: 'conversation_joined',
-      data: {
-        conversationId,
-        messages: conversation.messages.reverse()
-      }
-    }));
-
-    // Notifier les autres utilisateurs de la conversation
-    broadcastToConversationUsers(conversationId, {
-      type: 'user_joined_conversation',
-      data: {
-        conversationId,
-        userId: user.userId,
-        username: user.username
-      }
-    }, user.userId);
-
-  } catch (error) {
-    console.error('Erreur jointure conversation:', error);
-    user.socket.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'Erreur lors de la jointure de conversation' }
-    }));
-  }
-}
-
-async function handleLeaveConversation(message: WebSocketMessage, user: ConnectedUser) {
-  const { conversationId } = message.data;
-  
-  if (conversationUsers.has(conversationId)) {
-    conversationUsers.get(conversationId)!.delete(user.userId);
-    
-    if (conversationUsers.get(conversationId)!.size === 0) {
-      conversationUsers.delete(conversationId);
     }
   }
 
-  user.socket.send(JSON.stringify({
-    type: 'conversation_left',
-    data: { conversationId }
-  }));
-
-  // Notifier les autres utilisateurs
-  broadcastToConversationUsers(conversationId, {
-    type: 'user_left_conversation',
-    data: {
-      conversationId,
-      userId: user.userId,
-      username: user.username
+  /**
+   * Mettre à jour le statut en ligne d'un utilisateur
+   */
+  private async updateUserOnlineStatus(userId: string, isOnline: boolean): Promise<void> {
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          isOnline,
+          lastSeen: new Date(),
+          lastActiveAt: isOnline ? new Date() : undefined
+        }
+      });
+    } catch (error) {
+      console.error('Error updating user online status:', error);
     }
-  }, user.userId);
-}
-
-async function handleSendMessage(message: WebSocketMessage, user: ConnectedUser, request: FastifyRequest) {
-  const { conversationId, content, messageType = 'text' } = message.data;
-  
-  if (!conversationId || !content) {
-    user.socket.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'ID de conversation et contenu requis' }
-    }));
-    return;
   }
 
-  try {
-    // Vérifier l'accès à la conversation
-    const conversation = await request.server.prisma.conversation.findFirst({
-      where: {
-        id: conversationId,
-        members: {
-          some: {
-            userId: user.userId,
-            isActive: true
+  /**
+   * Envoyer un message à un utilisateur spécifique
+   */
+  public sendToUser(userId: string, message: any): void {
+    const userConns = this.userConnections.get(userId);
+    if (userConns) {
+      for (const connId of userConns) {
+        const connection = this.connections.get(connId);
+        if (connection) {
+          try {
+            connection.socket.send(JSON.stringify(message));
+          } catch (error) {
+            console.error(`Error sending to user ${userId}:`, error);
           }
         }
       }
-    });
-
-    if (!conversation) {
-      user.socket.send(JSON.stringify({
-        type: 'error',
-        data: { message: 'Conversation non trouvée ou accès refusé' }
-      }));
-      return;
     }
-
-    // Créer le message
-    const newMessage = await request.server.prisma.message.create({
-      data: {
-        content,
-        messageType,
-        conversationId,
-        senderId: user.userId,
-        createdAt: new Date()
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            username: true
-          }
-        }
-      }
-    });
-
-    // Mettre à jour la conversation
-    await request.server.prisma.conversation.update({
-      where: { id: conversationId },
-      data: {
-        lastMessageAt: new Date()
-      }
-    });
-
-    // Diffuser le message à tous les utilisateurs de la conversation
-    broadcastToConversationUsers(conversationId, {
-      type: 'new_message',
-      data: {
-        message: newMessage,
-        conversationId
-      }
-    });
-
-    // Confirmer l'envoi à l'expéditeur
-    user.socket.send(JSON.stringify({
-      type: 'message_sent',
-      data: {
-        messageId: newMessage.id,
-        conversationId,
-        tempId: message.messageId
-      }
-    }));
-
-  } catch (error) {
-    console.error('Erreur envoi message:', error);
-    user.socket.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'Erreur lors de l\'envoi du message' }
-    }));
-  }
-}
-
-async function handleTypingIndicator(message: WebSocketMessage, user: ConnectedUser) {
-  const { conversationId } = message.data;
-  
-  if (!conversationId) return;
-
-  // Diffuser l'indicateur de frappe aux autres utilisateurs
-  broadcastToConversationUsers(conversationId, {
-    type: message.type,
-    data: {
-      conversationId,
-      userId: user.userId,
-      username: user.username
-    }
-  }, user.userId);
-}
-
-async function handleMessageRead(message: WebSocketMessage, user: ConnectedUser, request: FastifyRequest) {
-  const { messageId, conversationId } = message.data;
-  
-  if (!messageId || !conversationId) {
-    user.socket.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'ID de message et conversation requis' }
-    }));
-    return;
   }
 
-  try {
-    // Créer un statut de lecture
-    await request.server.prisma.messageReadStatus.create({
-      data: {
-        messageId,
-        userId: user.userId,
-        readAt: new Date()
-      }
-    });
-
-    // Notifier les autres utilisateurs
-    broadcastToConversationUsers(conversationId, {
-      type: 'message_read',
-      data: {
-        messageId,
-        conversationId,
-        readBy: user.userId,
-        readAt: new Date()
-      }
-    }, user.userId);
-
-  } catch (error) {
-    console.error('Erreur marquage message lu:', error);
-    user.socket.send(JSON.stringify({
-      type: 'error',
-      data: { message: 'Erreur lors du marquage du message' }
-    }));
+  /**
+   * Obtenir les statistiques de connexion
+   */
+  public getStats(): any {
+    return {
+      totalConnections: this.connections.size,
+      totalUsers: this.userConnections.size,
+      totalConversations: this.conversationMembers.size
+    };
   }
-}
-
-function broadcastToConversationUsers(conversationId: string, message: any, excludeUserId?: string) {
-  const users = conversationUsers.get(conversationId);
-  if (!users) return;
-
-  const messageStr = JSON.stringify(message);
-  
-  users.forEach((userId) => {
-    if (excludeUserId && userId === excludeUserId) return;
-    
-    const user = connectedUsers.get(userId);
-    if (user && user.socket.readyState === 1) { // WebSocket.OPEN
-      try {
-        user.socket.send(messageStr);
-      } catch (error) {
-        console.error(`Erreur envoi message à ${userId}:`, error);
-        // Nettoyer les connexions fermées
-        connectedUsers.delete(userId);
-        users.delete(userId);
-      }
-    }
-  });
-}
-
-// Fonction utilitaire pour diffuser à tous les utilisateurs connectés
-export function broadcastToAllUsers(message: any, excludeUserId?: string) {
-  const messageStr = JSON.stringify(message);
-  
-  connectedUsers.forEach((user, userId) => {
-    if (excludeUserId && userId === excludeUserId) return;
-    
-    if (user.socket.readyState === 1) { // WebSocket.OPEN
-      try {
-        user.socket.send(messageStr);
-      } catch (error) {
-        console.error(`Erreur diffusion à ${userId}:`, error);
-        connectedUsers.delete(userId);
-      }
-    }
-  });
-}
-
-// Fonction pour obtenir les utilisateurs connectés
-export function getConnectedUsers(): Map<string, ConnectedUser> {
-  return connectedUsers;
-}
-
-// Fonction pour obtenir les utilisateurs d'une conversation
-export function getConversationUsers(conversationId: string): Set<string> | undefined {
-  return conversationUsers.get(conversationId);
 }

@@ -4,7 +4,7 @@ import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import websocket from '@fastify/websocket';
-import { PrismaClient } from '../../shared/node_modules/.prisma/client';
+import { PrismaClient } from '../../shared/generated';
 import winston from 'winston';
 
 // Déclarations TypeScript pour Fastify
@@ -23,7 +23,8 @@ import { friendRequestRoutes } from './routes/friends';
 import { notificationRoutes } from './routes/notifications';
 import { shareLinksRoutes } from './routes/share-links';
 import { adminRoutes } from './routes/admin';
-import { websocketHandler } from './websocket/handler';
+import { translationRoutes } from './routes/translation';
+import { MeeshyWebSocketHandler } from './websocket/handler';
 import { GrpcClient } from './grpc/client';
 
 // Configuration du logger
@@ -83,22 +84,13 @@ async function start() {
 
     // Configuration CORS
     await server.register(cors, {
-      origin: ['http://localhost:3000', 'https://your-domain.com'],
+      origin: [process.env.CORS_ORIGIN || 'http://localhost:3100'],
       credentials: true
     });
 
     // Configuration JWT
     await server.register(jwt, {
       secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key'
-    });
-
-    // Décoration du serveur avec le middleware d'authentification
-    server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        await request.jwtVerify();
-      } catch (err) {
-        reply.send(err);
-      }
     });
 
     // Configuration du rate limiting
@@ -119,11 +111,11 @@ async function start() {
     await server.register(notificationRoutes, { prefix: '/api' });
     await server.register(shareLinksRoutes, { prefix: '/api' });
     await server.register(adminRoutes, { prefix: '/api' });
+    await server.register(translationRoutes, { prefix: '/api' });
 
-    // Configuration WebSocket
-    server.register(async function (fastify: FastifyInstance) {
-      fastify.get('/ws', { websocket: true }, websocketHandler);
-    });
+    // Configuration WebSocket avec notre nouveau gestionnaire
+    const wsHandler = new MeeshyWebSocketHandler(prisma, process.env.JWT_SECRET!);
+    wsHandler.setupWebSocket(server);
 
     // Route de santé complète
     server.get('/health', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -243,7 +235,7 @@ async function start() {
     });
 
     // Démarrage du serveur
-    const port = parseInt(process.env.FASTIFY_PORT || '3001');
+    const port = parseInt(process.env.PORT || '3000');
     const host = process.env.FASTIFY_HOST || '0.0.0.0';
     
     await server.listen({ port, host });
