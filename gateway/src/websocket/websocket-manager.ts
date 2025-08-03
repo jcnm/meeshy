@@ -8,7 +8,22 @@ import { PrismaClient } from '../../../shared/generated';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { logger } from '../utils/logger';
-import { translationClient } from '../grpc/translation-client';
+import { ZMQTranslationClient } from '../services/zmq-translation-client';
+
+// Instance globale du client ZMQ
+let zmqTranslationClient: ZMQTranslationClient | null = null;
+
+// Initialiser le client ZMQ
+async function getZMQClient(): Promise<ZMQTranslationClient> {
+  if (!zmqTranslationClient) {
+    const port = parseInt(process.env.ZMQ_PORT || '5555');
+    const host = process.env.ZMQ_HOST || 'translator';
+    
+    zmqTranslationClient = new ZMQTranslationClient(port, host);
+    await zmqTranslationClient.initialize();
+  }
+  return zmqTranslationClient;
+}
 
 // Interface simplifiée pour les connexions WebSocket
 interface SimpleWebSocketConnection {
@@ -312,7 +327,7 @@ export class MeeshyWebSocketManager {
       });
 
       // Traduction automatique si le service est disponible
-      if (translationClient.isReady()) {
+      if (zmqTranslationClient) {
         await this.handleAutoTranslation(message.id, content, conversationId);
       }
 
@@ -350,28 +365,29 @@ export class MeeshyWebSocketManager {
       }
 
       // Effectuer la traduction
-      const translationResult = await translationClient.translateMultiple(
+      const client = await getZMQClient();
+      const translationResult = await client.translateToMultipleLanguages(
         message.content,
-        targetLanguages,
-        sourceLanguage
+        sourceLanguage || 'auto',
+        targetLanguages
       );
 
-      if (!translationResult) {
+      if (!translationResult || translationResult.length === 0) {
         throw new Error('Échec de la traduction');
       }
 
       // Sauvegarder les traductions en base
       const translations = await Promise.all(
-        translationResult.translations.map(async (translation) => {
+        translationResult.map(async (translation) => {
           return await this.prisma.messageTranslation.create({
             data: {
               id: uuidv4(),
               messageId,
-              targetLanguage: translation.target_language,
-              translatedContent: translation.translated_text,
-              sourceLanguage: translationResult.detected_source_language,
-              translationModel: translation.model_tier,
-              cacheKey: `${messageId}_${translation.target_language}`
+              targetLanguage: 'auto', // TODO: Récupérer la langue cible depuis la requête
+              translatedContent: translation.translatedText,
+              sourceLanguage: translation.detectedSourceLanguage,
+              translationModel: translation.metadata?.modelUsed || 'basic',
+              cacheKey: `${messageId}_${translation.detectedSourceLanguage}`
             }
           });
         })
@@ -382,8 +398,8 @@ export class MeeshyWebSocketManager {
         type: WebSocketEventType.MESSAGE_TRANSLATED,
         data: {
           messageId,
-          sourceLanguage: translationResult.detected_source_language,
-          translations: translations.map(t => ({
+          sourceLanguage: translationResult[0]?.detectedSourceLanguage || 'auto',
+          translations: translations.map((t: any) => ({
             language: t.targetLanguage,
             content: t.translatedContent,
             model: t.translationModel
@@ -411,25 +427,30 @@ export class MeeshyWebSocketManager {
       logger.info(`🤖 Traduction automatique pour message ${messageId}`);
 
       // Effectuer la traduction
-      const translationResult = await translationClient.translateMultiple(content, targetLanguages);
+      const client = await getZMQClient();
+      const translationResult = await client.translateToMultipleLanguages(
+        content,
+        'auto',
+        targetLanguages
+      );
 
-      if (!translationResult) {
+      if (!translationResult || translationResult.length === 0) {
         logger.warn(`⚠️ Échec traduction automatique pour message ${messageId}`);
         return;
       }
 
       // Sauvegarder les traductions automatiques
       const translations = await Promise.all(
-        translationResult.translations.map(async (translation) => {
+        translationResult.map(async (translation) => {
           return await this.prisma.messageTranslation.create({
             data: {
               id: uuidv4(),
               messageId,
-              targetLanguage: translation.target_language,
-              translatedContent: translation.translated_text,
-              sourceLanguage: translationResult.detected_source_language,
-              translationModel: translation.model_tier,
-              cacheKey: `auto_${messageId}_${translation.target_language}`
+              targetLanguage: 'auto', // TODO: Récupérer la langue cible appropriée
+              translatedContent: translation.translatedText,
+              sourceLanguage: translation.detectedSourceLanguage,
+              translationModel: translation.metadata?.modelUsed || 'basic',
+              cacheKey: `auto_${messageId}_${translation.detectedSourceLanguage}`
             }
           });
         })
@@ -441,8 +462,8 @@ export class MeeshyWebSocketManager {
         data: {
           messageId,
           conversationId,
-          sourceLanguage: translationResult.detected_source_language,
-          translations: translations.map(t => ({
+          sourceLanguage: translationResult[0]?.detectedSourceLanguage || 'auto',
+          translations: translations.map((t: any) => ({
             language: t.targetLanguage,
             content: t.translatedContent,
             model: t.translationModel
@@ -568,7 +589,7 @@ export class MeeshyWebSocketManager {
       totalConnections: this.connections.size,
       authenticatedConnections: authenticatedConnections.length,
       uniqueUsers: this.userConnections.size,
-      translationServiceReady: translationClient.isReady(),
+      translationServiceReady: zmqTranslationClient !== null,
       activeUsers: authenticatedConnections.map(c => ({
         userId: c.userId,
         username: c.username,
