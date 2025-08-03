@@ -1,15 +1,16 @@
 # ===== .dockerignore pour Meeshy =====
 
 # Git
-.git
+.git/
 .gitignore
+.github/
 
 # Documentation
 *.md
 !README.md
-DOCKER_README.md
+!RESTRUCTURE_README.md
 
-# Environnements de développement
+# Environnements
 .env.local
 .env.development
 .env.test
@@ -19,15 +20,37 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
-# Next.js
+# Builds
 .next/
 out/
 build/
 dist/
+coverage/
 
-# Production builds
-*.tgz
+# Models - Très volumineux (seront copiés spécifiquement dans translator)
+translator/models/
+!translator/models/README.md
+!translator/models/index.json
+
+# Développement
+.vscode/
+.DS_Store
+*.log
+*.tmp
+*.swp
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+!frontend/Dockerfile
+!gateway/Dockerfile  
+!translator/Dockerfile
+
+# Scripts non nécessaires
+scripts/
+docker/
 *.tar.gz
 
 # Runtime data

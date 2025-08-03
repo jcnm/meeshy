@@ -53,8 +53,15 @@ next-env.d.ts
 .eslintcache
 
 # TensorFlow.js models (will be downloaded)
-public/models/
-
+*/**/models/
+*/**/venv 
+*/**/__pycache__
+*/**/node_modules
+*/**/dist
+*/**/build
+*/**/coverage
+*/**/logs
+*/**/cache
 # Logs
 *.log
 logs/

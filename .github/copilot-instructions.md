@@ -5,12 +5,14 @@
 
 ## 🎯 Core Behavioral Rules (CRITICAL - Always Follow)
 
-1. **Performance First**: Always consider 10k messages/second throughput in design decisions
+1. **Performance First**: Always consider 100k messages/second throughput in design decisions
 2. **Multi-language Aware**: Consider that each message gets translated to multiple target languages simultaneously
 3. **Type Safety**: Verify type consistency across Fastify/FastAPI/Frontend stack with Prisma schema
 4. **Think Before Code**: Consider implications on real-time performance before changes
 5. **Ask for Help**: Stop and ask for clarification if stuck for 2-3 minutes
 6. **Reference Precisely**: Always include line numbers and filenames when referencing code
+7. **Production Tools**: Always choose tools and libraries that are production-ready and well-supported, otherwise, distinct development and production configurations
+8. **Commande execution**: Always use production ready commands: `yarn dev` for development and `yarn start`, pnpm instead of npm, ALWAYS USE `cd` BEFORE EXECUTING COMMANDS to ensure correct directory context.
 
 ## 🏗️ System Architecture
 
@@ -53,11 +55,13 @@ Cache Layer (Redis) + Database
 ### Translation Request/Response Schema
 ```protobuf
 message TranslationRequest {
-  string message_id = 1;
+  string message_id = 1; // Unique identifier for the message si le message existe déjà sinon vide!
   string text = 2;
   string source_language = 3;
   string target_language = 4;  // Can be "ALL" for all supported languages
   int64 timestamp = 5;
+  string sender_id = 6;
+  string conversation_id = 7;
 }
 
 message Translation {
@@ -65,6 +69,17 @@ message Translation {
   string translated_text = 2;
   bool from_cache = 3;
   int32 processing_time_ms = 4;
+  int32 confidence_score = 5;  // Optional, for ML models
+  string translation_model = 6; // "basic", "medium", "premium"
+  string cache_key = 7;        // Unique cache identifier
+  string message_id = 8;       // Reference to original message
+  string source_language = 9;  // Source language of the original text
+  string original_text = 10;   // Original text before translation
+  string translation_id = 11;  // Unique identifier for this translation
+  string translation_status = 12; // "pending", "completed", "failed"
+  string error_message = 13;   // Optional, for failed translations
+  int64 created_at = 14;       // Timestamp of translation creation
+  int64 updated_at = 15;       // Timestamp of last update
 }
 
 message TranslationResponse {
@@ -246,7 +261,7 @@ shared/
 ### Database Configuration
 ```env
 # Production Database
-DATABASE_URL=postgresql://user:password@postgres:5432/meeshy
+DATABASE_URL=postgresql://meeshy:MeeshyP@ssword@postgres:5432/meeshy
 
 # Development Database  
 DATABASE_URL=file:./dev.db
