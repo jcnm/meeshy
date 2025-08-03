@@ -1,287 +1,145 @@
 /**
- * Hook unifié pour la traduction dans Meeshy
- * Combine toutes les fonctionnalités de traduction en un seul hook
+ * Hook de traduction simplifié pour le service API
  */
 
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { translationService, type TranslationResult, type TranslationProgress } from '@/services/translation.service';
-import { ACTIVE_MODELS } from '@/lib/unified-model-config';
+import { translationService, type TranslationResult } from '@/services/translation.service';
 import type { Message, TranslatedMessage, User, TranslationModelType } from '@/types';
 
-// Types unifiés
-interface UseTranslationReturn {
-  // Traduction simple
-  translate: (text: string, sourceLanguage: string, targetLanguage: string, preferredModel?: TranslationModelType) => Promise<string>;
-  
-  // Traduction de messages
-  translateMessage: (message: Message, targetLanguage: string) => Promise<TranslatedMessage>;
-  translateMessages: (messages: Message[], targetLanguage: string) => Promise<TranslatedMessage[]>;
-  
-  // Gestion des modèles
-  loadModel: (model: TranslationModelType) => Promise<void>;
-  isModelLoaded: (model: TranslationModelType) => boolean;
-  getLoadedModels: () => TranslationModelType[];
-  
-  // États
+interface TranslationOptions {
+  preferredModel?: TranslationModelType;
+  useCache?: boolean;
+}
+
+interface TranslationState {
   isTranslating: boolean;
-  isLoading: boolean;
-  progress: TranslationProgress | null;
   error: string | null;
-  
-  // Cache
-  getCacheStats: () => { size: number; expiredCount: number; totalTranslations: number };
-  clearCache: () => void;
-  
-  // Utilitaires
-  clearError: () => void;
 }
 
-interface TranslationRequest {
-  id: string;
-  text: string;
-  sourceLanguage: string;
-  targetLanguage: string;
-  timestamp: number;
-}
+export const useTranslation = () => {
+  const [state, setState] = useState<TranslationState>({
+    isTranslating: false,
+    error: null
+  });
 
-/**
- * Hook unifié pour toutes les fonctionnalités de traduction
- */
-export const useTranslation = (currentUser: User | null): UseTranslationReturn => {
-  // États
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState<TranslationProgress | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Queue de traductions pour éviter les conflits
-  const translationQueue = useRef<TranslationRequest[]>([]);
-  const isProcessingQueue = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Effacer les erreurs
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
+  const translateText = useCallback(async (
+    text: string, 
+    targetLanguage: string, 
+    sourceLanguage?: string,
+    options: TranslationOptions = {}
+  ): Promise<TranslationResult | null> => {
+    if (!text.trim()) return null;
 
-  // === MÉTHODES DE TRADUCTION SIMPLE ===
-
-  const translate = useCallback(async (
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-    preferredModel?: TranslationModelType
-  ): Promise<string> => {
-    if (!text.trim()) return text;
-    
-    try {
-      setIsTranslating(true);
-      setError(null);
-      
-      const result = await translationService.translate(text, targetLanguage, sourceLanguage, { preferredModel });
-      return result.translatedText;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction inconnue';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsTranslating(false);
+    // Annuler la traduction précédente si elle existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
-  }, []);
 
-  // === MÉTHODES DE TRADUCTION DE MESSAGES ===
+    abortControllerRef.current = new AbortController();
 
-  const convertToTranslatedMessage = useCallback((message: Message): TranslatedMessage => {
-    return {
-      ...message,
-      originalContent: message.content,
-      translations: [],
-      isTranslated: false
-    };
+    setState({ isTranslating: true, error: null });
+
+    try {
+      const result = await translationService.translateText({
+        text,
+        sourceLanguage: sourceLanguage || 'auto',
+        targetLanguage,
+        model: 'basic'
+      });
+      
+      setState({ isTranslating: false, error: null });
+      return result;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Translation aborted');
+        return null;
+      }
+      
+      const errorMessage = error instanceof Error ? error.message : 'Erreur de traduction';
+      setState({ isTranslating: false, error: errorMessage });
+      console.error('Translation error:', error);
+      return null;
+    }
   }, []);
 
   const translateMessage = useCallback(async (
     message: Message,
-    targetLanguage: string
-  ): Promise<TranslatedMessage> => {
+    targetLanguage: string,
+    currentUser?: User,
+    options: TranslationOptions = {}
+  ): Promise<TranslatedMessage | null> => {
+    if (!message.content || !targetLanguage) return null;
+
     try {
-      const translatedMessage = convertToTranslatedMessage(message);
-      
-      // Éviter la traduction si c'est déjà dans la langue cible
-      if (message.originalLanguage === targetLanguage) {
-        return translatedMessage;
-      }
-      
-      // Vérifier que les langues sont supportées (cette logique pourrait être déplacée ou améliorée)
-      const supportedLanguages = ['en', 'fr', 'es', 'de', 'ru', 'zh', 'ja', 'ar', 'hi', 'pt', 'it', 'sv'];
-      if (!supportedLanguages.includes(message.originalLanguage)) {
-        throw new Error(`Langue source "${message.originalLanguage}" non supportée`);
-      }
-      if (!supportedLanguages.includes(targetLanguage)) {
-        throw new Error(`Langue cible "${targetLanguage}" non supportée`);
-      }
-      
-      const result = await translationService.translate(
+      const result = await translateText(
         message.content,
         targetLanguage,
-        message.originalLanguage
+        'auto', // Détecter automatiquement la langue source
+        options
       );
-      
-      // Ajouter la traduction
-      if (!translatedMessage.translations) {
-        translatedMessage.translations = [];
-      }
-      
-      translatedMessage.translations.push({
-        language: targetLanguage,
-        content: result.translatedText,
-        flag: '', // À définir selon la langue
-        createdAt: new Date(),
-        modelUsed: result.modelUsed as TranslationModelType
-      });
-      
-      translatedMessage.isTranslated = true;
-      translatedMessage.translatedContent = result.translatedText;
-      translatedMessage.targetLanguage = targetLanguage;
-      
-      return translatedMessage;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction du message';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    }
-  }, [convertToTranslatedMessage]);
 
-  const translateMessages = useCallback(async (
-    messages: Message[],
-    targetLanguage: string
-  ): Promise<TranslatedMessage[]> => {
-    const results: TranslatedMessage[] = [];
-    
-    try {
-      setIsTranslating(true);
-      setError(null);
-      
-      for (let i = 0; i < messages.length; i++) {
-        const message = messages[i];
-        const translatedMessage = await translateMessage(message, targetLanguage);
-        results.push(translatedMessage);
-        
-        // Petite pause pour éviter de surcharger
-        if (i % 5 === 0 && i > 0) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-      }
-      
-      return results;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur de traduction des messages';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsTranslating(false);
-    }
-  }, [translateMessage]);
+      if (!result) return null;
 
-  // === MÉTHODES DE GESTION DES MODÈLES ===
-
-  const loadModel = useCallback(async (model: TranslationModelType) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      await translationService.loadTranslationPipeline(model, (progressData) => {
-        setProgress(progressData);
-      });
-      
-      setProgress(null);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur de chargement du modèle';
-      setError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setIsLoading(false);
+      return {
+        ...message,
+        translatedContent: result.translatedText,
+        originalContent: message.content,
+        targetLanguage,
+        translationConfidence: result.confidence || 0.95,
+        translatedAt: new Date(),
+        translationModel: options.preferredModel || 'api-service'
+      } as TranslatedMessage;
+    } catch (error) {
+      console.error('Message translation error:', error);
+      return null;
     }
+  }, [translateText]);
+
+  const abortTranslation = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setState(prev => ({ ...prev, isTranslating: false }));
+    }
+  }, []);
+
+  // Méthodes simplifiées pour compatibilité
+  const loadModel = useCallback(async (model: TranslationModelType): Promise<boolean> => {
+    // Service API - modèles toujours disponibles
+    return true;
   }, []);
 
   const isModelLoaded = useCallback((model: TranslationModelType): boolean => {
-    return translationService.isModelLoaded(model);
+    // Service API - modèles toujours disponibles
+    return true;
   }, []);
 
   const getLoadedModels = useCallback((): TranslationModelType[] => {
-    return translationService.getLoadedModels();
+    // Service API - retourner un modèle générique
+    return ['MT5_SMALL'];
   }, []);
-
-  // === MÉTHODES DE CACHE ===
 
   const getCacheStats = useCallback(() => {
-    return translationService.getCacheStats();
-  }, []);
-
-  const clearCache = useCallback(() => {
-    translationService.clearCache();
+    // Service API - pas de statistiques de cache local
+    return {
+      size: 0,
+      totalTranslations: 0,
+      hitRate: 0
+    };
   }, []);
 
   return {
-    // Traduction simple
-    translate,
-    
-    // Traduction de messages
+    ...state,
+    translateText,
+    translate: translateText, // Alias pour compatibilité
     translateMessage,
-    translateMessages,
-    
-    // Gestion des modèles
+    abortTranslation,
     loadModel,
     isModelLoaded,
     getLoadedModels,
-    
-    // États
-    isTranslating,
-    isLoading,
-    progress,
-    error,
-    
-    // Cache
-    getCacheStats,
-    clearCache,
-    
-    // Utilitaires
-    clearError
+    getCacheStats
   };
 };
-
-// Hooks spécialisés pour compatibilité
-export const useMessageTranslation = (currentUser: User | null) => {
-  const { translateMessage, translateMessages, isTranslating, error, clearError } = useTranslation(currentUser);
-  
-  return {
-    translateMessage,
-    translateMessages,
-    isTranslating,
-    error,
-    clearError
-  };
-};
-
-export const useSimpleTranslation = () => {
-  const { translate, isTranslating, error, clearError } = useTranslation(null);
-  
-  return {
-    translate,
-    isTranslating,
-    error,
-    clearError
-  };
-};
-
-export const useTranslationCache = () => {
-  const { getCacheStats, clearCache } = useTranslation(null);
-  
-  return {
-    getCacheStats,
-    clearCache
-  };
-};
-
-

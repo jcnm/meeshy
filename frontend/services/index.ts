@@ -20,8 +20,8 @@ export type { UserStats, UpdateUserDto } from './users.service';
 export type { Message, CreateMessageDto, UpdateMessageDto } from './messages.service';
 
 // Service de traduction unifié
-export { translationService, TranslationService } from './translation.service';
-export type { TranslationResult, TranslationProgress, LanguageDetectionResult } from './translation.service';
+export { translationService, default as TranslationService } from './translation.service';
+export type { TranslationResult, TranslationRequest, TranslationError } from './translation.service';
 
 // Service mock pour les tests
 export { mockApiService } from './mock-api.service';

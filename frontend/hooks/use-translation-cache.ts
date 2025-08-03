@@ -1,12 +1,11 @@
 /**
  * Hook pour la gestion du cache de traduction
- * Simplifié pour les besoins du cache manager
+ * Version simplifiée pour le service API
  */
 
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { translationService } from '@/services/translation.service';
 
 interface CacheEntry {
   value: string;
@@ -40,10 +39,10 @@ export const useTranslationCache = () => {
   };
 
   const updateStats = useCallback(() => {
-    const cacheStats = translationService.getCacheStats();
+    // Service API - statistiques de cache non disponibles
     setStats({
-      totalEntries: cacheStats.size,
-      totalSize: cacheStats.size * 100, // Estimation approximative
+      totalEntries: 0,
+      totalSize: 0
     });
   }, []);
 
@@ -52,40 +51,39 @@ export const useTranslationCache = () => {
   }, [updateStats]);
 
   const getEntriesByLanguage = useCallback((): CacheEntry[] => {
-    // Simulation d'entrées pour le moment
-    // Dans une implémentation complète, on pourrait récupérer les vraies entrées du cache
+    // Service API - pas d'entrées locales
     return [];
   }, []);
 
   const clear = useCallback(() => {
-    translationService.clearCache();
+    // Service API - pas de cache local à vider
+    console.log('Cache géré côté serveur');
     updateStats();
     setHitCount(0);
     setMissCount(0);
   }, [updateStats]);
 
   const exportCache = useCallback((): string => {
-    // Exporter les données du cache au format JSON
+    // Service API - export non disponible
     const cacheData = {
       stats,
       timestamp: new Date().toISOString(),
-      entries: getEntriesByLanguage(),
+      entries: [],
+      note: 'Cache géré côté serveur'
     };
     return JSON.stringify(cacheData, null, 2);
-  }, [stats, getEntriesByLanguage]);
+  }, [stats]);
 
   const importCache = useCallback((data: string): boolean => {
     try {
       const parsed = JSON.parse(data);
-      // Ici on pourrait implémenter l'import réel
-      console.log('Import cache data:', parsed);
-      updateStats();
-      return true;
+      console.log('Import non disponible avec service API:', parsed);
+      return false;
     } catch (error) {
       console.error('Erreur lors de l\'import du cache:', error);
       return false;
     }
-  }, [updateStats]);
+  }, []);
 
   return {
     stats,
