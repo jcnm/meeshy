@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - '@tensorflow/tfjs-node'
+  - core-js
+  - onnxruntime-node
+  - protobufjs
+  - sharp
+  - unrs-resolver
