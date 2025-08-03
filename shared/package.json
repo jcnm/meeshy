@@ -14,7 +14,8 @@
     "migrate": "prisma migrate dev",
     "studio": "prisma studio",
     "seed": "tsx prisma/seed.ts",
-    "build": "pnpm run generate",
+    "build": "pnpm run generate && pnpm run distribute",
+    "distribute": "chmod +x scripts/distribute.sh && ./scripts/distribute.sh",
     "clean": "rm -rf generated/ node_modules/",
     "proto:compile": "protoc --js_out=import_style=commonjs,binary:./proto/generated --ts_out=./proto/generated proto/*.proto"
   },

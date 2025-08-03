@@ -25,6 +25,7 @@ backend/dist/
 # misc
 .DS_Store
 *.pem
+*/**/.DS_Store
 
 # debug
 npm-debug.log*
@@ -68,3 +69,37 @@ logs/
 venv/
 test_venv/
 test_env/
+./gateway/node_modules
+./gateway/libs
+./gateway/dist
+./gateway/build
+./gateway/coverage
+./gateway/logs
+./gateway/cache
+./gateway/.cache
+./gateway/.eslintcache
+./gateway/libs
+./frontend/node_modules
+./frontend/libs
+./frontend/dist
+./frontend/build
+./frontend/coverage
+./frontend/logs
+./frontend/cache
+./frontend/.cache
+./frontend/.eslintcache
+./frontend/.next
+./frontend/out
+./frontend/.vercel
+./frontend/.vscode
+./frontend/.idea
+./frontend/.DS_Store
+./frontend/*.pem
+./frontend/npm-debug.log*
+./backend/node_modules
+./backend/libs
+./backend/dist
+./backend/build
+./backend/coverage
+./backend/logs
+./backend/cache

@@ -4,7 +4,7 @@
   "private": true,
   "workspaces": [
     "shared",
-    "gateway", 
+    "gateway",
     "translator",
     "frontend"
   ],
@@ -27,7 +27,7 @@
     "test:translator": "cd translator && python -m pytest",
     "install:all": "npm install && npm run install:frontend && npm run install:gateway && npm run install:translator",
     "install:frontend": "cd frontend && npm install",
-    "install:gateway": "cd gateway && npm install", 
+    "install:gateway": "cd gateway && npm install",
     "install:translator": "cd translator && pip install -r requirements.txt",
     "clean": "rm -rf node_modules frontend/node_modules gateway/node_modules translator/__pycache__ frontend/.next gateway/dist",
     "docker:build": "docker-compose build",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "tsx": "^4.20.3"
   }
 }
