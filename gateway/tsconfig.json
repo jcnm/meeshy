@@ -18,10 +18,17 @@
     "resolveJsonModule": true
   },
   "include": [
-    "src/**/*"
+    "src/server.ts
+    "src/services/**/*",
+    "src/utils/**/*",
+    "src/types/**/*",
+    "src/grpc/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "src/server-optimized.ts",
+    "src/websocket/advanced-handler.ts",
+    "src/websocket/websocket-manager.ts"
   ]
 }
