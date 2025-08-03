@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "FastAPI Translation service for Meeshy multi-language messaging",
   "scripts": {
-    "dev": "python src/main.py",
-    "start": "python src/main.py",
+    "dev": "python main.py",
+    "start": "python main.py",
     "test": "python -m pytest",
     "test:watch": "python -m pytest --watch",
     "install": "pip install -r requirements.txt",

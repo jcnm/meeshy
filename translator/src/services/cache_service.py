@@ -1,351 +1,300 @@
 """
-Service de cache production-ready pour les traductions
-Gère le cache Redis + fallback local avec TTL et optimisations
+Service de cache optimisé pour les traductions
+Utilise Redis + cache local pour performance maximale
 """
 
 import asyncio
-import json
 import hashlib
+import json
 import logging
 import time
-from typing import Optional, Dict, Any, Union
-from datetime import datetime, timedelta
+from typing import Dict, Any, Optional, Tuple
+from dataclasses import dataclass
 
-# Import conditionnel de Redis
 try:
     import redis.asyncio as redis
-    REDIS_ASYNC_AVAILABLE = True
+    REDIS_AVAILABLE = True
 except ImportError:
-    REDIS_ASYNC_AVAILABLE = False
-    try:
-        import redis
-        REDIS_SYNC_AVAILABLE = True
-    except ImportError:
-        REDIS_SYNC_AVAILABLE = False
+    REDIS_AVAILABLE = False
 
 from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
+@dataclass
+class CacheEntry:
+    """Entrée de cache avec métadonnées"""
+    value: str
+    created_at: float
+    hits: int = 0
+    source_lang: str = ""
+    target_lang: str = ""
+    model_type: str = "basic"
+
 class CacheService:
-    """Service de cache haute performance avec Redis et fallback local"""
+    """Service de cache multi-niveau pour les traductions"""
     
     def __init__(self):
         self.settings = get_settings()
-        self.redis_client: Optional[Union[redis.Redis, Any]] = None
-        self.is_redis_available = False
-        
-        # Cache local de fallback (toujours disponible)
-        self._local_cache: Dict[str, Dict[str, Any]] = {}
-        self._local_cache_timestamps: Dict[str, float] = {}
-        
-        # Statistiques
+        self.redis_client: Optional[redis.Redis] = None
+        self.local_cache: Dict[str, CacheEntry] = {}
         self.stats = {
-            'hits': 0,
+            'redis_hits': 0,
+            'local_hits': 0,
             'misses': 0,
-            'sets': 0,
-            'errors': 0,
-            'local_cache_size': 0,
-            'redis_available': False
+            'total_requests': 0,
+            'redis_errors': 0
         }
-        
+        self.is_initialized = False
+    
     async def initialize(self):
-        """Initialise le service de cache (Redis + local)"""
-        logger.info("🔄 Initialisation du service de cache...")
-        
-        # Toujours initialiser le cache local
-        self._local_cache.clear()
-        self._local_cache_timestamps.clear()
-        
-        # Essayer d'initialiser Redis
-        if REDIS_ASYNC_AVAILABLE:
-            await self._init_redis_async()
-        elif REDIS_SYNC_AVAILABLE:
-            self._init_redis_sync()
-        else:
-            logger.warning("⚠️ Redis non disponible - cache local uniquement")
-        
-        self.stats['redis_available'] = self.is_redis_available
-        
-        logger.info(f"✅ Cache initialisé (Redis: {self.is_redis_available}, Local: Toujours)")
-        
-    async def _init_redis_async(self):
-        """Initialise Redis en mode async"""
+        """Initialise le service de cache"""
         try:
-            self.redis_client = redis.from_url(
-                self.settings.redis_url,
-                encoding="utf-8",
-                decode_responses=True,
-                max_connections=20,
-                retry_on_timeout=True,
-                socket_connect_timeout=5,
-                socket_timeout=5
-            )
+            if REDIS_AVAILABLE:
+                logger.info("🔌 Connexion à Redis...")
+                self.redis_client = redis.from_url(
+                    self.settings.redis_url,
+                    encoding='utf-8',
+                    decode_responses=True,
+                    socket_connect_timeout=5,
+                    socket_timeout=5
+                )
+                
+                # Test de connexion
+                await self.redis_client.ping()
+                logger.info("✅ Redis connecté avec succès")
+            else:
+                logger.warning("⚠️ Redis non disponible, utilisation du cache local uniquement")
             
-            # Test de connexion
-            await self.redis_client.ping()
-            self.is_redis_available = True
-            logger.info("✅ Redis async connecté")
+            self.is_initialized = True
+            logger.info("📦 Service de cache initialisé")
             
         except Exception as e:
-            logger.warning(f"⚠️ Redis async non disponible: {e}")
-            self.is_redis_available = False
+            logger.error(f"❌ Erreur lors de l'initialisation du cache: {e}")
+            logger.warning("🔄 Basculement vers le cache local uniquement")
             self.redis_client = None
+            self.is_initialized = True
     
-    def _init_redis_sync(self):
-        """Initialise Redis en mode sync (fallback)"""
-        try:
-            import redis as redis_sync
-            self.redis_client = redis_sync.StrictRedis.from_url(
-                self.settings.redis_url,
-                encoding="utf-8",
-                decode_responses=True,
-                max_connections=20,
-                socket_connect_timeout=5,
-                socket_timeout=5
-            )
-            
-            # Test de connexion
-            self.redis_client.ping()
-            self.is_redis_available = True
-            logger.info("✅ Redis sync connecté")
-            
-        except Exception as e:
-            logger.warning(f"⚠️ Redis sync non disponible: {e}")
-            self.is_redis_available = False
-            self.redis_client = None
-    
-    def generate_cache_key(self, text: str, source_lang: str, target_lang: str, model: str = "basic") -> str:
-        """Génère une clé de cache unique et reproductible"""
-        # Normalisation du texte
+    def _generate_cache_key(self, text: str, source_lang: str, target_lang: str, model_type: str = "basic") -> str:
+        """Génère une clé de cache unique"""
+        # Normaliser le texte pour améliorer les hits de cache
         normalized_text = text.strip().lower()
         
-        # Création de la clé composite
-        key_content = f"{normalized_text}|{source_lang}|{target_lang}|{model}"
+        # Créer la clé avec hash pour éviter les clés trop longues
+        key_data = f"{normalized_text}:{source_lang}:{target_lang}:{model_type}"
+        key_hash = hashlib.sha256(key_data.encode()).hexdigest()[:16]
         
-        # Hash SHA-256 pour une clé courte et unique
-        hash_obj = hashlib.sha256(key_content.encode('utf-8'))
-        cache_key = f"translation:{hash_obj.hexdigest()[:16]}"
-        
-        return cache_key
+        return f"meeshy:translate:{source_lang}:{target_lang}:{model_type}:{key_hash}"
     
-    async def get_translation(self, cache_key: str) -> Optional[Dict[str, Any]]:
-        """Récupère une traduction depuis le cache (Redis prioritaire, local en fallback)"""
-        try:
-            # Essayer Redis d'abord si disponible
-            if self.is_redis_available and self.redis_client:
-                result = await self._get_from_redis(cache_key)
-                if result:
-                    self.stats['hits'] += 1
-                    return result
-            
-            # Fallback vers cache local
-            result = self._get_from_local_cache(cache_key)
-            if result:
-                self.stats['hits'] += 1
-                return result
-            
-            self.stats['misses'] += 1
-            return None
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur récupération cache: {e}")
-            self.stats['errors'] += 1
-            return None
-    
-    async def _get_from_redis(self, cache_key: str) -> Optional[Dict[str, Any]]:
-        """Récupère depuis Redis"""
-        try:
-            if REDIS_ASYNC_AVAILABLE and hasattr(self.redis_client, 'get'):
-                data = await self.redis_client.get(cache_key)
-            else:
-                # Mode sync
-                data = self.redis_client.get(cache_key)
-            
-            if data:
-                return json.loads(data)
-            return None
-            
-        except Exception as e:
-            logger.warning(f"⚠️ Erreur Redis get: {e}")
-            return None
-    
-    def _get_from_local_cache(self, cache_key: str) -> Optional[Dict[str, Any]]:
-        """Récupère depuis le cache local avec vérification TTL"""
-        if cache_key not in self._local_cache:
+    async def get_translation(self, text: str, source_lang: str, target_lang: str, model_type: str = "basic") -> Optional[Dict[str, Any]]:
+        """Récupère une traduction du cache"""
+        if not self.is_initialized:
             return None
         
-        # Vérifier TTL
-        timestamp = self._local_cache_timestamps.get(cache_key, 0)
-        if time.time() - timestamp > self.settings.translation_cache_ttl:
-            # Expiré - nettoyer
-            self._local_cache.pop(cache_key, None)
-            self._local_cache_timestamps.pop(cache_key, None)
-            return None
+        cache_key = self._generate_cache_key(text, source_lang, target_lang, model_type)
+        self.stats['total_requests'] += 1
         
-        return self._local_cache[cache_key]
-    
-    async def set_translation(self, cache_key: str, translation_data: Dict[str, Any]):
-        """Stocke une traduction dans le cache (Redis + local)"""
-        try:
-            # Enrichir les données avec timestamp
-            enriched_data = {
-                **translation_data,
-                'cached_at': time.time(),
-                'ttl': self.settings.translation_cache_ttl
-            }
+        # 1. Vérifier le cache local d'abord (plus rapide)
+        if cache_key in self.local_cache:
+            entry = self.local_cache[cache_key]
             
-            # Stocker dans Redis si disponible
-            if self.is_redis_available and self.redis_client:
-                await self._set_in_redis(cache_key, enriched_data)
-            
-            # Toujours stocker en local (fallback + rapidité)
-            self._set_in_local_cache(cache_key, enriched_data)
-            
-            self.stats['sets'] += 1
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur stockage cache: {e}")
-            self.stats['errors'] += 1
-    
-    async def _set_in_redis(self, cache_key: str, data: Dict[str, Any]):
-        """Stocke dans Redis avec TTL"""
-        try:
-            data_json = json.dumps(data, ensure_ascii=False)
-            
-            if REDIS_ASYNC_AVAILABLE and hasattr(self.redis_client, 'setex'):
-                await self.redis_client.setex(
-                    cache_key, 
-                    self.settings.translation_cache_ttl, 
-                    data_json
-                )
-            else:
-                # Mode sync
-                self.redis_client.setex(
-                    cache_key, 
-                    self.settings.translation_cache_ttl, 
-                    data_json
-                )
+            # Vérifier l'expiration
+            if time.time() - entry.created_at < self.settings.translation_cache_ttl:
+                entry.hits += 1
+                self.stats['local_hits'] += 1
                 
-        except Exception as e:
-            logger.warning(f"⚠️ Erreur Redis set: {e}")
-    
-    def _set_in_local_cache(self, cache_key: str, data: Dict[str, Any]):
-        """Stocke dans le cache local avec gestion de taille"""
-        # Limiter la taille du cache local
-        if len(self._local_cache) >= self.settings.cache_max_entries:
-            self._cleanup_local_cache()
+                logger.debug(f"💨 Cache local HIT: {cache_key}")
+                return {
+                    'translated_text': entry.value,
+                    'from_cache': True,
+                    'cache_source': 'local',
+                    'cache_key': cache_key,
+                    'hits': entry.hits
+                }
+            else:
+                # Entrée expirée, la supprimer
+                del self.local_cache[cache_key]
         
-        self._local_cache[cache_key] = data
-        self._local_cache_timestamps[cache_key] = time.time()
-        self.stats['local_cache_size'] = len(self._local_cache)
+        # 2. Vérifier Redis si disponible
+        if self.redis_client:
+            try:
+                cached_data = await self.redis_client.get(cache_key)
+                if cached_data:
+                    data = json.loads(cached_data)
+                    self.stats['redis_hits'] += 1
+                    
+                    # Sauvegarder dans le cache local pour les prochaines requêtes
+                    self.local_cache[cache_key] = CacheEntry(
+                        value=data['translated_text'],
+                        created_at=time.time(),
+                        hits=data.get('hits', 0) + 1,
+                        source_lang=source_lang,
+                        target_lang=target_lang,
+                        model_type=model_type
+                    )
+                    
+                    logger.debug(f"🔥 Cache Redis HIT: {cache_key}")
+                    return {
+                        'translated_text': data['translated_text'],
+                        'from_cache': True,
+                        'cache_source': 'redis',
+                        'cache_key': cache_key,
+                        'hits': data.get('hits', 0) + 1
+                    }
+                    
+            except Exception as e:
+                logger.error(f"❌ Erreur Redis GET: {e}")
+                self.stats['redis_errors'] += 1
+        
+        # 3. Aucun cache trouvé
+        self.stats['misses'] += 1
+        logger.debug(f"❌ Cache MISS: {cache_key}")
+        return None
     
-    def _cleanup_local_cache(self):
-        """Nettoie le cache local (supprime les plus anciens)"""
-        if not self._local_cache_timestamps:
+    async def set_translation(self, text: str, source_lang: str, target_lang: str, translated_text: str, model_type: str = "basic", metadata: Optional[Dict] = None) -> bool:
+        """Sauvegarde une traduction dans le cache"""
+        if not self.is_initialized:
+            return False
+        
+        cache_key = self._generate_cache_key(text, source_lang, target_lang, model_type)
+        current_time = time.time()
+        
+        # Données à cacher
+        cache_data = {
+            'translated_text': translated_text,
+            'source_lang': source_lang,
+            'target_lang': target_lang,
+            'model_type': model_type,
+            'created_at': current_time,
+            'hits': 0
+        }
+        
+        if metadata:
+            cache_data.update(metadata)
+        
+        try:
+            # 1. Sauvegarder dans le cache local
+            self.local_cache[cache_key] = CacheEntry(
+                value=translated_text,
+                created_at=current_time,
+                source_lang=source_lang,
+                target_lang=target_lang,
+                model_type=model_type
+            )
+            
+            # Limiter la taille du cache local
+            if len(self.local_cache) > self.settings.cache_max_entries:
+                await self._cleanup_local_cache()
+            
+            # 2. Sauvegarder dans Redis si disponible
+            if self.redis_client:
+                await self.redis_client.setex(
+                    cache_key,
+                    self.settings.translation_cache_ttl,
+                    json.dumps(cache_data)
+                )
+            
+            logger.debug(f"✅ Cache SET: {cache_key}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur lors de la sauvegarde en cache: {e}")
+            if self.redis_client:
+                self.stats['redis_errors'] += 1
+            return False
+    
+    async def _cleanup_local_cache(self):
+        """Nettoie le cache local en gardant les entrées les plus récentes et utilisées"""
+        if len(self.local_cache) <= self.settings.cache_max_entries:
             return
         
-        # Supprimer les entrées expirées
-        current_time = time.time()
-        expired_keys = [
-            key for key, timestamp in self._local_cache_timestamps.items()
-            if current_time - timestamp > self.settings.translation_cache_ttl
-        ]
+        # Trier par hits (plus utilisées) et date (plus récentes)
+        sorted_entries = sorted(
+            self.local_cache.items(),
+            key=lambda x: (x[1].hits, x[1].created_at),
+            reverse=True
+        )
         
-        for key in expired_keys:
-            self._local_cache.pop(key, None)
-            self._local_cache_timestamps.pop(key, None)
+        # Garder seulement les 80% meilleures entrées
+        keep_count = int(self.settings.cache_max_entries * 0.8)
+        entries_to_keep = dict(sorted_entries[:keep_count])
         
-        # Si encore trop d'entrées, supprimer les plus anciennes
-        if len(self._local_cache) >= self.settings.cache_max_entries:
-            # Trier par timestamp (plus ancien en premier)
-            sorted_keys = sorted(
-                self._local_cache_timestamps.items(), 
-                key=lambda x: x[1]
-            )
-            
-            # Supprimer la moitié des plus anciennes
-            keys_to_remove = sorted_keys[:len(sorted_keys) // 2]
-            for key, _ in keys_to_remove:
-                self._local_cache.pop(key, None)
-                self._local_cache_timestamps.pop(key, None)
+        removed_count = len(self.local_cache) - len(entries_to_keep)
+        self.local_cache = entries_to_keep
         
-        self.stats['local_cache_size'] = len(self._local_cache)
+        logger.info(f"🧹 Cache local nettoyé: {removed_count} entrées supprimées")
     
-    async def get_cache_info(self) -> Dict[str, Any]:
-        """Retourne les informations du cache"""
-        redis_info = {}
-        
-        if self.is_redis_available and self.redis_client:
-            try:
-                if REDIS_ASYNC_AVAILABLE and hasattr(self.redis_client, 'info'):
-                    info = await self.redis_client.info('memory')
-                else:
-                    info = self.redis_client.info('memory')
-                
-                redis_info = {
-                    'connected': True,
-                    'memory_used': info.get('used_memory_human', 'N/A'),
-                    'memory_peak': info.get('used_memory_peak_human', 'N/A')
-                }
-            except Exception as e:
-                redis_info = {'connected': False, 'error': str(e)}
+    async def clear_cache(self, pattern: Optional[str] = None):
+        """Vide le cache (local et Redis)"""
+        # Vider le cache local
+        if pattern:
+            keys_to_remove = [k for k in self.local_cache.keys() if pattern in k]
+            for key in keys_to_remove:
+                del self.local_cache[key]
+            logger.info(f"🧹 Cache local vidé pour le pattern: {pattern}")
         else:
-            redis_info = {'connected': False, 'reason': 'not_initialized'}
+            self.local_cache.clear()
+            logger.info("🧹 Cache local entièrement vidé")
+        
+        # Vider Redis si disponible
+        if self.redis_client:
+            try:
+                if pattern:
+                    keys = await self.redis_client.keys(f"meeshy:translate:*{pattern}*")
+                    if keys:
+                        await self.redis_client.delete(*keys)
+                        logger.info(f"🧹 Cache Redis vidé pour le pattern: {pattern} ({len(keys)} clés)")
+                else:
+                    keys = await self.redis_client.keys("meeshy:translate:*")
+                    if keys:
+                        await self.redis_client.delete(*keys)
+                        logger.info(f"🧹 Cache Redis entièrement vidé ({len(keys)} clés)")
+            except Exception as e:
+                logger.error(f"❌ Erreur lors du vidage Redis: {e}")
+                self.stats['redis_errors'] += 1
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """Retourne les statistiques du cache"""
+        total_requests = self.stats['total_requests']
+        if total_requests > 0:
+            hit_rate = (self.stats['redis_hits'] + self.stats['local_hits']) / total_requests * 100
+        else:
+            hit_rate = 0
         
         return {
-            'type': 'redis+local' if self.is_redis_available else 'local_only',
-            'redis': redis_info,
-            'local_cache': {
-                'size': len(self._local_cache),
-                'max_entries': self.settings.cache_max_entries,
-                'ttl_seconds': self.settings.translation_cache_ttl
-            },
-            'stats': self.stats,
-            'hit_rate': (
-                self.stats['hits'] / (self.stats['hits'] + self.stats['misses'])
-                if (self.stats['hits'] + self.stats['misses']) > 0 else 0.0
-            )
+            **self.stats,
+            'hit_rate_percent': round(hit_rate, 2),
+            'local_cache_size': len(self.local_cache),
+            'redis_available': self.redis_client is not None,
+            'cache_initialized': self.is_initialized
         }
     
-    async def clear_cache(self):
-        """Vide le cache (Redis + local)"""
-        try:
-            # Vider Redis si disponible
-            if self.is_redis_available and self.redis_client:
-                if REDIS_ASYNC_AVAILABLE and hasattr(self.redis_client, 'flushdb'):
-                    await self.redis_client.flushdb()
-                else:
-                    self.redis_client.flushdb()
-                logger.info("🗑️ Cache Redis vidé")
-            
-            # Vider cache local
-            self._local_cache.clear()
-            self._local_cache_timestamps.clear()
-            self.stats['local_cache_size'] = 0
-            
-            logger.info("🗑️ Cache local vidé")
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur lors du vidage du cache: {e}")
-    
-    async def cleanup(self):
-        """Nettoie les ressources du cache"""
-        logger.info("🧹 Nettoyage du service de cache...")
+    async def health_check(self) -> Dict[str, Any]:
+        """Vérifie la santé du service de cache"""
+        health = {
+            'local_cache': True,
+            'redis': False,
+            'redis_latency_ms': None
+        }
         
-        try:
-            # Fermer la connexion Redis si active
-            if self.is_redis_available and self.redis_client:
-                if REDIS_ASYNC_AVAILABLE and hasattr(self.redis_client, 'close'):
-                    await self.redis_client.close()
-                elif hasattr(self.redis_client, 'connection_pool'):
-                    self.redis_client.connection_pool.disconnect()
-            
-            # Vider le cache local
-            self._local_cache.clear()
-            self._local_cache_timestamps.clear()
-            
-            logger.info("✅ Nettoyage du cache terminé")
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur lors du nettoyage du cache: {e}")
+        if self.redis_client:
+            try:
+                start_time = time.time()
+                await self.redis_client.ping()
+                latency = (time.time() - start_time) * 1000
+                
+                health['redis'] = True
+                health['redis_latency_ms'] = round(latency, 2)
+            except Exception as e:
+                logger.error(f"❌ Health check Redis failed: {e}")
+        
+        return health
+    
+    async def close(self):
+        """Ferme les connexions du service de cache"""
+        if self.redis_client:
+            await self.redis_client.close()
+            logger.info("✅ Connexion Redis fermée")
+        
+        self.local_cache.clear()
+        logger.info("✅ Service de cache fermé")

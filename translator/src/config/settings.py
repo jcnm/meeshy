@@ -30,7 +30,7 @@ class Settings:
         # Configuration ML
         self.ml_batch_size = int(os.getenv("ML_BATCH_SIZE", "32"))
         self.gpu_memory_fraction = float(os.getenv("GPU_MEMORY_FRACTION", "0.8"))
-        self.models_path = os.getenv("MODELS_PATH", "/Users/smpceo/Downloads/Meeshy/meeshy/public/models")
+        self.models_path = os.getenv("MODELS_PATH", "/app/models")  # Chemin Docker corrigé
         
         # Configuration des langues
         self.default_language = os.getenv("DEFAULT_LANGUAGE", "fr")

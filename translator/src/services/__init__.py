@@ -1,24 +1,16 @@
-"""Initialisation du package services"""
+"""
+Meeshy Translation Services Module
+Contient tous les services du système de traduction
+"""
 
-# Imports conditionnels pour éviter les problèmes de dépendances
-def get_cache_service():
-    """Import conditionnel du CacheService"""
-    from .cache_service import CacheService
-    return CacheService
+from .translation_service import TranslationService
+from .cache_service import CacheService
+from .message_service import MessageService
+from .zmq_server import ZMQTranslationServer
 
-def get_translation_service():
-    """Import conditionnel du TranslationService"""
-    from .translation_service import TranslationService
-    return TranslationService
-
-def get_message_service():
-    """Import conditionnel du MessageService"""
-    from .message_service import MessageService
-    return MessageService
-
-# Exports pour la compatibilité
 __all__ = [
-    'get_cache_service',
-    'get_translation_service', 
-    'get_message_service'
+    "TranslationService",
+    "CacheService", 
+    "MessageService",
+    "ZMQTranslationServer"
 ]
