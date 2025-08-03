@@ -1,52 +1,127 @@
 /**
- * Serveur Fastify clean pour Meeshy
- * Communication: WebSocket (Frontend) + ZMQ (Backend Translation Service)
- * Suppression des moyens de communication inutiles (gRPC direct)
+ * Meeshy Fastify Gateway Server
+ * 
+ * A clean, professional WebSocket + REST API gateway for translation services
+ * Architecture: Frontend (WebSocket/REST) ↔ Gateway (Fastify) ↔ Translation Service (ZMQ)
+ * 
+ * @version 1.0.0
+ * @author Meeshy Team
  */
 
-import fastify from 'fastify';
+import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import websocket from '@fastify/websocket';
-import { PrismaClient } from '../../shared/generated';
-import * as winston from 'winston';
+import sensible from '@fastify/sensible'; // Ajout pour httpErrors
+import { PrismaClient } from '../libs';
+import winston from 'winston';
 import { ZMQTranslationClient } from './services/zmq-translation-client';
+import { authenticate } from './middleware/auth';
 
-// Configuration
-const JWT_SECRET = process.env.JWT_SECRET || 'meeshy-secret-key-dev';
-const PORT = parseInt(process.env.PORT || '3000');
-const TRANSLATION_SERVICE_PORT = parseInt(process.env.TRANSLATION_SERVICE_PORT || '5555');
+// ============================================================================
+// CONFIGURATION & ENVIRONMENT
+// ============================================================================
 
-// Logger
+interface ServerConfig {
+  nodeEnv: string;
+  isDev: boolean;
+  jwtSecret: string;
+  port: number;
+  translationServicePort: number;
+  databaseUrl: string;
+}
+
+function loadConfiguration(): ServerConfig {
+  const nodeEnv = process.env.NODE_ENV || 'development';
+  const isDev = nodeEnv === 'development';
+  
+  return {
+    nodeEnv,
+    isDev,
+    jwtSecret: process.env.JWT_SECRET || 'meeshy-secret-key-dev',
+    port: parseInt(process.env.PORT || process.env.GATEWAY_PORT || '3000'),
+    translationServicePort: parseInt(process.env.TRANSLATION_SERVICE_PORT || '5555'),
+    databaseUrl: process.env.DATABASE_URL || ''
+  };
+}
+
+const config = loadConfiguration();
+
+// ============================================================================
+// LOGGER SETUP
+// ============================================================================
+
 const logger = winston.createLogger({
-  level: 'info',
+  level: config.isDev ? 'debug' : 'info',
   format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.errors({ stack: true }),
+    config.isDev 
+      ? winston.format.combine(
+          winston.format.colorize(),
+          winston.format.printf(({ timestamp, level, message, stack }) => {
+            return `${timestamp} [${level}] ${message}${stack ? '\n' + stack : ''}`;
+          })
+        )
+      : winston.format.json()
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
+    ...(!config.isDev ? [
+      new winston.transports.File({ 
+        filename: 'logs/error.log', 
+        level: 'error',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5
+      }),
+      new winston.transports.File({ 
+        filename: 'logs/combined.log',
+        maxsize: 5242880, // 5MB
+        maxFiles: 5
+      })
+    ] : [])
   ]
 });
 
-// Services
-const prisma = new PrismaClient();
-const translationClient = new ZMQTranslationClient(TRANSLATION_SERVICE_PORT);
+// ============================================================================
+// CUSTOM ERROR CLASSES
+// ============================================================================
 
-// Créer le serveur
-const server = fastify({
-  logger: {
-    level: 'info',
-    transport: {
-      target: 'pino-pretty'
-    }
+class AuthenticationError extends Error {
+  public statusCode: number;
+  
+  constructor(message: string = 'Authentication failed') {
+    super(message);
+    this.name = 'AuthenticationError';
+    this.statusCode = 401;
   }
-});
+}
 
-// Types pour WebSocket
+class ValidationError extends Error {
+  public statusCode: number;
+  
+  constructor(message: string = 'Validation failed') {
+    super(message);
+    this.name = 'ValidationError';
+    this.statusCode = 400;
+  }
+}
+
+class TranslationError extends Error {
+  public statusCode: number;
+  
+  constructor(message: string = 'Translation failed') {
+    super(message);
+    this.name = 'TranslationError';
+    this.statusCode = 500;
+  }
+}
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
 interface WebSocketMessage {
   type: 'translate' | 'translate_multi' | 'typing' | 'stop_typing';
   messageId?: string;
@@ -56,7 +131,6 @@ interface WebSocketMessage {
   targetLanguages?: string[];
   conversationId?: string;
   userId?: string;
-  error?: string;
 }
 
 interface WebSocketResponse {
@@ -77,311 +151,642 @@ interface WebSocketResponse {
   conversationId?: string;
   userId?: string;
   error?: string;
+  timestamp: string;
 }
 
-// Middleware
-async function setupMiddleware() {
-  // CORS
-  await server.register(cors, {
-    origin: true,
-    credentials: true
-  });
-
-  // Sécurité
-  await server.register(helmet);
-
-  // JWT
-  await server.register(jwt, {
-    secret: JWT_SECRET
-  });
-
-  // WebSocket
-  await server.register(websocket);
-
-  logger.info('✅ Middleware configuré');
-}
-
-// WebSocket Handler
-async function setupWebSocket() {
-  server.register(async function (fastify) {
-    fastify.get('/ws', { websocket: true }, (connection, _req) => {
-      logger.info('🔌 Nouvelle connexion WebSocket');
-      
-      connection.on('message', async (message: Buffer) => {
-        try {
-          const data: WebSocketMessage = JSON.parse(message.toString());
-          logger.info(`📨 Message WebSocket reçu: ${data.type}`);
-          
-          switch (data.type) {
-            case 'translate':
-              await handleTranslation(connection, data);
-              break;
-              
-            case 'translate_multi':
-              await handleMultiTranslation(connection, data);
-              break;
-              
-            case 'typing':
-            case 'stop_typing':
-              // Relayer les événements de frappe (implémentation future)
-              await handleTypingEvent(connection, data);
-              break;
-              
-            default:
-              logger.warn(`⚠️ Type de message non supporté: ${data.type}`);
-              sendError(connection, data.messageId, `Type de message non supporté: ${data.type}`);
-          }
-          
-        } catch (error) {
-          logger.error('❌ Erreur traitement message WebSocket:', error);
-          sendError(connection, undefined, 'Erreur de traitement du message');
-        }
-      });
-      
-      connection.on('close', () => {
-        logger.info('🔌 Connexion WebSocket fermée');
-      });
-      
-      connection.on('error', (error: Error) => {
-        logger.error('❌ Erreur WebSocket:', error);
-      });
-    });
-  });
-  
-  logger.info('✅ WebSocket configuré sur /ws');
-}
-
-// Type pour connexion WebSocket
 interface WebSocketConnection {
   send: (data: string) => void;
 }
 
-// Handlers WebSocket
-async function handleTranslation(connection: WebSocketConnection, data: WebSocketMessage) {
-  try {
-    if (!data.text || !data.sourceLanguage || !data.targetLanguage) {
-      sendError(connection, data.messageId, 'Paramètres manquants pour la traduction');
-      return;
-    }
-    
-    // Appeler le service de traduction via ZMQ
-    const result = await translationClient.translateText({
-      messageId: data.messageId || '',
-      text: data.text,
-      sourceLanguage: data.sourceLanguage,
-      targetLanguage: data.targetLanguage
+interface TranslationRequest {
+  text: string;
+  source_language: string;
+  target_language: string;
+}
+
+// Fastify type extensions
+declare module 'fastify' {
+  interface FastifyInstance {
+    prisma: PrismaClient;
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+  }
+}
+
+// ============================================================================
+// SERVICES INITIALIZATION
+// ============================================================================
+
+class MeeshyServer {
+  private server: FastifyInstance;
+  private prisma: PrismaClient;
+  private translationClient: ZMQTranslationClient;
+
+  constructor() {
+    this.server = fastify({
+      logger: false, // We use Winston instead
+      disableRequestLogging: !config.isDev
     });
     
-    // Répondre via WebSocket
-    const response: WebSocketResponse = {
-      type: 'translation',
-      messageId: data.messageId,
-      originalText: data.text,
-      translatedText: result.translatedText,
-      sourceLanguage: data.sourceLanguage,
-      targetLanguage: data.targetLanguage,
-      confidence: result.metadata?.confidenceScore,
-      fromCache: result.metadata?.fromCache,
-      modelUsed: result.metadata?.modelUsed,
-      conversationId: data.conversationId
-    };
+    this.prisma = new PrismaClient({
+      log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error']
+    });
     
-    connection.send(JSON.stringify(response));
-    logger.info(`✅ Traduction envoyée: "${data.text}" → "${result.translatedText}"`);
-    
-  } catch (error) {
-    logger.error('❌ Erreur traduction:', error);
-    sendError(connection, data.messageId, `Erreur de traduction: ${error}`);
+    this.translationClient = new ZMQTranslationClient(config.translationServicePort);
   }
-}
 
-async function handleMultiTranslation(connection: WebSocketConnection, data: WebSocketMessage) {
-  try {
-    if (!data.text || !data.sourceLanguage || !data.targetLanguages?.length) {
-      sendError(connection, data.messageId, 'Paramètres manquants pour la traduction multiple');
-      return;
-    }
-    
-    // Traduire vers toutes les langues cibles
-    const results = await translationClient.translateToMultipleLanguages(
-      data.text,
-      data.sourceLanguage,
-      data.targetLanguages
-    );
-    
-    // Formater les résultats
-    const translations = results.map((result, index) => ({
-      language: data.targetLanguages![index],
-      text: result.translatedText,
-      confidence: result.metadata?.confidenceScore || 0
-    }));
-    
-    const response: WebSocketResponse = {
-      type: 'translation_multi',
-      messageId: data.messageId,
-      originalText: data.text,
-      translations,
-      sourceLanguage: data.sourceLanguage,
-      conversationId: data.conversationId
-    };
-    
-    connection.send(JSON.stringify(response));
-    logger.info(`✅ Traductions multiples envoyées: ${translations.length} langues`);
-    
-  } catch (error) {
-    logger.error('❌ Erreur traduction multiple:', error);
-    sendError(connection, data.messageId, `Erreur de traduction multiple: ${error}`);
-  }
-}
+  // --------------------------------------------------------------------------
+  // MIDDLEWARE SETUP
+  // --------------------------------------------------------------------------
 
-async function handleTypingEvent(connection: WebSocketConnection, data: WebSocketMessage) {
-  // Pour l'instant, juste logger
-  logger.info(`👀 Événement frappe: ${data.type} de ${data.userId} dans ${data.conversationId}`);
-  
-  // Dans une implémentation complète, on relayerait cet événement aux autres participants
-  // de la conversation via WebSocket broadcast
-}
+  private async setupMiddleware(): Promise<void> {
+    logger.info('Setting up middleware...');
 
-function sendError(connection: WebSocketConnection, messageId: string | undefined, error: string) {
-  const response: WebSocketResponse = {
-    type: 'error',
-    messageId,
-    error
-  };
-  connection.send(JSON.stringify(response));
-}
+    // Register sensible plugin for httpErrors
+    await this.server.register(sensible);
 
-// Routes REST basiques
-async function setupRoutes() {
-  // Health check
-  server.get('/health', async () => {
-    const translationHealthy = await translationClient.healthCheck();
-    
-    return {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      services: {
-        database: true, // TODO: vrai check Prisma
-        translation: translationHealthy,
-        websocket: true
-      }
-    };
-  });
-  
-  // Info sur le service
-  server.get('/info', async () => {
-    return {
-      name: 'Meeshy Fastify Gateway',
-      version: '1.0.0',
-      communication: {
-        websocket: '/ws',
-        translation_backend: 'ZMQ+Protobuf',
-        frontend: 'WebSocket+REST'
-      },
-      supported_languages: ['fr', 'en', 'es', 'de', 'pt', 'zh', 'ja', 'ar']
-    };
-  });
+    // Security headers
+    await this.server.register(helmet, {
+      contentSecurityPolicy: config.isDev ? false : undefined
+    });
 
-  // API de traduction REST
-  server.post('/api/translate', {
-    schema: {
-      body: {
-        type: 'object',
-        required: ['text', 'source_language', 'target_language'],
-        properties: {
-          text: { type: 'string' },
-          source_language: { type: 'string' },
-          target_language: { type: 'string' }
+    // CORS configuration
+    await this.server.register(cors, {
+      origin: config.isDev ? true : (origin, cb) => {
+        // Add your production domains here
+        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+        if (!origin || allowedOrigins.includes(origin)) {
+          return cb(null, true);
         }
+        return cb(new Error('Not allowed by CORS'), false);
+      },
+      credentials: true
+    });
+
+    // JWT authentication
+    await this.server.register(jwt, {
+      secret: config.jwtSecret
+    });
+
+    // WebSocket support
+    await this.server.register(websocket);
+
+    // Global error handler
+    this.server.setErrorHandler(async (error, request, reply) => {
+      logger.error('Global error handler:', error);
+
+      if (error instanceof AuthenticationError) {
+        return reply.code(401).send({
+          error: 'Authentication Failed',
+          message: error.message,
+          statusCode: 401,
+          timestamp: new Date().toISOString()
+        });
       }
+
+      if (error instanceof ValidationError) {
+        return reply.code(400).send({
+          error: 'Validation Error',
+          message: error.message,
+          statusCode: 400,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      if (error instanceof TranslationError) {
+        return reply.code(500).send({
+          error: 'Translation Error',
+          message: error.message,
+          statusCode: 500,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Default error handling
+      const statusCode = error.statusCode || 500;
+      return reply.code(statusCode).send({
+        error: 'Internal Server Error',
+        message: config.isDev ? error.message : 'An unexpected error occurred',
+        statusCode,
+        timestamp: new Date().toISOString(),
+        ...(config.isDev && { stack: error.stack })
+      });
+    });
+
+    // Decorators for dependency injection
+    this.server.decorate('prisma', this.prisma);
+    this.server.decorate('authenticate', this.createAuthMiddleware());
+
+    logger.info('✓ Middleware configured successfully');
+  }
+
+  private createAuthMiddleware() {
+    return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+      if (config.isDev) {
+        logger.debug('Authentication middleware (development mode)');
+      }
+      
+      try {
+        await authenticate(request, reply);
+      } catch (error) {
+        logger.error('Authentication failed:', error);
+        throw new AuthenticationError('Authentication failed');
+      }
+    };
+  }
+
+  // --------------------------------------------------------------------------
+  // WEBSOCKET HANDLERS
+  // --------------------------------------------------------------------------
+
+  private async setupWebSocket(): Promise<void> {
+    logger.info('Configuring WebSocket endpoints...');
+
+    this.server.register(async (fastify) => {
+      fastify.get('/ws', { websocket: true }, (connection, request) => {
+        const clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        logger.info(`New WebSocket connection established: ${clientId}`);
+        
+        connection.on('message', async (message: Buffer) => {
+          try {
+            const data: WebSocketMessage = JSON.parse(message.toString());
+            logger.debug(`WebSocket message received from ${clientId}: ${data.type}`);
+            
+            await this.handleWebSocketMessage(connection, data, clientId);
+          } catch (error) {
+            logger.error(`WebSocket message processing error for ${clientId}:`, error);
+            this.sendWebSocketError(connection, undefined, 'Invalid message format');
+          }
+        });
+        
+        connection.on('close', () => {
+          logger.info(`WebSocket connection closed: ${clientId}`);
+        });
+        
+        connection.on('error', (error: Error) => {
+          logger.error(`WebSocket error for ${clientId}:`, error);
+        });
+
+        // Send welcome message
+        this.sendWebSocketMessage(connection, {
+          type: 'translation',
+          messageId: 'welcome',
+          originalText: 'Connection established',
+          translatedText: 'Welcome to Meeshy Translation Service',
+          timestamp: new Date().toISOString()
+        });
+      });
+    });
+
+    logger.info('✓ WebSocket configured on /ws');
+  }
+
+  private async handleWebSocketMessage(
+    connection: WebSocketConnection, 
+    data: WebSocketMessage, 
+    clientId: string
+  ): Promise<void> {
+    switch (data.type) {
+      case 'translate':
+        await this.handleSingleTranslation(connection, data);
+        break;
+        
+      case 'translate_multi':
+        await this.handleMultipleTranslation(connection, data);
+        break;
+        
+      case 'typing':
+      case 'stop_typing':
+        await this.handleTypingEvent(connection, data, clientId);
+        break;
+        
+      default:
+        logger.warn(`Unsupported message type: ${data.type} from ${clientId}`);
+        this.sendWebSocketError(connection, data.messageId, `Unsupported message type: ${data.type}`);
     }
-  }, async (request, reply) => {
+  }
+
+  private async handleSingleTranslation(
+    connection: WebSocketConnection, 
+    data: WebSocketMessage
+  ): Promise<void> {
     try {
-      const body = request.body as {
-        text: string;
-        source_language: string;
-        target_language: string;
-      };
+      if (!data.text || !data.sourceLanguage || !data.targetLanguage) {
+        this.sendWebSocketError(connection, data.messageId, 'Missing required parameters: text, sourceLanguage, targetLanguage');
+        return;
+      }
       
-      const { text, source_language, target_language } = body;
-      
-      logger.info(`🌐 Traduction API: "${text}" (${source_language} → ${target_language})`);
-      
-      // Appeler le service de traduction via ZMQ
-      const result = await translationClient.translateText({
-        messageId: `api-${Date.now().toString()}`,
-        text,
-        sourceLanguage: source_language,
-        targetLanguage: target_language
+      const startTime = Date.now();
+      const result = await this.translationClient.translateText({
+        messageId: data.messageId || `ws_${Date.now()}`,
+        text: data.text,
+        sourceLanguage: data.sourceLanguage,
+        targetLanguage: data.targetLanguage
       });
       
-      return {
-        translated_text: result.translatedText,
-        source_language,
-        target_language,
-        original_text: text,
-        confidence: result.metadata?.confidenceScore || 0,
+      const response: WebSocketResponse = {
+        type: 'translation',
+        messageId: data.messageId,
+        originalText: data.text,
+        translatedText: result.translatedText,
+        sourceLanguage: data.sourceLanguage,
+        targetLanguage: data.targetLanguage,
+        confidence: result.metadata?.confidenceScore,
+        fromCache: result.metadata?.fromCache,
+        modelUsed: result.metadata?.modelUsed,
+        conversationId: data.conversationId,
         timestamp: new Date().toISOString()
       };
       
+      this.sendWebSocketMessage(connection, response);
+      
+      const duration = Date.now() - startTime;
+      logger.info(`Translation completed in ${duration}ms: "${data.text}" → "${result.translatedText}"`);
+      
     } catch (error) {
-      logger.error('❌ Erreur traduction API:', error);
-      reply.status(500);
-      return {
-        error: 'Translation failed',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      };
+      logger.error('Single translation error:', error);
+      this.sendWebSocketError(
+        connection, 
+        data.messageId, 
+        `Translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
-  });
-  
-  logger.info('✅ Routes REST configurées');
-}
+  }
 
-// Initialisation
-async function start() {
-  try {
-    logger.info('🚀 Démarrage du serveur Fastify Meeshy...');
+  private async handleMultipleTranslation(
+    connection: WebSocketConnection, 
+    data: WebSocketMessage
+  ): Promise<void> {
+    try {
+      if (!data.text || !data.sourceLanguage || !data.targetLanguages?.length) {
+        this.sendWebSocketError(connection, data.messageId, 'Missing required parameters: text, sourceLanguage, targetLanguages');
+        return;
+      }
+      
+      const startTime = Date.now();
+      const results = await this.translationClient.translateToMultipleLanguages(
+        data.text,
+        data.sourceLanguage,
+        data.targetLanguages
+      );
+      
+      const translations = results.map((result: any, index: number) => ({
+        language: data.targetLanguages![index],
+        text: result.translatedText,
+        confidence: result.metadata?.confidenceScore || 0
+      }));
+      
+      const response: WebSocketResponse = {
+        type: 'translation_multi',
+        messageId: data.messageId,
+        originalText: data.text,
+        translations,
+        sourceLanguage: data.sourceLanguage,
+        conversationId: data.conversationId,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.sendWebSocketMessage(connection, response);
+      
+      const duration = Date.now() - startTime;
+      logger.info(`Multiple translations completed in ${duration}ms: ${translations.length} languages`);
+      
+    } catch (error) {
+      logger.error('Multiple translation error:', error);
+      this.sendWebSocketError(
+        connection, 
+        data.messageId, 
+        `Multiple translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  private async handleTypingEvent(
+    connection: WebSocketConnection, 
+    data: WebSocketMessage, 
+    clientId: string
+  ): Promise<void> {
+    logger.debug(`Typing event: ${data.type} from user ${data.userId} in conversation ${data.conversationId}`);
     
-    // 1. Initialiser les services
-    logger.info('📦 Initialisation des services...');
-    await translationClient.initialize();
+    // Future implementation: broadcast to other conversation participants
+    // For now, just acknowledge the event
+    const response: WebSocketResponse = {
+      type: data.type as 'typing' | 'stop_typing',
+      messageId: data.messageId,
+      conversationId: data.conversationId,
+      userId: data.userId,
+      timestamp: new Date().toISOString()
+    };
     
-    // 2. Configuration du serveur
-    await setupMiddleware();
-    await setupWebSocket();
-    await setupRoutes();
+    this.sendWebSocketMessage(connection, response);
+  }
+
+  private sendWebSocketMessage(connection: WebSocketConnection, message: WebSocketResponse): void {
+    try {
+      connection.send(JSON.stringify(message));
+    } catch (error) {
+      logger.error('Failed to send WebSocket message:', error);
+    }
+  }
+
+  private sendWebSocketError(connection: WebSocketConnection, messageId: string | undefined, error: string): void {
+    const response: WebSocketResponse = {
+      type: 'error',
+      messageId,
+      error,
+      timestamp: new Date().toISOString()
+    };
+    this.sendWebSocketMessage(connection, response);
+  }
+
+  // --------------------------------------------------------------------------
+  // REST API ROUTES
+  // --------------------------------------------------------------------------
+
+  private async setupRoutes(): Promise<void> {
+    logger.info('Configuring REST API routes...');
+
+    // Health check endpoint
+    this.server.get('/health', async (request, reply) => {
+      try {
+        const [userCount, translationHealthy] = await Promise.all([
+          this.prisma.user.count(),
+          this.translationClient.healthCheck().catch(() => false)
+        ]);
+        
+        const health = {
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          environment: config.nodeEnv,
+          version: '1.0.0',
+          services: {
+            database: { status: 'up', userCount },
+            translation: { status: translationHealthy ? 'up' : 'down' },
+            websocket: { status: 'up' }
+          },
+          uptime: process.uptime()
+        };
+        
+        reply.code(200).send(health);
+      } catch (error) {
+        logger.error('Health check failed:', error);
+        reply.code(503).send({
+          status: 'unhealthy',
+          timestamp: new Date().toISOString(),
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    });
     
-    // 3. Démarrer le serveur
-    await server.listen({ port: PORT, host: '0.0.0.0' });
+    // Service information endpoint
+    this.server.get('/info', async (request, reply) => {
+      return {
+        name: 'Meeshy Translation Gateway',
+        version: '1.0.0',
+        environment: config.nodeEnv,
+        architecture: {
+          frontend: 'WebSocket + REST API',
+          backend: 'ZMQ + Protocol Buffers',
+          database: 'PostgreSQL + Prisma'
+        },
+        endpoints: {
+          websocket: '/ws',
+          health: '/health',
+          translate: '/api/translate'
+        },
+        supportedLanguages: ['fr', 'en', 'es', 'de', 'pt', 'zh', 'ja', 'ar'],
+        features: ['real-time translation', 'multiple language support', 'caching', 'typing indicators']
+      };
+    });
+
+    // Translation REST API
+    this.server.post<{ Body: TranslationRequest }>('/api/translate', {
+      schema: {
+        body: {
+          type: 'object',
+          required: ['text', 'source_language', 'target_language'],
+          properties: {
+            text: { type: 'string', minLength: 1, maxLength: 5000 },
+            source_language: { type: 'string', pattern: '^[a-z]{2}$' },
+            target_language: { type: 'string', pattern: '^[a-z]{2}$' }
+          }
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              translated_text: { type: 'string' },
+              original_text: { type: 'string' },
+              source_language: { type: 'string' },
+              target_language: { type: 'string' },
+              confidence: { type: 'number' },
+              timestamp: { type: 'string' },
+              processing_time_ms: { type: 'number' }
+            }
+          }
+        }
+      }
+    }, async (request, reply) => {
+      const startTime = Date.now();
+      
+      try {
+        const { text, source_language, target_language } = request.body;
+        
+        // Validation supplémentaire
+        if (!text.trim()) {
+          throw new ValidationError('Text cannot be empty');
+        }
+        
+        logger.info(`REST API translation request: "${text}" (${source_language} → ${target_language})`);
+        
+        const result = await this.translationClient.translateText({
+          messageId: `api_${Date.now()}`,
+          text,
+          sourceLanguage: source_language,
+          targetLanguage: target_language
+        });
+        
+        const processingTime = Date.now() - startTime;
+        
+        const response = {
+          translated_text: result.translatedText,
+          original_text: text,
+          source_language,
+          target_language,
+          confidence: result.metadata?.confidenceScore || 0,
+          timestamp: new Date().toISOString(),
+          processing_time_ms: processingTime
+        };
+        
+        logger.info(`REST API translation completed in ${processingTime}ms`);
+        return response;
+        
+      } catch (error) {
+        const processingTime = Date.now() - startTime;
+        logger.error(`REST API translation failed after ${processingTime}ms:`, error);
+        
+        if (error instanceof ValidationError) {
+          throw error; // Will be handled by global error handler
+        }
+        
+        throw new TranslationError(error instanceof Error ? error.message : 'Unknown error');
+      }
+    });
     
-    logger.info('🌟 Serveur Fastify démarré avec succès!');
-    logger.info(`📍 Port: ${PORT}`);
-    logger.info(`🔌 WebSocket: ws://localhost:${PORT}/ws`);
-    logger.info(`🗣️ Service de traduction: tcp://localhost:${TRANSLATION_SERVICE_PORT}`);
-    logger.info(`🏥 Health check: http://localhost:${PORT}/health`);
+    logger.info('✓ REST API routes configured successfully');
+  }
+
+  // --------------------------------------------------------------------------
+  // SERVER LIFECYCLE
+  // --------------------------------------------------------------------------
+
+  private async initializeServices(): Promise<void> {
+    logger.info('Initializing external services...');
+
+    // Test database connection
+    try {
+      const userCount = await this.prisma.user.count();
+      logger.info(`✓ Database connected successfully (${userCount} users found)`);
+    } catch (error) {
+      logger.error('✗ Database connection failed:', error);
+      throw new Error('Database initialization failed');
+    }
+
+    // Initialize translation service
+    try {
+      await this.translationClient.initialize();
+      const isHealthy = await this.translationClient.healthCheck();
+      if (isHealthy) {
+        logger.info('✓ Translation service connected successfully');
+      } else {
+        throw new Error('Translation service health check failed');
+      }
+    } catch (error) {
+      logger.error('✗ Translation service initialization failed:', error);
+      throw new Error('Translation service initialization failed');
+    }
+  }
+
+  private displayStartupBanner(): void {
+    const banner = `
+╔══════════════════════════════════════════════════════════════════╗
+║                       🌍 MEESHY GATEWAY 🌍                       ║
+║                   Translation Service Gateway                     ║
+╠══════════════════════════════════════════════════════════════════╣
+║  Environment: ${config.nodeEnv.padEnd(48)} ║
+║  Port:        ${config.port.toString().padEnd(48)} ║
+║  Database:    ${config.databaseUrl ? 'Connected' : 'Not configured'.padEnd(48)} ║
+║  Translation: tcp://localhost:${config.translationServicePort.toString().padEnd(37)} ║
+╠══════════════════════════════════════════════════════════════════╣
+║  📡 WebSocket:    ws://localhost:${config.port}/ws${' '.repeat(23)} ║
+║  🏥 Health:       http://localhost:${config.port}/health${' '.repeat(18)} ║
+║  📖 Info:         http://localhost:${config.port}/info${' '.repeat(20)} ║
+║  🔄 Translate:    http://localhost:${config.port}/api/translate${' '.repeat(11)} ║
+╚══════════════════════════════════════════════════════════════════╝
+    `.trim();
     
-  } catch (error) {
-    logger.error('❌ Erreur lors du démarrage:', error);
-    process.exit(1);
+    console.log(banner);
+  }
+
+  public async start(): Promise<void> {
+    try {
+      logger.info('🚀 Starting Meeshy Translation Gateway...');
+
+      // Display configuration
+      logger.info('Configuration loaded:', {
+        environment: config.nodeEnv,
+        port: config.port,
+        translationPort: config.translationServicePort,
+        development: config.isDev
+      });
+
+      // Initialize services
+      await this.initializeServices();
+
+      // Setup server components
+      await this.setupMiddleware();
+      await this.setupWebSocket();
+      await this.setupRoutes();
+
+      // Start the server
+      await this.server.listen({ 
+        port: config.port, 
+        host: '0.0.0.0' 
+      });
+
+      // Display success banner
+      this.displayStartupBanner();
+      logger.info('🎉 Server started successfully and ready to accept connections');
+
+    } catch (error) {
+      logger.error('❌ Failed to start server:', error);
+      process.exit(1);
+    }
+  }
+
+  public async stop(): Promise<void> {
+    logger.info('🛑 Shutting down server...');
+
+    try {
+      if (this.translationClient) {
+        await this.translationClient.close();
+        logger.info('✓ Translation service connection closed');
+      }
+
+      await this.server.close();
+      logger.info('✓ HTTP server closed');
+
+      await this.prisma.$disconnect();
+      logger.info('✓ Database connection closed');
+
+      logger.info('✅ Server shutdown completed successfully');
+    } catch (error) {
+      logger.error('❌ Error during shutdown:', error);
+      throw error;
+    }
   }
 }
 
-// Arrêt propre
-process.on('SIGINT', async () => {
-  logger.info('🛑 Arrêt du serveur...');
-  
+// ============================================================================
+// APPLICATION BOOTSTRAP
+// ============================================================================
+
+const meeshyServer = new MeeshyServer();
+
+// Graceful shutdown handlers
+process.on('SIGTERM', async () => {
+  logger.info('Received SIGTERM signal');
   try {
-    await translationClient.close();
-    await server.close();
-    await prisma.$disconnect();
-    
-    logger.info('✅ Serveur arrêté proprement');
+    await meeshyServer.stop();
     process.exit(0);
   } catch (error) {
-    logger.error('❌ Erreur lors de l\'arrêt:', error);
+    logger.error('Error during SIGTERM shutdown:', error);
     process.exit(1);
   }
 });
 
-// Démarrer
-start();
+process.on('SIGINT', async () => {
+  logger.info('Received SIGINT signal (Ctrl+C)');
+  try {
+    await meeshyServer.stop();
+    process.exit(0);
+  } catch (error) {
+    logger.error('Error during SIGINT shutdown:', error);
+    process.exit(1);
+  }
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
+// Start the server
+meeshyServer.start().catch((error) => {
+  logger.error('Failed to start application:', error);
+  process.exit(1);
+});

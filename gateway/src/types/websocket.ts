@@ -3,7 +3,7 @@
  * Gestion complète des fonctionnalités temps réel avec authentification
  */
 
-import { User, Message, Conversation, MessageTranslation } from '../../../shared/generated';
+import { User, Message, Conversation, MessageTranslation } from '../../libs';
 
 // Types de base pour les événements WebSocket
 export interface WebSocketUser {

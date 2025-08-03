@@ -825,3 +825,8 @@ class TranslationService:
             
         except Exception as e:
             logger.error(f"❌ Erreur lors du déchargement: {e}")
+
+    # Alias pour compatibilité avec le code existant
+    async def translate(self, text: str, source_language: str, target_language: str, model_type: str = "basic") -> Dict[str, Any]:
+        """Alias pour translate_text pour compatibilité avec le code existant"""
+        return await self.translate_text(text, source_language, target_language, model_type)
