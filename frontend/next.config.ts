@@ -10,11 +10,14 @@ const nextConfig: NextConfig = {
   // Configuration Docker
   output: 'standalone',
   
-  // Configuration des images
+  // Configuration des images (désactiver Sharp en production Docker)
   images: {
     domains: ['localhost'],
-    unoptimized: true
+    unoptimized: true,
   },
+  
+  // Experimental pour éviter les problèmes avec Sharp
+  serverExternalPackages: ['sharp'],
   
   // Configuration API
   async rewrites() {

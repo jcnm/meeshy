@@ -1,34 +1,63 @@
-# Frontend Dockerfile - Production Ready with Node.js 22
-FROM node:22-alpine AS base
+# Frontend Dockerfile - ONNX WASM capable with Ubuntu base
+FROM ubuntu:22.04 AS base
 
-# Install pnpm and system dependencies
-RUN corepack enable && corepack prepare pnpm@latest --activate
-RUN apk add --no-cache tini
-ENTRYPOINT ["/sbin/tini", "--"]
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install Node.js 22 and basic dependencies
+RUN apt-get update --fix-missing && \
+    apt-get install -y curl git wget build-essential && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g pnpm && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install tini for proper init handling
+RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Install WASM/ONNX support dependencies
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip \
+    cmake make gcc g++ \
+    zlib1g-dev libncurses5-dev libgdbm-dev \
+    libnss3-dev libssl-dev libreadline-dev libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # === DEPENDENCIES STAGE ===
 FROM base AS deps
 WORKDIR /app
 
 # Copy package files for frontend
-COPY frontend/package.json pnpm-lock.yaml ./
-RUN pnpm install --no-frozen-lockfile --prod
+COPY package.json pnpm-lock.yaml* ./
+# Install dependencies based on available lock file
+RUN \
+  if [ -f pnpm-lock.yaml ]; then \
+    corepack enable pnpm && pnpm install --no-frozen-lockfile; \
+  elif [ -f package-lock.json ]; then \
+    npm ci; \
+  else \
+    npm install; \
+  fi
 
 # === BUILDER STAGE ===
 FROM base AS builder
 WORKDIR /app
 
-# Copy over the node_modules from the deps stage
+# Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy the application source
-COPY frontend/ .
+# Copy source code (node_modules and .next excluded via .dockerignore)
+COPY . .
 
-# Install all dev dependencies for build (including TailwindCSS)
-RUN pnpm install --no-frozen-lockfile
+# Set environment variables for ONNX Runtime and production build
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
+ENV NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
 
 # Build the application
-ENV NEXT_TELEMETRY_DISABLED=1
+# Note: node_modules and .next are excluded via .dockerignore to prevent copying
 RUN pnpm build
 
 # === PRODUCTION STAGE ===
@@ -39,8 +68,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Create system user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
 
 # Copy built application
 COPY --from=builder /app/public ./public
@@ -55,5 +84,9 @@ ENV PORT=3100
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3100', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Set environment for ONNX Runtime (disabled for client-side)
+ENV NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
+ENV NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
 
 CMD ["node", "server.js"]
