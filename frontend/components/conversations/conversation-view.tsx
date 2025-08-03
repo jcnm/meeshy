@@ -63,7 +63,7 @@ export function ConversationView({
   const processedMessageIds = useRef<Set<string>>(new Set());
 
   // Hooks pour la traduction et services
-  const { translateMessage } = useTranslation(currentUser);
+  const { translateMessage } = useTranslation();
   const messaging = useMessaging({
     conversationId: conversation.id,
     currentUser: currentUser || undefined
@@ -176,10 +176,10 @@ export function ConversationView({
       const flag = SUPPORTED_LANGUAGES.find(lang => lang.code === targetLanguage)?.flag || '🌐';
       const newTranslation: Translation = {
         language: targetLanguage,
-        content: translatedMessage.translatedContent || message.content,
+        content: translatedMessage?.translatedContent || message.content,
         flag,
         createdAt: new Date(),
-        modelUsed: translatedMessage.modelUsed
+        modelUsed: translatedMessage?.modelUsed
       };
       
       const updatedTranslatedMessage: TranslatedMessage = {

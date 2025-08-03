@@ -106,10 +106,10 @@ export function ModelSelector({
           }
         ];
 
-        // Vérifier l'état actuel des modèles
+        // Vérifier l'état actuel des modèles (service API - toujours disponible)
         const updatedModels = modelInfos.map(model => ({
           ...model,
-          isLoaded: translationService.isModelLoaded(model.id) 
+          isLoaded: true // Service API - modèles toujours disponibles côté serveur
         }));
 
         setModels(updatedModels);
@@ -151,8 +151,8 @@ export function ModelSelector({
         }));
       }, 200);
 
-      // Charger le modèle
-      translationService.isModelLoaded(modelId);
+      // Service API - pas de vérification de modèle nécessaire
+      // translationService.isModelLoaded(modelId); // Supprimé pour service API
 
       clearInterval(progressInterval);
 
@@ -184,10 +184,11 @@ export function ModelSelector({
     }
   };
 
-  // Gérer la suppression d'un modèle du cache
+  // Gérer la suppression d'un modèle du cache (désactivé pour service API)
   const handleRemoveModel = async (modelId: TranslationModelType) => {
     try {
-      await translationService.unloadPipeline(modelId);
+      // Service API - pas de déchargement de modèle nécessaire
+      toast.info('Modèles gérés côté serveur - aucune action requise');
       
       setModels(prev => prev.map(model => 
         model.id === modelId 

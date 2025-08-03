@@ -61,7 +61,7 @@ export function ConversationViewSimple({
   const [showingOriginal, setShowingOriginal] = useState<Map<string, boolean>>(new Map());
 
   // Hooks pour la traduction et services
-  const { translate } = useTranslation(currentUser);
+  const { translate } = useTranslation(); // Service API - pas de paramètres nécessaires
   const messaging = useMessaging({
     conversationId: conversation.id,
     currentUser: currentUser || undefined
@@ -165,11 +165,13 @@ export function ConversationViewSimple({
         ? message.originalLanguage 
         : 'fr'; // langue par défaut
         
-      const translatedText = await translate(
+      const result = await translate(
         message.content, 
-        sourceLanguage, 
-        targetLanguage
+        targetLanguage,
+        sourceLanguage
       );
+
+      const translatedText = result?.translatedText || message.content;
 
       // Mettre à jour avec la traduction
       const translatedMessage: TranslatedMessage = {

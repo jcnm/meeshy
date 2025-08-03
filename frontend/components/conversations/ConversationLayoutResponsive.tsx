@@ -33,8 +33,8 @@ import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection 
 import { TranslationPerformanceTips } from '@/components/translation/translation-performance-tips';
 import { SystemPerformanceMonitor } from '@/components/translation/system-performance-monitor';
 import { cleanTranslationOutput } from '@/utils/translation-cleaner';
-import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.3.0';
-env.allowLocalModels = false; // Skip check for models hosted locally
+// Supprimé: import { pipeline, env } from '@xenova/transformers';
+// Supprimé: env.allowLocalModels = false; // Skip check for models hosted locally
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -68,7 +68,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
 const c = console;
 
-function progress_callback(x) {
+function progress_callback(x: any) {
     if (x.status === "done") {
         c.log(`Done: ${x.file}`);
     }
@@ -79,15 +79,20 @@ function progress_callback(x) {
 
 async function initializeTranslator() {
     try {
-        const translator = await pipeline('translation', 'Xenova/nllb-200-distilled-600M', { progress_callback });
-        return translator;
+        // Plus besoin d'initialiser un modèle local, on utilise l'API
+        const isHealthy = await translationService.checkHealth();
+        if (!isHealthy) {
+            throw new Error('Service de traduction indisponible');
+        }
+        c.log("API de traduction prête 🔥");
+        return true; // Juste un indicateur que l'API est prête
     } catch (error) {
         c.error("Failed to initialize translator:", error);
         throw error;
     }
 }
 
-async function translateText(text, src_lang, tgt_lang, translator) {
+async function translateText(text: string, src_lang: string, tgt_lang: string, translator: any) {
     try {
         const result = await translator(text, { src_lang, tgt_lang });
         return result[0].translation_text;
@@ -232,12 +237,12 @@ const main = async () => {
         toast.loading('Retraduction forcée en cours...', { id: `retranslate-${messageId}` });
       }
 
-      const translationResult = await translationService.translate(
-        message.content,
-        targetLanguage,
-        sourceLanguage,
-        { preferredModel: selectedTranslationModel }
-      );
+      const translationResult = await translationService.translateText({
+        text: message.content,
+        sourceLanguage: sourceLanguage,
+        targetLanguage: targetLanguage,
+        model: 'basic' as const // Utiliser un modèle basique par défaut
+      });
 
       // Créer le message traduit avec toutes les propriétés requises
       const translatedMsg: TranslatedMessage = {
@@ -698,11 +703,10 @@ const main = async () => {
                           <Badge variant="outline" className="text-xs px-1 py-0">
                             {config.parameters}
                           </Badge>
-                          {translationService.isModelLoaded(config.name) && (
-                            <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
-                              ✓
-                            </Badge>
-                          )}
+                          {/* Supprimé: la vérification de modèle chargé n'est plus nécessaire avec l'API */}
+                          <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
+                            API
+                          </Badge>
                         </div>
                       </SelectItem>
                       );
