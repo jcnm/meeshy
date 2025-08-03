@@ -116,8 +116,8 @@ services:
   # ===== FRONTEND SERVICE (Next.js) =====
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: meeshy-frontend
     restart: unless-stopped
     environment:

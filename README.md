@@ -1,148 +1,247 @@
-# Meeshy - Platform de Messagerie Multilingue 🌍
+# Meeshy 🚀
 
-Plateforme de messagerie en temps réel avec traduction automatique intégrée.
+**Plateforme de messagerie haute performance avec traduction multilingue en temps réel**
 
-## 🚀 Démarrage Rapide
+Meeshy est une application de messagerie moderne conçue pour gérer 100 000 messages par seconde avec traduction automatique en temps réel vers plusieurs langues simultanément.
+
+![Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
+![Performance](https://img.shields.io/badge/Performance-100k_msg/sec-green)
+![Languages](https://img.shields.io/badge/Languages-8_supported-orange)
+
+## 🎯 Fonctionnalités
+
+### 💬 Messagerie Temps Réel
+- **WebSocket haute performance** avec Fastify
+- **Gestion de 100k connexions simultanées**
+- **Messages temps réel** avec indicateurs de frappe
+- **Conversations de groupe** avec gestion des rôles
+
+### 🌐 Traduction Automatique Multilingue
+- **Traduction instantanée** vers 8 langues (FR, EN, ES, DE, PT, ZH, JA, AR)
+- **Modèles ML avancés**: MT5 (basic), NLLB-200 600M (medium), NLLB-200 1.3B (premium)
+- **Cache intelligent** avec Redis + base de données persistante
+- **Détection automatique de langue** source
+
+### 🏗️ Architecture Distribuée
+- **Frontend**: Next.js 15 + TypeScript + Tailwind CSS
+- **Gateway**: Fastify + WebSocket (gestion utilisateurs, routage messages)
+- **Translator**: FastAPI + Transformers (traduction ML)
+- **Base de données**: PostgreSQL + Prisma ORM
+- **Cache**: Redis pour performances optimales
+
+### 🚀 Performance & Scalabilité
+- **Communication gRPC** entre services avec Protocol Buffers
+- **Queue asynchrone** ZMQ/RabbitMQ pour opérations batch
+- **Base de données optimisée** avec indexation intelligente
+- **Déploiement Docker** avec orchestration Kubernetes
+
+## 🏛️ Architecture Système
+
+```
+┌─────────────────┐    WebSocket/HTTP    ┌──────────────────┐
+│   Frontend      │◄───────────────────►│    Gateway       │
+│   (Next.js)     │                     │   (Fastify)      │
+└─────────────────┘                     └──────────────────┘
+                                                  │
+                                         gRPC + Protobuf
+                                                  ▼
+┌─────────────────┐                     ┌──────────────────┐
+│   PostgreSQL    │◄────────────────────┤   Translator     │
+│   + Prisma      │    Shared Database  │   (FastAPI)      │
+└─────────────────┘                     └──────────────────┘
+                                                  │
+┌─────────────────┐                              │
+│     Redis       │◄─────────────────────────────┘
+│    (Cache)      │         Translation Cache
+└─────────────────┘
+```
+
+### Responsabilités des Services
+
+#### 🎨 Frontend (Next.js)
+- Interface utilisateur moderne et responsive
+- Gestion des WebSockets pour temps réel
+- Réception des messages dans la langue configurée de l'utilisateur
+- Gestion d'état avec React hooks + SWR
+
+#### ⚡ Gateway (Fastify)
+- **CRUD complet**: Utilisateurs, conversations, groupes, préférences
+- **Messages en lecture seule**: Affichage et routage uniquement
+- **WebSocket**: Connexions temps réel et routage intelligent
+- **Filtrage linguistique**: Distribution selon les préférences utilisateur
+
+#### 🤖 Translator (FastAPI)
+- **CRUD Messages**: Création, modification, suppression des messages
+- **Traduction ML**: Modèles MT5 et NLLB-200 via Transformers
+- **Cache intelligent**: Système de cache robuste par paire de langues
+- **Traduction simultanée**: Vers toutes les langues requises en une fois
+
+## 🌐 Flux de Traduction Multilingue
+
+### Configuration Linguistique Utilisateur
+```typescript
+interface UserLanguageConfig {
+  systemLanguage: string;              // Défaut: "fr"
+  regionalLanguage: string;            // Défaut: "fr"
+  customDestinationLanguage?: string;  // Optionnel
+  autoTranslateEnabled: boolean;       // Défaut: true
+  translateToSystemLanguage: boolean;  // Défaut: true
+  translateToRegionalLanguage: boolean; // Défaut: false
+  useCustomDestination: boolean;       // Défaut: false
+}
+```
+
+### Exemple de Flux de Traduction
+```
+1. Utilisateur A envoie "Bonjour" (français) → Gateway (WebSocket)
+2. Gateway détermine les langues requises des participants
+3. Gateway → Translator (gRPC): Demande de traduction vers toutes les langues
+4. Translator traite:
+   • Vérifie le cache (MessageTranslation + Redis)
+   • Traduit les langues manquantes avec ML
+   • Stocke les traductions avec clé de cache
+5. Translator → Gateway: Toutes les traductions
+6. Gateway diffuse selon les préférences:
+   • Utilisateur B (systemLanguage: "en") → reçoit "Hello"
+   • Utilisateur C (regionalLanguage: "es") → reçoit "Hola"
+   • Utilisateur D (systemLanguage: "fr") → reçoit "Bonjour"
+```
+
+## � Démarrage Rapide
 
 ### Prérequis
-- Docker et Docker Compose
-- Git
+- Node.js 18+ et pnpm
+- Python 3.9+ 
+- PostgreSQL et Redis (ou Docker)
 
-### Installation
+### Option 1: Développement Local
 ```bash
-git clone <repo-url>
+# Cloner le projet
+git clone https://github.com/sylorion/meeshy.git
 cd meeshy
-cp .env.example .env  # Ajustez la configuration si nécessaire
+
+# Lancer en mode développement local
+./dev-local.sh
 ```
 
-### Démarrage avec Docker
+### Option 2: Docker (Recommandé)
 ```bash
-# Démarrer tous les services
-./meeshy-docker.sh up
+# Cloner le projet
+git clone https://github.com/sylorion/meeshy.git
+cd meeshy
 
-# Voir les logs
-./meeshy-docker.sh logs
-
-# Arrêter les services
-./meeshy-docker.sh down
+# Lancer avec Docker
+./dev-docker.sh start
 ```
 
-### Accès aux Services
-- **Frontend**: http://localhost:3000
-- **API Backend**: http://localhost:3001
-- **Service de Traduction**: http://localhost:8000
+🌐 **Accès à l'application**: http://localhost (via Nginx) ou http://localhost:3100 (direct)
 
-## 📋 Architecture
+## 📊 Langues Supportées
 
-### Services
-- **Frontend**: Next.js 15 avec React 19
-- **Backend**: Fastify avec WebSocket et gRPC
-- **Service de Traduction**: Python avec T5/NLLB models
-- **Base de données**: PostgreSQL
-- **Cache**: Redis
+| Langue | Code | Modèle | Performance |
+|--------|------|--------|-------------|
+| Français | `fr` | NLLB-200 | Natif |
+| Anglais | `en` | NLLB-200 | Excellent |
+| Espagnol | `es` | NLLB-200 | Excellent |
+| Allemand | `de` | NLLB-200 | Très bon |
+| Portugais | `pt` | NLLB-200 | Très bon |
+| Chinois | `zh` | NLLB-200 | Bon |
+| Japonais | `ja` | NLLB-200 | Bon |
+| Arabe | `ar` | NLLB-200 | Bon |
 
-### Technologies Principales
-- **Frontend**: Next.js, React, TailwindCSS, Socket.io
-- **Backend**: Node.js, Fastify, Prisma, gRPC
-- **Traduction**: Python, Transformers, gRPC
-- **Containerisation**: Docker, Docker Compose
+## �️ Développement
 
-## 🛠️ Développement
+### Structure du Projet
+```
+meeshy/
+├── frontend/          # Next.js 15 + TypeScript
+├── gateway/           # Fastify + WebSocket
+├── translator/        # FastAPI + ML Models
+├── shared/            # Prisma Schema + Proto
+├── docker/            # Configuration Nginx
+├── dev-local.sh       # Script développement local
+└── dev-docker.sh      # Script Docker
+```
 
 ### Scripts Disponibles
 ```bash
-./meeshy-docker.sh help      # Aide
-./meeshy-docker.sh build     # Builder les images
-./meeshy-docker.sh rebuild   # Rebuild complet
-./meeshy-docker.sh status    # Statut des services
-./meeshy-docker.sh clean     # Nettoyer les containers
-```
+# Développement local
+./dev-local.sh
 
-### Tests
-```bash
-# Frontend
-npm test
-npm run test:watch
-
-# Backend
-cd backend/fastify-service
-npm test
-
-# Validation configuration
-npm run validate:config
-```
-
-## 📁 Structure du Projet
-
-```
-meeshy/
-├── src/                    # Code frontend Next.js
-├── backend/
-│   ├── fastify-service/    # API backend
-│   ├── translation-service/ # Service de traduction
-│   └── shared/             # Code partagé
-├── public/
-│   └── models/             # Modèles de traduction
-├── scripts/                # Scripts utilitaires
-└── docker-compose.yml      # Configuration Docker
+# Docker
+./dev-docker.sh start          # Démarrage
+./dev-docker.sh start --clean  # Reconstruction complète
+./dev-docker.sh logs          # Voir les logs
+./dev-docker.sh stop          # Arrêt
+./dev-docker.sh health        # Vérification santé
 ```
 
 ## 🔧 Configuration
 
 ### Variables d'Environnement
-Le fichier `.env` contient toute la configuration nécessaire :
-- Ports des services
-- URLs d'accès
-- Configuration des bases de données
-- Paramètres de traduction
+```env
+# Base de données
+DATABASE_URL=postgresql://user:pass@localhost:5432/meeshy
 
-### Modèles de Traduction
-Les modèles sont téléchargés automatiquement au premier démarrage :
-- T5-small (modèle de base)
-- NLLB-200-distilled-600M (modèle medium)
-- NLLB-200-distilled-1.3B (modèle premium)
+# Services
+TRANSLATOR_HTTP_PORT=8000
+TRANSLATOR_GRPC_PORT=50051
+GATEWAY_PORT=3000
+FRONTEND_PORT=3100
 
-## 📚 API Documentation
+# Langues
+SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
+DEFAULT_LANGUAGE=fr
+```
 
-### Endpoints Principaux
-- `GET /health` - Santé du service
-- `POST /api/translate` - Traduction de texte
-- `WS /ws` - WebSocket pour messages temps réel
-- `POST /api/conversations` - Gestion des conversations
+## 📈 Performance & Métriques
 
-### gRPC Services
-- TranslationService - Service de traduction
-- MessageService - Gestion des messages
+### Objectifs de Performance
+- **Débit messages**: 100 000 messages/seconde
+- **Latence traduction**: <50ms bout en bout
+- **Cache hit ratio**: >80% sur les traductions
+- **Requêtes DB**: <10ms temps moyen
+- **Connexions WebSocket**: 100k simultanées
 
-## 🐳 Production
+### Monitoring
+- Logs structurés avec niveau de détail configurable
+- Métriques de performance en temps réel
+- Health checks pour tous les services
+- Alertes sur seuils de performance
 
-Pour un déploiement en production, utilisez les images Docker séparément :
+## 🚀 Déploiement Production
 
+### Docker Compose (Simple)
 ```bash
-# Builder les images
-docker compose build
+./dev-docker.sh start
+```
 
-# Déployer avec des orchestrateurs
-docker run -d meeshy-frontend:latest
-docker run -d meeshy-backend:latest
-docker run -d meeshy-translation:latest
+### Kubernetes (Scalable)
+```bash
+# À venir - Configuration Kubernetes pour production
+kubectl apply -f k8s/
 ```
 
 ## 🤝 Contribution
 
-1. Fork le projet
+1. Fork du projet
 2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+3. Commit des changements (`git commit -m 'Add AmazingFeature'`)
 4. Push vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrir une Pull Request
 
-## 📄 License
+## 📄 Licence
 
-Distribué sous la licence MIT. Voir `LICENSE` pour plus d'informations.
+Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
-## 🆘 Support
+## 🙏 Remerciements
 
-Pour toute question ou problème :
-1. Vérifiez les logs avec `./meeshy-docker.sh logs`
-2. Consultez la documentation dans `/docs`
-3. Ouvrez une issue sur GitHub
+- [Fastify](https://www.fastify.io/) pour les performances WebSocket
+- [Next.js](https://nextjs.org/) pour l'interface utilisateur
+- [Prisma](https://www.prisma.io/) pour l'ORM moderne
+- [Transformers](https://huggingface.co/transformers/) pour les modèles ML
+- [NLLB-200](https://ai.facebook.com/research/no-language-left-behind/) pour la traduction multilingue
+
+---
+
+**Meeshy** - Connecter le monde, une traduction à la fois 🌍✨
