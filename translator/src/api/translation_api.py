@@ -134,7 +134,7 @@ class TranslationAPI:
                     raise HTTPException(status_code=400, detail="Text cannot be empty")
                 
                 # Appel au service de traduction
-                result = await self.translation_service.translate(
+                result = await self.translation_service.translate_text(
                     text=request.text,
                     source_language=request.source_language,
                     target_language=request.target_language,

@@ -18,12 +18,14 @@ src_dir = current_dir / "src"
 sys.path.insert(0, str(src_dir))
 
 # Configuration du logging
+log_dir = current_dir / "logs"
+log_dir.mkdir(exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('logs/translation_service.log')
+        logging.FileHandler(log_dir / 'translation_service.log')
     ]
 )
 
@@ -65,7 +67,7 @@ class MeeshyTranslationServer:
             logger.info("✅ Service de traduction initialisé")
             
             # Initialise le serveur ZMQ
-            zmq_port = int(self.settings.ZMQ_PORT or 5555)
+            zmq_port = int(self.settings.zmq_port or 5555)
             self.zmq_server = ZMQTranslationServer(
                 translation_service=self.translation_service,
                 port=zmq_port
@@ -102,7 +104,7 @@ class MeeshyTranslationServer:
                 uvicorn.run(
                     self.translation_api.app,
                     host="0.0.0.0",
-                    port=int(self.settings.API_PORT or 8000),
+                    port=int(self.settings.fastapi_port or 8000),
                     log_level="info",
                     access_log=True
                 )
@@ -119,7 +121,7 @@ class MeeshyTranslationServer:
         logger.info("🚀 Démarrage du serveur intégré (FastAPI + ZMQ)...")
         
         # Test du service de traduction
-        test_result = await self.translation_service.translate(
+        test_result = await self.translation_service.translate_text(
             text="Hello Meeshy",
             source_language="en", 
             target_language="fr",
@@ -135,8 +137,8 @@ class MeeshyTranslationServer:
         self.zmq_task = asyncio.create_task(self.start_zmq_server())
         
         logger.info("✅ Serveur Meeshy prêt et en fonctionnement")
-        logger.info(f"📍 FastAPI: http://0.0.0.0:{self.settings.API_PORT or 8000}")
-        logger.info(f"📍 ZMQ: tcp://0.0.0.0:{self.settings.ZMQ_PORT or 5555}")
+        logger.info(f"📍 FastAPI: http://0.0.0.0:{self.settings.fastapi_port or 8000}")
+        logger.info(f"📍 ZMQ: tcp://0.0.0.0:{self.settings.zmq_port or 5555}")
         
         try:
             # Attendre l'arrêt
