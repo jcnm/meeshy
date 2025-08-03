@@ -53,22 +53,10 @@ export default function TranslationSettingsPage() {
   const [regionalLanguage, setRegionalLanguage] = useState(user?.regionalLanguage ?? 'fr');
   const [customDestinationLanguage, setCustomDestinationLanguage] = useState(user?.customDestinationLanguage ?? 'en');
 
-  // Charger les statistiques du cache
+  // Charger les statistiques du cache (désactivé - service API uniquement)
   useEffect(() => {
-    const loadCacheStats = () => {
-      try {
-        const stats = translationService.getStats();
-        console.log('🔍 Statistiques du cache de traduction:', JSON.stringify(stats, null, 2));
-      } catch (error) {
-        console.error('Erreur lors du chargement des statistiques:', error);
-      }
-    };
-
-    loadCacheStats();
-    
-    // Rafraîchir les stats toutes les 30 secondes
-    const interval = setInterval(loadCacheStats, 30000);
-    return () => clearInterval(interval);
+    // Les statistiques de cache ne sont plus disponibles avec le service API
+    console.log('� Utilisation du service de traduction API - statistiques de cache non disponibles');
   }, []);
 
   // Sauvegarder les préférences
@@ -95,15 +83,13 @@ export default function TranslationSettingsPage() {
     }
   };
 
-  // Vider le cache
+  // Vider le cache (désactivé - service API uniquement)
   const clearCache = async () => {
     try {
-      translationService.clearCache();
-      setCacheStats({ size: 0, totalTranslations: 0, expiredCount: 0 });
-      toast.success('Cache de traduction vidé');
+      toast.info('Cache côté client non disponible avec le service API');
     } catch (error) {
-      console.error('Erreur lors du vidage du cache:', error);
-      toast.error('Erreur lors du vidage du cache');
+      console.error('Erreur:', error);
+      toast.error('Opération non disponible');
     }
   };
 
@@ -122,12 +108,10 @@ export default function TranslationSettingsPage() {
       const hasWebGPU = 'gpu' in navigator;
       
       const results = {
-        // modelsLoaded: loadedModels.length,
-        // modelsPersisted: persistedModels.length,
         memoryUsed: memoryInfo ? Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024) : 'Non disponible',
         memoryTotal: memoryInfo ? Math.round(memoryInfo.totalJSHeapSize / 1024 / 1024) : 'Non disponible',
         webGPUSupport: hasWebGPU,
-        cacheSize: cacheStats.size
+        serviceType: 'API Server'
       };
 
       console.log('🔍 Diagnostic du système de traduction:', results);
@@ -336,16 +320,14 @@ export default function TranslationSettingsPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-center">
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-blue-600">{cacheStats.totalTranslations}</p>
-                <p className="text-xs text-gray-500">Traductions en cache</p>
+                <p className="text-2xl font-bold text-blue-600">N/A</p>
+                <p className="text-xs text-gray-500">Service API</p>
               </div>
               <div className="space-y-1">
-                <p className="text-2xl font-bold text-green-600">{cacheStats.size}</p>
-                <p className="text-xs text-gray-500">Taille du cache</p>
+                <p className="text-2xl font-bold text-green-600">N/A</p>
+                <p className="text-xs text-gray-500">Cache côté serveur</p>
               </div>
-            </div>
-
-            <Separator />
+            </div>            <Separator />
 
             <div className="space-y-2">
               <Button 
@@ -370,19 +352,18 @@ export default function TranslationSettingsPage() {
               </Button>
             </div>
 
-            {cacheStats.expiredCount > 0 && (
-              <div className="flex items-start gap-2 p-3 bg-yellow-50 rounded-lg">
-                <Info className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div className="text-xs">
-                  <p className="font-medium text-yellow-800">
-                    {cacheStats.expiredCount} traductions expirées
-                  </p>
-                  <p className="text-yellow-600">
-                    Videz le cache pour améliorer les performances
-                  </p>
-                </div>
+            {/* Info sur service API */}
+            <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+              <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-xs">
+                <p className="font-medium text-blue-800">
+                  Service de traduction API
+                </p>
+                <p className="text-blue-600">
+                  Les traductions sont traitées côté serveur
+                </p>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 

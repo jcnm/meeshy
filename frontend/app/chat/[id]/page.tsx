@@ -44,7 +44,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Hook de traduction avec persistance
-  const { translate } = useTranslation(null); // currentUser sera passé depuis le contexte
+  const { translate } = useTranslation(); // Service API - pas de paramètres nécessaires
 
   // Hook de vérification des modèles
   const { hasAnyModel, isLoading: isLoadingModels } = useModelStatus();
@@ -209,11 +209,13 @@ export default function ChatPage() {
     ));
 
     try {
-      const translatedText = await translate(
+      const result = await translate(
         message.content, 
-        message.originalLanguage || 'auto', 
-        targetLanguage
+        targetLanguage,
+        message.originalLanguage || 'auto'
       );
+
+      const translatedText = result?.translatedText || message.content;
 
       // Mettre à jour avec la traduction
       setMessages(prev => prev.map(msg => 

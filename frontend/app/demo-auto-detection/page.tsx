@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { translationService, type LanguageDetectionResult } from '@/services';
+import { translationService } from '@/services';
 import { SUPPORTED_LANGUAGES } from '@/types';
 import { Loader2, Languages } from 'lucide-react';
 import { detect, detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
@@ -15,7 +15,7 @@ export default function DemoAutoDetection() {
   const [text, setText] = useState('');
   const [targetLanguage, setTargetLanguage] = useState('fr');
   const [translatedText, setTranslatedText] = useState('');
-  const [detectedLanguage, setDetectedLanguage] = useState<LanguageDetectionResult | null>(null);
+  const [detectedLanguage, setDetectedLanguage] = useState<any | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [showDetectionDetails, setShowDetectionDetails] = useState(false);
@@ -53,7 +53,12 @@ export default function DemoAutoDetection() {
       const detections = detectAll(text);
       const sourceLang = detections.length > 0 ? detections[0].lang : 'en'; // Fallback à 'en' si non détecté
 
-      const result = await translationService.translate(text, targetLanguage, sourceLang);
+      const result = await translationService.translateText({
+        text,
+        sourceLanguage: sourceLang,
+        targetLanguage: targetLanguage,
+        model: 'basic'
+      });
       setTranslatedText(result.translatedText);
       
       // Mettre à jour la langue détectée pour l'affichage
@@ -168,7 +173,7 @@ export default function DemoAutoDetection() {
                 <div className="bg-white p-4 rounded-md border">
                   <p className="font-medium mb-2">Langues détectées (top 5):</p>
                   <ul className="space-y-1">
-                    {detectedLanguage.detectedLanguages.slice(0, 5).map((lang, index) => (
+                    {detectedLanguage.detectedLanguages.slice(0, 5).map((lang: any, index: number) => (
                       <li key={index} className="flex justify-between">
                         <span>{lang.language}</span>
                         <span className="text-gray-600">{Math.round(lang.confidence * 100)}%</span>

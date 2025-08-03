@@ -1,7 +1,8 @@
-'use client';
+import { ProtectedRoute } from '../../components/auth/ProtectedRoute';
+import { ConversationLayoutResponsive } from '../../components/conversations/ConversationLayoutResponsive';
 
-import { ProtectedRoute } from '@/components/auth';
-import { ConversationLayoutResponsive } from '@/components/conversations/ConversationLayoutResponsive';
+// Désactiver le prerendering pour éviter les problèmes avec Sharp
+export const dynamic = 'force-dynamic';
 
 export default function ConversationsPage() {
   return (
