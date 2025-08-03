@@ -153,15 +153,15 @@ export async function translateMessage(
     const modelType = selectBestModel(text.length);
     console.log(`🤖 Utilisation du modèle: ${modelType} pour "${text.substring(0, 50)}..."`);
     
-    // Utiliser le service HuggingFace pour la traduction
-    const result = await translationService.translate(
+    // Utiliser le service API pour la traduction
+    const result = await translationService.translateText({
       text, 
-      targetLang,
-      sourceLang, 
-      { forceRefresh: true, preferredModel: modelType }
-    );
+      targetLanguage: targetLang,
+      sourceLanguage: sourceLang || 'auto',
+      model: 'premium'
+    });
     
-    const translatedText = result.translatedText;
+    const translatedText = result?.translatedText;
     
     // Mettre en cache le résultat
     if (translatedText && translatedText !== text) {
@@ -173,19 +173,18 @@ export async function translateMessage(
   } catch (error) {
     console.error('❌ Erreur de traduction:', error);
     
-    // En cas d'erreur, essayer de charger automatiquement un modèle de base
+    // En cas d'erreur, essayer avec un modèle de base
     try {
-      console.log('🔄 Tentative de chargement automatique d\'un modèle...');
-      const modelType = translationService.getLoadedModels().pop() || 'NLLB_DISTILLED_600M';
+      console.log('🔄 Tentative de traduction avec un modèle de base...');
       
-      const result = await translationService.translate(
+      const result = await translationService.translateText({
         text,
-        targetLang,
-        sourceLang,
-        { forceRefresh: true, preferredModel: modelType }
-      );
+        targetLanguage: targetLang,
+        sourceLanguage: sourceLang || 'auto',
+        model: 'basic'
+      });
       
-      const translatedText = result.translatedText;
+      const translatedText = result?.translatedText;
       
       // Mettre en cache le résultat
       if (translatedText && translatedText !== text) {
@@ -196,7 +195,7 @@ export async function translateMessage(
       return translatedText;
     } catch (fallbackError) {
       console.error('❌ Échec de la traduction de secours:', fallbackError);
-      throw new Error('Aucun modèle de traduction disponible');
+      throw new Error('Service de traduction indisponible');
     }
   }
 }

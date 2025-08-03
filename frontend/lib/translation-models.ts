@@ -271,8 +271,13 @@ class TranslationModelsManager {
       throw new Error(`Modèle non supporté: ${modelType}`);
     }
     
-    const result = await translationService.translate(text, targetLanguage, sourceLanguage, {forceRefresh: true, preferredModel: hfModelType});
-    return result.translatedText;
+    const result = await translationService.translateText({
+      text,
+      targetLanguage,
+      sourceLanguage: sourceLanguage || 'auto',
+      model: 'premium'
+    });
+    return result?.translatedText || text;
   }
 
   /**
