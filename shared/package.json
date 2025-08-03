@@ -1,0 +1,34 @@
+{
+  "name": "@meeshy/shared",
+  "version": "1.0.0",
+  "description": "Shared types, schemas, and protocols for Meeshy microservices",
+  "main": "generated/index.js",
+  "types": "generated/index.d.ts",
+  "exports": {
+    ".": "./generated/index.js",
+    "./prisma": "./generated/prisma/index.js",
+    "./proto": "./proto/index.js"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio",
+    "seed": "tsx prisma/seed.ts",
+    "build": "pnpm run generate",
+    "clean": "rm -rf generated/ node_modules/",
+    "proto:compile": "protoc --js_out=import_style=commonjs,binary:./proto/generated --ts_out=./proto/generated proto/*.proto"
+  },
+  "dependencies": {
+    "@prisma/client": "6.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "prisma": "6.13.0",
+    "tsx": "^4.7.1"
+  },
+  "files": [
+    "generated/",
+    "proto/",
+    "prisma/schema.prisma"
+  ]
+}
