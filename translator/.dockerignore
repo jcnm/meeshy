@@ -1,0 +1,12 @@
+# Translator specific .dockerignore
+# Allow models to be copied for this service
+!models/
+node_modules/
+.env*
+*.log
+.DS_Store
+.git/
+.github/
+.vscode/
+*.md
+!README.md
