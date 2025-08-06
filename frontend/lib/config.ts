@@ -240,3 +240,17 @@ export const API_ENDPOINTS = {
 export const buildApiUrl = (endpoint: string): string => {
   return `${APP_CONFIG.getBackendUrl()}${endpoint}`;
 };
+
+// Helper pour construire une URL WebSocket
+export const getWebSocketUrl = (): string => {
+  const backendUrl = APP_CONFIG.getBackendUrl();
+  // Convertir HTTP/HTTPS en WS/WSS
+  return backendUrl.replace(/^https?:\/\//, (match) => 
+    match === 'https://' ? 'wss://' : 'ws://'
+  );
+};
+
+// Helper pour construire une URL WebSocket complète avec path
+export const buildWebSocketUrl = (path = '/ws'): string => {
+  return `${getWebSocketUrl()}${path}`;
+};

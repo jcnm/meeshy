@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Languages, Zap, Globe, Brain } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { buildWebSocketUrl, buildApiUrl } from '@/lib/config';
 
 interface TranslationResult {
   translated_text: string;
@@ -46,21 +47,21 @@ const getModelInfo = (tier: string) => {
   switch (tier) {
     case 'basic':
       return {
-        name: 'Basic (M2M100-418M)',
+        name: 'Basic (T5-Small)',
         color: 'bg-green-100 text-green-800',
         icon: <Zap className="w-3 h-3" />,
         description: '< 20 caractères - Rapide'
       };
     case 'medium':
       return {
-        name: 'Medium (M2M100-1.2B)',
+        name: 'Medium (NLLB-600M)',
         color: 'bg-blue-100 text-blue-800',
         icon: <Globe className="w-3 h-3" />,
         description: '20-100 caractères - Équilibré'
       };
     case 'premium':
       return {
-        name: 'Premium (NLLB-200-3.3B)',
+        name: 'Premium (NLLB-1.3B)',
         color: 'bg-purple-100 text-purple-800',
         icon: <Brain className="w-3 h-3" />,
         description: '> 100 caractères - Précis'
@@ -125,42 +126,61 @@ export default function DemoTranslationPage() {
     }
 
     setWsStatus('connecting');
-    const ws = new WebSocket('ws://localhost:3000/ws');
+    // Utiliser la fonction utilitaire pour l'URL WebSocket
+    const wsUrl = buildWebSocketUrl('/ws');
+    console.log('🔌 Tentative de connexion WebSocket à:', wsUrl);
+    const ws = new WebSocket(wsUrl);
     
     ws.onopen = () => {
-      console.log('WebSocket connecté');
+      console.log('✅ WebSocket connecté à', wsUrl);
       setWsStatus('connected');
       setWebsocket(ws);
     };
 
     ws.onmessage = (event) => {
-      const data: WebSocketTranslation = JSON.parse(event.data);
-      console.log('Message WebSocket reçu:', data);
-      
-      if (data.type === 'translation') {
-        setResult({
-          translated_text: data.translatedText || '',
-          source_language: data.sourceLanguage,
-          target_language: data.targetLanguage,
-          original_text: data.originalText,
-          confidence: data.confidence || 0,
-          timestamp: new Date().toISOString()
-        });
-        setIsTranslating(false);
-      } else if (data.type === 'error') {
-        setError(data.error || 'Erreur de traduction');
-        setIsTranslating(false);
+      console.log('📥 Message WebSocket brut reçu:', event.data);
+      try {
+        const data: WebSocketTranslation = JSON.parse(event.data);
+        console.log('📦 Message WebSocket parsé:', data);
+        
+        if (data.type === 'translation') {
+          // Ignorer les messages de bienvenue
+          if (data.messageId === 'welcome') {
+            console.log('👋 Message de bienvenue ignoré:', data.translatedText);
+            return;
+          }
+          
+          setResult({
+            translated_text: data.translatedText || '',
+            source_language: data.sourceLanguage,
+            target_language: data.targetLanguage,
+            original_text: data.originalText,
+            confidence: data.confidence || 0,
+            timestamp: new Date().toISOString()
+          });
+          setIsTranslating(false);
+        } else if (data.type === 'error') {
+          console.error('❌ Erreur WebSocket:', data.error);
+          setError(data.error || 'Erreur de traduction');
+          setIsTranslating(false);
+        } else if (data.type === 'connection') {
+          console.log('🔗 Message de connexion WebSocket:', data.messageId);
+        } else {
+          console.log('ℹ️ Message WebSocket non géré:', data.type);
+        }
+      } catch (parseError) {
+        console.error('❌ Erreur parsing message WebSocket:', parseError, 'Data:', event.data);
       }
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket fermé');
+    ws.onclose = (event) => {
+      console.log('🔌 WebSocket fermé. Code:', event.code, 'Raison:', event.reason);
       setWsStatus('disconnected');
       setWebsocket(null);
     };
 
     ws.onerror = (error) => {
-      console.error('Erreur WebSocket:', error);
+      console.error('❌ Erreur WebSocket:', error);
       setWsStatus('disconnected');
       setError('Erreur de connexion WebSocket');
       setIsTranslating(false);
@@ -174,8 +194,11 @@ export default function DemoTranslationPage() {
     setError(null);
     setResult(null);
 
+    // Déterminer le type de modèle basé sur la longueur du texte
+    const predictedModelType = getPredictedModel(text.trim().length);
+
     try {
-      const response = await fetch('http://localhost:3000/api/translate', {
+      const response = await fetch(buildApiUrl('/api/translate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,6 +207,7 @@ export default function DemoTranslationPage() {
           text: text.trim(),
           source_language: sourceLanguage === 'auto' ? 'fr' : sourceLanguage, // Fallback pour auto-detect
           target_language: targetLanguage,
+          model_type: predictedModelType, // Ajouter le type de modèle
         }),
       });
 
@@ -212,14 +236,19 @@ export default function DemoTranslationPage() {
     setError(null);
     setResult(null);
 
+    // Déterminer le type de modèle basé sur la longueur du texte
+    const predictedModelType = getPredictedModel(text.trim().length);
+
     const message = {
       type: 'translate',
       messageId: `demo-${Date.now()}`,
       text: text.trim(),
       sourceLanguage: sourceLanguage === 'auto' ? 'fr' : sourceLanguage,
       targetLanguage: targetLanguage,
+      modelType: predictedModelType, // Ajouter le type de modèle
     };
 
+    console.log('📤 Envoi message WebSocket:', message);
     websocket.send(JSON.stringify(message));
   };
 
