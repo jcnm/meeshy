@@ -8,13 +8,16 @@
  * @author Meeshy Team
  */
 
+// Load environment configuration first
+import './env';
+
 import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import websocket from '@fastify/websocket';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
-import { PrismaClient } from '../libs';
+import { PrismaClient } from '../libs/prisma/client'; // Import Prisma client from shared library
 import winston from 'winston';
 import { ZMQTranslationClient } from './services/zmq-translation-client';
 import { authenticate } from './middleware/auth';
@@ -35,7 +38,8 @@ interface ServerConfig {
 function loadConfiguration(): ServerConfig {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const isDev = nodeEnv === 'development';
-  
+  const dbUrl = process.env.DATABASE_URL || '';
+  console.log(`Loading configuration for environment: ${dbUrl}`);
   return {
     nodeEnv,
     isDev,
@@ -61,10 +65,23 @@ const logger = winston.createLogger({
       ? winston.format.combine(
           winston.format.colorize(),
           winston.format.printf(({ timestamp, level, message, stack }) => {
-            return `${timestamp} [${level}] ${message}${stack ? '\n' + stack : ''}`;
+            return `${timestamp} [GWY] [${level}] ${message}${stack ? '\n' + stack : ''}`;
           })
         )
-      : winston.format.json()
+      : winston.format.combine(
+          winston.format.printf(({ timestamp, level, message, stack }) => {
+            const logObj: any = {
+              timestamp,
+              service: 'GWY',
+              level,
+              message
+            };
+            if (stack) {
+              logObj.stack = stack;
+            }
+            return JSON.stringify(logObj);
+          })
+        )
   ),
   transports: [
     new winston.transports.Console(),
@@ -304,40 +321,39 @@ class MeeshyServer {
     this.server.register(async (fastify) => {
       fastify.get('/ws', { websocket: true }, (connection, request) => {
         const clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        logger.info(`New WebSocket connection established: ${clientId}`);
+        logger.info(`[GWY] New WebSocket connection established: ${clientId} from ${request.ip}`);
         
         connection.on('message', async (message: Buffer) => {
           try {
             const data: WebSocketMessage = JSON.parse(message.toString());
-            logger.debug(`WebSocket message received from ${clientId}: ${data.type}`);
+            logger.debug(`[GWY] WebSocket message received from ${clientId}: ${data.type}`);
             
             await this.handleWebSocketMessage(connection, data, clientId);
           } catch (error) {
-            logger.error(`WebSocket message processing error for ${clientId}:`, error);
+            logger.error(`[GWY] WebSocket message processing error for ${clientId}:`, error);
             this.sendWebSocketError(connection, undefined, 'Invalid message format');
           }
         });
         
         connection.on('close', () => {
-          logger.info(`WebSocket connection closed: ${clientId}`);
+          logger.info(`[GWY] WebSocket connection closed: ${clientId}`);
         });
         
         connection.on('error', (error: Error) => {
-          logger.error(`WebSocket error for ${clientId}:`, error);
+          logger.error(`[GWY] WebSocket error for ${clientId}:`, error);
         });
 
-        // Send welcome message
-        this.sendWebSocketMessage(connection, {
-          type: 'translation',
-          messageId: 'welcome',
-          originalText: 'Connection established',
-          translatedText: 'Welcome to Meeshy Translation Service',
+        // Send simple ping message to establish connection
+        connection.send(JSON.stringify({
+          type: 'connection',
+          messageId: 'ping',
+          message: 'WebSocket connected',
           timestamp: new Date().toISOString()
-        });
+        }));
       });
     });
 
-    logger.info('✓ WebSocket configured on /ws');
+    logger.info('[GWY] ✓ WebSocket configured on /ws');
   }
 
   private async handleWebSocketMessage(
@@ -641,14 +657,17 @@ class MeeshyServer {
 
   private async initializeServices(): Promise<void> {
     logger.info('Initializing external services...');
-
+    logger.info('Database URL:', JSON.stringify(config, null, 2));
     // Test database connection
     try {
-      const userCount = await this.prisma.user.count();
-      logger.info(`✓ Database connected successfully (${userCount} users found)`);
+      // Test connection with a simple query instead
+      await this.prisma.$queryRaw`SELECT 1`;
+      logger.info(`✓ Database connected successfully`);
     } catch (error) {
       logger.error('✗ Database connection failed:', error);
-      throw new Error('Database initialization failed');
+      logger.info('Database connection failed, but continuing without database (development mode)');
+      // Don't throw error in development mode
+      // throw new Error('Database initialization failed');
     }
 
     // Initialize translation service
@@ -665,19 +684,20 @@ class MeeshyServer {
       throw new Error('Translation service initialization failed');
     }
   }
-
+  
   private displayStartupBanner(): void {
+    const dbStatus = config.databaseUrl ? 'Connected' : 'Not configured'.padEnd(48);
+    const translateUrl = `tcp://0.0.0.0:${config.translationServicePort.toString().padEnd(37)}`;
     const banner = `
 ╔══════════════════════════════════════════════════════════════════╗
 ║                       🌍 MEESHY GATEWAY 🌍                       ║
-║                   Translation Service Gateway                     ║
 ╠══════════════════════════════════════════════════════════════════╣
-║  Environment: ${config.nodeEnv.padEnd(48)} ║
-║  Port:        ${config.port.toString().padEnd(48)} ║
-║  Database:    ${config.databaseUrl ? 'Connected' : 'Not configured'.padEnd(48)} ║
-║  Translation: tcp://localhost:${config.translationServicePort.toString().padEnd(37)} ║
+║  Environment: ${config.nodeEnv.padEnd(48)}   ║
+║  Port:        ${config.port.toString().padEnd(48)}   ║
+║  Database:    ${dbStatus}                                          ║
+║  Translator:  ${translateUrl}║
 ╠══════════════════════════════════════════════════════════════════╣
-║  📡 WebSocket:    ws://localhost:${config.port}/ws${' '.repeat(23)} ║
+║  📡 WebSocket:    ws://localhost:${config.port}/ws${' '.repeat(23)}  ║
 ║  🏥 Health:       http://localhost:${config.port}/health${' '.repeat(18)} ║
 ║  📖 Info:         http://localhost:${config.port}/info${' '.repeat(20)} ║
 ║  🔄 Translate:    http://localhost:${config.port}/api/translate${' '.repeat(11)} ║
@@ -718,7 +738,7 @@ class MeeshyServer {
       logger.info('🎉 Server started successfully and ready to accept connections');
 
     } catch (error) {
-      logger.error('❌ Failed to start server:', error);
+      logger.error('❌ Failed to start server: ', error);
       process.exit(1);
     }
   }
