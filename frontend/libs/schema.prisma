@@ -1,7 +1,8 @@
 // Schéma Prisma partagé entre Fastify et FastAPI
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated"
+  output   = "./prisma/client" // Chemin vers le client Prisma généré
+  
 }
 
 datasource db {
@@ -10,109 +11,109 @@ datasource db {
 }
 
 model User {
-  id                          String    @id @default(cuid())
-  username                    String    @unique
+  id                          String   @id @default(cuid())
+  username                    String   @unique
   firstName                   String
   lastName                    String
-  email                       String    @unique
-  phoneNumber                 String?   @unique
+  email                       String   @unique
+  phoneNumber                 String?  @unique
   password                    String
   displayName                 String?
   avatar                      String?
-  isOnline                    Boolean   @default(false)
-  lastSeen                    DateTime  @default(now())
-  lastActiveAt                DateTime  @default(now())
-  systemLanguage              String    @default("fr")
-  regionalLanguage            String    @default("fr")
+  isOnline                    Boolean  @default(false)
+  lastSeen                    DateTime @default(now())
+  lastActiveAt                DateTime @default(now())
+  systemLanguage              String   @default("fr")
+  regionalLanguage            String   @default("fr")
   customDestinationLanguage   String?
-  autoTranslateEnabled        Boolean   @default(true)
-  translateToSystemLanguage   Boolean   @default(true)
-  translateToRegionalLanguage Boolean   @default(false)
-  useCustomDestination        Boolean   @default(false)
-  role                        String    @default("USER") // USER, ADMIN, MODO, AUDIT, ANALYST, BIGBOSS
-  isActive                    Boolean   @default(true)
+  autoTranslateEnabled        Boolean  @default(true)
+  translateToSystemLanguage   Boolean  @default(true)
+  translateToRegionalLanguage Boolean  @default(false)
+  useCustomDestination        Boolean  @default(false)
+  role                        String   @default("USER") // USER, ADMIN, MODO, AUDIT, ANALYST, BIGBOSS
+  isActive                    Boolean  @default(true)
   deactivatedAt               DateTime?
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
 
   // Relations
-  sentMessages            Message[]                @relation("MessageSender")
-  conversations           ConversationMember[]
-  groupMemberships        GroupMember[]
-  createdGroups           Group[]                  @relation("GroupCreator")
-  adminGroups             Group[]                  @relation("GroupAdmins")
-  moderatorGroups         Group[]                  @relation("GroupModerators")
-  sentFriendRequests      FriendRequest[]          @relation("FriendRequestSender")
-  receivedFriendRequests  FriendRequest[]          @relation("FriendRequestReceiver")
-  typingIndicators        TypingIndicator[]
-  messageReadStatus       MessageReadStatus[]
-  notifications           Notification[]
-  createdShareLinks       ConversationShareLink[]  @relation("ShareLinkCreator")
-  stats                   UserStats?
-  preferences             UserPreference[]
-  conversationPreferences ConversationPreference[]
+  sentMessages                Message[]           @relation("MessageSender")
+  conversations               ConversationMember[]
+  groupMemberships           GroupMember[]
+  createdGroups              Group[]             @relation("GroupCreator")
+  adminGroups                Group[]             @relation("GroupAdmins")
+  moderatorGroups            Group[]             @relation("GroupModerators")
+  sentFriendRequests         FriendRequest[]     @relation("FriendRequestSender")
+  receivedFriendRequests     FriendRequest[]     @relation("FriendRequestReceiver")
+  typingIndicators           TypingIndicator[]
+  messageReadStatus          MessageReadStatus[]
+  notifications              Notification[]
+  createdShareLinks          ConversationShareLink[] @relation("ShareLinkCreator")
+  stats                      UserStats?
+  preferences                UserPreference[]
+  conversationPreferences    ConversationPreference[]
 
   @@map("users")
 }
 
 model Conversation {
-  id            String   @id @default(cuid())
-  type          String // "direct" or "group"
-  title         String? // Pour les conversations de groupe
-  description   String?
-  avatar        String?
-  groupId       String? // Référence au groupe si c'est une conversation de groupe
-  isActive      Boolean  @default(true)
-  isArchived    Boolean  @default(false)
-  lastMessageAt DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(cuid())
+  type            String   // "direct" or "group"
+  title           String?  // Pour les conversations de groupe
+  description     String?
+  avatar          String?
+  groupId         String?  // Référence au groupe si c'est une conversation de groupe
+  isActive        Boolean  @default(true)
+  isArchived      Boolean  @default(false)
+  lastMessageAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  group            Group?                   @relation(fields: [groupId], references: [id])
-  members          ConversationMember[]
-  messages         Message[]
+  group           Group?                     @relation(fields: [groupId], references: [id])
+  members         ConversationMember[]
+  messages        Message[]
   typingIndicators TypingIndicator[]
-  shareLinks       ConversationShareLink[]
-  preferences      ConversationPreference[]
+  shareLinks      ConversationShareLink[]
+  preferences     ConversationPreference[]
 
   @@map("conversations")
 }
 
 model ConversationMember {
-  id             String    @id @default(cuid())
-  conversationId String
-  userId         String
-  role           String    @default("member") // "admin", "moderator", "member"
-  joinedAt       DateTime  @default(now())
-  leftAt         DateTime?
-  isActive       Boolean   @default(true)
+  id               String   @id @default(cuid())
+  conversationId   String
+  userId           String
+  role             String   @default("member") // "admin", "moderator", "member"
+  joinedAt         DateTime @default(now())
+  leftAt           DateTime?
+  isActive         Boolean  @default(true)
 
   // Relations
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@map("conversation_members")
 }
 
 model ConversationShareLink {
-  id             String    @id @default(cuid())
-  linkId         String    @unique
+  id             String   @id @default(cuid())
+  linkId         String   @unique
   conversationId String
   createdBy      String
   name           String?
   description    String?
   maxUses        Int?
-  currentUses    Int       @default(0)
+  currentUses    Int      @default(0)
   expiresAt      DateTime?
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  creator      User         @relation("ShareLinkCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  creator        User         @relation("ShareLinkCreator", fields: [createdBy], references: [id], onDelete: Cascade)
 
   @@map("conversation_share_links")
 }
@@ -130,10 +131,10 @@ model Group {
 
   // Relations
   conversations Conversation[] // Un groupe peut avoir plusieurs conversations
-  createdBy     User           @relation("GroupCreator", fields: [createdById], references: [id])
+  createdBy     User          @relation("GroupCreator", fields: [createdById], references: [id])
   members       GroupMember[]
-  admins        User[]         @relation("GroupAdmins")
-  moderators    User[]         @relation("GroupModerators")
+  admins        User[]        @relation("GroupAdmins")
+  moderators    User[]        @relation("GroupModerators")
 
   @@map("groups")
 }
@@ -146,8 +147,8 @@ model GroupMember {
   joinedAt DateTime @default(now())
 
   // Relations
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@map("group_members")
@@ -169,12 +170,12 @@ model Message {
   updatedAt        DateTime  @updatedAt
 
   // Relations - Lecture seule pour Fastify
-  conversation Conversation         @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       User                 @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  replyTo      Message?             @relation("MessageReplies", fields: [replyToId], references: [id])
-  replies      Message[]            @relation("MessageReplies")
-  translations MessageTranslation[]
-  readStatus   MessageReadStatus[]
+  conversation     Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender           User                @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  replyTo          Message?            @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies          Message[]           @relation("MessageReplies")
+  translations     MessageTranslation[]
+  readStatus       MessageReadStatus[]
 
   @@map("messages")
 }
@@ -185,12 +186,12 @@ model MessageTranslation {
   sourceLanguage    String
   targetLanguage    String
   translatedContent String
-  translationModel  String // "mt5" ou "nllb"
+  translationModel  String   // "mt5" ou "nllb"
   cacheKey          String   @unique
   createdAt         DateTime @default(now())
 
   // Relations
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  message           Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, targetLanguage])
   @@map("message_translations")
@@ -203,8 +204,8 @@ model MessageReadStatus {
   readAt    DateTime @default(now())
 
   // Relations
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
   @@map("message_read_status")
@@ -219,8 +220,8 @@ model FriendRequest {
   updatedAt  DateTime @updatedAt
 
   // Relations
-  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
   @@map("friend_requests")
@@ -235,26 +236,26 @@ model TypingIndicator {
   updatedAt      DateTime @updatedAt
 
   // Relations
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@map("typing_indicators")
 }
 
 model Notification {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
-  type      String // "message", "friend_request", "group_invite", etc.
+  type      String   // "message", "friend_request", "group_invite", etc.
   title     String
   content   String
-  data      String? // JSON data
-  isRead    Boolean   @default(false)
+  data      String?  // JSON data
+  isRead    Boolean  @default(false)
   expiresAt DateTime?
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }

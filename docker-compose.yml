@@ -1,5 +1,4 @@
 # Meeshy - Production Docker Compose for Microservices Architecture
-version: '3.8'
 
 services:
   # ===== DATABASE =====

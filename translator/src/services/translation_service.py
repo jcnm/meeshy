@@ -87,6 +87,24 @@ class TranslationService:
         # Thread safety
         self._model_lock = threading.Lock()
     
+    def _get_language_name(self, language_code: str) -> str:
+        """Convertit un code de langue en nom lisible pour T5"""
+        language_names = {
+            'fr': 'French',
+            'en': 'English', 
+            'es': 'Spanish',
+            'de': 'German',
+            'pt': 'Portuguese',
+            'zh': 'Chinese',
+            'ja': 'Japanese',
+            'ar': 'Arabic',
+            'it': 'Italian',
+            'ru': 'Russian',
+            'ko': 'Korean',
+            'nl': 'Dutch'
+        }
+        return language_names.get(language_code, language_code.capitalize())
+    
     async def initialize(self):
         """Initialise le service de traduction"""
         logger.info("🤖 Démarrage du service de traduction ML...")
@@ -568,8 +586,10 @@ class TranslationService:
                 logger.info(f"   📤 NLLB résultat pipeline: '{translated_text}'")
             
             elif config["type"] == "t5":
-                # Format T5 avec instruction explicite incluant les langues
-                simple_instruction = f"translate English to French: {text}"
+                # Format T5 avec instruction explicite dynamique
+                source_name = self._get_language_name(source_language)
+                target_name = self._get_language_name(target_language)
+                simple_instruction = f"translate {source_name} to {target_name}: {text}"
                 logger.info(f"   📝 Instruction T5 explicite: '{simple_instruction}'")
                 
                 # Paramètres spécifiques pour T5 text generation
@@ -599,8 +619,12 @@ class TranslationService:
                 translated_text = translated_text.strip()
                 
                 # Si T5 retourne l'instruction + résultat, extraire seulement la traduction
-                if "translate English to French:" in translated_text:
-                    parts = translated_text.split("translate English to French:", 1)
+                source_name = self._get_language_name(source_language)
+                target_name = self._get_language_name(target_language)
+                instruction_prefix = f"translate {source_name} to {target_name}:"
+                
+                if instruction_prefix in translated_text:
+                    parts = translated_text.split(instruction_prefix, 1)
                     if len(parts) > 1:
                         translated_text = parts[1].strip()
                 

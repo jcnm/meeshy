@@ -38,7 +38,7 @@ RUN mkdir -p logs cache models src proto && \
 
 # Copy application code and models with correct ownership
 COPY --chown=translator:translator translator/src/ ./src/
-COPY --chown=translator:translator translator/main_clean.py ./main.py
+COPY --chown=translator:translator translator/main.py ./main.py
 COPY --chown=translator:translator translator/models/ ./models/
 COPY --chown=translator:translator shared/proto/ ./proto/
 

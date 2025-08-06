@@ -4,7 +4,7 @@
  */
 
 import { FastifyRequest } from 'fastify';
-import { PrismaClient } from '../../libs';
+import { PrismaClient } from '../../libs/prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { logger } from '../utils/logger';

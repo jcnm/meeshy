@@ -4,7 +4,7 @@
  */
 
 import { FastifyInstance } from 'fastify';
-import { PrismaClient } from '../../libs';
+import { PrismaClient } from '../../libs/prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { logger } from '../utils/logger';
@@ -12,6 +12,14 @@ import { ZMQTranslationClient } from '../services/zmq-translation-client';
 
 // Instance globale du client ZMQ
 let zmqTranslationClient: ZMQTranslationClient | null = null;
+
+// Helper function to predict model type based on text length
+function getPredictedModelType(text: string): 'basic' | 'medium' | 'premium' {
+  const length = text.length;
+  if (length < 20) return 'basic';
+  if (length <= 100) return 'medium';
+  return 'premium';
+}
 
 // Initialiser le client ZMQ
 async function getZMQClient(): Promise<ZMQTranslationClient> {
@@ -364,12 +372,14 @@ export class MeeshyWebSocketManager {
         throw new Error('Message non trouvé');
       }
 
-      // Effectuer la traduction
+      // Effectuer la traduction avec détermination automatique du modèle
       const client = await getZMQClient();
+      const predictedModelType = getPredictedModelType(message.content);
       const translationResult = await client.translateToMultipleLanguages(
         message.content,
         sourceLanguage || 'auto',
-        targetLanguages
+        targetLanguages,
+        predictedModelType
       );
 
       if (!translationResult || translationResult.length === 0) {
@@ -426,12 +436,14 @@ export class MeeshyWebSocketManager {
 
       logger.info(`🤖 Traduction automatique pour message ${messageId}`);
 
-      // Effectuer la traduction
+      // Effectuer la traduction avec détermination automatique du modèle
       const client = await getZMQClient();
+      const predictedModelType = getPredictedModelType(content);
       const translationResult = await client.translateToMultipleLanguages(
         content,
         'auto',
-        targetLanguages
+        targetLanguages,
+        predictedModelType
       );
 
       if (!translationResult || translationResult.length === 0) {

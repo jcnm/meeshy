@@ -22,7 +22,7 @@ log_dir = current_dir / "logs"
 log_dir.mkdir(exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format='%(asctime)s [TRA] [%(levelname)s] %(name)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
         logging.FileHandler(log_dir / 'translation_service.log')

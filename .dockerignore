@@ -152,6 +152,10 @@ venv/
 .env
 pip-log.txt
 pip-delete-this-directory.txt
+translator/venv/
+translator/.venv/
+translator/__pycache__/
+translator/env/
 
 # Database
 *.db

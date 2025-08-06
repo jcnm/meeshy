@@ -13,6 +13,7 @@ interface TranslationRequest {
   text: string;
   sourceLanguage: string;
   targetLanguage: string;
+  modelType?: string; // Ajouter le type de modèle
 }
 
 interface TranslationResponse {
@@ -87,7 +88,7 @@ export class ZMQTranslationClient {
         text: request.text,
         sourceLanguage: request.sourceLanguage,
         targetLanguage: request.targetLanguage,
-        modelType: 'basic' // Ajouter le type de modèle
+        modelType: request.modelType || 'basic' // Utiliser le modelType de la requête
       };
       
       console.log(`   📦 Requête JSON créée:`, jsonRequest);
@@ -147,8 +148,12 @@ export class ZMQTranslationClient {
   async translateToMultipleLanguages(
     text: string, 
     sourceLanguage: string, 
-    targetLanguages: string[]
+    targetLanguages: string[],
+    modelType?: 'basic' | 'medium' | 'premium'
   ): Promise<TranslationResponse[]> {
+    // Auto-determine model type if not provided
+    const effectiveModelType = modelType || this.getPredictedModelType(text);
+    
     const results: TranslationResponse[] = [];
     
     for (const targetLang of targetLanguages) {
@@ -157,7 +162,8 @@ export class ZMQTranslationClient {
           messageId: randomUUID(),
           text,
           sourceLanguage,
-          targetLanguage: targetLang
+          targetLanguage: targetLang,
+          modelType: effectiveModelType
         });
         results.push(result);
       } catch (error) {
@@ -194,6 +200,14 @@ export class ZMQTranslationClient {
       console.error('❌ Health check ZMQ échoué:', error);
       return false;
     }
+  }
+  
+  // Helper method to predict model type based on text length
+  getPredictedModelType(text: string): 'basic' | 'medium' | 'premium' {
+    const length = text.length;
+    if (length < 20) return 'basic';
+    if (length <= 100) return 'medium';
+    return 'premium';
   }
   
   async close(): Promise<void> {

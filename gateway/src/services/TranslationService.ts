@@ -3,7 +3,7 @@
  * Gère les traductions de messages avec cache et détection de langue
  */
 
-import { PrismaClient } from '../../libs';
+import { PrismaClient } from '../../libs/prisma/client';
 import { GrpcClient } from '../grpc/client';
 
 export interface TranslationRequest {

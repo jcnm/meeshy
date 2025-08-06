@@ -3,7 +3,7 @@
  * Crée des utilisateurs de test avec différents rôles et configurations linguistiques
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './prisma/client';
 
 const prisma = new PrismaClient();
 

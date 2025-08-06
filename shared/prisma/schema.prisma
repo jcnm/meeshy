@@ -1,7 +1,8 @@
 // Schéma Prisma partagé entre Fastify et FastAPI
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated"
+  output   = "./prisma/client" // Chemin vers le client Prisma généré
+  
 }
 
 datasource db {

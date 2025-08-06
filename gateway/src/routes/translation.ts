@@ -8,14 +8,14 @@ const TranslateRequestSchema = z.object({
   text: z.string().min(1).max(1000),
   source_language: z.string().min(2).max(5).optional(),
   target_language: z.string().min(2).max(5),
-  model_tier: z.enum(['basic', 'medium', 'premium']).optional().default('basic')
+  model_type: z.enum(['basic', 'medium', 'premium']).optional() // Optional car on peut le prédire automatiquement
 });
 
 interface TranslateRequest {
   text: string;
   sourceLanguage?: string;
   targetLanguage: string;
-  modelTier?: 'basic' | 'medium' | 'premium';
+  modelType?: 'basic' | 'medium' | 'premium';
 }
 
 interface TranslationResult {
@@ -28,6 +28,13 @@ interface TranslationResult {
   processing_time: number;
   from_cache: boolean;
   cache_key?: string;
+}
+
+// Fonction pour prédire le type de modèle selon la taille du texte
+function getPredictedModelType(textLength: number): 'basic' | 'medium' | 'premium' {
+  if (textLength < 20) return 'basic';
+  if (textLength <= 100) return 'medium';
+  return 'premium';
 }
 
 // Instance globale du client ZMQ
@@ -50,17 +57,23 @@ async function callZMQTranslationService(
   text: string,
   sourceLanguage: string | undefined,
   targetLanguage: string,
-  modelTier: string = 'basic'
+  modelType: string = 'basic'
 ): Promise<TranslationResult> {
   
   try {
     const client = await getZMQClient();
     
+    // Déterminer le type de modèle automatiquement si non spécifié ou si 'basic'
+    const finalModelType = modelType === 'basic' ? getPredictedModelType(text.length) : modelType;
+    
+    console.log(`🎯 Modèle sélectionné: ${finalModelType} (texte: ${text.length} caractères, demandé: ${modelType})`);
+    
     const request = {
       messageId: randomUUID(),
       text: text,
       sourceLanguage: sourceLanguage || 'auto',
-      targetLanguage: targetLanguage
+      targetLanguage: targetLanguage,
+      modelType: finalModelType // Utiliser le modèle déterminé
     };
 
     const response = await client.translateText(request);
@@ -71,7 +84,7 @@ async function callZMQTranslationService(
       source_language: response.detectedSourceLanguage,
       target_language: targetLanguage,
       original_text: text,
-      model_used: response.metadata?.modelUsed || modelTier,
+      model_used: response.metadata?.modelUsed || finalModelType,
       confidence: response.metadata?.confidenceScore || 0.8,
       processing_time: 0, // Sera calculé par la route
       from_cache: response.metadata?.fromCache || false,
@@ -110,7 +123,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
         validatedData.text,
         validatedData.source_language,
         validatedData.target_language,
-        validatedData.model_tier
+        validatedData.model_type || 'basic'
       );
 
       const processingTime = (Date.now() - startTime) / 1000;

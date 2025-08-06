@@ -3,7 +3,7 @@
  * Gestion complète des fonctionnalités temps réel avec authentification
  */
 
-import { User, Message, Conversation, MessageTranslation } from '../../libs';
+import { User, Message, Conversation, MessageTranslation } from '../../libs/prisma/client';
 
 // Types de base pour les événements WebSocket
 export interface WebSocketUser {
