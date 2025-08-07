@@ -7,4 +7,6 @@ export { CompleteUserSettings } from './complete-user-settings';
 export { NotificationSettings } from './notification-settings';
 export { PrivacySettings } from './privacy-settings';
 export { ThemeSettings } from './theme-settings';
+export { FontSelector } from './font-selector';
+export { FontPreview } from './font-preview';
 export { ConfigModal } from './config-modal';

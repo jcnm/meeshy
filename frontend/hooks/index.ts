@@ -11,6 +11,7 @@ export { useTranslation } from './use-translation';
 export { useNotifications } from './use-notifications';
 export { useOnlinePresence } from './use-online-presence';
 export { useUserPreferences } from './use-user-preferences';
+export { useFontPreference } from './use-font-preference';
 
 // Statut des modèles
 export { useModelStatus } from './useModelStatus';

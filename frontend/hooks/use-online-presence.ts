@@ -23,6 +23,11 @@ export const useOnlinePresence = (): UseOnlinePresenceReturn => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   const connectToPresence = useCallback((token: string) => {
+    // Ne pas se connecter pendant le build SSR
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     if (socket?.connected) return;
 
     const newSocket = io(APP_CONFIG.getBackendUrl(), {

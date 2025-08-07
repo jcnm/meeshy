@@ -52,6 +52,11 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
 
   // Configuration de l'utilisateur actuel
   useEffect(() => {
+    // Ne pas configurer pendant le build SSR
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     if (currentUser) {
       messagingService.setCurrentUser(currentUser);
       console.log('🔧 useMessaging: Utilisateur configuré', { userId: currentUser.id, username: currentUser.username });
@@ -60,6 +65,11 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
 
   // Rejoindre/quitter la conversation
   useEffect(() => {
+    // Ne pas se connecter pendant le build SSR
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     if (conversationId) {
       console.log('🚪 useMessaging: Rejoindre conversation', { conversationId });
       messagingService.joinConversation(conversationId);
@@ -73,6 +83,11 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
 
   // Setup des listeners
   useEffect(() => {
+    // Ne pas configurer les listeners pendant le build SSR
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     console.log('🎧 useMessaging: Installation des listeners');
     
     const unsubscribeMessage = messagingService.onNewMessage((message) => {

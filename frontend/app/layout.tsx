@@ -1,20 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppProvider } from "@/context/AppContext";
 import { ErrorBoundary } from "@/components/common";
+import { FontInitializer } from "@/components/common/font-initializer";
+import { ClientOnly } from "@/components/common/client-only";
+import { getAllFontVariables } from "@/lib/fonts";
 // import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Meeshy - Messagerie avec traduction automatique",
@@ -29,10 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${getAllFontVariables()} antialiased font-nunito`}
       >
         <AppProvider>
           <ErrorBoundary>
+            <ClientOnly>
+              <FontInitializer />
+            </ClientOnly>
             {children}
           </ErrorBoundary>
         </AppProvider>

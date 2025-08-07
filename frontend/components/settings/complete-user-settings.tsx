@@ -9,12 +9,14 @@ import {
   User as UserIcon, 
   Palette, 
   BarChart3,
-  Brain
+  Brain,
+  Type
 } from 'lucide-react';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
 import { ModelsSettings } from './models-settings';
 import { ThemeSettings } from './theme-settings';
+import { FontSelector } from './font-selector';
 import { TranslationStats } from '@/components/translation/translation-stats';
 
 interface CompleteUserSettingsProps {
@@ -29,7 +31,7 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
   // Gérer l'ancrage URL pour les tabs
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['user', 'translation', 'models', 'theme', 'notifications', 'stats'].includes(hash)) {
+    if (hash && ['user', 'translation', 'models', 'theme', 'fonts', 'notifications', 'stats'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -78,6 +80,12 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
       label: "Thème",
       icon: <Palette className="h-3 w-3 lg:h-4 lg:w-4" />,
       content: <ThemeSettings />
+    },
+    {
+      value: "fonts",
+      label: "Polices",
+      icon: <Type className="h-3 w-3 lg:h-4 lg:w-4" />,
+      content: <FontSelector />
     },
     {
       value: "stats",

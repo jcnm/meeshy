@@ -19,6 +19,26 @@ const nextConfig: NextConfig = {
   // Experimental pour éviter les problèmes avec Sharp
   serverExternalPackages: ['sharp'],
   
+  // Configuration optimisée pour éviter les timeouts de build
+  experimental: {
+    optimizeCss: false, // Désactiver l'optimisation CSS pendant le build
+  },
+  
+  // Configuration pour éviter les timeouts avec Google Fonts
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ]
+  },
+  
   // Configuration API
   async rewrites() {
     return [
