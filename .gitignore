@@ -15,9 +15,12 @@ backend/node_modules/
 /coverage
 
 # next.js
-/.next/
+**/*/.next/
 /out/
-
+**/*/libs/
+**/*/dist/
+**/*/build/
+**/*/libs/* */
 # production
 /build
 backend/dist/

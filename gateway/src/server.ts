@@ -21,6 +21,7 @@ import { PrismaClient } from '../libs/prisma/client'; // Import Prisma client fr
 import winston from 'winston';
 import { ZMQTranslationClient } from './services/zmq-translation-client';
 import { authenticate } from './middleware/auth';
+import { authRoutes } from './routes/auth';
 
 // ============================================================================
 // CONFIGURATION & ENVIRONMENT
@@ -647,6 +648,9 @@ class MeeshyServer {
         throw new TranslationError(error instanceof Error ? error.message : 'Unknown error');
       }
     });
+    
+    // Register authentication routes with /auth prefix
+    await this.server.register(authRoutes, { prefix: '/auth' });
     
     logger.info('✓ REST API routes configured successfully');
   }

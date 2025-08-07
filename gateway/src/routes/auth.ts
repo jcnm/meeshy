@@ -4,8 +4,11 @@ import { z } from 'zod';
 
 // Schémas de validation
 const loginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().optional(),
+  email: z.string().optional(),
   password: z.string().min(6)
+}).refine(data => data.username || data.email, {
+  message: "Either username or email must be provided"
 });
 
 const registerSchema = z.object({
@@ -23,24 +26,55 @@ export async function authRoutes(fastify: FastifyInstance) {
     try {
       const body = loginSchema.parse(request.body);
       
-      // Recherche de l'utilisateur
-      const user = await fastify.prisma.user.findUnique({
-        where: { email: body.email }
+      // Recherche de l'utilisateur par email ou username
+      const user = await fastify.prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: body.email },
+            { username: body.username }
+          ]
+        }
       });
 
       if (!user) {
         return reply.status(401).send({
           success: false,
-          message: 'Email ou mot de passe incorrect'
+          message: 'Identifiant ou mot de passe incorrect'
         });
       }
 
-      // Vérification du mot de passe
-      const isPasswordValid = await bcrypt.compare(body.password, user.password);
+      // ============================================================================
+      // TODO: DÉVELOPPEMENT UNIQUEMENT - CONNEXION SIMPLIFIÉE POUR LES TESTS
+      // WARNING: Cette logique doit être SUPPRIMÉE en production !
+      // ============================================================================
+      
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      // En développement : permet la connexion avec le mot de passe standard "password123"
+      // ou avec le vrai mot de passe hashé
+      let isPasswordValid = false;
+      
+      if (isDevelopment) {
+        // TODO: Enlever cette logique en production !
+        // WARNING: Connexion simplifiée pour utilisateurs de test
+        const standardPassword = 'password123';
+        const isStandardPassword = body.password === standardPassword;
+        const isRealPassword = await bcrypt.compare(body.password, user.password);
+        
+        isPasswordValid = isStandardPassword || isRealPassword;
+        
+        if (isStandardPassword) {
+          fastify.log.warn(`⚠️  DÉVELOPPEMENT: Connexion simplifiée utilisée pour ${user.email || user.username}`);
+        }
+      } else {
+        // Production : vérification normale du mot de passe
+        isPasswordValid = await bcrypt.compare(body.password, user.password);
+      }
+
       if (!isPasswordValid) {
         return reply.status(401).send({
           success: false,
-          message: 'Email ou mot de passe incorrect'
+          message: 'Identifiant ou mot de passe incorrect'
         });
       }
 
@@ -63,15 +97,13 @@ export async function authRoutes(fastify: FastifyInstance) {
         { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
       );
 
-      // Retour de la réponse sans le mot de passe
+      // Retour de la réponse sans le mot de passe - format attendu par le frontend
       const { password, ...userWithoutPassword } = user;
       
       return reply.send({
         success: true,
-        data: {
-          user: userWithoutPassword,
-          token
-        }
+        user: userWithoutPassword,
+        access_token: token
       });
 
     } catch (error) {
@@ -244,6 +276,51 @@ export async function authRoutes(fastify: FastifyInstance) {
 
     } catch (error) {
       fastify.log.error('Verify token error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Route de vérification du profil utilisateur (alias de /verify pour compatibilité frontend)
+  fastify.get('/me', {
+    onRequest: [fastify.authenticate]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { userId } = request.user as any;
+
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          displayName: true,
+          avatar: true,
+          isOnline: true,
+          systemLanguage: true,
+          regionalLanguage: true,
+          autoTranslateEnabled: true,
+          role: true,
+          isActive: true
+        }
+      });
+
+      if (!user) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Token invalide'
+        });
+      }
+
+      // Format attendu par le frontend (directement l'utilisateur, pas dans un objet data)
+      return reply.send(user);
+
+    } catch (error) {
+      fastify.log.error('Get user profile error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'

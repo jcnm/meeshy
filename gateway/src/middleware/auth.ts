@@ -27,10 +27,25 @@ export interface AuthenticatedRequest extends FastifyRequest {
  */
 export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
   try {
-    // Pour l'instant, on passe l'authentification - à implémenter
-    console.log('Authentication middleware - to be implemented');
+    // Vérifier le token JWT avec Fastify JWT
+    await request.jwtVerify();
+    
+    // Le payload JWT est maintenant disponible dans request.user
+    const { userId, email, username } = request.user as AuthenticatedUser;
+    
+    if (!userId) {
+      throw new Error('Invalid token payload: missing userId');
+    }
+    
+    // Optionnel: vérifier que l'utilisateur existe toujours en base
+    // (pour l'instant on fait confiance au token)
+    
   } catch (error) {
-    reply.code(401).send({ error: 'Authentication failed' });
+    console.error('Authentication failed:', error);
+    reply.code(401).send({ 
+      success: false,
+      message: 'Token invalide ou manquant' 
+    });
   }
 }
 

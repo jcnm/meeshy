@@ -74,7 +74,7 @@ export default function LandingPage() {
     router.push('/dashboard');
   };
 
-  const quickLogin = async (username: string) => {
+  const quickLogin = async (email: string) => {
     try {
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
@@ -82,7 +82,8 @@ export default function LandingPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
+          username:email,
+          email,
           password: 'password123',
         }),
       });
