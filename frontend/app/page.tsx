@@ -30,6 +30,7 @@ import {
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { JoinConversationForm } from '@/components/auth/join-conversation-form';
+import { BubbleStreamPage } from '@/components/common';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 
@@ -52,7 +53,7 @@ export default function LandingPage() {
           if (response.ok) {
             const userData = await response.json();
             setCurrentUser(userData);
-            router.push('/dashboard');
+            // Rediriger vers le Bubble Stream si connecté
             return;
           } else {
             localStorage.removeItem('auth_token');
@@ -71,7 +72,7 @@ export default function LandingPage() {
   const handleAuthSuccess = (user: User, token: string) => {
     localStorage.setItem('auth_token', token);
     setCurrentUser(user);
-    router.push('/dashboard');
+    // Rediriger vers le Bubble Stream après connexion réussie
   };
 
   const quickLogin = async (email: string) => {
@@ -111,7 +112,7 @@ export default function LandingPage() {
   }
 
   if (currentUser) {
-    return null; // Redirection en cours
+    return <BubbleStreamPage user={currentUser} />;
   }
 
   return (
