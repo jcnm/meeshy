@@ -27,7 +27,8 @@ import {
   Timer,
   TrendingUp,
   Hash,
-  MoreHorizontal
+  MoreHorizontal,
+  ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -131,6 +132,89 @@ function LanguageIndicators({ languageStats }: LanguageIndicatorsProps) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Composant pour une section foldable générique
+interface FoldableSectionProps {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  defaultExpanded?: boolean;
+}
+
+function FoldableSection({ title, icon, children, defaultExpanded = true }: FoldableSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  return (
+    <Card className="mb-6 bg-white/80 backdrop-blur-sm border-gray-200/50 shadow-lg">
+      <CardContent className="p-0">
+        {/* Header cliquable */}
+        <div 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <h3 className="font-semibold text-gray-900 flex items-center">
+            {icon}
+            {title}
+          </h3>
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4 text-gray-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
+        
+        {/* Contenu */}
+        {isExpanded && (
+          <div className="px-4 pb-4 border-t border-gray-100">
+            <div className="mt-3">
+              {children}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Composant pour les langues dans le header de la sidebar
+interface SidebarLanguageHeaderProps {
+  languageStats: LanguageStats[];
+  userLanguage: string;
+}
+
+function SidebarLanguageHeader({ languageStats, userLanguage }: SidebarLanguageHeaderProps) {
+  const topLanguages = [...languageStats]
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  return (
+    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200/50">
+      <h2 className="font-semibold text-gray-900 mb-3 flex items-center">
+        <Globe2 className="h-4 w-4 mr-2" />
+        Communication Globale
+      </h2>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {topLanguages.map((stat) => (
+          <div 
+            key={stat.language}
+            className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs transition-colors ${
+              stat.language === userLanguage 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-white/80 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <span>{stat.flag}</span>
+            <span className="font-medium">{stat.count}</span>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-gray-600">
+        <span className="font-medium">{languageStats.reduce((sum, stat) => sum + stat.count, 0)}</span> messages 
+        en <span className="font-medium">{languageStats.length}</span> langues actives
+      </p>
     </div>
   );
 }
@@ -1109,8 +1193,8 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header simplifié */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200/50">
+      {/* Header simplifié - Style Dashboard */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo et titre */}
@@ -1124,24 +1208,28 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900">Meeshy</h1>
               </div>
+              <div className="hidden md:block">
+                <span className="text-gray-400 mx-2">/</span>
+                <span className="text-lg font-medium text-gray-700">Stream Global</span>
+              </div>
             </div>
 
-            {/* Section droite: recherche, notifications et menu utilisateur */}
-            <div className="flex items-center space-x-4">
-              {/* Barre de recherche */}
-              <div className="max-w-sm">
-                <form onSubmit={handleSearch} className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Rechercher..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-full"
-                  />
-                </form>
-              </div>
+            {/* Barre de recherche centrée - Style Dashboard */}
+            <div className="flex-1 max-w-lg mx-8">
+              <form onSubmit={handleSearch} className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Rechercher conversations, groupes, contacts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 w-full"
+                />
+              </form>
+            </div>
 
+            {/* Menu utilisateur */}
+            <div className="flex items-center space-x-4">
               {/* Notifications */}
               <Button 
                 variant="ghost" 
@@ -1367,29 +1455,68 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           </div>
         </div>
 
-        {/* Sidebar droite - Desktop uniquement - FIXE */}
-        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 p-6 bg-white/30 backdrop-blur-sm border-l border-gray-200/50 overflow-y-auto">
-          {/* Langues actives - Section fixe */}
-          <Card className="mb-6 bg-white/80 backdrop-blur-sm border-gray-200/50 shadow-lg">
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center sticky top-0 bg-white/90 backdrop-blur-sm pb-2 border-b border-gray-100">
-                <Languages className="h-4 w-4 mr-2" />
-                Langues actives
-              </h3>
-              <LanguageIndicators languageStats={languageStats} />
-            </CardContent>
-          </Card>
+        {/* Sidebar droite - Desktop uniquement - FIXE avec scroll indépendant */}
+        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/30 backdrop-blur-sm border-l border-gray-200/50">
+          <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent p-6">
+            
+            {/* Header avec langues globales */}
+            <SidebarLanguageHeader 
+              languageStats={languageStats} 
+              userLanguage={userLanguage}
+            />
 
-          {/* Hashtags tendances - Section fixe avec scroll */}
-          <Card className="mb-6 bg-white/80 backdrop-blur-sm border-gray-200/50 shadow-lg">
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center sticky top-0 bg-white/90 backdrop-blur-sm pb-2 border-b border-gray-100">
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Tendances
-              </h3>
+            {/* Section Langues Actives - Foldable */}
+            <FoldableSection
+              title="Langues Actives"
+              icon={<Languages className="h-4 w-4 mr-2" />}
+              defaultExpanded={true}
+            >
               <div className="space-y-2">
-                {/* Affichage des 7 premiers hashtags */}
-                {trendingHashtags.slice(0, 7).map((hashtag) => (
+                {/* Affichage des 5 premiers langages */}
+                {[...languageStats].sort((a, b) => b.count - a.count).slice(0, 5).map((stat) => (
+                  <div key={stat.language} className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{stat.flag}</span>
+                      <span className="text-sm font-medium">
+                        {SUPPORTED_LANGUAGES.find(l => l.code === stat.language)?.name || stat.language}
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="text-xs bg-white/50">
+                      {stat.count}
+                    </Badge>
+                  </div>
+                ))}
+                
+                {/* Section scrollable pour les langages restants */}
+                {languageStats.length > 5 && (
+                  <div className="max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2">
+                    {[...languageStats].sort((a, b) => b.count - a.count).slice(5).map((stat) => (
+                      <div key={stat.language} className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg">{stat.flag}</span>
+                          <span className="text-sm font-medium">
+                            {SUPPORTED_LANGUAGES.find(l => l.code === stat.language)?.name || stat.language}
+                          </span>
+                        </div>
+                        <Badge variant="outline" className="text-xs bg-white/50">
+                          {stat.count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </FoldableSection>
+
+            {/* Section Tendances - Foldable */}
+            <FoldableSection
+              title="Tendances"
+              icon={<TrendingUp className="h-4 w-4 mr-2" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-2">
+                {/* Affichage des 6 premiers hashtags */}
+                {trendingHashtags.slice(0, 6).map((hashtag) => (
                   <div
                     key={hashtag}
                     className="trending-hashtag flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
@@ -1402,9 +1529,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 ))}
                 
                 {/* Section scrollable pour les hashtags restants */}
-                {trendingHashtags.length > 7 && (
-                  <div className="max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-2 pr-1">
-                    {trendingHashtags.slice(7).map((hashtag) => (
+                {trendingHashtags.length > 6 && (
+                  <div className="max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2">
+                    {trendingHashtags.slice(6).map((hashtag) => (
                       <div
                         key={hashtag}
                         className="trending-hashtag flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
@@ -1418,19 +1545,17 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </FoldableSection>
 
-          {/* Utilisateurs actifs - Section fixe avec scroll */}
-          <Card className="bg-white/80 backdrop-blur-sm border-gray-200/50 shadow-lg">
-            <CardContent className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center sticky top-0 bg-white/90 backdrop-blur-sm pb-2 border-b border-gray-100">
-                <Users className="h-4 w-4 mr-2" />
-                Utilisateurs actifs
-              </h3>
+            {/* Section Utilisateurs Actifs - Foldable */}
+            <FoldableSection
+              title="Utilisateurs Actifs"
+              icon={<Users className="h-4 w-4 mr-2" />}
+              defaultExpanded={true}
+            >
               <div className="space-y-3">
-                {/* Affichage des 7 premiers utilisateurs */}
-                {activeUsers.slice(0, 7).map((activeUser) => (
+                {/* Affichage des 6 premiers utilisateurs */}
+                {activeUsers.slice(0, 6).map((activeUser) => (
                   <div
                     key={activeUser.id}
                     className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
@@ -1454,9 +1579,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 ))}
                 
                 {/* Section scrollable pour les utilisateurs restants */}
-                {activeUsers.length > 7 && (
-                  <div className="max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-3 pr-1">
-                    {activeUsers.slice(7).map((activeUser) => (
+                {activeUsers.length > 6 && (
+                  <div className="max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-3 pr-1 border-t border-gray-100 pt-3 mt-3">
+                    {activeUsers.slice(6).map((activeUser) => (
                       <div
                         key={activeUser.id}
                         className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
@@ -1481,8 +1606,8 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </FoldableSection>
+          </div>
         </div>
       </div>
     </div>
