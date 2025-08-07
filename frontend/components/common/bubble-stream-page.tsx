@@ -1193,6 +1193,25 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <style jsx global>{`
+        /* Cache toutes les barres de défilement */
+        .scrollbar-hidden {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .scrollbar-hidden::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Style pour les conteneurs avec scroll caché */
+        .scroll-hidden {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .scroll-hidden::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {/* Header simplifié - Style Dashboard */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1206,30 +1225,30 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <MessageSquare className="h-5 w-5 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">Meeshy</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Meeshy</h1>
               </div>
-              <div className="hidden md:block">
+              <div className="hidden lg:block">
                 <span className="text-gray-400 mx-2">/</span>
                 <span className="text-lg font-medium text-gray-700">Stream Global</span>
               </div>
             </div>
 
-            {/* Barre de recherche centrée - Style Dashboard */}
-            <div className="flex-1 max-w-lg mx-8">
+            {/* Barre de recherche centrée - Responsive */}
+            <div className="flex-1 max-w-sm sm:max-w-md lg:max-w-lg mx-4 sm:mx-8">
               <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Rechercher conversations, groupes, contacts..."
+                  placeholder="Rechercher..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-full"
+                  className="pl-10 w-full text-sm"
                 />
               </form>
             </div>
 
-            {/* Menu utilisateur */}
-            <div className="flex items-center space-x-4">
+            {/* Menu utilisateur - Responsive */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Notifications */}
               <Button 
                 variant="ghost" 
@@ -1248,14 +1267,14 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
               {/* Menu utilisateur */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-100">
+                  <Button variant="ghost" className="flex items-center space-x-2 sm:space-x-3 hover:bg-gray-100">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar} alt={user.firstName} />
                       <AvatarFallback>
                         {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="hidden md:block text-left">
+                    <div className="hidden sm:block text-left">
                       <p className="text-sm font-medium text-gray-900">
                         {user.firstName} {user.lastName}
                       </p>
@@ -1265,7 +1284,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 z-50">
                   <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                     <Home className="mr-2 h-4 w-4" />
                     <span>Tableau de bord</span>
@@ -1332,9 +1351,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       </header>
 
       {/* Layout principal */}
-      <div className="pt-16 flex min-h-screen">
-        {/* Feed principal - Centré avec marge pour sidebar fixe */}
-        <div className="flex-1 max-w-4xl mx-auto xl:mr-80">
+      <div className="pt-16 min-h-screen relative">
+        {/* Feed principal - Container avec gestion propre du scroll */}
+        <div className="w-full xl:pr-80 relative">
           {/* Indicateur de statut de connexion WebSocket */}
           <div className="px-4 sm:px-6 lg:px-8 mb-4 pt-4">
             <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
@@ -1354,61 +1373,71 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
             </div>
           </div>
 
-          {/* Feed des messages - Canvas sans limites visibles */}
+          {/* Feed des messages avec scroll correct */}
           <div className="relative">
-            <div 
-              ref={messagesContainerRef}
-              className="feed-container space-y-5 mb-6 max-h-[calc(100vh-250px)] overflow-y-auto scroll-smooth px-4 sm:px-6 lg:px-8"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                boxShadow: 'none'
-              }}
-            >
-              {messages.length === 0 ? (
-                <div className="text-center py-12">
-                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Aucun message pour le moment
-                  </h3>
-                  <p className="text-gray-500">
-                    Soyez le premier à publier dans le stream global !
-                  </p>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <BubbleMessage
-                    key={message.id}
-                    message={message}
-                    currentUser={user}
-                    userLanguage={userLanguage}
-                  />
-                ))
-              )}
+            {/* Container des messages avec padding pour la zone de saisie */}
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-48 pt-8">
+              <div 
+                ref={messagesContainerRef}
+                className="space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto scroll-smooth scroll-hidden px-4 py-6"
+                style={{ background: 'transparent' }}
+              >
+                {messages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Aucun message pour le moment
+                    </h3>
+                    <p className="text-gray-500">
+                      Soyez le premier à publier dans le stream global !
+                    </p>
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <BubbleMessage
+                      key={message.id}
+                      message={message}
+                      currentUser={user}
+                      userLanguage={userLanguage}
+                    />
+                  ))
+                )}
+                {/* Espace supplémentaire pour s'assurer que le dernier message est entièrement visible */}
+                <div className="h-24" />
+              </div>
             </div>
+            
+            {/* Dégradé inférieur - Transition progressive vers les couleurs générales de la page */}
+            <div className="absolute bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50/40 via-indigo-100/30 to-transparent pointer-events-none z-10" />
           </div>
+        </div>
 
-          {/* Zone de composition - Intégrée sans bordures */}
-          <div className="sticky bottom-0 bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-sm border-t border-gray-200/50 p-4">
-            <div className="max-w-2xl mx-auto">
-              <div className="relative">
+        {/* Zone de composition flottante - Position fixe avec transparence cohérente aux couleurs de la page */}
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-50 bg-transparent">
+          {/* Dégradé de fond pour transition douce avec les couleurs générales */}
+          <div className="h-0 bg-gradient-to-t from-blue-50/30 via-indigo-100/20 to-transparent pointer-events-none" />
+          
+          {/* Zone de saisie avec transparence et couleurs harmonisées */}
+          <div className="bg-blue-50/40 backdrop-blur-md border-t border-blue-200/30 p-4 shadow-lg shadow-indigo-500/10">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="relative max-w-2xl mx-auto">
                 <Textarea
                   ref={textareaRef}
                   value={newMessage}
                   onChange={(e) => handleTyping(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={`Partagez quelque chose avec le monde...`}
-                  className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-24 text-base border-gray-300/50 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20"
+                  className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-24 text-base border-blue-200/40 bg-blue-50/50 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-blue-50/70 placeholder:text-gray-700 scroll-hidden transition-all duration-200"
                   maxLength={MAX_MESSAGE_LENGTH}
                   disabled={!isComposingEnabled}
                   style={{
                     borderRadius: '16px',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 4px 16px rgba(59, 130, 246, 0.15)'
                   }}
                 />
                 
                 {/* Indicateurs dans le textarea */}
-                <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-500">
+                <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-600">
                   {/* Indicateur de langue détectée */}
                   <div className="flex items-center space-x-1">
                     <Languages className="h-4 w-4" />
@@ -1435,7 +1464,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                       ? remainingChars < 0 
                         ? 'text-red-600' 
                         : 'text-orange-600'
-                      : 'text-gray-400'
+                      : 'text-gray-500'
                   }`}>
                     {remainingChars}
                   </span>
@@ -1444,7 +1473,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim() || newMessage.length > MAX_MESSAGE_LENGTH}
                     size="sm"
-                    className="send-button px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg"
+                    className="send-button px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg backdrop-blur-sm transition-all duration-200"
                     style={{ borderRadius: '12px' }}
                   >
                     <Send className="h-4 w-4" />
@@ -1456,8 +1485,10 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         </div>
 
         {/* Sidebar droite - Desktop uniquement - FIXE avec scroll indépendant */}
-        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/30 backdrop-blur-sm border-l border-gray-200/50">
-          <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent p-6">
+        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/50 backdrop-blur-md border-l border-white/50 z-30">
+          <div 
+            className="h-full overflow-y-auto p-6 scroll-hidden"
+          >
             
             {/* Header avec langues globales */}
             <SidebarLanguageHeader 
@@ -1489,7 +1520,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 
                 {/* Section scrollable pour les langages restants */}
                 {languageStats.length > 5 && (
-                  <div className="max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2">
+                  <div 
+                    className="max-h-40 overflow-y-auto space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2 scroll-hidden"
+                  >
                     {[...languageStats].sort((a, b) => b.count - a.count).slice(5).map((stat) => (
                       <div key={stat.language} className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
                         <div className="flex items-center space-x-2">
@@ -1530,7 +1563,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 
                 {/* Section scrollable pour les hashtags restants */}
                 {trendingHashtags.length > 6 && (
-                  <div className="max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2">
+                  <div 
+                    className="max-h-32 overflow-y-auto space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2 scroll-hidden"
+                  >
                     {trendingHashtags.slice(6).map((hashtag) => (
                       <div
                         key={hashtag}
@@ -1580,7 +1615,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 
                 {/* Section scrollable pour les utilisateurs restants */}
                 {activeUsers.length > 6 && (
-                  <div className="max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-3 pr-1 border-t border-gray-100 pt-3 mt-3">
+                  <div 
+                    className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 pt-3 mt-3 scroll-hidden"
+                  >
                     {activeUsers.slice(6).map((activeUser) => (
                       <div
                         key={activeUser.id}

@@ -20,7 +20,8 @@ backend/node_modules/
 **/*/libs/
 **/*/dist/
 **/*/build/
-**/*/libs/* */
+**/*/libs/* 
+**/*/prisma/prisma/*
 # production
 /build
 backend/dist/
