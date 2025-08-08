@@ -141,7 +141,7 @@ class TranslationError extends Error {
 // ============================================================================
 
 interface WebSocketMessage {
-  type: 'translate' | 'translate_multi' | 'typing' | 'stop_typing';
+  type: 'translate' | 'translate_multi' | 'typing' | 'stop_typing' | 'new_message' | 'join_conversation' | 'leave_conversation' | 'user_typing';
   messageId?: string;
   text?: string;
   sourceLanguage?: string;
@@ -149,10 +149,11 @@ interface WebSocketMessage {
   targetLanguages?: string[];
   conversationId?: string;
   userId?: string;
+  data?: any; // Pour les données spécifiques au type de message
 }
 
 interface WebSocketResponse {
-  type: 'translation' | 'translation_multi' | 'error' | 'typing' | 'stop_typing';
+  type: 'translation' | 'translation_multi' | 'error' | 'typing' | 'stop_typing' | 'message_sent' | 'conversation_joined' | 'conversation_left';
   messageId?: string;
   originalText?: string;
   translatedText?: string;
@@ -169,6 +170,7 @@ interface WebSocketResponse {
   conversationId?: string;
   userId?: string;
   error?: string;
+  data?: any; // Pour les données spécifiques au type de réponse
   timestamp: string;
 }
 
@@ -320,9 +322,27 @@ class MeeshyServer {
     logger.info('Configuring WebSocket endpoints...');
 
     this.server.register(async (fastify) => {
-      fastify.get('/ws', { websocket: true }, (connection, request) => {
+      fastify.get('/ws', { websocket: true }, async (connection, request) => {
         const clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        logger.info(`[GWY] New WebSocket connection established: ${clientId} from ${request.ip}`);
+        
+        // Authentification JWT via query parameter
+        try {
+          const token = (request.query as any)?.token as string;
+          if (!token) {
+            logger.warn(`[GWY] WebSocket connection rejected: No token provided from ${request.ip}`);
+            connection.close(4001, 'Authentication required: token parameter missing');
+            return;
+          }
+
+          // Vérifier le token JWT
+          request.headers.authorization = `Bearer ${token}`;
+          const decoded = await request.jwtVerify() as any;
+          logger.info(`[GWY] New WebSocket connection established: ${clientId} from ${request.ip} for user ${decoded.userId || 'unknown'}`);
+        } catch (error) {
+          logger.warn(`[GWY] WebSocket connection rejected: Invalid token from ${request.ip}`, error);
+          connection.close(4002, 'Authentication failed: invalid token');
+          return;
+        }
         
         connection.on('message', async (message: Buffer) => {
           try {
@@ -369,6 +389,22 @@ class MeeshyServer {
         
       case 'translate_multi':
         await this.handleMultipleTranslation(connection, data);
+        break;
+        
+      case 'new_message':
+        await this.handleNewMessage(connection, data, clientId);
+        break;
+        
+      case 'join_conversation':
+        await this.handleJoinConversation(connection, data, clientId);
+        break;
+        
+      case 'leave_conversation':
+        await this.handleLeaveConversation(connection, data, clientId);
+        break;
+        
+      case 'user_typing':
+        await this.handleTypingEvent(connection, data, clientId);
         break;
         
       case 'typing':
@@ -495,6 +531,81 @@ class MeeshyServer {
     };
     
     this.sendWebSocketMessage(connection, response);
+  }
+
+  private async handleNewMessage(
+    connection: WebSocketConnection, 
+    data: WebSocketMessage, 
+    clientId: string
+  ): Promise<void> {
+    try {
+      logger.debug(`New message from ${clientId}: ${data.data?.content}`);
+      
+      // TODO: Créer le message en base de données
+      // TODO: Diffuser le message aux autres participants de la conversation
+      
+      // Pour l'instant, juste confirmer la réception
+      const response: WebSocketResponse = {
+        type: 'message_sent',
+        messageId: data.messageId,
+        data: data.data,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.sendWebSocketMessage(connection, response);
+    } catch (error) {
+      logger.error(`Error handling new message from ${clientId}:`, error);
+      this.sendWebSocketError(connection, data.messageId, 'Failed to send message');
+    }
+  }
+
+  private async handleJoinConversation(
+    connection: WebSocketConnection, 
+    data: WebSocketMessage, 
+    clientId: string
+  ): Promise<void> {
+    try {
+      logger.debug(`User ${clientId} joining conversation ${data.conversationId}`);
+      
+      // TODO: Vérifier les permissions d'accès à la conversation
+      // TODO: Ajouter l'utilisateur à la conversation
+      
+      const response: WebSocketResponse = {
+        type: 'conversation_joined',
+        messageId: data.messageId,
+        conversationId: data.conversationId,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.sendWebSocketMessage(connection, response);
+    } catch (error) {
+      logger.error(`Error joining conversation for ${clientId}:`, error);
+      this.sendWebSocketError(connection, data.messageId, 'Failed to join conversation');
+    }
+  }
+
+  private async handleLeaveConversation(
+    connection: WebSocketConnection, 
+    data: WebSocketMessage, 
+    clientId: string
+  ): Promise<void> {
+    try {
+      logger.debug(`User ${clientId} leaving conversation ${data.conversationId}`);
+      
+      // TODO: Retirer l'utilisateur de la conversation
+      
+      const response: WebSocketResponse = {
+        type: 'conversation_left',
+        messageId: data.messageId,
+        conversationId: data.conversationId,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.sendWebSocketMessage(connection, response);
+    } catch (error) {
+      logger.error(`Error leaving conversation for ${clientId}:`, error);
+      this.sendWebSocketError(connection, data.messageId, 'Failed to leave conversation');
+    }
   }
 
   private sendWebSocketMessage(connection: WebSocketConnection, message: WebSocketResponse): void {
