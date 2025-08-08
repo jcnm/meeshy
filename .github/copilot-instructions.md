@@ -2,7 +2,9 @@
 # Copilot Instructions for Meeshy
 
 <!-- High-performance messaging with multi-language backend translation system -->
-
+## Meeshy Project Overview
+Meeshy is a high-performance real-time messaging system designed to handle 100k messages per second with multi-language support. It features a distributed architecture with a Fastify gateway, FastAPI translator service, and a shared PostgreSQL database using Prisma ORM. The system is optimized for real-time performance, type safety, and multi-language translation capabilities. Run frontend application with `cd frontend && frontend.sh`, translator service with `cd translator && ./translator.sh` and gateway service with `cd gateway && ./gateway.sh`.
+It uses WebSocket for real-time communication and zmq/protobuf for efficient message translation requests. The architecture is designed to ensure that each message is translated into multiple target languages simultaneously, leveraging a robust caching system for performance.
 ## 🎯 Core Behavioral Rules (CRITICAL - Always Follow)
 
 1. **Performance First**: Always consider 100k messages/second throughput in design decisions
