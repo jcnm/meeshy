@@ -56,11 +56,18 @@ class MessagingService {
       return;
     }
 
-    console.log('🔌 MessagingService: Initialisation connexion WebSocket...');
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000';
+    console.log('🔌 MessagingService: Initialisation connexion WebSocket...', {
+      url: wsUrl,
+      hasToken: !!token,
+      tokenPreview: token.substring(0, 20) + '...'
+    });
 
-    this.socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:3000', {
+    this.socket = io(wsUrl, {
       transports: ['websocket', 'polling'],
-      auth: { token }
+      auth: { token },
+      timeout: 10000,
+      forceNew: true
     });
 
     this.setupEventListeners();
@@ -71,12 +78,27 @@ class MessagingService {
 
     this.socket.on('connect', () => {
       this.isConnected = true;
-      console.log('✅ MessagingService: WebSocket connecté');
+      console.log('✅ MessagingService: WebSocket connecté', {
+        socketId: this.socket?.id,
+        transport: this.socket?.io.engine.transport.name
+      });
     });
 
-    this.socket.on('disconnect', () => {
+    this.socket.on('disconnect', (reason) => {
       this.isConnected = false;
-      console.log('❌ MessagingService: WebSocket déconnecté');
+      console.log('❌ MessagingService: WebSocket déconnecté', { reason });
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('❌ MessagingService: Erreur de connexion WebSocket', error);
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 MessagingService: Reconnexion réussie', { attemptNumber });
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('❌ MessagingService: Erreur de reconnexion', error);
     });
 
     // POINT UNIQUE DE RÉCEPTION DES MESSAGES
@@ -320,6 +342,33 @@ class MessagingService {
       isConnected: this.isConnected,
       hasSocket: !!this.socket,
       currentUser: this.currentUser?.username || 'Non défini'
+    };
+  }
+
+  // Méthode de reconnexion manuelle
+  reconnect() {
+    console.log('🔄 MessagingService: Tentative de reconnexion manuelle...');
+    
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+    
+    this.isConnected = false;
+    this.initializeConnection();
+  }
+
+  // Diagnostic de l'état de connexion
+  getConnectionDiagnostics() {
+    return {
+      hasSocket: !!this.socket,
+      isConnected: this.isConnected,
+      socketConnected: this.socket?.connected || false,
+      socketId: this.socket?.id,
+      transport: this.socket?.io.engine?.transport?.name,
+      url: process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000',
+      hasToken: !!localStorage.getItem('auth_token'),
+      currentUser: this.currentUser?.username
     };
   }
 
