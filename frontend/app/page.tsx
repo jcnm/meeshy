@@ -31,6 +31,7 @@ import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { JoinConversationForm } from '@/components/auth/join-conversation-form';
 import { BubbleStreamPage } from '@/components/common';
+import { GlobalConversationPage } from '@/components/conversations/global-conversation-page';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 
@@ -112,7 +113,7 @@ export default function LandingPage() {
   }
 
   if (currentUser) {
-    return <BubbleStreamPage user={currentUser} />;
+    return <GlobalConversationPage user={currentUser} />;
   }
 
   return (

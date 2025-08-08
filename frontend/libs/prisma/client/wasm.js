@@ -149,8 +149,9 @@ exports.Prisma.ConversationScalarFieldEnum = {
   type: 'type',
   title: 'title',
   description: 'description',
+  image: 'image',
   avatar: 'avatar',
-  groupId: 'groupId',
+  communityId: 'communityId',
   isActive: 'isActive',
   isArchived: 'isArchived',
   lastMessageAt: 'lastMessageAt',
@@ -163,6 +164,13 @@ exports.Prisma.ConversationMemberScalarFieldEnum = {
   conversationId: 'conversationId',
   userId: 'userId',
   role: 'role',
+  canSendMessage: 'canSendMessage',
+  canSendFiles: 'canSendFiles',
+  canSendImages: 'canSendImages',
+  canSendVideos: 'canSendVideos',
+  canSendAudios: 'canSendAudios',
+  canSendLocations: 'canSendLocations',
+  canSendLinks: 'canSendLinks',
   joinedAt: 'joinedAt',
   leftAt: 'leftAt',
   isActive: 'isActive'
@@ -177,36 +185,44 @@ exports.Prisma.ConversationShareLinkScalarFieldEnum = {
   description: 'description',
   maxUses: 'maxUses',
   currentUses: 'currentUses',
+  maxConcurrentUsers: 'maxConcurrentUsers',
+  currentConcurrentUsers: 'currentConcurrentUsers',
   expiresAt: 'expiresAt',
   isActive: 'isActive',
+  allowAnonymousMessages: 'allowAnonymousMessages',
+  allowAnonymousFiles: 'allowAnonymousFiles',
+  allowAnonymousImages: 'allowAnonymousImages',
+  allowViewHistory: 'allowViewHistory',
+  requireNickname: 'requireNickname',
+  requireEmail: 'requireEmail',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.GroupScalarFieldEnum = {
+exports.Prisma.AnonymousParticipantScalarFieldEnum = {
   id: 'id',
-  title: 'title',
-  description: 'description',
-  image: 'image',
-  isPublic: 'isPublic',
-  maxMembers: 'maxMembers',
-  createdById: 'createdById',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.GroupMemberScalarFieldEnum = {
-  id: 'id',
-  groupId: 'groupId',
-  userId: 'userId',
-  role: 'role',
-  joinedAt: 'joinedAt'
+  conversationId: 'conversationId',
+  shareLinkId: 'shareLinkId',
+  nickname: 'nickname',
+  email: 'email',
+  sessionToken: 'sessionToken',
+  ipAddress: 'ipAddress',
+  isActive: 'isActive',
+  isOnline: 'isOnline',
+  lastActiveAt: 'lastActiveAt',
+  canSendMessages: 'canSendMessages',
+  canSendFiles: 'canSendFiles',
+  canSendImages: 'canSendImages',
+  joinedAt: 'joinedAt',
+  lastSeenAt: 'lastSeenAt',
+  leftAt: 'leftAt'
 };
 
 exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
   conversationId: 'conversationId',
   senderId: 'senderId',
+  anonymousSenderId: 'anonymousSenderId',
   content: 'content',
   originalLanguage: 'originalLanguage',
   messageType: 'messageType',
@@ -227,6 +243,7 @@ exports.Prisma.MessageTranslationScalarFieldEnum = {
   translatedContent: 'translatedContent',
   translationModel: 'translationModel',
   cacheKey: 'cacheKey',
+  confidenceScore: 'confidenceScore',
   createdAt: 'createdAt'
 };
 
@@ -262,9 +279,50 @@ exports.Prisma.NotificationScalarFieldEnum = {
   title: 'title',
   content: 'content',
   data: 'data',
+  priority: 'priority',
   isRead: 'isRead',
+  emailSent: 'emailSent',
+  pushSent: 'pushSent',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.CommunityScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  image: 'image',
+  isPublic: 'isPublic',
+  maxMembers: 'maxMembers',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CommunityMemberScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt'
+};
+
+exports.Prisma.GroupScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  avatar: 'avatar',
+  isPrivate: 'isPrivate',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GroupMemberScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  userId: 'userId',
+  joinedAt: 'joinedAt'
 };
 
 exports.Prisma.UserStatsScalarFieldEnum = {
@@ -272,9 +330,18 @@ exports.Prisma.UserStatsScalarFieldEnum = {
   userId: 'userId',
   messagesSent: 'messagesSent',
   messagesReceived: 'messagesReceived',
+  charactersTyped: 'charactersTyped',
+  imageMessagesSent: 'imageMessagesSent',
+  filesShared: 'filesShared',
   conversationsJoined: 'conversationsJoined',
   groupsCreated: 'groupsCreated',
+  friendsAdded: 'friendsAdded',
+  friendRequestsSent: 'friendRequestsSent',
   translationsUsed: 'translationsUsed',
+  languagesDetected: 'languagesDetected',
+  autoTranslateTimeMinutes: 'autoTranslateTimeMinutes',
+  totalOnlineTimeMinutes: 'totalOnlineTimeMinutes',
+  sessionCount: 'sessionCount',
   lastActiveAt: 'lastActiveAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -285,6 +352,8 @@ exports.Prisma.UserPreferenceScalarFieldEnum = {
   userId: 'userId',
   key: 'key',
   value: 'value',
+  valueType: 'valueType',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -295,6 +364,8 @@ exports.Prisma.ConversationPreferenceScalarFieldEnum = {
   userId: 'userId',
   key: 'key',
   value: 'value',
+  valueType: 'valueType',
+  description: 'description',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -315,14 +386,17 @@ exports.Prisma.ModelName = {
   Conversation: 'Conversation',
   ConversationMember: 'ConversationMember',
   ConversationShareLink: 'ConversationShareLink',
-  Group: 'Group',
-  GroupMember: 'GroupMember',
+  AnonymousParticipant: 'AnonymousParticipant',
   Message: 'Message',
   MessageTranslation: 'MessageTranslation',
   MessageReadStatus: 'MessageReadStatus',
   FriendRequest: 'FriendRequest',
   TypingIndicator: 'TypingIndicator',
   Notification: 'Notification',
+  Community: 'Community',
+  CommunityMember: 'CommunityMember',
+  Group: 'Group',
+  GroupMember: 'GroupMember',
   UserStats: 'UserStats',
   UserPreference: 'UserPreference',
   ConversationPreference: 'ConversationPreference'
