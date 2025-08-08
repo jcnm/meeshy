@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { InitService } from '../services/init.service';
 
 // Schémas de validation
 const loginSchema = z.object({
@@ -179,6 +180,14 @@ export async function authRoutes(fastify: FastifyInstance) {
         },
         { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
       );
+
+      // Auto-ajout à la conversation globale "Meeshy"
+      try {
+        await InitService.addUserToGlobalConversation(newUser.id);
+      } catch (error) {
+        fastify.log.warn(`Échec de l'ajout de l'utilisateur ${newUser.id} à la conversation globale:`, error);
+        // Ne pas bloquer l'inscription si l'ajout à la conversation échoue
+      }
 
       // Retour de la réponse sans le mot de passe
       const { password, ...userWithoutPassword } = newUser;

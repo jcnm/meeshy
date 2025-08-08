@@ -22,6 +22,8 @@ import winston from 'winston';
 import { ZMQTranslationClient } from './services/zmq-translation-client';
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
+import { conversationRoutes } from './routes/conversations';
+import { InitService } from './services/init.service';
 
 // ============================================================================
 // CONFIGURATION & ENVIRONMENT
@@ -763,6 +765,9 @@ class MeeshyServer {
     // Register authentication routes with /auth prefix
     await this.server.register(authRoutes, { prefix: '/auth' });
     
+    // Register conversation routes with /api prefix
+    await this.server.register(conversationRoutes, { prefix: '/api' });
+    
     logger.info('✓ REST API routes configured successfully');
   }
 
@@ -778,6 +783,10 @@ class MeeshyServer {
       // Test connection with a simple query instead
       await this.prisma.$queryRaw`SELECT 1`;
       logger.info(`✓ Database connected successfully`);
+      
+      // Initialize global conversation and auto-add users
+      await InitService.initialize();
+      
     } catch (error) {
       logger.error('✗ Database connection failed:', error);
       logger.info('Database connection failed, but continuing without database (development mode)');
