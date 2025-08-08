@@ -2445,45 +2445,45 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
-    sentMessages: number
+    createdCommunities: number
+    communityMemberships: number
     conversations: number
+    conversationPreferences: number
+    createdShareLinks: number
+    receivedFriendRequests: number
+    sentFriendRequests: number
     groupMemberships: number
     createdGroups: number
-    adminGroups: number
-    moderatorGroups: number
-    sentFriendRequests: number
-    receivedFriendRequests: number
-    typingIndicators: number
     messageReadStatus: number
+    sentMessages: number
     notifications: number
-    createdShareLinks: number
+    typingIndicators: number
     preferences: number
-    conversationPreferences: number
-    createdCommunities: number
     adminCommunities: number
     moderatorCommunities: number
-    communityMemberships: number
+    adminGroups: number
+    moderatorGroups: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
+    createdCommunities?: boolean | UserCountOutputTypeCountCreatedCommunitiesArgs
+    communityMemberships?: boolean | UserCountOutputTypeCountCommunityMembershipsArgs
     conversations?: boolean | UserCountOutputTypeCountConversationsArgs
+    conversationPreferences?: boolean | UserCountOutputTypeCountConversationPreferencesArgs
+    createdShareLinks?: boolean | UserCountOutputTypeCountCreatedShareLinksArgs
+    receivedFriendRequests?: boolean | UserCountOutputTypeCountReceivedFriendRequestsArgs
+    sentFriendRequests?: boolean | UserCountOutputTypeCountSentFriendRequestsArgs
     groupMemberships?: boolean | UserCountOutputTypeCountGroupMembershipsArgs
     createdGroups?: boolean | UserCountOutputTypeCountCreatedGroupsArgs
-    adminGroups?: boolean | UserCountOutputTypeCountAdminGroupsArgs
-    moderatorGroups?: boolean | UserCountOutputTypeCountModeratorGroupsArgs
-    sentFriendRequests?: boolean | UserCountOutputTypeCountSentFriendRequestsArgs
-    receivedFriendRequests?: boolean | UserCountOutputTypeCountReceivedFriendRequestsArgs
-    typingIndicators?: boolean | UserCountOutputTypeCountTypingIndicatorsArgs
     messageReadStatus?: boolean | UserCountOutputTypeCountMessageReadStatusArgs
+    sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
-    createdShareLinks?: boolean | UserCountOutputTypeCountCreatedShareLinksArgs
+    typingIndicators?: boolean | UserCountOutputTypeCountTypingIndicatorsArgs
     preferences?: boolean | UserCountOutputTypeCountPreferencesArgs
-    conversationPreferences?: boolean | UserCountOutputTypeCountConversationPreferencesArgs
-    createdCommunities?: boolean | UserCountOutputTypeCountCreatedCommunitiesArgs
     adminCommunities?: boolean | UserCountOutputTypeCountAdminCommunitiesArgs
     moderatorCommunities?: boolean | UserCountOutputTypeCountModeratorCommunitiesArgs
-    communityMemberships?: boolean | UserCountOutputTypeCountCommunityMembershipsArgs
+    adminGroups?: boolean | UserCountOutputTypeCountAdminGroupsArgs
+    moderatorGroups?: boolean | UserCountOutputTypeCountModeratorGroupsArgs
   }
 
   // Custom InputTypes
@@ -2500,8 +2500,15 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountSentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageWhereInput
+  export type UserCountOutputTypeCountCreatedCommunitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CommunityWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCommunityMembershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CommunityMemberWhereInput
   }
 
   /**
@@ -2509,6 +2516,34 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ConversationMemberWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountConversationPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationPreferenceWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedShareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationShareLinkWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReceivedFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FriendRequestWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSentFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FriendRequestWhereInput
   }
 
   /**
@@ -2528,43 +2563,15 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountAdminGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: GroupWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountModeratorGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: GroupWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountSentFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: FriendRequestWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountReceivedFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: FriendRequestWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountTypingIndicatorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TypingIndicatorWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
   export type UserCountOutputTypeCountMessageReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageReadStatusWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageWhereInput
   }
 
   /**
@@ -2577,8 +2584,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountCreatedShareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConversationShareLinkWhereInput
+  export type UserCountOutputTypeCountTypingIndicatorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TypingIndicatorWhereInput
   }
 
   /**
@@ -2586,20 +2593,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserPreferenceWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountConversationPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConversationPreferenceWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountCreatedCommunitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityWhereInput
   }
 
   /**
@@ -2619,8 +2612,15 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountCommunityMembershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityMemberWhereInput
+  export type UserCountOutputTypeCountAdminGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroupWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountModeratorGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroupWhereInput
   }
 
 
@@ -2629,21 +2629,21 @@ export namespace Prisma {
    */
 
   export type ConversationCountOutputType = {
+    anonymousParticipants: number
     members: number
+    preferences: number
+    shareLinks: number
     messages: number
     typingIndicators: number
-    shareLinks: number
-    preferences: number
-    anonymousParticipants: number
   }
 
   export type ConversationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    anonymousParticipants?: boolean | ConversationCountOutputTypeCountAnonymousParticipantsArgs
     members?: boolean | ConversationCountOutputTypeCountMembersArgs
+    preferences?: boolean | ConversationCountOutputTypeCountPreferencesArgs
+    shareLinks?: boolean | ConversationCountOutputTypeCountShareLinksArgs
     messages?: boolean | ConversationCountOutputTypeCountMessagesArgs
     typingIndicators?: boolean | ConversationCountOutputTypeCountTypingIndicatorsArgs
-    shareLinks?: boolean | ConversationCountOutputTypeCountShareLinksArgs
-    preferences?: boolean | ConversationCountOutputTypeCountPreferencesArgs
-    anonymousParticipants?: boolean | ConversationCountOutputTypeCountAnonymousParticipantsArgs
   }
 
   // Custom InputTypes
@@ -2660,8 +2660,29 @@ export namespace Prisma {
   /**
    * ConversationCountOutputType without action
    */
+  export type ConversationCountOutputTypeCountAnonymousParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AnonymousParticipantWhereInput
+  }
+
+  /**
+   * ConversationCountOutputType without action
+   */
   export type ConversationCountOutputTypeCountMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ConversationMemberWhereInput
+  }
+
+  /**
+   * ConversationCountOutputType without action
+   */
+  export type ConversationCountOutputTypeCountPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationPreferenceWhereInput
+  }
+
+  /**
+   * ConversationCountOutputType without action
+   */
+  export type ConversationCountOutputTypeCountShareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationShareLinkWhereInput
   }
 
   /**
@@ -2676,27 +2697,6 @@ export namespace Prisma {
    */
   export type ConversationCountOutputTypeCountTypingIndicatorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TypingIndicatorWhereInput
-  }
-
-  /**
-   * ConversationCountOutputType without action
-   */
-  export type ConversationCountOutputTypeCountShareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConversationShareLinkWhereInput
-  }
-
-  /**
-   * ConversationCountOutputType without action
-   */
-  export type ConversationCountOutputTypeCountPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConversationPreferenceWhereInput
-  }
-
-  /**
-   * ConversationCountOutputType without action
-   */
-  export type ConversationCountOutputTypeCountAnonymousParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: AnonymousParticipantWhereInput
   }
 
 
@@ -2767,15 +2767,15 @@ export namespace Prisma {
    */
 
   export type MessageCountOutputType = {
-    replies: number
-    translations: number
     readStatus: number
+    translations: number
+    replies: number
   }
 
   export type MessageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    replies?: boolean | MessageCountOutputTypeCountRepliesArgs
-    translations?: boolean | MessageCountOutputTypeCountTranslationsArgs
     readStatus?: boolean | MessageCountOutputTypeCountReadStatusArgs
+    translations?: boolean | MessageCountOutputTypeCountTranslationsArgs
+    replies?: boolean | MessageCountOutputTypeCountRepliesArgs
   }
 
   // Custom InputTypes
@@ -2792,8 +2792,8 @@ export namespace Prisma {
   /**
    * MessageCountOutputType without action
    */
-  export type MessageCountOutputTypeCountRepliesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageWhereInput
+  export type MessageCountOutputTypeCountReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageReadStatusWhereInput
   }
 
   /**
@@ -2806,8 +2806,8 @@ export namespace Prisma {
   /**
    * MessageCountOutputType without action
    */
-  export type MessageCountOutputTypeCountReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageReadStatusWhereInput
+  export type MessageCountOutputTypeCountRepliesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageWhereInput
   }
 
 
@@ -2816,15 +2816,15 @@ export namespace Prisma {
    */
 
   export type CommunityCountOutputType = {
-    conversations: number
     members: number
+    conversations: number
     admins: number
     moderators: number
   }
 
   export type CommunityCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversations?: boolean | CommunityCountOutputTypeCountConversationsArgs
     members?: boolean | CommunityCountOutputTypeCountMembersArgs
+    conversations?: boolean | CommunityCountOutputTypeCountConversationsArgs
     admins?: boolean | CommunityCountOutputTypeCountAdminsArgs
     moderators?: boolean | CommunityCountOutputTypeCountModeratorsArgs
   }
@@ -2843,15 +2843,15 @@ export namespace Prisma {
   /**
    * CommunityCountOutputType without action
    */
-  export type CommunityCountOutputTypeCountConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ConversationWhereInput
+  export type CommunityCountOutputTypeCountMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CommunityMemberWhereInput
   }
 
   /**
    * CommunityCountOutputType without action
    */
-  export type CommunityCountOutputTypeCountMembersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityMemberWhereInput
+  export type CommunityCountOutputTypeCountConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ConversationWhereInput
   }
 
   /**
@@ -3238,25 +3238,25 @@ export namespace Prisma {
     deactivatedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
+    createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
+    communityMemberships?: boolean | User$communityMembershipsArgs<ExtArgs>
     conversations?: boolean | User$conversationsArgs<ExtArgs>
+    conversationPreferences?: boolean | User$conversationPreferencesArgs<ExtArgs>
+    createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
+    receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
+    sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
     groupMemberships?: boolean | User$groupMembershipsArgs<ExtArgs>
     createdGroups?: boolean | User$createdGroupsArgs<ExtArgs>
-    adminGroups?: boolean | User$adminGroupsArgs<ExtArgs>
-    moderatorGroups?: boolean | User$moderatorGroupsArgs<ExtArgs>
-    sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
-    receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
-    typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     messageReadStatus?: boolean | User$messageReadStatusArgs<ExtArgs>
+    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
-    createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
-    stats?: boolean | User$statsArgs<ExtArgs>
+    typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     preferences?: boolean | User$preferencesArgs<ExtArgs>
-    conversationPreferences?: boolean | User$conversationPreferencesArgs<ExtArgs>
-    createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
+    stats?: boolean | User$statsArgs<ExtArgs>
     adminCommunities?: boolean | User$adminCommunitiesArgs<ExtArgs>
     moderatorCommunities?: boolean | User$moderatorCommunitiesArgs<ExtArgs>
-    communityMemberships?: boolean | User$communityMembershipsArgs<ExtArgs>
+    adminGroups?: boolean | User$adminGroupsArgs<ExtArgs>
+    moderatorGroups?: boolean | User$moderatorGroupsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3343,25 +3343,25 @@ export namespace Prisma {
 
   export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "firstName" | "lastName" | "email" | "phoneNumber" | "password" | "displayName" | "avatar" | "isOnline" | "lastSeen" | "lastActiveAt" | "systemLanguage" | "regionalLanguage" | "customDestinationLanguage" | "autoTranslateEnabled" | "translateToSystemLanguage" | "translateToRegionalLanguage" | "useCustomDestination" | "role" | "isActive" | "deactivatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
+    createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
+    communityMemberships?: boolean | User$communityMembershipsArgs<ExtArgs>
     conversations?: boolean | User$conversationsArgs<ExtArgs>
+    conversationPreferences?: boolean | User$conversationPreferencesArgs<ExtArgs>
+    createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
+    receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
+    sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
     groupMemberships?: boolean | User$groupMembershipsArgs<ExtArgs>
     createdGroups?: boolean | User$createdGroupsArgs<ExtArgs>
-    adminGroups?: boolean | User$adminGroupsArgs<ExtArgs>
-    moderatorGroups?: boolean | User$moderatorGroupsArgs<ExtArgs>
-    sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
-    receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
-    typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     messageReadStatus?: boolean | User$messageReadStatusArgs<ExtArgs>
+    sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
-    createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
-    stats?: boolean | User$statsArgs<ExtArgs>
+    typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     preferences?: boolean | User$preferencesArgs<ExtArgs>
-    conversationPreferences?: boolean | User$conversationPreferencesArgs<ExtArgs>
-    createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
+    stats?: boolean | User$statsArgs<ExtArgs>
     adminCommunities?: boolean | User$adminCommunitiesArgs<ExtArgs>
     moderatorCommunities?: boolean | User$moderatorCommunitiesArgs<ExtArgs>
-    communityMemberships?: boolean | User$communityMembershipsArgs<ExtArgs>
+    adminGroups?: boolean | User$adminGroupsArgs<ExtArgs>
+    moderatorGroups?: boolean | User$moderatorGroupsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3370,82 +3370,25 @@ export namespace Prisma {
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
-      /**
-       * Messages envoyés par cet utilisateur
-       */
-      sentMessages: Prisma.$MessagePayload<ExtArgs>[]
-      /**
-       * Participations aux conversations
-       */
-      conversations: Prisma.$ConversationMemberPayload<ExtArgs>[]
-      /**
-       * Participations aux groupes (legacy - conservé pour compatibilité)
-       */
-      groupMemberships: Prisma.$GroupMemberPayload<ExtArgs>[]
-      /**
-       * Groupes créés par cet utilisateur (legacy)
-       */
-      createdGroups: Prisma.$GroupPayload<ExtArgs>[]
-      /**
-       * Groupes où cet utilisateur est administrateur (legacy)
-       */
-      adminGroups: Prisma.$GroupPayload<ExtArgs>[]
-      /**
-       * Groupes où cet utilisateur est modérateur (legacy)
-       */
-      moderatorGroups: Prisma.$GroupPayload<ExtArgs>[]
-      /**
-       * Demandes d'amitié envoyées
-       */
-      sentFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
-      /**
-       * Demandes d'amitié reçues
-       */
-      receivedFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
-      /**
-       * Indicateurs de frappe en cours
-       */
-      typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
-      /**
-       * Statuts de lecture des messages
-       */
-      messageReadStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
-      /**
-       * Notifications reçues
-       */
-      notifications: Prisma.$NotificationPayload<ExtArgs>[]
-      /**
-       * Liens de partage créés
-       */
-      createdShareLinks: Prisma.$ConversationShareLinkPayload<ExtArgs>[]
-      /**
-       * Statistiques d'utilisation
-       */
-      stats: Prisma.$UserStatsPayload<ExtArgs> | null
-      /**
-       * Préférences utilisateur générales
-       */
-      preferences: Prisma.$UserPreferencePayload<ExtArgs>[]
-      /**
-       * Préférences spécifiques aux conversations
-       */
-      conversationPreferences: Prisma.$ConversationPreferencePayload<ExtArgs>[]
-      /**
-       * Communautés créées par cet utilisateur
-       */
       createdCommunities: Prisma.$CommunityPayload<ExtArgs>[]
-      /**
-       * Communautés où cet utilisateur est administrateur
-       */
-      adminCommunities: Prisma.$CommunityPayload<ExtArgs>[]
-      /**
-       * Communautés où cet utilisateur est modérateur
-       */
-      moderatorCommunities: Prisma.$CommunityPayload<ExtArgs>[]
-      /**
-       * Participations aux communautés
-       */
       communityMemberships: Prisma.$CommunityMemberPayload<ExtArgs>[]
+      conversations: Prisma.$ConversationMemberPayload<ExtArgs>[]
+      conversationPreferences: Prisma.$ConversationPreferencePayload<ExtArgs>[]
+      createdShareLinks: Prisma.$ConversationShareLinkPayload<ExtArgs>[]
+      receivedFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
+      sentFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
+      groupMemberships: Prisma.$GroupMemberPayload<ExtArgs>[]
+      createdGroups: Prisma.$GroupPayload<ExtArgs>[]
+      messageReadStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
+      sentMessages: Prisma.$MessagePayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
+      preferences: Prisma.$UserPreferencePayload<ExtArgs>[]
+      stats: Prisma.$UserStatsPayload<ExtArgs> | null
+      adminCommunities: Prisma.$CommunityPayload<ExtArgs>[]
+      moderatorCommunities: Prisma.$CommunityPayload<ExtArgs>[]
+      adminGroups: Prisma.$GroupPayload<ExtArgs>[]
+      moderatorGroups: Prisma.$GroupPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -3944,25 +3887,25 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    createdCommunities<T extends User$createdCommunitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$createdCommunitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    communityMemberships<T extends User$communityMembershipsArgs<ExtArgs> = {}>(args?: Subset<T, User$communityMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     conversations<T extends User$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, User$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    conversationPreferences<T extends User$conversationPreferencesArgs<ExtArgs> = {}>(args?: Subset<T, User$conversationPreferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    createdShareLinks<T extends User$createdShareLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$createdShareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    receivedFriendRequests<T extends User$receivedFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    sentFriendRequests<T extends User$sentFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$sentFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     groupMemberships<T extends User$groupMembershipsArgs<ExtArgs> = {}>(args?: Subset<T, User$groupMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdGroups<T extends User$createdGroupsArgs<ExtArgs> = {}>(args?: Subset<T, User$createdGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    adminGroups<T extends User$adminGroupsArgs<ExtArgs> = {}>(args?: Subset<T, User$adminGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    moderatorGroups<T extends User$moderatorGroupsArgs<ExtArgs> = {}>(args?: Subset<T, User$moderatorGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    sentFriendRequests<T extends User$sentFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$sentFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    receivedFriendRequests<T extends User$receivedFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    typingIndicators<T extends User$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, User$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     messageReadStatus<T extends User$messageReadStatusArgs<ExtArgs> = {}>(args?: Subset<T, User$messageReadStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    createdShareLinks<T extends User$createdShareLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$createdShareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    stats<T extends User$statsArgs<ExtArgs> = {}>(args?: Subset<T, User$statsArgs<ExtArgs>>): Prisma__UserStatsClient<$Result.GetResult<Prisma.$UserStatsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    typingIndicators<T extends User$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, User$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     preferences<T extends User$preferencesArgs<ExtArgs> = {}>(args?: Subset<T, User$preferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    conversationPreferences<T extends User$conversationPreferencesArgs<ExtArgs> = {}>(args?: Subset<T, User$conversationPreferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    createdCommunities<T extends User$createdCommunitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$createdCommunitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    stats<T extends User$statsArgs<ExtArgs> = {}>(args?: Subset<T, User$statsArgs<ExtArgs>>): Prisma__UserStatsClient<$Result.GetResult<Prisma.$UserStatsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     adminCommunities<T extends User$adminCommunitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$adminCommunitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     moderatorCommunities<T extends User$moderatorCommunitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$moderatorCommunitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    communityMemberships<T extends User$communityMembershipsArgs<ExtArgs> = {}>(args?: Subset<T, User$communityMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    adminGroups<T extends User$adminGroupsArgs<ExtArgs> = {}>(args?: Subset<T, User$adminGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    moderatorGroups<T extends User$moderatorGroupsArgs<ExtArgs> = {}>(args?: Subset<T, User$moderatorGroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4402,27 +4345,51 @@ export namespace Prisma {
   }
 
   /**
-   * User.sentMessages
+   * User.createdCommunities
    */
-  export type User$sentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$createdCommunitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Message
+     * Select specific fields to fetch from the Community
      */
-    select?: MessageSelect<ExtArgs> | null
+    select?: CommunitySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Message
+     * Omit specific fields from the Community
      */
-    omit?: MessageOmit<ExtArgs> | null
+    omit?: CommunityOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageInclude<ExtArgs> | null
-    where?: MessageWhereInput
-    orderBy?: MessageOrderByWithRelationInput | MessageOrderByWithRelationInput[]
-    cursor?: MessageWhereUniqueInput
+    include?: CommunityInclude<ExtArgs> | null
+    where?: CommunityWhereInput
+    orderBy?: CommunityOrderByWithRelationInput | CommunityOrderByWithRelationInput[]
+    cursor?: CommunityWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: MessageScalarFieldEnum | MessageScalarFieldEnum[]
+    distinct?: CommunityScalarFieldEnum | CommunityScalarFieldEnum[]
+  }
+
+  /**
+   * User.communityMemberships
+   */
+  export type User$communityMembershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CommunityMember
+     */
+    select?: CommunityMemberSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CommunityMember
+     */
+    omit?: CommunityMemberOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CommunityMemberInclude<ExtArgs> | null
+    where?: CommunityMemberWhereInput
+    orderBy?: CommunityMemberOrderByWithRelationInput | CommunityMemberOrderByWithRelationInput[]
+    cursor?: CommunityMemberWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CommunityMemberScalarFieldEnum | CommunityMemberScalarFieldEnum[]
   }
 
   /**
@@ -4447,6 +4414,102 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ConversationMemberScalarFieldEnum | ConversationMemberScalarFieldEnum[]
+  }
+
+  /**
+   * User.conversationPreferences
+   */
+  export type User$conversationPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationPreference
+     */
+    select?: ConversationPreferenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationPreference
+     */
+    omit?: ConversationPreferenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationPreferenceInclude<ExtArgs> | null
+    where?: ConversationPreferenceWhereInput
+    orderBy?: ConversationPreferenceOrderByWithRelationInput | ConversationPreferenceOrderByWithRelationInput[]
+    cursor?: ConversationPreferenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConversationPreferenceScalarFieldEnum | ConversationPreferenceScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdShareLinks
+   */
+  export type User$createdShareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationShareLink
+     */
+    select?: ConversationShareLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationShareLink
+     */
+    omit?: ConversationShareLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationShareLinkInclude<ExtArgs> | null
+    where?: ConversationShareLinkWhereInput
+    orderBy?: ConversationShareLinkOrderByWithRelationInput | ConversationShareLinkOrderByWithRelationInput[]
+    cursor?: ConversationShareLinkWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConversationShareLinkScalarFieldEnum | ConversationShareLinkScalarFieldEnum[]
+  }
+
+  /**
+   * User.receivedFriendRequests
+   */
+  export type User$receivedFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FriendRequest
+     */
+    select?: FriendRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FriendRequest
+     */
+    omit?: FriendRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FriendRequestInclude<ExtArgs> | null
+    where?: FriendRequestWhereInput
+    orderBy?: FriendRequestOrderByWithRelationInput | FriendRequestOrderByWithRelationInput[]
+    cursor?: FriendRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FriendRequestScalarFieldEnum | FriendRequestScalarFieldEnum[]
+  }
+
+  /**
+   * User.sentFriendRequests
+   */
+  export type User$sentFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the FriendRequest
+     */
+    select?: FriendRequestSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the FriendRequest
+     */
+    omit?: FriendRequestOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FriendRequestInclude<ExtArgs> | null
+    where?: FriendRequestWhereInput
+    orderBy?: FriendRequestOrderByWithRelationInput | FriendRequestOrderByWithRelationInput[]
+    cursor?: FriendRequestWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FriendRequestScalarFieldEnum | FriendRequestScalarFieldEnum[]
   }
 
   /**
@@ -4498,126 +4561,6 @@ export namespace Prisma {
   }
 
   /**
-   * User.adminGroups
-   */
-  export type User$adminGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Group
-     */
-    select?: GroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Group
-     */
-    omit?: GroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: GroupInclude<ExtArgs> | null
-    where?: GroupWhereInput
-    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
-    cursor?: GroupWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
-  }
-
-  /**
-   * User.moderatorGroups
-   */
-  export type User$moderatorGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Group
-     */
-    select?: GroupSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Group
-     */
-    omit?: GroupOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: GroupInclude<ExtArgs> | null
-    where?: GroupWhereInput
-    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
-    cursor?: GroupWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
-  }
-
-  /**
-   * User.sentFriendRequests
-   */
-  export type User$sentFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FriendRequest
-     */
-    select?: FriendRequestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FriendRequest
-     */
-    omit?: FriendRequestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FriendRequestInclude<ExtArgs> | null
-    where?: FriendRequestWhereInput
-    orderBy?: FriendRequestOrderByWithRelationInput | FriendRequestOrderByWithRelationInput[]
-    cursor?: FriendRequestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: FriendRequestScalarFieldEnum | FriendRequestScalarFieldEnum[]
-  }
-
-  /**
-   * User.receivedFriendRequests
-   */
-  export type User$receivedFriendRequestsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the FriendRequest
-     */
-    select?: FriendRequestSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the FriendRequest
-     */
-    omit?: FriendRequestOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: FriendRequestInclude<ExtArgs> | null
-    where?: FriendRequestWhereInput
-    orderBy?: FriendRequestOrderByWithRelationInput | FriendRequestOrderByWithRelationInput[]
-    cursor?: FriendRequestWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: FriendRequestScalarFieldEnum | FriendRequestScalarFieldEnum[]
-  }
-
-  /**
-   * User.typingIndicators
-   */
-  export type User$typingIndicatorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TypingIndicator
-     */
-    select?: TypingIndicatorSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TypingIndicator
-     */
-    omit?: TypingIndicatorOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TypingIndicatorInclude<ExtArgs> | null
-    where?: TypingIndicatorWhereInput
-    orderBy?: TypingIndicatorOrderByWithRelationInput | TypingIndicatorOrderByWithRelationInput[]
-    cursor?: TypingIndicatorWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TypingIndicatorScalarFieldEnum | TypingIndicatorScalarFieldEnum[]
-  }
-
-  /**
    * User.messageReadStatus
    */
   export type User$messageReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4639,6 +4582,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+  }
+
+  /**
+   * User.sentMessages
+   */
+  export type User$sentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Message
+     */
+    select?: MessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Message
+     */
+    omit?: MessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageInclude<ExtArgs> | null
+    where?: MessageWhereInput
+    orderBy?: MessageOrderByWithRelationInput | MessageOrderByWithRelationInput[]
+    cursor?: MessageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageScalarFieldEnum | MessageScalarFieldEnum[]
   }
 
   /**
@@ -4666,46 +4633,27 @@ export namespace Prisma {
   }
 
   /**
-   * User.createdShareLinks
+   * User.typingIndicators
    */
-  export type User$createdShareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$typingIndicatorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ConversationShareLink
+     * Select specific fields to fetch from the TypingIndicator
      */
-    select?: ConversationShareLinkSelect<ExtArgs> | null
+    select?: TypingIndicatorSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ConversationShareLink
+     * Omit specific fields from the TypingIndicator
      */
-    omit?: ConversationShareLinkOmit<ExtArgs> | null
+    omit?: TypingIndicatorOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ConversationShareLinkInclude<ExtArgs> | null
-    where?: ConversationShareLinkWhereInput
-    orderBy?: ConversationShareLinkOrderByWithRelationInput | ConversationShareLinkOrderByWithRelationInput[]
-    cursor?: ConversationShareLinkWhereUniqueInput
+    include?: TypingIndicatorInclude<ExtArgs> | null
+    where?: TypingIndicatorWhereInput
+    orderBy?: TypingIndicatorOrderByWithRelationInput | TypingIndicatorOrderByWithRelationInput[]
+    cursor?: TypingIndicatorWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: ConversationShareLinkScalarFieldEnum | ConversationShareLinkScalarFieldEnum[]
-  }
-
-  /**
-   * User.stats
-   */
-  export type User$statsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the UserStats
-     */
-    select?: UserStatsSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the UserStats
-     */
-    omit?: UserStatsOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: UserStatsInclude<ExtArgs> | null
-    where?: UserStatsWhereInput
+    distinct?: TypingIndicatorScalarFieldEnum | TypingIndicatorScalarFieldEnum[]
   }
 
   /**
@@ -4733,51 +4681,22 @@ export namespace Prisma {
   }
 
   /**
-   * User.conversationPreferences
+   * User.stats
    */
-  export type User$conversationPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$statsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the ConversationPreference
+     * Select specific fields to fetch from the UserStats
      */
-    select?: ConversationPreferenceSelect<ExtArgs> | null
+    select?: UserStatsSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the ConversationPreference
+     * Omit specific fields from the UserStats
      */
-    omit?: ConversationPreferenceOmit<ExtArgs> | null
+    omit?: UserStatsOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: ConversationPreferenceInclude<ExtArgs> | null
-    where?: ConversationPreferenceWhereInput
-    orderBy?: ConversationPreferenceOrderByWithRelationInput | ConversationPreferenceOrderByWithRelationInput[]
-    cursor?: ConversationPreferenceWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ConversationPreferenceScalarFieldEnum | ConversationPreferenceScalarFieldEnum[]
-  }
-
-  /**
-   * User.createdCommunities
-   */
-  export type User$createdCommunitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Community
-     */
-    select?: CommunitySelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Community
-     */
-    omit?: CommunityOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CommunityInclude<ExtArgs> | null
-    where?: CommunityWhereInput
-    orderBy?: CommunityOrderByWithRelationInput | CommunityOrderByWithRelationInput[]
-    cursor?: CommunityWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: CommunityScalarFieldEnum | CommunityScalarFieldEnum[]
+    include?: UserStatsInclude<ExtArgs> | null
+    where?: UserStatsWhereInput
   }
 
   /**
@@ -4829,27 +4748,51 @@ export namespace Prisma {
   }
 
   /**
-   * User.communityMemberships
+   * User.adminGroups
    */
-  export type User$communityMembershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$adminGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityMember
+     * Select specific fields to fetch from the Group
      */
-    select?: CommunityMemberSelect<ExtArgs> | null
+    select?: GroupSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityMember
+     * Omit specific fields from the Group
      */
-    omit?: CommunityMemberOmit<ExtArgs> | null
+    omit?: GroupOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityMemberInclude<ExtArgs> | null
-    where?: CommunityMemberWhereInput
-    orderBy?: CommunityMemberOrderByWithRelationInput | CommunityMemberOrderByWithRelationInput[]
-    cursor?: CommunityMemberWhereUniqueInput
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
+    cursor?: GroupWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: CommunityMemberScalarFieldEnum | CommunityMemberScalarFieldEnum[]
+    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
+  }
+
+  /**
+   * User.moderatorGroups
+   */
+  export type User$moderatorGroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Group
+     */
+    omit?: GroupOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
+    cursor?: GroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
   }
 
   /**
@@ -5091,13 +5034,13 @@ export namespace Prisma {
     lastMessageAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    community?: boolean | Conversation$communityArgs<ExtArgs>
+    anonymousParticipants?: boolean | Conversation$anonymousParticipantsArgs<ExtArgs>
     members?: boolean | Conversation$membersArgs<ExtArgs>
+    preferences?: boolean | Conversation$preferencesArgs<ExtArgs>
+    shareLinks?: boolean | Conversation$shareLinksArgs<ExtArgs>
+    community?: boolean | Conversation$communityArgs<ExtArgs>
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     typingIndicators?: boolean | Conversation$typingIndicatorsArgs<ExtArgs>
-    shareLinks?: boolean | Conversation$shareLinksArgs<ExtArgs>
-    preferences?: boolean | Conversation$preferencesArgs<ExtArgs>
-    anonymousParticipants?: boolean | Conversation$anonymousParticipantsArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversation"]>
 
@@ -5150,13 +5093,13 @@ export namespace Prisma {
 
   export type ConversationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "title" | "description" | "image" | "avatar" | "communityId" | "isActive" | "isArchived" | "lastMessageAt" | "createdAt" | "updatedAt", ExtArgs["result"]["conversation"]>
   export type ConversationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    community?: boolean | Conversation$communityArgs<ExtArgs>
+    anonymousParticipants?: boolean | Conversation$anonymousParticipantsArgs<ExtArgs>
     members?: boolean | Conversation$membersArgs<ExtArgs>
+    preferences?: boolean | Conversation$preferencesArgs<ExtArgs>
+    shareLinks?: boolean | Conversation$shareLinksArgs<ExtArgs>
+    community?: boolean | Conversation$communityArgs<ExtArgs>
     messages?: boolean | Conversation$messagesArgs<ExtArgs>
     typingIndicators?: boolean | Conversation$typingIndicatorsArgs<ExtArgs>
-    shareLinks?: boolean | Conversation$shareLinksArgs<ExtArgs>
-    preferences?: boolean | Conversation$preferencesArgs<ExtArgs>
-    anonymousParticipants?: boolean | Conversation$anonymousParticipantsArgs<ExtArgs>
     _count?: boolean | ConversationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ConversationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5169,34 +5112,13 @@ export namespace Prisma {
   export type $ConversationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Conversation"
     objects: {
-      /**
-       * Communauté parente (si applicable)
-       */
-      community: Prisma.$CommunityPayload<ExtArgs> | null
-      /**
-       * Membres de la conversation
-       */
-      members: Prisma.$ConversationMemberPayload<ExtArgs>[]
-      /**
-       * Messages de la conversation
-       */
-      messages: Prisma.$MessagePayload<ExtArgs>[]
-      /**
-       * Indicateurs de frappe actifs
-       */
-      typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
-      /**
-       * Liens de partage pour accès anonyme
-       */
-      shareLinks: Prisma.$ConversationShareLinkPayload<ExtArgs>[]
-      /**
-       * Préférences spécifiques à cette conversation
-       */
-      preferences: Prisma.$ConversationPreferencePayload<ExtArgs>[]
-      /**
-       * Participants anonymes via liens de partage
-       */
       anonymousParticipants: Prisma.$AnonymousParticipantPayload<ExtArgs>[]
+      members: Prisma.$ConversationMemberPayload<ExtArgs>[]
+      preferences: Prisma.$ConversationPreferencePayload<ExtArgs>[]
+      shareLinks: Prisma.$ConversationShareLinkPayload<ExtArgs>[]
+      community: Prisma.$CommunityPayload<ExtArgs> | null
+      messages: Prisma.$MessagePayload<ExtArgs>[]
+      typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -5646,13 +5568,13 @@ export namespace Prisma {
    */
   export interface Prisma__ConversationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    community<T extends Conversation$communityArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$communityArgs<ExtArgs>>): Prisma__CommunityClient<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    anonymousParticipants<T extends Conversation$anonymousParticipantsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$anonymousParticipantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     members<T extends Conversation$membersArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    preferences<T extends Conversation$preferencesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$preferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    shareLinks<T extends Conversation$shareLinksArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$shareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    community<T extends Conversation$communityArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$communityArgs<ExtArgs>>): Prisma__CommunityClient<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     messages<T extends Conversation$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     typingIndicators<T extends Conversation$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    shareLinks<T extends Conversation$shareLinksArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$shareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    preferences<T extends Conversation$preferencesArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$preferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    anonymousParticipants<T extends Conversation$anonymousParticipantsArgs<ExtArgs> = {}>(args?: Subset<T, Conversation$anonymousParticipantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6088,22 +6010,27 @@ export namespace Prisma {
   }
 
   /**
-   * Conversation.community
+   * Conversation.anonymousParticipants
    */
-  export type Conversation$communityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Conversation$anonymousParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the Community
+     * Select specific fields to fetch from the AnonymousParticipant
      */
-    select?: CommunitySelect<ExtArgs> | null
+    select?: AnonymousParticipantSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the Community
+     * Omit specific fields from the AnonymousParticipant
      */
-    omit?: CommunityOmit<ExtArgs> | null
+    omit?: AnonymousParticipantOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityInclude<ExtArgs> | null
-    where?: CommunityWhereInput
+    include?: AnonymousParticipantInclude<ExtArgs> | null
+    where?: AnonymousParticipantWhereInput
+    orderBy?: AnonymousParticipantOrderByWithRelationInput | AnonymousParticipantOrderByWithRelationInput[]
+    cursor?: AnonymousParticipantWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AnonymousParticipantScalarFieldEnum | AnonymousParticipantScalarFieldEnum[]
   }
 
   /**
@@ -6128,6 +6055,73 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ConversationMemberScalarFieldEnum | ConversationMemberScalarFieldEnum[]
+  }
+
+  /**
+   * Conversation.preferences
+   */
+  export type Conversation$preferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationPreference
+     */
+    select?: ConversationPreferenceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationPreference
+     */
+    omit?: ConversationPreferenceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationPreferenceInclude<ExtArgs> | null
+    where?: ConversationPreferenceWhereInput
+    orderBy?: ConversationPreferenceOrderByWithRelationInput | ConversationPreferenceOrderByWithRelationInput[]
+    cursor?: ConversationPreferenceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConversationPreferenceScalarFieldEnum | ConversationPreferenceScalarFieldEnum[]
+  }
+
+  /**
+   * Conversation.shareLinks
+   */
+  export type Conversation$shareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ConversationShareLink
+     */
+    select?: ConversationShareLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ConversationShareLink
+     */
+    omit?: ConversationShareLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationShareLinkInclude<ExtArgs> | null
+    where?: ConversationShareLinkWhereInput
+    orderBy?: ConversationShareLinkOrderByWithRelationInput | ConversationShareLinkOrderByWithRelationInput[]
+    cursor?: ConversationShareLinkWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConversationShareLinkScalarFieldEnum | ConversationShareLinkScalarFieldEnum[]
+  }
+
+  /**
+   * Conversation.community
+   */
+  export type Conversation$communityArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Community
+     */
+    select?: CommunitySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Community
+     */
+    omit?: CommunityOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CommunityInclude<ExtArgs> | null
+    where?: CommunityWhereInput
   }
 
   /**
@@ -6176,78 +6170,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TypingIndicatorScalarFieldEnum | TypingIndicatorScalarFieldEnum[]
-  }
-
-  /**
-   * Conversation.shareLinks
-   */
-  export type Conversation$shareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConversationShareLink
-     */
-    select?: ConversationShareLinkSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConversationShareLink
-     */
-    omit?: ConversationShareLinkOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConversationShareLinkInclude<ExtArgs> | null
-    where?: ConversationShareLinkWhereInput
-    orderBy?: ConversationShareLinkOrderByWithRelationInput | ConversationShareLinkOrderByWithRelationInput[]
-    cursor?: ConversationShareLinkWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ConversationShareLinkScalarFieldEnum | ConversationShareLinkScalarFieldEnum[]
-  }
-
-  /**
-   * Conversation.preferences
-   */
-  export type Conversation$preferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ConversationPreference
-     */
-    select?: ConversationPreferenceSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the ConversationPreference
-     */
-    omit?: ConversationPreferenceOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConversationPreferenceInclude<ExtArgs> | null
-    where?: ConversationPreferenceWhereInput
-    orderBy?: ConversationPreferenceOrderByWithRelationInput | ConversationPreferenceOrderByWithRelationInput[]
-    cursor?: ConversationPreferenceWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ConversationPreferenceScalarFieldEnum | ConversationPreferenceScalarFieldEnum[]
-  }
-
-  /**
-   * Conversation.anonymousParticipants
-   */
-  export type Conversation$anonymousParticipantsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the AnonymousParticipant
-     */
-    select?: AnonymousParticipantSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the AnonymousParticipant
-     */
-    omit?: AnonymousParticipantOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: AnonymousParticipantInclude<ExtArgs> | null
-    where?: AnonymousParticipantWhereInput
-    orderBy?: AnonymousParticipantOrderByWithRelationInput | AnonymousParticipantOrderByWithRelationInput[]
-    cursor?: AnonymousParticipantWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: AnonymousParticipantScalarFieldEnum | AnonymousParticipantScalarFieldEnum[]
   }
 
   /**
@@ -6505,8 +6427,8 @@ export namespace Prisma {
     joinedAt?: boolean
     leftAt?: boolean
     isActive?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationMember"]>
 
   export type ConversationMemberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6524,8 +6446,8 @@ export namespace Prisma {
     joinedAt?: boolean
     leftAt?: boolean
     isActive?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationMember"]>
 
   export type ConversationMemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -6543,8 +6465,8 @@ export namespace Prisma {
     joinedAt?: boolean
     leftAt?: boolean
     isActive?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationMember"]>
 
   export type ConversationMemberSelectScalar = {
@@ -6566,29 +6488,23 @@ export namespace Prisma {
 
   export type ConversationMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "userId" | "role" | "canSendMessage" | "canSendFiles" | "canSendImages" | "canSendVideos" | "canSendAudios" | "canSendLocations" | "canSendLinks" | "joinedAt" | "leftAt" | "isActive", ExtArgs["result"]["conversationMember"]>
   export type ConversationMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type ConversationMemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type ConversationMemberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
 
   export type $ConversationMemberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ConversationMember"
     objects: {
-      /**
-       * Référence à la conversation
-       */
-      conversation: Prisma.$ConversationPayload<ExtArgs>
-      /**
-       * Référence à l'utilisateur
-       */
       user: Prisma.$UserPayload<ExtArgs>
+      conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -7045,8 +6961,8 @@ export namespace Prisma {
    */
   export interface Prisma__ConversationMemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -7832,9 +7748,9 @@ export namespace Prisma {
     requireEmail?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    creator?: boolean | UserDefaultArgs<ExtArgs>
     anonymousParticipants?: boolean | ConversationShareLink$anonymousParticipantsArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     _count?: boolean | ConversationShareLinkCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationShareLink"]>
 
@@ -7859,8 +7775,8 @@ export namespace Prisma {
     requireEmail?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationShareLink"]>
 
   export type ConversationShareLinkSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -7884,8 +7800,8 @@ export namespace Prisma {
     requireEmail?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationShareLink"]>
 
   export type ConversationShareLinkSelectScalar = {
@@ -7913,35 +7829,26 @@ export namespace Prisma {
 
   export type ConversationShareLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "conversationId" | "createdBy" | "name" | "description" | "maxUses" | "currentUses" | "maxConcurrentUsers" | "currentConcurrentUsers" | "expiresAt" | "isActive" | "allowAnonymousMessages" | "allowAnonymousFiles" | "allowAnonymousImages" | "allowViewHistory" | "requireNickname" | "requireEmail" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationShareLink"]>
   export type ConversationShareLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    creator?: boolean | UserDefaultArgs<ExtArgs>
     anonymousParticipants?: boolean | ConversationShareLink$anonymousParticipantsArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     _count?: boolean | ConversationShareLinkCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ConversationShareLinkIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type ConversationShareLinkIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
 
   export type $ConversationShareLinkPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ConversationShareLink"
     objects: {
-      /**
-       * Référence à la conversation partagée
-       */
-      conversation: Prisma.$ConversationPayload<ExtArgs>
-      /**
-       * Référence à l'utilisateur créateur
-       */
-      creator: Prisma.$UserPayload<ExtArgs>
-      /**
-       * Participants anonymes utilisant ce lien
-       */
       anonymousParticipants: Prisma.$AnonymousParticipantPayload<ExtArgs>[]
+      creator: Prisma.$UserPayload<ExtArgs>
+      conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -8418,9 +8325,9 @@ export namespace Prisma {
    */
   export interface Prisma__ConversationShareLinkClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     anonymousParticipants<T extends ConversationShareLink$anonymousParticipantsArgs<ExtArgs> = {}>(args?: Subset<T, ConversationShareLink$anonymousParticipantsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9158,8 +9065,8 @@ export namespace Prisma {
     joinedAt?: boolean
     lastSeenAt?: boolean
     leftAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     sentMessages?: boolean | AnonymousParticipant$sentMessagesArgs<ExtArgs>
     _count?: boolean | AnonymousParticipantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["anonymousParticipant"]>
@@ -9181,8 +9088,8 @@ export namespace Prisma {
     joinedAt?: boolean
     lastSeenAt?: boolean
     leftAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["anonymousParticipant"]>
 
   export type AnonymousParticipantSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -9202,8 +9109,8 @@ export namespace Prisma {
     joinedAt?: boolean
     lastSeenAt?: boolean
     leftAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["anonymousParticipant"]>
 
   export type AnonymousParticipantSelectScalar = {
@@ -9227,34 +9134,25 @@ export namespace Prisma {
 
   export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "nickname" | "email" | "sessionToken" | "ipAddress" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
   export type AnonymousParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     sentMessages?: boolean | AnonymousParticipant$sentMessagesArgs<ExtArgs>
     _count?: boolean | AnonymousParticipantCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AnonymousParticipantIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type AnonymousParticipantIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
 
   export type $AnonymousParticipantPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "AnonymousParticipant"
     objects: {
-      /**
-       * Référence à la conversation
-       */
-      conversation: Prisma.$ConversationPayload<ExtArgs>
-      /**
-       * Référence au lien de partage utilisé
-       */
       shareLink: Prisma.$ConversationShareLinkPayload<ExtArgs>
-      /**
-       * Messages envoyés par ce participant anonyme
-       */
+      conversation: Prisma.$ConversationPayload<ExtArgs>
       sentMessages: Prisma.$MessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -9716,8 +9614,8 @@ export namespace Prisma {
    */
   export interface Prisma__AnonymousParticipantClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     shareLink<T extends ConversationShareLinkDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationShareLinkDefaultArgs<ExtArgs>>): Prisma__ConversationShareLinkClient<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     sentMessages<T extends AnonymousParticipant$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, AnonymousParticipant$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -10436,13 +10334,13 @@ export namespace Prisma {
     replyToId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    sender?: boolean | Message$senderArgs<ExtArgs>
-    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    translations?: boolean | Message$translationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
-    translations?: boolean | Message$translationsArgs<ExtArgs>
-    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    sender?: boolean | Message$senderArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     _count?: boolean | MessageCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
@@ -10461,10 +10359,10 @@ export namespace Prisma {
     replyToId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    sender?: boolean | Message$senderArgs<ExtArgs>
-    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
+    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    sender?: boolean | Message$senderArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
   export type MessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -10482,10 +10380,10 @@ export namespace Prisma {
     replyToId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    sender?: boolean | Message$senderArgs<ExtArgs>
-    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
+    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    sender?: boolean | Message$senderArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
   export type MessageSelectScalar = {
@@ -10507,59 +10405,38 @@ export namespace Prisma {
 
   export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "senderId" | "anonymousSenderId" | "content" | "originalLanguage" | "messageType" | "isEdited" | "editedAt" | "isDeleted" | "deletedAt" | "replyToId" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    sender?: boolean | Message$senderArgs<ExtArgs>
-    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    translations?: boolean | Message$translationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
-    translations?: boolean | Message$translationsArgs<ExtArgs>
-    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    sender?: boolean | Message$senderArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     _count?: boolean | MessageCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type MessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    sender?: boolean | Message$senderArgs<ExtArgs>
-    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
+    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    sender?: boolean | Message$senderArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type MessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
-    sender?: boolean | Message$senderArgs<ExtArgs>
-    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
+    anonymousSender?: boolean | Message$anonymousSenderArgs<ExtArgs>
+    sender?: boolean | Message$senderArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
 
   export type $MessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Message"
     objects: {
-      /**
-       * Référence à la conversation
-       */
-      conversation: Prisma.$ConversationPayload<ExtArgs>
-      /**
-       * Référence à l'expéditeur enregistré (si applicable)
-       */
-      sender: Prisma.$UserPayload<ExtArgs> | null
-      /**
-       * Référence à l'expéditeur anonyme (si applicable)
-       */
-      anonymousSender: Prisma.$AnonymousParticipantPayload<ExtArgs> | null
-      /**
-       * Référence au message parent (pour les réponses)
-       */
-      replyTo: Prisma.$MessagePayload<ExtArgs> | null
-      /**
-       * Messages en réponse à ce message
-       */
-      replies: Prisma.$MessagePayload<ExtArgs>[]
-      /**
-       * Traductions disponibles de ce message
-       */
-      translations: Prisma.$MessageTranslationPayload<ExtArgs>[]
-      /**
-       * Statuts de lecture par les utilisateurs
-       */
       readStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
+      translations: Prisma.$MessageTranslationPayload<ExtArgs>[]
+      replyTo: Prisma.$MessagePayload<ExtArgs> | null
+      replies: Prisma.$MessagePayload<ExtArgs>[]
+      anonymousSender: Prisma.$AnonymousParticipantPayload<ExtArgs> | null
+      sender: Prisma.$UserPayload<ExtArgs> | null
+      conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -11019,13 +10896,13 @@ export namespace Prisma {
    */
   export interface Prisma__MessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    sender<T extends Message$senderArgs<ExtArgs> = {}>(args?: Subset<T, Message$senderArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    anonymousSender<T extends Message$anonymousSenderArgs<ExtArgs> = {}>(args?: Subset<T, Message$anonymousSenderArgs<ExtArgs>>): Prisma__AnonymousParticipantClient<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    readStatus<T extends Message$readStatusArgs<ExtArgs> = {}>(args?: Subset<T, Message$readStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    translations<T extends Message$translationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$translationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageTranslationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     replyTo<T extends Message$replyToArgs<ExtArgs> = {}>(args?: Subset<T, Message$replyToArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     replies<T extends Message$repliesArgs<ExtArgs> = {}>(args?: Subset<T, Message$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    translations<T extends Message$translationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$translationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageTranslationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    readStatus<T extends Message$readStatusArgs<ExtArgs> = {}>(args?: Subset<T, Message$readStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    anonymousSender<T extends Message$anonymousSenderArgs<ExtArgs> = {}>(args?: Subset<T, Message$anonymousSenderArgs<ExtArgs>>): Prisma__AnonymousParticipantClient<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    sender<T extends Message$senderArgs<ExtArgs> = {}>(args?: Subset<T, Message$senderArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11463,41 +11340,51 @@ export namespace Prisma {
   }
 
   /**
-   * Message.sender
+   * Message.readStatus
    */
-  export type Message$senderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Message$readStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the User
+     * Select specific fields to fetch from the MessageReadStatus
      */
-    select?: UserSelect<ExtArgs> | null
+    select?: MessageReadStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the User
+     * Omit specific fields from the MessageReadStatus
      */
-    omit?: UserOmit<ExtArgs> | null
+    omit?: MessageReadStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: UserInclude<ExtArgs> | null
-    where?: UserWhereInput
+    include?: MessageReadStatusInclude<ExtArgs> | null
+    where?: MessageReadStatusWhereInput
+    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    cursor?: MessageReadStatusWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
   }
 
   /**
-   * Message.anonymousSender
+   * Message.translations
    */
-  export type Message$anonymousSenderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Message$translationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the AnonymousParticipant
+     * Select specific fields to fetch from the MessageTranslation
      */
-    select?: AnonymousParticipantSelect<ExtArgs> | null
+    select?: MessageTranslationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the AnonymousParticipant
+     * Omit specific fields from the MessageTranslation
      */
-    omit?: AnonymousParticipantOmit<ExtArgs> | null
+    omit?: MessageTranslationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: AnonymousParticipantInclude<ExtArgs> | null
-    where?: AnonymousParticipantWhereInput
+    include?: MessageTranslationInclude<ExtArgs> | null
+    where?: MessageTranslationWhereInput
+    orderBy?: MessageTranslationOrderByWithRelationInput | MessageTranslationOrderByWithRelationInput[]
+    cursor?: MessageTranslationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageTranslationScalarFieldEnum | MessageTranslationScalarFieldEnum[]
   }
 
   /**
@@ -11544,51 +11431,41 @@ export namespace Prisma {
   }
 
   /**
-   * Message.translations
+   * Message.anonymousSender
    */
-  export type Message$translationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Message$anonymousSenderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageTranslation
+     * Select specific fields to fetch from the AnonymousParticipant
      */
-    select?: MessageTranslationSelect<ExtArgs> | null
+    select?: AnonymousParticipantSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageTranslation
+     * Omit specific fields from the AnonymousParticipant
      */
-    omit?: MessageTranslationOmit<ExtArgs> | null
+    omit?: AnonymousParticipantOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageTranslationInclude<ExtArgs> | null
-    where?: MessageTranslationWhereInput
-    orderBy?: MessageTranslationOrderByWithRelationInput | MessageTranslationOrderByWithRelationInput[]
-    cursor?: MessageTranslationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: MessageTranslationScalarFieldEnum | MessageTranslationScalarFieldEnum[]
+    include?: AnonymousParticipantInclude<ExtArgs> | null
+    where?: AnonymousParticipantWhereInput
   }
 
   /**
-   * Message.readStatus
+   * Message.sender
    */
-  export type Message$readStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Message$senderArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the User
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: UserSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the User
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: UserOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
-    where?: MessageReadStatusWhereInput
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
-    cursor?: MessageReadStatusWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -11895,9 +11772,6 @@ export namespace Prisma {
   export type $MessageTranslationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "MessageTranslation"
     objects: {
-      /**
-       * Référence au message original
-       */
       message: Prisma.$MessagePayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -12938,8 +12812,8 @@ export namespace Prisma {
     messageId?: boolean
     userId?: boolean
     readAt?: boolean
-    message?: boolean | MessageDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageReadStatus"]>
 
   export type MessageReadStatusSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12947,8 +12821,8 @@ export namespace Prisma {
     messageId?: boolean
     userId?: boolean
     readAt?: boolean
-    message?: boolean | MessageDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageReadStatus"]>
 
   export type MessageReadStatusSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12956,8 +12830,8 @@ export namespace Prisma {
     messageId?: boolean
     userId?: boolean
     readAt?: boolean
-    message?: boolean | MessageDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | MessageDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["messageReadStatus"]>
 
   export type MessageReadStatusSelectScalar = {
@@ -12969,29 +12843,23 @@ export namespace Prisma {
 
   export type MessageReadStatusOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "userId" | "readAt", ExtArgs["result"]["messageReadStatus"]>
   export type MessageReadStatusInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    message?: boolean | MessageDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | MessageDefaultArgs<ExtArgs>
   }
   export type MessageReadStatusIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    message?: boolean | MessageDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | MessageDefaultArgs<ExtArgs>
   }
   export type MessageReadStatusIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    message?: boolean | MessageDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    message?: boolean | MessageDefaultArgs<ExtArgs>
   }
 
   export type $MessageReadStatusPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "MessageReadStatus"
     objects: {
-      /**
-       * Référence au message lu
-       */
-      message: Prisma.$MessagePayload<ExtArgs>
-      /**
-       * Référence à l'utilisateur
-       */
       user: Prisma.$UserPayload<ExtArgs>
+      message: Prisma.$MessagePayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -13404,8 +13272,8 @@ export namespace Prisma {
    */
   export interface Prisma__MessageReadStatusClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    message<T extends MessageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MessageDefaultArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    message<T extends MessageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MessageDefaultArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14023,8 +13891,8 @@ export namespace Prisma {
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    sender?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | UserDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["friendRequest"]>
 
   export type FriendRequestSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -14034,8 +13902,8 @@ export namespace Prisma {
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    sender?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | UserDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["friendRequest"]>
 
   export type FriendRequestSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -14045,8 +13913,8 @@ export namespace Prisma {
     status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    sender?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | UserDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["friendRequest"]>
 
   export type FriendRequestSelectScalar = {
@@ -14060,29 +13928,23 @@ export namespace Prisma {
 
   export type FriendRequestOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "senderId" | "receiverId" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["friendRequest"]>
   export type FriendRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sender?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | UserDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type FriendRequestIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sender?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | UserDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type FriendRequestIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sender?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | UserDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $FriendRequestPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "FriendRequest"
     objects: {
-      /**
-       * Référence à l'expéditeur
-       */
-      sender: Prisma.$UserPayload<ExtArgs>
-      /**
-       * Référence au destinataire
-       */
       receiver: Prisma.$UserPayload<ExtArgs>
+      sender: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -14507,8 +14369,8 @@ export namespace Prisma {
    */
   export interface Prisma__FriendRequestClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    sender<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     receiver<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    sender<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15128,8 +14990,8 @@ export namespace Prisma {
     isTyping?: boolean
     startedAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["typingIndicator"]>
 
   export type TypingIndicatorSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -15139,8 +15001,8 @@ export namespace Prisma {
     isTyping?: boolean
     startedAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["typingIndicator"]>
 
   export type TypingIndicatorSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -15150,8 +15012,8 @@ export namespace Prisma {
     isTyping?: boolean
     startedAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["typingIndicator"]>
 
   export type TypingIndicatorSelectScalar = {
@@ -15165,29 +15027,23 @@ export namespace Prisma {
 
   export type TypingIndicatorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "userId" | "isTyping" | "startedAt" | "updatedAt", ExtArgs["result"]["typingIndicator"]>
   export type TypingIndicatorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type TypingIndicatorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type TypingIndicatorIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
 
   export type $TypingIndicatorPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "TypingIndicator"
     objects: {
-      /**
-       * Référence à la conversation
-       */
-      conversation: Prisma.$ConversationPayload<ExtArgs>
-      /**
-       * Référence à l'utilisateur
-       */
       user: Prisma.$UserPayload<ExtArgs>
+      conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -15608,8 +15464,8 @@ export namespace Prisma {
    */
   export interface Prisma__TypingIndicatorClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16341,9 +16197,6 @@ export namespace Prisma {
   export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Notification"
     objects: {
-      /**
-       * Référence à l'utilisateur destinataire
-       */
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -17484,9 +17337,9 @@ export namespace Prisma {
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversations?: boolean | Community$conversationsArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | Community$membersArgs<ExtArgs>
+    conversations?: boolean | Community$conversationsArgs<ExtArgs>
     admins?: boolean | Community$adminsArgs<ExtArgs>
     moderators?: boolean | Community$moderatorsArgs<ExtArgs>
     _count?: boolean | CommunityCountOutputTypeDefaultArgs<ExtArgs>
@@ -17532,9 +17385,9 @@ export namespace Prisma {
 
   export type CommunityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "image" | "isPublic" | "maxMembers" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["community"]>
   export type CommunityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversations?: boolean | Community$conversationsArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | Community$membersArgs<ExtArgs>
+    conversations?: boolean | Community$conversationsArgs<ExtArgs>
     admins?: boolean | Community$adminsArgs<ExtArgs>
     moderators?: boolean | Community$moderatorsArgs<ExtArgs>
     _count?: boolean | CommunityCountOutputTypeDefaultArgs<ExtArgs>
@@ -17549,25 +17402,10 @@ export namespace Prisma {
   export type $CommunityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Community"
     objects: {
-      /**
-       * Conversations appartenant à cette communauté
-       */
-      conversations: Prisma.$ConversationPayload<ExtArgs>[]
-      /**
-       * Référence au créateur
-       */
       createdBy: Prisma.$UserPayload<ExtArgs>
-      /**
-       * Membres de la communauté
-       */
       members: Prisma.$CommunityMemberPayload<ExtArgs>[]
-      /**
-       * Administrateurs de la communauté
-       */
+      conversations: Prisma.$ConversationPayload<ExtArgs>[]
       admins: Prisma.$UserPayload<ExtArgs>[]
-      /**
-       * Modérateurs de la communauté
-       */
       moderators: Prisma.$UserPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -18001,9 +17839,9 @@ export namespace Prisma {
    */
   export interface Prisma__CommunityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversations<T extends Community$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, Community$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     members<T extends Community$membersArgs<ExtArgs> = {}>(args?: Subset<T, Community$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    conversations<T extends Community$conversationsArgs<ExtArgs> = {}>(args?: Subset<T, Community$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     admins<T extends Community$adminsArgs<ExtArgs> = {}>(args?: Subset<T, Community$adminsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     moderators<T extends Community$moderatorsArgs<ExtArgs> = {}>(args?: Subset<T, Community$moderatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -18438,30 +18276,6 @@ export namespace Prisma {
   }
 
   /**
-   * Community.conversations
-   */
-  export type Community$conversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Conversation
-     */
-    select?: ConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Conversation
-     */
-    omit?: ConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ConversationInclude<ExtArgs> | null
-    where?: ConversationWhereInput
-    orderBy?: ConversationOrderByWithRelationInput | ConversationOrderByWithRelationInput[]
-    cursor?: ConversationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ConversationScalarFieldEnum | ConversationScalarFieldEnum[]
-  }
-
-  /**
    * Community.members
    */
   export type Community$membersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18483,6 +18297,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CommunityMemberScalarFieldEnum | CommunityMemberScalarFieldEnum[]
+  }
+
+  /**
+   * Community.conversations
+   */
+  export type Community$conversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Conversation
+     */
+    select?: ConversationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Conversation
+     */
+    omit?: ConversationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ConversationInclude<ExtArgs> | null
+    where?: ConversationWhereInput
+    orderBy?: ConversationOrderByWithRelationInput | ConversationOrderByWithRelationInput[]
+    cursor?: ConversationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ConversationScalarFieldEnum | ConversationScalarFieldEnum[]
   }
 
   /**
@@ -18716,8 +18554,8 @@ export namespace Prisma {
     userId?: boolean
     role?: boolean
     joinedAt?: boolean
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    community?: boolean | CommunityDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["communityMember"]>
 
   export type CommunityMemberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -18726,8 +18564,8 @@ export namespace Prisma {
     userId?: boolean
     role?: boolean
     joinedAt?: boolean
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    community?: boolean | CommunityDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["communityMember"]>
 
   export type CommunityMemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -18736,8 +18574,8 @@ export namespace Prisma {
     userId?: boolean
     role?: boolean
     joinedAt?: boolean
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    community?: boolean | CommunityDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["communityMember"]>
 
   export type CommunityMemberSelectScalar = {
@@ -18750,29 +18588,23 @@ export namespace Prisma {
 
   export type CommunityMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "communityId" | "userId" | "role" | "joinedAt", ExtArgs["result"]["communityMember"]>
   export type CommunityMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    community?: boolean | CommunityDefaultArgs<ExtArgs>
   }
   export type CommunityMemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    community?: boolean | CommunityDefaultArgs<ExtArgs>
   }
   export type CommunityMemberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    community?: boolean | CommunityDefaultArgs<ExtArgs>
   }
 
   export type $CommunityMemberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "CommunityMember"
     objects: {
-      /**
-       * Référence à la communauté
-       */
-      community: Prisma.$CommunityPayload<ExtArgs>
-      /**
-       * Référence à l'utilisateur
-       */
       user: Prisma.$UserPayload<ExtArgs>
+      community: Prisma.$CommunityPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -19192,8 +19024,8 @@ export namespace Prisma {
    */
   export interface Prisma__CommunityMemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    community<T extends CommunityDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CommunityDefaultArgs<ExtArgs>>): Prisma__CommunityClient<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    community<T extends CommunityDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CommunityDefaultArgs<ExtArgs>>): Prisma__CommunityClient<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -19828,8 +19660,8 @@ export namespace Prisma {
     createdBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    creator?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | Group$membersArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
     admins?: boolean | Group$adminsArgs<ExtArgs>
     moderators?: boolean | Group$moderatorsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
@@ -19872,8 +19704,8 @@ export namespace Prisma {
 
   export type GroupOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "avatar" | "isPrivate" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["group"]>
   export type GroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    creator?: boolean | UserDefaultArgs<ExtArgs>
     members?: boolean | Group$membersArgs<ExtArgs>
+    creator?: boolean | UserDefaultArgs<ExtArgs>
     admins?: boolean | Group$adminsArgs<ExtArgs>
     moderators?: boolean | Group$moderatorsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
@@ -19888,8 +19720,8 @@ export namespace Prisma {
   export type $GroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Group"
     objects: {
-      creator: Prisma.$UserPayload<ExtArgs>
       members: Prisma.$GroupMemberPayload<ExtArgs>[]
+      creator: Prisma.$UserPayload<ExtArgs>
       admins: Prisma.$UserPayload<ExtArgs>[]
       moderators: Prisma.$UserPayload<ExtArgs>[]
     }
@@ -20320,8 +20152,8 @@ export namespace Prisma {
    */
   export interface Prisma__GroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     members<T extends Group$membersArgs<ExtArgs> = {}>(args?: Subset<T, Group$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     admins<T extends Group$adminsArgs<ExtArgs> = {}>(args?: Subset<T, Group$adminsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     moderators<T extends Group$moderatorsArgs<ExtArgs> = {}>(args?: Subset<T, Group$moderatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -21001,8 +20833,8 @@ export namespace Prisma {
     groupId?: boolean
     userId?: boolean
     joinedAt?: boolean
-    group?: boolean | GroupDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["groupMember"]>
 
   export type GroupMemberSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -21010,8 +20842,8 @@ export namespace Prisma {
     groupId?: boolean
     userId?: boolean
     joinedAt?: boolean
-    group?: boolean | GroupDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["groupMember"]>
 
   export type GroupMemberSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -21019,8 +20851,8 @@ export namespace Prisma {
     groupId?: boolean
     userId?: boolean
     joinedAt?: boolean
-    group?: boolean | GroupDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["groupMember"]>
 
   export type GroupMemberSelectScalar = {
@@ -21032,23 +20864,23 @@ export namespace Prisma {
 
   export type GroupMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "groupId" | "userId" | "joinedAt", ExtArgs["result"]["groupMember"]>
   export type GroupMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | GroupDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
   }
   export type GroupMemberIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | GroupDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
   }
   export type GroupMemberIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    group?: boolean | GroupDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | GroupDefaultArgs<ExtArgs>
   }
 
   export type $GroupMemberPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "GroupMember"
     objects: {
-      group: Prisma.$GroupPayload<ExtArgs>
       user: Prisma.$UserPayload<ExtArgs>
+      group: Prisma.$GroupPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -21461,8 +21293,8 @@ export namespace Prisma {
    */
   export interface Prisma__GroupMemberClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    group<T extends GroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupDefaultArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    group<T extends GroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupDefaultArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -22355,9 +22187,6 @@ export namespace Prisma {
   export type $UserStatsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "UserStats"
     objects: {
-      /**
-       * Référence à l'utilisateur
-       */
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -23532,9 +23361,6 @@ export namespace Prisma {
   export type $UserPreferencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "UserPreference"
     objects: {
-      /**
-       * Référence à l'utilisateur
-       */
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -24611,8 +24437,8 @@ export namespace Prisma {
     description?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationPreference"]>
 
   export type ConversationPreferenceSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -24625,8 +24451,8 @@ export namespace Prisma {
     description?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationPreference"]>
 
   export type ConversationPreferenceSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -24639,8 +24465,8 @@ export namespace Prisma {
     description?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["conversationPreference"]>
 
   export type ConversationPreferenceSelectScalar = {
@@ -24657,29 +24483,23 @@ export namespace Prisma {
 
   export type ConversationPreferenceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "userId" | "key" | "value" | "valueType" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationPreference"]>
   export type ConversationPreferenceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type ConversationPreferenceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
   export type ConversationPreferenceIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    conversation?: boolean | ConversationDefaultArgs<ExtArgs>
   }
 
   export type $ConversationPreferencePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ConversationPreference"
     objects: {
-      /**
-       * Référence à la conversation
-       */
-      conversation: Prisma.$ConversationPayload<ExtArgs>
-      /**
-       * Référence à l'utilisateur
-       */
       user: Prisma.$UserPayload<ExtArgs>
+      conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       /**
@@ -25112,8 +24932,8 @@ export namespace Prisma {
    */
   export interface Prisma__ConversationPreferenceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -25969,25 +25789,25 @@ export namespace Prisma {
     deactivatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    sentMessages?: MessageListRelationFilter
+    createdCommunities?: CommunityListRelationFilter
+    communityMemberships?: CommunityMemberListRelationFilter
     conversations?: ConversationMemberListRelationFilter
+    conversationPreferences?: ConversationPreferenceListRelationFilter
+    createdShareLinks?: ConversationShareLinkListRelationFilter
+    receivedFriendRequests?: FriendRequestListRelationFilter
+    sentFriendRequests?: FriendRequestListRelationFilter
     groupMemberships?: GroupMemberListRelationFilter
     createdGroups?: GroupListRelationFilter
-    adminGroups?: GroupListRelationFilter
-    moderatorGroups?: GroupListRelationFilter
-    sentFriendRequests?: FriendRequestListRelationFilter
-    receivedFriendRequests?: FriendRequestListRelationFilter
-    typingIndicators?: TypingIndicatorListRelationFilter
     messageReadStatus?: MessageReadStatusListRelationFilter
+    sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
-    createdShareLinks?: ConversationShareLinkListRelationFilter
-    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
+    typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
-    conversationPreferences?: ConversationPreferenceListRelationFilter
-    createdCommunities?: CommunityListRelationFilter
+    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
     adminCommunities?: CommunityListRelationFilter
     moderatorCommunities?: CommunityListRelationFilter
-    communityMemberships?: CommunityMemberListRelationFilter
+    adminGroups?: GroupListRelationFilter
+    moderatorGroups?: GroupListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -26015,25 +25835,25 @@ export namespace Prisma {
     deactivatedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    sentMessages?: MessageOrderByRelationAggregateInput
+    createdCommunities?: CommunityOrderByRelationAggregateInput
+    communityMemberships?: CommunityMemberOrderByRelationAggregateInput
     conversations?: ConversationMemberOrderByRelationAggregateInput
+    conversationPreferences?: ConversationPreferenceOrderByRelationAggregateInput
+    createdShareLinks?: ConversationShareLinkOrderByRelationAggregateInput
+    receivedFriendRequests?: FriendRequestOrderByRelationAggregateInput
+    sentFriendRequests?: FriendRequestOrderByRelationAggregateInput
     groupMemberships?: GroupMemberOrderByRelationAggregateInput
     createdGroups?: GroupOrderByRelationAggregateInput
-    adminGroups?: GroupOrderByRelationAggregateInput
-    moderatorGroups?: GroupOrderByRelationAggregateInput
-    sentFriendRequests?: FriendRequestOrderByRelationAggregateInput
-    receivedFriendRequests?: FriendRequestOrderByRelationAggregateInput
-    typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
     messageReadStatus?: MessageReadStatusOrderByRelationAggregateInput
+    sentMessages?: MessageOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
-    createdShareLinks?: ConversationShareLinkOrderByRelationAggregateInput
-    stats?: UserStatsOrderByWithRelationInput
+    typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
     preferences?: UserPreferenceOrderByRelationAggregateInput
-    conversationPreferences?: ConversationPreferenceOrderByRelationAggregateInput
-    createdCommunities?: CommunityOrderByRelationAggregateInput
+    stats?: UserStatsOrderByWithRelationInput
     adminCommunities?: CommunityOrderByRelationAggregateInput
     moderatorCommunities?: CommunityOrderByRelationAggregateInput
-    communityMemberships?: CommunityMemberOrderByRelationAggregateInput
+    adminGroups?: GroupOrderByRelationAggregateInput
+    moderatorGroups?: GroupOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -26064,25 +25884,25 @@ export namespace Prisma {
     deactivatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    sentMessages?: MessageListRelationFilter
+    createdCommunities?: CommunityListRelationFilter
+    communityMemberships?: CommunityMemberListRelationFilter
     conversations?: ConversationMemberListRelationFilter
+    conversationPreferences?: ConversationPreferenceListRelationFilter
+    createdShareLinks?: ConversationShareLinkListRelationFilter
+    receivedFriendRequests?: FriendRequestListRelationFilter
+    sentFriendRequests?: FriendRequestListRelationFilter
     groupMemberships?: GroupMemberListRelationFilter
     createdGroups?: GroupListRelationFilter
-    adminGroups?: GroupListRelationFilter
-    moderatorGroups?: GroupListRelationFilter
-    sentFriendRequests?: FriendRequestListRelationFilter
-    receivedFriendRequests?: FriendRequestListRelationFilter
-    typingIndicators?: TypingIndicatorListRelationFilter
     messageReadStatus?: MessageReadStatusListRelationFilter
+    sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
-    createdShareLinks?: ConversationShareLinkListRelationFilter
-    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
+    typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
-    conversationPreferences?: ConversationPreferenceListRelationFilter
-    createdCommunities?: CommunityListRelationFilter
+    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
     adminCommunities?: CommunityListRelationFilter
     moderatorCommunities?: CommunityListRelationFilter
-    communityMemberships?: CommunityMemberListRelationFilter
+    adminGroups?: GroupListRelationFilter
+    moderatorGroups?: GroupListRelationFilter
   }, "id" | "username" | "email" | "phoneNumber">
 
   export type UserOrderByWithAggregationInput = {
@@ -26161,13 +25981,13 @@ export namespace Prisma {
     lastMessageAt?: DateTimeFilter<"Conversation"> | Date | string
     createdAt?: DateTimeFilter<"Conversation"> | Date | string
     updatedAt?: DateTimeFilter<"Conversation"> | Date | string
-    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
+    anonymousParticipants?: AnonymousParticipantListRelationFilter
     members?: ConversationMemberListRelationFilter
+    preferences?: ConversationPreferenceListRelationFilter
+    shareLinks?: ConversationShareLinkListRelationFilter
+    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
-    shareLinks?: ConversationShareLinkListRelationFilter
-    preferences?: ConversationPreferenceListRelationFilter
-    anonymousParticipants?: AnonymousParticipantListRelationFilter
   }
 
   export type ConversationOrderByWithRelationInput = {
@@ -26183,13 +26003,13 @@ export namespace Prisma {
     lastMessageAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    community?: CommunityOrderByWithRelationInput
+    anonymousParticipants?: AnonymousParticipantOrderByRelationAggregateInput
     members?: ConversationMemberOrderByRelationAggregateInput
+    preferences?: ConversationPreferenceOrderByRelationAggregateInput
+    shareLinks?: ConversationShareLinkOrderByRelationAggregateInput
+    community?: CommunityOrderByWithRelationInput
     messages?: MessageOrderByRelationAggregateInput
     typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
-    shareLinks?: ConversationShareLinkOrderByRelationAggregateInput
-    preferences?: ConversationPreferenceOrderByRelationAggregateInput
-    anonymousParticipants?: AnonymousParticipantOrderByRelationAggregateInput
   }
 
   export type ConversationWhereUniqueInput = Prisma.AtLeast<{
@@ -26208,13 +26028,13 @@ export namespace Prisma {
     lastMessageAt?: DateTimeFilter<"Conversation"> | Date | string
     createdAt?: DateTimeFilter<"Conversation"> | Date | string
     updatedAt?: DateTimeFilter<"Conversation"> | Date | string
-    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
+    anonymousParticipants?: AnonymousParticipantListRelationFilter
     members?: ConversationMemberListRelationFilter
+    preferences?: ConversationPreferenceListRelationFilter
+    shareLinks?: ConversationShareLinkListRelationFilter
+    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
-    shareLinks?: ConversationShareLinkListRelationFilter
-    preferences?: ConversationPreferenceListRelationFilter
-    anonymousParticipants?: AnonymousParticipantListRelationFilter
   }, "id">
 
   export type ConversationOrderByWithAggregationInput = {
@@ -26271,8 +26091,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"ConversationMember"> | Date | string
     leftAt?: DateTimeNullableFilter<"ConversationMember"> | Date | string | null
     isActive?: BoolFilter<"ConversationMember"> | boolean
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationMemberOrderByWithRelationInput = {
@@ -26290,8 +26110,8 @@ export namespace Prisma {
     joinedAt?: SortOrder
     leftAt?: SortOrderInput | SortOrder
     isActive?: SortOrder
-    conversation?: ConversationOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    conversation?: ConversationOrderByWithRelationInput
   }
 
   export type ConversationMemberWhereUniqueInput = Prisma.AtLeast<{
@@ -26313,8 +26133,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"ConversationMember"> | Date | string
     leftAt?: DateTimeNullableFilter<"ConversationMember"> | Date | string | null
     isActive?: BoolFilter<"ConversationMember"> | boolean
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id" | "conversationId_userId">
 
   export type ConversationMemberOrderByWithAggregationInput = {
@@ -26381,9 +26201,9 @@ export namespace Prisma {
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
-    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     anonymousParticipants?: AnonymousParticipantListRelationFilter
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationShareLinkOrderByWithRelationInput = {
@@ -26407,9 +26227,9 @@ export namespace Prisma {
     requireEmail?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    conversation?: ConversationOrderByWithRelationInput
-    creator?: UserOrderByWithRelationInput
     anonymousParticipants?: AnonymousParticipantOrderByRelationAggregateInput
+    creator?: UserOrderByWithRelationInput
+    conversation?: ConversationOrderByWithRelationInput
   }
 
   export type ConversationShareLinkWhereUniqueInput = Prisma.AtLeast<{
@@ -26436,9 +26256,9 @@ export namespace Prisma {
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
-    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     anonymousParticipants?: AnonymousParticipantListRelationFilter
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id" | "linkId">
 
   export type ConversationShareLinkOrderByWithAggregationInput = {
@@ -26515,8 +26335,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     shareLink?: XOR<ConversationShareLinkScalarRelationFilter, ConversationShareLinkWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     sentMessages?: MessageListRelationFilter
   }
 
@@ -26537,8 +26357,8 @@ export namespace Prisma {
     joinedAt?: SortOrder
     lastSeenAt?: SortOrder
     leftAt?: SortOrderInput | SortOrder
-    conversation?: ConversationOrderByWithRelationInput
     shareLink?: ConversationShareLinkOrderByWithRelationInput
+    conversation?: ConversationOrderByWithRelationInput
     sentMessages?: MessageOrderByRelationAggregateInput
   }
 
@@ -26563,8 +26383,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     shareLink?: XOR<ConversationShareLinkScalarRelationFilter, ConversationShareLinkWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     sentMessages?: MessageListRelationFilter
   }, "id" | "sessionToken" | "conversationId_sessionToken">
 
@@ -26630,13 +26450,13 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
-    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
-    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    readStatus?: MessageReadStatusListRelationFilter
+    translations?: MessageTranslationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
-    translations?: MessageTranslationListRelationFilter
-    readStatus?: MessageReadStatusListRelationFilter
+    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type MessageOrderByWithRelationInput = {
@@ -26654,13 +26474,13 @@ export namespace Prisma {
     replyToId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    conversation?: ConversationOrderByWithRelationInput
-    sender?: UserOrderByWithRelationInput
-    anonymousSender?: AnonymousParticipantOrderByWithRelationInput
+    readStatus?: MessageReadStatusOrderByRelationAggregateInput
+    translations?: MessageTranslationOrderByRelationAggregateInput
     replyTo?: MessageOrderByWithRelationInput
     replies?: MessageOrderByRelationAggregateInput
-    translations?: MessageTranslationOrderByRelationAggregateInput
-    readStatus?: MessageReadStatusOrderByRelationAggregateInput
+    anonymousSender?: AnonymousParticipantOrderByWithRelationInput
+    sender?: UserOrderByWithRelationInput
+    conversation?: ConversationOrderByWithRelationInput
   }
 
   export type MessageWhereUniqueInput = Prisma.AtLeast<{
@@ -26681,13 +26501,13 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
-    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
-    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    readStatus?: MessageReadStatusListRelationFilter
+    translations?: MessageTranslationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
-    translations?: MessageTranslationListRelationFilter
-    readStatus?: MessageReadStatusListRelationFilter
+    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type MessageOrderByWithAggregationInput = {
@@ -26816,8 +26636,8 @@ export namespace Prisma {
     messageId?: StringFilter<"MessageReadStatus"> | string
     userId?: StringFilter<"MessageReadStatus"> | string
     readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
-    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }
 
   export type MessageReadStatusOrderByWithRelationInput = {
@@ -26825,8 +26645,8 @@ export namespace Prisma {
     messageId?: SortOrder
     userId?: SortOrder
     readAt?: SortOrder
-    message?: MessageOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    message?: MessageOrderByWithRelationInput
   }
 
   export type MessageReadStatusWhereUniqueInput = Prisma.AtLeast<{
@@ -26838,8 +26658,8 @@ export namespace Prisma {
     messageId?: StringFilter<"MessageReadStatus"> | string
     userId?: StringFilter<"MessageReadStatus"> | string
     readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
-    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }, "id" | "messageId_userId">
 
   export type MessageReadStatusOrderByWithAggregationInput = {
@@ -26872,8 +26692,8 @@ export namespace Prisma {
     status?: StringFilter<"FriendRequest"> | string
     createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
     updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
-    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
     receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type FriendRequestOrderByWithRelationInput = {
@@ -26883,8 +26703,8 @@ export namespace Prisma {
     status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    sender?: UserOrderByWithRelationInput
     receiver?: UserOrderByWithRelationInput
+    sender?: UserOrderByWithRelationInput
   }
 
   export type FriendRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -26898,8 +26718,8 @@ export namespace Prisma {
     status?: StringFilter<"FriendRequest"> | string
     createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
     updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
-    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
     receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "senderId_receiverId">
 
   export type FriendRequestOrderByWithAggregationInput = {
@@ -26936,8 +26756,8 @@ export namespace Prisma {
     isTyping?: BoolFilter<"TypingIndicator"> | boolean
     startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
     updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type TypingIndicatorOrderByWithRelationInput = {
@@ -26947,8 +26767,8 @@ export namespace Prisma {
     isTyping?: SortOrder
     startedAt?: SortOrder
     updatedAt?: SortOrder
-    conversation?: ConversationOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    conversation?: ConversationOrderByWithRelationInput
   }
 
   export type TypingIndicatorWhereUniqueInput = Prisma.AtLeast<{
@@ -26962,8 +26782,8 @@ export namespace Prisma {
     isTyping?: BoolFilter<"TypingIndicator"> | boolean
     startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
     updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id" | "conversationId_userId">
 
   export type TypingIndicatorOrderByWithAggregationInput = {
@@ -27093,9 +26913,9 @@ export namespace Prisma {
     createdById?: StringFilter<"Community"> | string
     createdAt?: DateTimeFilter<"Community"> | Date | string
     updatedAt?: DateTimeFilter<"Community"> | Date | string
-    conversations?: ConversationListRelationFilter
     createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: CommunityMemberListRelationFilter
+    conversations?: ConversationListRelationFilter
     admins?: UserListRelationFilter
     moderators?: UserListRelationFilter
   }
@@ -27110,9 +26930,9 @@ export namespace Prisma {
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    conversations?: ConversationOrderByRelationAggregateInput
     createdBy?: UserOrderByWithRelationInput
     members?: CommunityMemberOrderByRelationAggregateInput
+    conversations?: ConversationOrderByRelationAggregateInput
     admins?: UserOrderByRelationAggregateInput
     moderators?: UserOrderByRelationAggregateInput
   }
@@ -27130,9 +26950,9 @@ export namespace Prisma {
     createdById?: StringFilter<"Community"> | string
     createdAt?: DateTimeFilter<"Community"> | Date | string
     updatedAt?: DateTimeFilter<"Community"> | Date | string
-    conversations?: ConversationListRelationFilter
     createdBy?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: CommunityMemberListRelationFilter
+    conversations?: ConversationListRelationFilter
     admins?: UserListRelationFilter
     moderators?: UserListRelationFilter
   }, "id">
@@ -27178,8 +26998,8 @@ export namespace Prisma {
     userId?: StringFilter<"CommunityMember"> | string
     role?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
-    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }
 
   export type CommunityMemberOrderByWithRelationInput = {
@@ -27188,8 +27008,8 @@ export namespace Prisma {
     userId?: SortOrder
     role?: SortOrder
     joinedAt?: SortOrder
-    community?: CommunityOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    community?: CommunityOrderByWithRelationInput
   }
 
   export type CommunityMemberWhereUniqueInput = Prisma.AtLeast<{
@@ -27202,8 +27022,8 @@ export namespace Prisma {
     userId?: StringFilter<"CommunityMember"> | string
     role?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
-    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }, "id" | "communityId_userId">
 
   export type CommunityMemberOrderByWithAggregationInput = {
@@ -27240,8 +27060,8 @@ export namespace Prisma {
     createdBy?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
-    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: GroupMemberListRelationFilter
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     admins?: UserListRelationFilter
     moderators?: UserListRelationFilter
   }
@@ -27255,8 +27075,8 @@ export namespace Prisma {
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    creator?: UserOrderByWithRelationInput
     members?: GroupMemberOrderByRelationAggregateInput
+    creator?: UserOrderByWithRelationInput
     admins?: UserOrderByRelationAggregateInput
     moderators?: UserOrderByRelationAggregateInput
   }
@@ -27273,8 +27093,8 @@ export namespace Prisma {
     createdBy?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
-    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     members?: GroupMemberListRelationFilter
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     admins?: UserListRelationFilter
     moderators?: UserListRelationFilter
   }, "id">
@@ -27315,8 +27135,8 @@ export namespace Prisma {
     groupId?: StringFilter<"GroupMember"> | string
     userId?: StringFilter<"GroupMember"> | string
     joinedAt?: DateTimeFilter<"GroupMember"> | Date | string
-    group?: XOR<GroupScalarRelationFilter, GroupWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    group?: XOR<GroupScalarRelationFilter, GroupWhereInput>
   }
 
   export type GroupMemberOrderByWithRelationInput = {
@@ -27324,8 +27144,8 @@ export namespace Prisma {
     groupId?: SortOrder
     userId?: SortOrder
     joinedAt?: SortOrder
-    group?: GroupOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    group?: GroupOrderByWithRelationInput
   }
 
   export type GroupMemberWhereUniqueInput = Prisma.AtLeast<{
@@ -27337,8 +27157,8 @@ export namespace Prisma {
     groupId?: StringFilter<"GroupMember"> | string
     userId?: StringFilter<"GroupMember"> | string
     joinedAt?: DateTimeFilter<"GroupMember"> | Date | string
-    group?: XOR<GroupScalarRelationFilter, GroupWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    group?: XOR<GroupScalarRelationFilter, GroupWhereInput>
   }, "id" | "groupId_userId">
 
   export type GroupMemberOrderByWithAggregationInput = {
@@ -27572,8 +27392,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"ConversationPreference"> | string | null
     createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationPreferenceOrderByWithRelationInput = {
@@ -27586,8 +27406,8 @@ export namespace Prisma {
     description?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    conversation?: ConversationOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    conversation?: ConversationOrderByWithRelationInput
   }
 
   export type ConversationPreferenceWhereUniqueInput = Prisma.AtLeast<{
@@ -27604,8 +27424,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"ConversationPreference"> | string | null
     createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id" | "conversationId_userId_key">
 
   export type ConversationPreferenceOrderByWithAggregationInput = {
@@ -27663,25 +27483,25 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -27709,25 +27529,25 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUpdateInput = {
@@ -27755,25 +27575,25 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -27801,25 +27621,25 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -27915,13 +27735,13 @@ export namespace Prisma {
     lastMessageAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-    community?: CommunityCreateNestedOneWithoutConversationsInput
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
     members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationsInput
     messages?: MessageCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUncheckedCreateInput = {
@@ -27937,12 +27757,12 @@ export namespace Prisma {
     lastMessageAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
     members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
     messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
   }
 
   export type ConversationUpdateInput = {
@@ -27957,13 +27777,13 @@ export namespace Prisma {
     lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneWithoutConversationsNestedInput
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
     members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationsNestedInput
     messages?: MessageUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationUncheckedUpdateInput = {
@@ -27979,12 +27799,12 @@ export namespace Prisma {
     lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
     members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationCreateManyInput = {
@@ -28044,8 +27864,8 @@ export namespace Prisma {
     joinedAt?: Date | string
     leftAt?: Date | string | null
     isActive?: boolean
-    conversation: ConversationCreateNestedOneWithoutMembersInput
     user: UserCreateNestedOneWithoutConversationsInput
+    conversation: ConversationCreateNestedOneWithoutMembersInput
   }
 
   export type ConversationMemberUncheckedCreateInput = {
@@ -28078,8 +27898,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    conversation?: ConversationUpdateOneRequiredWithoutMembersNestedInput
     user?: UserUpdateOneRequiredWithoutConversationsNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMembersNestedInput
   }
 
   export type ConversationMemberUncheckedUpdateInput = {
@@ -28167,9 +27987,9 @@ export namespace Prisma {
     requireEmail?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutShareLinksInput
-    creator: UserCreateNestedOneWithoutCreatedShareLinksInput
     anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
+    creator: UserCreateNestedOneWithoutCreatedShareLinksInput
+    conversation: ConversationCreateNestedOneWithoutShareLinksInput
   }
 
   export type ConversationShareLinkUncheckedCreateInput = {
@@ -28215,9 +28035,9 @@ export namespace Prisma {
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutShareLinksNestedInput
-    creator?: UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput
     anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
+    creator?: UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutShareLinksNestedInput
   }
 
   export type ConversationShareLinkUncheckedUpdateInput = {
@@ -28326,8 +28146,8 @@ export namespace Prisma {
     joinedAt?: Date | string
     lastSeenAt?: Date | string
     leftAt?: Date | string | null
-    conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
     shareLink: ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput
+    conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
     sentMessages?: MessageCreateNestedManyWithoutAnonymousSenderInput
   }
 
@@ -28366,8 +28186,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
     shareLink?: ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
     sentMessages?: MessageUpdateManyWithoutAnonymousSenderNestedInput
   }
 
@@ -28457,13 +28277,13 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutMessagesInput
-    sender?: UserCreateNestedOneWithoutSentMessagesInput
-    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
   export type MessageUncheckedCreateInput = {
@@ -28481,9 +28301,9 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
   export type MessageUpdateInput = {
@@ -28497,13 +28317,13 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
-    sender?: UserUpdateOneWithoutSentMessagesNestedInput
-    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
   export type MessageUncheckedUpdateInput = {
@@ -28521,9 +28341,9 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
   export type MessageCreateManyInput = {
@@ -28659,8 +28479,8 @@ export namespace Prisma {
   export type MessageReadStatusCreateInput = {
     id?: string
     readAt?: Date | string
-    message: MessageCreateNestedOneWithoutReadStatusInput
     user: UserCreateNestedOneWithoutMessageReadStatusInput
+    message: MessageCreateNestedOneWithoutReadStatusInput
   }
 
   export type MessageReadStatusUncheckedCreateInput = {
@@ -28673,8 +28493,8 @@ export namespace Prisma {
   export type MessageReadStatusUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    message?: MessageUpdateOneRequiredWithoutReadStatusNestedInput
     user?: UserUpdateOneRequiredWithoutMessageReadStatusNestedInput
+    message?: MessageUpdateOneRequiredWithoutReadStatusNestedInput
   }
 
   export type MessageReadStatusUncheckedUpdateInput = {
@@ -28708,8 +28528,8 @@ export namespace Prisma {
     status?: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    sender: UserCreateNestedOneWithoutSentFriendRequestsInput
     receiver: UserCreateNestedOneWithoutReceivedFriendRequestsInput
+    sender: UserCreateNestedOneWithoutSentFriendRequestsInput
   }
 
   export type FriendRequestUncheckedCreateInput = {
@@ -28726,8 +28546,8 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sender?: UserUpdateOneRequiredWithoutSentFriendRequestsNestedInput
     receiver?: UserUpdateOneRequiredWithoutReceivedFriendRequestsNestedInput
+    sender?: UserUpdateOneRequiredWithoutSentFriendRequestsNestedInput
   }
 
   export type FriendRequestUncheckedUpdateInput = {
@@ -28769,8 +28589,8 @@ export namespace Prisma {
     isTyping?: boolean
     startedAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutTypingIndicatorsInput
     user: UserCreateNestedOneWithoutTypingIndicatorsInput
+    conversation: ConversationCreateNestedOneWithoutTypingIndicatorsInput
   }
 
   export type TypingIndicatorUncheckedCreateInput = {
@@ -28787,8 +28607,8 @@ export namespace Prisma {
     isTyping?: BoolFieldUpdateOperationsInput | boolean
     startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutTypingIndicatorsNestedInput
     user?: UserUpdateOneRequiredWithoutTypingIndicatorsNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutTypingIndicatorsNestedInput
   }
 
   export type TypingIndicatorUncheckedUpdateInput = {
@@ -28938,9 +28758,9 @@ export namespace Prisma {
     maxMembers?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversations?: ConversationCreateNestedManyWithoutCommunityInput
     createdBy: UserCreateNestedOneWithoutCreatedCommunitiesInput
     members?: CommunityMemberCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationCreateNestedManyWithoutCommunityInput
     admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
     moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
   }
@@ -28955,8 +28775,8 @@ export namespace Prisma {
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
     members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
     admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
     moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
   }
@@ -28970,9 +28790,9 @@ export namespace Prisma {
     maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
     members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
     admins?: UserUpdateManyWithoutAdminCommunitiesNestedInput
     moderators?: UserUpdateManyWithoutModeratorCommunitiesNestedInput
   }
@@ -28987,8 +28807,8 @@ export namespace Prisma {
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
     members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
     admins?: UserUncheckedUpdateManyWithoutAdminCommunitiesNestedInput
     moderators?: UserUncheckedUpdateManyWithoutModeratorCommunitiesNestedInput
   }
@@ -29032,8 +28852,8 @@ export namespace Prisma {
     id?: string
     role?: string
     joinedAt?: Date | string
-    community: CommunityCreateNestedOneWithoutMembersInput
     user: UserCreateNestedOneWithoutCommunityMembershipsInput
+    community: CommunityCreateNestedOneWithoutMembersInput
   }
 
   export type CommunityMemberUncheckedCreateInput = {
@@ -29048,8 +28868,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneRequiredWithoutMembersNestedInput
     user?: UserUpdateOneRequiredWithoutCommunityMembershipsNestedInput
+    community?: CommunityUpdateOneRequiredWithoutMembersNestedInput
   }
 
   export type CommunityMemberUncheckedUpdateInput = {
@@ -29090,8 +28910,8 @@ export namespace Prisma {
     isPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    creator: UserCreateNestedOneWithoutCreatedGroupsInput
     members?: GroupMemberCreateNestedManyWithoutGroupInput
+    creator: UserCreateNestedOneWithoutCreatedGroupsInput
     admins?: UserCreateNestedManyWithoutAdminGroupsInput
     moderators?: UserCreateNestedManyWithoutModeratorGroupsInput
   }
@@ -29118,8 +28938,8 @@ export namespace Prisma {
     isPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    creator?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
     members?: GroupMemberUpdateManyWithoutGroupNestedInput
+    creator?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
     admins?: UserUpdateManyWithoutAdminGroupsNestedInput
     moderators?: UserUpdateManyWithoutModeratorGroupsNestedInput
   }
@@ -29173,8 +28993,8 @@ export namespace Prisma {
   export type GroupMemberCreateInput = {
     id?: string
     joinedAt?: Date | string
-    group: GroupCreateNestedOneWithoutMembersInput
     user: UserCreateNestedOneWithoutGroupMembershipsInput
+    group: GroupCreateNestedOneWithoutMembersInput
   }
 
   export type GroupMemberUncheckedCreateInput = {
@@ -29187,8 +29007,8 @@ export namespace Prisma {
   export type GroupMemberUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    group?: GroupUpdateOneRequiredWithoutMembersNestedInput
     user?: UserUpdateOneRequiredWithoutGroupMembershipsNestedInput
+    group?: GroupUpdateOneRequiredWithoutMembersNestedInput
   }
 
   export type GroupMemberUncheckedUpdateInput = {
@@ -29454,8 +29274,8 @@ export namespace Prisma {
     description?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutPreferencesInput
     user: UserCreateNestedOneWithoutConversationPreferencesInput
+    conversation: ConversationCreateNestedOneWithoutPreferencesInput
   }
 
   export type ConversationPreferenceUncheckedCreateInput = {
@@ -29478,8 +29298,8 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutPreferencesNestedInput
     user?: UserUpdateOneRequiredWithoutConversationPreferencesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutPreferencesNestedInput
   }
 
   export type ConversationPreferenceUncheckedUpdateInput = {
@@ -29583,16 +29403,40 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
-  export type MessageListRelationFilter = {
-    every?: MessageWhereInput
-    some?: MessageWhereInput
-    none?: MessageWhereInput
+  export type CommunityListRelationFilter = {
+    every?: CommunityWhereInput
+    some?: CommunityWhereInput
+    none?: CommunityWhereInput
+  }
+
+  export type CommunityMemberListRelationFilter = {
+    every?: CommunityMemberWhereInput
+    some?: CommunityMemberWhereInput
+    none?: CommunityMemberWhereInput
   }
 
   export type ConversationMemberListRelationFilter = {
     every?: ConversationMemberWhereInput
     some?: ConversationMemberWhereInput
     none?: ConversationMemberWhereInput
+  }
+
+  export type ConversationPreferenceListRelationFilter = {
+    every?: ConversationPreferenceWhereInput
+    some?: ConversationPreferenceWhereInput
+    none?: ConversationPreferenceWhereInput
+  }
+
+  export type ConversationShareLinkListRelationFilter = {
+    every?: ConversationShareLinkWhereInput
+    some?: ConversationShareLinkWhereInput
+    none?: ConversationShareLinkWhereInput
+  }
+
+  export type FriendRequestListRelationFilter = {
+    every?: FriendRequestWhereInput
+    some?: FriendRequestWhereInput
+    none?: FriendRequestWhereInput
   }
 
   export type GroupMemberListRelationFilter = {
@@ -29607,22 +29451,16 @@ export namespace Prisma {
     none?: GroupWhereInput
   }
 
-  export type FriendRequestListRelationFilter = {
-    every?: FriendRequestWhereInput
-    some?: FriendRequestWhereInput
-    none?: FriendRequestWhereInput
-  }
-
-  export type TypingIndicatorListRelationFilter = {
-    every?: TypingIndicatorWhereInput
-    some?: TypingIndicatorWhereInput
-    none?: TypingIndicatorWhereInput
-  }
-
   export type MessageReadStatusListRelationFilter = {
     every?: MessageReadStatusWhereInput
     some?: MessageReadStatusWhereInput
     none?: MessageReadStatusWhereInput
+  }
+
+  export type MessageListRelationFilter = {
+    every?: MessageWhereInput
+    some?: MessageWhereInput
+    none?: MessageWhereInput
   }
 
   export type NotificationListRelationFilter = {
@@ -29631,15 +29469,10 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
-  export type ConversationShareLinkListRelationFilter = {
-    every?: ConversationShareLinkWhereInput
-    some?: ConversationShareLinkWhereInput
-    none?: ConversationShareLinkWhereInput
-  }
-
-  export type UserStatsNullableScalarRelationFilter = {
-    is?: UserStatsWhereInput | null
-    isNot?: UserStatsWhereInput | null
+  export type TypingIndicatorListRelationFilter = {
+    every?: TypingIndicatorWhereInput
+    some?: TypingIndicatorWhereInput
+    none?: TypingIndicatorWhereInput
   }
 
   export type UserPreferenceListRelationFilter = {
@@ -29648,22 +29481,9 @@ export namespace Prisma {
     none?: UserPreferenceWhereInput
   }
 
-  export type ConversationPreferenceListRelationFilter = {
-    every?: ConversationPreferenceWhereInput
-    some?: ConversationPreferenceWhereInput
-    none?: ConversationPreferenceWhereInput
-  }
-
-  export type CommunityListRelationFilter = {
-    every?: CommunityWhereInput
-    some?: CommunityWhereInput
-    none?: CommunityWhereInput
-  }
-
-  export type CommunityMemberListRelationFilter = {
-    every?: CommunityMemberWhereInput
-    some?: CommunityMemberWhereInput
-    none?: CommunityMemberWhereInput
+  export type UserStatsNullableScalarRelationFilter = {
+    is?: UserStatsWhereInput | null
+    isNot?: UserStatsWhereInput | null
   }
 
   export type SortOrderInput = {
@@ -29671,11 +29491,27 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
-  export type MessageOrderByRelationAggregateInput = {
+  export type CommunityOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CommunityMemberOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type ConversationMemberOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ConversationPreferenceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ConversationShareLinkOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FriendRequestOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29687,15 +29523,11 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type FriendRequestOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type TypingIndicatorOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
   export type MessageReadStatusOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type MessageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29703,23 +29535,11 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type ConversationShareLinkOrderByRelationAggregateInput = {
+  export type TypingIndicatorOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type UserPreferenceOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type ConversationPreferenceOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type CommunityOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type CommunityMemberOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -29874,15 +29694,15 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type CommunityNullableScalarRelationFilter = {
-    is?: CommunityWhereInput | null
-    isNot?: CommunityWhereInput | null
-  }
-
   export type AnonymousParticipantListRelationFilter = {
     every?: AnonymousParticipantWhereInput
     some?: AnonymousParticipantWhereInput
     none?: AnonymousParticipantWhereInput
+  }
+
+  export type CommunityNullableScalarRelationFilter = {
+    is?: CommunityWhereInput | null
+    isNot?: CommunityWhereInput | null
   }
 
   export type AnonymousParticipantOrderByRelationAggregateInput = {
@@ -29934,14 +29754,14 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type ConversationScalarRelationFilter = {
-    is?: ConversationWhereInput
-    isNot?: ConversationWhereInput
-  }
-
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
+  }
+
+  export type ConversationScalarRelationFilter = {
+    is?: ConversationWhereInput
+    isNot?: ConversationWhereInput
   }
 
   export type ConversationMemberConversationIdUserIdCompoundUniqueInput = {
@@ -30204,14 +30024,10 @@ export namespace Prisma {
     leftAt?: SortOrder
   }
 
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
-  }
-
-  export type AnonymousParticipantNullableScalarRelationFilter = {
-    is?: AnonymousParticipantWhereInput | null
-    isNot?: AnonymousParticipantWhereInput | null
+  export type MessageTranslationListRelationFilter = {
+    every?: MessageTranslationWhereInput
+    some?: MessageTranslationWhereInput
+    none?: MessageTranslationWhereInput
   }
 
   export type MessageNullableScalarRelationFilter = {
@@ -30219,10 +30035,14 @@ export namespace Prisma {
     isNot?: MessageWhereInput | null
   }
 
-  export type MessageTranslationListRelationFilter = {
-    every?: MessageTranslationWhereInput
-    some?: MessageTranslationWhereInput
-    none?: MessageTranslationWhereInput
+  export type AnonymousParticipantNullableScalarRelationFilter = {
+    is?: AnonymousParticipantWhereInput | null
+    isNot?: AnonymousParticipantWhereInput | null
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
   }
 
   export type MessageTranslationOrderByRelationAggregateInput = {
@@ -30838,11 +30658,18 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type MessageCreateNestedManyWithoutSenderInput = {
-    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
-    createMany?: MessageCreateManySenderInputEnvelope
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+  export type CommunityCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
+    createMany?: CommunityCreateManyCreatedByInputEnvelope
+    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+  }
+
+  export type CommunityMemberCreateNestedManyWithoutUserInput = {
+    create?: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput> | CommunityMemberCreateWithoutUserInput[] | CommunityMemberUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CommunityMemberCreateOrConnectWithoutUserInput | CommunityMemberCreateOrConnectWithoutUserInput[]
+    createMany?: CommunityMemberCreateManyUserInputEnvelope
+    connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
   }
 
   export type ConversationMemberCreateNestedManyWithoutUserInput = {
@@ -30850,6 +30677,34 @@ export namespace Prisma {
     connectOrCreate?: ConversationMemberCreateOrConnectWithoutUserInput | ConversationMemberCreateOrConnectWithoutUserInput[]
     createMany?: ConversationMemberCreateManyUserInputEnvelope
     connect?: ConversationMemberWhereUniqueInput | ConversationMemberWhereUniqueInput[]
+  }
+
+  export type ConversationPreferenceCreateNestedManyWithoutUserInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
+    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+  }
+
+  export type ConversationShareLinkCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
+    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+  }
+
+  export type FriendRequestCreateNestedManyWithoutReceiverInput = {
+    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
+    createMany?: FriendRequestCreateManyReceiverInputEnvelope
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+  }
+
+  export type FriendRequestCreateNestedManyWithoutSenderInput = {
+    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
+    createMany?: FriendRequestCreateManySenderInputEnvelope
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
   }
 
   export type GroupMemberCreateNestedManyWithoutUserInput = {
@@ -30866,44 +30721,18 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
-  export type GroupCreateNestedManyWithoutAdminsInput = {
-    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-  }
-
-  export type GroupCreateNestedManyWithoutModeratorsInput = {
-    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-  }
-
-  export type FriendRequestCreateNestedManyWithoutSenderInput = {
-    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
-    createMany?: FriendRequestCreateManySenderInputEnvelope
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-  }
-
-  export type FriendRequestCreateNestedManyWithoutReceiverInput = {
-    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
-    createMany?: FriendRequestCreateManyReceiverInputEnvelope
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-  }
-
-  export type TypingIndicatorCreateNestedManyWithoutUserInput = {
-    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
-    createMany?: TypingIndicatorCreateManyUserInputEnvelope
-    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-  }
-
   export type MessageReadStatusCreateNestedManyWithoutUserInput = {
     create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
     connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
     createMany?: MessageReadStatusCreateManyUserInputEnvelope
     connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  }
+
+  export type MessageCreateNestedManyWithoutSenderInput = {
+    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
+    createMany?: MessageCreateManySenderInputEnvelope
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
   export type NotificationCreateNestedManyWithoutUserInput = {
@@ -30913,17 +30742,11 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
-  export type ConversationShareLinkCreateNestedManyWithoutCreatorInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
-    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-  }
-
-  export type UserStatsCreateNestedOneWithoutUserInput = {
-    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
-    connect?: UserStatsWhereUniqueInput
+  export type TypingIndicatorCreateNestedManyWithoutUserInput = {
+    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
+    createMany?: TypingIndicatorCreateManyUserInputEnvelope
+    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
   }
 
   export type UserPreferenceCreateNestedManyWithoutUserInput = {
@@ -30933,18 +30756,10 @@ export namespace Prisma {
     connect?: UserPreferenceWhereUniqueInput | UserPreferenceWhereUniqueInput[]
   }
 
-  export type ConversationPreferenceCreateNestedManyWithoutUserInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
-    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-  }
-
-  export type CommunityCreateNestedManyWithoutCreatedByInput = {
-    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
-    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
-    createMany?: CommunityCreateManyCreatedByInputEnvelope
-    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+  export type UserStatsCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
+    connect?: UserStatsWhereUniqueInput
   }
 
   export type CommunityCreateNestedManyWithoutAdminsInput = {
@@ -30959,18 +30774,30 @@ export namespace Prisma {
     connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
   }
 
-  export type CommunityMemberCreateNestedManyWithoutUserInput = {
+  export type GroupCreateNestedManyWithoutAdminsInput = {
+    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
+  export type GroupCreateNestedManyWithoutModeratorsInput = {
+    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
+  export type CommunityUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
+    createMany?: CommunityCreateManyCreatedByInputEnvelope
+    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+  }
+
+  export type CommunityMemberUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput> | CommunityMemberCreateWithoutUserInput[] | CommunityMemberUncheckedCreateWithoutUserInput[]
     connectOrCreate?: CommunityMemberCreateOrConnectWithoutUserInput | CommunityMemberCreateOrConnectWithoutUserInput[]
     createMany?: CommunityMemberCreateManyUserInputEnvelope
     connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
-  }
-
-  export type MessageUncheckedCreateNestedManyWithoutSenderInput = {
-    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
-    createMany?: MessageCreateManySenderInputEnvelope
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
   export type ConversationMemberUncheckedCreateNestedManyWithoutUserInput = {
@@ -30978,6 +30805,34 @@ export namespace Prisma {
     connectOrCreate?: ConversationMemberCreateOrConnectWithoutUserInput | ConversationMemberCreateOrConnectWithoutUserInput[]
     createMany?: ConversationMemberCreateManyUserInputEnvelope
     connect?: ConversationMemberWhereUniqueInput | ConversationMemberWhereUniqueInput[]
+  }
+
+  export type ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
+    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+  }
+
+  export type ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
+    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+  }
+
+  export type FriendRequestUncheckedCreateNestedManyWithoutReceiverInput = {
+    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
+    createMany?: FriendRequestCreateManyReceiverInputEnvelope
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+  }
+
+  export type FriendRequestUncheckedCreateNestedManyWithoutSenderInput = {
+    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
+    createMany?: FriendRequestCreateManySenderInputEnvelope
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
   }
 
   export type GroupMemberUncheckedCreateNestedManyWithoutUserInput = {
@@ -30994,44 +30849,18 @@ export namespace Prisma {
     connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
-  export type GroupUncheckedCreateNestedManyWithoutAdminsInput = {
-    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-  }
-
-  export type GroupUncheckedCreateNestedManyWithoutModeratorsInput = {
-    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-  }
-
-  export type FriendRequestUncheckedCreateNestedManyWithoutSenderInput = {
-    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
-    createMany?: FriendRequestCreateManySenderInputEnvelope
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-  }
-
-  export type FriendRequestUncheckedCreateNestedManyWithoutReceiverInput = {
-    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
-    createMany?: FriendRequestCreateManyReceiverInputEnvelope
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-  }
-
-  export type TypingIndicatorUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
-    createMany?: TypingIndicatorCreateManyUserInputEnvelope
-    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-  }
-
   export type MessageReadStatusUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
     connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
     createMany?: MessageReadStatusCreateManyUserInputEnvelope
     connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  }
+
+  export type MessageUncheckedCreateNestedManyWithoutSenderInput = {
+    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
+    createMany?: MessageCreateManySenderInputEnvelope
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
   export type NotificationUncheckedCreateNestedManyWithoutUserInput = {
@@ -31041,17 +30870,11 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
-  export type ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
-    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-  }
-
-  export type UserStatsUncheckedCreateNestedOneWithoutUserInput = {
-    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
-    connect?: UserStatsWhereUniqueInput
+  export type TypingIndicatorUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
+    createMany?: TypingIndicatorCreateManyUserInputEnvelope
+    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
   }
 
   export type UserPreferenceUncheckedCreateNestedManyWithoutUserInput = {
@@ -31061,18 +30884,10 @@ export namespace Prisma {
     connect?: UserPreferenceWhereUniqueInput | UserPreferenceWhereUniqueInput[]
   }
 
-  export type ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
-    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-  }
-
-  export type CommunityUncheckedCreateNestedManyWithoutCreatedByInput = {
-    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
-    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
-    createMany?: CommunityCreateManyCreatedByInputEnvelope
-    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+  export type UserStatsUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
+    connect?: UserStatsWhereUniqueInput
   }
 
   export type CommunityUncheckedCreateNestedManyWithoutAdminsInput = {
@@ -31087,11 +30902,16 @@ export namespace Prisma {
     connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
   }
 
-  export type CommunityMemberUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput> | CommunityMemberCreateWithoutUserInput[] | CommunityMemberUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityMemberCreateOrConnectWithoutUserInput | CommunityMemberCreateOrConnectWithoutUserInput[]
-    createMany?: CommunityMemberCreateManyUserInputEnvelope
-    connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
+  export type GroupUncheckedCreateNestedManyWithoutAdminsInput = {
+    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
+  export type GroupUncheckedCreateNestedManyWithoutModeratorsInput = {
+    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -31114,18 +30934,32 @@ export namespace Prisma {
     set?: Date | string | null
   }
 
-  export type MessageUpdateManyWithoutSenderNestedInput = {
-    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
-    upsert?: MessageUpsertWithWhereUniqueWithoutSenderInput | MessageUpsertWithWhereUniqueWithoutSenderInput[]
-    createMany?: MessageCreateManySenderInputEnvelope
-    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    update?: MessageUpdateWithWhereUniqueWithoutSenderInput | MessageUpdateWithWhereUniqueWithoutSenderInput[]
-    updateMany?: MessageUpdateManyWithWhereWithoutSenderInput | MessageUpdateManyWithWhereWithoutSenderInput[]
-    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
+  export type CommunityUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
+    upsert?: CommunityUpsertWithWhereUniqueWithoutCreatedByInput | CommunityUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: CommunityCreateManyCreatedByInputEnvelope
+    set?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    disconnect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    delete?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    update?: CommunityUpdateWithWhereUniqueWithoutCreatedByInput | CommunityUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: CommunityUpdateManyWithWhereWithoutCreatedByInput | CommunityUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
+  }
+
+  export type CommunityMemberUpdateManyWithoutUserNestedInput = {
+    create?: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput> | CommunityMemberCreateWithoutUserInput[] | CommunityMemberUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: CommunityMemberCreateOrConnectWithoutUserInput | CommunityMemberCreateOrConnectWithoutUserInput[]
+    upsert?: CommunityMemberUpsertWithWhereUniqueWithoutUserInput | CommunityMemberUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: CommunityMemberCreateManyUserInputEnvelope
+    set?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
+    disconnect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
+    delete?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
+    connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
+    update?: CommunityMemberUpdateWithWhereUniqueWithoutUserInput | CommunityMemberUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: CommunityMemberUpdateManyWithWhereWithoutUserInput | CommunityMemberUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
   }
 
   export type ConversationMemberUpdateManyWithoutUserNestedInput = {
@@ -31140,6 +30974,62 @@ export namespace Prisma {
     update?: ConversationMemberUpdateWithWhereUniqueWithoutUserInput | ConversationMemberUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ConversationMemberUpdateManyWithWhereWithoutUserInput | ConversationMemberUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ConversationMemberScalarWhereInput | ConversationMemberScalarWhereInput[]
+  }
+
+  export type ConversationPreferenceUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
+    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput | ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
+    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput | ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutUserInput | ConversationPreferenceUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
+  }
+
+  export type ConversationShareLinkUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
+    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
+    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput | ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
+  }
+
+  export type FriendRequestUpdateManyWithoutReceiverNestedInput = {
+    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
+    upsert?: FriendRequestUpsertWithWhereUniqueWithoutReceiverInput | FriendRequestUpsertWithWhereUniqueWithoutReceiverInput[]
+    createMany?: FriendRequestCreateManyReceiverInputEnvelope
+    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    update?: FriendRequestUpdateWithWhereUniqueWithoutReceiverInput | FriendRequestUpdateWithWhereUniqueWithoutReceiverInput[]
+    updateMany?: FriendRequestUpdateManyWithWhereWithoutReceiverInput | FriendRequestUpdateManyWithWhereWithoutReceiverInput[]
+    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
+  }
+
+  export type FriendRequestUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
+    upsert?: FriendRequestUpsertWithWhereUniqueWithoutSenderInput | FriendRequestUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: FriendRequestCreateManySenderInputEnvelope
+    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    update?: FriendRequestUpdateWithWhereUniqueWithoutSenderInput | FriendRequestUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: FriendRequestUpdateManyWithWhereWithoutSenderInput | FriendRequestUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
   }
 
   export type GroupMemberUpdateManyWithoutUserNestedInput = {
@@ -31170,74 +31060,6 @@ export namespace Prisma {
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type GroupUpdateManyWithoutAdminsNestedInput = {
-    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
-    upsert?: GroupUpsertWithWhereUniqueWithoutAdminsInput | GroupUpsertWithWhereUniqueWithoutAdminsInput[]
-    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    update?: GroupUpdateWithWhereUniqueWithoutAdminsInput | GroupUpdateWithWhereUniqueWithoutAdminsInput[]
-    updateMany?: GroupUpdateManyWithWhereWithoutAdminsInput | GroupUpdateManyWithWhereWithoutAdminsInput[]
-    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
-  }
-
-  export type GroupUpdateManyWithoutModeratorsNestedInput = {
-    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
-    upsert?: GroupUpsertWithWhereUniqueWithoutModeratorsInput | GroupUpsertWithWhereUniqueWithoutModeratorsInput[]
-    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    update?: GroupUpdateWithWhereUniqueWithoutModeratorsInput | GroupUpdateWithWhereUniqueWithoutModeratorsInput[]
-    updateMany?: GroupUpdateManyWithWhereWithoutModeratorsInput | GroupUpdateManyWithWhereWithoutModeratorsInput[]
-    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
-  }
-
-  export type FriendRequestUpdateManyWithoutSenderNestedInput = {
-    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
-    upsert?: FriendRequestUpsertWithWhereUniqueWithoutSenderInput | FriendRequestUpsertWithWhereUniqueWithoutSenderInput[]
-    createMany?: FriendRequestCreateManySenderInputEnvelope
-    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    update?: FriendRequestUpdateWithWhereUniqueWithoutSenderInput | FriendRequestUpdateWithWhereUniqueWithoutSenderInput[]
-    updateMany?: FriendRequestUpdateManyWithWhereWithoutSenderInput | FriendRequestUpdateManyWithWhereWithoutSenderInput[]
-    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
-  }
-
-  export type FriendRequestUpdateManyWithoutReceiverNestedInput = {
-    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
-    upsert?: FriendRequestUpsertWithWhereUniqueWithoutReceiverInput | FriendRequestUpsertWithWhereUniqueWithoutReceiverInput[]
-    createMany?: FriendRequestCreateManyReceiverInputEnvelope
-    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    update?: FriendRequestUpdateWithWhereUniqueWithoutReceiverInput | FriendRequestUpdateWithWhereUniqueWithoutReceiverInput[]
-    updateMany?: FriendRequestUpdateManyWithWhereWithoutReceiverInput | FriendRequestUpdateManyWithWhereWithoutReceiverInput[]
-    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
-  }
-
-  export type TypingIndicatorUpdateManyWithoutUserNestedInput = {
-    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
-    upsert?: TypingIndicatorUpsertWithWhereUniqueWithoutUserInput | TypingIndicatorUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: TypingIndicatorCreateManyUserInputEnvelope
-    set?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    disconnect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    delete?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    update?: TypingIndicatorUpdateWithWhereUniqueWithoutUserInput | TypingIndicatorUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: TypingIndicatorUpdateManyWithWhereWithoutUserInput | TypingIndicatorUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
-  }
-
   export type MessageReadStatusUpdateManyWithoutUserNestedInput = {
     create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
     connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
@@ -31250,6 +31072,20 @@ export namespace Prisma {
     update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  }
+
+  export type MessageUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
+    upsert?: MessageUpsertWithWhereUniqueWithoutSenderInput | MessageUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: MessageCreateManySenderInputEnvelope
+    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    update?: MessageUpdateWithWhereUniqueWithoutSenderInput | MessageUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: MessageUpdateManyWithWhereWithoutSenderInput | MessageUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
   export type NotificationUpdateManyWithoutUserNestedInput = {
@@ -31266,28 +31102,18 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
-  export type ConversationShareLinkUpdateManyWithoutCreatorNestedInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
-    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput[]
-    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
-    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput[]
-    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput | ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput[]
-    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
-  }
-
-  export type UserStatsUpdateOneWithoutUserNestedInput = {
-    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
-    upsert?: UserStatsUpsertWithoutUserInput
-    disconnect?: UserStatsWhereInput | boolean
-    delete?: UserStatsWhereInput | boolean
-    connect?: UserStatsWhereUniqueInput
-    update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
+  export type TypingIndicatorUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
+    upsert?: TypingIndicatorUpsertWithWhereUniqueWithoutUserInput | TypingIndicatorUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TypingIndicatorCreateManyUserInputEnvelope
+    set?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    disconnect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    delete?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    update?: TypingIndicatorUpdateWithWhereUniqueWithoutUserInput | TypingIndicatorUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TypingIndicatorUpdateManyWithWhereWithoutUserInput | TypingIndicatorUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
   }
 
   export type UserPreferenceUpdateManyWithoutUserNestedInput = {
@@ -31304,32 +31130,14 @@ export namespace Prisma {
     deleteMany?: UserPreferenceScalarWhereInput | UserPreferenceScalarWhereInput[]
   }
 
-  export type ConversationPreferenceUpdateManyWithoutUserNestedInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
-    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput | ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
-    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput | ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutUserInput | ConversationPreferenceUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
-  }
-
-  export type CommunityUpdateManyWithoutCreatedByNestedInput = {
-    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
-    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
-    upsert?: CommunityUpsertWithWhereUniqueWithoutCreatedByInput | CommunityUpsertWithWhereUniqueWithoutCreatedByInput[]
-    createMany?: CommunityCreateManyCreatedByInputEnvelope
-    set?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    disconnect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    delete?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    update?: CommunityUpdateWithWhereUniqueWithoutCreatedByInput | CommunityUpdateWithWhereUniqueWithoutCreatedByInput[]
-    updateMany?: CommunityUpdateManyWithWhereWithoutCreatedByInput | CommunityUpdateManyWithWhereWithoutCreatedByInput[]
-    deleteMany?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
+  export type UserStatsUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
+    upsert?: UserStatsUpsertWithoutUserInput
+    disconnect?: UserStatsWhereInput | boolean
+    delete?: UserStatsWhereInput | boolean
+    connect?: UserStatsWhereUniqueInput
+    update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
   }
 
   export type CommunityUpdateManyWithoutAdminsNestedInput = {
@@ -31358,7 +31166,47 @@ export namespace Prisma {
     deleteMany?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
   }
 
-  export type CommunityMemberUpdateManyWithoutUserNestedInput = {
+  export type GroupUpdateManyWithoutAdminsNestedInput = {
+    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutAdminsInput | GroupUpsertWithWhereUniqueWithoutAdminsInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutAdminsInput | GroupUpdateWithWhereUniqueWithoutAdminsInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutAdminsInput | GroupUpdateManyWithWhereWithoutAdminsInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
+  export type GroupUpdateManyWithoutModeratorsNestedInput = {
+    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutModeratorsInput | GroupUpsertWithWhereUniqueWithoutModeratorsInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutModeratorsInput | GroupUpdateWithWhereUniqueWithoutModeratorsInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutModeratorsInput | GroupUpdateManyWithWhereWithoutModeratorsInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
+  export type CommunityUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
+    upsert?: CommunityUpsertWithWhereUniqueWithoutCreatedByInput | CommunityUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: CommunityCreateManyCreatedByInputEnvelope
+    set?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    disconnect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    delete?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
+    update?: CommunityUpdateWithWhereUniqueWithoutCreatedByInput | CommunityUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: CommunityUpdateManyWithWhereWithoutCreatedByInput | CommunityUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
+  }
+
+  export type CommunityMemberUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput> | CommunityMemberCreateWithoutUserInput[] | CommunityMemberUncheckedCreateWithoutUserInput[]
     connectOrCreate?: CommunityMemberCreateOrConnectWithoutUserInput | CommunityMemberCreateOrConnectWithoutUserInput[]
     upsert?: CommunityMemberUpsertWithWhereUniqueWithoutUserInput | CommunityMemberUpsertWithWhereUniqueWithoutUserInput[]
@@ -31370,20 +31218,6 @@ export namespace Prisma {
     update?: CommunityMemberUpdateWithWhereUniqueWithoutUserInput | CommunityMemberUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: CommunityMemberUpdateManyWithWhereWithoutUserInput | CommunityMemberUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
-  }
-
-  export type MessageUncheckedUpdateManyWithoutSenderNestedInput = {
-    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
-    upsert?: MessageUpsertWithWhereUniqueWithoutSenderInput | MessageUpsertWithWhereUniqueWithoutSenderInput[]
-    createMany?: MessageCreateManySenderInputEnvelope
-    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    update?: MessageUpdateWithWhereUniqueWithoutSenderInput | MessageUpdateWithWhereUniqueWithoutSenderInput[]
-    updateMany?: MessageUpdateManyWithWhereWithoutSenderInput | MessageUpdateManyWithWhereWithoutSenderInput[]
-    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
   export type ConversationMemberUncheckedUpdateManyWithoutUserNestedInput = {
@@ -31398,6 +31232,62 @@ export namespace Prisma {
     update?: ConversationMemberUpdateWithWhereUniqueWithoutUserInput | ConversationMemberUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ConversationMemberUpdateManyWithWhereWithoutUserInput | ConversationMemberUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ConversationMemberScalarWhereInput | ConversationMemberScalarWhereInput[]
+  }
+
+  export type ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
+    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput | ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
+    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput | ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutUserInput | ConversationPreferenceUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
+  }
+
+  export type ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
+    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
+    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput | ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
+  }
+
+  export type FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput = {
+    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
+    upsert?: FriendRequestUpsertWithWhereUniqueWithoutReceiverInput | FriendRequestUpsertWithWhereUniqueWithoutReceiverInput[]
+    createMany?: FriendRequestCreateManyReceiverInputEnvelope
+    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    update?: FriendRequestUpdateWithWhereUniqueWithoutReceiverInput | FriendRequestUpdateWithWhereUniqueWithoutReceiverInput[]
+    updateMany?: FriendRequestUpdateManyWithWhereWithoutReceiverInput | FriendRequestUpdateManyWithWhereWithoutReceiverInput[]
+    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
+  }
+
+  export type FriendRequestUncheckedUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
+    upsert?: FriendRequestUpsertWithWhereUniqueWithoutSenderInput | FriendRequestUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: FriendRequestCreateManySenderInputEnvelope
+    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
+    update?: FriendRequestUpdateWithWhereUniqueWithoutSenderInput | FriendRequestUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: FriendRequestUpdateManyWithWhereWithoutSenderInput | FriendRequestUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
   }
 
   export type GroupMemberUncheckedUpdateManyWithoutUserNestedInput = {
@@ -31428,74 +31318,6 @@ export namespace Prisma {
     deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type GroupUncheckedUpdateManyWithoutAdminsNestedInput = {
-    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
-    upsert?: GroupUpsertWithWhereUniqueWithoutAdminsInput | GroupUpsertWithWhereUniqueWithoutAdminsInput[]
-    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    update?: GroupUpdateWithWhereUniqueWithoutAdminsInput | GroupUpdateWithWhereUniqueWithoutAdminsInput[]
-    updateMany?: GroupUpdateManyWithWhereWithoutAdminsInput | GroupUpdateManyWithWhereWithoutAdminsInput[]
-    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
-  }
-
-  export type GroupUncheckedUpdateManyWithoutModeratorsNestedInput = {
-    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
-    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
-    upsert?: GroupUpsertWithWhereUniqueWithoutModeratorsInput | GroupUpsertWithWhereUniqueWithoutModeratorsInput[]
-    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
-    update?: GroupUpdateWithWhereUniqueWithoutModeratorsInput | GroupUpdateWithWhereUniqueWithoutModeratorsInput[]
-    updateMany?: GroupUpdateManyWithWhereWithoutModeratorsInput | GroupUpdateManyWithWhereWithoutModeratorsInput[]
-    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
-  }
-
-  export type FriendRequestUncheckedUpdateManyWithoutSenderNestedInput = {
-    create?: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput> | FriendRequestCreateWithoutSenderInput[] | FriendRequestUncheckedCreateWithoutSenderInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutSenderInput | FriendRequestCreateOrConnectWithoutSenderInput[]
-    upsert?: FriendRequestUpsertWithWhereUniqueWithoutSenderInput | FriendRequestUpsertWithWhereUniqueWithoutSenderInput[]
-    createMany?: FriendRequestCreateManySenderInputEnvelope
-    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    update?: FriendRequestUpdateWithWhereUniqueWithoutSenderInput | FriendRequestUpdateWithWhereUniqueWithoutSenderInput[]
-    updateMany?: FriendRequestUpdateManyWithWhereWithoutSenderInput | FriendRequestUpdateManyWithWhereWithoutSenderInput[]
-    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
-  }
-
-  export type FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput = {
-    create?: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput> | FriendRequestCreateWithoutReceiverInput[] | FriendRequestUncheckedCreateWithoutReceiverInput[]
-    connectOrCreate?: FriendRequestCreateOrConnectWithoutReceiverInput | FriendRequestCreateOrConnectWithoutReceiverInput[]
-    upsert?: FriendRequestUpsertWithWhereUniqueWithoutReceiverInput | FriendRequestUpsertWithWhereUniqueWithoutReceiverInput[]
-    createMany?: FriendRequestCreateManyReceiverInputEnvelope
-    set?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    disconnect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    delete?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
-    update?: FriendRequestUpdateWithWhereUniqueWithoutReceiverInput | FriendRequestUpdateWithWhereUniqueWithoutReceiverInput[]
-    updateMany?: FriendRequestUpdateManyWithWhereWithoutReceiverInput | FriendRequestUpdateManyWithWhereWithoutReceiverInput[]
-    deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
-  }
-
-  export type TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
-    upsert?: TypingIndicatorUpsertWithWhereUniqueWithoutUserInput | TypingIndicatorUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: TypingIndicatorCreateManyUserInputEnvelope
-    set?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    disconnect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    delete?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
-    update?: TypingIndicatorUpdateWithWhereUniqueWithoutUserInput | TypingIndicatorUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: TypingIndicatorUpdateManyWithWhereWithoutUserInput | TypingIndicatorUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
-  }
-
   export type MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
     connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
@@ -31508,6 +31330,20 @@ export namespace Prisma {
     update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  }
+
+  export type MessageUncheckedUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput> | MessageCreateWithoutSenderInput[] | MessageUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutSenderInput | MessageCreateOrConnectWithoutSenderInput[]
+    upsert?: MessageUpsertWithWhereUniqueWithoutSenderInput | MessageUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: MessageCreateManySenderInputEnvelope
+    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    update?: MessageUpdateWithWhereUniqueWithoutSenderInput | MessageUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: MessageUpdateManyWithWhereWithoutSenderInput | MessageUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
   export type NotificationUncheckedUpdateManyWithoutUserNestedInput = {
@@ -31524,28 +31360,18 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
-  export type ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput> | ConversationShareLinkCreateWithoutCreatorInput[] | ConversationShareLinkUncheckedCreateWithoutCreatorInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutCreatorInput | ConversationShareLinkCreateOrConnectWithoutCreatorInput[]
-    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput[]
-    createMany?: ConversationShareLinkCreateManyCreatorInputEnvelope
-    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput | ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput[]
-    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput | ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput[]
-    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
-  }
-
-  export type UserStatsUncheckedUpdateOneWithoutUserNestedInput = {
-    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
-    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
-    upsert?: UserStatsUpsertWithoutUserInput
-    disconnect?: UserStatsWhereInput | boolean
-    delete?: UserStatsWhereInput | boolean
-    connect?: UserStatsWhereUniqueInput
-    update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
+  export type TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput> | TypingIndicatorCreateWithoutUserInput[] | TypingIndicatorUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TypingIndicatorCreateOrConnectWithoutUserInput | TypingIndicatorCreateOrConnectWithoutUserInput[]
+    upsert?: TypingIndicatorUpsertWithWhereUniqueWithoutUserInput | TypingIndicatorUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TypingIndicatorCreateManyUserInputEnvelope
+    set?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    disconnect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    delete?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
+    update?: TypingIndicatorUpdateWithWhereUniqueWithoutUserInput | TypingIndicatorUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TypingIndicatorUpdateManyWithWhereWithoutUserInput | TypingIndicatorUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
   }
 
   export type UserPreferenceUncheckedUpdateManyWithoutUserNestedInput = {
@@ -31562,32 +31388,14 @@ export namespace Prisma {
     deleteMany?: UserPreferenceScalarWhereInput | UserPreferenceScalarWhereInput[]
   }
 
-  export type ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput> | ConversationPreferenceCreateWithoutUserInput[] | ConversationPreferenceUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutUserInput | ConversationPreferenceCreateOrConnectWithoutUserInput[]
-    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput | ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: ConversationPreferenceCreateManyUserInputEnvelope
-    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput | ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutUserInput | ConversationPreferenceUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
-  }
-
-  export type CommunityUncheckedUpdateManyWithoutCreatedByNestedInput = {
-    create?: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput> | CommunityCreateWithoutCreatedByInput[] | CommunityUncheckedCreateWithoutCreatedByInput[]
-    connectOrCreate?: CommunityCreateOrConnectWithoutCreatedByInput | CommunityCreateOrConnectWithoutCreatedByInput[]
-    upsert?: CommunityUpsertWithWhereUniqueWithoutCreatedByInput | CommunityUpsertWithWhereUniqueWithoutCreatedByInput[]
-    createMany?: CommunityCreateManyCreatedByInputEnvelope
-    set?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    disconnect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    delete?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    connect?: CommunityWhereUniqueInput | CommunityWhereUniqueInput[]
-    update?: CommunityUpdateWithWhereUniqueWithoutCreatedByInput | CommunityUpdateWithWhereUniqueWithoutCreatedByInput[]
-    updateMany?: CommunityUpdateManyWithWhereWithoutCreatedByInput | CommunityUpdateManyWithWhereWithoutCreatedByInput[]
-    deleteMany?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
+  export type UserStatsUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
+    upsert?: UserStatsUpsertWithoutUserInput
+    disconnect?: UserStatsWhereInput | boolean
+    delete?: UserStatsWhereInput | boolean
+    connect?: UserStatsWhereUniqueInput
+    update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
   }
 
   export type CommunityUncheckedUpdateManyWithoutAdminsNestedInput = {
@@ -31616,24 +31424,37 @@ export namespace Prisma {
     deleteMany?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
   }
 
-  export type CommunityMemberUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput> | CommunityMemberCreateWithoutUserInput[] | CommunityMemberUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityMemberCreateOrConnectWithoutUserInput | CommunityMemberCreateOrConnectWithoutUserInput[]
-    upsert?: CommunityMemberUpsertWithWhereUniqueWithoutUserInput | CommunityMemberUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: CommunityMemberCreateManyUserInputEnvelope
-    set?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
-    disconnect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
-    delete?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
-    connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
-    update?: CommunityMemberUpdateWithWhereUniqueWithoutUserInput | CommunityMemberUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: CommunityMemberUpdateManyWithWhereWithoutUserInput | CommunityMemberUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
+  export type GroupUncheckedUpdateManyWithoutAdminsNestedInput = {
+    create?: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput> | GroupCreateWithoutAdminsInput[] | GroupUncheckedCreateWithoutAdminsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutAdminsInput | GroupCreateOrConnectWithoutAdminsInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutAdminsInput | GroupUpsertWithWhereUniqueWithoutAdminsInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutAdminsInput | GroupUpdateWithWhereUniqueWithoutAdminsInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutAdminsInput | GroupUpdateManyWithWhereWithoutAdminsInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
-  export type CommunityCreateNestedOneWithoutConversationsInput = {
-    create?: XOR<CommunityCreateWithoutConversationsInput, CommunityUncheckedCreateWithoutConversationsInput>
-    connectOrCreate?: CommunityCreateOrConnectWithoutConversationsInput
-    connect?: CommunityWhereUniqueInput
+  export type GroupUncheckedUpdateManyWithoutModeratorsNestedInput = {
+    create?: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput> | GroupCreateWithoutModeratorsInput[] | GroupUncheckedCreateWithoutModeratorsInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutModeratorsInput | GroupCreateOrConnectWithoutModeratorsInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutModeratorsInput | GroupUpsertWithWhereUniqueWithoutModeratorsInput[]
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutModeratorsInput | GroupUpdateWithWhereUniqueWithoutModeratorsInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutModeratorsInput | GroupUpdateManyWithWhereWithoutModeratorsInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
+  export type AnonymousParticipantCreateNestedManyWithoutConversationInput = {
+    create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
+    createMany?: AnonymousParticipantCreateManyConversationInputEnvelope
+    connect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
   }
 
   export type ConversationMemberCreateNestedManyWithoutConversationInput = {
@@ -31641,6 +31462,26 @@ export namespace Prisma {
     connectOrCreate?: ConversationMemberCreateOrConnectWithoutConversationInput | ConversationMemberCreateOrConnectWithoutConversationInput[]
     createMany?: ConversationMemberCreateManyConversationInputEnvelope
     connect?: ConversationMemberWhereUniqueInput | ConversationMemberWhereUniqueInput[]
+  }
+
+  export type ConversationPreferenceCreateNestedManyWithoutConversationInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
+    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+  }
+
+  export type ConversationShareLinkCreateNestedManyWithoutConversationInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
+    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+  }
+
+  export type CommunityCreateNestedOneWithoutConversationsInput = {
+    create?: XOR<CommunityCreateWithoutConversationsInput, CommunityUncheckedCreateWithoutConversationsInput>
+    connectOrCreate?: CommunityCreateOrConnectWithoutConversationsInput
+    connect?: CommunityWhereUniqueInput
   }
 
   export type MessageCreateNestedManyWithoutConversationInput = {
@@ -31657,21 +31498,7 @@ export namespace Prisma {
     connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
   }
 
-  export type ConversationShareLinkCreateNestedManyWithoutConversationInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
-    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-  }
-
-  export type ConversationPreferenceCreateNestedManyWithoutConversationInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
-    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-  }
-
-  export type AnonymousParticipantCreateNestedManyWithoutConversationInput = {
+  export type AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
     createMany?: AnonymousParticipantCreateManyConversationInputEnvelope
@@ -31683,6 +31510,20 @@ export namespace Prisma {
     connectOrCreate?: ConversationMemberCreateOrConnectWithoutConversationInput | ConversationMemberCreateOrConnectWithoutConversationInput[]
     createMany?: ConversationMemberCreateManyConversationInputEnvelope
     connect?: ConversationMemberWhereUniqueInput | ConversationMemberWhereUniqueInput[]
+  }
+
+  export type ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
+    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+  }
+
+  export type ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
+    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
   }
 
   export type MessageUncheckedCreateNestedManyWithoutConversationInput = {
@@ -31699,35 +31540,18 @@ export namespace Prisma {
     connect?: TypingIndicatorWhereUniqueInput | TypingIndicatorWhereUniqueInput[]
   }
 
-  export type ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
-    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-  }
-
-  export type ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
-    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-  }
-
-  export type AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput = {
+  export type AnonymousParticipantUpdateManyWithoutConversationNestedInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
+    upsert?: AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput | AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput[]
     createMany?: AnonymousParticipantCreateManyConversationInputEnvelope
+    set?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
+    disconnect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
+    delete?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
     connect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
-  }
-
-  export type CommunityUpdateOneWithoutConversationsNestedInput = {
-    create?: XOR<CommunityCreateWithoutConversationsInput, CommunityUncheckedCreateWithoutConversationsInput>
-    connectOrCreate?: CommunityCreateOrConnectWithoutConversationsInput
-    upsert?: CommunityUpsertWithoutConversationsInput
-    disconnect?: CommunityWhereInput | boolean
-    delete?: CommunityWhereInput | boolean
-    connect?: CommunityWhereUniqueInput
-    update?: XOR<XOR<CommunityUpdateToOneWithWhereWithoutConversationsInput, CommunityUpdateWithoutConversationsInput>, CommunityUncheckedUpdateWithoutConversationsInput>
+    update?: AnonymousParticipantUpdateWithWhereUniqueWithoutConversationInput | AnonymousParticipantUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: AnonymousParticipantUpdateManyWithWhereWithoutConversationInput | AnonymousParticipantUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
   }
 
   export type ConversationMemberUpdateManyWithoutConversationNestedInput = {
@@ -31742,6 +31566,44 @@ export namespace Prisma {
     update?: ConversationMemberUpdateWithWhereUniqueWithoutConversationInput | ConversationMemberUpdateWithWhereUniqueWithoutConversationInput[]
     updateMany?: ConversationMemberUpdateManyWithWhereWithoutConversationInput | ConversationMemberUpdateManyWithWhereWithoutConversationInput[]
     deleteMany?: ConversationMemberScalarWhereInput | ConversationMemberScalarWhereInput[]
+  }
+
+  export type ConversationPreferenceUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
+    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
+    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutConversationInput | ConversationPreferenceUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
+  }
+
+  export type ConversationShareLinkUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
+    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
+    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutConversationInput | ConversationShareLinkUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
+  }
+
+  export type CommunityUpdateOneWithoutConversationsNestedInput = {
+    create?: XOR<CommunityCreateWithoutConversationsInput, CommunityUncheckedCreateWithoutConversationsInput>
+    connectOrCreate?: CommunityCreateOrConnectWithoutConversationsInput
+    upsert?: CommunityUpsertWithoutConversationsInput
+    disconnect?: CommunityWhereInput | boolean
+    delete?: CommunityWhereInput | boolean
+    connect?: CommunityWhereUniqueInput
+    update?: XOR<XOR<CommunityUpdateToOneWithWhereWithoutConversationsInput, CommunityUpdateWithoutConversationsInput>, CommunityUncheckedUpdateWithoutConversationsInput>
   }
 
   export type MessageUpdateManyWithoutConversationNestedInput = {
@@ -31772,35 +31634,7 @@ export namespace Prisma {
     deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
   }
 
-  export type ConversationShareLinkUpdateManyWithoutConversationNestedInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
-    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput[]
-    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
-    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput[]
-    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutConversationInput | ConversationShareLinkUpdateManyWithWhereWithoutConversationInput[]
-    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
-  }
-
-  export type ConversationPreferenceUpdateManyWithoutConversationNestedInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
-    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput[]
-    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
-    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput[]
-    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutConversationInput | ConversationPreferenceUpdateManyWithWhereWithoutConversationInput[]
-    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
-  }
-
-  export type AnonymousParticipantUpdateManyWithoutConversationNestedInput = {
+  export type AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput = {
     create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
     upsert?: AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput | AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput[]
@@ -31826,6 +31660,34 @@ export namespace Prisma {
     update?: ConversationMemberUpdateWithWhereUniqueWithoutConversationInput | ConversationMemberUpdateWithWhereUniqueWithoutConversationInput[]
     updateMany?: ConversationMemberUpdateManyWithWhereWithoutConversationInput | ConversationMemberUpdateManyWithWhereWithoutConversationInput[]
     deleteMany?: ConversationMemberScalarWhereInput | ConversationMemberScalarWhereInput[]
+  }
+
+  export type ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
+    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
+    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
+    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutConversationInput | ConversationPreferenceUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
+  }
+
+  export type ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput = {
+    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
+    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
+    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput[]
+    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
+    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
+    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput[]
+    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutConversationInput | ConversationShareLinkUpdateManyWithWhereWithoutConversationInput[]
+    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
   }
 
   export type MessageUncheckedUpdateManyWithoutConversationNestedInput = {
@@ -31856,66 +31718,16 @@ export namespace Prisma {
     deleteMany?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
   }
 
-  export type ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput = {
-    create?: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput> | ConversationShareLinkCreateWithoutConversationInput[] | ConversationShareLinkUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutConversationInput | ConversationShareLinkCreateOrConnectWithoutConversationInput[]
-    upsert?: ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput[]
-    createMany?: ConversationShareLinkCreateManyConversationInputEnvelope
-    set?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    disconnect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    delete?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    connect?: ConversationShareLinkWhereUniqueInput | ConversationShareLinkWhereUniqueInput[]
-    update?: ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput | ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput[]
-    updateMany?: ConversationShareLinkUpdateManyWithWhereWithoutConversationInput | ConversationShareLinkUpdateManyWithWhereWithoutConversationInput[]
-    deleteMany?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
-  }
-
-  export type ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput = {
-    create?: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput> | ConversationPreferenceCreateWithoutConversationInput[] | ConversationPreferenceUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: ConversationPreferenceCreateOrConnectWithoutConversationInput | ConversationPreferenceCreateOrConnectWithoutConversationInput[]
-    upsert?: ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput[]
-    createMany?: ConversationPreferenceCreateManyConversationInputEnvelope
-    set?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    disconnect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    delete?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    connect?: ConversationPreferenceWhereUniqueInput | ConversationPreferenceWhereUniqueInput[]
-    update?: ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput | ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput[]
-    updateMany?: ConversationPreferenceUpdateManyWithWhereWithoutConversationInput | ConversationPreferenceUpdateManyWithWhereWithoutConversationInput[]
-    deleteMany?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
-  }
-
-  export type AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput = {
-    create?: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput> | AnonymousParticipantCreateWithoutConversationInput[] | AnonymousParticipantUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutConversationInput | AnonymousParticipantCreateOrConnectWithoutConversationInput[]
-    upsert?: AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput | AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput[]
-    createMany?: AnonymousParticipantCreateManyConversationInputEnvelope
-    set?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
-    disconnect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
-    delete?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
-    connect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
-    update?: AnonymousParticipantUpdateWithWhereUniqueWithoutConversationInput | AnonymousParticipantUpdateWithWhereUniqueWithoutConversationInput[]
-    updateMany?: AnonymousParticipantUpdateManyWithWhereWithoutConversationInput | AnonymousParticipantUpdateManyWithWhereWithoutConversationInput[]
-    deleteMany?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
-  }
-
-  export type ConversationCreateNestedOneWithoutMembersInput = {
-    create?: XOR<ConversationCreateWithoutMembersInput, ConversationUncheckedCreateWithoutMembersInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutMembersInput
-    connect?: ConversationWhereUniqueInput
-  }
-
   export type UserCreateNestedOneWithoutConversationsInput = {
     create?: XOR<UserCreateWithoutConversationsInput, UserUncheckedCreateWithoutConversationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutConversationsInput
     connect?: UserWhereUniqueInput
   }
 
-  export type ConversationUpdateOneRequiredWithoutMembersNestedInput = {
+  export type ConversationCreateNestedOneWithoutMembersInput = {
     create?: XOR<ConversationCreateWithoutMembersInput, ConversationUncheckedCreateWithoutMembersInput>
     connectOrCreate?: ConversationCreateOrConnectWithoutMembersInput
-    upsert?: ConversationUpsertWithoutMembersInput
     connect?: ConversationWhereUniqueInput
-    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMembersInput, ConversationUpdateWithoutMembersInput>, ConversationUncheckedUpdateWithoutMembersInput>
   }
 
   export type UserUpdateOneRequiredWithoutConversationsNestedInput = {
@@ -31926,10 +31738,19 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutConversationsInput, UserUpdateWithoutConversationsInput>, UserUncheckedUpdateWithoutConversationsInput>
   }
 
-  export type ConversationCreateNestedOneWithoutShareLinksInput = {
-    create?: XOR<ConversationCreateWithoutShareLinksInput, ConversationUncheckedCreateWithoutShareLinksInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutShareLinksInput
+  export type ConversationUpdateOneRequiredWithoutMembersNestedInput = {
+    create?: XOR<ConversationCreateWithoutMembersInput, ConversationUncheckedCreateWithoutMembersInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutMembersInput
+    upsert?: ConversationUpsertWithoutMembersInput
     connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMembersInput, ConversationUpdateWithoutMembersInput>, ConversationUncheckedUpdateWithoutMembersInput>
+  }
+
+  export type AnonymousParticipantCreateNestedManyWithoutShareLinkInput = {
+    create?: XOR<AnonymousParticipantCreateWithoutShareLinkInput, AnonymousParticipantUncheckedCreateWithoutShareLinkInput> | AnonymousParticipantCreateWithoutShareLinkInput[] | AnonymousParticipantUncheckedCreateWithoutShareLinkInput[]
+    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutShareLinkInput | AnonymousParticipantCreateOrConnectWithoutShareLinkInput[]
+    createMany?: AnonymousParticipantCreateManyShareLinkInputEnvelope
+    connect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
   }
 
   export type UserCreateNestedOneWithoutCreatedShareLinksInput = {
@@ -31938,11 +31759,10 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type AnonymousParticipantCreateNestedManyWithoutShareLinkInput = {
-    create?: XOR<AnonymousParticipantCreateWithoutShareLinkInput, AnonymousParticipantUncheckedCreateWithoutShareLinkInput> | AnonymousParticipantCreateWithoutShareLinkInput[] | AnonymousParticipantUncheckedCreateWithoutShareLinkInput[]
-    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutShareLinkInput | AnonymousParticipantCreateOrConnectWithoutShareLinkInput[]
-    createMany?: AnonymousParticipantCreateManyShareLinkInputEnvelope
-    connect?: AnonymousParticipantWhereUniqueInput | AnonymousParticipantWhereUniqueInput[]
+  export type ConversationCreateNestedOneWithoutShareLinksInput = {
+    create?: XOR<ConversationCreateWithoutShareLinksInput, ConversationUncheckedCreateWithoutShareLinksInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutShareLinksInput
+    connect?: ConversationWhereUniqueInput
   }
 
   export type AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput = {
@@ -31968,22 +31788,6 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type ConversationUpdateOneRequiredWithoutShareLinksNestedInput = {
-    create?: XOR<ConversationCreateWithoutShareLinksInput, ConversationUncheckedCreateWithoutShareLinksInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutShareLinksInput
-    upsert?: ConversationUpsertWithoutShareLinksInput
-    connect?: ConversationWhereUniqueInput
-    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutShareLinksInput, ConversationUpdateWithoutShareLinksInput>, ConversationUncheckedUpdateWithoutShareLinksInput>
-  }
-
-  export type UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput = {
-    create?: XOR<UserCreateWithoutCreatedShareLinksInput, UserUncheckedCreateWithoutCreatedShareLinksInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCreatedShareLinksInput
-    upsert?: UserUpsertWithoutCreatedShareLinksInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedShareLinksInput, UserUpdateWithoutCreatedShareLinksInput>, UserUncheckedUpdateWithoutCreatedShareLinksInput>
-  }
-
   export type AnonymousParticipantUpdateManyWithoutShareLinkNestedInput = {
     create?: XOR<AnonymousParticipantCreateWithoutShareLinkInput, AnonymousParticipantUncheckedCreateWithoutShareLinkInput> | AnonymousParticipantCreateWithoutShareLinkInput[] | AnonymousParticipantUncheckedCreateWithoutShareLinkInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutShareLinkInput | AnonymousParticipantCreateOrConnectWithoutShareLinkInput[]
@@ -31996,6 +31800,22 @@ export namespace Prisma {
     update?: AnonymousParticipantUpdateWithWhereUniqueWithoutShareLinkInput | AnonymousParticipantUpdateWithWhereUniqueWithoutShareLinkInput[]
     updateMany?: AnonymousParticipantUpdateManyWithWhereWithoutShareLinkInput | AnonymousParticipantUpdateManyWithWhereWithoutShareLinkInput[]
     deleteMany?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedShareLinksInput, UserUncheckedCreateWithoutCreatedShareLinksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedShareLinksInput
+    upsert?: UserUpsertWithoutCreatedShareLinksInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedShareLinksInput, UserUpdateWithoutCreatedShareLinksInput>, UserUncheckedUpdateWithoutCreatedShareLinksInput>
+  }
+
+  export type ConversationUpdateOneRequiredWithoutShareLinksNestedInput = {
+    create?: XOR<ConversationCreateWithoutShareLinksInput, ConversationUncheckedCreateWithoutShareLinksInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutShareLinksInput
+    upsert?: ConversationUpsertWithoutShareLinksInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutShareLinksInput, ConversationUpdateWithoutShareLinksInput>, ConversationUncheckedUpdateWithoutShareLinksInput>
   }
 
   export type AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput = {
@@ -32012,16 +31832,16 @@ export namespace Prisma {
     deleteMany?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
   }
 
-  export type ConversationCreateNestedOneWithoutAnonymousParticipantsInput = {
-    create?: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutAnonymousParticipantsInput
-    connect?: ConversationWhereUniqueInput
-  }
-
   export type ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput = {
     create?: XOR<ConversationShareLinkCreateWithoutAnonymousParticipantsInput, ConversationShareLinkUncheckedCreateWithoutAnonymousParticipantsInput>
     connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutAnonymousParticipantsInput
     connect?: ConversationShareLinkWhereUniqueInput
+  }
+
+  export type ConversationCreateNestedOneWithoutAnonymousParticipantsInput = {
+    create?: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutAnonymousParticipantsInput
+    connect?: ConversationWhereUniqueInput
   }
 
   export type MessageCreateNestedManyWithoutAnonymousSenderInput = {
@@ -32038,20 +31858,20 @@ export namespace Prisma {
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
-  export type ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput = {
-    create?: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutAnonymousParticipantsInput
-    upsert?: ConversationUpsertWithoutAnonymousParticipantsInput
-    connect?: ConversationWhereUniqueInput
-    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutAnonymousParticipantsInput, ConversationUpdateWithoutAnonymousParticipantsInput>, ConversationUncheckedUpdateWithoutAnonymousParticipantsInput>
-  }
-
   export type ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput = {
     create?: XOR<ConversationShareLinkCreateWithoutAnonymousParticipantsInput, ConversationShareLinkUncheckedCreateWithoutAnonymousParticipantsInput>
     connectOrCreate?: ConversationShareLinkCreateOrConnectWithoutAnonymousParticipantsInput
     upsert?: ConversationShareLinkUpsertWithoutAnonymousParticipantsInput
     connect?: ConversationShareLinkWhereUniqueInput
     update?: XOR<XOR<ConversationShareLinkUpdateToOneWithWhereWithoutAnonymousParticipantsInput, ConversationShareLinkUpdateWithoutAnonymousParticipantsInput>, ConversationShareLinkUncheckedUpdateWithoutAnonymousParticipantsInput>
+  }
+
+  export type ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput = {
+    create?: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutAnonymousParticipantsInput
+    upsert?: ConversationUpsertWithoutAnonymousParticipantsInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutAnonymousParticipantsInput, ConversationUpdateWithoutAnonymousParticipantsInput>, ConversationUncheckedUpdateWithoutAnonymousParticipantsInput>
   }
 
   export type MessageUpdateManyWithoutAnonymousSenderNestedInput = {
@@ -32082,22 +31902,18 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
-  export type ConversationCreateNestedOneWithoutMessagesInput = {
-    create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
-    connect?: ConversationWhereUniqueInput
+  export type MessageReadStatusCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
+    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
   }
 
-  export type UserCreateNestedOneWithoutSentMessagesInput = {
-    create?: XOR<UserCreateWithoutSentMessagesInput, UserUncheckedCreateWithoutSentMessagesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSentMessagesInput
-    connect?: UserWhereUniqueInput
-  }
-
-  export type AnonymousParticipantCreateNestedOneWithoutSentMessagesInput = {
-    create?: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
-    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutSentMessagesInput
-    connect?: AnonymousParticipantWhereUniqueInput
+  export type MessageTranslationCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput> | MessageTranslationCreateWithoutMessageInput[] | MessageTranslationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageTranslationCreateOrConnectWithoutMessageInput | MessageTranslationCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageTranslationCreateManyMessageInputEnvelope
+    connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
   }
 
   export type MessageCreateNestedOneWithoutRepliesInput = {
@@ -32113,32 +31929,22 @@ export namespace Prisma {
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
-  export type MessageTranslationCreateNestedManyWithoutMessageInput = {
-    create?: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput> | MessageTranslationCreateWithoutMessageInput[] | MessageTranslationUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageTranslationCreateOrConnectWithoutMessageInput | MessageTranslationCreateOrConnectWithoutMessageInput[]
-    createMany?: MessageTranslationCreateManyMessageInputEnvelope
-    connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
+  export type AnonymousParticipantCreateNestedOneWithoutSentMessagesInput = {
+    create?: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
+    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutSentMessagesInput
+    connect?: AnonymousParticipantWhereUniqueInput
   }
 
-  export type MessageReadStatusCreateNestedManyWithoutMessageInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type UserCreateNestedOneWithoutSentMessagesInput = {
+    create?: XOR<UserCreateWithoutSentMessagesInput, UserUncheckedCreateWithoutSentMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSentMessagesInput
+    connect?: UserWhereUniqueInput
   }
 
-  export type MessageUncheckedCreateNestedManyWithoutReplyToInput = {
-    create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
-    createMany?: MessageCreateManyReplyToInputEnvelope
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-  }
-
-  export type MessageTranslationUncheckedCreateNestedManyWithoutMessageInput = {
-    create?: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput> | MessageTranslationCreateWithoutMessageInput[] | MessageTranslationUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageTranslationCreateOrConnectWithoutMessageInput | MessageTranslationCreateOrConnectWithoutMessageInput[]
-    createMany?: MessageTranslationCreateManyMessageInputEnvelope
-    connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
+  export type ConversationCreateNestedOneWithoutMessagesInput = {
+    create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
+    connect?: ConversationWhereUniqueInput
   }
 
   export type MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput = {
@@ -32148,32 +31954,46 @@ export namespace Prisma {
     connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
   }
 
-  export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
-    create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
-    upsert?: ConversationUpsertWithoutMessagesInput
-    connect?: ConversationWhereUniqueInput
-    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMessagesInput, ConversationUpdateWithoutMessagesInput>, ConversationUncheckedUpdateWithoutMessagesInput>
+  export type MessageTranslationUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput> | MessageTranslationCreateWithoutMessageInput[] | MessageTranslationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageTranslationCreateOrConnectWithoutMessageInput | MessageTranslationCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageTranslationCreateManyMessageInputEnvelope
+    connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
   }
 
-  export type UserUpdateOneWithoutSentMessagesNestedInput = {
-    create?: XOR<UserCreateWithoutSentMessagesInput, UserUncheckedCreateWithoutSentMessagesInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSentMessagesInput
-    upsert?: UserUpsertWithoutSentMessagesInput
-    disconnect?: UserWhereInput | boolean
-    delete?: UserWhereInput | boolean
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSentMessagesInput, UserUpdateWithoutSentMessagesInput>, UserUncheckedUpdateWithoutSentMessagesInput>
+  export type MessageUncheckedCreateNestedManyWithoutReplyToInput = {
+    create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
+    createMany?: MessageCreateManyReplyToInputEnvelope
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
-  export type AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput = {
-    create?: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
-    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutSentMessagesInput
-    upsert?: AnonymousParticipantUpsertWithoutSentMessagesInput
-    disconnect?: AnonymousParticipantWhereInput | boolean
-    delete?: AnonymousParticipantWhereInput | boolean
-    connect?: AnonymousParticipantWhereUniqueInput
-    update?: XOR<XOR<AnonymousParticipantUpdateToOneWithWhereWithoutSentMessagesInput, AnonymousParticipantUpdateWithoutSentMessagesInput>, AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput>
+  export type MessageReadStatusUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput | MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
+    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+    update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  }
+
+  export type MessageTranslationUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput> | MessageTranslationCreateWithoutMessageInput[] | MessageTranslationUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageTranslationCreateOrConnectWithoutMessageInput | MessageTranslationCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageTranslationUpsertWithWhereUniqueWithoutMessageInput | MessageTranslationUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageTranslationCreateManyMessageInputEnvelope
+    set?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
+    disconnect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
+    delete?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
+    connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
+    update?: MessageTranslationUpdateWithWhereUniqueWithoutMessageInput | MessageTranslationUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageTranslationUpdateManyWithWhereWithoutMessageInput | MessageTranslationUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
   }
 
   export type MessageUpdateOneWithoutRepliesNestedInput = {
@@ -32200,21 +32020,35 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
-  export type MessageTranslationUpdateManyWithoutMessageNestedInput = {
-    create?: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput> | MessageTranslationCreateWithoutMessageInput[] | MessageTranslationUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageTranslationCreateOrConnectWithoutMessageInput | MessageTranslationCreateOrConnectWithoutMessageInput[]
-    upsert?: MessageTranslationUpsertWithWhereUniqueWithoutMessageInput | MessageTranslationUpsertWithWhereUniqueWithoutMessageInput[]
-    createMany?: MessageTranslationCreateManyMessageInputEnvelope
-    set?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
-    disconnect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
-    delete?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
-    connect?: MessageTranslationWhereUniqueInput | MessageTranslationWhereUniqueInput[]
-    update?: MessageTranslationUpdateWithWhereUniqueWithoutMessageInput | MessageTranslationUpdateWithWhereUniqueWithoutMessageInput[]
-    updateMany?: MessageTranslationUpdateManyWithWhereWithoutMessageInput | MessageTranslationUpdateManyWithWhereWithoutMessageInput[]
-    deleteMany?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
+  export type AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput = {
+    create?: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
+    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutSentMessagesInput
+    upsert?: AnonymousParticipantUpsertWithoutSentMessagesInput
+    disconnect?: AnonymousParticipantWhereInput | boolean
+    delete?: AnonymousParticipantWhereInput | boolean
+    connect?: AnonymousParticipantWhereUniqueInput
+    update?: XOR<XOR<AnonymousParticipantUpdateToOneWithWhereWithoutSentMessagesInput, AnonymousParticipantUpdateWithoutSentMessagesInput>, AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput>
   }
 
-  export type MessageReadStatusUpdateManyWithoutMessageNestedInput = {
+  export type UserUpdateOneWithoutSentMessagesNestedInput = {
+    create?: XOR<UserCreateWithoutSentMessagesInput, UserUncheckedCreateWithoutSentMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSentMessagesInput
+    upsert?: UserUpsertWithoutSentMessagesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSentMessagesInput, UserUpdateWithoutSentMessagesInput>, UserUncheckedUpdateWithoutSentMessagesInput>
+  }
+
+  export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
+    create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
+    upsert?: ConversationUpsertWithoutMessagesInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMessagesInput, ConversationUpdateWithoutMessagesInput>, ConversationUncheckedUpdateWithoutMessagesInput>
+  }
+
+  export type MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput = {
     create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
     connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
     upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput | MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput[]
@@ -32226,20 +32060,6 @@ export namespace Prisma {
     update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
     updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
     deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
-  }
-
-  export type MessageUncheckedUpdateManyWithoutReplyToNestedInput = {
-    create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
-    connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
-    upsert?: MessageUpsertWithWhereUniqueWithoutReplyToInput | MessageUpsertWithWhereUniqueWithoutReplyToInput[]
-    createMany?: MessageCreateManyReplyToInputEnvelope
-    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-    update?: MessageUpdateWithWhereUniqueWithoutReplyToInput | MessageUpdateWithWhereUniqueWithoutReplyToInput[]
-    updateMany?: MessageUpdateManyWithWhereWithoutReplyToInput | MessageUpdateManyWithWhereWithoutReplyToInput[]
-    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
   export type MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput = {
@@ -32256,18 +32076,18 @@ export namespace Prisma {
     deleteMany?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput | MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageUncheckedUpdateManyWithoutReplyToNestedInput = {
+    create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
+    connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
+    upsert?: MessageUpsertWithWhereUniqueWithoutReplyToInput | MessageUpsertWithWhereUniqueWithoutReplyToInput[]
+    createMany?: MessageCreateManyReplyToInputEnvelope
+    set?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    disconnect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    delete?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+    update?: MessageUpdateWithWhereUniqueWithoutReplyToInput | MessageUpdateWithWhereUniqueWithoutReplyToInput[]
+    updateMany?: MessageUpdateManyWithWhereWithoutReplyToInput | MessageUpdateManyWithWhereWithoutReplyToInput[]
+    deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
   export type MessageCreateNestedOneWithoutTranslationsInput = {
@@ -32292,24 +32112,16 @@ export namespace Prisma {
     update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutTranslationsInput, MessageUpdateWithoutTranslationsInput>, MessageUncheckedUpdateWithoutTranslationsInput>
   }
 
-  export type MessageCreateNestedOneWithoutReadStatusInput = {
-    create?: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
-    connectOrCreate?: MessageCreateOrConnectWithoutReadStatusInput
-    connect?: MessageWhereUniqueInput
-  }
-
   export type UserCreateNestedOneWithoutMessageReadStatusInput = {
     create?: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
     connectOrCreate?: UserCreateOrConnectWithoutMessageReadStatusInput
     connect?: UserWhereUniqueInput
   }
 
-  export type MessageUpdateOneRequiredWithoutReadStatusNestedInput = {
+  export type MessageCreateNestedOneWithoutReadStatusInput = {
     create?: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
     connectOrCreate?: MessageCreateOrConnectWithoutReadStatusInput
-    upsert?: MessageUpsertWithoutReadStatusInput
     connect?: MessageWhereUniqueInput
-    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutReadStatusInput, MessageUpdateWithoutReadStatusInput>, MessageUncheckedUpdateWithoutReadStatusInput>
   }
 
   export type UserUpdateOneRequiredWithoutMessageReadStatusNestedInput = {
@@ -32320,10 +32132,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMessageReadStatusInput, UserUpdateWithoutMessageReadStatusInput>, UserUncheckedUpdateWithoutMessageReadStatusInput>
   }
 
-  export type UserCreateNestedOneWithoutSentFriendRequestsInput = {
-    create?: XOR<UserCreateWithoutSentFriendRequestsInput, UserUncheckedCreateWithoutSentFriendRequestsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutSentFriendRequestsInput
-    connect?: UserWhereUniqueInput
+  export type MessageUpdateOneRequiredWithoutReadStatusNestedInput = {
+    create?: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutReadStatusInput
+    upsert?: MessageUpsertWithoutReadStatusInput
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutReadStatusInput, MessageUpdateWithoutReadStatusInput>, MessageUncheckedUpdateWithoutReadStatusInput>
   }
 
   export type UserCreateNestedOneWithoutReceivedFriendRequestsInput = {
@@ -32332,12 +32146,10 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type UserUpdateOneRequiredWithoutSentFriendRequestsNestedInput = {
+  export type UserCreateNestedOneWithoutSentFriendRequestsInput = {
     create?: XOR<UserCreateWithoutSentFriendRequestsInput, UserUncheckedCreateWithoutSentFriendRequestsInput>
     connectOrCreate?: UserCreateOrConnectWithoutSentFriendRequestsInput
-    upsert?: UserUpsertWithoutSentFriendRequestsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSentFriendRequestsInput, UserUpdateWithoutSentFriendRequestsInput>, UserUncheckedUpdateWithoutSentFriendRequestsInput>
   }
 
   export type UserUpdateOneRequiredWithoutReceivedFriendRequestsNestedInput = {
@@ -32348,10 +32160,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReceivedFriendRequestsInput, UserUpdateWithoutReceivedFriendRequestsInput>, UserUncheckedUpdateWithoutReceivedFriendRequestsInput>
   }
 
-  export type ConversationCreateNestedOneWithoutTypingIndicatorsInput = {
-    create?: XOR<ConversationCreateWithoutTypingIndicatorsInput, ConversationUncheckedCreateWithoutTypingIndicatorsInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutTypingIndicatorsInput
-    connect?: ConversationWhereUniqueInput
+  export type UserUpdateOneRequiredWithoutSentFriendRequestsNestedInput = {
+    create?: XOR<UserCreateWithoutSentFriendRequestsInput, UserUncheckedCreateWithoutSentFriendRequestsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSentFriendRequestsInput
+    upsert?: UserUpsertWithoutSentFriendRequestsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSentFriendRequestsInput, UserUpdateWithoutSentFriendRequestsInput>, UserUncheckedUpdateWithoutSentFriendRequestsInput>
   }
 
   export type UserCreateNestedOneWithoutTypingIndicatorsInput = {
@@ -32360,12 +32174,10 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type ConversationUpdateOneRequiredWithoutTypingIndicatorsNestedInput = {
+  export type ConversationCreateNestedOneWithoutTypingIndicatorsInput = {
     create?: XOR<ConversationCreateWithoutTypingIndicatorsInput, ConversationUncheckedCreateWithoutTypingIndicatorsInput>
     connectOrCreate?: ConversationCreateOrConnectWithoutTypingIndicatorsInput
-    upsert?: ConversationUpsertWithoutTypingIndicatorsInput
     connect?: ConversationWhereUniqueInput
-    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutTypingIndicatorsInput, ConversationUpdateWithoutTypingIndicatorsInput>, ConversationUncheckedUpdateWithoutTypingIndicatorsInput>
   }
 
   export type UserUpdateOneRequiredWithoutTypingIndicatorsNestedInput = {
@@ -32374,6 +32186,14 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutTypingIndicatorsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTypingIndicatorsInput, UserUpdateWithoutTypingIndicatorsInput>, UserUncheckedUpdateWithoutTypingIndicatorsInput>
+  }
+
+  export type ConversationUpdateOneRequiredWithoutTypingIndicatorsNestedInput = {
+    create?: XOR<ConversationCreateWithoutTypingIndicatorsInput, ConversationUncheckedCreateWithoutTypingIndicatorsInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutTypingIndicatorsInput
+    upsert?: ConversationUpsertWithoutTypingIndicatorsInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutTypingIndicatorsInput, ConversationUpdateWithoutTypingIndicatorsInput>, ConversationUncheckedUpdateWithoutTypingIndicatorsInput>
   }
 
   export type UserCreateNestedOneWithoutNotificationsInput = {
@@ -32390,13 +32210,6 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
   }
 
-  export type ConversationCreateNestedManyWithoutCommunityInput = {
-    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
-    createMany?: ConversationCreateManyCommunityInputEnvelope
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-  }
-
   export type UserCreateNestedOneWithoutCreatedCommunitiesInput = {
     create?: XOR<UserCreateWithoutCreatedCommunitiesInput, UserUncheckedCreateWithoutCreatedCommunitiesInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedCommunitiesInput
@@ -32408,6 +32221,13 @@ export namespace Prisma {
     connectOrCreate?: CommunityMemberCreateOrConnectWithoutCommunityInput | CommunityMemberCreateOrConnectWithoutCommunityInput[]
     createMany?: CommunityMemberCreateManyCommunityInputEnvelope
     connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
+  }
+
+  export type ConversationCreateNestedManyWithoutCommunityInput = {
+    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
+    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
+    createMany?: ConversationCreateManyCommunityInputEnvelope
+    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
   }
 
   export type UserCreateNestedManyWithoutAdminCommunitiesInput = {
@@ -32422,18 +32242,18 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
-  export type ConversationUncheckedCreateNestedManyWithoutCommunityInput = {
-    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
-    createMany?: ConversationCreateManyCommunityInputEnvelope
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-  }
-
   export type CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput = {
     create?: XOR<CommunityMemberCreateWithoutCommunityInput, CommunityMemberUncheckedCreateWithoutCommunityInput> | CommunityMemberCreateWithoutCommunityInput[] | CommunityMemberUncheckedCreateWithoutCommunityInput[]
     connectOrCreate?: CommunityMemberCreateOrConnectWithoutCommunityInput | CommunityMemberCreateOrConnectWithoutCommunityInput[]
     createMany?: CommunityMemberCreateManyCommunityInputEnvelope
     connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
+  }
+
+  export type ConversationUncheckedCreateNestedManyWithoutCommunityInput = {
+    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
+    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
+    createMany?: ConversationCreateManyCommunityInputEnvelope
+    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
   }
 
   export type UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput = {
@@ -32446,20 +32266,6 @@ export namespace Prisma {
     create?: XOR<UserCreateWithoutModeratorCommunitiesInput, UserUncheckedCreateWithoutModeratorCommunitiesInput> | UserCreateWithoutModeratorCommunitiesInput[] | UserUncheckedCreateWithoutModeratorCommunitiesInput[]
     connectOrCreate?: UserCreateOrConnectWithoutModeratorCommunitiesInput | UserCreateOrConnectWithoutModeratorCommunitiesInput[]
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-  }
-
-  export type ConversationUpdateManyWithoutCommunityNestedInput = {
-    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
-    upsert?: ConversationUpsertWithWhereUniqueWithoutCommunityInput | ConversationUpsertWithWhereUniqueWithoutCommunityInput[]
-    createMany?: ConversationCreateManyCommunityInputEnvelope
-    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    update?: ConversationUpdateWithWhereUniqueWithoutCommunityInput | ConversationUpdateWithWhereUniqueWithoutCommunityInput[]
-    updateMany?: ConversationUpdateManyWithWhereWithoutCommunityInput | ConversationUpdateManyWithWhereWithoutCommunityInput[]
-    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
   }
 
   export type UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput = {
@@ -32482,6 +32288,20 @@ export namespace Prisma {
     update?: CommunityMemberUpdateWithWhereUniqueWithoutCommunityInput | CommunityMemberUpdateWithWhereUniqueWithoutCommunityInput[]
     updateMany?: CommunityMemberUpdateManyWithWhereWithoutCommunityInput | CommunityMemberUpdateManyWithWhereWithoutCommunityInput[]
     deleteMany?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
+  }
+
+  export type ConversationUpdateManyWithoutCommunityNestedInput = {
+    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
+    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
+    upsert?: ConversationUpsertWithWhereUniqueWithoutCommunityInput | ConversationUpsertWithWhereUniqueWithoutCommunityInput[]
+    createMany?: ConversationCreateManyCommunityInputEnvelope
+    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    update?: ConversationUpdateWithWhereUniqueWithoutCommunityInput | ConversationUpdateWithWhereUniqueWithoutCommunityInput[]
+    updateMany?: ConversationUpdateManyWithWhereWithoutCommunityInput | ConversationUpdateManyWithWhereWithoutCommunityInput[]
+    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
   }
 
   export type UserUpdateManyWithoutAdminCommunitiesNestedInput = {
@@ -32510,20 +32330,6 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
-  export type ConversationUncheckedUpdateManyWithoutCommunityNestedInput = {
-    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
-    upsert?: ConversationUpsertWithWhereUniqueWithoutCommunityInput | ConversationUpsertWithWhereUniqueWithoutCommunityInput[]
-    createMany?: ConversationCreateManyCommunityInputEnvelope
-    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
-    update?: ConversationUpdateWithWhereUniqueWithoutCommunityInput | ConversationUpdateWithWhereUniqueWithoutCommunityInput[]
-    updateMany?: ConversationUpdateManyWithWhereWithoutCommunityInput | ConversationUpdateManyWithWhereWithoutCommunityInput[]
-    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
-  }
-
   export type CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput = {
     create?: XOR<CommunityMemberCreateWithoutCommunityInput, CommunityMemberUncheckedCreateWithoutCommunityInput> | CommunityMemberCreateWithoutCommunityInput[] | CommunityMemberUncheckedCreateWithoutCommunityInput[]
     connectOrCreate?: CommunityMemberCreateOrConnectWithoutCommunityInput | CommunityMemberCreateOrConnectWithoutCommunityInput[]
@@ -32536,6 +32342,20 @@ export namespace Prisma {
     update?: CommunityMemberUpdateWithWhereUniqueWithoutCommunityInput | CommunityMemberUpdateWithWhereUniqueWithoutCommunityInput[]
     updateMany?: CommunityMemberUpdateManyWithWhereWithoutCommunityInput | CommunityMemberUpdateManyWithWhereWithoutCommunityInput[]
     deleteMany?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
+  }
+
+  export type ConversationUncheckedUpdateManyWithoutCommunityNestedInput = {
+    create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
+    connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
+    upsert?: ConversationUpsertWithWhereUniqueWithoutCommunityInput | ConversationUpsertWithWhereUniqueWithoutCommunityInput[]
+    createMany?: ConversationCreateManyCommunityInputEnvelope
+    set?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    disconnect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    delete?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    connect?: ConversationWhereUniqueInput | ConversationWhereUniqueInput[]
+    update?: ConversationUpdateWithWhereUniqueWithoutCommunityInput | ConversationUpdateWithWhereUniqueWithoutCommunityInput[]
+    updateMany?: ConversationUpdateManyWithWhereWithoutCommunityInput | ConversationUpdateManyWithWhereWithoutCommunityInput[]
+    deleteMany?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
   }
 
   export type UserUncheckedUpdateManyWithoutAdminCommunitiesNestedInput = {
@@ -32564,24 +32384,16 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
-  export type CommunityCreateNestedOneWithoutMembersInput = {
-    create?: XOR<CommunityCreateWithoutMembersInput, CommunityUncheckedCreateWithoutMembersInput>
-    connectOrCreate?: CommunityCreateOrConnectWithoutMembersInput
-    connect?: CommunityWhereUniqueInput
-  }
-
   export type UserCreateNestedOneWithoutCommunityMembershipsInput = {
     create?: XOR<UserCreateWithoutCommunityMembershipsInput, UserUncheckedCreateWithoutCommunityMembershipsInput>
     connectOrCreate?: UserCreateOrConnectWithoutCommunityMembershipsInput
     connect?: UserWhereUniqueInput
   }
 
-  export type CommunityUpdateOneRequiredWithoutMembersNestedInput = {
+  export type CommunityCreateNestedOneWithoutMembersInput = {
     create?: XOR<CommunityCreateWithoutMembersInput, CommunityUncheckedCreateWithoutMembersInput>
     connectOrCreate?: CommunityCreateOrConnectWithoutMembersInput
-    upsert?: CommunityUpsertWithoutMembersInput
     connect?: CommunityWhereUniqueInput
-    update?: XOR<XOR<CommunityUpdateToOneWithWhereWithoutMembersInput, CommunityUpdateWithoutMembersInput>, CommunityUncheckedUpdateWithoutMembersInput>
   }
 
   export type UserUpdateOneRequiredWithoutCommunityMembershipsNestedInput = {
@@ -32592,10 +32404,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCommunityMembershipsInput, UserUpdateWithoutCommunityMembershipsInput>, UserUncheckedUpdateWithoutCommunityMembershipsInput>
   }
 
-  export type UserCreateNestedOneWithoutCreatedGroupsInput = {
-    create?: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCreatedGroupsInput
-    connect?: UserWhereUniqueInput
+  export type CommunityUpdateOneRequiredWithoutMembersNestedInput = {
+    create?: XOR<CommunityCreateWithoutMembersInput, CommunityUncheckedCreateWithoutMembersInput>
+    connectOrCreate?: CommunityCreateOrConnectWithoutMembersInput
+    upsert?: CommunityUpsertWithoutMembersInput
+    connect?: CommunityWhereUniqueInput
+    update?: XOR<XOR<CommunityUpdateToOneWithWhereWithoutMembersInput, CommunityUpdateWithoutMembersInput>, CommunityUncheckedUpdateWithoutMembersInput>
   }
 
   export type GroupMemberCreateNestedManyWithoutGroupInput = {
@@ -32603,6 +32417,12 @@ export namespace Prisma {
     connectOrCreate?: GroupMemberCreateOrConnectWithoutGroupInput | GroupMemberCreateOrConnectWithoutGroupInput[]
     createMany?: GroupMemberCreateManyGroupInputEnvelope
     connect?: GroupMemberWhereUniqueInput | GroupMemberWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedOneWithoutCreatedGroupsInput = {
+    create?: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedGroupsInput
+    connect?: UserWhereUniqueInput
   }
 
   export type UserCreateNestedManyWithoutAdminGroupsInput = {
@@ -32636,14 +32456,6 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
-  export type UserUpdateOneRequiredWithoutCreatedGroupsNestedInput = {
-    create?: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCreatedGroupsInput
-    upsert?: UserUpsertWithoutCreatedGroupsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedGroupsInput, UserUpdateWithoutCreatedGroupsInput>, UserUncheckedUpdateWithoutCreatedGroupsInput>
-  }
-
   export type GroupMemberUpdateManyWithoutGroupNestedInput = {
     create?: XOR<GroupMemberCreateWithoutGroupInput, GroupMemberUncheckedCreateWithoutGroupInput> | GroupMemberCreateWithoutGroupInput[] | GroupMemberUncheckedCreateWithoutGroupInput[]
     connectOrCreate?: GroupMemberCreateOrConnectWithoutGroupInput | GroupMemberCreateOrConnectWithoutGroupInput[]
@@ -32656,6 +32468,14 @@ export namespace Prisma {
     update?: GroupMemberUpdateWithWhereUniqueWithoutGroupInput | GroupMemberUpdateWithWhereUniqueWithoutGroupInput[]
     updateMany?: GroupMemberUpdateManyWithWhereWithoutGroupInput | GroupMemberUpdateManyWithWhereWithoutGroupInput[]
     deleteMany?: GroupMemberScalarWhereInput | GroupMemberScalarWhereInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutCreatedGroupsNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedGroupsInput
+    upsert?: UserUpsertWithoutCreatedGroupsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedGroupsInput, UserUpdateWithoutCreatedGroupsInput>, UserUncheckedUpdateWithoutCreatedGroupsInput>
   }
 
   export type UserUpdateManyWithoutAdminGroupsNestedInput = {
@@ -32724,24 +32544,16 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
-  export type GroupCreateNestedOneWithoutMembersInput = {
-    create?: XOR<GroupCreateWithoutMembersInput, GroupUncheckedCreateWithoutMembersInput>
-    connectOrCreate?: GroupCreateOrConnectWithoutMembersInput
-    connect?: GroupWhereUniqueInput
-  }
-
   export type UserCreateNestedOneWithoutGroupMembershipsInput = {
     create?: XOR<UserCreateWithoutGroupMembershipsInput, UserUncheckedCreateWithoutGroupMembershipsInput>
     connectOrCreate?: UserCreateOrConnectWithoutGroupMembershipsInput
     connect?: UserWhereUniqueInput
   }
 
-  export type GroupUpdateOneRequiredWithoutMembersNestedInput = {
+  export type GroupCreateNestedOneWithoutMembersInput = {
     create?: XOR<GroupCreateWithoutMembersInput, GroupUncheckedCreateWithoutMembersInput>
     connectOrCreate?: GroupCreateOrConnectWithoutMembersInput
-    upsert?: GroupUpsertWithoutMembersInput
     connect?: GroupWhereUniqueInput
-    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutMembersInput, GroupUpdateWithoutMembersInput>, GroupUncheckedUpdateWithoutMembersInput>
   }
 
   export type UserUpdateOneRequiredWithoutGroupMembershipsNestedInput = {
@@ -32750,6 +32562,14 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutGroupMembershipsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutGroupMembershipsInput, UserUpdateWithoutGroupMembershipsInput>, UserUncheckedUpdateWithoutGroupMembershipsInput>
+  }
+
+  export type GroupUpdateOneRequiredWithoutMembersNestedInput = {
+    create?: XOR<GroupCreateWithoutMembersInput, GroupUncheckedCreateWithoutMembersInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutMembersInput
+    upsert?: GroupUpsertWithoutMembersInput
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutMembersInput, GroupUpdateWithoutMembersInput>, GroupUncheckedUpdateWithoutMembersInput>
   }
 
   export type UserCreateNestedOneWithoutStatsInput = {
@@ -32780,24 +32600,16 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPreferencesInput, UserUpdateWithoutPreferencesInput>, UserUncheckedUpdateWithoutPreferencesInput>
   }
 
-  export type ConversationCreateNestedOneWithoutPreferencesInput = {
-    create?: XOR<ConversationCreateWithoutPreferencesInput, ConversationUncheckedCreateWithoutPreferencesInput>
-    connectOrCreate?: ConversationCreateOrConnectWithoutPreferencesInput
-    connect?: ConversationWhereUniqueInput
-  }
-
   export type UserCreateNestedOneWithoutConversationPreferencesInput = {
     create?: XOR<UserCreateWithoutConversationPreferencesInput, UserUncheckedCreateWithoutConversationPreferencesInput>
     connectOrCreate?: UserCreateOrConnectWithoutConversationPreferencesInput
     connect?: UserWhereUniqueInput
   }
 
-  export type ConversationUpdateOneRequiredWithoutPreferencesNestedInput = {
+  export type ConversationCreateNestedOneWithoutPreferencesInput = {
     create?: XOR<ConversationCreateWithoutPreferencesInput, ConversationUncheckedCreateWithoutPreferencesInput>
     connectOrCreate?: ConversationCreateOrConnectWithoutPreferencesInput
-    upsert?: ConversationUpsertWithoutPreferencesInput
     connect?: ConversationWhereUniqueInput
-    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutPreferencesInput, ConversationUpdateWithoutPreferencesInput>, ConversationUncheckedUpdateWithoutPreferencesInput>
   }
 
   export type UserUpdateOneRequiredWithoutConversationPreferencesNestedInput = {
@@ -32806,6 +32618,14 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutConversationPreferencesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutConversationPreferencesInput, UserUpdateWithoutConversationPreferencesInput>, UserUncheckedUpdateWithoutConversationPreferencesInput>
+  }
+
+  export type ConversationUpdateOneRequiredWithoutPreferencesNestedInput = {
+    create?: XOR<ConversationCreateWithoutPreferencesInput, ConversationUncheckedCreateWithoutPreferencesInput>
+    connectOrCreate?: ConversationCreateOrConnectWithoutPreferencesInput
+    upsert?: ConversationUpsertWithoutPreferencesInput
+    connect?: ConversationWhereUniqueInput
+    update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutPreferencesInput, ConversationUpdateWithoutPreferencesInput>, ConversationUncheckedUpdateWithoutPreferencesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -33025,51 +32845,66 @@ export namespace Prisma {
     _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
-  export type MessageCreateWithoutSenderInput = {
+  export type CommunityCreateWithoutCreatedByInput = {
     id?: string
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
+    title: string
+    description?: string | null
+    image?: string | null
+    isPublic?: boolean
+    maxMembers?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutMessagesInput
-    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
-    replyTo?: MessageCreateNestedOneWithoutRepliesInput
-    replies?: MessageCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    members?: CommunityMemberCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationCreateNestedManyWithoutCommunityInput
+    admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
+    moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
   }
 
-  export type MessageUncheckedCreateWithoutSenderInput = {
+  export type CommunityUncheckedCreateWithoutCreatedByInput = {
     id?: string
-    conversationId: string
-    anonymousSenderId?: string | null
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    replyToId?: string | null
+    title: string
+    description?: string | null
+    image?: string | null
+    isPublic?: boolean
+    maxMembers?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
+    admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
+    moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
   }
 
-  export type MessageCreateOrConnectWithoutSenderInput = {
-    where: MessageWhereUniqueInput
-    create: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput>
+  export type CommunityCreateOrConnectWithoutCreatedByInput = {
+    where: CommunityWhereUniqueInput
+    create: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput>
   }
 
-  export type MessageCreateManySenderInputEnvelope = {
-    data: MessageCreateManySenderInput | MessageCreateManySenderInput[]
+  export type CommunityCreateManyCreatedByInputEnvelope = {
+    data: CommunityCreateManyCreatedByInput | CommunityCreateManyCreatedByInput[]
+  }
+
+  export type CommunityMemberCreateWithoutUserInput = {
+    id?: string
+    role?: string
+    joinedAt?: Date | string
+    community: CommunityCreateNestedOneWithoutMembersInput
+  }
+
+  export type CommunityMemberUncheckedCreateWithoutUserInput = {
+    id?: string
+    communityId: string
+    role?: string
+    joinedAt?: Date | string
+  }
+
+  export type CommunityMemberCreateOrConnectWithoutUserInput = {
+    where: CommunityMemberWhereUniqueInput
+    create: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput>
+  }
+
+  export type CommunityMemberCreateManyUserInputEnvelope = {
+    data: CommunityMemberCreateManyUserInput | CommunityMemberCreateManyUserInput[]
   }
 
   export type ConversationMemberCreateWithoutUserInput = {
@@ -33111,6 +32946,142 @@ export namespace Prisma {
 
   export type ConversationMemberCreateManyUserInputEnvelope = {
     data: ConversationMemberCreateManyUserInput | ConversationMemberCreateManyUserInput[]
+  }
+
+  export type ConversationPreferenceCreateWithoutUserInput = {
+    id?: string
+    key: string
+    value: string
+    valueType?: string
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    conversation: ConversationCreateNestedOneWithoutPreferencesInput
+  }
+
+  export type ConversationPreferenceUncheckedCreateWithoutUserInput = {
+    id?: string
+    conversationId: string
+    key: string
+    value: string
+    valueType?: string
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ConversationPreferenceCreateOrConnectWithoutUserInput = {
+    where: ConversationPreferenceWhereUniqueInput
+    create: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput>
+  }
+
+  export type ConversationPreferenceCreateManyUserInputEnvelope = {
+    data: ConversationPreferenceCreateManyUserInput | ConversationPreferenceCreateManyUserInput[]
+  }
+
+  export type ConversationShareLinkCreateWithoutCreatorInput = {
+    id?: string
+    linkId: string
+    name?: string | null
+    description?: string | null
+    maxUses?: number | null
+    currentUses?: number
+    maxConcurrentUsers?: number | null
+    currentConcurrentUsers?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    allowAnonymousMessages?: boolean
+    allowAnonymousFiles?: boolean
+    allowAnonymousImages?: boolean
+    allowViewHistory?: boolean
+    requireNickname?: boolean
+    requireEmail?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
+    conversation: ConversationCreateNestedOneWithoutShareLinksInput
+  }
+
+  export type ConversationShareLinkUncheckedCreateWithoutCreatorInput = {
+    id?: string
+    linkId: string
+    conversationId: string
+    name?: string | null
+    description?: string | null
+    maxUses?: number | null
+    currentUses?: number
+    maxConcurrentUsers?: number | null
+    currentConcurrentUsers?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    allowAnonymousMessages?: boolean
+    allowAnonymousFiles?: boolean
+    allowAnonymousImages?: boolean
+    allowViewHistory?: boolean
+    requireNickname?: boolean
+    requireEmail?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput
+  }
+
+  export type ConversationShareLinkCreateOrConnectWithoutCreatorInput = {
+    where: ConversationShareLinkWhereUniqueInput
+    create: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type ConversationShareLinkCreateManyCreatorInputEnvelope = {
+    data: ConversationShareLinkCreateManyCreatorInput | ConversationShareLinkCreateManyCreatorInput[]
+  }
+
+  export type FriendRequestCreateWithoutReceiverInput = {
+    id?: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sender: UserCreateNestedOneWithoutSentFriendRequestsInput
+  }
+
+  export type FriendRequestUncheckedCreateWithoutReceiverInput = {
+    id?: string
+    senderId: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FriendRequestCreateOrConnectWithoutReceiverInput = {
+    where: FriendRequestWhereUniqueInput
+    create: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput>
+  }
+
+  export type FriendRequestCreateManyReceiverInputEnvelope = {
+    data: FriendRequestCreateManyReceiverInput | FriendRequestCreateManyReceiverInput[]
+  }
+
+  export type FriendRequestCreateWithoutSenderInput = {
+    id?: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    receiver: UserCreateNestedOneWithoutReceivedFriendRequestsInput
+  }
+
+  export type FriendRequestUncheckedCreateWithoutSenderInput = {
+    id?: string
+    receiverId: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FriendRequestCreateOrConnectWithoutSenderInput = {
+    where: FriendRequestWhereUniqueInput
+    create: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput>
+  }
+
+  export type FriendRequestCreateManySenderInputEnvelope = {
+    data: FriendRequestCreateManySenderInput | FriendRequestCreateManySenderInput[]
   }
 
   export type GroupMemberCreateWithoutUserInput = {
@@ -33169,143 +33140,6 @@ export namespace Prisma {
     data: GroupCreateManyCreatorInput | GroupCreateManyCreatorInput[]
   }
 
-  export type GroupCreateWithoutAdminsInput = {
-    id?: string
-    name: string
-    description?: string | null
-    avatar?: string | null
-    isPrivate?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    creator: UserCreateNestedOneWithoutCreatedGroupsInput
-    members?: GroupMemberCreateNestedManyWithoutGroupInput
-    moderators?: UserCreateNestedManyWithoutModeratorGroupsInput
-  }
-
-  export type GroupUncheckedCreateWithoutAdminsInput = {
-    id?: string
-    name: string
-    description?: string | null
-    avatar?: string | null
-    isPrivate?: boolean
-    createdBy: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: GroupMemberUncheckedCreateNestedManyWithoutGroupInput
-    moderators?: UserUncheckedCreateNestedManyWithoutModeratorGroupsInput
-  }
-
-  export type GroupCreateOrConnectWithoutAdminsInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput>
-  }
-
-  export type GroupCreateWithoutModeratorsInput = {
-    id?: string
-    name: string
-    description?: string | null
-    avatar?: string | null
-    isPrivate?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    creator: UserCreateNestedOneWithoutCreatedGroupsInput
-    members?: GroupMemberCreateNestedManyWithoutGroupInput
-    admins?: UserCreateNestedManyWithoutAdminGroupsInput
-  }
-
-  export type GroupUncheckedCreateWithoutModeratorsInput = {
-    id?: string
-    name: string
-    description?: string | null
-    avatar?: string | null
-    isPrivate?: boolean
-    createdBy: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: GroupMemberUncheckedCreateNestedManyWithoutGroupInput
-    admins?: UserUncheckedCreateNestedManyWithoutAdminGroupsInput
-  }
-
-  export type GroupCreateOrConnectWithoutModeratorsInput = {
-    where: GroupWhereUniqueInput
-    create: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput>
-  }
-
-  export type FriendRequestCreateWithoutSenderInput = {
-    id?: string
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    receiver: UserCreateNestedOneWithoutReceivedFriendRequestsInput
-  }
-
-  export type FriendRequestUncheckedCreateWithoutSenderInput = {
-    id?: string
-    receiverId: string
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FriendRequestCreateOrConnectWithoutSenderInput = {
-    where: FriendRequestWhereUniqueInput
-    create: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput>
-  }
-
-  export type FriendRequestCreateManySenderInputEnvelope = {
-    data: FriendRequestCreateManySenderInput | FriendRequestCreateManySenderInput[]
-  }
-
-  export type FriendRequestCreateWithoutReceiverInput = {
-    id?: string
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sender: UserCreateNestedOneWithoutSentFriendRequestsInput
-  }
-
-  export type FriendRequestUncheckedCreateWithoutReceiverInput = {
-    id?: string
-    senderId: string
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FriendRequestCreateOrConnectWithoutReceiverInput = {
-    where: FriendRequestWhereUniqueInput
-    create: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput>
-  }
-
-  export type FriendRequestCreateManyReceiverInputEnvelope = {
-    data: FriendRequestCreateManyReceiverInput | FriendRequestCreateManyReceiverInput[]
-  }
-
-  export type TypingIndicatorCreateWithoutUserInput = {
-    id?: string
-    isTyping?: boolean
-    startedAt?: Date | string
-    updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutTypingIndicatorsInput
-  }
-
-  export type TypingIndicatorUncheckedCreateWithoutUserInput = {
-    id?: string
-    conversationId: string
-    isTyping?: boolean
-    startedAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TypingIndicatorCreateOrConnectWithoutUserInput = {
-    where: TypingIndicatorWhereUniqueInput
-    create: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput>
-  }
-
-  export type TypingIndicatorCreateManyUserInputEnvelope = {
-    data: TypingIndicatorCreateManyUserInput | TypingIndicatorCreateManyUserInput[]
-  }
-
   export type MessageReadStatusCreateWithoutUserInput = {
     id?: string
     readAt?: Date | string
@@ -33325,6 +33159,53 @@ export namespace Prisma {
 
   export type MessageReadStatusCreateManyUserInputEnvelope = {
     data: MessageReadStatusCreateManyUserInput | MessageReadStatusCreateManyUserInput[]
+  }
+
+  export type MessageCreateWithoutSenderInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutSenderInput = {
+    id?: string
+    conversationId: string
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutSenderInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput>
+  }
+
+  export type MessageCreateManySenderInputEnvelope = {
+    data: MessageCreateManySenderInput | MessageCreateManySenderInput[]
   }
 
   export type NotificationCreateWithoutUserInput = {
@@ -33364,59 +33245,58 @@ export namespace Prisma {
     data: NotificationCreateManyUserInput | NotificationCreateManyUserInput[]
   }
 
-  export type ConversationShareLinkCreateWithoutCreatorInput = {
+  export type TypingIndicatorCreateWithoutUserInput = {
     id?: string
-    linkId: string
-    name?: string | null
-    description?: string | null
-    maxUses?: number | null
-    currentUses?: number
-    maxConcurrentUsers?: number | null
-    currentConcurrentUsers?: number
-    expiresAt?: Date | string | null
-    isActive?: boolean
-    allowAnonymousMessages?: boolean
-    allowAnonymousFiles?: boolean
-    allowAnonymousImages?: boolean
-    allowViewHistory?: boolean
-    requireNickname?: boolean
-    requireEmail?: boolean
-    createdAt?: Date | string
+    isTyping?: boolean
+    startedAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutShareLinksInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
+    conversation: ConversationCreateNestedOneWithoutTypingIndicatorsInput
   }
 
-  export type ConversationShareLinkUncheckedCreateWithoutCreatorInput = {
+  export type TypingIndicatorUncheckedCreateWithoutUserInput = {
     id?: string
-    linkId: string
     conversationId: string
-    name?: string | null
+    isTyping?: boolean
+    startedAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TypingIndicatorCreateOrConnectWithoutUserInput = {
+    where: TypingIndicatorWhereUniqueInput
+    create: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput>
+  }
+
+  export type TypingIndicatorCreateManyUserInputEnvelope = {
+    data: TypingIndicatorCreateManyUserInput | TypingIndicatorCreateManyUserInput[]
+  }
+
+  export type UserPreferenceCreateWithoutUserInput = {
+    id?: string
+    key: string
+    value: string
+    valueType?: string
     description?: string | null
-    maxUses?: number | null
-    currentUses?: number
-    maxConcurrentUsers?: number | null
-    currentConcurrentUsers?: number
-    expiresAt?: Date | string | null
-    isActive?: boolean
-    allowAnonymousMessages?: boolean
-    allowAnonymousFiles?: boolean
-    allowAnonymousImages?: boolean
-    allowViewHistory?: boolean
-    requireNickname?: boolean
-    requireEmail?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput
   }
 
-  export type ConversationShareLinkCreateOrConnectWithoutCreatorInput = {
-    where: ConversationShareLinkWhereUniqueInput
-    create: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput>
+  export type UserPreferenceUncheckedCreateWithoutUserInput = {
+    id?: string
+    key: string
+    value: string
+    valueType?: string
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
-  export type ConversationShareLinkCreateManyCreatorInputEnvelope = {
-    data: ConversationShareLinkCreateManyCreatorInput | ConversationShareLinkCreateManyCreatorInput[]
+  export type UserPreferenceCreateOrConnectWithoutUserInput = {
+    where: UserPreferenceWhereUniqueInput
+    create: XOR<UserPreferenceCreateWithoutUserInput, UserPreferenceUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserPreferenceCreateManyUserInputEnvelope = {
+    data: UserPreferenceCreateManyUserInput | UserPreferenceCreateManyUserInput[]
   }
 
   export type UserStatsCreateWithoutUserInput = {
@@ -33466,105 +33346,6 @@ export namespace Prisma {
     create: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
   }
 
-  export type UserPreferenceCreateWithoutUserInput = {
-    id?: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type UserPreferenceUncheckedCreateWithoutUserInput = {
-    id?: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type UserPreferenceCreateOrConnectWithoutUserInput = {
-    where: UserPreferenceWhereUniqueInput
-    create: XOR<UserPreferenceCreateWithoutUserInput, UserPreferenceUncheckedCreateWithoutUserInput>
-  }
-
-  export type UserPreferenceCreateManyUserInputEnvelope = {
-    data: UserPreferenceCreateManyUserInput | UserPreferenceCreateManyUserInput[]
-  }
-
-  export type ConversationPreferenceCreateWithoutUserInput = {
-    id?: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutPreferencesInput
-  }
-
-  export type ConversationPreferenceUncheckedCreateWithoutUserInput = {
-    id?: string
-    conversationId: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ConversationPreferenceCreateOrConnectWithoutUserInput = {
-    where: ConversationPreferenceWhereUniqueInput
-    create: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput>
-  }
-
-  export type ConversationPreferenceCreateManyUserInputEnvelope = {
-    data: ConversationPreferenceCreateManyUserInput | ConversationPreferenceCreateManyUserInput[]
-  }
-
-  export type CommunityCreateWithoutCreatedByInput = {
-    id?: string
-    title: string
-    description?: string | null
-    image?: string | null
-    isPublic?: boolean
-    maxMembers?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversations?: ConversationCreateNestedManyWithoutCommunityInput
-    members?: CommunityMemberCreateNestedManyWithoutCommunityInput
-    admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
-    moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
-  }
-
-  export type CommunityUncheckedCreateWithoutCreatedByInput = {
-    id?: string
-    title: string
-    description?: string | null
-    image?: string | null
-    isPublic?: boolean
-    maxMembers?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
-    members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
-    admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
-    moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
-  }
-
-  export type CommunityCreateOrConnectWithoutCreatedByInput = {
-    where: CommunityWhereUniqueInput
-    create: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput>
-  }
-
-  export type CommunityCreateManyCreatedByInputEnvelope = {
-    data: CommunityCreateManyCreatedByInput | CommunityCreateManyCreatedByInput[]
-  }
-
   export type CommunityCreateWithoutAdminsInput = {
     id?: string
     title: string
@@ -33574,9 +33355,9 @@ export namespace Prisma {
     maxMembers?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversations?: ConversationCreateNestedManyWithoutCommunityInput
     createdBy: UserCreateNestedOneWithoutCreatedCommunitiesInput
     members?: CommunityMemberCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationCreateNestedManyWithoutCommunityInput
     moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
   }
 
@@ -33590,8 +33371,8 @@ export namespace Prisma {
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
     members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
     moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
   }
 
@@ -33609,9 +33390,9 @@ export namespace Prisma {
     maxMembers?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversations?: ConversationCreateNestedManyWithoutCommunityInput
     createdBy: UserCreateNestedOneWithoutCreatedCommunitiesInput
     members?: CommunityMemberCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationCreateNestedManyWithoutCommunityInput
     admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
   }
 
@@ -33625,8 +33406,8 @@ export namespace Prisma {
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
     members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
+    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
     admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
   }
 
@@ -33635,63 +33416,124 @@ export namespace Prisma {
     create: XOR<CommunityCreateWithoutModeratorsInput, CommunityUncheckedCreateWithoutModeratorsInput>
   }
 
-  export type CommunityMemberCreateWithoutUserInput = {
+  export type GroupCreateWithoutAdminsInput = {
     id?: string
-    role?: string
-    joinedAt?: Date | string
-    community: CommunityCreateNestedOneWithoutMembersInput
+    name: string
+    description?: string | null
+    avatar?: string | null
+    isPrivate?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: GroupMemberCreateNestedManyWithoutGroupInput
+    creator: UserCreateNestedOneWithoutCreatedGroupsInput
+    moderators?: UserCreateNestedManyWithoutModeratorGroupsInput
   }
 
-  export type CommunityMemberUncheckedCreateWithoutUserInput = {
+  export type GroupUncheckedCreateWithoutAdminsInput = {
     id?: string
-    communityId: string
-    role?: string
-    joinedAt?: Date | string
+    name: string
+    description?: string | null
+    avatar?: string | null
+    isPrivate?: boolean
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: GroupMemberUncheckedCreateNestedManyWithoutGroupInput
+    moderators?: UserUncheckedCreateNestedManyWithoutModeratorGroupsInput
   }
 
-  export type CommunityMemberCreateOrConnectWithoutUserInput = {
+  export type GroupCreateOrConnectWithoutAdminsInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput>
+  }
+
+  export type GroupCreateWithoutModeratorsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    avatar?: string | null
+    isPrivate?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: GroupMemberCreateNestedManyWithoutGroupInput
+    creator: UserCreateNestedOneWithoutCreatedGroupsInput
+    admins?: UserCreateNestedManyWithoutAdminGroupsInput
+  }
+
+  export type GroupUncheckedCreateWithoutModeratorsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    avatar?: string | null
+    isPrivate?: boolean
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: GroupMemberUncheckedCreateNestedManyWithoutGroupInput
+    admins?: UserUncheckedCreateNestedManyWithoutAdminGroupsInput
+  }
+
+  export type GroupCreateOrConnectWithoutModeratorsInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput>
+  }
+
+  export type CommunityUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: CommunityWhereUniqueInput
+    update: XOR<CommunityUpdateWithoutCreatedByInput, CommunityUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type CommunityUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: CommunityWhereUniqueInput
+    data: XOR<CommunityUpdateWithoutCreatedByInput, CommunityUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type CommunityUpdateManyWithWhereWithoutCreatedByInput = {
+    where: CommunityScalarWhereInput
+    data: XOR<CommunityUpdateManyMutationInput, CommunityUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type CommunityScalarWhereInput = {
+    AND?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
+    OR?: CommunityScalarWhereInput[]
+    NOT?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
+    id?: StringFilter<"Community"> | string
+    title?: StringFilter<"Community"> | string
+    description?: StringNullableFilter<"Community"> | string | null
+    image?: StringNullableFilter<"Community"> | string | null
+    isPublic?: BoolFilter<"Community"> | boolean
+    maxMembers?: IntNullableFilter<"Community"> | number | null
+    createdById?: StringFilter<"Community"> | string
+    createdAt?: DateTimeFilter<"Community"> | Date | string
+    updatedAt?: DateTimeFilter<"Community"> | Date | string
+  }
+
+  export type CommunityMemberUpsertWithWhereUniqueWithoutUserInput = {
     where: CommunityMemberWhereUniqueInput
+    update: XOR<CommunityMemberUpdateWithoutUserInput, CommunityMemberUncheckedUpdateWithoutUserInput>
     create: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput>
   }
 
-  export type CommunityMemberCreateManyUserInputEnvelope = {
-    data: CommunityMemberCreateManyUserInput | CommunityMemberCreateManyUserInput[]
+  export type CommunityMemberUpdateWithWhereUniqueWithoutUserInput = {
+    where: CommunityMemberWhereUniqueInput
+    data: XOR<CommunityMemberUpdateWithoutUserInput, CommunityMemberUncheckedUpdateWithoutUserInput>
   }
 
-  export type MessageUpsertWithWhereUniqueWithoutSenderInput = {
-    where: MessageWhereUniqueInput
-    update: XOR<MessageUpdateWithoutSenderInput, MessageUncheckedUpdateWithoutSenderInput>
-    create: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput>
+  export type CommunityMemberUpdateManyWithWhereWithoutUserInput = {
+    where: CommunityMemberScalarWhereInput
+    data: XOR<CommunityMemberUpdateManyMutationInput, CommunityMemberUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type MessageUpdateWithWhereUniqueWithoutSenderInput = {
-    where: MessageWhereUniqueInput
-    data: XOR<MessageUpdateWithoutSenderInput, MessageUncheckedUpdateWithoutSenderInput>
-  }
-
-  export type MessageUpdateManyWithWhereWithoutSenderInput = {
-    where: MessageScalarWhereInput
-    data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutSenderInput>
-  }
-
-  export type MessageScalarWhereInput = {
-    AND?: MessageScalarWhereInput | MessageScalarWhereInput[]
-    OR?: MessageScalarWhereInput[]
-    NOT?: MessageScalarWhereInput | MessageScalarWhereInput[]
-    id?: StringFilter<"Message"> | string
-    conversationId?: StringFilter<"Message"> | string
-    senderId?: StringNullableFilter<"Message"> | string | null
-    anonymousSenderId?: StringNullableFilter<"Message"> | string | null
-    content?: StringFilter<"Message"> | string
-    originalLanguage?: StringFilter<"Message"> | string
-    messageType?: StringFilter<"Message"> | string
-    isEdited?: BoolFilter<"Message"> | boolean
-    editedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
-    isDeleted?: BoolFilter<"Message"> | boolean
-    deletedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
-    replyToId?: StringNullableFilter<"Message"> | string | null
-    createdAt?: DateTimeFilter<"Message"> | Date | string
-    updatedAt?: DateTimeFilter<"Message"> | Date | string
+  export type CommunityMemberScalarWhereInput = {
+    AND?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
+    OR?: CommunityMemberScalarWhereInput[]
+    NOT?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
+    id?: StringFilter<"CommunityMember"> | string
+    communityId?: StringFilter<"CommunityMember"> | string
+    userId?: StringFilter<"CommunityMember"> | string
+    role?: StringFilter<"CommunityMember"> | string
+    joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
   }
 
   export type ConversationMemberUpsertWithWhereUniqueWithoutUserInput = {
@@ -33728,6 +33570,123 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"ConversationMember"> | Date | string
     leftAt?: DateTimeNullableFilter<"ConversationMember"> | Date | string | null
     isActive?: BoolFilter<"ConversationMember"> | boolean
+  }
+
+  export type ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput = {
+    where: ConversationPreferenceWhereUniqueInput
+    update: XOR<ConversationPreferenceUpdateWithoutUserInput, ConversationPreferenceUncheckedUpdateWithoutUserInput>
+    create: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput>
+  }
+
+  export type ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput = {
+    where: ConversationPreferenceWhereUniqueInput
+    data: XOR<ConversationPreferenceUpdateWithoutUserInput, ConversationPreferenceUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ConversationPreferenceUpdateManyWithWhereWithoutUserInput = {
+    where: ConversationPreferenceScalarWhereInput
+    data: XOR<ConversationPreferenceUpdateManyMutationInput, ConversationPreferenceUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ConversationPreferenceScalarWhereInput = {
+    AND?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
+    OR?: ConversationPreferenceScalarWhereInput[]
+    NOT?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
+    id?: StringFilter<"ConversationPreference"> | string
+    conversationId?: StringFilter<"ConversationPreference"> | string
+    userId?: StringFilter<"ConversationPreference"> | string
+    key?: StringFilter<"ConversationPreference"> | string
+    value?: StringFilter<"ConversationPreference"> | string
+    valueType?: StringFilter<"ConversationPreference"> | string
+    description?: StringNullableFilter<"ConversationPreference"> | string | null
+    createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
+    updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
+  }
+
+  export type ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: ConversationShareLinkWhereUniqueInput
+    update: XOR<ConversationShareLinkUpdateWithoutCreatorInput, ConversationShareLinkUncheckedUpdateWithoutCreatorInput>
+    create: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: ConversationShareLinkWhereUniqueInput
+    data: XOR<ConversationShareLinkUpdateWithoutCreatorInput, ConversationShareLinkUncheckedUpdateWithoutCreatorInput>
+  }
+
+  export type ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput = {
+    where: ConversationShareLinkScalarWhereInput
+    data: XOR<ConversationShareLinkUpdateManyMutationInput, ConversationShareLinkUncheckedUpdateManyWithoutCreatorInput>
+  }
+
+  export type ConversationShareLinkScalarWhereInput = {
+    AND?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
+    OR?: ConversationShareLinkScalarWhereInput[]
+    NOT?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
+    id?: StringFilter<"ConversationShareLink"> | string
+    linkId?: StringFilter<"ConversationShareLink"> | string
+    conversationId?: StringFilter<"ConversationShareLink"> | string
+    createdBy?: StringFilter<"ConversationShareLink"> | string
+    name?: StringNullableFilter<"ConversationShareLink"> | string | null
+    description?: StringNullableFilter<"ConversationShareLink"> | string | null
+    maxUses?: IntNullableFilter<"ConversationShareLink"> | number | null
+    currentUses?: IntFilter<"ConversationShareLink"> | number
+    maxConcurrentUsers?: IntNullableFilter<"ConversationShareLink"> | number | null
+    currentConcurrentUsers?: IntFilter<"ConversationShareLink"> | number
+    expiresAt?: DateTimeNullableFilter<"ConversationShareLink"> | Date | string | null
+    isActive?: BoolFilter<"ConversationShareLink"> | boolean
+    allowAnonymousMessages?: BoolFilter<"ConversationShareLink"> | boolean
+    allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
+    allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
+    allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
+    requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
+    requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
+    updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
+  }
+
+  export type FriendRequestUpsertWithWhereUniqueWithoutReceiverInput = {
+    where: FriendRequestWhereUniqueInput
+    update: XOR<FriendRequestUpdateWithoutReceiverInput, FriendRequestUncheckedUpdateWithoutReceiverInput>
+    create: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput>
+  }
+
+  export type FriendRequestUpdateWithWhereUniqueWithoutReceiverInput = {
+    where: FriendRequestWhereUniqueInput
+    data: XOR<FriendRequestUpdateWithoutReceiverInput, FriendRequestUncheckedUpdateWithoutReceiverInput>
+  }
+
+  export type FriendRequestUpdateManyWithWhereWithoutReceiverInput = {
+    where: FriendRequestScalarWhereInput
+    data: XOR<FriendRequestUpdateManyMutationInput, FriendRequestUncheckedUpdateManyWithoutReceiverInput>
+  }
+
+  export type FriendRequestScalarWhereInput = {
+    AND?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
+    OR?: FriendRequestScalarWhereInput[]
+    NOT?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
+    id?: StringFilter<"FriendRequest"> | string
+    senderId?: StringFilter<"FriendRequest"> | string
+    receiverId?: StringFilter<"FriendRequest"> | string
+    status?: StringFilter<"FriendRequest"> | string
+    createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
+    updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
+  }
+
+  export type FriendRequestUpsertWithWhereUniqueWithoutSenderInput = {
+    where: FriendRequestWhereUniqueInput
+    update: XOR<FriendRequestUpdateWithoutSenderInput, FriendRequestUncheckedUpdateWithoutSenderInput>
+    create: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput>
+  }
+
+  export type FriendRequestUpdateWithWhereUniqueWithoutSenderInput = {
+    where: FriendRequestWhereUniqueInput
+    data: XOR<FriendRequestUpdateWithoutSenderInput, FriendRequestUncheckedUpdateWithoutSenderInput>
+  }
+
+  export type FriendRequestUpdateManyWithWhereWithoutSenderInput = {
+    where: FriendRequestScalarWhereInput
+    data: XOR<FriendRequestUpdateManyMutationInput, FriendRequestUncheckedUpdateManyWithoutSenderInput>
   }
 
   export type GroupMemberUpsertWithWhereUniqueWithoutUserInput = {
@@ -33786,110 +33745,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Group"> | Date | string
   }
 
-  export type GroupUpsertWithWhereUniqueWithoutAdminsInput = {
-    where: GroupWhereUniqueInput
-    update: XOR<GroupUpdateWithoutAdminsInput, GroupUncheckedUpdateWithoutAdminsInput>
-    create: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput>
-  }
-
-  export type GroupUpdateWithWhereUniqueWithoutAdminsInput = {
-    where: GroupWhereUniqueInput
-    data: XOR<GroupUpdateWithoutAdminsInput, GroupUncheckedUpdateWithoutAdminsInput>
-  }
-
-  export type GroupUpdateManyWithWhereWithoutAdminsInput = {
-    where: GroupScalarWhereInput
-    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutAdminsInput>
-  }
-
-  export type GroupUpsertWithWhereUniqueWithoutModeratorsInput = {
-    where: GroupWhereUniqueInput
-    update: XOR<GroupUpdateWithoutModeratorsInput, GroupUncheckedUpdateWithoutModeratorsInput>
-    create: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput>
-  }
-
-  export type GroupUpdateWithWhereUniqueWithoutModeratorsInput = {
-    where: GroupWhereUniqueInput
-    data: XOR<GroupUpdateWithoutModeratorsInput, GroupUncheckedUpdateWithoutModeratorsInput>
-  }
-
-  export type GroupUpdateManyWithWhereWithoutModeratorsInput = {
-    where: GroupScalarWhereInput
-    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutModeratorsInput>
-  }
-
-  export type FriendRequestUpsertWithWhereUniqueWithoutSenderInput = {
-    where: FriendRequestWhereUniqueInput
-    update: XOR<FriendRequestUpdateWithoutSenderInput, FriendRequestUncheckedUpdateWithoutSenderInput>
-    create: XOR<FriendRequestCreateWithoutSenderInput, FriendRequestUncheckedCreateWithoutSenderInput>
-  }
-
-  export type FriendRequestUpdateWithWhereUniqueWithoutSenderInput = {
-    where: FriendRequestWhereUniqueInput
-    data: XOR<FriendRequestUpdateWithoutSenderInput, FriendRequestUncheckedUpdateWithoutSenderInput>
-  }
-
-  export type FriendRequestUpdateManyWithWhereWithoutSenderInput = {
-    where: FriendRequestScalarWhereInput
-    data: XOR<FriendRequestUpdateManyMutationInput, FriendRequestUncheckedUpdateManyWithoutSenderInput>
-  }
-
-  export type FriendRequestScalarWhereInput = {
-    AND?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
-    OR?: FriendRequestScalarWhereInput[]
-    NOT?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
-    id?: StringFilter<"FriendRequest"> | string
-    senderId?: StringFilter<"FriendRequest"> | string
-    receiverId?: StringFilter<"FriendRequest"> | string
-    status?: StringFilter<"FriendRequest"> | string
-    createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
-    updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
-  }
-
-  export type FriendRequestUpsertWithWhereUniqueWithoutReceiverInput = {
-    where: FriendRequestWhereUniqueInput
-    update: XOR<FriendRequestUpdateWithoutReceiverInput, FriendRequestUncheckedUpdateWithoutReceiverInput>
-    create: XOR<FriendRequestCreateWithoutReceiverInput, FriendRequestUncheckedCreateWithoutReceiverInput>
-  }
-
-  export type FriendRequestUpdateWithWhereUniqueWithoutReceiverInput = {
-    where: FriendRequestWhereUniqueInput
-    data: XOR<FriendRequestUpdateWithoutReceiverInput, FriendRequestUncheckedUpdateWithoutReceiverInput>
-  }
-
-  export type FriendRequestUpdateManyWithWhereWithoutReceiverInput = {
-    where: FriendRequestScalarWhereInput
-    data: XOR<FriendRequestUpdateManyMutationInput, FriendRequestUncheckedUpdateManyWithoutReceiverInput>
-  }
-
-  export type TypingIndicatorUpsertWithWhereUniqueWithoutUserInput = {
-    where: TypingIndicatorWhereUniqueInput
-    update: XOR<TypingIndicatorUpdateWithoutUserInput, TypingIndicatorUncheckedUpdateWithoutUserInput>
-    create: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput>
-  }
-
-  export type TypingIndicatorUpdateWithWhereUniqueWithoutUserInput = {
-    where: TypingIndicatorWhereUniqueInput
-    data: XOR<TypingIndicatorUpdateWithoutUserInput, TypingIndicatorUncheckedUpdateWithoutUserInput>
-  }
-
-  export type TypingIndicatorUpdateManyWithWhereWithoutUserInput = {
-    where: TypingIndicatorScalarWhereInput
-    data: XOR<TypingIndicatorUpdateManyMutationInput, TypingIndicatorUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type TypingIndicatorScalarWhereInput = {
-    AND?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
-    OR?: TypingIndicatorScalarWhereInput[]
-    NOT?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
-    id?: StringFilter<"TypingIndicator"> | string
-    conversationId?: StringFilter<"TypingIndicator"> | string
-    userId?: StringFilter<"TypingIndicator"> | string
-    isTyping?: BoolFilter<"TypingIndicator"> | boolean
-    startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-    updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-  }
-
   export type MessageReadStatusUpsertWithWhereUniqueWithoutUserInput = {
     where: MessageReadStatusWhereUniqueInput
     update: XOR<MessageReadStatusUpdateWithoutUserInput, MessageReadStatusUncheckedUpdateWithoutUserInput>
@@ -33914,6 +33769,42 @@ export namespace Prisma {
     messageId?: StringFilter<"MessageReadStatus"> | string
     userId?: StringFilter<"MessageReadStatus"> | string
     readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+  }
+
+  export type MessageUpsertWithWhereUniqueWithoutSenderInput = {
+    where: MessageWhereUniqueInput
+    update: XOR<MessageUpdateWithoutSenderInput, MessageUncheckedUpdateWithoutSenderInput>
+    create: XOR<MessageCreateWithoutSenderInput, MessageUncheckedCreateWithoutSenderInput>
+  }
+
+  export type MessageUpdateWithWhereUniqueWithoutSenderInput = {
+    where: MessageWhereUniqueInput
+    data: XOR<MessageUpdateWithoutSenderInput, MessageUncheckedUpdateWithoutSenderInput>
+  }
+
+  export type MessageUpdateManyWithWhereWithoutSenderInput = {
+    where: MessageScalarWhereInput
+    data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutSenderInput>
+  }
+
+  export type MessageScalarWhereInput = {
+    AND?: MessageScalarWhereInput | MessageScalarWhereInput[]
+    OR?: MessageScalarWhereInput[]
+    NOT?: MessageScalarWhereInput | MessageScalarWhereInput[]
+    id?: StringFilter<"Message"> | string
+    conversationId?: StringFilter<"Message"> | string
+    senderId?: StringNullableFilter<"Message"> | string | null
+    anonymousSenderId?: StringNullableFilter<"Message"> | string | null
+    content?: StringFilter<"Message"> | string
+    originalLanguage?: StringFilter<"Message"> | string
+    messageType?: StringFilter<"Message"> | string
+    isEdited?: BoolFilter<"Message"> | boolean
+    editedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
+    isDeleted?: BoolFilter<"Message"> | boolean
+    deletedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
+    replyToId?: StringNullableFilter<"Message"> | string | null
+    createdAt?: DateTimeFilter<"Message"> | Date | string
+    updatedAt?: DateTimeFilter<"Message"> | Date | string
   }
 
   export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
@@ -33950,46 +33841,62 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
-  export type ConversationShareLinkUpsertWithWhereUniqueWithoutCreatorInput = {
-    where: ConversationShareLinkWhereUniqueInput
-    update: XOR<ConversationShareLinkUpdateWithoutCreatorInput, ConversationShareLinkUncheckedUpdateWithoutCreatorInput>
-    create: XOR<ConversationShareLinkCreateWithoutCreatorInput, ConversationShareLinkUncheckedCreateWithoutCreatorInput>
+  export type TypingIndicatorUpsertWithWhereUniqueWithoutUserInput = {
+    where: TypingIndicatorWhereUniqueInput
+    update: XOR<TypingIndicatorUpdateWithoutUserInput, TypingIndicatorUncheckedUpdateWithoutUserInput>
+    create: XOR<TypingIndicatorCreateWithoutUserInput, TypingIndicatorUncheckedCreateWithoutUserInput>
   }
 
-  export type ConversationShareLinkUpdateWithWhereUniqueWithoutCreatorInput = {
-    where: ConversationShareLinkWhereUniqueInput
-    data: XOR<ConversationShareLinkUpdateWithoutCreatorInput, ConversationShareLinkUncheckedUpdateWithoutCreatorInput>
+  export type TypingIndicatorUpdateWithWhereUniqueWithoutUserInput = {
+    where: TypingIndicatorWhereUniqueInput
+    data: XOR<TypingIndicatorUpdateWithoutUserInput, TypingIndicatorUncheckedUpdateWithoutUserInput>
   }
 
-  export type ConversationShareLinkUpdateManyWithWhereWithoutCreatorInput = {
-    where: ConversationShareLinkScalarWhereInput
-    data: XOR<ConversationShareLinkUpdateManyMutationInput, ConversationShareLinkUncheckedUpdateManyWithoutCreatorInput>
+  export type TypingIndicatorUpdateManyWithWhereWithoutUserInput = {
+    where: TypingIndicatorScalarWhereInput
+    data: XOR<TypingIndicatorUpdateManyMutationInput, TypingIndicatorUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type ConversationShareLinkScalarWhereInput = {
-    AND?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
-    OR?: ConversationShareLinkScalarWhereInput[]
-    NOT?: ConversationShareLinkScalarWhereInput | ConversationShareLinkScalarWhereInput[]
-    id?: StringFilter<"ConversationShareLink"> | string
-    linkId?: StringFilter<"ConversationShareLink"> | string
-    conversationId?: StringFilter<"ConversationShareLink"> | string
-    createdBy?: StringFilter<"ConversationShareLink"> | string
-    name?: StringNullableFilter<"ConversationShareLink"> | string | null
-    description?: StringNullableFilter<"ConversationShareLink"> | string | null
-    maxUses?: IntNullableFilter<"ConversationShareLink"> | number | null
-    currentUses?: IntFilter<"ConversationShareLink"> | number
-    maxConcurrentUsers?: IntNullableFilter<"ConversationShareLink"> | number | null
-    currentConcurrentUsers?: IntFilter<"ConversationShareLink"> | number
-    expiresAt?: DateTimeNullableFilter<"ConversationShareLink"> | Date | string | null
-    isActive?: BoolFilter<"ConversationShareLink"> | boolean
-    allowAnonymousMessages?: BoolFilter<"ConversationShareLink"> | boolean
-    allowAnonymousFiles?: BoolFilter<"ConversationShareLink"> | boolean
-    allowAnonymousImages?: BoolFilter<"ConversationShareLink"> | boolean
-    allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
-    requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
-    requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
-    createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
-    updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
+  export type TypingIndicatorScalarWhereInput = {
+    AND?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
+    OR?: TypingIndicatorScalarWhereInput[]
+    NOT?: TypingIndicatorScalarWhereInput | TypingIndicatorScalarWhereInput[]
+    id?: StringFilter<"TypingIndicator"> | string
+    conversationId?: StringFilter<"TypingIndicator"> | string
+    userId?: StringFilter<"TypingIndicator"> | string
+    isTyping?: BoolFilter<"TypingIndicator"> | boolean
+    startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
+    updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
+  }
+
+  export type UserPreferenceUpsertWithWhereUniqueWithoutUserInput = {
+    where: UserPreferenceWhereUniqueInput
+    update: XOR<UserPreferenceUpdateWithoutUserInput, UserPreferenceUncheckedUpdateWithoutUserInput>
+    create: XOR<UserPreferenceCreateWithoutUserInput, UserPreferenceUncheckedCreateWithoutUserInput>
+  }
+
+  export type UserPreferenceUpdateWithWhereUniqueWithoutUserInput = {
+    where: UserPreferenceWhereUniqueInput
+    data: XOR<UserPreferenceUpdateWithoutUserInput, UserPreferenceUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserPreferenceUpdateManyWithWhereWithoutUserInput = {
+    where: UserPreferenceScalarWhereInput
+    data: XOR<UserPreferenceUpdateManyMutationInput, UserPreferenceUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type UserPreferenceScalarWhereInput = {
+    AND?: UserPreferenceScalarWhereInput | UserPreferenceScalarWhereInput[]
+    OR?: UserPreferenceScalarWhereInput[]
+    NOT?: UserPreferenceScalarWhereInput | UserPreferenceScalarWhereInput[]
+    id?: StringFilter<"UserPreference"> | string
+    userId?: StringFilter<"UserPreference"> | string
+    key?: StringFilter<"UserPreference"> | string
+    value?: StringFilter<"UserPreference"> | string
+    valueType?: StringFilter<"UserPreference"> | string
+    description?: StringNullableFilter<"UserPreference"> | string | null
+    createdAt?: DateTimeFilter<"UserPreference"> | Date | string
+    updatedAt?: DateTimeFilter<"UserPreference"> | Date | string
   }
 
   export type UserStatsUpsertWithoutUserInput = {
@@ -34045,98 +33952,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type UserPreferenceUpsertWithWhereUniqueWithoutUserInput = {
-    where: UserPreferenceWhereUniqueInput
-    update: XOR<UserPreferenceUpdateWithoutUserInput, UserPreferenceUncheckedUpdateWithoutUserInput>
-    create: XOR<UserPreferenceCreateWithoutUserInput, UserPreferenceUncheckedCreateWithoutUserInput>
-  }
-
-  export type UserPreferenceUpdateWithWhereUniqueWithoutUserInput = {
-    where: UserPreferenceWhereUniqueInput
-    data: XOR<UserPreferenceUpdateWithoutUserInput, UserPreferenceUncheckedUpdateWithoutUserInput>
-  }
-
-  export type UserPreferenceUpdateManyWithWhereWithoutUserInput = {
-    where: UserPreferenceScalarWhereInput
-    data: XOR<UserPreferenceUpdateManyMutationInput, UserPreferenceUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type UserPreferenceScalarWhereInput = {
-    AND?: UserPreferenceScalarWhereInput | UserPreferenceScalarWhereInput[]
-    OR?: UserPreferenceScalarWhereInput[]
-    NOT?: UserPreferenceScalarWhereInput | UserPreferenceScalarWhereInput[]
-    id?: StringFilter<"UserPreference"> | string
-    userId?: StringFilter<"UserPreference"> | string
-    key?: StringFilter<"UserPreference"> | string
-    value?: StringFilter<"UserPreference"> | string
-    valueType?: StringFilter<"UserPreference"> | string
-    description?: StringNullableFilter<"UserPreference"> | string | null
-    createdAt?: DateTimeFilter<"UserPreference"> | Date | string
-    updatedAt?: DateTimeFilter<"UserPreference"> | Date | string
-  }
-
-  export type ConversationPreferenceUpsertWithWhereUniqueWithoutUserInput = {
-    where: ConversationPreferenceWhereUniqueInput
-    update: XOR<ConversationPreferenceUpdateWithoutUserInput, ConversationPreferenceUncheckedUpdateWithoutUserInput>
-    create: XOR<ConversationPreferenceCreateWithoutUserInput, ConversationPreferenceUncheckedCreateWithoutUserInput>
-  }
-
-  export type ConversationPreferenceUpdateWithWhereUniqueWithoutUserInput = {
-    where: ConversationPreferenceWhereUniqueInput
-    data: XOR<ConversationPreferenceUpdateWithoutUserInput, ConversationPreferenceUncheckedUpdateWithoutUserInput>
-  }
-
-  export type ConversationPreferenceUpdateManyWithWhereWithoutUserInput = {
-    where: ConversationPreferenceScalarWhereInput
-    data: XOR<ConversationPreferenceUpdateManyMutationInput, ConversationPreferenceUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type ConversationPreferenceScalarWhereInput = {
-    AND?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
-    OR?: ConversationPreferenceScalarWhereInput[]
-    NOT?: ConversationPreferenceScalarWhereInput | ConversationPreferenceScalarWhereInput[]
-    id?: StringFilter<"ConversationPreference"> | string
-    conversationId?: StringFilter<"ConversationPreference"> | string
-    userId?: StringFilter<"ConversationPreference"> | string
-    key?: StringFilter<"ConversationPreference"> | string
-    value?: StringFilter<"ConversationPreference"> | string
-    valueType?: StringFilter<"ConversationPreference"> | string
-    description?: StringNullableFilter<"ConversationPreference"> | string | null
-    createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-    updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-  }
-
-  export type CommunityUpsertWithWhereUniqueWithoutCreatedByInput = {
-    where: CommunityWhereUniqueInput
-    update: XOR<CommunityUpdateWithoutCreatedByInput, CommunityUncheckedUpdateWithoutCreatedByInput>
-    create: XOR<CommunityCreateWithoutCreatedByInput, CommunityUncheckedCreateWithoutCreatedByInput>
-  }
-
-  export type CommunityUpdateWithWhereUniqueWithoutCreatedByInput = {
-    where: CommunityWhereUniqueInput
-    data: XOR<CommunityUpdateWithoutCreatedByInput, CommunityUncheckedUpdateWithoutCreatedByInput>
-  }
-
-  export type CommunityUpdateManyWithWhereWithoutCreatedByInput = {
-    where: CommunityScalarWhereInput
-    data: XOR<CommunityUpdateManyMutationInput, CommunityUncheckedUpdateManyWithoutCreatedByInput>
-  }
-
-  export type CommunityScalarWhereInput = {
-    AND?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
-    OR?: CommunityScalarWhereInput[]
-    NOT?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
-    id?: StringFilter<"Community"> | string
-    title?: StringFilter<"Community"> | string
-    description?: StringNullableFilter<"Community"> | string | null
-    image?: StringNullableFilter<"Community"> | string | null
-    isPublic?: BoolFilter<"Community"> | boolean
-    maxMembers?: IntNullableFilter<"Community"> | number | null
-    createdById?: StringFilter<"Community"> | string
-    createdAt?: DateTimeFilter<"Community"> | Date | string
-    updatedAt?: DateTimeFilter<"Community"> | Date | string
-  }
-
   export type CommunityUpsertWithWhereUniqueWithoutAdminsInput = {
     where: CommunityWhereUniqueInput
     update: XOR<CommunityUpdateWithoutAdminsInput, CommunityUncheckedUpdateWithoutAdminsInput>
@@ -34169,265 +33984,36 @@ export namespace Prisma {
     data: XOR<CommunityUpdateManyMutationInput, CommunityUncheckedUpdateManyWithoutModeratorsInput>
   }
 
-  export type CommunityMemberUpsertWithWhereUniqueWithoutUserInput = {
-    where: CommunityMemberWhereUniqueInput
-    update: XOR<CommunityMemberUpdateWithoutUserInput, CommunityMemberUncheckedUpdateWithoutUserInput>
-    create: XOR<CommunityMemberCreateWithoutUserInput, CommunityMemberUncheckedCreateWithoutUserInput>
+  export type GroupUpsertWithWhereUniqueWithoutAdminsInput = {
+    where: GroupWhereUniqueInput
+    update: XOR<GroupUpdateWithoutAdminsInput, GroupUncheckedUpdateWithoutAdminsInput>
+    create: XOR<GroupCreateWithoutAdminsInput, GroupUncheckedCreateWithoutAdminsInput>
   }
 
-  export type CommunityMemberUpdateWithWhereUniqueWithoutUserInput = {
-    where: CommunityMemberWhereUniqueInput
-    data: XOR<CommunityMemberUpdateWithoutUserInput, CommunityMemberUncheckedUpdateWithoutUserInput>
+  export type GroupUpdateWithWhereUniqueWithoutAdminsInput = {
+    where: GroupWhereUniqueInput
+    data: XOR<GroupUpdateWithoutAdminsInput, GroupUncheckedUpdateWithoutAdminsInput>
   }
 
-  export type CommunityMemberUpdateManyWithWhereWithoutUserInput = {
-    where: CommunityMemberScalarWhereInput
-    data: XOR<CommunityMemberUpdateManyMutationInput, CommunityMemberUncheckedUpdateManyWithoutUserInput>
+  export type GroupUpdateManyWithWhereWithoutAdminsInput = {
+    where: GroupScalarWhereInput
+    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutAdminsInput>
   }
 
-  export type CommunityMemberScalarWhereInput = {
-    AND?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
-    OR?: CommunityMemberScalarWhereInput[]
-    NOT?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
-    id?: StringFilter<"CommunityMember"> | string
-    communityId?: StringFilter<"CommunityMember"> | string
-    userId?: StringFilter<"CommunityMember"> | string
-    role?: StringFilter<"CommunityMember"> | string
-    joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
+  export type GroupUpsertWithWhereUniqueWithoutModeratorsInput = {
+    where: GroupWhereUniqueInput
+    update: XOR<GroupUpdateWithoutModeratorsInput, GroupUncheckedUpdateWithoutModeratorsInput>
+    create: XOR<GroupCreateWithoutModeratorsInput, GroupUncheckedCreateWithoutModeratorsInput>
   }
 
-  export type CommunityCreateWithoutConversationsInput = {
-    id?: string
-    title: string
-    description?: string | null
-    image?: string | null
-    isPublic?: boolean
-    maxMembers?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    createdBy: UserCreateNestedOneWithoutCreatedCommunitiesInput
-    members?: CommunityMemberCreateNestedManyWithoutCommunityInput
-    admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
-    moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
+  export type GroupUpdateWithWhereUniqueWithoutModeratorsInput = {
+    where: GroupWhereUniqueInput
+    data: XOR<GroupUpdateWithoutModeratorsInput, GroupUncheckedUpdateWithoutModeratorsInput>
   }
 
-  export type CommunityUncheckedCreateWithoutConversationsInput = {
-    id?: string
-    title: string
-    description?: string | null
-    image?: string | null
-    isPublic?: boolean
-    maxMembers?: number | null
-    createdById: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
-    admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
-    moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
-  }
-
-  export type CommunityCreateOrConnectWithoutConversationsInput = {
-    where: CommunityWhereUniqueInput
-    create: XOR<CommunityCreateWithoutConversationsInput, CommunityUncheckedCreateWithoutConversationsInput>
-  }
-
-  export type ConversationMemberCreateWithoutConversationInput = {
-    id?: string
-    role?: string
-    canSendMessage?: boolean
-    canSendFiles?: boolean
-    canSendImages?: boolean
-    canSendVideos?: boolean
-    canSendAudios?: boolean
-    canSendLocations?: boolean
-    canSendLinks?: boolean
-    joinedAt?: Date | string
-    leftAt?: Date | string | null
-    isActive?: boolean
-    user: UserCreateNestedOneWithoutConversationsInput
-  }
-
-  export type ConversationMemberUncheckedCreateWithoutConversationInput = {
-    id?: string
-    userId: string
-    role?: string
-    canSendMessage?: boolean
-    canSendFiles?: boolean
-    canSendImages?: boolean
-    canSendVideos?: boolean
-    canSendAudios?: boolean
-    canSendLocations?: boolean
-    canSendLinks?: boolean
-    joinedAt?: Date | string
-    leftAt?: Date | string | null
-    isActive?: boolean
-  }
-
-  export type ConversationMemberCreateOrConnectWithoutConversationInput = {
-    where: ConversationMemberWhereUniqueInput
-    create: XOR<ConversationMemberCreateWithoutConversationInput, ConversationMemberUncheckedCreateWithoutConversationInput>
-  }
-
-  export type ConversationMemberCreateManyConversationInputEnvelope = {
-    data: ConversationMemberCreateManyConversationInput | ConversationMemberCreateManyConversationInput[]
-  }
-
-  export type MessageCreateWithoutConversationInput = {
-    id?: string
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sender?: UserCreateNestedOneWithoutSentMessagesInput
-    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
-    replyTo?: MessageCreateNestedOneWithoutRepliesInput
-    replies?: MessageCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageUncheckedCreateWithoutConversationInput = {
-    id?: string
-    senderId?: string | null
-    anonymousSenderId?: string | null
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    replyToId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageCreateOrConnectWithoutConversationInput = {
-    where: MessageWhereUniqueInput
-    create: XOR<MessageCreateWithoutConversationInput, MessageUncheckedCreateWithoutConversationInput>
-  }
-
-  export type MessageCreateManyConversationInputEnvelope = {
-    data: MessageCreateManyConversationInput | MessageCreateManyConversationInput[]
-  }
-
-  export type TypingIndicatorCreateWithoutConversationInput = {
-    id?: string
-    isTyping?: boolean
-    startedAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTypingIndicatorsInput
-  }
-
-  export type TypingIndicatorUncheckedCreateWithoutConversationInput = {
-    id?: string
-    userId: string
-    isTyping?: boolean
-    startedAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TypingIndicatorCreateOrConnectWithoutConversationInput = {
-    where: TypingIndicatorWhereUniqueInput
-    create: XOR<TypingIndicatorCreateWithoutConversationInput, TypingIndicatorUncheckedCreateWithoutConversationInput>
-  }
-
-  export type TypingIndicatorCreateManyConversationInputEnvelope = {
-    data: TypingIndicatorCreateManyConversationInput | TypingIndicatorCreateManyConversationInput[]
-  }
-
-  export type ConversationShareLinkCreateWithoutConversationInput = {
-    id?: string
-    linkId: string
-    name?: string | null
-    description?: string | null
-    maxUses?: number | null
-    currentUses?: number
-    maxConcurrentUsers?: number | null
-    currentConcurrentUsers?: number
-    expiresAt?: Date | string | null
-    isActive?: boolean
-    allowAnonymousMessages?: boolean
-    allowAnonymousFiles?: boolean
-    allowAnonymousImages?: boolean
-    allowViewHistory?: boolean
-    requireNickname?: boolean
-    requireEmail?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    creator: UserCreateNestedOneWithoutCreatedShareLinksInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
-  }
-
-  export type ConversationShareLinkUncheckedCreateWithoutConversationInput = {
-    id?: string
-    linkId: string
-    createdBy: string
-    name?: string | null
-    description?: string | null
-    maxUses?: number | null
-    currentUses?: number
-    maxConcurrentUsers?: number | null
-    currentConcurrentUsers?: number
-    expiresAt?: Date | string | null
-    isActive?: boolean
-    allowAnonymousMessages?: boolean
-    allowAnonymousFiles?: boolean
-    allowAnonymousImages?: boolean
-    allowViewHistory?: boolean
-    requireNickname?: boolean
-    requireEmail?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput
-  }
-
-  export type ConversationShareLinkCreateOrConnectWithoutConversationInput = {
-    where: ConversationShareLinkWhereUniqueInput
-    create: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput>
-  }
-
-  export type ConversationShareLinkCreateManyConversationInputEnvelope = {
-    data: ConversationShareLinkCreateManyConversationInput | ConversationShareLinkCreateManyConversationInput[]
-  }
-
-  export type ConversationPreferenceCreateWithoutConversationInput = {
-    id?: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutConversationPreferencesInput
-  }
-
-  export type ConversationPreferenceUncheckedCreateWithoutConversationInput = {
-    id?: string
-    userId: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type ConversationPreferenceCreateOrConnectWithoutConversationInput = {
-    where: ConversationPreferenceWhereUniqueInput
-    create: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput>
-  }
-
-  export type ConversationPreferenceCreateManyConversationInputEnvelope = {
-    data: ConversationPreferenceCreateManyConversationInput | ConversationPreferenceCreateManyConversationInput[]
+  export type GroupUpdateManyWithWhereWithoutModeratorsInput = {
+    where: GroupScalarWhereInput
+    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutModeratorsInput>
   }
 
   export type AnonymousParticipantCreateWithoutConversationInput = {
@@ -34477,6 +34063,326 @@ export namespace Prisma {
     data: AnonymousParticipantCreateManyConversationInput | AnonymousParticipantCreateManyConversationInput[]
   }
 
+  export type ConversationMemberCreateWithoutConversationInput = {
+    id?: string
+    role?: string
+    canSendMessage?: boolean
+    canSendFiles?: boolean
+    canSendImages?: boolean
+    canSendVideos?: boolean
+    canSendAudios?: boolean
+    canSendLocations?: boolean
+    canSendLinks?: boolean
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isActive?: boolean
+    user: UserCreateNestedOneWithoutConversationsInput
+  }
+
+  export type ConversationMemberUncheckedCreateWithoutConversationInput = {
+    id?: string
+    userId: string
+    role?: string
+    canSendMessage?: boolean
+    canSendFiles?: boolean
+    canSendImages?: boolean
+    canSendVideos?: boolean
+    canSendAudios?: boolean
+    canSendLocations?: boolean
+    canSendLinks?: boolean
+    joinedAt?: Date | string
+    leftAt?: Date | string | null
+    isActive?: boolean
+  }
+
+  export type ConversationMemberCreateOrConnectWithoutConversationInput = {
+    where: ConversationMemberWhereUniqueInput
+    create: XOR<ConversationMemberCreateWithoutConversationInput, ConversationMemberUncheckedCreateWithoutConversationInput>
+  }
+
+  export type ConversationMemberCreateManyConversationInputEnvelope = {
+    data: ConversationMemberCreateManyConversationInput | ConversationMemberCreateManyConversationInput[]
+  }
+
+  export type ConversationPreferenceCreateWithoutConversationInput = {
+    id?: string
+    key: string
+    value: string
+    valueType?: string
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutConversationPreferencesInput
+  }
+
+  export type ConversationPreferenceUncheckedCreateWithoutConversationInput = {
+    id?: string
+    userId: string
+    key: string
+    value: string
+    valueType?: string
+    description?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ConversationPreferenceCreateOrConnectWithoutConversationInput = {
+    where: ConversationPreferenceWhereUniqueInput
+    create: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput>
+  }
+
+  export type ConversationPreferenceCreateManyConversationInputEnvelope = {
+    data: ConversationPreferenceCreateManyConversationInput | ConversationPreferenceCreateManyConversationInput[]
+  }
+
+  export type ConversationShareLinkCreateWithoutConversationInput = {
+    id?: string
+    linkId: string
+    name?: string | null
+    description?: string | null
+    maxUses?: number | null
+    currentUses?: number
+    maxConcurrentUsers?: number | null
+    currentConcurrentUsers?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    allowAnonymousMessages?: boolean
+    allowAnonymousFiles?: boolean
+    allowAnonymousImages?: boolean
+    allowViewHistory?: boolean
+    requireNickname?: boolean
+    requireEmail?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
+    creator: UserCreateNestedOneWithoutCreatedShareLinksInput
+  }
+
+  export type ConversationShareLinkUncheckedCreateWithoutConversationInput = {
+    id?: string
+    linkId: string
+    createdBy: string
+    name?: string | null
+    description?: string | null
+    maxUses?: number | null
+    currentUses?: number
+    maxConcurrentUsers?: number | null
+    currentConcurrentUsers?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    allowAnonymousMessages?: boolean
+    allowAnonymousFiles?: boolean
+    allowAnonymousImages?: boolean
+    allowViewHistory?: boolean
+    requireNickname?: boolean
+    requireEmail?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput
+  }
+
+  export type ConversationShareLinkCreateOrConnectWithoutConversationInput = {
+    where: ConversationShareLinkWhereUniqueInput
+    create: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput>
+  }
+
+  export type ConversationShareLinkCreateManyConversationInputEnvelope = {
+    data: ConversationShareLinkCreateManyConversationInput | ConversationShareLinkCreateManyConversationInput[]
+  }
+
+  export type CommunityCreateWithoutConversationsInput = {
+    id?: string
+    title: string
+    description?: string | null
+    image?: string | null
+    isPublic?: boolean
+    maxMembers?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedCommunitiesInput
+    members?: CommunityMemberCreateNestedManyWithoutCommunityInput
+    admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
+    moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
+  }
+
+  export type CommunityUncheckedCreateWithoutConversationsInput = {
+    id?: string
+    title: string
+    description?: string | null
+    image?: string | null
+    isPublic?: boolean
+    maxMembers?: number | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
+    admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
+    moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
+  }
+
+  export type CommunityCreateOrConnectWithoutConversationsInput = {
+    where: CommunityWhereUniqueInput
+    create: XOR<CommunityCreateWithoutConversationsInput, CommunityUncheckedCreateWithoutConversationsInput>
+  }
+
+  export type MessageCreateWithoutConversationInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutConversationInput = {
+    id?: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutConversationInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutConversationInput, MessageUncheckedCreateWithoutConversationInput>
+  }
+
+  export type MessageCreateManyConversationInputEnvelope = {
+    data: MessageCreateManyConversationInput | MessageCreateManyConversationInput[]
+  }
+
+  export type TypingIndicatorCreateWithoutConversationInput = {
+    id?: string
+    isTyping?: boolean
+    startedAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutTypingIndicatorsInput
+  }
+
+  export type TypingIndicatorUncheckedCreateWithoutConversationInput = {
+    id?: string
+    userId: string
+    isTyping?: boolean
+    startedAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TypingIndicatorCreateOrConnectWithoutConversationInput = {
+    where: TypingIndicatorWhereUniqueInput
+    create: XOR<TypingIndicatorCreateWithoutConversationInput, TypingIndicatorUncheckedCreateWithoutConversationInput>
+  }
+
+  export type TypingIndicatorCreateManyConversationInputEnvelope = {
+    data: TypingIndicatorCreateManyConversationInput | TypingIndicatorCreateManyConversationInput[]
+  }
+
+  export type AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput = {
+    where: AnonymousParticipantWhereUniqueInput
+    update: XOR<AnonymousParticipantUpdateWithoutConversationInput, AnonymousParticipantUncheckedUpdateWithoutConversationInput>
+    create: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput>
+  }
+
+  export type AnonymousParticipantUpdateWithWhereUniqueWithoutConversationInput = {
+    where: AnonymousParticipantWhereUniqueInput
+    data: XOR<AnonymousParticipantUpdateWithoutConversationInput, AnonymousParticipantUncheckedUpdateWithoutConversationInput>
+  }
+
+  export type AnonymousParticipantUpdateManyWithWhereWithoutConversationInput = {
+    where: AnonymousParticipantScalarWhereInput
+    data: XOR<AnonymousParticipantUpdateManyMutationInput, AnonymousParticipantUncheckedUpdateManyWithoutConversationInput>
+  }
+
+  export type AnonymousParticipantScalarWhereInput = {
+    AND?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
+    OR?: AnonymousParticipantScalarWhereInput[]
+    NOT?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
+    id?: StringFilter<"AnonymousParticipant"> | string
+    conversationId?: StringFilter<"AnonymousParticipant"> | string
+    shareLinkId?: StringFilter<"AnonymousParticipant"> | string
+    nickname?: StringFilter<"AnonymousParticipant"> | string
+    email?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    sessionToken?: StringFilter<"AnonymousParticipant"> | string
+    ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    isActive?: BoolFilter<"AnonymousParticipant"> | boolean
+    isOnline?: BoolFilter<"AnonymousParticipant"> | boolean
+    lastActiveAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
+    canSendMessages?: BoolFilter<"AnonymousParticipant"> | boolean
+    canSendFiles?: BoolFilter<"AnonymousParticipant"> | boolean
+    canSendImages?: BoolFilter<"AnonymousParticipant"> | boolean
+    joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
+    lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
+    leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
+  }
+
+  export type ConversationMemberUpsertWithWhereUniqueWithoutConversationInput = {
+    where: ConversationMemberWhereUniqueInput
+    update: XOR<ConversationMemberUpdateWithoutConversationInput, ConversationMemberUncheckedUpdateWithoutConversationInput>
+    create: XOR<ConversationMemberCreateWithoutConversationInput, ConversationMemberUncheckedCreateWithoutConversationInput>
+  }
+
+  export type ConversationMemberUpdateWithWhereUniqueWithoutConversationInput = {
+    where: ConversationMemberWhereUniqueInput
+    data: XOR<ConversationMemberUpdateWithoutConversationInput, ConversationMemberUncheckedUpdateWithoutConversationInput>
+  }
+
+  export type ConversationMemberUpdateManyWithWhereWithoutConversationInput = {
+    where: ConversationMemberScalarWhereInput
+    data: XOR<ConversationMemberUpdateManyMutationInput, ConversationMemberUncheckedUpdateManyWithoutConversationInput>
+  }
+
+  export type ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput = {
+    where: ConversationPreferenceWhereUniqueInput
+    update: XOR<ConversationPreferenceUpdateWithoutConversationInput, ConversationPreferenceUncheckedUpdateWithoutConversationInput>
+    create: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput>
+  }
+
+  export type ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput = {
+    where: ConversationPreferenceWhereUniqueInput
+    data: XOR<ConversationPreferenceUpdateWithoutConversationInput, ConversationPreferenceUncheckedUpdateWithoutConversationInput>
+  }
+
+  export type ConversationPreferenceUpdateManyWithWhereWithoutConversationInput = {
+    where: ConversationPreferenceScalarWhereInput
+    data: XOR<ConversationPreferenceUpdateManyMutationInput, ConversationPreferenceUncheckedUpdateManyWithoutConversationInput>
+  }
+
+  export type ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput = {
+    where: ConversationShareLinkWhereUniqueInput
+    update: XOR<ConversationShareLinkUpdateWithoutConversationInput, ConversationShareLinkUncheckedUpdateWithoutConversationInput>
+    create: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput>
+  }
+
+  export type ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput = {
+    where: ConversationShareLinkWhereUniqueInput
+    data: XOR<ConversationShareLinkUpdateWithoutConversationInput, ConversationShareLinkUncheckedUpdateWithoutConversationInput>
+  }
+
+  export type ConversationShareLinkUpdateManyWithWhereWithoutConversationInput = {
+    where: ConversationShareLinkScalarWhereInput
+    data: XOR<ConversationShareLinkUpdateManyMutationInput, ConversationShareLinkUncheckedUpdateManyWithoutConversationInput>
+  }
+
   export type CommunityUpsertWithoutConversationsInput = {
     update: XOR<CommunityUpdateWithoutConversationsInput, CommunityUncheckedUpdateWithoutConversationsInput>
     create: XOR<CommunityCreateWithoutConversationsInput, CommunityUncheckedCreateWithoutConversationsInput>
@@ -34518,22 +34424,6 @@ export namespace Prisma {
     moderators?: UserUncheckedUpdateManyWithoutModeratorCommunitiesNestedInput
   }
 
-  export type ConversationMemberUpsertWithWhereUniqueWithoutConversationInput = {
-    where: ConversationMemberWhereUniqueInput
-    update: XOR<ConversationMemberUpdateWithoutConversationInput, ConversationMemberUncheckedUpdateWithoutConversationInput>
-    create: XOR<ConversationMemberCreateWithoutConversationInput, ConversationMemberUncheckedCreateWithoutConversationInput>
-  }
-
-  export type ConversationMemberUpdateWithWhereUniqueWithoutConversationInput = {
-    where: ConversationMemberWhereUniqueInput
-    data: XOR<ConversationMemberUpdateWithoutConversationInput, ConversationMemberUncheckedUpdateWithoutConversationInput>
-  }
-
-  export type ConversationMemberUpdateManyWithWhereWithoutConversationInput = {
-    where: ConversationMemberScalarWhereInput
-    data: XOR<ConversationMemberUpdateManyMutationInput, ConversationMemberUncheckedUpdateManyWithoutConversationInput>
-  }
-
   export type MessageUpsertWithWhereUniqueWithoutConversationInput = {
     where: MessageWhereUniqueInput
     update: XOR<MessageUpdateWithoutConversationInput, MessageUncheckedUpdateWithoutConversationInput>
@@ -34566,121 +34456,6 @@ export namespace Prisma {
     data: XOR<TypingIndicatorUpdateManyMutationInput, TypingIndicatorUncheckedUpdateManyWithoutConversationInput>
   }
 
-  export type ConversationShareLinkUpsertWithWhereUniqueWithoutConversationInput = {
-    where: ConversationShareLinkWhereUniqueInput
-    update: XOR<ConversationShareLinkUpdateWithoutConversationInput, ConversationShareLinkUncheckedUpdateWithoutConversationInput>
-    create: XOR<ConversationShareLinkCreateWithoutConversationInput, ConversationShareLinkUncheckedCreateWithoutConversationInput>
-  }
-
-  export type ConversationShareLinkUpdateWithWhereUniqueWithoutConversationInput = {
-    where: ConversationShareLinkWhereUniqueInput
-    data: XOR<ConversationShareLinkUpdateWithoutConversationInput, ConversationShareLinkUncheckedUpdateWithoutConversationInput>
-  }
-
-  export type ConversationShareLinkUpdateManyWithWhereWithoutConversationInput = {
-    where: ConversationShareLinkScalarWhereInput
-    data: XOR<ConversationShareLinkUpdateManyMutationInput, ConversationShareLinkUncheckedUpdateManyWithoutConversationInput>
-  }
-
-  export type ConversationPreferenceUpsertWithWhereUniqueWithoutConversationInput = {
-    where: ConversationPreferenceWhereUniqueInput
-    update: XOR<ConversationPreferenceUpdateWithoutConversationInput, ConversationPreferenceUncheckedUpdateWithoutConversationInput>
-    create: XOR<ConversationPreferenceCreateWithoutConversationInput, ConversationPreferenceUncheckedCreateWithoutConversationInput>
-  }
-
-  export type ConversationPreferenceUpdateWithWhereUniqueWithoutConversationInput = {
-    where: ConversationPreferenceWhereUniqueInput
-    data: XOR<ConversationPreferenceUpdateWithoutConversationInput, ConversationPreferenceUncheckedUpdateWithoutConversationInput>
-  }
-
-  export type ConversationPreferenceUpdateManyWithWhereWithoutConversationInput = {
-    where: ConversationPreferenceScalarWhereInput
-    data: XOR<ConversationPreferenceUpdateManyMutationInput, ConversationPreferenceUncheckedUpdateManyWithoutConversationInput>
-  }
-
-  export type AnonymousParticipantUpsertWithWhereUniqueWithoutConversationInput = {
-    where: AnonymousParticipantWhereUniqueInput
-    update: XOR<AnonymousParticipantUpdateWithoutConversationInput, AnonymousParticipantUncheckedUpdateWithoutConversationInput>
-    create: XOR<AnonymousParticipantCreateWithoutConversationInput, AnonymousParticipantUncheckedCreateWithoutConversationInput>
-  }
-
-  export type AnonymousParticipantUpdateWithWhereUniqueWithoutConversationInput = {
-    where: AnonymousParticipantWhereUniqueInput
-    data: XOR<AnonymousParticipantUpdateWithoutConversationInput, AnonymousParticipantUncheckedUpdateWithoutConversationInput>
-  }
-
-  export type AnonymousParticipantUpdateManyWithWhereWithoutConversationInput = {
-    where: AnonymousParticipantScalarWhereInput
-    data: XOR<AnonymousParticipantUpdateManyMutationInput, AnonymousParticipantUncheckedUpdateManyWithoutConversationInput>
-  }
-
-  export type AnonymousParticipantScalarWhereInput = {
-    AND?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
-    OR?: AnonymousParticipantScalarWhereInput[]
-    NOT?: AnonymousParticipantScalarWhereInput | AnonymousParticipantScalarWhereInput[]
-    id?: StringFilter<"AnonymousParticipant"> | string
-    conversationId?: StringFilter<"AnonymousParticipant"> | string
-    shareLinkId?: StringFilter<"AnonymousParticipant"> | string
-    nickname?: StringFilter<"AnonymousParticipant"> | string
-    email?: StringNullableFilter<"AnonymousParticipant"> | string | null
-    sessionToken?: StringFilter<"AnonymousParticipant"> | string
-    ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
-    isActive?: BoolFilter<"AnonymousParticipant"> | boolean
-    isOnline?: BoolFilter<"AnonymousParticipant"> | boolean
-    lastActiveAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
-    canSendMessages?: BoolFilter<"AnonymousParticipant"> | boolean
-    canSendFiles?: BoolFilter<"AnonymousParticipant"> | boolean
-    canSendImages?: BoolFilter<"AnonymousParticipant"> | boolean
-    joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
-    lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
-    leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
-  }
-
-  export type ConversationCreateWithoutMembersInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    community?: CommunityCreateNestedOneWithoutConversationsInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationUncheckedCreateWithoutMembersInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    communityId?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationCreateOrConnectWithoutMembersInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutMembersInput, ConversationUncheckedCreateWithoutMembersInput>
-  }
-
   export type UserCreateWithoutConversationsInput = {
     id?: string
     username: string
@@ -34706,24 +34481,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -34751,24 +34526,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -34776,55 +34551,49 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutConversationsInput, UserUncheckedCreateWithoutConversationsInput>
   }
 
-  export type ConversationUpsertWithoutMembersInput = {
-    update: XOR<ConversationUpdateWithoutMembersInput, ConversationUncheckedUpdateWithoutMembersInput>
+  export type ConversationCreateWithoutMembersInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationsInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutMembersInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutMembersInput = {
+    where: ConversationWhereUniqueInput
     create: XOR<ConversationCreateWithoutMembersInput, ConversationUncheckedCreateWithoutMembersInput>
-    where?: ConversationWhereInput
-  }
-
-  export type ConversationUpdateToOneWithWhereWithoutMembersInput = {
-    where?: ConversationWhereInput
-    data: XOR<ConversationUpdateWithoutMembersInput, ConversationUncheckedUpdateWithoutMembersInput>
-  }
-
-  export type ConversationUpdateWithoutMembersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneWithoutConversationsNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateWithoutMembersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    communityId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserUpsertWithoutConversationsInput = {
@@ -34863,24 +34632,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
@@ -34908,164 +34677,75 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
-  export type ConversationCreateWithoutShareLinksInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    community?: CommunityCreateNestedOneWithoutConversationsInput
-    members?: ConversationMemberCreateNestedManyWithoutConversationInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+  export type ConversationUpsertWithoutMembersInput = {
+    update: XOR<ConversationUpdateWithoutMembersInput, ConversationUncheckedUpdateWithoutMembersInput>
+    create: XOR<ConversationCreateWithoutMembersInput, ConversationUncheckedCreateWithoutMembersInput>
+    where?: ConversationWhereInput
   }
 
-  export type ConversationUncheckedCreateWithoutShareLinksInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    communityId?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+  export type ConversationUpdateToOneWithWhereWithoutMembersInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutMembersInput, ConversationUncheckedUpdateWithoutMembersInput>
   }
 
-  export type ConversationCreateOrConnectWithoutShareLinksInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutShareLinksInput, ConversationUncheckedCreateWithoutShareLinksInput>
+  export type ConversationUpdateWithoutMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationsNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
   }
 
-  export type UserCreateWithoutCreatedShareLinksInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
-    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutCreatedShareLinksInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
-    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutCreatedShareLinksInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCreatedShareLinksInput, UserUncheckedCreateWithoutCreatedShareLinksInput>
+  export type ConversationUncheckedUpdateWithoutMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type AnonymousParticipantCreateWithoutShareLinkInput = {
@@ -35115,55 +34795,160 @@ export namespace Prisma {
     data: AnonymousParticipantCreateManyShareLinkInput | AnonymousParticipantCreateManyShareLinkInput[]
   }
 
-  export type ConversationUpsertWithoutShareLinksInput = {
-    update: XOR<ConversationUpdateWithoutShareLinksInput, ConversationUncheckedUpdateWithoutShareLinksInput>
+  export type UserCreateWithoutCreatedShareLinksInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedShareLinksInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedShareLinksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedShareLinksInput, UserUncheckedCreateWithoutCreatedShareLinksInput>
+  }
+
+  export type ConversationCreateWithoutShareLinksInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationsInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutShareLinksInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutShareLinksInput = {
+    where: ConversationWhereUniqueInput
     create: XOR<ConversationCreateWithoutShareLinksInput, ConversationUncheckedCreateWithoutShareLinksInput>
-    where?: ConversationWhereInput
   }
 
-  export type ConversationUpdateToOneWithWhereWithoutShareLinksInput = {
-    where?: ConversationWhereInput
-    data: XOR<ConversationUpdateWithoutShareLinksInput, ConversationUncheckedUpdateWithoutShareLinksInput>
+  export type AnonymousParticipantUpsertWithWhereUniqueWithoutShareLinkInput = {
+    where: AnonymousParticipantWhereUniqueInput
+    update: XOR<AnonymousParticipantUpdateWithoutShareLinkInput, AnonymousParticipantUncheckedUpdateWithoutShareLinkInput>
+    create: XOR<AnonymousParticipantCreateWithoutShareLinkInput, AnonymousParticipantUncheckedCreateWithoutShareLinkInput>
   }
 
-  export type ConversationUpdateWithoutShareLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneWithoutConversationsNestedInput
-    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+  export type AnonymousParticipantUpdateWithWhereUniqueWithoutShareLinkInput = {
+    where: AnonymousParticipantWhereUniqueInput
+    data: XOR<AnonymousParticipantUpdateWithoutShareLinkInput, AnonymousParticipantUncheckedUpdateWithoutShareLinkInput>
   }
 
-  export type ConversationUncheckedUpdateWithoutShareLinksInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    communityId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+  export type AnonymousParticipantUpdateManyWithWhereWithoutShareLinkInput = {
+    where: AnonymousParticipantScalarWhereInput
+    data: XOR<AnonymousParticipantUpdateManyMutationInput, AnonymousParticipantUncheckedUpdateManyWithoutShareLinkInput>
   }
 
   export type UserUpsertWithoutCreatedShareLinksInput = {
@@ -35202,24 +34987,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedShareLinksInput = {
@@ -35247,85 +35032,75 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
-  export type AnonymousParticipantUpsertWithWhereUniqueWithoutShareLinkInput = {
-    where: AnonymousParticipantWhereUniqueInput
-    update: XOR<AnonymousParticipantUpdateWithoutShareLinkInput, AnonymousParticipantUncheckedUpdateWithoutShareLinkInput>
-    create: XOR<AnonymousParticipantCreateWithoutShareLinkInput, AnonymousParticipantUncheckedCreateWithoutShareLinkInput>
+  export type ConversationUpsertWithoutShareLinksInput = {
+    update: XOR<ConversationUpdateWithoutShareLinksInput, ConversationUncheckedUpdateWithoutShareLinksInput>
+    create: XOR<ConversationCreateWithoutShareLinksInput, ConversationUncheckedCreateWithoutShareLinksInput>
+    where?: ConversationWhereInput
   }
 
-  export type AnonymousParticipantUpdateWithWhereUniqueWithoutShareLinkInput = {
-    where: AnonymousParticipantWhereUniqueInput
-    data: XOR<AnonymousParticipantUpdateWithoutShareLinkInput, AnonymousParticipantUncheckedUpdateWithoutShareLinkInput>
+  export type ConversationUpdateToOneWithWhereWithoutShareLinksInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutShareLinksInput, ConversationUncheckedUpdateWithoutShareLinksInput>
   }
 
-  export type AnonymousParticipantUpdateManyWithWhereWithoutShareLinkInput = {
-    where: AnonymousParticipantScalarWhereInput
-    data: XOR<AnonymousParticipantUpdateManyMutationInput, AnonymousParticipantUncheckedUpdateManyWithoutShareLinkInput>
+  export type ConversationUpdateWithoutShareLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationsNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
   }
 
-  export type ConversationCreateWithoutAnonymousParticipantsInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    community?: CommunityCreateNestedOneWithoutConversationsInput
-    members?: ConversationMemberCreateNestedManyWithoutConversationInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationUncheckedCreateWithoutAnonymousParticipantsInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    communityId?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationCreateOrConnectWithoutAnonymousParticipantsInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
+  export type ConversationUncheckedUpdateWithoutShareLinksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationShareLinkCreateWithoutAnonymousParticipantsInput = {
@@ -35347,8 +35122,8 @@ export namespace Prisma {
     requireEmail?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutShareLinksInput
     creator: UserCreateNestedOneWithoutCreatedShareLinksInput
+    conversation: ConversationCreateNestedOneWithoutShareLinksInput
   }
 
   export type ConversationShareLinkUncheckedCreateWithoutAnonymousParticipantsInput = {
@@ -35379,6 +35154,51 @@ export namespace Prisma {
     create: XOR<ConversationShareLinkCreateWithoutAnonymousParticipantsInput, ConversationShareLinkUncheckedCreateWithoutAnonymousParticipantsInput>
   }
 
+  export type ConversationCreateWithoutAnonymousParticipantsInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationsInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutAnonymousParticipantsInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutAnonymousParticipantsInput = {
+    where: ConversationWhereUniqueInput
+    create: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
+  }
+
   export type MessageCreateWithoutAnonymousSenderInput = {
     id?: string
     content: string
@@ -35390,12 +35210,12 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutMessagesInput
-    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
   export type MessageUncheckedCreateWithoutAnonymousSenderInput = {
@@ -35412,9 +35232,9 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
   export type MessageCreateOrConnectWithoutAnonymousSenderInput = {
@@ -35424,57 +35244,6 @@ export namespace Prisma {
 
   export type MessageCreateManyAnonymousSenderInputEnvelope = {
     data: MessageCreateManyAnonymousSenderInput | MessageCreateManyAnonymousSenderInput[]
-  }
-
-  export type ConversationUpsertWithoutAnonymousParticipantsInput = {
-    update: XOR<ConversationUpdateWithoutAnonymousParticipantsInput, ConversationUncheckedUpdateWithoutAnonymousParticipantsInput>
-    create: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
-    where?: ConversationWhereInput
-  }
-
-  export type ConversationUpdateToOneWithWhereWithoutAnonymousParticipantsInput = {
-    where?: ConversationWhereInput
-    data: XOR<ConversationUpdateWithoutAnonymousParticipantsInput, ConversationUncheckedUpdateWithoutAnonymousParticipantsInput>
-  }
-
-  export type ConversationUpdateWithoutAnonymousParticipantsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneWithoutConversationsNestedInput
-    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateWithoutAnonymousParticipantsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    communityId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type ConversationShareLinkUpsertWithoutAnonymousParticipantsInput = {
@@ -35507,8 +35276,8 @@ export namespace Prisma {
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutShareLinksNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutShareLinksNestedInput
   }
 
   export type ConversationShareLinkUncheckedUpdateWithoutAnonymousParticipantsInput = {
@@ -35534,6 +35303,57 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ConversationUpsertWithoutAnonymousParticipantsInput = {
+    update: XOR<ConversationUpdateWithoutAnonymousParticipantsInput, ConversationUncheckedUpdateWithoutAnonymousParticipantsInput>
+    create: XOR<ConversationCreateWithoutAnonymousParticipantsInput, ConversationUncheckedCreateWithoutAnonymousParticipantsInput>
+    where?: ConversationWhereInput
+  }
+
+  export type ConversationUpdateToOneWithWhereWithoutAnonymousParticipantsInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutAnonymousParticipantsInput, ConversationUncheckedUpdateWithoutAnonymousParticipantsInput>
+  }
+
+  export type ConversationUpdateWithoutAnonymousParticipantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationsNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateWithoutAnonymousParticipantsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+  }
+
   export type MessageUpsertWithWhereUniqueWithoutAnonymousSenderInput = {
     where: MessageWhereUniqueInput
     update: XOR<MessageUpdateWithoutAnonymousSenderInput, MessageUncheckedUpdateWithoutAnonymousSenderInput>
@@ -35550,277 +35370,25 @@ export namespace Prisma {
     data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutAnonymousSenderInput>
   }
 
-  export type ConversationCreateWithoutMessagesInput = {
+  export type MessageReadStatusCreateWithoutMessageInput = {
     id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    community?: CommunityCreateNestedOneWithoutConversationsInput
-    members?: ConversationMemberCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    readAt?: Date | string
+    user: UserCreateNestedOneWithoutMessageReadStatusInput
   }
 
-  export type ConversationUncheckedCreateWithoutMessagesInput = {
+  export type MessageReadStatusUncheckedCreateWithoutMessageInput = {
     id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    communityId?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    userId: string
+    readAt?: Date | string
   }
 
-  export type ConversationCreateOrConnectWithoutMessagesInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
+  export type MessageReadStatusCreateOrConnectWithoutMessageInput = {
+    where: MessageReadStatusWhereUniqueInput
+    create: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput>
   }
 
-  export type UserCreateWithoutSentMessagesInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
-    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutSentMessagesInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
-    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutSentMessagesInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutSentMessagesInput, UserUncheckedCreateWithoutSentMessagesInput>
-  }
-
-  export type AnonymousParticipantCreateWithoutSentMessagesInput = {
-    id?: string
-    nickname: string
-    email?: string | null
-    sessionToken: string
-    ipAddress?: string | null
-    isActive?: boolean
-    isOnline?: boolean
-    lastActiveAt?: Date | string
-    canSendMessages?: boolean
-    canSendFiles?: boolean
-    canSendImages?: boolean
-    joinedAt?: Date | string
-    lastSeenAt?: Date | string
-    leftAt?: Date | string | null
-    conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
-    shareLink: ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput
-  }
-
-  export type AnonymousParticipantUncheckedCreateWithoutSentMessagesInput = {
-    id?: string
-    conversationId: string
-    shareLinkId: string
-    nickname: string
-    email?: string | null
-    sessionToken: string
-    ipAddress?: string | null
-    isActive?: boolean
-    isOnline?: boolean
-    lastActiveAt?: Date | string
-    canSendMessages?: boolean
-    canSendFiles?: boolean
-    canSendImages?: boolean
-    joinedAt?: Date | string
-    lastSeenAt?: Date | string
-    leftAt?: Date | string | null
-  }
-
-  export type AnonymousParticipantCreateOrConnectWithoutSentMessagesInput = {
-    where: AnonymousParticipantWhereUniqueInput
-    create: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
-  }
-
-  export type MessageCreateWithoutRepliesInput = {
-    id?: string
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutMessagesInput
-    sender?: UserCreateNestedOneWithoutSentMessagesInput
-    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
-    replyTo?: MessageCreateNestedOneWithoutRepliesInput
-    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageUncheckedCreateWithoutRepliesInput = {
-    id?: string
-    conversationId: string
-    senderId?: string | null
-    anonymousSenderId?: string | null
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    replyToId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageCreateOrConnectWithoutRepliesInput = {
-    where: MessageWhereUniqueInput
-    create: XOR<MessageCreateWithoutRepliesInput, MessageUncheckedCreateWithoutRepliesInput>
-  }
-
-  export type MessageCreateWithoutReplyToInput = {
-    id?: string
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutMessagesInput
-    sender?: UserCreateNestedOneWithoutSentMessagesInput
-    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
-    replies?: MessageCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageUncheckedCreateWithoutReplyToInput = {
-    id?: string
-    conversationId: string
-    senderId?: string | null
-    anonymousSenderId?: string | null
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageCreateOrConnectWithoutReplyToInput = {
-    where: MessageWhereUniqueInput
-    create: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput>
-  }
-
-  export type MessageCreateManyReplyToInputEnvelope = {
-    data: MessageCreateManyReplyToInput | MessageCreateManyReplyToInput[]
+  export type MessageReadStatusCreateManyMessageInputEnvelope = {
+    data: MessageReadStatusCreateManyMessageInput | MessageReadStatusCreateManyMessageInput[]
   }
 
   export type MessageTranslationCreateWithoutMessageInput = {
@@ -35854,76 +35422,438 @@ export namespace Prisma {
     data: MessageTranslationCreateManyMessageInput | MessageTranslationCreateManyMessageInput[]
   }
 
-  export type MessageReadStatusCreateWithoutMessageInput = {
+  export type MessageCreateWithoutRepliesInput = {
     id?: string
-    readAt?: Date | string
-    user: UserCreateNestedOneWithoutMessageReadStatusInput
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
-  export type MessageReadStatusUncheckedCreateWithoutMessageInput = {
+  export type MessageUncheckedCreateWithoutRepliesInput = {
     id?: string
-    userId: string
-    readAt?: Date | string
+    conversationId: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
   }
 
-  export type MessageReadStatusCreateOrConnectWithoutMessageInput = {
+  export type MessageCreateOrConnectWithoutRepliesInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutRepliesInput, MessageUncheckedCreateWithoutRepliesInput>
+  }
+
+  export type MessageCreateWithoutReplyToInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutReplyToInput = {
+    id?: string
+    conversationId: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutReplyToInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput>
+  }
+
+  export type MessageCreateManyReplyToInputEnvelope = {
+    data: MessageCreateManyReplyToInput | MessageCreateManyReplyToInput[]
+  }
+
+  export type AnonymousParticipantCreateWithoutSentMessagesInput = {
+    id?: string
+    nickname: string
+    email?: string | null
+    sessionToken: string
+    ipAddress?: string | null
+    isActive?: boolean
+    isOnline?: boolean
+    lastActiveAt?: Date | string
+    canSendMessages?: boolean
+    canSendFiles?: boolean
+    canSendImages?: boolean
+    joinedAt?: Date | string
+    lastSeenAt?: Date | string
+    leftAt?: Date | string | null
+    shareLink: ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput
+    conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
+  }
+
+  export type AnonymousParticipantUncheckedCreateWithoutSentMessagesInput = {
+    id?: string
+    conversationId: string
+    shareLinkId: string
+    nickname: string
+    email?: string | null
+    sessionToken: string
+    ipAddress?: string | null
+    isActive?: boolean
+    isOnline?: boolean
+    lastActiveAt?: Date | string
+    canSendMessages?: boolean
+    canSendFiles?: boolean
+    canSendImages?: boolean
+    joinedAt?: Date | string
+    lastSeenAt?: Date | string
+    leftAt?: Date | string | null
+  }
+
+  export type AnonymousParticipantCreateOrConnectWithoutSentMessagesInput = {
+    where: AnonymousParticipantWhereUniqueInput
+    create: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
+  }
+
+  export type UserCreateWithoutSentMessagesInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserUncheckedCreateWithoutSentMessagesInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserCreateOrConnectWithoutSentMessagesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSentMessagesInput, UserUncheckedCreateWithoutSentMessagesInput>
+  }
+
+  export type ConversationCreateWithoutMessagesInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationsInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutMessagesInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutMessagesInput = {
+    where: ConversationWhereUniqueInput
+    create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
+  }
+
+  export type MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput = {
     where: MessageReadStatusWhereUniqueInput
+    update: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
     create: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput>
   }
 
-  export type MessageReadStatusCreateManyMessageInputEnvelope = {
-    data: MessageReadStatusCreateManyMessageInput | MessageReadStatusCreateManyMessageInput[]
+  export type MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput = {
+    where: MessageReadStatusWhereUniqueInput
+    data: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
   }
 
-  export type ConversationUpsertWithoutMessagesInput = {
-    update: XOR<ConversationUpdateWithoutMessagesInput, ConversationUncheckedUpdateWithoutMessagesInput>
-    create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
-    where?: ConversationWhereInput
+  export type MessageReadStatusUpdateManyWithWhereWithoutMessageInput = {
+    where: MessageReadStatusScalarWhereInput
+    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyWithoutMessageInput>
   }
 
-  export type ConversationUpdateToOneWithWhereWithoutMessagesInput = {
-    where?: ConversationWhereInput
-    data: XOR<ConversationUpdateWithoutMessagesInput, ConversationUncheckedUpdateWithoutMessagesInput>
+  export type MessageTranslationUpsertWithWhereUniqueWithoutMessageInput = {
+    where: MessageTranslationWhereUniqueInput
+    update: XOR<MessageTranslationUpdateWithoutMessageInput, MessageTranslationUncheckedUpdateWithoutMessageInput>
+    create: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput>
   }
 
-  export type ConversationUpdateWithoutMessagesInput = {
+  export type MessageTranslationUpdateWithWhereUniqueWithoutMessageInput = {
+    where: MessageTranslationWhereUniqueInput
+    data: XOR<MessageTranslationUpdateWithoutMessageInput, MessageTranslationUncheckedUpdateWithoutMessageInput>
+  }
+
+  export type MessageTranslationUpdateManyWithWhereWithoutMessageInput = {
+    where: MessageTranslationScalarWhereInput
+    data: XOR<MessageTranslationUpdateManyMutationInput, MessageTranslationUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type MessageTranslationScalarWhereInput = {
+    AND?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
+    OR?: MessageTranslationScalarWhereInput[]
+    NOT?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
+    id?: StringFilter<"MessageTranslation"> | string
+    messageId?: StringFilter<"MessageTranslation"> | string
+    sourceLanguage?: StringFilter<"MessageTranslation"> | string
+    targetLanguage?: StringFilter<"MessageTranslation"> | string
+    translatedContent?: StringFilter<"MessageTranslation"> | string
+    translationModel?: StringFilter<"MessageTranslation"> | string
+    cacheKey?: StringFilter<"MessageTranslation"> | string
+    confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
+    createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
+  }
+
+  export type MessageUpsertWithoutRepliesInput = {
+    update: XOR<MessageUpdateWithoutRepliesInput, MessageUncheckedUpdateWithoutRepliesInput>
+    create: XOR<MessageCreateWithoutRepliesInput, MessageUncheckedCreateWithoutRepliesInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutRepliesInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutRepliesInput, MessageUncheckedUpdateWithoutRepliesInput>
+  }
+
+  export type MessageUpdateWithoutRepliesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneWithoutConversationsNestedInput
-    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
-  export type ConversationUncheckedUpdateWithoutMessagesInput = {
+  export type MessageUncheckedUpdateWithoutRepliesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    communityId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+  }
+
+  export type MessageUpsertWithWhereUniqueWithoutReplyToInput = {
+    where: MessageWhereUniqueInput
+    update: XOR<MessageUpdateWithoutReplyToInput, MessageUncheckedUpdateWithoutReplyToInput>
+    create: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput>
+  }
+
+  export type MessageUpdateWithWhereUniqueWithoutReplyToInput = {
+    where: MessageWhereUniqueInput
+    data: XOR<MessageUpdateWithoutReplyToInput, MessageUncheckedUpdateWithoutReplyToInput>
+  }
+
+  export type MessageUpdateManyWithWhereWithoutReplyToInput = {
+    where: MessageScalarWhereInput
+    data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutReplyToInput>
+  }
+
+  export type AnonymousParticipantUpsertWithoutSentMessagesInput = {
+    update: XOR<AnonymousParticipantUpdateWithoutSentMessagesInput, AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput>
+    create: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
+    where?: AnonymousParticipantWhereInput
+  }
+
+  export type AnonymousParticipantUpdateToOneWithWhereWithoutSentMessagesInput = {
+    where?: AnonymousParticipantWhereInput
+    data: XOR<AnonymousParticipantUpdateWithoutSentMessagesInput, AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput>
+  }
+
+  export type AnonymousParticipantUpdateWithoutSentMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nickname?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionToken?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    canSendMessages?: BoolFieldUpdateOperationsInput | boolean
+    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
+    canSendImages?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    shareLink?: ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
+  }
+
+  export type AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    shareLinkId?: StringFieldUpdateOperationsInput | string
+    nickname?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionToken?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    canSendMessages?: BoolFieldUpdateOperationsInput | boolean
+    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
+    canSendImages?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUpsertWithoutSentMessagesInput = {
@@ -35962,24 +35892,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -36007,185 +35937,75 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
-  export type AnonymousParticipantUpsertWithoutSentMessagesInput = {
-    update: XOR<AnonymousParticipantUpdateWithoutSentMessagesInput, AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput>
-    create: XOR<AnonymousParticipantCreateWithoutSentMessagesInput, AnonymousParticipantUncheckedCreateWithoutSentMessagesInput>
-    where?: AnonymousParticipantWhereInput
+  export type ConversationUpsertWithoutMessagesInput = {
+    update: XOR<ConversationUpdateWithoutMessagesInput, ConversationUncheckedUpdateWithoutMessagesInput>
+    create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
+    where?: ConversationWhereInput
   }
 
-  export type AnonymousParticipantUpdateToOneWithWhereWithoutSentMessagesInput = {
-    where?: AnonymousParticipantWhereInput
-    data: XOR<AnonymousParticipantUpdateWithoutSentMessagesInput, AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput>
+  export type ConversationUpdateToOneWithWhereWithoutMessagesInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutMessagesInput, ConversationUncheckedUpdateWithoutMessagesInput>
   }
 
-  export type AnonymousParticipantUpdateWithoutSentMessagesInput = {
+  export type ConversationUpdateWithoutMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionToken?: StringFieldUpdateOperationsInput | string
-    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
-    isOnline?: BoolFieldUpdateOperationsInput | boolean
-    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    canSendMessages?: BoolFieldUpdateOperationsInput | boolean
-    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
-    canSendImages?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
-    shareLink?: ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
-  }
-
-  export type AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    shareLinkId?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
-    email?: NullableStringFieldUpdateOperationsInput | string | null
-    sessionToken?: StringFieldUpdateOperationsInput | string
-    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isOnline?: BoolFieldUpdateOperationsInput | boolean
-    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    canSendMessages?: BoolFieldUpdateOperationsInput | boolean
-    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
-    canSendImages?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type MessageUpsertWithoutRepliesInput = {
-    update: XOR<MessageUpdateWithoutRepliesInput, MessageUncheckedUpdateWithoutRepliesInput>
-    create: XOR<MessageCreateWithoutRepliesInput, MessageUncheckedCreateWithoutRepliesInput>
-    where?: MessageWhereInput
-  }
-
-  export type MessageUpdateToOneWithWhereWithoutRepliesInput = {
-    where?: MessageWhereInput
-    data: XOR<MessageUpdateWithoutRepliesInput, MessageUncheckedUpdateWithoutRepliesInput>
-  }
-
-  export type MessageUpdateWithoutRepliesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
-    sender?: UserUpdateOneWithoutSentMessagesNestedInput
-    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
-    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
-    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationsNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
   }
 
-  export type MessageUncheckedUpdateWithoutRepliesInput = {
+  export type ConversationUncheckedUpdateWithoutMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    senderId?: NullableStringFieldUpdateOperationsInput | string | null
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
-  }
-
-  export type MessageUpsertWithWhereUniqueWithoutReplyToInput = {
-    where: MessageWhereUniqueInput
-    update: XOR<MessageUpdateWithoutReplyToInput, MessageUncheckedUpdateWithoutReplyToInput>
-    create: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput>
-  }
-
-  export type MessageUpdateWithWhereUniqueWithoutReplyToInput = {
-    where: MessageWhereUniqueInput
-    data: XOR<MessageUpdateWithoutReplyToInput, MessageUncheckedUpdateWithoutReplyToInput>
-  }
-
-  export type MessageUpdateManyWithWhereWithoutReplyToInput = {
-    where: MessageScalarWhereInput
-    data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutReplyToInput>
-  }
-
-  export type MessageTranslationUpsertWithWhereUniqueWithoutMessageInput = {
-    where: MessageTranslationWhereUniqueInput
-    update: XOR<MessageTranslationUpdateWithoutMessageInput, MessageTranslationUncheckedUpdateWithoutMessageInput>
-    create: XOR<MessageTranslationCreateWithoutMessageInput, MessageTranslationUncheckedCreateWithoutMessageInput>
-  }
-
-  export type MessageTranslationUpdateWithWhereUniqueWithoutMessageInput = {
-    where: MessageTranslationWhereUniqueInput
-    data: XOR<MessageTranslationUpdateWithoutMessageInput, MessageTranslationUncheckedUpdateWithoutMessageInput>
-  }
-
-  export type MessageTranslationUpdateManyWithWhereWithoutMessageInput = {
-    where: MessageTranslationScalarWhereInput
-    data: XOR<MessageTranslationUpdateManyMutationInput, MessageTranslationUncheckedUpdateManyWithoutMessageInput>
-  }
-
-  export type MessageTranslationScalarWhereInput = {
-    AND?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
-    OR?: MessageTranslationScalarWhereInput[]
-    NOT?: MessageTranslationScalarWhereInput | MessageTranslationScalarWhereInput[]
-    id?: StringFilter<"MessageTranslation"> | string
-    messageId?: StringFilter<"MessageTranslation"> | string
-    sourceLanguage?: StringFilter<"MessageTranslation"> | string
-    targetLanguage?: StringFilter<"MessageTranslation"> | string
-    translatedContent?: StringFilter<"MessageTranslation"> | string
-    translationModel?: StringFilter<"MessageTranslation"> | string
-    cacheKey?: StringFilter<"MessageTranslation"> | string
-    confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
-    createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
-  }
-
-  export type MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    update: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
-    create: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput>
-  }
-
-  export type MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    data: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
-  }
-
-  export type MessageReadStatusUpdateManyWithWhereWithoutMessageInput = {
-    where: MessageReadStatusScalarWhereInput
-    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyWithoutMessageInput>
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type MessageCreateWithoutTranslationsInput = {
@@ -36199,12 +36019,12 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutMessagesInput
-    sender?: UserCreateNestedOneWithoutSentMessagesInput
-    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
   export type MessageUncheckedCreateWithoutTranslationsInput = {
@@ -36222,8 +36042,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
   export type MessageCreateOrConnectWithoutTranslationsInput = {
@@ -36253,12 +36073,12 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
-    sender?: UserUpdateOneWithoutSentMessagesNestedInput
-    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutTranslationsInput = {
@@ -36276,51 +36096,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
-  }
-
-  export type MessageCreateWithoutReadStatusInput = {
-    id?: string
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversation: ConversationCreateNestedOneWithoutMessagesInput
-    sender?: UserCreateNestedOneWithoutSentMessagesInput
-    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
-    replyTo?: MessageCreateNestedOneWithoutRepliesInput
-    replies?: MessageCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageUncheckedCreateWithoutReadStatusInput = {
-    id?: string
-    conversationId: string
-    senderId?: string | null
-    anonymousSenderId?: string | null
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    replyToId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
-    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
-  }
-
-  export type MessageCreateOrConnectWithoutReadStatusInput = {
-    where: MessageWhereUniqueInput
-    create: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
   export type UserCreateWithoutMessageReadStatusInput = {
@@ -36348,24 +36125,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutMessageReadStatusInput = {
@@ -36393,24 +36170,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutMessageReadStatusInput = {
@@ -36418,53 +36195,47 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
   }
 
-  export type MessageUpsertWithoutReadStatusInput = {
-    update: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
+  export type MessageCreateWithoutReadStatusInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutReadStatusInput = {
+    id?: string
+    conversationId: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutReadStatusInput = {
+    where: MessageWhereUniqueInput
     create: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
-    where?: MessageWhereInput
-  }
-
-  export type MessageUpdateToOneWithWhereWithoutReadStatusInput = {
-    where?: MessageWhereInput
-    data: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
-  }
-
-  export type MessageUpdateWithoutReadStatusInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
-    sender?: UserUpdateOneWithoutSentMessagesNestedInput
-    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
-    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
-    replies?: MessageUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
-  }
-
-  export type MessageUncheckedUpdateWithoutReadStatusInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    senderId?: NullableStringFieldUpdateOperationsInput | string | null
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type UserUpsertWithoutMessageReadStatusInput = {
@@ -36503,24 +36274,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageReadStatusInput = {
@@ -36548,119 +36319,73 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
-  export type UserCreateWithoutSentFriendRequestsInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
-    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+  export type MessageUpsertWithoutReadStatusInput = {
+    update: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
+    create: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
+    where?: MessageWhereInput
   }
 
-  export type UserUncheckedCreateWithoutSentFriendRequestsInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
-    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+  export type MessageUpdateToOneWithWhereWithoutReadStatusInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
   }
 
-  export type UserCreateOrConnectWithoutSentFriendRequestsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutSentFriendRequestsInput, UserUncheckedCreateWithoutSentFriendRequestsInput>
+  export type MessageUpdateWithoutReadStatusInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutReadStatusInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
   export type UserCreateWithoutReceivedFriendRequestsInput = {
@@ -36688,24 +36413,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutReceivedFriendRequestsInput = {
@@ -36733,24 +36458,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutReceivedFriendRequestsInput = {
@@ -36758,105 +36483,99 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutReceivedFriendRequestsInput, UserUncheckedCreateWithoutReceivedFriendRequestsInput>
   }
 
-  export type UserUpsertWithoutSentFriendRequestsInput = {
-    update: XOR<UserUpdateWithoutSentFriendRequestsInput, UserUncheckedUpdateWithoutSentFriendRequestsInput>
+  export type UserCreateWithoutSentFriendRequestsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserUncheckedCreateWithoutSentFriendRequestsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserCreateOrConnectWithoutSentFriendRequestsInput = {
+    where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutSentFriendRequestsInput, UserUncheckedCreateWithoutSentFriendRequestsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutSentFriendRequestsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutSentFriendRequestsInput, UserUncheckedUpdateWithoutSentFriendRequestsInput>
-  }
-
-  export type UserUpdateWithoutSentFriendRequestsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
-    displayName?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isOnline?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    systemLanguage?: StringFieldUpdateOperationsInput | string
-    regionalLanguage?: StringFieldUpdateOperationsInput | string
-    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
-    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
-    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
-    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
-    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
-    role?: StringFieldUpdateOperationsInput | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
-    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
-    groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
-    createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
-    adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
-    moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutSentFriendRequestsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
-    displayName?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isOnline?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    systemLanguage?: StringFieldUpdateOperationsInput | string
-    regionalLanguage?: StringFieldUpdateOperationsInput | string
-    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
-    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
-    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
-    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
-    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
-    role?: StringFieldUpdateOperationsInput | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
-    groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
-    createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
-    adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutReceivedFriendRequestsInput = {
@@ -36895,24 +36614,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedFriendRequestsInput = {
@@ -36940,69 +36659,125 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
+  }
+
+  export type UserUpsertWithoutSentFriendRequestsInput = {
+    update: XOR<UserUpdateWithoutSentFriendRequestsInput, UserUncheckedUpdateWithoutSentFriendRequestsInput>
+    create: XOR<UserCreateWithoutSentFriendRequestsInput, UserUncheckedCreateWithoutSentFriendRequestsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSentFriendRequestsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSentFriendRequestsInput, UserUncheckedUpdateWithoutSentFriendRequestsInput>
+  }
+
+  export type UserUpdateWithoutSentFriendRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
+    moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSentFriendRequestsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
     communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type ConversationCreateWithoutTypingIndicatorsInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    community?: CommunityCreateNestedOneWithoutConversationsInput
-    members?: ConversationMemberCreateNestedManyWithoutConversationInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationUncheckedCreateWithoutTypingIndicatorsInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    communityId?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationCreateOrConnectWithoutTypingIndicatorsInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutTypingIndicatorsInput, ConversationUncheckedCreateWithoutTypingIndicatorsInput>
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserCreateWithoutTypingIndicatorsInput = {
@@ -37030,24 +36805,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -37075,24 +36850,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -37100,55 +36875,49 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutTypingIndicatorsInput, UserUncheckedCreateWithoutTypingIndicatorsInput>
   }
 
-  export type ConversationUpsertWithoutTypingIndicatorsInput = {
-    update: XOR<ConversationUpdateWithoutTypingIndicatorsInput, ConversationUncheckedUpdateWithoutTypingIndicatorsInput>
+  export type ConversationCreateWithoutTypingIndicatorsInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationsInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutTypingIndicatorsInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutTypingIndicatorsInput = {
+    where: ConversationWhereUniqueInput
     create: XOR<ConversationCreateWithoutTypingIndicatorsInput, ConversationUncheckedCreateWithoutTypingIndicatorsInput>
-    where?: ConversationWhereInput
-  }
-
-  export type ConversationUpdateToOneWithWhereWithoutTypingIndicatorsInput = {
-    where?: ConversationWhereInput
-    data: XOR<ConversationUpdateWithoutTypingIndicatorsInput, ConversationUncheckedUpdateWithoutTypingIndicatorsInput>
-  }
-
-  export type ConversationUpdateWithoutTypingIndicatorsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneWithoutConversationsNestedInput
-    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateWithoutTypingIndicatorsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    communityId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserUpsertWithoutTypingIndicatorsInput = {
@@ -37187,24 +36956,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTypingIndicatorsInput = {
@@ -37232,24 +37001,75 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
+  }
+
+  export type ConversationUpsertWithoutTypingIndicatorsInput = {
+    update: XOR<ConversationUpdateWithoutTypingIndicatorsInput, ConversationUncheckedUpdateWithoutTypingIndicatorsInput>
+    create: XOR<ConversationCreateWithoutTypingIndicatorsInput, ConversationUncheckedCreateWithoutTypingIndicatorsInput>
+    where?: ConversationWhereInput
+  }
+
+  export type ConversationUpdateToOneWithWhereWithoutTypingIndicatorsInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutTypingIndicatorsInput, ConversationUncheckedUpdateWithoutTypingIndicatorsInput>
+  }
+
+  export type ConversationUpdateWithoutTypingIndicatorsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationsNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateWithoutTypingIndicatorsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -37277,24 +37097,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -37322,24 +37142,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -37383,24 +37203,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -37428,73 +37248,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type ConversationCreateWithoutCommunityInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: ConversationMemberCreateNestedManyWithoutConversationInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationUncheckedCreateWithoutCommunityInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
-    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationCreateOrConnectWithoutCommunityInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput>
-  }
-
-  export type ConversationCreateManyCommunityInputEnvelope = {
-    data: ConversationCreateManyCommunityInput | ConversationCreateManyCommunityInput[]
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserCreateWithoutCreatedCommunitiesInput = {
@@ -37522,24 +37293,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutCreatedCommunitiesInput = {
@@ -37567,24 +37338,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutCreatedCommunitiesInput = {
@@ -37615,6 +37386,55 @@ export namespace Prisma {
     data: CommunityMemberCreateManyCommunityInput | CommunityMemberCreateManyCommunityInput[]
   }
 
+  export type ConversationCreateWithoutCommunityInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutCommunityInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    preferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutCommunityInput = {
+    where: ConversationWhereUniqueInput
+    create: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput>
+  }
+
+  export type ConversationCreateManyCommunityInputEnvelope = {
+    data: ConversationCreateManyCommunityInput | ConversationCreateManyCommunityInput[]
+  }
+
   export type UserCreateWithoutAdminCommunitiesInput = {
     id?: string
     username: string
@@ -37640,24 +37460,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
     adminGroups?: GroupCreateNestedManyWithoutAdminsInput
     moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
-    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAdminCommunitiesInput = {
@@ -37685,24 +37505,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
     adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
     moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
-    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAdminCommunitiesInput = {
@@ -37735,24 +37555,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     adminGroups?: GroupCreateNestedManyWithoutAdminsInput
     moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutModeratorCommunitiesInput = {
@@ -37780,63 +37600,29 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
     moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutModeratorCommunitiesInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutModeratorCommunitiesInput, UserUncheckedCreateWithoutModeratorCommunitiesInput>
-  }
-
-  export type ConversationUpsertWithWhereUniqueWithoutCommunityInput = {
-    where: ConversationWhereUniqueInput
-    update: XOR<ConversationUpdateWithoutCommunityInput, ConversationUncheckedUpdateWithoutCommunityInput>
-    create: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput>
-  }
-
-  export type ConversationUpdateWithWhereUniqueWithoutCommunityInput = {
-    where: ConversationWhereUniqueInput
-    data: XOR<ConversationUpdateWithoutCommunityInput, ConversationUncheckedUpdateWithoutCommunityInput>
-  }
-
-  export type ConversationUpdateManyWithWhereWithoutCommunityInput = {
-    where: ConversationScalarWhereInput
-    data: XOR<ConversationUpdateManyMutationInput, ConversationUncheckedUpdateManyWithoutCommunityInput>
-  }
-
-  export type ConversationScalarWhereInput = {
-    AND?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
-    OR?: ConversationScalarWhereInput[]
-    NOT?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
-    id?: StringFilter<"Conversation"> | string
-    type?: StringFilter<"Conversation"> | string
-    title?: StringNullableFilter<"Conversation"> | string | null
-    description?: StringNullableFilter<"Conversation"> | string | null
-    image?: StringNullableFilter<"Conversation"> | string | null
-    avatar?: StringNullableFilter<"Conversation"> | string | null
-    communityId?: StringNullableFilter<"Conversation"> | string | null
-    isActive?: BoolFilter<"Conversation"> | boolean
-    isArchived?: BoolFilter<"Conversation"> | boolean
-    lastMessageAt?: DateTimeFilter<"Conversation"> | Date | string
-    createdAt?: DateTimeFilter<"Conversation"> | Date | string
-    updatedAt?: DateTimeFilter<"Conversation"> | Date | string
   }
 
   export type UserUpsertWithoutCreatedCommunitiesInput = {
@@ -37875,24 +37661,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedCommunitiesInput = {
@@ -37920,24 +37706,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type CommunityMemberUpsertWithWhereUniqueWithoutCommunityInput = {
@@ -37954,6 +37740,40 @@ export namespace Prisma {
   export type CommunityMemberUpdateManyWithWhereWithoutCommunityInput = {
     where: CommunityMemberScalarWhereInput
     data: XOR<CommunityMemberUpdateManyMutationInput, CommunityMemberUncheckedUpdateManyWithoutCommunityInput>
+  }
+
+  export type ConversationUpsertWithWhereUniqueWithoutCommunityInput = {
+    where: ConversationWhereUniqueInput
+    update: XOR<ConversationUpdateWithoutCommunityInput, ConversationUncheckedUpdateWithoutCommunityInput>
+    create: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput>
+  }
+
+  export type ConversationUpdateWithWhereUniqueWithoutCommunityInput = {
+    where: ConversationWhereUniqueInput
+    data: XOR<ConversationUpdateWithoutCommunityInput, ConversationUncheckedUpdateWithoutCommunityInput>
+  }
+
+  export type ConversationUpdateManyWithWhereWithoutCommunityInput = {
+    where: ConversationScalarWhereInput
+    data: XOR<ConversationUpdateManyMutationInput, ConversationUncheckedUpdateManyWithoutCommunityInput>
+  }
+
+  export type ConversationScalarWhereInput = {
+    AND?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
+    OR?: ConversationScalarWhereInput[]
+    NOT?: ConversationScalarWhereInput | ConversationScalarWhereInput[]
+    id?: StringFilter<"Conversation"> | string
+    type?: StringFilter<"Conversation"> | string
+    title?: StringNullableFilter<"Conversation"> | string | null
+    description?: StringNullableFilter<"Conversation"> | string | null
+    image?: StringNullableFilter<"Conversation"> | string | null
+    avatar?: StringNullableFilter<"Conversation"> | string | null
+    communityId?: StringNullableFilter<"Conversation"> | string | null
+    isActive?: BoolFilter<"Conversation"> | boolean
+    isArchived?: BoolFilter<"Conversation"> | boolean
+    lastMessageAt?: DateTimeFilter<"Conversation"> | Date | string
+    createdAt?: DateTimeFilter<"Conversation"> | Date | string
+    updatedAt?: DateTimeFilter<"Conversation"> | Date | string
   }
 
   export type UserUpsertWithWhereUniqueWithoutAdminCommunitiesInput = {
@@ -38018,41 +37838,6 @@ export namespace Prisma {
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutModeratorCommunitiesInput>
   }
 
-  export type CommunityCreateWithoutMembersInput = {
-    id?: string
-    title: string
-    description?: string | null
-    image?: string | null
-    isPublic?: boolean
-    maxMembers?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversations?: ConversationCreateNestedManyWithoutCommunityInput
-    createdBy: UserCreateNestedOneWithoutCreatedCommunitiesInput
-    admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
-    moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
-  }
-
-  export type CommunityUncheckedCreateWithoutMembersInput = {
-    id?: string
-    title: string
-    description?: string | null
-    image?: string | null
-    isPublic?: boolean
-    maxMembers?: number | null
-    createdById: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
-    admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
-    moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
-  }
-
-  export type CommunityCreateOrConnectWithoutMembersInput = {
-    where: CommunityWhereUniqueInput
-    create: XOR<CommunityCreateWithoutMembersInput, CommunityUncheckedCreateWithoutMembersInput>
-  }
-
   export type UserCreateWithoutCommunityMembershipsInput = {
     id?: string
     username: string
@@ -38078,24 +37863,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutCommunityMembershipsInput = {
@@ -38123,24 +37908,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutCommunityMembershipsInput = {
@@ -38148,45 +37933,39 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutCommunityMembershipsInput, UserUncheckedCreateWithoutCommunityMembershipsInput>
   }
 
-  export type CommunityUpsertWithoutMembersInput = {
-    update: XOR<CommunityUpdateWithoutMembersInput, CommunityUncheckedUpdateWithoutMembersInput>
+  export type CommunityCreateWithoutMembersInput = {
+    id?: string
+    title: string
+    description?: string | null
+    image?: string | null
+    isPublic?: boolean
+    maxMembers?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedCommunitiesInput
+    conversations?: ConversationCreateNestedManyWithoutCommunityInput
+    admins?: UserCreateNestedManyWithoutAdminCommunitiesInput
+    moderators?: UserCreateNestedManyWithoutModeratorCommunitiesInput
+  }
+
+  export type CommunityUncheckedCreateWithoutMembersInput = {
+    id?: string
+    title: string
+    description?: string | null
+    image?: string | null
+    isPublic?: boolean
+    maxMembers?: number | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    conversations?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
+    admins?: UserUncheckedCreateNestedManyWithoutAdminCommunitiesInput
+    moderators?: UserUncheckedCreateNestedManyWithoutModeratorCommunitiesInput
+  }
+
+  export type CommunityCreateOrConnectWithoutMembersInput = {
+    where: CommunityWhereUniqueInput
     create: XOR<CommunityCreateWithoutMembersInput, CommunityUncheckedCreateWithoutMembersInput>
-    where?: CommunityWhereInput
-  }
-
-  export type CommunityUpdateToOneWithWhereWithoutMembersInput = {
-    where?: CommunityWhereInput
-    data: XOR<CommunityUpdateWithoutMembersInput, CommunityUncheckedUpdateWithoutMembersInput>
-  }
-
-  export type CommunityUpdateWithoutMembersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    isPublic?: BoolFieldUpdateOperationsInput | boolean
-    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
-    createdBy?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
-    admins?: UserUpdateManyWithoutAdminCommunitiesNestedInput
-    moderators?: UserUpdateManyWithoutModeratorCommunitiesNestedInput
-  }
-
-  export type CommunityUncheckedUpdateWithoutMembersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    isPublic?: BoolFieldUpdateOperationsInput | boolean
-    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
-    createdById?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
-    admins?: UserUncheckedUpdateManyWithoutAdminCommunitiesNestedInput
-    moderators?: UserUncheckedUpdateManyWithoutModeratorCommunitiesNestedInput
   }
 
   export type UserUpsertWithoutCommunityMembershipsInput = {
@@ -38225,24 +38004,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommunityMembershipsInput = {
@@ -38270,24 +38049,86 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
+  }
+
+  export type CommunityUpsertWithoutMembersInput = {
+    update: XOR<CommunityUpdateWithoutMembersInput, CommunityUncheckedUpdateWithoutMembersInput>
+    create: XOR<CommunityCreateWithoutMembersInput, CommunityUncheckedCreateWithoutMembersInput>
+    where?: CommunityWhereInput
+  }
+
+  export type CommunityUpdateToOneWithWhereWithoutMembersInput = {
+    where?: CommunityWhereInput
+    data: XOR<CommunityUpdateWithoutMembersInput, CommunityUncheckedUpdateWithoutMembersInput>
+  }
+
+  export type CommunityUpdateWithoutMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublic?: BoolFieldUpdateOperationsInput | boolean
+    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
+    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
+    admins?: UserUpdateManyWithoutAdminCommunitiesNestedInput
+    moderators?: UserUpdateManyWithoutModeratorCommunitiesNestedInput
+  }
+
+  export type CommunityUncheckedUpdateWithoutMembersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublic?: BoolFieldUpdateOperationsInput | boolean
+    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
+    admins?: UserUncheckedUpdateManyWithoutAdminCommunitiesNestedInput
+    moderators?: UserUncheckedUpdateManyWithoutModeratorCommunitiesNestedInput
+  }
+
+  export type GroupMemberCreateWithoutGroupInput = {
+    id?: string
+    joinedAt?: Date | string
+    user: UserCreateNestedOneWithoutGroupMembershipsInput
+  }
+
+  export type GroupMemberUncheckedCreateWithoutGroupInput = {
+    id?: string
+    userId: string
+    joinedAt?: Date | string
+  }
+
+  export type GroupMemberCreateOrConnectWithoutGroupInput = {
+    where: GroupMemberWhereUniqueInput
+    create: XOR<GroupMemberCreateWithoutGroupInput, GroupMemberUncheckedCreateWithoutGroupInput>
+  }
+
+  export type GroupMemberCreateManyGroupInputEnvelope = {
+    data: GroupMemberCreateManyGroupInput | GroupMemberCreateManyGroupInput[]
   }
 
   export type UserCreateWithoutCreatedGroupsInput = {
@@ -38315,24 +38156,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
     createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -38360,50 +38201,29 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
-    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
     createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutCreatedGroupsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
-  }
-
-  export type GroupMemberCreateWithoutGroupInput = {
-    id?: string
-    joinedAt?: Date | string
-    user: UserCreateNestedOneWithoutGroupMembershipsInput
-  }
-
-  export type GroupMemberUncheckedCreateWithoutGroupInput = {
-    id?: string
-    userId: string
-    joinedAt?: Date | string
-  }
-
-  export type GroupMemberCreateOrConnectWithoutGroupInput = {
-    where: GroupMemberWhereUniqueInput
-    create: XOR<GroupMemberCreateWithoutGroupInput, GroupMemberUncheckedCreateWithoutGroupInput>
-  }
-
-  export type GroupMemberCreateManyGroupInputEnvelope = {
-    data: GroupMemberCreateManyGroupInput | GroupMemberCreateManyGroupInput[]
   }
 
   export type UserCreateWithoutAdminGroupsInput = {
@@ -38431,24 +38251,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutAdminGroupsInput = {
@@ -38476,24 +38296,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutAdminGroupsInput = {
@@ -38526,24 +38346,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
   }
 
   export type UserUncheckedCreateWithoutModeratorGroupsInput = {
@@ -38571,29 +38391,45 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
   }
 
   export type UserCreateOrConnectWithoutModeratorGroupsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutModeratorGroupsInput, UserUncheckedCreateWithoutModeratorGroupsInput>
+  }
+
+  export type GroupMemberUpsertWithWhereUniqueWithoutGroupInput = {
+    where: GroupMemberWhereUniqueInput
+    update: XOR<GroupMemberUpdateWithoutGroupInput, GroupMemberUncheckedUpdateWithoutGroupInput>
+    create: XOR<GroupMemberCreateWithoutGroupInput, GroupMemberUncheckedCreateWithoutGroupInput>
+  }
+
+  export type GroupMemberUpdateWithWhereUniqueWithoutGroupInput = {
+    where: GroupMemberWhereUniqueInput
+    data: XOR<GroupMemberUpdateWithoutGroupInput, GroupMemberUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type GroupMemberUpdateManyWithWhereWithoutGroupInput = {
+    where: GroupMemberScalarWhereInput
+    data: XOR<GroupMemberUpdateManyMutationInput, GroupMemberUncheckedUpdateManyWithoutGroupInput>
   }
 
   export type UserUpsertWithoutCreatedGroupsInput = {
@@ -38632,24 +38468,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
-    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
-    groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
     createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -38677,40 +38513,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
-    groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
     createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type GroupMemberUpsertWithWhereUniqueWithoutGroupInput = {
-    where: GroupMemberWhereUniqueInput
-    update: XOR<GroupMemberUpdateWithoutGroupInput, GroupMemberUncheckedUpdateWithoutGroupInput>
-    create: XOR<GroupMemberCreateWithoutGroupInput, GroupMemberUncheckedCreateWithoutGroupInput>
-  }
-
-  export type GroupMemberUpdateWithWhereUniqueWithoutGroupInput = {
-    where: GroupMemberWhereUniqueInput
-    data: XOR<GroupMemberUpdateWithoutGroupInput, GroupMemberUncheckedUpdateWithoutGroupInput>
-  }
-
-  export type GroupMemberUpdateManyWithWhereWithoutGroupInput = {
-    where: GroupMemberScalarWhereInput
-    data: XOR<GroupMemberUpdateManyMutationInput, GroupMemberUncheckedUpdateManyWithoutGroupInput>
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutAdminGroupsInput = {
@@ -38745,6 +38565,101 @@ export namespace Prisma {
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutModeratorGroupsInput>
   }
 
+  export type UserCreateWithoutGroupMembershipsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserUncheckedCreateWithoutGroupMembershipsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
+  }
+
+  export type UserCreateOrConnectWithoutGroupMembershipsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutGroupMembershipsInput, UserUncheckedCreateWithoutGroupMembershipsInput>
+  }
+
   export type GroupCreateWithoutMembersInput = {
     id?: string
     name: string
@@ -38776,99 +38691,105 @@ export namespace Prisma {
     create: XOR<GroupCreateWithoutMembersInput, GroupUncheckedCreateWithoutMembersInput>
   }
 
-  export type UserCreateWithoutGroupMembershipsInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
-    createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
-  }
-
-  export type UserUncheckedCreateWithoutGroupMembershipsInput = {
-    id?: string
-    username: string
-    firstName: string
-    lastName: string
-    email: string
-    phoneNumber?: string | null
-    password: string
-    displayName?: string | null
-    avatar?: string | null
-    isOnline?: boolean
-    lastSeen?: Date | string
-    lastActiveAt?: Date | string
-    systemLanguage?: string
-    regionalLanguage?: string
-    customDestinationLanguage?: string | null
-    autoTranslateEnabled?: boolean
-    translateToSystemLanguage?: boolean
-    translateToRegionalLanguage?: boolean
-    useCustomDestination?: boolean
-    role?: string
-    isActive?: boolean
-    deactivatedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
-    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
-    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
-    adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type UserCreateOrConnectWithoutGroupMembershipsInput = {
-    where: UserWhereUniqueInput
+  export type UserUpsertWithoutGroupMembershipsInput = {
+    update: XOR<UserUpdateWithoutGroupMembershipsInput, UserUncheckedUpdateWithoutGroupMembershipsInput>
     create: XOR<UserCreateWithoutGroupMembershipsInput, UserUncheckedCreateWithoutGroupMembershipsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutGroupMembershipsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutGroupMembershipsInput, UserUncheckedUpdateWithoutGroupMembershipsInput>
+  }
+
+  export type UserUpdateWithoutGroupMembershipsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
+    moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type GroupUpsertWithoutMembersInput = {
@@ -38908,107 +38829,6 @@ export namespace Prisma {
     moderators?: UserUncheckedUpdateManyWithoutModeratorGroupsNestedInput
   }
 
-  export type UserUpsertWithoutGroupMembershipsInput = {
-    update: XOR<UserUpdateWithoutGroupMembershipsInput, UserUncheckedUpdateWithoutGroupMembershipsInput>
-    create: XOR<UserCreateWithoutGroupMembershipsInput, UserUncheckedCreateWithoutGroupMembershipsInput>
-    where?: UserWhereInput
-  }
-
-  export type UserUpdateToOneWithWhereWithoutGroupMembershipsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutGroupMembershipsInput, UserUncheckedUpdateWithoutGroupMembershipsInput>
-  }
-
-  export type UserUpdateWithoutGroupMembershipsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
-    displayName?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isOnline?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    systemLanguage?: StringFieldUpdateOperationsInput | string
-    regionalLanguage?: StringFieldUpdateOperationsInput | string
-    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
-    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
-    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
-    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
-    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
-    role?: StringFieldUpdateOperationsInput | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
-    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
-    createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
-    adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
-    moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
-  }
-
-  export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
-    firstName?: StringFieldUpdateOperationsInput | string
-    lastName?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    password?: StringFieldUpdateOperationsInput | string
-    displayName?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isOnline?: BoolFieldUpdateOperationsInput | boolean
-    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
-    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    systemLanguage?: StringFieldUpdateOperationsInput | string
-    regionalLanguage?: StringFieldUpdateOperationsInput | string
-    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
-    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
-    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
-    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
-    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
-    role?: StringFieldUpdateOperationsInput | string
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
-    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
-    createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
-    adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
-  }
-
   export type UserCreateWithoutStatsInput = {
     id?: string
     username: string
@@ -39034,24 +38854,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutStatsInput = {
@@ -39079,24 +38899,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutStatsInput = {
@@ -39140,24 +38960,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStatsInput = {
@@ -39185,24 +39005,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserCreateWithoutPreferencesInput = {
@@ -39230,24 +39050,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -39275,24 +39095,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -39336,24 +39156,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferencesInput = {
@@ -39381,69 +39201,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type ConversationCreateWithoutPreferencesInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    community?: CommunityCreateNestedOneWithoutConversationsInput
-    members?: ConversationMemberCreateNestedManyWithoutConversationInput
-    messages?: MessageCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationUncheckedCreateWithoutPreferencesInput = {
-    id?: string
-    type: string
-    title?: string | null
-    description?: string | null
-    image?: string | null
-    avatar?: string | null
-    communityId?: string | null
-    isActive?: boolean
-    isArchived?: boolean
-    lastMessageAt?: Date | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
-    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
-    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
-    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type ConversationCreateOrConnectWithoutPreferencesInput = {
-    where: ConversationWhereUniqueInput
-    create: XOR<ConversationCreateWithoutPreferencesInput, ConversationUncheckedCreateWithoutPreferencesInput>
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserCreateWithoutConversationPreferencesInput = {
@@ -39471,24 +39246,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberCreateNestedManyWithoutUserInput
     createdGroups?: GroupCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    adminGroups?: GroupCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserUncheckedCreateWithoutConversationPreferencesInput = {
@@ -39516,24 +39291,24 @@ export namespace Prisma {
     deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
     conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
     groupMemberships?: GroupMemberUncheckedCreateNestedManyWithoutUserInput
     createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatorInput
-    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
-    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
-    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
-    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatedByInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     adminCommunities?: CommunityUncheckedCreateNestedManyWithoutAdminsInput
     moderatorCommunities?: CommunityUncheckedCreateNestedManyWithoutModeratorsInput
-    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    adminGroups?: GroupUncheckedCreateNestedManyWithoutAdminsInput
+    moderatorGroups?: GroupUncheckedCreateNestedManyWithoutModeratorsInput
   }
 
   export type UserCreateOrConnectWithoutConversationPreferencesInput = {
@@ -39541,55 +39316,49 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutConversationPreferencesInput, UserUncheckedCreateWithoutConversationPreferencesInput>
   }
 
-  export type ConversationUpsertWithoutPreferencesInput = {
-    update: XOR<ConversationUpdateWithoutPreferencesInput, ConversationUncheckedUpdateWithoutPreferencesInput>
+  export type ConversationCreateWithoutPreferencesInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkCreateNestedManyWithoutConversationInput
+    community?: CommunityCreateNestedOneWithoutConversationsInput
+    messages?: MessageCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationUncheckedCreateWithoutPreferencesInput = {
+    id?: string
+    type: string
+    title?: string | null
+    description?: string | null
+    image?: string | null
+    avatar?: string | null
+    communityId?: string | null
+    isActive?: boolean
+    isArchived?: boolean
+    lastMessageAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutConversationInput
+    members?: ConversationMemberUncheckedCreateNestedManyWithoutConversationInput
+    shareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutConversationInput
+    messages?: MessageUncheckedCreateNestedManyWithoutConversationInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutConversationInput
+  }
+
+  export type ConversationCreateOrConnectWithoutPreferencesInput = {
+    where: ConversationWhereUniqueInput
     create: XOR<ConversationCreateWithoutPreferencesInput, ConversationUncheckedCreateWithoutPreferencesInput>
-    where?: ConversationWhereInput
-  }
-
-  export type ConversationUpdateToOneWithWhereWithoutPreferencesInput = {
-    where?: ConversationWhereInput
-    data: XOR<ConversationUpdateWithoutPreferencesInput, ConversationUncheckedUpdateWithoutPreferencesInput>
-  }
-
-  export type ConversationUpdateWithoutPreferencesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneWithoutConversationsNestedInput
-    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateWithoutPreferencesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    communityId?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
   }
 
   export type UserUpsertWithoutConversationPreferencesInput = {
@@ -39628,24 +39397,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationPreferencesInput = {
@@ -39673,40 +39442,93 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
-  export type MessageCreateManySenderInput = {
+  export type ConversationUpsertWithoutPreferencesInput = {
+    update: XOR<ConversationUpdateWithoutPreferencesInput, ConversationUncheckedUpdateWithoutPreferencesInput>
+    create: XOR<ConversationCreateWithoutPreferencesInput, ConversationUncheckedCreateWithoutPreferencesInput>
+    where?: ConversationWhereInput
+  }
+
+  export type ConversationUpdateToOneWithWhereWithoutPreferencesInput = {
+    where?: ConversationWhereInput
+    data: XOR<ConversationUpdateWithoutPreferencesInput, ConversationUncheckedUpdateWithoutPreferencesInput>
+  }
+
+  export type ConversationUpdateWithoutPreferencesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    community?: CommunityUpdateOneWithoutConversationsNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateWithoutPreferencesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    communityId?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+  }
+
+  export type CommunityCreateManyCreatedByInput = {
     id?: string
-    conversationId: string
-    anonymousSenderId?: string | null
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    replyToId?: string | null
+    title: string
+    description?: string | null
+    image?: string | null
+    isPublic?: boolean
+    maxMembers?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type CommunityMemberCreateManyUserInput = {
+    id?: string
+    communityId: string
+    role?: string
+    joinedAt?: Date | string
   }
 
   export type ConversationMemberCreateManyUserInput = {
@@ -39725,64 +39547,15 @@ export namespace Prisma {
     isActive?: boolean
   }
 
-  export type GroupMemberCreateManyUserInput = {
-    id?: string
-    groupId: string
-    joinedAt?: Date | string
-  }
-
-  export type GroupCreateManyCreatorInput = {
-    id?: string
-    name: string
-    description?: string | null
-    avatar?: string | null
-    isPrivate?: boolean
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FriendRequestCreateManySenderInput = {
-    id?: string
-    receiverId: string
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type FriendRequestCreateManyReceiverInput = {
-    id?: string
-    senderId: string
-    status?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TypingIndicatorCreateManyUserInput = {
+  export type ConversationPreferenceCreateManyUserInput = {
     id?: string
     conversationId: string
-    isTyping?: boolean
-    startedAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type MessageReadStatusCreateManyUserInput = {
-    id?: string
-    messageId: string
-    readAt?: Date | string
-  }
-
-  export type NotificationCreateManyUserInput = {
-    id?: string
-    type: string
-    title: string
-    content: string
-    data?: string | null
-    priority?: string
-    isRead?: boolean
-    emailSent?: boolean
-    pushSent?: boolean
-    expiresAt?: Date | string | null
+    key: string
+    value: string
+    valueType?: string
+    description?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ConversationShareLinkCreateManyCreatorInput = {
@@ -39807,6 +39580,82 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type FriendRequestCreateManyReceiverInput = {
+    id?: string
+    senderId: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type FriendRequestCreateManySenderInput = {
+    id?: string
+    receiverId: string
+    status?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type GroupMemberCreateManyUserInput = {
+    id?: string
+    groupId: string
+    joinedAt?: Date | string
+  }
+
+  export type GroupCreateManyCreatorInput = {
+    id?: string
+    name: string
+    description?: string | null
+    avatar?: string | null
+    isPrivate?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MessageReadStatusCreateManyUserInput = {
+    id?: string
+    messageId: string
+    readAt?: Date | string
+  }
+
+  export type MessageCreateManySenderInput = {
+    id?: string
+    conversationId: string
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type NotificationCreateManyUserInput = {
+    id?: string
+    type: string
+    title: string
+    content: string
+    data?: string | null
+    priority?: string
+    isRead?: boolean
+    emailSent?: boolean
+    pushSent?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type TypingIndicatorCreateManyUserInput = {
+    id?: string
+    conversationId: string
+    isTyping?: boolean
+    startedAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserPreferenceCreateManyUserInput = {
     id?: string
     key: string
@@ -39817,87 +39666,66 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type ConversationPreferenceCreateManyUserInput = {
-    id?: string
-    conversationId: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type CommunityCreateManyCreatedByInput = {
-    id?: string
-    title: string
-    description?: string | null
-    image?: string | null
-    isPublic?: boolean
-    maxMembers?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type CommunityMemberCreateManyUserInput = {
-    id?: string
-    communityId: string
-    role?: string
-    joinedAt?: Date | string
-  }
-
-  export type MessageUpdateWithoutSenderInput = {
+  export type CommunityUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublic?: BoolFieldUpdateOperationsInput | boolean
+    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
-    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
-    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
-    replies?: MessageUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
+    admins?: UserUpdateManyWithoutAdminCommunitiesNestedInput
+    moderators?: UserUpdateManyWithoutModeratorCommunitiesNestedInput
   }
 
-  export type MessageUncheckedUpdateWithoutSenderInput = {
+  export type CommunityUncheckedUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublic?: BoolFieldUpdateOperationsInput | boolean
+    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
+    admins?: UserUncheckedUpdateManyWithoutAdminCommunitiesNestedInput
+    moderators?: UserUncheckedUpdateManyWithoutModeratorCommunitiesNestedInput
   }
 
-  export type MessageUncheckedUpdateManyWithoutSenderInput = {
+  export type CommunityUncheckedUpdateManyWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublic?: BoolFieldUpdateOperationsInput | boolean
+    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CommunityMemberUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    community?: CommunityUpdateOneRequiredWithoutMembersNestedInput
+  }
+
+  export type CommunityMemberUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    communityId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CommunityMemberUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    communityId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ConversationMemberUpdateWithoutUserInput = {
@@ -39946,6 +39774,155 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type ConversationPreferenceUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    valueType?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversation?: ConversationUpdateOneRequiredWithoutPreferencesNestedInput
+  }
+
+  export type ConversationPreferenceUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    valueType?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationPreferenceUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    valueType?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationShareLinkUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkId?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
+    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
+    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireNickname?: BoolFieldUpdateOperationsInput | boolean
+    requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutShareLinksNestedInput
+  }
+
+  export type ConversationShareLinkUncheckedUpdateWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkId?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
+    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
+    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireNickname?: BoolFieldUpdateOperationsInput | boolean
+    requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput
+  }
+
+  export type ConversationShareLinkUncheckedUpdateManyWithoutCreatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkId?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
+    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
+    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireNickname?: BoolFieldUpdateOperationsInput | boolean
+    requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FriendRequestUpdateWithoutReceiverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sender?: UserUpdateOneRequiredWithoutSentFriendRequestsNestedInput
+  }
+
+  export type FriendRequestUncheckedUpdateWithoutReceiverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FriendRequestUncheckedUpdateManyWithoutReceiverInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FriendRequestUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receiver?: UserUpdateOneRequiredWithoutReceivedFriendRequestsNestedInput
+  }
+
+  export type FriendRequestUncheckedUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FriendRequestUncheckedUpdateManyWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type GroupMemberUpdateWithoutUserInput = {
@@ -40002,152 +39979,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type GroupUpdateWithoutAdminsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    creator?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
-    members?: GroupMemberUpdateManyWithoutGroupNestedInput
-    moderators?: UserUpdateManyWithoutModeratorGroupsNestedInput
-  }
-
-  export type GroupUncheckedUpdateWithoutAdminsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdBy?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
-    moderators?: UserUncheckedUpdateManyWithoutModeratorGroupsNestedInput
-  }
-
-  export type GroupUncheckedUpdateManyWithoutAdminsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdBy?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type GroupUpdateWithoutModeratorsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    creator?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
-    members?: GroupMemberUpdateManyWithoutGroupNestedInput
-    admins?: UserUpdateManyWithoutAdminGroupsNestedInput
-  }
-
-  export type GroupUncheckedUpdateWithoutModeratorsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdBy?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
-    admins?: UserUncheckedUpdateManyWithoutAdminGroupsNestedInput
-  }
-
-  export type GroupUncheckedUpdateManyWithoutModeratorsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdBy?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FriendRequestUpdateWithoutSenderInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    receiver?: UserUpdateOneRequiredWithoutReceivedFriendRequestsNestedInput
-  }
-
-  export type FriendRequestUncheckedUpdateWithoutSenderInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FriendRequestUncheckedUpdateManyWithoutSenderInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FriendRequestUpdateWithoutReceiverInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sender?: UserUpdateOneRequiredWithoutSentFriendRequestsNestedInput
-  }
-
-  export type FriendRequestUncheckedUpdateWithoutReceiverInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type FriendRequestUncheckedUpdateManyWithoutReceiverInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    senderId?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TypingIndicatorUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    isTyping?: BoolFieldUpdateOperationsInput | boolean
-    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutTypingIndicatorsNestedInput
-  }
-
-  export type TypingIndicatorUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    isTyping?: BoolFieldUpdateOperationsInput | boolean
-    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TypingIndicatorUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    isTyping?: BoolFieldUpdateOperationsInput | boolean
-    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type MessageReadStatusUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     readAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40164,6 +39995,60 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     messageId?: StringFieldUpdateOperationsInput | string
     readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+  }
+
+  export type MessageUncheckedUpdateManyWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationUpdateWithoutUserInput = {
@@ -40208,71 +40093,27 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ConversationShareLinkUpdateWithoutCreatorInput = {
+  export type TypingIndicatorUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    linkId?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
-    currentUses?: IntFieldUpdateOperationsInput | number
-    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
-    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
-    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
-    requireNickname?: BoolFieldUpdateOperationsInput | boolean
-    requireEmail?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isTyping?: BoolFieldUpdateOperationsInput | boolean
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutShareLinksNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutTypingIndicatorsNestedInput
   }
 
-  export type ConversationShareLinkUncheckedUpdateWithoutCreatorInput = {
+  export type TypingIndicatorUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    linkId?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
-    currentUses?: IntFieldUpdateOperationsInput | number
-    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
-    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
-    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
-    requireNickname?: BoolFieldUpdateOperationsInput | boolean
-    requireEmail?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isTyping?: BoolFieldUpdateOperationsInput | boolean
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput
   }
 
-  export type ConversationShareLinkUncheckedUpdateManyWithoutCreatorInput = {
+  export type TypingIndicatorUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    linkId?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
-    currentUses?: IntFieldUpdateOperationsInput | number
-    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
-    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
-    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
-    requireNickname?: BoolFieldUpdateOperationsInput | boolean
-    requireEmail?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isTyping?: BoolFieldUpdateOperationsInput | boolean
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -40306,80 +40147,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type ConversationPreferenceUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutPreferencesNestedInput
-  }
-
-  export type ConversationPreferenceUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ConversationPreferenceUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CommunityUpdateWithoutCreatedByInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    isPublic?: BoolFieldUpdateOperationsInput | boolean
-    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
-    members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
-    admins?: UserUpdateManyWithoutAdminCommunitiesNestedInput
-    moderators?: UserUpdateManyWithoutModeratorCommunitiesNestedInput
-  }
-
-  export type CommunityUncheckedUpdateWithoutCreatedByInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    isPublic?: BoolFieldUpdateOperationsInput | boolean
-    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
-    members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
-    admins?: UserUncheckedUpdateManyWithoutAdminCommunitiesNestedInput
-    moderators?: UserUncheckedUpdateManyWithoutModeratorCommunitiesNestedInput
-  }
-
-  export type CommunityUncheckedUpdateManyWithoutCreatedByInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    isPublic?: BoolFieldUpdateOperationsInput | boolean
-    maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type CommunityUpdateWithoutAdminsInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -40389,9 +40156,9 @@ export namespace Prisma {
     maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
     members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
     moderators?: UserUpdateManyWithoutModeratorCommunitiesNestedInput
   }
 
@@ -40405,8 +40172,8 @@ export namespace Prisma {
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
     members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
     moderators?: UserUncheckedUpdateManyWithoutModeratorCommunitiesNestedInput
   }
 
@@ -40431,9 +40198,9 @@ export namespace Prisma {
     maxMembers?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
     createdBy?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
     members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUpdateManyWithoutCommunityNestedInput
     admins?: UserUpdateManyWithoutAdminCommunitiesNestedInput
   }
 
@@ -40447,8 +40214,8 @@ export namespace Prisma {
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
     members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
+    conversations?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
     admins?: UserUncheckedUpdateManyWithoutAdminCommunitiesNestedInput
   }
 
@@ -40464,25 +40231,96 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommunityMemberUpdateWithoutUserInput = {
+  export type GroupUpdateWithoutAdminsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneRequiredWithoutMembersNestedInput
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: GroupMemberUpdateManyWithoutGroupNestedInput
+    creator?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    moderators?: UserUpdateManyWithoutModeratorGroupsNestedInput
   }
 
-  export type CommunityMemberUncheckedUpdateWithoutUserInput = {
+  export type GroupUncheckedUpdateWithoutAdminsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    communityId?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
+    moderators?: UserUncheckedUpdateManyWithoutModeratorGroupsNestedInput
   }
 
-  export type CommunityMemberUncheckedUpdateManyWithoutUserInput = {
+  export type GroupUncheckedUpdateManyWithoutAdminsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    communityId?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GroupUpdateWithoutModeratorsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: GroupMemberUpdateManyWithoutGroupNestedInput
+    creator?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    admins?: UserUpdateManyWithoutAdminGroupsNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutModeratorsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    members?: GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
+    admins?: UserUncheckedUpdateManyWithoutAdminGroupsNestedInput
+  }
+
+  export type GroupUncheckedUpdateManyWithoutModeratorsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AnonymousParticipantCreateManyConversationInput = {
+    id?: string
+    shareLinkId: string
+    nickname: string
+    email?: string | null
+    sessionToken: string
+    ipAddress?: string | null
+    isActive?: boolean
+    isOnline?: boolean
+    lastActiveAt?: Date | string
+    canSendMessages?: boolean
+    canSendFiles?: boolean
+    canSendImages?: boolean
+    joinedAt?: Date | string
+    lastSeenAt?: Date | string
+    leftAt?: Date | string | null
   }
 
   export type ConversationMemberCreateManyConversationInput = {
@@ -40501,27 +40339,14 @@ export namespace Prisma {
     isActive?: boolean
   }
 
-  export type MessageCreateManyConversationInput = {
-    id?: string
-    senderId?: string | null
-    anonymousSenderId?: string | null
-    content: string
-    originalLanguage?: string
-    messageType?: string
-    isEdited?: boolean
-    editedAt?: Date | string | null
-    isDeleted?: boolean
-    deletedAt?: Date | string | null
-    replyToId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TypingIndicatorCreateManyConversationInput = {
+  export type ConversationPreferenceCreateManyConversationInput = {
     id?: string
     userId: string
-    isTyping?: boolean
-    startedAt?: Date | string
+    key: string
+    value: string
+    valueType?: string
+    description?: string | null
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -40547,260 +40372,28 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type ConversationPreferenceCreateManyConversationInput = {
+  export type MessageCreateManyConversationInput = {
     id?: string
-    userId: string
-    key: string
-    value: string
-    valueType?: string
-    description?: string | null
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
-  export type AnonymousParticipantCreateManyConversationInput = {
+  export type TypingIndicatorCreateManyConversationInput = {
     id?: string
-    shareLinkId: string
-    nickname: string
-    email?: string | null
-    sessionToken: string
-    ipAddress?: string | null
-    isActive?: boolean
-    isOnline?: boolean
-    lastActiveAt?: Date | string
-    canSendMessages?: boolean
-    canSendFiles?: boolean
-    canSendImages?: boolean
-    joinedAt?: Date | string
-    lastSeenAt?: Date | string
-    leftAt?: Date | string | null
-  }
-
-  export type ConversationMemberUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    canSendMessage?: BoolFieldUpdateOperationsInput | boolean
-    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
-    canSendImages?: BoolFieldUpdateOperationsInput | boolean
-    canSendVideos?: BoolFieldUpdateOperationsInput | boolean
-    canSendAudios?: BoolFieldUpdateOperationsInput | boolean
-    canSendLocations?: BoolFieldUpdateOperationsInput | boolean
-    canSendLinks?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    user?: UserUpdateOneRequiredWithoutConversationsNestedInput
-  }
-
-  export type ConversationMemberUncheckedUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    canSendMessage?: BoolFieldUpdateOperationsInput | boolean
-    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
-    canSendImages?: BoolFieldUpdateOperationsInput | boolean
-    canSendVideos?: BoolFieldUpdateOperationsInput | boolean
-    canSendAudios?: BoolFieldUpdateOperationsInput | boolean
-    canSendLocations?: BoolFieldUpdateOperationsInput | boolean
-    canSendLinks?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type ConversationMemberUncheckedUpdateManyWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    role?: StringFieldUpdateOperationsInput | string
-    canSendMessage?: BoolFieldUpdateOperationsInput | boolean
-    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
-    canSendImages?: BoolFieldUpdateOperationsInput | boolean
-    canSendVideos?: BoolFieldUpdateOperationsInput | boolean
-    canSendAudios?: BoolFieldUpdateOperationsInput | boolean
-    canSendLocations?: BoolFieldUpdateOperationsInput | boolean
-    canSendLinks?: BoolFieldUpdateOperationsInput | boolean
-    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type MessageUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sender?: UserUpdateOneWithoutSentMessagesNestedInput
-    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
-    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
-    replies?: MessageUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
-  }
-
-  export type MessageUncheckedUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    senderId?: NullableStringFieldUpdateOperationsInput | string | null
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
-  }
-
-  export type MessageUncheckedUpdateManyWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    senderId?: NullableStringFieldUpdateOperationsInput | string | null
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TypingIndicatorUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    isTyping?: BoolFieldUpdateOperationsInput | boolean
-    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTypingIndicatorsNestedInput
-  }
-
-  export type TypingIndicatorUncheckedUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isTyping?: BoolFieldUpdateOperationsInput | boolean
-    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TypingIndicatorUncheckedUpdateManyWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isTyping?: BoolFieldUpdateOperationsInput | boolean
-    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ConversationShareLinkUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkId?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
-    currentUses?: IntFieldUpdateOperationsInput | number
-    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
-    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
-    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
-    requireNickname?: BoolFieldUpdateOperationsInput | boolean
-    requireEmail?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    creator?: UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
-  }
-
-  export type ConversationShareLinkUncheckedUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkId?: StringFieldUpdateOperationsInput | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
-    currentUses?: IntFieldUpdateOperationsInput | number
-    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
-    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
-    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
-    requireNickname?: BoolFieldUpdateOperationsInput | boolean
-    requireEmail?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput
-  }
-
-  export type ConversationShareLinkUncheckedUpdateManyWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    linkId?: StringFieldUpdateOperationsInput | string
-    createdBy?: StringFieldUpdateOperationsInput | string
-    name?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
-    currentUses?: IntFieldUpdateOperationsInput | number
-    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
-    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
-    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
-    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
-    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
-    requireNickname?: BoolFieldUpdateOperationsInput | boolean
-    requireEmail?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ConversationPreferenceUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutConversationPreferencesNestedInput
-  }
-
-  export type ConversationPreferenceUncheckedUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ConversationPreferenceUncheckedUpdateManyWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    key?: StringFieldUpdateOperationsInput | string
-    value?: StringFieldUpdateOperationsInput | string
-    valueType?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId: string
+    isTyping?: boolean
+    startedAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type AnonymousParticipantUpdateWithoutConversationInput = {
@@ -40857,6 +40450,233 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type ConversationMemberUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    canSendMessage?: BoolFieldUpdateOperationsInput | boolean
+    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
+    canSendImages?: BoolFieldUpdateOperationsInput | boolean
+    canSendVideos?: BoolFieldUpdateOperationsInput | boolean
+    canSendAudios?: BoolFieldUpdateOperationsInput | boolean
+    canSendLocations?: BoolFieldUpdateOperationsInput | boolean
+    canSendLinks?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    user?: UserUpdateOneRequiredWithoutConversationsNestedInput
+  }
+
+  export type ConversationMemberUncheckedUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    canSendMessage?: BoolFieldUpdateOperationsInput | boolean
+    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
+    canSendImages?: BoolFieldUpdateOperationsInput | boolean
+    canSendVideos?: BoolFieldUpdateOperationsInput | boolean
+    canSendAudios?: BoolFieldUpdateOperationsInput | boolean
+    canSendLocations?: BoolFieldUpdateOperationsInput | boolean
+    canSendLinks?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type ConversationMemberUncheckedUpdateManyWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    canSendMessage?: BoolFieldUpdateOperationsInput | boolean
+    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
+    canSendImages?: BoolFieldUpdateOperationsInput | boolean
+    canSendVideos?: BoolFieldUpdateOperationsInput | boolean
+    canSendAudios?: BoolFieldUpdateOperationsInput | boolean
+    canSendLocations?: BoolFieldUpdateOperationsInput | boolean
+    canSendLinks?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type ConversationPreferenceUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    valueType?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutConversationPreferencesNestedInput
+  }
+
+  export type ConversationPreferenceUncheckedUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    valueType?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationPreferenceUncheckedUpdateManyWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    key?: StringFieldUpdateOperationsInput | string
+    value?: StringFieldUpdateOperationsInput | string
+    valueType?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationShareLinkUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkId?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
+    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
+    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireNickname?: BoolFieldUpdateOperationsInput | boolean
+    requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
+    creator?: UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput
+  }
+
+  export type ConversationShareLinkUncheckedUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkId?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
+    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
+    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireNickname?: BoolFieldUpdateOperationsInput | boolean
+    requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput
+  }
+
+  export type ConversationShareLinkUncheckedUpdateManyWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    linkId?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
+    currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousFiles?: BoolFieldUpdateOperationsInput | boolean
+    allowAnonymousImages?: BoolFieldUpdateOperationsInput | boolean
+    allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
+    requireNickname?: BoolFieldUpdateOperationsInput | boolean
+    requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+  }
+
+  export type MessageUncheckedUpdateManyWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TypingIndicatorUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    isTyping?: BoolFieldUpdateOperationsInput | boolean
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTypingIndicatorsNestedInput
+  }
+
+  export type TypingIndicatorUncheckedUpdateWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    isTyping?: BoolFieldUpdateOperationsInput | boolean
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TypingIndicatorUncheckedUpdateManyWithoutConversationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    isTyping?: BoolFieldUpdateOperationsInput | boolean
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AnonymousParticipantCreateManyShareLinkInput = {
@@ -40960,12 +40780,12 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
-    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutAnonymousSenderInput = {
@@ -40982,9 +40802,9 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutAnonymousSenderInput = {
@@ -41003,6 +40823,23 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type MessageReadStatusCreateManyMessageInput = {
+    id?: string
+    userId: string
+    readAt?: Date | string
+  }
+
+  export type MessageTranslationCreateManyMessageInput = {
+    id?: string
+    sourceLanguage: string
+    targetLanguage: string
+    translatedContent: string
+    translationModel: string
+    cacheKey: string
+    confidenceScore?: number | null
+    createdAt?: Date | string
+  }
+
   export type MessageCreateManyReplyToInput = {
     id?: string
     conversationId: string
@@ -41019,75 +40856,22 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type MessageTranslationCreateManyMessageInput = {
-    id?: string
-    sourceLanguage: string
-    targetLanguage: string
-    translatedContent: string
-    translationModel: string
-    cacheKey: string
-    confidenceScore?: number | null
-    createdAt?: Date | string
-  }
-
-  export type MessageReadStatusCreateManyMessageInput = {
-    id?: string
-    userId: string
-    readAt?: Date | string
-  }
-
-  export type MessageUpdateWithoutReplyToInput = {
+  export type MessageReadStatusUpdateWithoutMessageInput = {
     id?: StringFieldUpdateOperationsInput | string
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
-    sender?: UserUpdateOneWithoutSentMessagesNestedInput
-    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
-    replies?: MessageUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutMessageReadStatusNestedInput
   }
 
-  export type MessageUncheckedUpdateWithoutReplyToInput = {
+  export type MessageReadStatusUncheckedUpdateWithoutMessageInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    senderId?: NullableStringFieldUpdateOperationsInput | string | null
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
-    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    userId?: StringFieldUpdateOperationsInput | string
+    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageUncheckedUpdateManyWithoutReplyToInput = {
+  export type MessageReadStatusUncheckedUpdateManyWithoutMessageInput = {
     id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    senderId?: NullableStringFieldUpdateOperationsInput | string | null
-    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
-    content?: StringFieldUpdateOperationsInput | string
-    originalLanguage?: StringFieldUpdateOperationsInput | string
-    messageType?: StringFieldUpdateOperationsInput | string
-    isEdited?: BoolFieldUpdateOperationsInput | boolean
-    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageTranslationUpdateWithoutMessageInput = {
@@ -41123,22 +40907,65 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageReadStatusUpdateWithoutMessageInput = {
+  export type MessageUpdateWithoutReplyToInput = {
     id?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutMessageReadStatusNestedInput
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateWithoutMessageInput = {
+  export type MessageUncheckedUpdateWithoutReplyToInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutMessageInput = {
+  export type MessageUncheckedUpdateManyWithoutReplyToInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CommunityMemberCreateManyCommunityInput = {
+    id?: string
+    userId: string
+    role?: string
+    joinedAt?: Date | string
   }
 
   export type ConversationCreateManyCommunityInput = {
@@ -41153,67 +40980,6 @@ export namespace Prisma {
     lastMessageAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
-  }
-
-  export type CommunityMemberCreateManyCommunityInput = {
-    id?: string
-    userId: string
-    role?: string
-    joinedAt?: Date | string
-  }
-
-  export type ConversationUpdateWithoutCommunityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
-    messages?: MessageUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateWithoutCommunityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
-    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
-    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
-    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
-    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
-  }
-
-  export type ConversationUncheckedUpdateManyWithoutCommunityInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    type?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    image?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    isArchived?: BoolFieldUpdateOperationsInput | boolean
-    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CommunityMemberUpdateWithoutCommunityInput = {
@@ -41235,6 +41001,60 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     role?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ConversationUpdateWithoutCommunityInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUpdateManyWithoutConversationNestedInput
+    messages?: MessageUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateWithoutCommunityInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutConversationNestedInput
+    members?: ConversationMemberUncheckedUpdateManyWithoutConversationNestedInput
+    preferences?: ConversationPreferenceUncheckedUpdateManyWithoutConversationNestedInput
+    shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+  }
+
+  export type ConversationUncheckedUpdateManyWithoutCommunityInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isArchived?: BoolFieldUpdateOperationsInput | boolean
+    lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUpdateWithoutAdminCommunitiesInput = {
@@ -41262,24 +41082,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
     adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
     moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
-    moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdminCommunitiesInput = {
@@ -41307,24 +41127,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
     adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
-    moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutAdminCommunitiesInput = {
@@ -41379,24 +41199,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
     moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
-    adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutModeratorCommunitiesInput = {
@@ -41424,24 +41244,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
-    adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutModeratorCommunitiesInput = {
@@ -41520,24 +41340,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    moderatorGroups?: GroupUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdminGroupsInput = {
@@ -41565,24 +41385,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    moderatorGroups?: GroupUncheckedUpdateManyWithoutModeratorsNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutAdminGroupsInput = {
@@ -41637,24 +41457,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
-    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUpdateManyWithoutAdminsNestedInput
   }
 
   export type UserUncheckedUpdateWithoutModeratorGroupsInput = {
@@ -41682,24 +41502,24 @@ export namespace Prisma {
     deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
     conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
     groupMemberships?: GroupMemberUncheckedUpdateManyWithoutUserNestedInput
     createdGroups?: GroupUncheckedUpdateManyWithoutCreatorNestedInput
-    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
-    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
-    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatedByNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     adminCommunities?: CommunityUncheckedUpdateManyWithoutAdminsNestedInput
     moderatorCommunities?: CommunityUncheckedUpdateManyWithoutModeratorsNestedInput
-    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminGroups?: GroupUncheckedUpdateManyWithoutAdminsNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutModeratorGroupsInput = {

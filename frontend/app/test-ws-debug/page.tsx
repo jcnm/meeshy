@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+// Désactiver le prerendering pour éviter les erreurs avec localStorage
+export const dynamic = 'force-dynamic';
+
 interface ConnectionTest {
   name: string;
   status: 'pending' | 'success' | 'error';
@@ -12,15 +15,22 @@ interface ConnectionTest {
   timestamp: Date;
 }
 
-export default function WebSocketDebugPage() {
+function WebSocketDebugContent() {
   const [tests, setTests] = useState<ConnectionTest[]>([]);
   const [wsInstance, setWsInstance] = useState<WebSocket | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const addTest = (test: Omit<ConnectionTest, 'timestamp'>) => {
     setTests(prev => [...prev, { ...test, timestamp: new Date() }]);
   };
 
   const testWebSocketConnection = () => {
+    if (!isClient) return;
+    
     addTest({ name: 'Préparation du test', status: 'pending', message: 'Récupération du token...' });
     
     const token = localStorage.getItem('auth_token');
@@ -95,6 +105,8 @@ export default function WebSocketDebugPage() {
   };
 
   const testAuthentication = async () => {
+    if (!isClient) return;
+    
     addTest({ name: 'Test Authentification', status: 'pending', message: 'Vérification du token...' });
     
     const token = localStorage.getItem('auth_token');
@@ -193,9 +205,9 @@ export default function WebSocketDebugPage() {
                 <div><strong>Frontend:</strong> http://localhost:3100</div>
                 <div><strong>Gateway:</strong> http://localhost:3000</div>
                 <div><strong>WebSocket:</strong> ws://localhost:3000/ws</div>
-                <div><strong>Token présent:</strong> {localStorage.getItem('auth_token') ? '✅' : '❌'}</div>
-                <div><strong>User Agent:</strong> {navigator.userAgent}</div>
-                <div><strong>WebSocket Support:</strong> {window.WebSocket ? '✅' : '❌'}</div>
+                <div><strong>Token présent:</strong> {isClient && localStorage.getItem('auth_token') ? '✅' : '❌'}</div>
+                <div><strong>User Agent:</strong> {isClient ? navigator.userAgent : 'N/A'}</div>
+                <div><strong>WebSocket Support:</strong> {isClient && window.WebSocket ? '✅' : '❌'}</div>
               </div>
             </CardContent>
           </Card>
@@ -240,4 +252,22 @@ export default function WebSocketDebugPage() {
       </div>
     </div>
   );
+}
+
+export default function WebSocketDebugPage() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-6">Debug WebSocket - Chargement...</h1>
+      </div>
+    );
+  }
+
+  return <WebSocketDebugContent />;
 }

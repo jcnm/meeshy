@@ -23,6 +23,7 @@ import { ZMQTranslationClient } from './services/zmq-translation-client';
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
+import userPreferencesRoutes from './routes/user-preferences';
 import { InitService } from './services/init.service';
 
 // ============================================================================
@@ -768,6 +769,9 @@ class MeeshyServer {
     // Register conversation routes with /api prefix
     await this.server.register(conversationRoutes, { prefix: '/api' });
     
+    // Register user preferences routes with /api/users prefix
+    await this.server.register(userPreferencesRoutes, { prefix: '/api/users' });
+    
     logger.info('✓ REST API routes configured successfully');
   }
 
@@ -805,7 +809,11 @@ class MeeshyServer {
       }
     } catch (error) {
       logger.error('✗ Translation service initialization failed:', error);
-      throw new Error('Translation service initialization failed');
+      if (config.isDev) {
+        logger.info('🔧 Development mode: Continuing without translation service');
+      } else {
+        throw new Error('Translation service initialization failed');
+      }
     }
   }
   

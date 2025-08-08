@@ -31,7 +31,6 @@ import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { JoinConversationForm } from '@/components/auth/join-conversation-form';
 import { BubbleStreamPage } from '@/components/common';
-import { GlobalConversationPage } from '@/components/conversations/global-conversation-page';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 
@@ -113,7 +112,7 @@ export default function LandingPage() {
   }
 
   if (currentUser) {
-    return <GlobalConversationPage user={currentUser} />;
+    return <BubbleStreamPage user={currentUser} />;
   }
 
   return (
@@ -129,36 +128,6 @@ export default function LandingPage() {
           </div>
           
           <div className="flex items-center space-x-2">
-            {/* Boutons de test rapide en développement */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="flex items-center space-x-1 mr-4 text-xs">
-                <span className="text-gray-500">Test rapide:</span>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => quickLogin('alice.martin@email.com')}
-                  className="text-xs px-2 py-1 h-6"
-                >
-                  Alice
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => quickLogin('bob.johnson@email.com')}
-                  className="text-xs px-2 py-1 h-6"
-                >
-                  Bob
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => quickLogin('carlos.rodriguez@email.com')}
-                  className="text-xs px-2 py-1 h-6"
-                >
-                  Carlos
-                </Button>
-              </div>
-            )}
             
             <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
               <DialogTrigger asChild>
@@ -293,11 +262,6 @@ export default function LandingPage() {
                   Détecte automatiquement la langue des messages pour une traduction plus précise.
                 </CardDescription>
               </CardHeader>
-              <div className="px-6 pb-6">
-                <Button asChild variant="outline" className="w-full">
-                  <a href="/demo-auto-detection">Tester la détection auto</a>
-                </Button>
-              </div>
             </Card>
             
             <Card className="border-0 shadow-lg">

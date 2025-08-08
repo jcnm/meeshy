@@ -4,7 +4,6 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { authenticate } from '../middleware/auth';
 
 interface UserPreferenceBody {
   key: string;
@@ -18,10 +17,10 @@ interface UserPreferenceParams {
 export default async function userPreferencesRoutes(fastify: FastifyInstance) {
   // Récupérer toutes les préférences de l'utilisateur connecté
   fastify.get('/preferences', {
-    preHandler: [authenticate]
+    preValidation: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { userId } = request.user;
+      const userId = (request as any).user.id;
 
       const preferences = await fastify.prisma.userPreference.findMany({
         where: { userId },
@@ -44,10 +43,10 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
 
   // Récupérer une préférence spécifique
   fastify.get<{ Params: UserPreferenceParams }>('/preferences/:key', {
-    preHandler: [authenticate]
+    preValidation: [fastify.authenticate]
   }, async (request: FastifyRequest<{ Params: UserPreferenceParams }>, reply: FastifyReply) => {
     try {
-      const { userId } = request.user;
+      const userId = (request as any).user.id;
       const { key } = request.params;
 
       if (!key) {
@@ -82,7 +81,7 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
 
   // Créer ou mettre à jour une préférence
   fastify.post<{ Body: UserPreferenceBody }>('/preferences', {
-    preHandler: [authenticate],
+    preValidation: [fastify.authenticate],
     schema: {
       body: {
         type: 'object',
@@ -95,7 +94,7 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
     }
   }, async (request: FastifyRequest<{ Body: UserPreferenceBody }>, reply: FastifyReply) => {
     try {
-      const { userId } = request.user;
+      const userId = (request as any).user.id;
       const { key, value } = request.body;
 
       // Validation spécifique pour certaines préférences
@@ -148,10 +147,10 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
 
   // Supprimer une préférence
   fastify.delete<{ Params: UserPreferenceParams }>('/preferences/:key', {
-    preHandler: [authenticate]
+    preValidation: [fastify.authenticate]
   }, async (request: FastifyRequest<{ Params: UserPreferenceParams }>, reply: FastifyReply) => {
     try {
-      const { userId } = request.user;
+      const userId = (request as any).user.id;
       const { key } = request.params;
 
       if (!key) {
@@ -186,10 +185,10 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
 
   // Réinitialiser toutes les préférences
   fastify.delete('/preferences', {
-    preHandler: [authenticate]
+    preValidation: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { userId } = request.user;
+      const userId = (request as any).user.id;
 
       await fastify.prisma.userPreference.deleteMany({
         where: { userId }

@@ -159,16 +159,17 @@ export function AppProvider({ children }: AppProviderProps) {
         try {
           const user = JSON.parse(savedUser);
           dispatch({ type: 'SET_USER', payload: user });
-          dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
         } catch (error) {
           console.error('Erreur lors du chargement de l\'utilisateur:', error);
+        } finally {
           dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
         }
       } else if (token) {
         // Si on a un token mais pas d'utilisateur en localStorage, 
         // récupérer l'utilisateur depuis l'API
         try {
-          const response = await fetch('http://localhost:3000/auth/me', {
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
+          const response = await fetch(`${backendUrl}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }

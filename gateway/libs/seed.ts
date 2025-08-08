@@ -11,8 +11,10 @@ async function main() {
   console.log('🌱 Début du seeding...');
 
   // Créer les utilisateurs avec différents rôles et configurations linguistiques
-  const bigboss = await prisma.user.create({
-    data: {
+  const bigboss = await prisma.user.upsert({
+    where: { email: 'bigboss@meeshy.com' },
+    update: {},
+    create: {
       username: 'bigboss',
       email: 'bigboss@meeshy.com',
       firstName: 'Big',
@@ -28,8 +30,10 @@ async function main() {
     }
   });
 
-  const admin = await prisma.user.create({
-    data: {
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@meeshy.com' },
+    update: {},
+    create: {
       username: 'admin',
       email: 'admin@meeshy.com',
       firstName: 'Admin',
@@ -46,8 +50,10 @@ async function main() {
   });
 
   // Utilisateur français en région russe (F)
-  const userF = await prisma.user.create({
-    data: {
+  const userF = await prisma.user.upsert({
+    where: { email: 'french@example.com' },
+    update: {},
+    create: {
       username: 'french_user',
       email: 'french@example.com',
       firstName: 'François',
@@ -64,8 +70,10 @@ async function main() {
   });
 
   // Utilisateur chinois en région chine, langue configurée en anglais (C)
-  const userC = await prisma.user.create({
-    data: {
+  const userC = await prisma.user.upsert({
+    where: { email: 'chinese@example.com' },
+    update: {},
+    create: {
       username: 'chinese_user',
       email: 'chinese@example.com',
       firstName: 'Chen',
@@ -82,8 +90,10 @@ async function main() {
   });
 
   // Utilisateur anglais aux États-Unis, langue configurée en portugais (A)
-  const userA = await prisma.user.create({
-    data: {
+  const userA = await prisma.user.upsert({
+    where: { email: 'american@example.com' },
+    update: {},
+    create: {
       username: 'american_user',
       email: 'american@example.com',
       firstName: 'John',
@@ -100,8 +110,10 @@ async function main() {
   });
 
   // Utilisateur espagnol basé en France, langue configurée en espagnol (E)
-  const userE = await prisma.user.create({
-    data: {
+  const userE = await prisma.user.upsert({
+    where: { email: 'spanish@example.com' },
+    update: {},
+    create: {
       username: 'spanish_user',
       email: 'spanish@example.com',
       firstName: 'Carlos',
@@ -118,8 +130,10 @@ async function main() {
   });
 
   // Utilisateurs classiques pour compatibilité
-  const alice = await prisma.user.create({
-    data: {
+  const alice = await prisma.user.upsert({
+    where: { email: 'alice@example.com' },
+    update: {},
+    create: {
       username: 'alice',
       email: 'alice@example.com',
       firstName: 'Alice',
@@ -133,8 +147,10 @@ async function main() {
     }
   });
 
-  const bob = await prisma.user.create({
-    data: {
+  const bob = await prisma.user.upsert({
+    where: { email: 'bob@example.com' },
+    update: {},
+    create: {
       username: 'bob',
       email: 'bob@example.com',
       firstName: 'Bob',
@@ -149,8 +165,10 @@ async function main() {
   });
 
   // Utilisateurs pour la demo du frontend (avec les emails exacts utilisés dans page.tsx)
-  const aliceMartin = await prisma.user.create({
-    data: {
+  const aliceMartin = await prisma.user.upsert({
+    where: { email: 'alice.martin@email.com' },
+    update: {},
+    create: {
       username: 'alice.martin',
       email: 'alice.martin@email.com',
       firstName: 'Alice',
@@ -166,8 +184,10 @@ async function main() {
     }
   });
 
-  const bobJohnson = await prisma.user.create({
-    data: {
+  const bobJohnson = await prisma.user.upsert({
+    where: { email: 'bob.johnson@email.com' },
+    update: {},
+    create: {
       username: 'bob.johnson',
       email: 'bob.johnson@email.com',
       firstName: 'Bob',
@@ -183,8 +203,10 @@ async function main() {
     }
   });
 
-  const carlosRodriguez = await prisma.user.create({
-    data: {
+  const carlosRodriguez = await prisma.user.upsert({
+    where: { email: 'carlos.rodriguez@email.com' },
+    update: {},
+    create: {
       username: 'carlos.rodriguez',
       email: 'carlos.rodriguez@email.com',
       firstName: 'Carlos',
@@ -203,8 +225,10 @@ async function main() {
   // ============== UTILISATEURS INTERNATIONAUX ===============
 
   // Utilisateur japonais - Tokyo, Japon
-  const takeshiNakamura = await prisma.user.create({
-    data: {
+  const takeshiNakamura = await prisma.user.upsert({
+    where: { email: 'takeshi.nakamura@email.com' },
+    update: {},
+    create: {
       username: 'takeshi.nakamura',
       email: 'takeshi.nakamura@email.com',
       firstName: 'Takeshi',
@@ -223,8 +247,10 @@ async function main() {
   });
 
   // Utilisatrice japonaise travaillant en entreprise internationale (anglais préféré)
-  const yukiSato = await prisma.user.create({
-    data: {
+  const yukiSato = await prisma.user.upsert({
+    where: { email: 'yuki.sato@email.com' },
+    update: {},
+    create: {
       username: 'yuki.sato',
       email: 'yuki.sato@email.com',
       firstName: 'Yuki',
@@ -243,8 +269,10 @@ async function main() {
   });
 
   // Utilisateur chinois - Shanghai, Chine
-  const liWei = await prisma.user.create({
-    data: {
+  const liWei = await prisma.user.upsert({
+    where: { email: 'li.wei@email.com' },
+    update: {},
+    create: {
       username: 'li.wei',
       email: 'li.wei@email.com',
       firstName: 'Li',
@@ -263,8 +291,10 @@ async function main() {
   });
 
   // Utilisatrice chinoise étudiante en France
-  const meiChen = await prisma.user.create({
-    data: {
+  const meiChen = await prisma.user.upsert({
+    where: { email: 'mei.chen@email.com' },
+    update: {},
+    create: {
       username: 'mei.chen',
       email: 'mei.chen@email.com',
       firstName: 'Mei',
@@ -283,8 +313,10 @@ async function main() {
   });
 
   // Utilisateur portugais - Lisbonne, Portugal
-  const pedroSilva = await prisma.user.create({
-    data: {
+  const pedroSilva = await prisma.user.upsert({
+    where: { email: 'pedro.silva@email.com' },
+    update: {},
+    create: {
       username: 'pedro.silva',
       email: 'pedro.silva@email.com',
       firstName: 'Pedro',
@@ -303,8 +335,10 @@ async function main() {
   });
 
   // Utilisatrice brésilienne
-  const mariaSantos = await prisma.user.create({
-    data: {
+  const mariaSantos = await prisma.user.upsert({
+    where: { email: 'maria.santos@email.com' },
+    update: {},
+    create: {
       username: 'maria.santos',
       email: 'maria.santos@email.com',
       firstName: 'Maria',
@@ -323,8 +357,10 @@ async function main() {
   });
 
   // Utilisateur camerounais - Yaoundé, Cameroun (francophone)
-  const paulNgassa = await prisma.user.create({
-    data: {
+  const paulNgassa = await prisma.user.upsert({
+    where: { email: 'paul.ngassa@email.com' },
+    update: {},
+    create: {
       username: 'paul.ngassa',
       email: 'paul.ngassa@email.com',
       firstName: 'Paul',
@@ -343,8 +379,10 @@ async function main() {
   });
 
   // Utilisatrice camerounaise anglophone - Bamenda, Cameroun
-  const graceNkomo = await prisma.user.create({
-    data: {
+  const graceNkomo = await prisma.user.upsert({
+    where: { email: 'grace.nkomo@email.com' },
+    update: {},
+    create: {
       username: 'grace.nkomo',
       email: 'grace.nkomo@email.com',
       firstName: 'Grace',
@@ -363,8 +401,10 @@ async function main() {
   });
 
   // Utilisateur canadien francophone - Québec, Canada
-  const pierreGagnon = await prisma.user.create({
-    data: {
+  const pierreGagnon = await prisma.user.upsert({
+    where: { email: 'pierre.gagnon@email.com' },
+    update: {},
+    create: {
       username: 'pierre.gagnon',
       email: 'pierre.gagnon@email.com',
       firstName: 'Pierre',
@@ -383,8 +423,10 @@ async function main() {
   });
 
   // Utilisatrice canadienne anglophone - Toronto, Canada
-  const sarahTaylor = await prisma.user.create({
-    data: {
+  const sarahTaylor = await prisma.user.upsert({
+    where: { email: 'sarah.taylor@email.com' },
+    update: {},
+    create: {
       username: 'sarah.taylor',
       email: 'sarah.taylor@email.com',
       firstName: 'Sarah',
@@ -403,8 +445,10 @@ async function main() {
   });
 
   // Utilisateur allemand
-  const hansSchmidt = await prisma.user.create({
-    data: {
+  const hansSchmidt = await prisma.user.upsert({
+    where: { email: 'hans.schmidt@email.com' },
+    update: {},
+    create: {
       username: 'hans.schmidt',
       email: 'hans.schmidt@email.com',
       firstName: 'Hans',
@@ -423,8 +467,10 @@ async function main() {
   });
 
   // Utilisatrice arabe - Maroc
-  const aminaHassan = await prisma.user.create({
-    data: {
+  const aminaHassan = await prisma.user.upsert({
+    where: { email: 'amina.hassan@email.com' },
+    update: {},
+    create: {
       username: 'amina.hassan',
       email: 'amina.hassan@email.com',
       firstName: 'Amina',
@@ -443,6 +489,279 @@ async function main() {
   });
 
   console.log('👥 Utilisateurs créés');
+
+  // Créer la conversation globale "Meeshy" accessible à tous
+  const globalConversation = await prisma.conversation.upsert({
+    where: { id: 'any' },
+    update: {},
+    create: {
+      id: 'any',
+      type: 'GLOBAL',
+      title: 'Meeshy',
+      description: 'Conversation globale pour tous les utilisateurs de Meeshy'
+    }
+  });
+
+  console.log('🌍 Conversation globale "Meeshy" créée');
+
+  // Ajouter tous les utilisateurs comme membres de la conversation globale
+  const allUsers = [
+    bigboss, admin, userF, userC, userA, userE, alice, bob,
+    aliceMartin, bobJohnson, carlosRodriguez, takeshiNakamura, yukiSato,
+    liWei, meiChen, pedroSilva, mariaSantos, paulNgassa, graceNkomo,
+    pierreGagnon, sarahTaylor, hansSchmidt, aminaHassan
+  ];
+
+  // Ajouter les utilisateurs un par un pour éviter les conflits de clés uniques
+  let membersAdded = 0;
+  for (const user of allUsers) {
+    try {
+      await prisma.conversationMember.upsert({
+        where: {
+          conversationId_userId: {
+            conversationId: globalConversation.id,
+            userId: user.id
+          }
+        },
+        update: {},
+        create: {
+          conversationId: globalConversation.id,
+          userId: user.id,
+          role: 'MEMBER',
+          joinedAt: new Date()
+        }
+      });
+      membersAdded++;
+    } catch (error) {
+      console.warn(`⚠️  Utilisateur ${user.username} déjà membre de la conversation globale`);
+    }
+  }
+
+  console.log(`🌍 ${membersAdded} utilisateurs ajoutés à la conversation globale "any"`);
+
+  // ============== CONVERSATIONS PRIVÉES ==============
+  
+  // Conversation privée entre Alice et Bob (Franco-Anglais)
+  const aliceBobPrivate = await prisma.conversation.upsert({
+    where: { id: 'alice-bob-private' },
+    update: {},
+    create: {
+      id: 'alice-bob-private',
+      type: 'DIRECT',
+      title: 'Alice & Bob Chat',
+      description: 'Conversation privée entre Alice Martin et Bob Johnson'
+    }
+  });
+
+  // Ajouter les participants (en utilisant upsert pour éviter les doublons)
+  await prisma.conversationMember.upsert({
+    where: {
+      conversationId_userId: {
+        conversationId: aliceBobPrivate.id,
+        userId: aliceMartin.id
+      }
+    },
+    update: {},
+    create: {
+      conversationId: aliceBobPrivate.id,
+      userId: aliceMartin.id,
+      role: 'MEMBER',
+      joinedAt: new Date()
+    }
+  });
+
+  await prisma.conversationMember.upsert({
+    where: {
+      conversationId_userId: {
+        conversationId: aliceBobPrivate.id,
+        userId: bobJohnson.id
+      }
+    },
+    update: {},
+    create: {
+      conversationId: aliceBobPrivate.id,
+      userId: bobJohnson.id,
+      role: 'MEMBER',
+      joinedAt: new Date()
+    }
+  });
+
+  // Conversation privée entre utilisateurs asiatiques
+  const asianPrivate = await prisma.conversation.upsert({
+    where: { id: 'asian-private' },
+    update: {},
+    create: {
+      id: 'asian-private',
+      type: 'DIRECT',
+      title: 'Takeshi & Li Wei',
+      description: 'Conversation privée entre collègues asiatiques'
+    }
+  });
+
+  await prisma.conversationMember.upsert({
+    where: {
+      conversationId_userId: {
+        conversationId: asianPrivate.id,
+        userId: takeshiNakamura.id
+      }
+    },
+    update: {},
+    create: {
+      conversationId: asianPrivate.id,
+      userId: takeshiNakamura.id,
+      role: 'MEMBER',
+      joinedAt: new Date()
+    }
+  });
+
+  await prisma.conversationMember.upsert({
+    where: {
+      conversationId_userId: {
+        conversationId: asianPrivate.id,
+        userId: liWei.id
+      }
+    },
+    update: {},
+    create: {
+      conversationId: asianPrivate.id,
+      userId: liWei.id,
+      role: 'MEMBER',
+      joinedAt: new Date()
+    }
+  });
+
+  // ============== CONVERSATIONS DE GROUPE ==============
+
+  // Groupe d'entreprise internationale
+  const businessGroup = await prisma.conversation.create({
+    data: {
+      type: 'GROUP',
+      title: 'International Business Team',
+      description: 'Équipe internationale pour projets business',
+      image: '/images/groups/business-team.jpg'
+    }
+  });
+
+  const businessMembers = [bigboss, admin, yukiSato, hansSchmidt, sarahTaylor, mariaSantos];
+  for (const member of businessMembers) {
+    await prisma.conversationMember.create({
+      data: {
+        conversationId: businessGroup.id,
+        userId: member.id,
+        role: member.id === bigboss.id ? 'ADMIN' : 'MEMBER',
+        joinedAt: new Date()
+      }
+    });
+  }
+
+  // Groupe étudiants internationaux
+  const studentsGroup = await prisma.conversation.create({
+    data: {
+      type: 'GROUP',
+      title: 'Étudiants Internationaux',
+      description: 'Groupe pour les étudiants étrangers en France',
+      image: '/images/groups/students.jpg'
+    }
+  });
+
+  const studentMembers = [meiChen, carlosRodriguez, alice, userE];
+  for (const member of studentMembers) {
+    await prisma.conversationMember.create({
+      data: {
+        conversationId: studentsGroup.id,
+        userId: member.id,
+        role: member.id === alice.id ? 'ADMIN' : 'MEMBER',
+        joinedAt: new Date()
+      }
+    });
+  }
+
+  // Groupe tech francophone
+  const techGroup = await prisma.conversation.create({
+    data: {
+      type: 'GROUP',
+      title: 'Tech Francophone',
+      description: 'Développeurs et techniciens francophones',
+      image: '/images/groups/tech.jpg'
+    }
+  });
+
+  const techMembers = [aliceMartin, paulNgassa, pierreGagnon, userF];
+  for (const member of techMembers) {
+    await prisma.conversationMember.create({
+      data: {
+        conversationId: techGroup.id,
+        userId: member.id,
+        role: member.id === aliceMartin.id ? 'ADMIN' : 'MEMBER',
+        joinedAt: new Date()
+      }
+    });
+  }
+
+  // ============== CONVERSATIONS COMMUNAUTAIRES ==============
+
+  // Créer des communautés d'abord
+  const frenchCommunity = await prisma.community.create({
+    data: {
+      title: 'Communauté Française',
+      description: 'Espace pour tous les francophones',
+      isPublic: true,
+      createdById: aliceMartin.id
+    }
+  });
+
+  const techCommunity = await prisma.community.create({
+    data: {
+      title: 'Tech Community',
+      description: 'Global technology community',
+      isPublic: true,
+      createdById: bobJohnson.id
+    }
+  });
+
+  // Conversation dans la communauté française
+  const frenchCommunityChat = await prisma.conversation.create({
+    data: {
+      type: 'COMMUNITY',
+      title: 'Général - Communauté Française',
+      description: 'Discussion générale en français',
+      communityId: frenchCommunity.id
+    }
+  });
+
+  const frenchSpeakers = [aliceMartin, userF, paulNgassa, pierreGagnon, meiChen, userE];
+  for (const member of frenchSpeakers) {
+    await prisma.conversationMember.create({
+      data: {
+        conversationId: frenchCommunityChat.id,
+        userId: member.id,
+        role: 'MEMBER',
+        joinedAt: new Date()
+      }
+    });
+  }
+
+  // Conversation tech dans la communauté tech
+  const techCommunityChat = await prisma.conversation.create({
+    data: {
+      type: 'COMMUNITY',
+      title: 'General Discussion - Tech',
+      description: 'Technical discussions and sharing',
+      communityId: techCommunity.id
+    }
+  });
+
+  const techUsers = [bobJohnson, yukiSato, hansSchmidt, sarahTaylor, liWei, graceNkomo];
+  for (const member of techUsers) {
+    await prisma.conversationMember.create({
+      data: {
+        conversationId: techCommunityChat.id,
+        userId: member.id,
+        role: 'MEMBER',
+        joinedAt: new Date()
+      }
+    });
+  }
 
   // Créer une conversation de groupe multilingue pour les tests
   const multilingualGroup = await prisma.conversation.create({
@@ -572,13 +891,361 @@ async function main() {
 
   console.log('💬 Messages de test créés avec traductions');
 
+  // ============== MESSAGES POUR CONVERSATIONS PRIVÉES ==============
+
+  // Messages Alice & Bob (Français/Anglais)
+  await prisma.message.create({
+    data: {
+      conversationId: aliceBobPrivate.id,
+      senderId: aliceMartin.id,
+      content: 'Salut Bob ! Comment ça va ?',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: aliceBobPrivate.id,
+      senderId: bobJohnson.id,
+      content: 'Hey Alice! I\'m doing great, thanks! How about you?',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: aliceBobPrivate.id,
+      senderId: aliceMartin.id,
+      content: 'Ça va bien merci ! Tu as vu le nouveau projet ?',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  // Messages Takeshi & Li Wei (Japonais/Chinois)
+  await prisma.message.create({
+    data: {
+      conversationId: asianPrivate.id,
+      senderId: takeshiNakamura.id,
+      content: 'こんにちは！お疲れ様です。',
+      originalLanguage: 'ja',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: asianPrivate.id,
+      senderId: liWei.id,
+      content: '你好！最近工作怎么样？',
+      originalLanguage: 'zh',
+      messageType: 'text'
+    }
+  });
+
+  // ============== MESSAGES POUR GROUPES ==============
+
+  // Messages Business Group
+  await prisma.message.create({
+    data: {
+      conversationId: businessGroup.id,
+      senderId: bigboss.id,
+      content: 'Welcome everyone to our international business team!',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: businessGroup.id,
+      senderId: yukiSato.id,
+      content: 'Thank you for the warm welcome! Looking forward to working together.',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: businessGroup.id,
+      senderId: hansSchmidt.id,
+      content: 'Guten Tag! Freue mich auf die Zusammenarbeit.',
+      originalLanguage: 'de',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: businessGroup.id,
+      senderId: mariaSantos.id,
+      content: 'Olá pessoal! Vamos fazer um ótimo trabalho juntos!',
+      originalLanguage: 'pt',
+      messageType: 'text'
+    }
+  });
+
+  // Messages Students Group
+  await prisma.message.create({
+    data: {
+      conversationId: studentsGroup.id,
+      senderId: alice.id,
+      content: 'Bienvenue dans notre groupe d\'étudiants internationaux !',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: studentsGroup.id,
+      senderId: meiChen.id,
+      content: 'Merci beaucoup ! Je suis ravie de faire partie du groupe.',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: studentsGroup.id,
+      senderId: carlosRodriguez.id,
+      content: '¡Hola a todos! Encantado de conoceros.',
+      originalLanguage: 'es',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: studentsGroup.id,
+      senderId: userE.id,
+      content: 'Perfecto, tenemos un grupo muy diverso aquí.',
+      originalLanguage: 'es',
+      messageType: 'text'
+    }
+  });
+
+  // Messages Tech Group
+  await prisma.message.create({
+    data: {
+      conversationId: techGroup.id,
+      senderId: aliceMartin.id,
+      content: 'Bonjour les devs ! Quel est votre langage préféré en ce moment ?',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: techGroup.id,
+      senderId: paulNgassa.id,
+      content: 'Personnellement, je suis fan de TypeScript et React.',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: techGroup.id,
+      senderId: pierreGagnon.id,
+      content: 'Moi c\'est Python et FastAPI pour les APIs !',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  // ============== MESSAGES POUR COMMUNAUTÉS ==============
+
+  // Messages French Community
+  await prisma.message.create({
+    data: {
+      conversationId: frenchCommunityChat.id,
+      senderId: aliceMartin.id,
+      content: 'Bienvenue dans la communauté francophone !',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: frenchCommunityChat.id,
+      senderId: paulNgassa.id,
+      content: 'Merci ! C\'est génial d\'avoir un espace pour nous exprimer en français.',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: frenchCommunityChat.id,
+      senderId: pierreGagnon.id,
+      content: 'Salut de Montréal ! Ravi de rencontrer des francophones du monde entier.',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: frenchCommunityChat.id,
+      senderId: meiChen.id,
+      content: 'Bonjour ! Je suis étudiante chinoise en France, contente d\'être ici !',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  // Messages Tech Community
+  await prisma.message.create({
+    data: {
+      conversationId: techCommunityChat.id,
+      senderId: bobJohnson.id,
+      content: 'Welcome to our global tech community! Let\'s share knowledge and grow together.',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: techCommunityChat.id,
+      senderId: yukiSato.id,
+      content: 'Thanks! I\'m excited to discuss the latest trends in AI and machine learning.',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: techCommunityChat.id,
+      senderId: liWei.id,
+      content: 'Hello everyone! Looking forward to collaborating on open source projects.',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: techCommunityChat.id,
+      senderId: graceNkomo.id,
+      content: 'Hi! I\'m interested in discussing mobile development and best practices.',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  // ============== MESSAGES POUR LA CONVERSATION GLOBALE ==============
+
+  // Messages dans la conversation globale "Meeshy"
+  await prisma.message.create({
+    data: {
+      conversationId: globalConversation.id,
+      senderId: bigboss.id,
+      content: 'Welcome to Meeshy! This is our global conversation where everyone can connect.',
+      originalLanguage: 'en',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: globalConversation.id,
+      senderId: aliceMartin.id,
+      content: 'Bienvenue dans Meeshy ! Hâte de discuter avec tout le monde.',
+      originalLanguage: 'fr',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: globalConversation.id,
+      senderId: takeshiNakamura.id,
+      content: 'みなさん、こんにちは！よろしくお願いします。',
+      originalLanguage: 'ja',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: globalConversation.id,
+      senderId: carlosRodriguez.id,
+      content: '¡Hola mundo! Espero que podamos tener grandes conversaciones aquí.',
+      originalLanguage: 'es',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: globalConversation.id,
+      senderId: liWei.id,
+      content: '大家好！很高兴能在这里与全世界的朋友交流。',
+      originalLanguage: 'zh',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: globalConversation.id,
+      senderId: hansSchmidt.id,
+      content: 'Hallo alle zusammen! Ich freue mich auf den internationalen Austausch.',
+      originalLanguage: 'de',
+      messageType: 'text'
+    }
+  });
+
+  await prisma.message.create({
+    data: {
+      conversationId: globalConversation.id,
+      senderId: aminaHassan.id,
+      content: 'مرحبا بالجميع! أتطلع إلى محادثات رائعة مع الجميع.',
+      originalLanguage: 'ar',
+      messageType: 'text'
+    }
+  });
+
+  console.log('💬 Messages supplémentaires créés pour toutes les conversations');
+
   console.log('✅ Seeding terminé avec succès !');
   console.log(`
 📊 Résumé du seeding :
 - ${await prisma.user.count()} utilisateurs créés
 - ${await prisma.conversation.count()} conversations créées
+- ${await prisma.community.count()} communautés créées
 - ${await prisma.message.count()} messages créés
 - ${await prisma.messageTranslation.count()} traductions créées
+
+🌍 CONVERSATION GLOBALE :
+- "Meeshy" (ID: any) - Accessible à tous les utilisateurs
+
+💬 CONVERSATIONS CRÉÉES :
+
+📞 Conversations Privées :
+- Alice Martin & Bob Johnson (Français/Anglais)
+- Takeshi Nakamura & Li Wei (Japonais/Chinois)
+
+👥 Groupes Thématiques :
+- "International Business Team" (6 membres - BigBoss, Admin, équipe internationale)
+- "Étudiants Internationaux" (4 membres - étudiants en France)
+- "Tech Francophone" (4 membres - développeurs francophones)
+- "Groupe Test Multilingue" (16 membres - utilisateurs test avec messages traduits)
+
+🏢 Conversations Communautaires :
+- "Communauté Française" → "Général - Communauté Française" (6 membres francophones)
+- "Tech Community" → "General Discussion - Tech" (6 membres tech anglophones)
 
 🔑 Comptes administratifs :
 - bigboss@meeshy.com / bigboss123 (BIGBOSS)

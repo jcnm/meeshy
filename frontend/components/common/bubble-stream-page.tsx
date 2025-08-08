@@ -236,7 +236,6 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [location, setLocation] = useState<string>('');
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
-  const [isDemoMode, setIsDemoMode] = useState(true); // Commencer en mode démo, passer en temps réel quand WebSocket connecté
 
   // État pour les utilisateurs en train de taper
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -270,7 +269,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     reconnect,
     getDiagnostics
   } = useNativeMessaging({
-    conversationId: 'global_stream', // Conversation globale pour le stream
+    conversationId: 'any', // Conversation globale pour le stream
     currentUser: user,
     onNewMessage: handleNewMessage,
     onUserTyping: handleUserTyping,
@@ -279,68 +278,61 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
   const { notifications, markAsRead } = useNotifications();
 
-  // Forcer la connexion WebSocket au chargement et basculer en mode temps réel
+  // Initialisation de la connexion WebSocket en temps réel
   useEffect(() => {
-    console.log('🚀 Initialisation de la connexion WebSocket au chargement...');
+    console.log('🚀 Initialisation de la connexion WebSocket...');
     
-    // Diagnostic immédiat
+    // Diagnostic initial
     const diagnostics = getDiagnostics();
     console.log('🔍 Diagnostic initial:', diagnostics);
     
-    // Délai pour laisser le temps à la connexion de s'établir
+    // Délai pour vérifier la connexion établie
     const initTimeout = setTimeout(() => {
       const newDiagnostics = getDiagnostics();
       console.log('🔍 Diagnostic après délai:', newDiagnostics);
       
       if (connectionStatus.isConnected && connectionStatus.hasSocket) {
-        setIsDemoMode(false);
-        console.log('✅ WebSocket connecté - Mode temps réel activé');
+        console.log('✅ WebSocket connecté - Messages en temps réel');
         toast.success('🎉 Connexion établie ! Messages en temps réel activés');
       } else {
-        console.log('⚠️ WebSocket non connecté après délai - Mode démo maintenu');
-        console.log('🔍 Raisons possibles:', {
+        console.log('⚠️ WebSocket non connecté après délai');
+        console.log('🔍 Diagnostic de connexion:', {
           hasSocket: connectionStatus.hasSocket,
           isConnected: connectionStatus.isConnected,
           hasToken: !!localStorage.getItem('auth_token'),
           wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
         });
-        toast.info('📱 Mode démo actif - Connexion WebSocket en cours...');
-        setIsDemoMode(true);
+        toast.warning('� Connexion WebSocket en cours...');
       }
-    }, 3000); // Attendre 3 secondes pour la connexion
+    }, 3000);
 
     return () => clearTimeout(initTimeout);
-  }, [getDiagnostics]); // Dépendance sur getDiagnostics
+  }, [getDiagnostics]);
 
-  // Hook pour détecter le statut de connexion réel et basculer automatiquement
+  // Surveillance du statut de connexion WebSocket
   useEffect(() => {
     const checkConnection = () => {
       const isReallyConnected = connectionStatus.isConnected && connectionStatus.hasSocket;
-      const wasInDemoMode = isDemoMode;
       
-      setIsDemoMode(!isReallyConnected);
-      
-      if (wasInDemoMode && isReallyConnected) {
-        console.log('🎉 Transition: Mode démo → Mode temps réel');
-        toast.success('🌐 Connexion WebSocket établie ! Réception des messages en temps réel');
-      } else if (!wasInDemoMode && !isReallyConnected) {
-        console.log('⚠️ Transition: Mode temps réel → Mode démo');
-        toast.warning('📡 Connexion WebSocket perdue - Basculement en mode démo');
+      if (isReallyConnected) {
+        console.log('🌐 Connexion WebSocket active');
+      } else {
+        console.log('📡 WebSocket déconnecté');
       }
       
       console.log('🔌 Statut connexion vérifié:', { 
-        isReallyConnected, 
-        isDemoMode: !isReallyConnected,
+        isConnected: connectionStatus.isConnected,
+        hasSocket: connectionStatus.hasSocket,
         connectionStatus 
       });
     };
 
     checkConnection();
     
-    // Vérifier périodiquement le statut (plus fréquent au début)
-    const interval = setInterval(checkConnection, 3000);
+    // Vérifier périodiquement le statut
+    const interval = setInterval(checkConnection, 5000);
     return () => clearInterval(interval);
-  }, [connectionStatus, isDemoMode]);
+  }, [connectionStatus]);
 
   // Géolocalisation
   useEffect(() => {
@@ -411,154 +403,12 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     return () => clearInterval(interval);
   }, [messages]);
 
-  // Simulation de messages existants pour la démo
+  // Pas d'initialisation de messages démo - les messages seront chargés depuis le serveur
   useEffect(() => {
-    // Génération de 30 messages de démonstration
-    const generateDemoMessages = (): BubbleStreamMessage[] => {
-      const demoUsers = [
-        { id: '1', username: 'alice_fr', firstName: 'Alice', lastName: 'Martin', systemLanguage: 'fr', flag: '🇫🇷', location: 'Paris' },
-        { id: '2', username: 'bob_en', firstName: 'Bob', lastName: 'Smith', systemLanguage: 'en', flag: '�🇧', location: 'London' },
-        { id: '3', username: 'carlos_es', firstName: 'Carlos', lastName: 'Rodriguez', systemLanguage: 'es', flag: '🇪🇸', location: 'Madrid' },
-        { id: '4', username: 'marie_fr', firstName: 'Marie', lastName: 'Dubois', systemLanguage: 'fr', flag: '🇫🇷', location: 'Lyon' },
-        { id: '5', username: 'hans_de', firstName: 'Hans', lastName: 'Mueller', systemLanguage: 'de', flag: '🇩🇪', location: 'Berlin' },
-        { id: '6', username: 'sofia_pt', firstName: 'Sofia', lastName: 'Silva', systemLanguage: 'pt', flag: '🇵🇹', location: 'Lisbon' },
-        { id: '7', username: 'li_zh', firstName: 'Li', lastName: 'Wei', systemLanguage: 'zh', flag: '🇨🇳', location: 'Beijing' },
-        { id: '8', username: 'yuki_ja', firstName: 'Yuki', lastName: 'Tanaka', systemLanguage: 'ja', flag: '🇯🇵', location: 'Tokyo' },
-      ];
-
-      const demoTexts = {
-        fr: [
-          'Bonjour tout le monde ! 🌍 Ravi de découvrir cette plateforme incroyable !',
-          'Cette technologie de traduction en temps réel est vraiment impressionnante 🚀',
-          'J\'adore pouvoir communiquer avec des personnes du monde entier sans barrière linguistique',
-          'Meeshy révolutionne vraiment la communication internationale ! 💫',
-          'C\'est fantastique de voir tous ces drapeaux qui représentent notre diversité',
-          'La qualité de traduction est remarquable, bravo à l\'équipe ! 👏',
-          'Je suis fasciné par cette interface si intuitive et moderne',
-          'Enfin une solution qui unit vraiment les cultures ! 🌈'
-        ],
-        en: [
-          'Hello everyone! 👋 This multilingual platform is absolutely amazing!',
-          'I\'m impressed by the real-time translation capabilities 🤖',
-          'Connecting with people from different cultures has never been easier!',
-          'The seamless communication across languages is mind-blowing 🤯',
-          'Love seeing all these flags representing our global community 🌎',
-          'This is the future of international communication! 🚀',
-          'The AI translation quality is surprisingly accurate',
-          'Great job on creating such an inclusive platform! 🎉'
-        ],
-        es: [
-          '¡Hola a todos! 🇪🇸 Esta plataforma es increíblemente innovadora',
-          'Me encanta poder hablar con gente de todo el mundo sin problemas',
-          'La traducción automática funciona de maravilla 🔥',
-          '¡Esto sí que es romper las barreras del idioma! 💪',
-          'Qué emocionante ver tantas culturas unidas aquí',
-          'La interfaz es muy intuitiva y fácil de usar 👌',
-          'Felicidades por esta extraordinaria herramienta',
-          '¡El futuro de la comunicación global está aquí! 🌟'
-        ],
-        de: [
-          'Hallo alle zusammen! 🇩🇪 Diese Plattform ist wirklich beeindruckend',
-          'Die Echtzeitübersetzung funktioniert fantastisch! ⚡',
-          'Endlich können wir alle miteinander sprechen',
-          'Diese Technologie wird die Welt verändern 🌍',
-          'Ich bin begeistert von der Benutzerfreundlichkeit',
-          'Großartige Arbeit beim Design dieser App! 🎨',
-          'Die KI-Übersetzung ist erstaunlich präzise',
-          'Das ist wahre Innovation in der Kommunikation! 💡'
-        ],
-        pt: [
-          'Olá pessoal! 🇵🇹 Esta plataforma é realmente inovadora',
-          'Adoro poder comunicar com pessoas de todo o mundo! 🌎',
-          'A tradução em tempo real é simplesmente fantástica',
-          'Finalmente uma ferramenta que une culturas 🤝',
-          'A qualidade da tradução é impressionante',
-          'Parabéns pela interface tão bem projetada! 🎯',
-          'Isto vai revolucionar a comunicação global',
-          'Que tecnologia incrível para quebrar barreiras! 🚀'
-        ],
-        zh: [
-          '大家好！🇨🇳 这个多语言平台太棒了！',
-          '实时翻译技术真的很令人印象深刻 🤖',
-          '能够与世界各地的人交流真是太好了',
-          '这种无缝的跨语言交流太神奇了！',
-          '看到这么多国旗代表我们的全球社区真棒 🌍',
-          '这就是国际交流的未来！',
-          'AI翻译的质量令人惊讶地准确',
-          '创建如此包容的平台做得很好！ 👏'
-        ],
-        ja: [
-          'こんにちはみなさん！🇯🇵 この多言語プラットフォームは素晴らしいです！',
-          'リアルタイム翻訳機能に感動しています 🚀',
-          '異なる文化の人々とのつながりがこんなに簡単になるなんて',
-          '言語を超えたシームレスなコミュニケーションは驚異的です',
-          '世界中からの参加者を表す旗を見るのが大好きです 🌈',
-          'これは国際コミュニケーションの未来ですね！',
-          'AI翻訳の品質は驚くほど正確です',
-          'こんな包括的なプラットフォームを作ってくれてありがとう！ 🎉'
-        ]
-      };
-
-      const messages: BubbleStreamMessage[] = [];
-      
-      for (let i = 0; i < 30; i++) {
-        const user = demoUsers[i % demoUsers.length];
-        const lang = user.systemLanguage as keyof typeof demoTexts;
-        const texts = demoTexts[lang];
-        const content = texts[i % texts.length];
-        
-        const baseUser = {
-          ...user,
-          email: `${user.username}@email.com`,
-          avatar: '',
-          role: 'USER' as const,
-          permissions: {
-            canAccessAdmin: false,
-            canManageUsers: false,
-            canManageGroups: false,
-            canManageConversations: false,
-            canViewAnalytics: false,
-            canModerateContent: false,
-            canViewAuditLogs: false,
-            canManageNotifications: false,
-            canManageTranslations: false,
-          },
-          regionalLanguage: user.systemLanguage,
-          autoTranslateEnabled: true,
-          translateToSystemLanguage: true,
-          translateToRegionalLanguage: false,
-          useCustomDestination: false,
-          isOnline: true,
-          lastSeen: new Date(),
-          createdAt: new Date(),
-          lastActiveAt: new Date()
-        };
-
-        messages.push({
-          id: `demo-${i + 1}`,
-          conversationId: 'global_stream',
-          senderId: user.id,
-          content,
-          originalLanguage: user.systemLanguage,
-          isTranslated: userLanguage !== user.systemLanguage,
-          translatedFrom: userLanguage !== user.systemLanguage ? user.systemLanguage : undefined,
-          isEdited: false,
-          createdAt: new Date(Date.now() - (30 - i) * 2 * 60 * 1000), // Messages espacés de 2 minutes
-          updatedAt: new Date(Date.now() - (30 - i) * 2 * 60 * 1000),
-          location: user.location,
-          sender: baseUser
-        });
-      }
-
-      return messages.reverse(); // Plus récents en premier
-    };
-
-    const demoMessages = generateDemoMessages();
-    setMessages(demoMessages);
-    console.log('Messages de démo initialisés:', demoMessages.length);
+    // Messages chargés depuis le serveur uniquement
   }, [userLanguage]);
 
-  // Chargement des données trending et simulation de messages entrants
+  // Chargement des données trending sans simulation de messages
   useEffect(() => {
     // Simulation des hashtags tendances - Plus de 7 pour tester le scroll
     setTrendingHashtags([
@@ -567,59 +417,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       '#communication', '#technology', '#ai', '#international', '#diversity'
     ]);
     
-    // Premier message d'accueil après quelques secondes en mode démo
-    const welcomeTimeout = setTimeout(() => {
-      if (isDemoMode) {
-        const welcomeMessage: BubbleStreamMessage = {
-          id: `welcome-msg-${Date.now()}`,
-          conversationId: 'global_stream',
-          senderId: 'meeshy_bot',
-          content: '🎉 Bienvenue sur Meeshy ! Les messages arrivent automatiquement toutes les 15-25 secondes en mode démo.',
-          originalLanguage: 'fr',
-          isTranslated: false,
-          isEdited: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          location: 'Global',
-          sender: {
-            id: 'meeshy_bot',
-            username: 'meeshy_bot',
-            firstName: 'Meeshy',
-            lastName: 'Bot',
-            email: 'bot@meeshy.com',
-            avatar: '',
-            role: 'USER' as const,
-            permissions: {
-              canAccessAdmin: false,
-              canManageUsers: false,
-              canManageGroups: false,
-              canManageConversations: false,
-              canViewAnalytics: false,
-              canModerateContent: false,
-              canViewAuditLogs: false,
-              canManageNotifications: false,
-              canManageTranslations: false,
-            },
-            systemLanguage: 'fr',
-            regionalLanguage: 'fr',
-            autoTranslateEnabled: true,
-            translateToSystemLanguage: true,
-            translateToRegionalLanguage: false,
-            useCustomDestination: false,
-            isOnline: true,
-            lastSeen: new Date(),
-            createdAt: new Date(),
-            lastActiveAt: new Date()
-          }
-        };
-
-        setMessages(prev => [welcomeMessage, ...prev]);
-        toast.info('🤖 Message de bienvenue du bot Meeshy !', { duration: 4000 });
-        console.log('🤖 Message de bienvenue ajouté');
-      }
-    }, 5000); // Après 5 secondes
-
-    // Simulation des utilisateurs actifs avec des objets User complets - Plus de 7 pour tester le scroll
+    // Pas de simulation de messages - utilisateurs actifs seulement
     setActiveUsers([
       { 
         id: '1', 
@@ -680,395 +478,12 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         lastSeen: new Date(),
         createdAt: new Date(),
         lastActiveAt: new Date()
-      },
-      { 
-        id: '3', 
-        username: 'carlos_es', 
-        firstName: 'Carlos', 
-        lastName: 'Rodriguez', 
-        email: 'carlos@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'es',
-        regionalLanguage: 'es',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '4',
-        username: 'marie_fr',
-        firstName: 'Marie',
-        lastName: 'Dubois',
-        email: 'marie@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'fr',
-        regionalLanguage: 'fr',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '5',
-        username: 'hans_de',
-        firstName: 'Hans',
-        lastName: 'Mueller',
-        email: 'hans@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'de',
-        regionalLanguage: 'de',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '6',
-        username: 'sofia_pt',
-        firstName: 'Sofia',
-        lastName: 'Silva',
-        email: 'sofia@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'pt',
-        regionalLanguage: 'pt',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '7',
-        username: 'li_zh',
-        firstName: 'Li',
-        lastName: 'Wei',
-        email: 'li@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'zh',
-        regionalLanguage: 'zh',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '8',
-        username: 'yuki_ja',
-        firstName: 'Yuki',
-        lastName: 'Tanaka',
-        email: 'yuki@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'ja',
-        regionalLanguage: 'ja',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '9',
-        username: 'ahmed_ar',
-        firstName: 'Ahmed',
-        lastName: 'Hassan',
-        email: 'ahmed@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'ar',
-        regionalLanguage: 'ar',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '10',
-        username: 'elena_ru',
-        firstName: 'Elena',
-        lastName: 'Volkov',
-        email: 'elena@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'ru',
-        regionalLanguage: 'ru',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '11',
-        username: 'priya_hi',
-        firstName: 'Priya',
-        lastName: 'Sharma',
-        email: 'priya@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'hi',
-        regionalLanguage: 'hi',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
-      },
-      {
-        id: '12',
-        username: 'giovanni_it',
-        firstName: 'Giovanni',
-        lastName: 'Rossi',
-        email: 'giovanni@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'it',
-        regionalLanguage: 'it',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date()
       }
     ]);
-
-    // Simuler l'arrivée de nouveaux messages toutes les 10-20 secondes
-    const messageInterval = setInterval(() => {
-      console.log('🎯 Simulation de message - Mode démo:', isDemoMode, 'Connexion:', connectionStatus.isConnected);
-      
-      if (isDemoMode) { // Utilise notre état local fiable
-        const randomMessages = [
-          { user: 'alice_fr', text: 'Cette plateforme devient de plus en plus populaire ! 📈', lang: 'fr', location: 'Paris' },
-          { user: 'bob_en', text: 'Amazing to see so many people connecting here! 🌟', lang: 'en', location: 'London' },
-          { user: 'carlos_es', text: '¡La comunidad crece cada día más! Me encanta 💕', lang: 'es', location: 'Madrid' },
-          { user: 'hans_de', text: 'Die Übersetzungsqualität wird immer besser! 🔥', lang: 'de', location: 'Berlin' },
-          { user: 'sofia_pt', text: 'Que bom ver tantas culturas unidas aqui! 🤝', lang: 'pt', location: 'Lisbon' },
-          { user: 'yuki_ja', text: 'みんなとつながれて嬉しいです！ 🎌', lang: 'ja', location: 'Tokyo' },
-          { user: 'li_zh', text: '这个平台真的很棒！ 🇨🇳', lang: 'zh', location: 'Beijing' },
-          { user: 'ahmed_ar', text: 'منصة رائعة للتواصل العالمي! 🌍', lang: 'ar', location: 'Cairo' },
-        ];
-
-        const randomMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
-        
-        const newMessage: BubbleStreamMessage = {
-          id: `auto-msg-${Date.now()}-${Math.random()}`,
-          conversationId: 'global_stream',
-          senderId: randomMessage.user,
-          content: randomMessage.text,
-          originalLanguage: randomMessage.lang,
-          isTranslated: userLanguage !== randomMessage.lang,
-          translatedFrom: userLanguage !== randomMessage.lang ? randomMessage.lang : undefined,
-          isEdited: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          location: randomMessage.location,
-          sender: {
-            id: randomMessage.user,
-            username: randomMessage.user,
-            firstName: randomMessage.user.split('_')[0].charAt(0).toUpperCase() + randomMessage.user.split('_')[0].slice(1),
-            lastName: randomMessage.user.split('_')[1]?.toUpperCase() || 'User',
-            email: `${randomMessage.user}@example.com`,
-            avatar: '',
-            role: 'USER' as const,
-            permissions: {
-              canAccessAdmin: false,
-              canManageUsers: false,
-              canManageGroups: false,
-              canManageConversations: false,
-              canViewAnalytics: false,
-              canModerateContent: false,
-              canViewAuditLogs: false,
-              canManageNotifications: false,
-              canManageTranslations: false,
-            },
-            systemLanguage: randomMessage.lang,
-            regionalLanguage: randomMessage.lang,
-            autoTranslateEnabled: true,
-            translateToSystemLanguage: true,
-            translateToRegionalLanguage: false,
-            useCustomDestination: false,
-            isOnline: true,
-            lastSeen: new Date(),
-            createdAt: new Date(),
-            lastActiveAt: new Date()
-          }
-        };
-
-        setMessages(prev => [newMessage, ...prev.slice(0, 49)]); // Garder max 50 messages
-        
-        // Notification toast pour le nouveau message
-        toast.info(`📨 Nouveau message de ${newMessage.sender.firstName}`, {
-          duration: 3000
-        });
-        
-        // Log pour debug
-        console.log('✅ Nouveau message simulé ajouté:', newMessage.content);
-      } else {
-        console.log('⏸️  Simulation arrêtée - Mode temps réel actif');
-      }
-    }, 15000 + Math.random() * 10000); // Entre 15 et 25 secondes
-
-    return () => {
-      clearInterval(messageInterval);
-      clearTimeout(welcomeTimeout);
-    };
-  }, [isDemoMode, userLanguage]); // Dépendance sur isDemoMode au lieu de connectionStatus
+  }, []);
 
   // Fonction pour charger les messages existants depuis le serveur
   const loadExistingMessages = useCallback(async () => {
-    if (isDemoMode) return; // Ne pas charger en mode démo
-    
     try {
       console.log('📥 Chargement des messages existants...');
       const token = localStorage.getItem('auth_token');
@@ -1078,7 +493,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         return;
       }
       
-      const response = await fetch(buildApiUrl(`/api/conversations/global_stream/messages`), {
+      const response = await fetch(buildApiUrl(`/api/conversations/any/messages`), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -1089,7 +504,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         const existingMessages = await response.json();
         console.log('✅ Messages existants chargés:', existingMessages.length);
         
-        // Convertir en BubbleStreamMessage et remplacer les messages démo
+        // Convertir en BubbleStreamMessage
         const bubbleMessages: BubbleStreamMessage[] = existingMessages.map((msg: any) => ({
           ...msg,
           originalLanguage: msg.originalLanguage || 'fr',
@@ -1106,11 +521,11 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     } catch (error) {
       console.error('❌ Erreur lors du chargement des messages:', error);
     }
-  }, [isDemoMode, userLanguage]);
+  }, [userLanguage]);
 
-  // Charger les messages existants quand on passe en mode temps réel
+  // Charger les messages existants dès la connexion
   useEffect(() => {
-    if (!isDemoMode && connectionStatus.isConnected) {
+    if (connectionStatus.isConnected) {
       // Délai pour laisser le temps à la connexion de se stabiliser
       const loadTimeout = setTimeout(() => {
         loadExistingMessages();
@@ -1118,7 +533,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       
       return () => clearTimeout(loadTimeout);
     }
-  }, [isDemoMode, connectionStatus.isConnected, loadExistingMessages]);
+  }, [connectionStatus.isConnected, loadExistingMessages]);
 
   function handleNewMessage(message: Message) {
     // Éviter les doublons si le message a déjà été ajouté localement
@@ -1164,10 +579,10 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
 
     try {
-      // Simuler l'envoi du message même sans connexion WebSocket
+      // Créer le message
       const newBubbleMessage: BubbleStreamMessage = {
         id: `user-msg-${Date.now()}`,
-        conversationId: 'global_stream',
+        conversationId: 'any',
         senderId: user.id,
         content: newMessage.trim(),
         originalLanguage: detectedLanguage,
@@ -1183,7 +598,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       setMessages(prev => [newBubbleMessage, ...prev]);
 
       // Essayer d'envoyer via le service WebSocket si connecté
-      if (connectionStatus.isConnected && !isDemoMode) {
+      if (connectionStatus.isConnected) {
         try {
           await sendMessageToService(newMessage.trim());
           console.log('✅ Message envoyé via WebSocket');
@@ -1194,8 +609,6 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           setMessages(prev => prev.filter(msg => msg.id !== newBubbleMessage.id));
           return;
         }
-      } else if (isDemoMode) {
-        console.log('📱 Message ajouté en mode démo local');
       } else {
         console.log('📡 WebSocket non connecté - Message en attente');
         toast.warning('Connexion en cours - Message sera envoyé dès la reconnexion');
@@ -1220,67 +633,8 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       
       toast.success('Message publié !');
 
-      // Simuler une réponse après quelques secondes si en mode démo
-      if (isDemoMode) {
-        setTimeout(() => {
-          const responses = [
-            'Intéressant point de vue ! 👍',
-            'Je suis d\'accord avec vous 🤝',
-            'Merci pour ce partage ! 🙏',
-            'Excellente observation ! ✨',
-            'C\'est exactement ce que je pensais ! 💯'
-          ];
-          
-          const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-          const responseMessage: BubbleStreamMessage = {
-            id: `demo-response-${Date.now()}`,
-            conversationId: 'global_stream',
-            senderId: 'demo-user',
-            content: randomResponse,
-            originalLanguage: 'fr',
-            isTranslated: false,
-            isEdited: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            location: 'Lyon',
-            sender: {
-              id: 'demo-user',
-              username: 'demo_user',
-              firstName: 'Utilisateur',
-              lastName: 'Démo',
-              email: 'demo@example.com',
-              avatar: '',
-              role: 'USER' as const,
-              permissions: {
-                canAccessAdmin: false,
-                canManageUsers: false,
-                canManageGroups: false,
-                canManageConversations: false,
-                canViewAnalytics: false,
-                canModerateContent: false,
-                canViewAuditLogs: false,
-                canManageNotifications: false,
-                canManageTranslations: false,
-              },
-              systemLanguage: 'fr',
-              regionalLanguage: 'fr',
-              autoTranslateEnabled: true,
-              translateToSystemLanguage: true,
-              translateToRegionalLanguage: false,
-              useCustomDestination: false,
-              isOnline: true,
-              lastSeen: new Date(),
-              createdAt: new Date(),
-              lastActiveAt: new Date()
-            }
-          };
-          
-          setMessages(prev => [responseMessage, ...prev]);
-        }, 2000 + Math.random() * 3000); // Réponse après 2-5 secondes
-      }
-      
     } catch (error) {
-      console.error('Erreur envoi message:', error);
+      console.error('❌ Erreur lors de l\'envoi du message:', error);
       toast.error('Erreur lors de l\'envoi du message');
     }
   };
@@ -1504,23 +858,23 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           <div className="fixed top-16 left-0 right-0 xl:right-80 z-40 px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none">
             <div className="pointer-events-auto">
               <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
-                !isDemoMode
+                connectionStatus.isConnected && connectionStatus.hasSocket
                   ? 'bg-green-100/80 text-green-800 border border-green-200/60' 
                   : 'bg-orange-100/80 text-orange-800 border border-orange-200/60'
               }`}>
                 <div className={`w-2 h-2 rounded-full animate-pulse ${
-                  !isDemoMode ? 'bg-green-600' : 'bg-orange-600'
+                  connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
                 }`} />
                 <span className="font-medium">
-                  {!isDemoMode ? 'Messages en temps réel' : 'Mode démonstration'}
+                  Messages en temps réel
                 </span>
-                {isDemoMode && (
-                  <span className="text-xs opacity-75">• Messages simulés</span>
+                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                  <span className="text-xs opacity-75">• Connexion en cours...</span>
                 )}
-                {!isDemoMode && (
+                {connectionStatus.isConnected && connectionStatus.hasSocket && (
                   <span className="text-xs opacity-75">• Communication active</span>
                 )}
-                {isDemoMode && (
+                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
                   <>
                     <Button
                       size="sm"
@@ -1540,7 +894,6 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                           
                           if (newDiagnostics.isConnected) {
                             toast.success('✅ Reconnexion réussie !');
-                            setIsDemoMode(false);
                           } else {
                             toast.error('❌ Reconnexion échouée - Vérifiez le serveur');
                           }
@@ -1560,18 +913,10 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                         const message = `Diagnostic WebSocket:
 • Socket créé: ${diagnostics.hasSocket ? '✅' : '❌'}
 • Connecté: ${diagnostics.isConnected ? '✅' : '❌'}  
-• État socket: ${diagnostics.socketState} (${diagnostics.socketState === 1 ? 'OPEN' : diagnostics.socketState === 0 ? 'CONNECTING' : diagnostics.socketState === 2 ? 'CLOSING' : 'CLOSED'})
 • Token: ${diagnostics.hasToken ? '✅' : '❌'}
-• URL: ${diagnostics.url}
-• Utilisateur: ${diagnostics.currentUser || 'Non défini'}
-• Tentatives: ${diagnostics.reconnectAttempts}
-
-💡 Si la connexion échoue:
-1. Vérifiez que le serveur gateway est démarré
-2. Vérifiez l'URL WebSocket dans .env  
-3. Vérifiez votre token d'authentification`;
+• URL: ${diagnostics.url}`;
                         
-                        toast.info(message, { duration: 10000 });
+                        toast.info(message, { duration: 8000 });
                       }}
                       className="ml-1 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
                     >
@@ -1614,7 +959,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 )}
 
                 {/* Indicateur des utilisateurs en train de taper */}
-                {typingUsers.length > 0 && !isDemoMode && (
+                {typingUsers.length > 0 && connectionStatus.isConnected && (
                   <div className="mt-4 p-3 bg-blue-50/50 rounded-xl border border-blue-200/30">
                     <div className="flex items-center space-x-2">
                       <div className="flex space-x-1">

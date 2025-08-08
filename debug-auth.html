@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Authentification Meeshy</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug Authentification Meeshy</h1>
+        
+        <div class="section">
+            <h2>1. Test de connexion API</h2>
+            <button onclick="testLogin()">Se connecter avec admin@meeshy.com</button>
+            <div id="loginResult" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>2. Test des conversations</h2>
+            <button onclick="testConversations()">Charger les conversations</button>
+            <div id="conversationsResult" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>3. Test des messages</h2>
+            <button onclick="testMessages()">Charger les messages de la conversation 'any'</button>
+            <div id="messagesResult" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>4. Connexion frontend</h2>
+            <button onclick="loginFrontend()">Se connecter et rediriger vers les conversations</button>
+            <div id="frontendResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            try {
+                const response = await fetch('http://localhost:3000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@meeshy.com',
+                        password: 'password123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.access_token;
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Connexion réussie !</strong><br>
+                        Token: ${authToken.substring(0, 20)}...<br>
+                        Utilisateur: ${data.user.username} (${data.user.email})
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `Erreur: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `Erreur réseau: ${error.message}`;
+            }
+        }
+
+        async function testConversations() {
+            const resultDiv = document.getElementById('conversationsResult');
+            if (!authToken) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = 'Veuillez d\'abord vous connecter';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/conversations', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Conversations chargées !</strong><br>
+                        Nombre: ${data.data.length}<br>
+                        Première conversation: ${data.data[0]?.title || 'Aucune'}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `Erreur: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `Erreur réseau: ${error.message}`;
+            }
+        }
+
+        async function testMessages() {
+            const resultDiv = document.getElementById('messagesResult');
+            if (!authToken) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = 'Veuillez d\'abord vous connecter';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/conversations/any/messages', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Messages chargés !</strong><br>
+                        Nombre: ${data.data.messages.length}<br>
+                        Premier message: ${data.data.messages[0]?.content.substring(0, 50) || 'Aucun'}...
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `Erreur: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `Erreur réseau: ${error.message}`;
+            }
+        }
+
+        async function loginFrontend() {
+            const resultDiv = document.getElementById('frontendResult');
+            
+            if (!authToken) {
+                await testLogin();
+                if (!authToken) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = 'Échec de la connexion';
+                    return;
+                }
+            }
+
+            // Stocker les données d'authentification dans localStorage comme le fait le frontend
+            const userData = {
+                id: "cme2pnbqm0001244fvxgepe5u",
+                username: "admin",
+                firstName: "Admin",
+                lastName: "User",
+                email: "admin@meeshy.com",
+                displayName: "Admin User",
+                role: "ADMIN"
+            };
+
+            localStorage.setItem('auth_token', authToken);
+            localStorage.setItem('user', JSON.stringify(userData));
+
+            resultDiv.className = 'result success';
+            resultDiv.innerHTML = `
+                <strong>Données stockées dans localStorage !</strong><br>
+                <button onclick="window.open('http://localhost:3100/conversations', '_blank')">
+                    Ouvrir les conversations
+                </button>
+            `;
+        }
+    </script>
+</body>
+</html>

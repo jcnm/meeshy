@@ -35,7 +35,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     preValidation: [fastify.authenticate]
   }, async (request: FastifyRequest, reply) => {
     try {
-      const userId = (request as any).user.id;
+      const userId = (request as any).user.userId || (request as any).user.id;
 
       const conversations = await prisma.conversation.findMany({
         where: {
@@ -139,7 +139,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const { id } = request.params;
-      const userId = (request as any).user.id;
+      const userId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier les permissions d'accès
       let canAccess = false;
@@ -214,7 +214,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const { type, title, description, participantIds = [], communityId } = request.body;
-      const userId = (request as any).user.id;
+      const userId = (request as any).user.userId || (request as any).user.id;
 
       // Validation des données
       if (!['direct', 'group', 'public', 'global'].includes(type)) {
@@ -291,7 +291,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params;
       const { limit = '20', offset = '0', before } = request.query;
-      const userId = (request as any).user.id;
+      const userId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier les permissions d'accès
       let canAccess = false;
@@ -378,12 +378,30 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Marquer les messages comme lus
       if (messages.length > 0) {
         const messageIds = messages.map(m => m.id);
-        await prisma.messageReadStatus.createMany({
-          data: messageIds.map(messageId => ({
-            messageId,
-            userId
-          }))
-        });
+        try {
+          // Vérifier quels messages ne sont pas encore marqués comme lus
+          const existingReadStatus = await prisma.messageReadStatus.findMany({
+            where: {
+              messageId: { in: messageIds },
+              userId: userId
+            },
+            select: { messageId: true }
+          });
+          
+          const alreadyReadMessageIds = new Set(existingReadStatus.map(r => r.messageId));
+          const unreadMessageIds = messageIds.filter(id => !alreadyReadMessageIds.has(id));
+          
+          if (unreadMessageIds.length > 0) {
+            await prisma.messageReadStatus.createMany({
+              data: unreadMessageIds.map(messageId => ({
+                messageId,
+                userId
+              }))
+            });
+          }
+        } catch (error) {
+          console.warn('Error marking messages as read:', error);
+        }
       }
 
       reply.send({
@@ -413,7 +431,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params;
       const { content, originalLanguage = 'fr', messageType = 'text', replyToId } = request.body;
-      const userId = (request as any).user.id;
+      const userId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier les permissions d'accès et d'écriture
       let canSend = false;

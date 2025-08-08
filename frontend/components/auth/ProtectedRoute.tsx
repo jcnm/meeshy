@@ -24,7 +24,7 @@ export function ProtectedRoute({
   useEffect(() => {
     const timer = setTimeout(() => {
       setTimeoutReached(true);
-    }, 5000); // 5 secondes maximum
+    }, 3000); // 3 secondes maximum pour être plus rapide
 
     return () => clearTimeout(timer);
   }, []);

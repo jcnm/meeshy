@@ -201,8 +201,13 @@ export class ConversationsService {
       return this.conversationsCache!.data;
     }
     
-    const response = await apiService.get<unknown[]>('/conversations');
-    const conversations = response.data.map(conv => this.transformConversationData(conv));
+    const response = await apiService.get<{ success: boolean; data: unknown[] }>('/api/conversations');
+    
+    if (!response.data.success || !Array.isArray(response.data.data)) {
+      throw new Error('Format de réponse invalide pour les conversations');
+    }
+    
+    const conversations = response.data.data.map(conv => this.transformConversationData(conv));
     
     // Mettre en cache les conversations
     this.setCacheConversations(conversations);
@@ -214,7 +219,7 @@ export class ConversationsService {
    * Obtenir une conversation spécifique par ID
    */
   async getConversation(id: string): Promise<Conversation> {
-    const response = await apiService.get<Conversation>(`/conversations/${id}`);
+    const response = await apiService.get<Conversation>(`/api/conversations/${id}`);
     return response.data;
   }
 
@@ -222,7 +227,7 @@ export class ConversationsService {
    * Créer une nouvelle conversation
    */
   async createConversation(data: CreateConversationRequest): Promise<Conversation> {
-    const response = await apiService.post<Conversation>('/conversations', data);
+    const response = await apiService.post<Conversation>('/api/conversations', data);
     return response.data;
   }
 
@@ -247,24 +252,36 @@ export class ConversationsService {
       const controller = this.createRequestController(requestKey);
       
       const response = await apiService.get<{
-        messages: unknown[];
-        total: number;
-        hasMore: boolean;
-      }>(`/conversations/${conversationId}/messages`, { page, limit }, {
+        success: boolean;
+        data: {
+          messages: unknown[];
+          hasMore: boolean;
+        };
+      }>(`/api/conversations/${conversationId}/messages`, { page, limit }, {
         signal: controller.signal
       });
       
       // Nettoyer le controller une fois la requête terminée
       this.pendingRequests.delete(requestKey);
       
+      // Vérifier la structure de la réponse
+      if (!response.data?.success || !response.data?.data) {
+        console.warn('⚠️ Structure de réponse inattendue:', response.data);
+        return {
+          messages: [],
+          total: 0,
+          hasMore: false,
+        };
+      }
+      
       // Transformer les messages du backend vers le format frontend
-      const transformedMessages = (response.data?.messages || []).map(msg => this.transformMessageData(msg));
+      const transformedMessages = (response.data.data.messages || []).map(msg => this.transformMessageData(msg));
       
       // Vérification de sécurité pour éviter les erreurs undefined
       return {
         messages: transformedMessages,
-        total: response.data?.total || 0,
-        hasMore: response.data?.hasMore || false,
+        total: transformedMessages.length, // Pour l'instant on utilise la longueur des messages
+        hasMore: response.data.data.hasMore || false,
       };
     } catch (error) {
       // Vérifier si l'erreur est due à l'annulation
@@ -288,36 +305,36 @@ export class ConversationsService {
    * Envoyer un message dans une conversation
    */
   async sendMessage(conversationId: string, data: SendMessageRequest): Promise<Message> {
-    const response = await apiService.post<Message>(`/conversations/${conversationId}/messages`, data);
-    return response.data;
+    const response = await apiService.post<{ success: boolean; data: Message }>(`/api/conversations/${conversationId}/messages`, data);
+    return response.data.data;
   }
 
   /**
    * Marquer une conversation comme lue
    */
   async markAsRead(conversationId: string): Promise<void> {
-    await apiService.post(`/conversations/${conversationId}/read`);
+    await apiService.post(`/api/conversations/${conversationId}/read`);
   }
 
   /**
    * Ajouter un participant à une conversation
    */
   async addParticipant(conversationId: string, userId: string): Promise<void> {
-    await apiService.post(`/conversations/${conversationId}/participants`, { userId });
+    await apiService.post(`/api/conversations/${conversationId}/participants`, { userId });
   }
 
   /**
    * Supprimer un participant d'une conversation
    */
   async removeParticipant(conversationId: string, userId: string): Promise<void> {
-    await apiService.delete(`/conversations/${conversationId}/participants/${userId}`);
+    await apiService.delete(`/api/conversations/${conversationId}/participants/${userId}`);
   }
 
   /**
    * Rechercher dans les conversations
    */
   async searchConversations(query: string): Promise<Conversation[]> {
-    const response = await apiService.get<Conversation[]>('/conversations/search', { q: query });
+    const response = await apiService.get<Conversation[]>('/api/conversations/search', { q: query });
     return response.data;
   }
 
@@ -325,7 +342,7 @@ export class ConversationsService {
    * Obtenir les participants d'une conversation
    */
   async getParticipants(conversationId: string): Promise<User[]> {
-    const response = await apiService.get<User[]>(`/conversations/${conversationId}/participants`);
+    const response = await apiService.get<User[]>(`/api/conversations/${conversationId}/participants`);
     return response.data;
   }
 

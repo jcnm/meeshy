@@ -20,7 +20,7 @@ import {
 import { toast } from 'sonner';
 import { Conversation, Message, TranslatedMessage } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
-import { MessageBubble } from './message-bubble';
+import { BubbleMessage } from '@/components/common/bubble-message';
 import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { cn } from '@/lib/utils';
@@ -43,7 +43,7 @@ interface ConversationLayoutResponsiveProps {
 export function ConversationLayoutResponsive({ selectedConversationId }: ConversationLayoutResponsiveProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useUser();
+  const { user, isAuthChecking } = useUser();
 
   // États principaux
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -472,25 +472,46 @@ const main = async () => {
 
   // Charger les données initiales avec optimisations
   const loadData = useCallback(async () => {
-    if (!user) return;
+    // Si on est encore en train de vérifier l'auth, attendre
+    if (isAuthChecking) {
+      return;
+    }
+    
+    // Si pas d'utilisateur mais token présent, essayer de charger quand même
+    const token = localStorage.getItem('auth_token');
+    if (!user && !token) {
+      return;
+    }
 
     try {
       setIsLoading(true);
-      console.log('🔄 Chargement des conversations...');
 
       // Démarrer le chargement des conversations immédiatement
-      const conversationsPromise = conversationsService.getConversations();
-
-      // Attendre les conversations
-      const conversationsData = await conversationsPromise;
+      const conversationsData = await conversationsService.getConversations();
 
       setConversations(conversationsData);
-      console.log(`✅ ${conversationsData.length} conversations chargées`);
 
       // Sélectionner une conversation seulement si spécifiée dans l'URL
       const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
       if (conversationIdFromUrl) {
-        const conversation = conversationsData.find(c => c.id === conversationIdFromUrl);
+        let conversation = conversationsData.find(c => c.id === conversationIdFromUrl);
+        
+        // Si c'est la conversation globale "any" et qu'elle n'est pas dans la liste, la créer
+        if (!conversation && conversationIdFromUrl === 'any') {
+          conversation = {
+            id: 'any',
+            name: 'Meeshy',
+            title: 'Meeshy',
+            type: 'global',
+            isGroup: true,
+            isActive: true,
+            participants: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            unreadCount: 0
+          };
+        }
+        
         if (conversation) {
           setSelectedConversation(conversation);
           // NOTE: La gestion WebSocket sera faite dans un useEffect séparé
@@ -507,8 +528,18 @@ const main = async () => {
       // Mettre fin au loading principal immédiatement après les conversations
       setIsLoading(false);
 
+      // Mettre fin au loading principal immédiatement après les conversations
+      setIsLoading(false);
+
     } catch (error) {
       console.error('❌ Erreur lors du chargement des conversations:', error);
+      
+      // Si c'est une erreur d'authentification, on peut essayer de rediriger
+      if (error instanceof Error && (error.message.includes('401') || error.message.includes('Token invalide'))) {
+        console.log('🔄 Erreur d\'authentification, redirection vers login...');
+        router.push('/login');
+        return;
+      }
 
       // Pas de toast d'erreur pour ne pas ralentir l'UI, juste les données mock
       console.log('🔄 Utilisation des données mock pour le développement');
@@ -555,14 +586,41 @@ const main = async () => {
         }
       ];
 
-      setConversations(mockConversations);
-      setIsLoading(false);
     }
-  }, [user, searchParams, selectedConversationId]);
+  }, [user, searchParams, selectedConversationId, isAuthChecking]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Redirection si pas d'utilisateur et vérification terminée
+  useEffect(() => {
+    if (!isAuthChecking) {
+      const token = localStorage.getItem('auth_token');
+      if (!user && !token) {
+        router.push('/login');
+      }
+    }
+  }, [user, isAuthChecking, router]);
+
+  // Si en cours de vérification d'authentification, afficher un loader
+  if (isAuthChecking) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Si pas d'utilisateur, ne rien afficher (la redirection va s'effectuer)
+  if (!user) {
+    return null;
+  }
 
   // Sélectionner une conversation
   const handleSelectConversation = (conversation: Conversation) => {
@@ -729,12 +787,24 @@ const main = async () => {
 
             {/* Liste scrollable */}
             <div className="flex-1 overflow-y-auto">
+              {/* Debug info */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="p-2 bg-yellow-100 text-yellow-800 text-xs">
+                  Debug: {conversations.length} conversations | Loading: {isLoading ? 'oui' : 'non'} | User: {user ? 'connecté' : 'non connecté'}
+                </div>
+              )}
+              
               {conversations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <MessageSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Aucune conversation</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    {isLoading ? 'Chargement...' : 'Aucune conversation'}
+                  </h3>
                   <p className="text-muted-foreground mb-6">
-                    Commencez une nouvelle conversation pour discuter avec vos amis !
+                    {isLoading 
+                      ? 'Récupération de vos conversations...' 
+                      : 'Commencez une nouvelle conversation pour discuter avec vos amis !'
+                    }
                   </p>
                 </div>
               ) : (
@@ -875,19 +945,25 @@ const main = async () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {translatedMessages.map((message) => (
-                        <MessageBubble
-                          key={message.id}
-                          message={message}
-                          currentUserId={user.id}
-                          currentUserLanguage={user.systemLanguage}
-                          onTranslate={handleTranslate}
-                          onEdit={handleEdit}
-                          onToggleOriginal={() => {
-                            console.log('Toggle original pour le message:', message.id);
-                          }}
-                        />
-                      ))}
+                      {translatedMessages.map((message) => {
+                        // Transformer le message pour BubbleMessage
+                        const bubbleMessage = {
+                          ...message,
+                          originalLanguage: message.originalLanguage || 'fr',
+                          isTranslated: message.isTranslated || false,
+                          translatedFrom: message.isTranslated ? message.originalLanguage : undefined,
+                          location: undefined // Pas de localisation dans les conversations
+                        };
+                        
+                        return (
+                          <BubbleMessage
+                            key={message.id}
+                            message={bubbleMessage}
+                            currentUser={user}
+                            userLanguage={user.systemLanguage}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </div>

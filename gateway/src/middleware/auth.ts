@@ -37,6 +37,9 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
       throw new Error('Invalid token payload: missing userId');
     }
     
+    // Ajouter la propriété 'id' pour la compatibilité
+    (request.user as any).id = userId;
+    
     // Optionnel: vérifier que l'utilisateur existe toujours en base
     // (pour l'instant on fait confiance au token)
     

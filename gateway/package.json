@@ -5,9 +5,10 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "npm run prebuild && tsc",
-    "prebuild": "cd ../shared && npm run generate && npm run distribute && cd - && prisma migrate dev --schema=libs/schema.prisma && tsx libs/seed.ts",
+    "prebuild": "cd ../shared && npm run generate && npm run distribute && cd - && npx prisma migrate reset --schema=libs/schema.prisma --force && npx tsx libs/seed.ts && mv libs/dev.db ./dev.db 2>/dev/null || true",
     "start": "node -r dotenv/config dist/server.js",
-    "dev": "npm run prebuild && tsx watch -r dotenv/config src/server.ts dotenv_config_path=.env.dev",
+    "dev": "npm run dev:quick && tsx watch -r dotenv/config src/server.ts dotenv_config_path=.env.dev",
+    "dev:quick": "cd ../shared && npm run generate && npm run distribute && cd - && npx prisma db push --schema=libs/schema.prisma",
     "generate": "cd ../shared && prisma generate",
     "migrate": "prisma migrate dev --schema=libs/schema.prisma",
     "seed": "tsx src/scripts/seed.ts",

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Connexion Meeshy</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 400px; margin: 0 auto; text-align: center; }
+        button { 
+            padding: 15px 30px; 
+            margin: 10px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #0056b3; }
+        .status { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-radius: 5px; 
+            background: #f8f9fa;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Connexion Meeshy</h1>
+        <div id="status" class="status">Cliquez sur le bouton pour vous connecter</div>
+        <button onclick="setupAuth()">Se connecter automatiquement</button>
+        <button onclick="openConversations()">Ouvrir les conversations</button>
+        <button onclick="clearAuth()">Déconnecter</button>
+        
+        <div style="margin-top: 30px;">
+            <h3>État actuel:</h3>
+            <div id="currentState">Chargement...</div>
+        </div>
+    </div>
+
+    <script>
+        async function setupAuth() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status';
+            statusDiv.innerHTML = 'Connexion en cours...';
+            
+            try {
+                // Appeler l'API de connexion
+                const response = await fetch('http://localhost:3000/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@meeshy.com',
+                        password: 'password123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Stocker dans localStorage comme le fait le frontend
+                    localStorage.setItem('auth_token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `Connecté avec succès ! Utilisateur: ${data.user.username}`;
+                    
+                    updateCurrentState();
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `Erreur de connexion: ${error.message}`;
+            }
+        }
+        
+        function openConversations() {
+            window.open('http://localhost:3100/conversations', '_blank');
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').innerHTML = 'Déconnecté';
+            updateCurrentState();
+        }
+        
+        function updateCurrentState() {
+            const token = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('user');
+            const stateDiv = document.getElementById('currentState');
+            
+            if (token && user) {
+                const userData = JSON.parse(user);
+                stateDiv.innerHTML = `
+                    <strong>Connecté</strong><br>
+                    Token: ${token.substring(0, 20)}...<br>
+                    Utilisateur: ${userData.username} (${userData.email})
+                `;
+            } else {
+                stateDiv.innerHTML = '<em>Non connecté</em>';
+            }
+        }
+        
+        // Mettre à jour l'état au chargement
+        updateCurrentState();
+    </script>
+</body>
+</html>
