@@ -52,7 +52,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { BubbleMessage } from '@/components/common/bubble-message';
-import { useMessaging } from '@/hooks/use-messaging';
+import { useNativeMessaging } from '@/hooks/use-native-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import type { User, Message } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
@@ -236,27 +236,98 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [location, setLocation] = useState<string>('');
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
-  const [isDemoMode, setIsDemoMode] = useState(true); // Mode démo par défaut
+  const [isDemoMode, setIsDemoMode] = useState(true); // Commencer en mode démo, passer en temps réel quand WebSocket connecté
+
+  // État pour les utilisateurs en train de taper
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+
+  // Fonctions de gestion des événements utilisateur
+  const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean) => {
+    if (userId === user.id) return; // Ignorer nos propres événements de frappe
+    
+    setTypingUsers(prev => {
+      if (isTyping) {
+        // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
+        return prev.includes(username) ? prev : [...prev, username];
+      } else {
+        // Retirer l'utilisateur de la liste
+        return prev.filter(name => name !== username);
+      }
+    });
+  }, [user.id]);
+
+  const handleUserStatus = useCallback((userId: string, username: string, isOnline: boolean) => {
+    console.log('👤 Statut utilisateur changé:', { userId, username, isOnline });
+    // TODO: Mettre à jour la liste des utilisateurs actifs
+  }, []);
 
   // Hooks
   const { 
     sendMessage: sendMessageToService,
     connectionStatus,
     startTyping,
-    stopTyping
-  } = useMessaging({
+    stopTyping,
+    reconnect,
+    getDiagnostics
+  } = useNativeMessaging({
     conversationId: 'global_stream', // Conversation globale pour le stream
     currentUser: user,
     onNewMessage: handleNewMessage,
+    onUserTyping: handleUserTyping,
+    onUserStatus: handleUserStatus,
   });
 
   const { notifications, markAsRead } = useNotifications();
 
-  // Hook pour détecter le statut de connexion réel
+  // Forcer la connexion WebSocket au chargement et basculer en mode temps réel
+  useEffect(() => {
+    console.log('🚀 Initialisation de la connexion WebSocket au chargement...');
+    
+    // Diagnostic immédiat
+    const diagnostics = getDiagnostics();
+    console.log('🔍 Diagnostic initial:', diagnostics);
+    
+    // Délai pour laisser le temps à la connexion de s'établir
+    const initTimeout = setTimeout(() => {
+      const newDiagnostics = getDiagnostics();
+      console.log('🔍 Diagnostic après délai:', newDiagnostics);
+      
+      if (connectionStatus.isConnected && connectionStatus.hasSocket) {
+        setIsDemoMode(false);
+        console.log('✅ WebSocket connecté - Mode temps réel activé');
+        toast.success('🎉 Connexion établie ! Messages en temps réel activés');
+      } else {
+        console.log('⚠️ WebSocket non connecté après délai - Mode démo maintenu');
+        console.log('🔍 Raisons possibles:', {
+          hasSocket: connectionStatus.hasSocket,
+          isConnected: connectionStatus.isConnected,
+          hasToken: !!localStorage.getItem('auth_token'),
+          wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
+        });
+        toast.info('📱 Mode démo actif - Connexion WebSocket en cours...');
+        setIsDemoMode(true);
+      }
+    }, 3000); // Attendre 3 secondes pour la connexion
+
+    return () => clearTimeout(initTimeout);
+  }, [getDiagnostics]); // Dépendance sur getDiagnostics
+
+  // Hook pour détecter le statut de connexion réel et basculer automatiquement
   useEffect(() => {
     const checkConnection = () => {
       const isReallyConnected = connectionStatus.isConnected && connectionStatus.hasSocket;
+      const wasInDemoMode = isDemoMode;
+      
       setIsDemoMode(!isReallyConnected);
+      
+      if (wasInDemoMode && isReallyConnected) {
+        console.log('🎉 Transition: Mode démo → Mode temps réel');
+        toast.success('🌐 Connexion WebSocket établie ! Réception des messages en temps réel');
+      } else if (!wasInDemoMode && !isReallyConnected) {
+        console.log('⚠️ Transition: Mode temps réel → Mode démo');
+        toast.warning('📡 Connexion WebSocket perdue - Basculement en mode démo');
+      }
+      
       console.log('🔌 Statut connexion vérifié:', { 
         isReallyConnected, 
         isDemoMode: !isReallyConnected,
@@ -266,10 +337,10 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
     checkConnection();
     
-    // Vérifier périodiquement le statut
-    const interval = setInterval(checkConnection, 5000);
+    // Vérifier périodiquement le statut (plus fréquent au début)
+    const interval = setInterval(checkConnection, 3000);
     return () => clearInterval(interval);
-  }, [connectionStatus]);
+  }, [connectionStatus, isDemoMode]);
 
   // Géolocalisation
   useEffect(() => {
@@ -417,7 +488,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           '创建如此包容的平台做得很好！ 👏'
         ],
         ja: [
-          'こんにちはみなさん！🇯� この多言語プラットフォームは素晴らしいです！',
+          'こんにちはみなさん！🇯🇵 この多言語プラットフォームは素晴らしいです！',
           'リアルタイム翻訳機能に感動しています 🚀',
           '異なる文化の人々とのつながりがこんなに簡単になるなんて',
           '言語を超えたシームレスなコミュニケーションは驚異的です',
@@ -994,6 +1065,61 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     };
   }, [isDemoMode, userLanguage]); // Dépendance sur isDemoMode au lieu de connectionStatus
 
+  // Fonction pour charger les messages existants depuis le serveur
+  const loadExistingMessages = useCallback(async () => {
+    if (isDemoMode) return; // Ne pas charger en mode démo
+    
+    try {
+      console.log('📥 Chargement des messages existants...');
+      const token = localStorage.getItem('auth_token');
+      
+      if (!token) {
+        console.log('⚠️ Pas de token d\'authentification disponible');
+        return;
+      }
+      
+      const response = await fetch(buildApiUrl(`/api/conversations/global_stream/messages`), {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const existingMessages = await response.json();
+        console.log('✅ Messages existants chargés:', existingMessages.length);
+        
+        // Convertir en BubbleStreamMessage et remplacer les messages démo
+        const bubbleMessages: BubbleStreamMessage[] = existingMessages.map((msg: any) => ({
+          ...msg,
+          originalLanguage: msg.originalLanguage || 'fr',
+          isTranslated: msg.originalLanguage !== userLanguage,
+          translatedFrom: msg.originalLanguage !== userLanguage ? msg.originalLanguage : undefined,
+          location: msg.location || 'Paris'
+        }));
+        
+        setMessages(bubbleMessages);
+        toast.success(`📨 ${existingMessages.length} messages chargés`);
+      } else {
+        console.log('⚠️ Impossible de charger les messages existants');
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des messages:', error);
+    }
+  }, [isDemoMode, userLanguage]);
+
+  // Charger les messages existants quand on passe en mode temps réel
+  useEffect(() => {
+    if (!isDemoMode && connectionStatus.isConnected) {
+      // Délai pour laisser le temps à la connexion de se stabiliser
+      const loadTimeout = setTimeout(() => {
+        loadExistingMessages();
+      }, 1000);
+      
+      return () => clearTimeout(loadTimeout);
+    }
+  }, [isDemoMode, connectionStatus.isConnected, loadExistingMessages]);
+
   function handleNewMessage(message: Message) {
     // Éviter les doublons si le message a déjà été ajouté localement
     const isDuplicate = messages.some(existingMsg => existingMsg.id === message.id);
@@ -1004,20 +1130,32 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       originalLanguage: message.originalLanguage || 'fr',
       isTranslated: message.originalLanguage !== userLanguage,
       translatedFrom: message.originalLanguage !== userLanguage ? message.originalLanguage : undefined,
-      location: 'Paris' // Simulation par défaut
+      location: (message as any).location || 'Paris' // Utilise la localisation du message ou par défaut
     };
 
     setMessages(prev => [bubbleMessage, ...prev]);
     
+    // Notification pour les nouveaux messages d'autres utilisateurs
+    if (message.senderId !== user.id) {
+      toast.info(`📨 Nouveau message de ${message.sender?.firstName || 'Utilisateur'}`, {
+        duration: 3000
+      });
+    }
+    
     // Auto-scroll vers le nouveau message
     setTimeout(() => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }, 100);
+    
+    console.log('📩 Nouveau message reçu:', {
+      from: message.sender?.username,
+      content: message.content,
+      isOwnMessage: message.senderId === user.id,
+      isTranslated: bubbleMessage.isTranslated
+    });
   }
 
   const handleSendMessage = async () => {
@@ -1041,16 +1179,26 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         sender: user
       };
 
-      // Ajouter le message immédiatement à la liste
+      // Ajouter le message immédiatement à la liste (optimistic update)
       setMessages(prev => [newBubbleMessage, ...prev]);
 
       // Essayer d'envoyer via le service WebSocket si connecté
-      if (connectionStatus.isConnected) {
+      if (connectionStatus.isConnected && !isDemoMode) {
         try {
           await sendMessageToService(newMessage.trim());
+          console.log('✅ Message envoyé via WebSocket');
         } catch (error) {
-          console.log('WebSocket non disponible, message ajouté en mode local');
+          console.error('❌ Erreur envoi WebSocket:', error);
+          toast.error('Erreur lors de l\'envoi du message');
+          // Retirer le message optimiste en cas d'erreur
+          setMessages(prev => prev.filter(msg => msg.id !== newBubbleMessage.id));
+          return;
         }
+      } else if (isDemoMode) {
+        console.log('📱 Message ajouté en mode démo local');
+      } else {
+        console.log('📡 WebSocket non connecté - Message en attente');
+        toast.warning('Connexion en cours - Message sera envoyé dès la reconnexion');
       }
 
       // Réinitialiser le formulaire
@@ -1064,12 +1212,10 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       
       // Auto-scroll vers le nouveau message
       setTimeout(() => {
-        if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          });
-        }
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
       }, 100);
       
       toast.success('Message publié !');
@@ -1229,7 +1375,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
               </div>
               <div className="hidden lg:block">
                 <span className="text-gray-400 mx-2">/</span>
-                <span className="text-lg font-medium text-gray-700">Stream Global</span>
+                <span className="text-lg font-medium text-gray-700">{/* Stream Global */}</span>
               </div>
             </div>
 
@@ -1354,32 +1500,96 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       <div className="pt-16 min-h-screen relative">
         {/* Feed principal - Container avec gestion propre du scroll */}
         <div className="w-full xl:pr-80 relative">
-          {/* Indicateur de statut de connexion WebSocket */}
-          <div className="px-4 sm:px-6 lg:px-8 mb-4 pt-4">
-            <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
-              !isDemoMode
-                ? 'bg-green-100/80 text-green-800 border border-green-200/50' 
-                : 'bg-orange-100/80 text-orange-800 border border-orange-200/50'
-            }`}>
-              <div className={`w-2 h-2 rounded-full animate-pulse ${
-                !isDemoMode ? 'bg-green-600' : 'bg-orange-600'
-              }`} />
-              <span className="font-medium">
-                {!isDemoMode ? 'Messages en temps réel' : 'Mode démonstration'}
-              </span>
-              {isDemoMode && (
-                <span className="text-xs opacity-75">• Les messages sont simulés</span>
-              )}
+          {/* Indicateur de statut de connexion WebSocket - Fixé en haut */}
+          <div className="fixed top-16 left-0 right-0 xl:right-80 z-40 px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none">
+            <div className="pointer-events-auto">
+              <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
+                !isDemoMode
+                  ? 'bg-green-100/80 text-green-800 border border-green-200/60' 
+                  : 'bg-orange-100/80 text-orange-800 border border-orange-200/60'
+              }`}>
+                <div className={`w-2 h-2 rounded-full animate-pulse ${
+                  !isDemoMode ? 'bg-green-600' : 'bg-orange-600'
+                }`} />
+                <span className="font-medium">
+                  {!isDemoMode ? 'Messages en temps réel' : 'Mode démonstration'}
+                </span>
+                {isDemoMode && (
+                  <span className="text-xs opacity-75">• Messages simulés</span>
+                )}
+                {!isDemoMode && (
+                  <span className="text-xs opacity-75">• Communication active</span>
+                )}
+                {isDemoMode && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        console.log('🔄 Tentative de reconnexion manuelle...');
+                        const diagnostics = getDiagnostics();
+                        console.log('🔍 Diagnostic avant reconnexion:', diagnostics);
+                        
+                        toast.info('🔄 Tentative de reconnexion...');
+                        reconnect();
+                        
+                        // Vérifier après un délai
+                        setTimeout(() => {
+                          const newDiagnostics = getDiagnostics();
+                          console.log('🔍 Diagnostic après reconnexion:', newDiagnostics);
+                          
+                          if (newDiagnostics.isConnected) {
+                            toast.success('✅ Reconnexion réussie !');
+                            setIsDemoMode(false);
+                          } else {
+                            toast.error('❌ Reconnexion échouée - Vérifiez le serveur');
+                          }
+                        }, 2000);
+                      }}
+                      className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
+                    >
+                      Reconnecter
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const diagnostics = getDiagnostics();
+                        console.log('🔍 Diagnostic complet:', diagnostics);
+                        
+                        const message = `Diagnostic WebSocket:
+• Socket créé: ${diagnostics.hasSocket ? '✅' : '❌'}
+• Connecté: ${diagnostics.isConnected ? '✅' : '❌'}  
+• État socket: ${diagnostics.socketState} (${diagnostics.socketState === 1 ? 'OPEN' : diagnostics.socketState === 0 ? 'CONNECTING' : diagnostics.socketState === 2 ? 'CLOSING' : 'CLOSED'})
+• Token: ${diagnostics.hasToken ? '✅' : '❌'}
+• URL: ${diagnostics.url}
+• Utilisateur: ${diagnostics.currentUser || 'Non défini'}
+• Tentatives: ${diagnostics.reconnectAttempts}
+
+💡 Si la connexion échoue:
+1. Vérifiez que le serveur gateway est démarré
+2. Vérifiez l'URL WebSocket dans .env  
+3. Vérifiez votre token d'authentification`;
+                        
+                        toast.info(message, { duration: 10000 });
+                      }}
+                      className="ml-1 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
+                    >
+                      Debug
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Feed des messages avec scroll correct */}
-          <div className="relative">
+          {/* Feed des messages avec scroll naturel - Padding top pour l'indicateur fixe */}
+          <div className="relative min-h-[calc(100vh-16rem)] pt-20">
             {/* Container des messages avec padding pour la zone de saisie */}
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-48 pt-8">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-40 pt-4">
               <div 
                 ref={messagesContainerRef}
-                className="space-y-5 max-h-[calc(100vh-200px)] overflow-y-auto scroll-smooth scroll-hidden px-4 py-6"
+                className="space-y-5 px-4 py-6"
                 style={{ background: 'transparent' }}
               >
                 {messages.length === 0 ? (
@@ -1402,24 +1612,46 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                     />
                   ))
                 )}
-                {/* Espace supplémentaire pour s'assurer que le dernier message est entièrement visible */}
-                <div className="h-24" />
+
+                {/* Indicateur des utilisateurs en train de taper */}
+                {typingUsers.length > 0 && !isDemoMode && (
+                  <div className="mt-4 p-3 bg-blue-50/50 rounded-xl border border-blue-200/30">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75" />
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150" />
+                      </div>
+                      <span className="text-sm text-blue-700">
+                        {typingUsers.length === 1 
+                          ? `${typingUsers[0]} est en train d'écrire...`
+                          : typingUsers.length === 2
+                          ? `${typingUsers[0]} et ${typingUsers[1]} sont en train d'écrire...`
+                          : `${typingUsers[0]} et ${typingUsers.length - 1} autres sont en train d'écrire...`
+                        }
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Espace supplémentaire réduit pour éviter que le dernier message soit caché */}
+                <div className="h-8" />
               </div>
             </div>
             
             {/* Dégradé inférieur - Transition progressive vers les couleurs générales de la page */}
-            <div className="absolute bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50/40 via-indigo-100/30 to-transparent pointer-events-none z-10" />
+            <div className="absolute bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none z-10" />
           </div>
         </div>
 
         {/* Zone de composition flottante - Position fixe avec transparence cohérente aux couleurs de la page */}
-        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-50 bg-transparent">
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30">
           {/* Dégradé de fond pour transition douce avec les couleurs générales */}
-          <div className="h-0 bg-gradient-to-t from-blue-50/30 via-indigo-100/20 to-transparent pointer-events-none" />
+          <div className="h-10 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none" />
           
           {/* Zone de saisie avec transparence et couleurs harmonisées */}
-          <div className="bg-blue-50/40 backdrop-blur-md border-t border-blue-200/30 p-4 shadow-lg shadow-indigo-500/10">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-blue-50/20 backdrop-blur-lg border-t border-blue-200/50 shadow-xl shadow-blue-500/10">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <div className="relative max-w-2xl mx-auto">
                 <Textarea
                   ref={textareaRef}
@@ -1427,12 +1659,12 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                   onChange={(e) => handleTyping(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={`Partagez quelque chose avec le monde...`}
-                  className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-24 text-base border-blue-200/40 bg-blue-50/50 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-blue-50/70 placeholder:text-gray-700 scroll-hidden transition-all duration-200"
+                  className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-24 text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
                   maxLength={MAX_MESSAGE_LENGTH}
                   disabled={!isComposingEnabled}
                   style={{
                     borderRadius: '16px',
-                    boxShadow: '0 4px 16px rgba(59, 130, 246, 0.15)'
+                    boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)'
                   }}
                 />
                 
@@ -1485,7 +1717,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         </div>
 
         {/* Sidebar droite - Desktop uniquement - FIXE avec scroll indépendant */}
-        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/50 backdrop-blur-md border-l border-white/50 z-30">
+        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/60 backdrop-blur-lg border-l border-blue-200/30 z-40">
           <div 
             className="h-full overflow-y-auto p-6 scroll-hidden"
           >
@@ -1584,7 +1816,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
             {/* Section Utilisateurs Actifs - Foldable */}
             <FoldableSection
-              title="Utilisateurs Actifs"
+              title={`Utilisateurs Actifs (${activeUsers.length})`}
               icon={<Users className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >

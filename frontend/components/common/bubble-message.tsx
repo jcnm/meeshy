@@ -104,7 +104,7 @@ export function BubbleMessage({ message, currentUser, userLanguage }: BubbleMess
 
   return (
     <Card 
-      className={`bubble-message relative transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
+      className={`bubble-message relative transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5 ${
         isOwnMessage ? 'bg-blue-50 border-blue-200' : 'bg-white'
       }`}
       onMouseEnter={() => setIsHovered(true)}
