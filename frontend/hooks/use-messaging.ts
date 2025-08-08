@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { messagingService } from '@/services/messaging.service';
+import { nativeWebSocketService } from '@/services/native-websocket.service';
 import type { Message, User } from '@/types';
 
 interface UseMessagingOptions {
@@ -15,6 +15,8 @@ interface UseMessagingOptions {
   onNewMessage?: (message: Message) => void;
   onMessageEdited?: (message: Message) => void;
   onMessageDeleted?: (messageId: string) => void;
+  onUserTyping?: (userId: string, username: string, isTyping: boolean) => void;
+  onUserStatus?: (userId: string, username: string, isOnline: boolean) => void;
 }
 
 interface UseMessagingReturn {
@@ -31,6 +33,12 @@ interface UseMessagingReturn {
   startTyping: () => void;
   stopTyping: () => void;
   
+  // Connexion
+  reconnect: () => void;
+  forceConnect: () => void;
+  disconnect: () => void;
+  getDiagnostics: () => any;
+  
   // État
   connectionStatus: {
     isConnected: boolean;
@@ -45,10 +53,12 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
     currentUser,
     onNewMessage,
     onMessageEdited,
-    onMessageDeleted
+    onMessageDeleted,
+    onUserTyping,
+    onUserStatus
   } = options;
 
-  const [connectionStatus, setConnectionStatus] = useState(messagingService.getConnectionStatus());
+  const [connectionStatus, setConnectionStatus] = useState(nativeWebSocketService.getConnectionStatus());
 
   // Configuration de l'utilisateur actuel
   useEffect(() => {
@@ -58,8 +68,17 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
     }
     
     if (currentUser) {
-      messagingService.setCurrentUser(currentUser);
+      nativeWebSocketService.setCurrentUser(currentUser);
       console.log('🔧 useMessaging: Utilisateur configuré', { userId: currentUser.id, username: currentUser.username });
+      
+      // Forcer la connexion WebSocket immédiatement après configuration de l'utilisateur
+      setTimeout(() => {
+        const status = nativeWebSocketService.getConnectionStatus();
+        if (!status.isConnected && !status.hasSocket) {
+          console.log('🔌 useMessaging: Connexion WebSocket manquante, force la connexion...');
+          nativeWebSocketService.reconnect();
+        }
+      }, 500);
     }
   }, [currentUser]);
 
@@ -72,11 +91,11 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
     
     if (conversationId) {
       console.log('🚪 useMessaging: Rejoindre conversation', { conversationId });
-      messagingService.joinConversation(conversationId);
+      nativeWebSocketService.joinConversation(conversationId);
 
       return () => {
         console.log('🚪 useMessaging: Quitter conversation', { conversationId });
-        messagingService.leaveConversation(conversationId);
+        nativeWebSocketService.leaveConversation(conversationId);
       };
     }
   }, [conversationId]);
@@ -90,7 +109,7 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
     
     console.log('🎧 useMessaging: Installation des listeners');
     
-    const unsubscribeMessage = messagingService.onNewMessage((message) => {
+    const unsubscribeMessage = nativeWebSocketService.onNewMessage((message: Message) => {
       console.log('📨 useMessaging: Nouveau message reçu', { 
         messageId: message.id, 
         conversationId: message.conversationId,
@@ -108,21 +127,32 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
       }
     });
 
-    const unsubscribeEdit = messagingService.onMessageEdited((message) => {
+    const unsubscribeEdit = nativeWebSocketService.onMessageEdited((message: Message) => {
       console.log('✏️ useMessaging: Message modifié', { messageId: message.id });
       if (!conversationId || message.conversationId === conversationId) {
         onMessageEdited?.(message);
       }
     });
 
-    const unsubscribeDelete = messagingService.onMessageDeleted((messageId) => {
+    const unsubscribeDelete = nativeWebSocketService.onMessageDeleted((messageId: string) => {
       console.log('🗑️ useMessaging: Message supprimé', { messageId });
       onMessageDeleted?.(messageId);
     });
 
+    // Listeners pour les événements de frappe et de statut
+    const unsubscribeTyping = nativeWebSocketService.onTyping((event: any) => {
+      if (!conversationId || event.conversationId === conversationId) {
+        onUserTyping?.(event.userId, event.username, event.isTyping);
+      }
+    });
+
+    const unsubscribeStatus = nativeWebSocketService.onUserStatus((event: any) => {
+      onUserStatus?.(event.userId, event.username, event.isOnline);
+    });
+
     // Mise à jour du statut de connexion
     const statusInterval = setInterval(() => {
-      const newStatus = messagingService.getConnectionStatus();
+      const newStatus = nativeWebSocketService.getConnectionStatus();
       setConnectionStatus(newStatus);
     }, 1000);
 
@@ -131,9 +161,11 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
       unsubscribeMessage();
       unsubscribeEdit();
       unsubscribeDelete();
+      unsubscribeTyping();
+      unsubscribeStatus();
       clearInterval(statusInterval);
     };
-  }, [conversationId, onNewMessage, onMessageEdited, onMessageDeleted]);
+  }, [conversationId, onNewMessage, onMessageEdited, onMessageDeleted, onUserTyping, onUserStatus]);
 
   // Actions
   const sendMessage = useCallback(async (content: string): Promise<boolean> => {
@@ -148,17 +180,17 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
       content: content.substring(0, 50) + '...'
     });
 
-    return await messagingService.sendMessage(conversationId, content);
+    return await nativeWebSocketService.sendMessage(conversationId, content);
   }, [conversationId]);
 
   const editMessage = useCallback(async (messageId: string, newContent: string): Promise<boolean> => {
     console.log('✏️ useMessaging: Modification message', { messageId, newContent: newContent.substring(0, 50) + '...' });
-    return await messagingService.editMessage(messageId, newContent);
+    return await nativeWebSocketService.editMessage(messageId, newContent);
   }, []);
 
   const deleteMessage = useCallback(async (messageId: string): Promise<boolean> => {
     console.log('🗑️ useMessaging: Suppression message', { messageId });
-    return await messagingService.deleteMessage(messageId);
+    return await nativeWebSocketService.deleteMessage(messageId);
   }, []);
 
   const joinConversation = useCallback((newConversationId: string) => {
@@ -166,25 +198,43 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
       from: conversationId,
       to: newConversationId 
     });
-    messagingService.joinConversation(newConversationId);
+    nativeWebSocketService.joinConversation(newConversationId);
   }, [conversationId]);
 
   const leaveConversation = useCallback((targetConversationId: string) => {
     console.log('🚪 useMessaging: Quitter conversation', { conversationId: targetConversationId });
-    messagingService.leaveConversation(targetConversationId);
+    nativeWebSocketService.leaveConversation(targetConversationId);
   }, []);
 
   const startTyping = useCallback(() => {
     if (conversationId) {
-      messagingService.startTyping(conversationId);
+      nativeWebSocketService.startTyping(conversationId);
     }
   }, [conversationId]);
 
   const stopTyping = useCallback(() => {
     if (conversationId) {
-      messagingService.stopTyping(conversationId);
+      nativeWebSocketService.stopTyping(conversationId);
     }
   }, [conversationId]);
+
+  const reconnect = useCallback(() => {
+    nativeWebSocketService.reconnect();
+  }, []);
+
+  const forceConnect = useCallback(() => {
+    console.log('🔧 useMessaging: Forcer la connexion WebSocket');
+    nativeWebSocketService.reconnect();
+  }, []);
+
+  const disconnect = useCallback(() => {
+    console.log('🔌 useMessaging: Déconnexion WebSocket');
+    nativeWebSocketService.disconnect();
+  }, []);
+
+  const getDiagnostics = useCallback(() => {
+    return nativeWebSocketService.getConnectionDiagnostics();
+  }, []);
 
   return {
     sendMessage,
@@ -194,6 +244,10 @@ export const useMessaging = (options: UseMessagingOptions = {}): UseMessagingRet
     leaveConversation,
     startTyping,
     stopTyping,
+    reconnect,
+    forceConnect,
+    disconnect,
+    getDiagnostics,
     connectionStatus,
   };
 };
