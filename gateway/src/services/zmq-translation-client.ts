@@ -13,7 +13,10 @@ interface TranslationRequest {
   text: string;
   sourceLanguage: string;
   targetLanguage: string;
-  modelType?: string; // Ajouter le type de modèle
+  modelType?: string; // Type de modèle (basic, medium, premium)
+  conversationId?: string; // ID de la conversation pour récupérer les participants
+  participantIds?: string[]; // IDs des participants (optionnel pour optimisation)
+  requestType?: string; // Type de requête (conversation_translation, direct_translation, etc.)
 }
 
 interface TranslationResponse {
@@ -82,13 +85,17 @@ export class ZMQTranslationClient {
       console.log(`   📏 Longueur: ${request.text.length} caractères`);
       console.log(`   🆔 Message ID: ${request.messageId}`);
       
-      // 1. Créer la requête JSON (temporairement au lieu de Protobuf)
+      // 1. Créer la requête JSON avec toutes les informations pour le Translator
       const jsonRequest = {
         messageId: request.messageId || randomUUID(),
         text: request.text,
         sourceLanguage: request.sourceLanguage,
         targetLanguage: request.targetLanguage,
-        modelType: request.modelType || 'basic' // Utiliser le modelType de la requête
+        modelType: request.modelType || 'basic',
+        // Nouvelles propriétés pour la traduction de conversation
+        conversationId: request.conversationId,
+        participantIds: request.participantIds,
+        requestType: request.requestType || 'direct_translation'
       };
       
       console.log(`   📦 Requête JSON créée:`, jsonRequest);

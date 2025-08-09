@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '../../libs/prisma/client';
-import { GrpcClient } from '../grpc/client';
+import { ZMQTranslationClient } from './zmq-translation-client';
 
 export interface TranslationRequest {
   messageId: string;
@@ -37,8 +37,21 @@ export interface UserLanguageConfig {
 export class TranslationService {
   constructor(
     private prisma: PrismaClient,
-    private grpcClient: GrpcClient
+    private zmqClient: ZMQTranslationClient
   ) {}
+
+  /**
+   * Initialise le service de traduction
+   */
+  async initialize(): Promise<void> {
+    try {
+      await this.zmqClient.initialize();
+      console.log('✅ Service de traduction initialisé avec ZMQ');
+    } catch (error) {
+      console.error('❌ Erreur initialisation service de traduction:', error);
+      throw error;
+    }
+  }
 
   /**
    * Génère une clé de cache unique pour une traduction
@@ -70,42 +83,63 @@ export class TranslationService {
       };
     }
 
-    // Appeler le service gRPC pour la traduction (temporairement désactivé)
-    // const translationResult = await this.grpcClient.translateText({
-    //   text: request.content,
-    //   sourceLanguage: request.sourceLanguage,
-    //   targetLanguage: request.targetLanguage
-    // });
+    // Appeler le service ZMQ pour la traduction
+    try {
+      const translationResult = await this.zmqClient.translateText({
+        messageId: request.messageId,
+        text: request.content,
+        sourceLanguage: request.sourceLanguage,
+        targetLanguage: request.targetLanguage,
+        modelType: 'basic' // Modèle par défaut, peut être configuré selon les besoins
+      });
 
-    // Version temporaire - à remplacer par le vrai service
-    const translationResult = {
-      translatedText: `[TRANSLATED-${request.targetLanguage}] ${request.content}`,
-      detectedLanguage: request.sourceLanguage,
-      confidence: 0.95,
-      model: 'test-model'
-    };
+      // Sauvegarder la traduction en cache
+      const newTranslation = await this.prisma.messageTranslation.create({
+        data: {
+          messageId: request.messageId,
+          sourceLanguage: request.sourceLanguage,
+          targetLanguage: request.targetLanguage,
+          translatedContent: translationResult.translatedText,
+          translationModel: translationResult.metadata?.modelUsed || 'basic',
+          cacheKey,
+          confidenceScore: translationResult.metadata?.confidenceScore
+        }
+      });
 
-    // Sauvegarder la traduction en cache
-    const newTranslation = await this.prisma.messageTranslation.create({
-      data: {
+      return {
         messageId: request.messageId,
         sourceLanguage: request.sourceLanguage,
         targetLanguage: request.targetLanguage,
         translatedContent: translationResult.translatedText,
-        translationModel: translationResult.model,
-        cacheKey
-      }
-    });
+        translationModel: translationResult.metadata?.modelUsed || 'basic',
+        cacheKey: cacheKey,
+        cached: false
+      };
+    } catch (error) {
+      console.error('❌ Erreur traduction ZMQ:', error);
+      
+      // Fallback : créer une traduction de base en cas d'erreur
+      const fallbackTranslation = await this.prisma.messageTranslation.create({
+        data: {
+          messageId: request.messageId,
+          sourceLanguage: request.sourceLanguage,
+          targetLanguage: request.targetLanguage,
+          translatedContent: `[ERREUR-TRADUCTION] ${request.content}`,
+          translationModel: 'error-fallback',
+          cacheKey
+        }
+      });
 
-    return {
-      messageId: request.messageId,
-      sourceLanguage: request.sourceLanguage,
-      targetLanguage: request.targetLanguage,
-      translatedContent: newTranslation.translatedContent,
-      translationModel: newTranslation.translationModel,
-      cacheKey: newTranslation.cacheKey,
-      cached: false
-    };
+      return {
+        messageId: request.messageId,
+        sourceLanguage: request.sourceLanguage,
+        targetLanguage: request.targetLanguage,
+        translatedContent: `[ERREUR-TRADUCTION] ${request.content}`,
+        translationModel: 'error-fallback',
+        cacheKey: cacheKey,
+        cached: false
+      };
+    }
   }
 
   /**

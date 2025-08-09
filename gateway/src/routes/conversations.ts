@@ -1,7 +1,26 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import { PrismaClient } from '../../libs/prisma/client';
+import { TranslationService } from '../services/TranslationService';
+import { ZMQTranslationClient } from '../services/zmq-translation-client';
 
 const prisma = new PrismaClient();
+const zmqClient = new ZMQTranslationClient();
+const translationService = new TranslationService(prisma, zmqClient);
+
+// Initialiser le service de traduction
+translationService.initialize().catch(console.error);
+
+// Fonction utilitaire pour prédire le type de modèle
+function getPredictedModelType(textLength: number): 'basic' | 'medium' | 'premium' {
+  if (textLength < 20) return 'basic';
+  if (textLength <= 100) return 'medium';
+  return 'premium';
+}
+
+interface EditMessageBody {
+  content: string;
+  originalLanguage?: string;
+}
 
 interface ConversationParams {
   id: string;
@@ -366,6 +385,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   displayName: true,
                   avatar: true
                 }
+              },
+              translations: {
+                select: {
+                  id: true,
+                  targetLanguage: true,
+                  translatedContent: true,
+                  translationModel: true,
+                  cacheKey: true
+                }
               }
             }
           }
@@ -373,6 +401,61 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         orderBy: { createdAt: 'desc' },
         take: parseInt(limit),
         skip: before ? 0 : parseInt(offset)
+      });
+
+      // Récupérer les préférences linguistiques de l'utilisateur (pour information)
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          systemLanguage: true,
+          regionalLanguage: true,
+          customDestinationLanguage: true,
+          autoTranslateEnabled: true,
+          translateToSystemLanguage: true,
+          translateToRegionalLanguage: true,
+          useCustomDestination: true
+        }
+      });
+
+      // Déterminer la langue préférée de l'utilisateur (pour information au frontend)
+      function resolveUserLanguage(user: any): string {
+        if (!user) return 'fr';
+        
+        if (user.useCustomDestination && user.customDestinationLanguage) {
+          return user.customDestinationLanguage;
+        }
+        
+        if (user.translateToSystemLanguage) {
+          return user.systemLanguage;
+        }
+        
+        if (user.translateToRegionalLanguage) {
+          return user.regionalLanguage;
+        }
+        
+        return user.systemLanguage; // fallback
+      }
+
+      const userPreferredLanguage = resolveUserLanguage(user);
+
+      // Retourner les messages avec toutes leurs traductions
+      // Le frontend se chargera d'afficher la bonne traduction
+      const messagesWithAllTranslations = messages.map(message => {
+        // Adapter le message de réponse également
+        let adaptedReplyTo = null;
+        if (message.replyTo) {
+          adaptedReplyTo = {
+            ...message.replyTo,
+            translations: message.replyTo.translations // Garder toutes les traductions
+          };
+        }
+
+        return {
+          ...message,
+          translations: message.translations, // Garder toutes les traductions
+          replyTo: adaptedReplyTo,
+          userPreferredLanguage: userPreferredLanguage // Indiquer au frontend la langue préférée
+        };
       });
 
       // Marquer les messages comme lus
@@ -407,8 +490,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       reply.send({
         success: true,
         data: {
-          messages: messages.reverse(), // Inverser pour avoir l'ordre chronologique
-          hasMore: messages.length === parseInt(limit)
+          messages: messagesWithAllTranslations.reverse(), // Inverser pour avoir l'ordre chronologique
+          hasMore: messages.length === parseInt(limit),
+          userLanguage: userPreferredLanguage
         }
       });
 
@@ -513,6 +597,51 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
+      // Traduire le message via le service Translator (qui gère les langues des participants)
+      try {
+        // Récupérer les IDs des participants
+        let participantIds: string[] = [];
+        
+        if (id === 'any') {
+          // Pour la conversation globale, récupérer tous les utilisateurs actifs
+          const activeUsers = await prisma.user.findMany({
+            where: { isActive: true },
+            select: { id: true }
+          });
+          participantIds = activeUsers.map(u => u.id);
+        } else {
+          const participants = await prisma.conversationMember.findMany({
+            where: {
+              conversationId: id,
+              isActive: true
+            },
+            select: { userId: true }
+          });
+          participantIds = participants.map(p => p.userId);
+        }
+
+        // Envoyer la demande de traduction au service Translator via ZMQ
+        // Le Translator récupérera lui-même les langues des participants et traduira en conséquence
+        const translationRequest = {
+          messageId: message.id,
+          text: message.content,
+          sourceLanguage: originalLanguage,
+          targetLanguage: originalLanguage, // Langue source (le Translator déterminera les cibles)
+          modelType: getPredictedModelType(message.content.length),
+          // Données supplémentaires pour le Translator
+          conversationId: id, // Le Translator utilisera ceci pour récupérer les participants
+          participantIds: participantIds, // Information optionnelle pour optimisation
+          requestType: 'conversation_translation'
+        };
+
+        await zmqClient.translateText(translationRequest);
+
+        console.log(`Translations requested for message ${message.id} in conversation ${id}`);
+      } catch (error) {
+        console.error('Error requesting translations:', error);
+        // Ne pas faire échouer l'envoi du message si la traduction échoue
+      }
+
       reply.status(201).send({
         success: true,
         data: message
@@ -523,6 +652,144 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de l\'envoi du message'
+      });
+    }
+  });
+
+  // Route pour modifier un message (permis depuis la gateway)
+  fastify.put<{
+    Params: ConversationParams & { messageId: string };
+    Body: EditMessageBody;
+  }>('/conversations/:id/messages/:messageId', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id, messageId } = request.params;
+      const { content, originalLanguage = 'fr' } = request.body;
+      const userId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que le message existe et appartient à l'utilisateur
+      const existingMessage = await prisma.message.findFirst({
+        where: {
+          id: messageId,
+          conversationId: id,
+          senderId: userId,
+          isDeleted: false
+        }
+      });
+
+      if (!existingMessage) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Message non trouvé ou vous n\'êtes pas autorisé à le modifier'
+        });
+      }
+
+      // Validation du contenu
+      if (!content || content.trim().length === 0) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Le contenu du message ne peut pas être vide'
+        });
+      }
+
+      // Mettre à jour le message
+      const updatedMessage = await prisma.message.update({
+        where: { id: messageId },
+        data: {
+          content: content.trim(),
+          originalLanguage,
+          isEdited: true,
+          editedAt: new Date()
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatar: true,
+              role: true
+            }
+          },
+          replyTo: {
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Note: Les traductions ne sont PAS modifiées ici - elles restent dans l'état du service Translator
+      // Selon les instructions Copilot, seul le service Translator peut modifier les traductions
+
+      reply.send({
+        success: true,
+        data: updatedMessage
+      });
+
+    } catch (error) {
+      console.error('Error updating message:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la modification du message'
+      });
+    }
+  });
+
+  // Route pour supprimer un message (soft delete)
+  fastify.delete<{
+    Params: ConversationParams & { messageId: string };
+  }>('/conversations/:id/messages/:messageId', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id, messageId } = request.params;
+      const userId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que le message existe et appartient à l'utilisateur
+      const existingMessage = await prisma.message.findFirst({
+        where: {
+          id: messageId,
+          conversationId: id,
+          senderId: userId,
+          isDeleted: false
+        }
+      });
+
+      if (!existingMessage) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Message non trouvé ou vous n\'êtes pas autorisé à le supprimer'
+        });
+      }
+
+      // Soft delete du message
+      await prisma.message.update({
+        where: { id: messageId },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date()
+        }
+      });
+
+      reply.send({
+        success: true,
+        data: { messageId, deleted: true }
+      });
+
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la suppression du message'
       });
     }
   });
@@ -649,6 +916,96 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la suppression de la conversation'
+      });
+    }
+  });
+
+  // Route pour modifier un message
+  fastify.patch<{
+    Params: { messageId: string };
+    Body: { content: string };
+  }>('/messages/:messageId', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { messageId } = request.params;
+      const { content } = request.body;
+      const userId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que le message existe et appartient à l'utilisateur
+      const message = await prisma.message.findUnique({
+        where: { id: messageId },
+        include: {
+          conversation: {
+            include: {
+              members: {
+                where: {
+                  userId: userId,
+                  isActive: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!message) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Message introuvable'
+        });
+      }
+
+      // Vérifier que l'utilisateur est l'auteur du message
+      if (message.senderId !== userId) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous ne pouvez modifier que vos propres messages'
+        });
+      }
+
+      // Vérifier que l'utilisateur est membre de la conversation
+      if (message.conversationId !== 'any' && message.conversation.members.length === 0) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Mettre à jour le contenu du message
+      const updatedMessage = await prisma.message.update({
+        where: { id: messageId },
+        data: {
+          content: content.trim(),
+          isEdited: true,
+          editedAt: new Date()
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatar: true,
+              role: true
+            }
+          }
+        }
+      });
+
+      // Note: Les traductions existantes restent inchangées
+      // Le service de traduction sera notifié si nécessaire via WebSocket
+
+      reply.send({
+        success: true,
+        data: updatedMessage
+      });
+
+    } catch (error) {
+      console.error('Error updating message:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la modification du message'
       });
     }
   });

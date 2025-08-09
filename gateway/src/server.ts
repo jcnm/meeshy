@@ -25,6 +25,7 @@ import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import userPreferencesRoutes from './routes/user-preferences';
 import { InitService } from './services/init.service';
+import { MeeshyWebSocketHandler } from './websocket/handler';
 
 // ============================================================================
 // CONFIGURATION & ENVIRONMENT
@@ -203,6 +204,7 @@ class MeeshyServer {
   private server: FastifyInstance;
   private prisma: PrismaClient;
   private translationClient: ZMQTranslationClient;
+  private wsHandler: MeeshyWebSocketHandler;
 
   constructor() {
     this.server = fastify({
@@ -215,6 +217,7 @@ class MeeshyServer {
     });
     
     this.translationClient = new ZMQTranslationClient(config.translationServicePort);
+    this.wsHandler = new MeeshyWebSocketHandler(this.prisma, config.jwtSecret);
   }
 
   // --------------------------------------------------------------------------
@@ -324,60 +327,15 @@ class MeeshyServer {
   private async setupWebSocket(): Promise<void> {
     logger.info('Configuring WebSocket endpoints...');
 
-    this.server.register(async (fastify) => {
-      fastify.get('/ws', { websocket: true }, async (connection, request) => {
-        const clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
-        // Authentification JWT via query parameter
-        try {
-          const token = (request.query as any)?.token as string;
-          if (!token) {
-            logger.warn(`[GWY] WebSocket connection rejected: No token provided from ${request.ip}`);
-            connection.close(4001, 'Authentication required: token parameter missing');
-            return;
-          }
-
-          // Vérifier le token JWT
-          request.headers.authorization = `Bearer ${token}`;
-          const decoded = await request.jwtVerify() as any;
-          logger.info(`[GWY] New WebSocket connection established: ${clientId} from ${request.ip} for user ${decoded.userId || 'unknown'}`);
-        } catch (error) {
-          logger.warn(`[GWY] WebSocket connection rejected: Invalid token from ${request.ip}`, error);
-          connection.close(4002, 'Authentication failed: invalid token');
-          return;
-        }
-        
-        connection.on('message', async (message: Buffer) => {
-          try {
-            const data: WebSocketMessage = JSON.parse(message.toString());
-            logger.debug(`[GWY] WebSocket message received from ${clientId}: ${data.type}`);
-            
-            await this.handleWebSocketMessage(connection, data, clientId);
-          } catch (error) {
-            logger.error(`[GWY] WebSocket message processing error for ${clientId}:`, error);
-            this.sendWebSocketError(connection, undefined, 'Invalid message format');
-          }
-        });
-        
-        connection.on('close', () => {
-          logger.info(`[GWY] WebSocket connection closed: ${clientId}`);
-        });
-        
-        connection.on('error', (error: Error) => {
-          logger.error(`[GWY] WebSocket error for ${clientId}:`, error);
-        });
-
-        // Send simple ping message to establish connection
-        connection.send(JSON.stringify({
-          type: 'connection',
-          messageId: 'ping',
-          message: 'WebSocket connected',
-          timestamp: new Date().toISOString()
-        }));
-      });
-    });
-
-    logger.info('[GWY] ✓ WebSocket configured on /ws');
+    // Utiliser le gestionnaire WebSocket de Meeshy pour le messaging
+    // Note: setupWebSocket doit être appelé AVANT que le serveur soit démarré
+    try {
+      this.wsHandler.setupWebSocket(this.server);
+      logger.info('[GWY] ✓ WebSocket configured with MeeshyWebSocketHandler');
+    } catch (error) {
+      logger.error('[GWY] ❌ Failed to setup WebSocket:', error);
+      throw error;
+    }
   }
 
   private async handleWebSocketMessage(
@@ -385,231 +343,15 @@ class MeeshyServer {
     data: WebSocketMessage, 
     clientId: string
   ): Promise<void> {
-    switch (data.type) {
-      case 'translate':
-        await this.handleSingleTranslation(connection, data);
-        break;
-        
-      case 'translate_multi':
-        await this.handleMultipleTranslation(connection, data);
-        break;
-        
-      case 'new_message':
-        await this.handleNewMessage(connection, data, clientId);
-        break;
-        
-      case 'join_conversation':
-        await this.handleJoinConversation(connection, data, clientId);
-        break;
-        
-      case 'leave_conversation':
-        await this.handleLeaveConversation(connection, data, clientId);
-        break;
-        
-      case 'user_typing':
-        await this.handleTypingEvent(connection, data, clientId);
-        break;
-        
-      case 'typing':
-      case 'stop_typing':
-        await this.handleTypingEvent(connection, data, clientId);
-        break;
-        
-      default:
-        logger.warn(`Unsupported message type: ${data.type} from ${clientId}`);
-        this.sendWebSocketError(connection, data.messageId, `Unsupported message type: ${data.type}`);
-    }
+    // Le MeeshyWebSocketHandler gère maintenant tous les types de messages
+    logger.warn(`Message WebSocket reçu sur l'ancien handler. Type: ${data.type}. Utiliser le MeeshyWebSocketHandler à la place.`);
   }
 
-  private async handleSingleTranslation(
-    connection: WebSocketConnection, 
-    data: WebSocketMessage
-  ): Promise<void> {
-    try {
-      if (!data.text || !data.sourceLanguage || !data.targetLanguage) {
-        this.sendWebSocketError(connection, data.messageId, 'Missing required parameters: text, sourceLanguage, targetLanguage');
-        return;
-      }
-      
-      const startTime = Date.now();
-      const result = await this.translationClient.translateText({
-        messageId: data.messageId || `ws_${Date.now()}`,
-        text: data.text,
-        sourceLanguage: data.sourceLanguage,
-        targetLanguage: data.targetLanguage
-      });
-      
-      const response: WebSocketResponse = {
-        type: 'translation',
-        messageId: data.messageId,
-        originalText: data.text,
-        translatedText: result.translatedText,
-        sourceLanguage: data.sourceLanguage,
-        targetLanguage: data.targetLanguage,
-        confidence: result.metadata?.confidenceScore,
-        fromCache: result.metadata?.fromCache,
-        modelUsed: result.metadata?.modelUsed,
-        conversationId: data.conversationId,
-        timestamp: new Date().toISOString()
-      };
-      
-      this.sendWebSocketMessage(connection, response);
-      
-      const duration = Date.now() - startTime;
-      logger.info(`Translation completed in ${duration}ms: "${data.text}" → "${result.translatedText}"`);
-      
-    } catch (error) {
-      logger.error('Single translation error:', error);
-      this.sendWebSocketError(
-        connection, 
-        data.messageId, 
-        `Translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
+  // Méthodes de gestion WebSocket supprimées - utiliser MeeshyWebSocketHandler à la place
 
-  private async handleMultipleTranslation(
-    connection: WebSocketConnection, 
-    data: WebSocketMessage
-  ): Promise<void> {
-    try {
-      if (!data.text || !data.sourceLanguage || !data.targetLanguages?.length) {
-        this.sendWebSocketError(connection, data.messageId, 'Missing required parameters: text, sourceLanguage, targetLanguages');
-        return;
-      }
-      
-      const startTime = Date.now();
-      const results = await this.translationClient.translateToMultipleLanguages(
-        data.text,
-        data.sourceLanguage,
-        data.targetLanguages
-      );
-      
-      const translations = results.map((result: any, index: number) => ({
-        language: data.targetLanguages![index],
-        text: result.translatedText,
-        confidence: result.metadata?.confidenceScore || 0
-      }));
-      
-      const response: WebSocketResponse = {
-        type: 'translation_multi',
-        messageId: data.messageId,
-        originalText: data.text,
-        translations,
-        sourceLanguage: data.sourceLanguage,
-        conversationId: data.conversationId,
-        timestamp: new Date().toISOString()
-      };
-      
-      this.sendWebSocketMessage(connection, response);
-      
-      const duration = Date.now() - startTime;
-      logger.info(`Multiple translations completed in ${duration}ms: ${translations.length} languages`);
-      
-    } catch (error) {
-      logger.error('Multiple translation error:', error);
-      this.sendWebSocketError(
-        connection, 
-        data.messageId, 
-        `Multiple translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
-    }
-  }
-
-  private async handleTypingEvent(
-    connection: WebSocketConnection, 
-    data: WebSocketMessage, 
-    clientId: string
-  ): Promise<void> {
-    logger.debug(`Typing event: ${data.type} from user ${data.userId} in conversation ${data.conversationId}`);
-    
-    // Future implementation: broadcast to other conversation participants
-    // For now, just acknowledge the event
-    const response: WebSocketResponse = {
-      type: data.type as 'typing' | 'stop_typing',
-      messageId: data.messageId,
-      conversationId: data.conversationId,
-      userId: data.userId,
-      timestamp: new Date().toISOString()
-    };
-    
-    this.sendWebSocketMessage(connection, response);
-  }
-
-  private async handleNewMessage(
-    connection: WebSocketConnection, 
-    data: WebSocketMessage, 
-    clientId: string
-  ): Promise<void> {
-    try {
-      logger.debug(`New message from ${clientId}: ${data.data?.content}`);
-      
-      // TODO: Créer le message en base de données
-      // TODO: Diffuser le message aux autres participants de la conversation
-      
-      // Pour l'instant, juste confirmer la réception
-      const response: WebSocketResponse = {
-        type: 'message_sent',
-        messageId: data.messageId,
-        data: data.data,
-        timestamp: new Date().toISOString()
-      };
-      
-      this.sendWebSocketMessage(connection, response);
-    } catch (error) {
-      logger.error(`Error handling new message from ${clientId}:`, error);
-      this.sendWebSocketError(connection, data.messageId, 'Failed to send message');
-    }
-  }
-
-  private async handleJoinConversation(
-    connection: WebSocketConnection, 
-    data: WebSocketMessage, 
-    clientId: string
-  ): Promise<void> {
-    try {
-      logger.debug(`User ${clientId} joining conversation ${data.conversationId}`);
-      
-      // TODO: Vérifier les permissions d'accès à la conversation
-      // TODO: Ajouter l'utilisateur à la conversation
-      
-      const response: WebSocketResponse = {
-        type: 'conversation_joined',
-        messageId: data.messageId,
-        conversationId: data.conversationId,
-        timestamp: new Date().toISOString()
-      };
-      
-      this.sendWebSocketMessage(connection, response);
-    } catch (error) {
-      logger.error(`Error joining conversation for ${clientId}:`, error);
-      this.sendWebSocketError(connection, data.messageId, 'Failed to join conversation');
-    }
-  }
-
-  private async handleLeaveConversation(
-    connection: WebSocketConnection, 
-    data: WebSocketMessage, 
-    clientId: string
-  ): Promise<void> {
-    try {
-      logger.debug(`User ${clientId} leaving conversation ${data.conversationId}`);
-      
-      // TODO: Retirer l'utilisateur de la conversation
-      
-      const response: WebSocketResponse = {
-        type: 'conversation_left',
-        messageId: data.messageId,
-        conversationId: data.conversationId,
-        timestamp: new Date().toISOString()
-      };
-      
-      this.sendWebSocketMessage(connection, response);
-    } catch (error) {
-      logger.error(`Error leaving conversation for ${clientId}:`, error);
-      this.sendWebSocketError(connection, data.messageId, 'Failed to leave conversation');
-    }
-  }
+  // --------------------------------------------------------------------------
+  // HELPER METHODS  
+  // --------------------------------------------------------------------------
 
   private sendWebSocketMessage(connection: WebSocketConnection, message: WebSocketResponse): void {
     try {
@@ -682,7 +424,7 @@ class MeeshyServer {
         endpoints: {
           websocket: '/ws',
           health: '/health',
-          translate: '/api/translate'
+          translate: '/translate'
         },
         supportedLanguages: ['fr', 'en', 'es', 'de', 'pt', 'zh', 'ja', 'ar'],
         features: ['real-time translation', 'multiple language support', 'caching', 'typing indicators']
@@ -690,7 +432,7 @@ class MeeshyServer {
     });
 
     // Translation REST API
-    this.server.post<{ Body: TranslationRequest }>('/api/translate', {
+    this.server.post<{ Body: TranslationRequest }>('/translate', {
       schema: {
         body: {
           type: 'object',
@@ -766,11 +508,11 @@ class MeeshyServer {
     // Register authentication routes with /auth prefix
     await this.server.register(authRoutes, { prefix: '/auth' });
     
-    // Register conversation routes with /api prefix
-    await this.server.register(conversationRoutes, { prefix: '/api' });
+    // Register conversation routes without prefix
+    await this.server.register(conversationRoutes);
     
-    // Register user preferences routes with /api/users prefix
-    await this.server.register(userPreferencesRoutes, { prefix: '/api/users' });
+    // Register user preferences routes with /users prefix
+    await this.server.register(userPreferencesRoutes, { prefix: '/users' });
     
     logger.info('✓ REST API routes configured successfully');
   }
@@ -832,7 +574,7 @@ class MeeshyServer {
 ║  📡 WebSocket:    ws://localhost:${config.port}/ws${' '.repeat(23)}  ║
 ║  🏥 Health:       http://localhost:${config.port}/health${' '.repeat(18)} ║
 ║  📖 Info:         http://localhost:${config.port}/info${' '.repeat(20)} ║
-║  🔄 Translate:    http://localhost:${config.port}/api/translate${' '.repeat(11)} ║
+║  🔄 Translate:    http://localhost:${config.port}/translate${' '.repeat(15)} ║
 ╚══════════════════════════════════════════════════════════════════╝
     `.trim();
     
