@@ -157,4 +157,15 @@
   .translating {
     animation: pulse-translation 1.5s ease-in-out infinite;
   }
+  /* Pour s'assurer que le popover soit au-dessus de tout */
+[data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
 }

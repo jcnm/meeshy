@@ -15,7 +15,6 @@ import fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
-import websocket from '@fastify/websocket';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import { PrismaClient } from '../libs/prisma/client'; // Import Prisma client from shared library
 import winston from 'winston';
@@ -25,7 +24,7 @@ import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import userPreferencesRoutes from './routes/user-preferences';
 import { InitService } from './services/init.service';
-import { MeeshyWebSocketHandler } from './websocket/handler';
+import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
 // ============================================================================
 // CONFIGURATION & ENVIRONMENT
@@ -204,7 +203,7 @@ class MeeshyServer {
   private server: FastifyInstance;
   private prisma: PrismaClient;
   private translationClient: ZMQTranslationClient;
-  private wsHandler: MeeshyWebSocketHandler;
+  private socketIOHandler: MeeshySocketIOHandler;
 
   constructor() {
     this.server = fastify({
@@ -217,7 +216,7 @@ class MeeshyServer {
     });
     
     this.translationClient = new ZMQTranslationClient(config.translationServicePort);
-    this.wsHandler = new MeeshyWebSocketHandler(this.prisma, config.jwtSecret);
+    this.socketIOHandler = new MeeshySocketIOHandler(this.prisma, config.jwtSecret);
   }
 
   // --------------------------------------------------------------------------
@@ -253,8 +252,8 @@ class MeeshyServer {
       secret: config.jwtSecret
     });
 
-    // WebSocket support
-    await this.server.register(websocket);
+    // Socket.IO will be configured after server initialization
+    // No need to register a plugin as Socket.IO attaches directly to the HTTP server
 
     // Global error handler
     this.server.setErrorHandler(async (error, request, reply) => {
@@ -321,33 +320,21 @@ class MeeshyServer {
   }
 
   // --------------------------------------------------------------------------
-  // WEBSOCKET HANDLERS
+  // SOCKET.IO SETUP
   // --------------------------------------------------------------------------
 
-  private async setupWebSocket(): Promise<void> {
-    logger.info('Configuring WebSocket endpoints...');
+  private async setupSocketIO(): Promise<void> {
+    logger.info('Configuring Socket.IO...');
 
-    // Utiliser le gestionnaire WebSocket de Meeshy pour le messaging
-    // Note: setupWebSocket doit être appelé AVANT que le serveur soit démarré
     try {
-      this.wsHandler.setupWebSocket(this.server);
-      logger.info('[GWY] ✓ WebSocket configured with MeeshyWebSocketHandler');
+      // Socket.IO sera configuré directement avec le serveur HTTP
+      this.socketIOHandler.setupSocketIO(this.server);
+      logger.info('[GWY] ✅ Socket.IO configured with MeeshySocketIOHandler');
     } catch (error) {
-      logger.error('[GWY] ❌ Failed to setup WebSocket:', error);
+      logger.error('[GWY] ❌ Failed to setup Socket.IO:', error);
       throw error;
     }
   }
-
-  private async handleWebSocketMessage(
-    connection: WebSocketConnection, 
-    data: WebSocketMessage, 
-    clientId: string
-  ): Promise<void> {
-    // Le MeeshyWebSocketHandler gère maintenant tous les types de messages
-    logger.warn(`Message WebSocket reçu sur l'ancien handler. Type: ${data.type}. Utiliser le MeeshyWebSocketHandler à la place.`);
-  }
-
-  // Méthodes de gestion WebSocket supprimées - utiliser MeeshyWebSocketHandler à la place
 
   // --------------------------------------------------------------------------
   // HELPER METHODS  
@@ -598,7 +585,7 @@ class MeeshyServer {
 
       // Setup server components
       await this.setupMiddleware();
-      await this.setupWebSocket();
+      await this.setupSocketIO();
       await this.setupRoutes();
 
       // Start the server

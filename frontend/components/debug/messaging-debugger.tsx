@@ -11,8 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { messagingService } from '@/services/messaging.service';
-import { useMessaging } from '@/hooks/use-messaging';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import type { Message, User } from '@/types';
 import { toast } from 'sonner';
 
@@ -41,19 +40,19 @@ export function MessagingDebugger() {
     connectionStatus,
     startTyping,
     stopTyping
-  } = useMessaging({
+  } = useSocketIOMessaging({
     conversationId: TEST_CONVERSATION_ID,
     currentUser: TEST_USER as User,
-    onNewMessage: (message) => {
-      addLog(`✅ MESSAGE REÇU: ${message.id} - ${message.content?.substring(0, 50)}...`);
+    onNewMessage: (message: Message) => {
+      console.log('📨 Nouveau message:', message);
       setMessages(prev => [...prev, message]);
     },
-    onMessageEdited: (message) => {
-      addLog(`✏️ MESSAGE MODIFIÉ: ${message.id}`);
+    onMessageEdited: (message: Message) => {
+      console.log('✏️ Message modifié:', message);
       setMessages(prev => prev.map(m => m.id === message.id ? message : m));
     },
-    onMessageDeleted: (messageId) => {
-      addLog(`🗑️ MESSAGE SUPPRIMÉ: ${messageId}`);
+    onMessageDeleted: (messageId: string) => {
+      console.log('🗑️ Message supprimé:', messageId);
       setMessages(prev => prev.filter(m => m.id !== messageId));
     }
   });

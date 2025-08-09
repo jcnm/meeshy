@@ -111,12 +111,7 @@ export default function AuthDebugPage() {
           >
             Go to Conversations
           </button>
-          <button 
-            onClick={() => window.location.href = '/test-conversations'}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Go to Test Conversations
-          </button>
+
           <button 
             onClick={() => {
               localStorage.clear();

@@ -34,6 +34,7 @@
     "pino-pretty": "^11.0.0",
     "prisma": "^6.11.1",
     "protobufjs": "^7.5.3",
+    "socket.io": "^4.8.1",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "zeromq": "^6.5.0",

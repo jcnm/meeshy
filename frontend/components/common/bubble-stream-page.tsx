@@ -230,9 +230,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
   // Langues utilisées par l'utilisateur (basées sur ses préférences)
   const usedLanguages: string[] = [
-    user.regionalLanguage,
-    user.customDestinationLanguage
-  ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage);
+    user?.regionalLanguage,
+    user?.customDestinationLanguage
+  ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user?.systemLanguage);
 
   // État pour les utilisateurs en train de taper
   const [typingUsers, setTypingUsers] = useState<string[]>([]);

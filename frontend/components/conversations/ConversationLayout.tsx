@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useConversations } from '@/context/AppContext';
-import { useMessaging } from '@/hooks/use-messaging';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { Conversation, Message } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -38,7 +38,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   const router = useRouter();
 
   // Hook de messagerie unifié
-  const messaging = useMessaging({
+  const messaging = useSocketIOMessaging({
     conversationId: selectedConversation?.id,
     currentUser: user || undefined,
     onNewMessage: (message: Message) => {

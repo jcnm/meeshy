@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage, TranslationModelType } from '@/types';
 import { MessageBubble } from './message-bubble';
 import { useTranslation } from '@/hooks/use-translation';
-import { useMessaging } from '@/hooks/use-messaging';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { toast } from 'sonner';
 
 interface ConversationViewProps {
@@ -62,7 +62,7 @@ export function ConversationViewSimple({
 
   // Hooks pour la traduction et services
   const { translate } = useTranslation(); // Service API - pas de paramètres nécessaires
-  const messaging = useMessaging({
+  const messaging = useSocketIOMessaging({
     conversationId: conversation.id,
     currentUser: currentUser || undefined
   });

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@/context/AppContext';
-import { useMessaging } from '@/hooks/use-messaging';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,8 +52,8 @@ export function GlobalConversationPage({ user }: GlobalConversationPageProps) {
     sendMessage: sendWsMessage,
     startTyping,
     stopTyping,
-    forceConnect
-  } = useMessaging();
+    reconnect
+  } = useSocketIOMessaging();
 
   // Charger les messages initiaux
   useEffect(() => {
@@ -68,9 +68,9 @@ export function GlobalConversationPage({ user }: GlobalConversationPageProps) {
   // Connexion WebSocket
   useEffect(() => {
     if (!connectionStatus.isConnected) {
-      forceConnect();
+      reconnect();
     }
-  }, [connectionStatus.isConnected, forceConnect]);
+  }, [connectionStatus.isConnected, reconnect]);
 
   // Gestion de la frappe
   useEffect(() => {

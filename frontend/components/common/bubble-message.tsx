@@ -32,6 +32,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Message, User, BubbleTranslation } from '@/types';
@@ -44,7 +49,7 @@ interface BubbleMessageProps {
   };
   currentUser: User;
   userLanguage: string;
-  usedLanguages: string[]; // Langues que l'utilisateur apprend
+  usedLanguages: string[];
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -58,58 +63,36 @@ const SUPPORTED_LANGUAGES = [
   { code: 'ar', name: 'العربية', flag: '🇸🇦' },
 ];
 
-export function BubbleMessage({ message, currentUser, userLanguage, usedLanguages }: BubbleMessageProps) {
+export function BubbleMessage({ 
+  message, 
+  currentUser, 
+  userLanguage, 
+  usedLanguages = []
+}: BubbleMessageProps) {
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
-  const [showTranslationTimeline, setShowTranslationTimeline] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [showLearningMode, setShowLearningMode] = useState(false);
+  const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const getLanguageInfo = (langCode: string) => {
     return SUPPORTED_LANGUAGES.find(lang => lang.code === langCode) || SUPPORTED_LANGUAGES[0];
   };
 
-  // Auto-transition vers la langue système de l'utilisateur
+  // Auto-transition vers la langue système dès qu'elle est disponible
   useEffect(() => {
-    // Vérifier si on a une traduction dans la langue système de l'utilisateur
     const systemLanguageTranslation = message.translations.find(t => 
       t.language === currentUser.systemLanguage && t.status === 'completed'
     );
     
-    // Si le message original n'est pas dans la langue système et qu'on a une traduction
-    if (message.originalLanguage !== currentUser.systemLanguage && 
-        systemLanguageTranslation && 
-        currentDisplayLanguage === message.originalLanguage) {
-      
-      // Délai pour permettre la lecture du message original (si différent de la langue système)
-      const timer = setTimeout(() => {
-        setCurrentDisplayLanguage(currentUser.systemLanguage);
-      }, 1500); // Délai réduit pour une meilleure UX
-      
-      return () => clearTimeout(timer);
+    if (message.originalLanguage !== currentUser.systemLanguage && systemLanguageTranslation) {
+      setCurrentDisplayLanguage(currentUser.systemLanguage);
     }
-  }, [message.translations, currentUser.systemLanguage, currentDisplayLanguage, message.originalLanguage]);
-
-  // Détection des nouvelles traductions pour mise à jour en temps réel
-  useEffect(() => {
-    // Si on affiche la langue système et qu'une nouvelle traduction arrive
-    const systemTranslation = message.translations.find(t => 
-      t.language === currentUser.systemLanguage && t.status === 'completed'
-    );
-    
-    if (systemTranslation && currentDisplayLanguage === currentUser.systemLanguage) {
-      // Forcer la mise à jour du contenu (grâce à la clé dans AnimatePresence)
-      console.log('🔄 Mise à jour traduction en temps réel:', {
-        messageId: message.id,
-        language: currentUser.systemLanguage,
-        content: systemTranslation.content
-      });
-    }
-  }, [message.translations, currentUser.systemLanguage, currentDisplayLanguage, message.id]);
+  }, [message.translations, currentUser.systemLanguage, message.originalLanguage]);
 
   const getCurrentContent = () => {
-    // Si on affiche la langue originale, retourner le contenu original
+    // Si on affiche la langue originale, retourner TOUJOURS le contenu original
     if (currentDisplayLanguage === message.originalLanguage) {
       return message.content;
     }
@@ -119,17 +102,7 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
       t.language === currentDisplayLanguage && t.status === 'completed'
     );
     
-    if (translation) {
-      return translation.content;
-    }
-    
-    // Fallback : si pas de traduction disponible, retourner le contenu original
-    return message.content;
-  };
-
-  const getTranslationStatus = (langCode: string) => {
-    const translation = message.translations.find(t => t.language === langCode);
-    return translation?.status || 'pending';
+    return translation?.content || message.content;
   };
 
   const formatTimeAgo = (timestamp: string | Date) => {
@@ -145,28 +118,50 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
 
   const handleLanguageSwitch = (langCode: string) => {
     setCurrentDisplayLanguage(langCode);
+    setIsTranslationPopoverOpen(false);
   };
 
   const isOwnMessage = message.senderId === currentUser.id;
-  const isUsedLanguage = usedLanguages.includes(currentDisplayLanguage);
+  const isUsedLanguage = usedLanguages?.includes(currentDisplayLanguage) || false;
+
+  // Obtenir toutes les versions disponibles (original + traductions complètes)
+  const availableVersions = [
+    {
+      language: message.originalLanguage,
+      content: message.content, // TOUJOURS le contenu original, jamais une traduction
+      isOriginal: true,
+      status: 'completed' as const,
+      confidence: 1,
+      timestamp: new Date(message.createdAt)
+    },
+    ...message.translations.filter(t => t.status === 'completed').map(t => ({
+      ...t,
+      isOriginal: false
+    }))
+  ];
+
+  const isTranslated = currentDisplayLanguage !== message.originalLanguage;
+  
+  // Permettre à l'émetteur de voir les traductions de son propre message
+  const canSeeTranslations = availableVersions.length > 1;
 
   return (
     <TooltipProvider>
       <Card 
-        className={`bubble-message relative transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${
-          isOwnMessage ? 'bg-blue-50 border-blue-200' : 'bg-white'
+        className={`bubble-message relative transition-all duration-300 hover:shadow-lg ${
+          isOwnMessage ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
         } ${isUsedLanguage ? 'ring-2 ring-green-200 ring-opacity-50' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <CardContent className="p-4">
-          {/* Header avec timeline des traductions */}
+          {/* Header */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={message.sender?.avatar} alt={message.sender?.firstName} />
-                <AvatarFallback>
-                  {message.sender?.firstName?.charAt(0)}{message.sender?.lastName?.charAt(0)}
+                <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
+                  {message.sender?.firstName?.charAt(0)?.toUpperCase()}{message.sender?.lastName?.charAt(0)?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               
@@ -175,14 +170,14 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
                   <span className="font-medium text-gray-900">
                     @{message.sender?.username}
                   </span>
-                  <span className="text-gray-500">•</span>
+                  <span className="text-gray-400">•</span>
                   <span className="text-sm text-gray-500 flex items-center">
                     <Timer className="h-3 w-3 mr-1" />
                     {formatTimeAgo(message.createdAt)}
                   </span>
                   {message.location && (
                     <>
-                      <span className="text-gray-500">•</span>
+                      <span className="text-gray-400">•</span>
                       <span className="text-sm text-gray-500 flex items-center">
                         <MapPin className="h-3 w-3 mr-1" />
                         {message.location}
@@ -193,9 +188,8 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
               </div>
             </div>
 
-            {/* Timeline des langues avec statuts */}
-            <div className="flex items-center space-x-1">
-              {/* Indicateur de traduction active */}
+            {/* Indicateur de langue avec traduction en cours */}
+            <div className="flex items-center space-x-2">
               {message.translations.some(t => t.status === 'translating') && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full">
                   <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
@@ -203,77 +197,36 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
                 </div>
               )}
               
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowTranslationTimeline(!showTranslationTimeline)}
-                className="p-1"
-                title="Voir timeline des traductions"
-              >
-                <Languages className="h-4 w-4" />
-              </Button>
-              
-              <AnimatePresence>
-                {showTranslationTimeline && (
-                  <motion.div
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="flex items-center space-x-1 overflow-hidden"
+              {/* Langue originale du message */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge 
+                    variant="outline" 
+                    className="bg-gray-50 border-gray-300 text-gray-700 font-medium cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleLanguageSwitch(message.originalLanguage)}
                   >
-                    {/* Langue originale */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={currentDisplayLanguage === message.originalLanguage ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handleLanguageSwitch(message.originalLanguage)}
-                          className="px-2 py-1 text-xs"
-                        >
-                          <span className="mr-1">{getLanguageInfo(message.originalLanguage).flag}</span>
-                          <CheckCircle2 className="h-3 w-3 text-green-500" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Version originale en {getLanguageInfo(message.originalLanguage).name}
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {/* Traductions */}
-                    {message.translations.map((translation) => {
-                      const langInfo = getLanguageInfo(translation.language);
-                      return (
-                        <Tooltip key={translation.language}>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant={currentDisplayLanguage === translation.language ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => translation.status === 'completed' && handleLanguageSwitch(translation.language)}
-                              className="px-2 py-1 text-xs"
-                              disabled={translation.status !== 'completed'}
-                            >
-                              <span className="mr-1">{langInfo.flag}</span>
-                              {translation.status === 'completed' && <CheckCircle2 className="h-3 w-3 text-green-500" />}
-                              {translation.status === 'translating' && <Loader2 className="h-3 w-3 animate-spin text-blue-500" />}
-                              {translation.status === 'pending' && <div className="h-3 w-3 rounded-full bg-gray-300" />}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {translation.status === 'completed' && `${langInfo.name} (${Math.round(translation.confidence * 100)}% confiance)`}
-                            {translation.status === 'translating' && `Traduction vers ${langInfo.name} en cours...`}
-                            {translation.status === 'pending' && `Traduction vers ${langInfo.name} en attente`}
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <span className="mr-1">{getLanguageInfo(message.originalLanguage).flag}</span>
+                    {getLanguageInfo(message.originalLanguage).code.toUpperCase()}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>Langue originale : {getLanguageInfo(message.originalLanguage).name}</TooltipContent>
+              </Tooltip>
+              
+              {/* Langue actuellement affichée (si différente de l'originale) */}
+              {currentDisplayLanguage !== message.originalLanguage && (
+                <Badge 
+                  variant="outline" 
+                  className="bg-green-50 border-green-200 text-green-800 font-medium"
+                >
+                  <span className="mr-1">{getLanguageInfo(currentDisplayLanguage).flag}</span>
+                  {getLanguageInfo(currentDisplayLanguage).code.toUpperCase()}
+                </Badge>
+              )}
             </div>
           </div>
 
-          {/* Contenu avec transition fluide */}
-          <div className="mb-3 relative">
+          {/* Contenu principal */}
+          <div className="mb-3">
             <AnimatePresence mode="wait">
               <motion.div
                 key={`${currentDisplayLanguage}-${getCurrentContent()}`}
@@ -282,60 +235,155 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ 
                   duration: 0.3, 
-                  ease: [0.4, 0, 0.2, 1] // Courbe de Bézier pour une transition naturelle
+                  ease: [0.4, 0, 0.2, 1]
                 }}
                 ref={contentRef}
               >
-                <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
+                <p className="text-gray-900 leading-relaxed whitespace-pre-wrap text-base">
                   {getCurrentContent()}
                 </p>
               </motion.div>
             </AnimatePresence>
-            
-            {/* Indicateur de langue actuelle */}
-            <div className="mt-2 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Badge 
-                  variant={isUsedLanguage ? "default" : "outline"} 
-                  className={`text-xs ${
-                    isUsedLanguage ? 'bg-green-100 text-green-800 border-green-300' : ''
-                  }`}
-                >
-                  <span className="mr-1">{getLanguageInfo(currentDisplayLanguage).flag}</span>
-                  {getLanguageInfo(currentDisplayLanguage).name}
-                  {isUsedLanguage && ' 📚'}
-                </Badge>
-                
-                {currentDisplayLanguage !== message.originalLanguage && (
-                  <span className="text-xs text-gray-500 flex items-center">
-                    <Globe2 className="h-3 w-3 mr-1" />
-                    Traduit de {getLanguageInfo(message.originalLanguage).name}
-                  </span>
-                )}
-              </div>
+          </div>
 
-              {/* Mode apprentissage */}
-              {isUsedLanguage && (
+          {/* Indicateur de traduction avec globe interactif - Disponible pour tous si traductions existent */}
+          {canSeeTranslations && (
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                {isTranslated ? (
+                  <>
+                    <Languages className="h-4 w-4" />
+                    <span>Traduit de {getLanguageInfo(message.originalLanguage).name}</span>
+                  </>
+                ) : (
+                  <>
+                    <Languages className="h-4 w-4" />
+                    <span>Traductions disponibles</span>
+                  </>
+                )}
+                
+                <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost" 
+                      size="sm"
+                      className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 h-auto ml-1"
+                      onMouseEnter={() => setIsTranslationPopoverOpen(true)}
+                    >
+                      <Globe2 className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent 
+                    className="w-80 p-0 shadow-xl border-0" 
+                    side="top" 
+                    align="start"
+                    sideOffset={8}
+                    style={{ zIndex: 9999 }}
+                  >
+                    <div className="p-4 bg-white rounded-lg shadow-2xl border border-gray-200">
+                      <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
+                        <Languages className="h-4 w-4 text-gray-600" />
+                        <span className="font-medium text-gray-900">Versions disponibles</span>
+                        <Badge variant="outline" className="text-xs">{availableVersions.length}</Badge>
+                      </div>
+                      
+                      <div className="space-y-1 max-h-60 overflow-y-auto">
+                        {availableVersions.map((version) => {
+                          const langInfo = getLanguageInfo(version.language);
+                          const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
+                          
+                          return (
+                            <button
+                              key={version.language}
+                              onClick={() => handleLanguageSwitch(version.language)}
+                              className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                                isCurrentlyDisplayed 
+                                  ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-200' 
+                                  : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-lg">{langInfo.flag}</span>
+                                  <span className="font-medium text-gray-900">{langInfo.name}</span>
+                                  {version.isOriginal && (
+                                    <Badge variant="outline" className="text-xs bg-gray-100">Original</Badge>
+                                  )}
+                                  {isCurrentlyDisplayed && (
+                                    <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                                  )}
+                                </div>
+                                {!version.isOriginal && (
+                                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                    {Math.round(version.confidence * 100)}%
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                                {version.content}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      
+                      {message.translations.some(t => t.status === 'translating') && (
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <div className="flex items-center space-x-2 text-sm text-blue-700 bg-blue-50 p-2 rounded">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <span>Traductions en cours...</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              {/* Bouton pour revenir à l'original ou voir une traduction */}
+              {isTranslated ? (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setShowLearningMode(!showLearningMode)}
-                  className="text-xs text-green-600 hover:text-green-800 p-0 h-auto"
+                  onClick={() => handleLanguageSwitch(message.originalLanguage)}
+                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm px-2 py-1 h-auto"
                 >
-                  {showLearningMode ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
-                  {showLearningMode ? 'Masquer aide' : 'Aide apprentissage'}
+                  <span className="mr-1">{getLanguageInfo(message.originalLanguage).flag}</span>
+                  Voir l'original
                 </Button>
+              ) : (
+                // Si on affiche l'original et qu'il y a des traductions, proposer de voir une traduction
+                availableVersions.length > 1 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      // Prendre la première traduction disponible (probablement dans la langue système de l'utilisateur)
+                      const firstTranslation = availableVersions.find(v => !v.isOriginal);
+                      if (firstTranslation) {
+                        handleLanguageSwitch(firstTranslation.language);
+                      }
+                    }}
+                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm px-2 py-1 h-auto"
+                  >
+                    <Globe2 className="h-4 w-4 mr-1" />
+                    Voir traduction
+                  </Button>
+                )
               )}
             </div>
+          )}
 
-            {/* Panel d'aide à l'apprentissage */}
+          {/* Mode apprentissage */}
+          {isUsedLanguage && (
             <AnimatePresence>
-              {showLearningMode && isUsedLanguage && (
+              {showLearningMode && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg"
+                  className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg"
                 >
                   <div className="text-sm space-y-2">
                     <div className="flex justify-between">
@@ -344,27 +392,14 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
                         variant="ghost"
                         size="sm"
                         onClick={() => handleLanguageSwitch(message.originalLanguage)}
-                        className="text-xs p-1"
+                        className="text-xs p-1 text-green-700 hover:text-green-900"
                       >
                         {getLanguageInfo(message.originalLanguage).flag} Voir
                       </Button>
                     </div>
                     
-                    <div className="flex justify-between">
-                      <span className="font-medium text-green-800">Votre langue :</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleLanguageSwitch(userLanguage)}
-                        className="text-xs p-1"
-                      >
-                        {getLanguageInfo(userLanguage).flag} Voir
-                      </Button>
-                    </div>
-                    
-                    {/* Indicateur de difficulté basé sur la différence linguistique */}
                     <div className="flex items-center space-x-2 text-xs text-green-700">
-                      <span>Difficulité estimée:</span>
+                      <span>Difficulté estimée:</span>
                       <div className="flex space-x-1">
                         {[1, 2, 3].map(level => (
                           <div
@@ -381,68 +416,118 @@ export function BubbleMessage({ message, currentUser, userLanguage, usedLanguage
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          )}
 
-          {/* Actions (avec nouvelles fonctionnalités d'apprentissage) */}
+          {/* Actions */}
           <div className={`flex items-center justify-between transition-all duration-200 ${
-            isHovered ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-2'
+            isHovered ? 'opacity-100 transform translate-y-0' : 'opacity-40 transform translate-y-1'
           }`}>
             <div className="flex items-center space-x-1">
-              {/* Actions existantes */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toast.info('Fonction de réponse à venir')}
-                className="action-icon text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2"
-                title="Répondre"
-              >
-                <MessageCircle className="h-4 w-4" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toast.info('Fonction de réponse à venir')}
+                    className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Répondre</TooltipContent>
+              </Tooltip>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsFavorited(!isFavorited)}
-                className={`action-icon p-2 ${
-                  isFavorited 
-                    ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50' 
-                    : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50'
-                }`}
-                title="Ajouter aux favoris"
-              >
-                <Star className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsFavorited(!isFavorited)}
+                    className={`p-2 rounded-full ${
+                      isFavorited 
+                        ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50' 
+                        : 'text-gray-500 hover:text-yellow-600 hover:bg-yellow-50'
+                    }`}
+                  >
+                    <Star className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Ajouter aux favoris</TooltipContent>
+              </Tooltip>
 
-              {/* Nouvelle action : Ajouter au vocabulaire d'apprentissage */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(getCurrentContent());
+                      toast.success('Texte copié');
+                    }}
+                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-full"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Copier</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toast.info('Signaler le message')}
+                    className="text-gray-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-full"
+                  >
+                    <AlertTriangle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Signaler</TooltipContent>
+              </Tooltip>
+
               {isUsedLanguage && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => toast.success('Ajouté au vocabulaire d\'apprentissage')}
-                      className="action-icon text-gray-500 hover:text-green-600 hover:bg-green-50 p-2"
+                      onClick={() => setShowLearningMode(!showLearningMode)}
+                      className="text-gray-500 hover:text-green-600 hover:bg-green-50 p-2 rounded-full"
                     >
-                      📚
+                      {showLearningMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    Ajouter au vocabulaire d'apprentissage
+                    {showLearningMode ? 'Masquer aide apprentissage' : 'Aide apprentissage'}
                   </TooltipContent>
                 </Tooltip>
               )}
             </div>
 
-            {/* Timeline toggle visible au hover */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowTranslationTimeline(!showTranslationTimeline)}
-              className="text-gray-500 hover:text-gray-700 p-2"
-              title="Gérer les traductions"
-            >
-              <Languages className="h-4 w-4" />
-            </Button>
+            {/* Menu plus d'options */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-500 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-full"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => toast.info('Partager le message')}>
+                  Partager
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.info('Épingler le message')}>
+                  Épingler
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toast.info('Modifier le message')}>
+                  Modifier
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
       </Card>
