@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
-import { useMessaging } from '@/hooks/use-messaging';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -119,8 +119,8 @@ const main = async () => {
 
 // export { initializeTranslator, translateText };
 
-  // Hook de messagerie unifié pour la gestion WebSocket
-  const messaging = useMessaging({
+  // Hook de messagerie Socket.IO pour la gestion des connexions temps réel
+  const messaging = useSocketIOMessaging({
     conversationId: selectedConversation?.id,
     currentUser: user || undefined,
     onNewMessage: (message: Message) => {
@@ -147,6 +147,10 @@ const main = async () => {
           ? { ...conv, lastMessage: message, updatedAt: new Date() }
           : conv
       ));
+    },
+    onTranslation: (messageId: string, translations: any[]) => {
+      console.log('🌐 Traductions reçues pour message:', messageId, translations);
+      // Gérer les traductions reçues via Socket.IO
     }
   });
 
@@ -953,8 +957,21 @@ const main = async () => {
                           originalLanguage: message.originalLanguage || 'fr',
                           isTranslated: message.isTranslated || false,
                           translatedFrom: message.isTranslated ? message.originalLanguage : undefined,
-                          location: undefined // Pas de localisation dans les conversations
+                          location: undefined, // Pas de localisation dans les conversations
+                          translations: message.translations?.map(t => ({
+                            language: t.language,
+                            content: t.content,
+                            status: 'completed' as const,
+                            timestamp: t.createdAt,
+                            confidence: 0.9
+                          })) || []
                         };
+
+                        // Langues utilisées (similaire à bubble-stream-page)
+                        const usedLanguages: string[] = [
+                          user.regionalLanguage,
+                          user.customDestinationLanguage
+                        ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage);
                         
                         return (
                           <BubbleMessage
@@ -962,6 +979,7 @@ const main = async () => {
                             message={bubbleMessage}
                             currentUser={user}
                             userLanguage={user.systemLanguage}
+                            usedLanguages={usedLanguages}
                           />
                         );
                       })}
