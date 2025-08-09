@@ -67,6 +67,15 @@ export interface Translation {
   modelCost?: ModelCost;
 }
 
+// Interface pour les traductions enrichies des bulles de message
+export interface BubbleTranslation {
+  language: string;
+  content: string;
+  status: 'pending' | 'translating' | 'completed';
+  timestamp: Date;
+  confidence: number; // 0-1 pour la qualité de traduction
+}
+
 export interface TranslationCache {
   key: string;
   originalMessage: string;

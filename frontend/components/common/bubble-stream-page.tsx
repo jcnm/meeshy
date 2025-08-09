@@ -18,16 +18,9 @@ import {
   Brain,
   Globe2,
   Send,
-  MessageCircle,
-  Star,
-  Copy,
-  AlertTriangle,
   Languages,
-  MapPin,
-  Timer,
-  TrendingUp,
-  Hash,
-  MoreHorizontal,
+  MapPin, 
+  TrendingUp, 
   ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,17 +37,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { BubbleMessage } from '@/components/common/bubble-message';
-import { useNativeMessaging } from '@/hooks/use-native-messaging';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
-import type { User, Message } from '@/types';
+import type { User, Message, BubbleTranslation } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 interface LanguageStats {
@@ -69,6 +55,7 @@ interface BubbleStreamMessage extends Message {
   originalLanguage: string;
   isTranslated: boolean;
   translatedFrom?: string;
+  translations: BubbleTranslation[];
 }
 
 interface BubbleStreamPageProps {
@@ -87,7 +74,10 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 const MAX_MESSAGE_LENGTH = 300;
-
+const TOAST_SHORT_DURATION = 2000;
+const TOAST_LONG_DURATION = 3000;
+const TOAST_ERROR_DURATION = 5000;
+const TYPING_CANCELATION_DELAY = 2000; // Délai avant d'annuler l'indicateur de frappe
 // Composant pour les indicateurs de langues - affichage vertical seulement
 interface LanguageIndicatorsProps {
   languageStats: LanguageStats[];
@@ -223,6 +213,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // États
   const [messages, setMessages] = useState<BubbleStreamMessage[]>([]);
@@ -236,6 +227,12 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [location, setLocation] = useState<string>('');
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
+
+  // Langues utilisées par l'utilisateur (basées sur ses préférences)
+  const usedLanguages: string[] = [
+    user.regionalLanguage,
+    user.customDestinationLanguage
+  ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage);
 
   // État pour les utilisateurs en train de taper
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -260,6 +257,152 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     // TODO: Mettre à jour la liste des utilisateurs actifs
   }, []);
 
+  const handleTranslation = useCallback((messageId: string, translations: any[]) => {
+    console.log('🌐 Traductions reçues pour message:', messageId, translations);
+    
+    // Vérifier si des traductions existent déjà pour éviter les doublons
+    let hasNewTranslation = false;
+    
+    // Mettre à jour le message avec les traductions reçues
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        // Convertir les traductions reçues au format BubbleTranslation
+        const newTranslations: BubbleTranslation[] = translations.map(t => ({
+          language: t.language || t.targetLanguage,
+          content: t.content || t.translatedContent,
+          status: 'completed' as const,
+          timestamp: new Date(),
+          confidence: t.confidence || 0.9
+        }));
+
+        // Fusionner avec les traductions existantes pour éviter les doublons
+        const existingTranslations = msg.translations || [];
+        const mergedTranslations: BubbleTranslation[] = [...existingTranslations];
+
+        newTranslations.forEach(newTrans => {
+          const existingIndex = mergedTranslations.findIndex(
+            existing => existing.language === newTrans.language
+          );
+          
+          if (existingIndex >= 0) {
+            // Mettre à jour la traduction existante
+            mergedTranslations[existingIndex] = newTrans;
+          } else {
+            // Ajouter nouvelle traduction
+            mergedTranslations.push(newTrans);
+            hasNewTranslation = true;
+          }
+        });
+
+        // Mettre à jour le contenu du message si nous avons une traduction pour la langue système
+        let updatedContent = msg.content;
+        const systemLanguageTranslation = mergedTranslations.find(t => 
+          t.language === user.systemLanguage && t.status === 'completed'
+        );
+        
+        // Si le message n'est pas dans la langue système de l'utilisateur, utiliser la traduction
+        if (msg.originalLanguage !== user.systemLanguage && systemLanguageTranslation) {
+          updatedContent = systemLanguageTranslation.content;
+        }
+
+        return {
+          ...msg,
+          content: updatedContent,
+          translations: mergedTranslations
+        };
+      }
+      return msg;
+    }));
+    
+    // Toast UNIQUEMENT pour les nouvelles traductions dans les langues de l'utilisateur
+    if (hasNewTranslation) {
+      const userLanguages = [
+        user.systemLanguage,
+        user.regionalLanguage,
+        user.customDestinationLanguage
+      ].filter(Boolean); // Enlever les valeurs undefined/null
+
+      const relevantTranslation = translations.find(t => 
+        userLanguages.includes(t.language || t.targetLanguage)
+      );
+      
+      if (relevantTranslation) {
+        const langInfo = SUPPORTED_LANGUAGES.find(lang => 
+          lang.code === (relevantTranslation.language || relevantTranslation.targetLanguage)
+        );
+        
+        console.log('✅ Toast pour traduction pertinente:', {
+          langue: langInfo?.name,
+          userLanguages,
+          translationLanguage: relevantTranslation.language || relevantTranslation.targetLanguage
+        });
+        
+        toast.success(`🌐 Message traduit en ${langInfo?.name || 'votre langue'}`, {
+          duration: TOAST_SHORT_DURATION
+        });
+      }
+    }
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]);
+
+  // Handler pour les nouveaux messages reçus via WebSocket
+  const handleNewMessage = useCallback((message: Message) => {
+    console.log('📩 Message reçu via WebSocket:', { id: message.id, content: message.content, senderId: message.senderId });
+    
+    setMessages(prev => {
+      // Éviter les doublons - vérifier par ID ET par contenu/senderId pour plus de sécurité
+      const isDuplicate = prev.some(existingMsg => 
+        existingMsg.id === message.id || 
+        (existingMsg.senderId === message.senderId && 
+         existingMsg.content === message.content && 
+         Math.abs(new Date(existingMsg.createdAt).getTime() - new Date(message.createdAt).getTime()) < 5000)
+      );
+      
+      if (isDuplicate) {
+        console.log('🚫 Message dupliqué détecté, ignoré:', message.id);
+        return prev;
+      }
+
+      const bubbleMessage: BubbleStreamMessage = {
+        ...message,
+        originalLanguage: message.originalLanguage || 'fr',
+        isTranslated: message.originalLanguage !== userLanguage,
+        translatedFrom: message.originalLanguage !== userLanguage ? message.originalLanguage : undefined,
+        location: (message as any).location || 'Paris', // Utilise la localisation du message ou par défaut
+        translations: [] // Initialiser avec un tableau vide
+      };
+
+      console.log('✅ Nouveau message ajouté au stream:', bubbleMessage.id);
+      // ⬆️ Les nouveaux messages sont placés EN HAUT de la liste (ordre chronologique inverse)
+      // Cela garantit que les messages les plus récents apparaissent en premier dans l'interface
+      return [bubbleMessage, ...prev];
+    });
+    
+    // Notification UNIQUEMENT pour les nouveaux messages d'autres utilisateurs
+    // ET seulement si ce n'est pas notre propre message
+    if (message.senderId !== user.id) {
+      toast.info(`📨 Nouveau message de ${message.sender?.firstName || 'Utilisateur'}`, {
+        duration: TOAST_LONG_DURATION
+      });
+    } else {
+      // Pour nos propres messages, juste un toast discret de confirmation
+      console.log('✅ Mon message publié avec succès');
+    }
+    
+    // Auto-scroll vers le nouveau message
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }, 100);
+    
+    console.log('📩 Nouveau message reçu:', {
+      from: message.sender?.username,
+      content: message.content,
+      isOwnMessage: message.senderId === user.id,
+    });
+  }, [user.id, userLanguage]);
+
   // Hooks
   const { 
     sendMessage: sendMessageToService,
@@ -268,12 +411,13 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     stopTyping,
     reconnect,
     getDiagnostics
-  } = useNativeMessaging({
+  } = useSocketIOMessaging({
     conversationId: 'any', // Conversation globale pour le stream
     currentUser: user,
     onNewMessage: handleNewMessage,
     onUserTyping: handleUserTyping,
     onUserStatus: handleUserStatus,
+    onTranslation: handleTranslation,
   });
 
   const { notifications, markAsRead } = useNotifications();
@@ -408,6 +552,15 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     // Messages chargés depuis le serveur uniquement
   }, [userLanguage]);
 
+  // Cleanup timeout de frappe au démontage
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Chargement des données trending sans simulation de messages
   useEffect(() => {
     // Simulation des hashtags tendances - Plus de 7 pour tester le scroll
@@ -526,14 +679,17 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           return;
         }
         
-        // Convertir en BubbleStreamMessage
-        const bubbleMessages: BubbleStreamMessage[] = existingMessages.map((msg: any) => ({
-          ...msg,
-          originalLanguage: msg.originalLanguage || 'fr',
-          isTranslated: msg.originalLanguage !== userLanguage,
-          translatedFrom: msg.originalLanguage !== userLanguage ? msg.originalLanguage : undefined,
-          location: msg.location || 'Paris'
-        }));
+        // Convertir en BubbleStreamMessage et trier par date décroissante (plus récents en premier)
+        const bubbleMessages: BubbleStreamMessage[] = existingMessages
+          .map((msg: any) => ({
+            ...msg,
+            originalLanguage: msg.originalLanguage || 'fr',
+            isTranslated: msg.originalLanguage !== userLanguage,
+            translatedFrom: msg.originalLanguage !== userLanguage ? msg.originalLanguage : undefined,
+            location: msg.location || 'Paris',
+            translations: msg.translations || [] // Initialiser avec un tableau vide si pas de traductions
+          }))
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         
         setMessages(bubbleMessages);
         toast.success(`📨 ${existingMessages.length} messages chargés`);
@@ -565,107 +721,48 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, [connectionStatus.isConnected, loadExistingMessages]);
 
-  function handleNewMessage(message: Message) {
-    // Éviter les doublons si le message a déjà été ajouté localement
-    const isDuplicate = messages.some(existingMsg => existingMsg.id === message.id);
-    if (isDuplicate) return;
-
-    const bubbleMessage: BubbleStreamMessage = {
-      ...message,
-      originalLanguage: message.originalLanguage || 'fr',
-      isTranslated: message.originalLanguage !== userLanguage,
-      translatedFrom: message.originalLanguage !== userLanguage ? message.originalLanguage : undefined,
-      location: (message as any).location || 'Paris' // Utilise la localisation du message ou par défaut
-    };
-
-    setMessages(prev => [bubbleMessage, ...prev]);
-    
-    // Notification pour les nouveaux messages d'autres utilisateurs
-    if (message.senderId !== user.id) {
-      toast.info(`📨 Nouveau message de ${message.sender?.firstName || 'Utilisateur'}`, {
-        duration: 3000
-      });
-    }
-    
-    // Auto-scroll vers le nouveau message
-    setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }, 100);
-    
-    console.log('📩 Nouveau message reçu:', {
-      from: message.sender?.username,
-      content: message.content,
-      isOwnMessage: message.senderId === user.id,
-      isTranslated: bubbleMessage.isTranslated
-    });
-  }
-
   const handleSendMessage = async () => {
     if (!newMessage.trim() || newMessage.length > MAX_MESSAGE_LENGTH) {
       return;
     }
 
+    const messageContent = newMessage.trim();
+    setNewMessage(''); // Réinitialiser immédiatement pour éviter les doubles envois
+    setIsTyping(false);
+    
+    // Réinitialiser la hauteur du textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+
     try {
-      // Créer le message
-      const newBubbleMessage: BubbleStreamMessage = {
-        id: `user-msg-${Date.now()}`,
-        conversationId: 'any',
-        senderId: user.id,
-        content: newMessage.trim(),
-        originalLanguage: detectedLanguage,
-        isTranslated: false,
-        isEdited: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        location: location || 'Paris',
-        sender: user
-      };
-
-      // Ajouter le message immédiatement à la liste (optimistic update)
-      setMessages(prev => [newBubbleMessage, ...prev]);
-
       // Essayer d'envoyer via le service WebSocket si connecté
       if (connectionStatus.isConnected) {
         try {
-          await sendMessageToService(newMessage.trim());
-          console.log('✅ Message envoyé via WebSocket');
+          await sendMessageToService(messageContent);
+          console.log('✅ Message envoyé via WebSocket - sera reçu via onNewMessage');
+          // Suppression du toast automatique pour éviter les doublons
+          // Le toast se fera lors de la réception via onNewMessage
         } catch (error) {
           console.error('❌ Erreur envoi WebSocket:', error);
           toast.error('Erreur lors de l\'envoi du message');
-          // Retirer le message optimiste en cas d'erreur
-          setMessages(prev => prev.filter(msg => msg.id !== newBubbleMessage.id));
+          // Restaurer le message en cas d'erreur
+          setNewMessage(messageContent);
           return;
         }
       } else {
         console.log('📡 WebSocket non connecté - Message en attente');
         toast.warning('Connexion en cours - Message sera envoyé dès la reconnexion');
+        // Restaurer le message pour permettre un nouvel essai
+        setNewMessage(messageContent);
+        return;
       }
-
-      // Réinitialiser le formulaire
-      setNewMessage('');
-      setIsTyping(false);
-      
-      // Réinitialiser la hauteur du textarea
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
-      
-      // Auto-scroll vers le nouveau message
-      setTimeout(() => {
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }, 100);
-      
-      toast.success('Message publié !');
 
     } catch (error) {
       console.error('❌ Erreur lors de l\'envoi du message:', error);
       toast.error('Erreur lors de l\'envoi du message');
+      // Restaurer le message en cas d'erreur
+      setNewMessage(messageContent);
     }
   };
 
@@ -679,12 +776,37 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const handleTyping = (value: string) => {
     setNewMessage(value);
     
-    if (value.trim() && !isTyping) {
-      setIsTyping(true);
-      startTyping();
-    } else if (!value.trim() && isTyping) {
-      setIsTyping(false);
-      stopTyping();
+    // Gérer l'indicateur de frappe avec timeout
+    if (value.trim()) {
+      // Si l'utilisateur tape et qu'il n'était pas déjà en train de taper
+      if (!isTyping) {
+        setIsTyping(true);
+        startTyping();
+      }
+      
+      // Réinitialiser le timeout à chaque caractère tapé
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Arrêter la frappe après 3 secondes d'inactivité
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+        stopTyping();
+      }, TYPING_CANCELATION_DELAY);
+      
+    } else {
+      // Si le champ est vide, arrêter immédiatement la frappe
+      if (isTyping) {
+        setIsTyping(false);
+        stopTyping();
+      }
+      
+      // Nettoyer le timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
     }
 
     // Auto-resize textarea
@@ -884,77 +1006,94 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       <div className="pt-16 min-h-screen relative">
         {/* Feed principal - Container avec gestion propre du scroll */}
         <div className="w-full xl:pr-80 relative">
-          {/* Indicateur de statut de connexion WebSocket - Fixé en haut */}
+          {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
           <div className="fixed top-16 left-0 right-0 xl:right-80 z-40 px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none">
             <div className="pointer-events-auto">
-              <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
-                connectionStatus.isConnected && connectionStatus.hasSocket
-                  ? 'bg-green-100/80 text-green-800 border border-green-200/60' 
-                  : 'bg-orange-100/80 text-orange-800 border border-orange-200/60'
-              }`}>
-                <div className={`w-2 h-2 rounded-full animate-pulse ${
-                  connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
-                }`} />
-                <span className="font-medium">
-                  Messages en temps réel
-                </span>
-                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                  <span className="text-xs opacity-75">• Connexion en cours...</span>
-                )}
-                {connectionStatus.isConnected && connectionStatus.hasSocket && (
-                  <span className="text-xs opacity-75">• Communication active</span>
-                )}
-                {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        console.log('🔄 Tentative de reconnexion manuelle...');
-                        const diagnostics = getDiagnostics();
-                        console.log('🔍 Diagnostic avant reconnexion:', diagnostics);
-                        
-                        toast.info('🔄 Tentative de reconnexion...');
-                        reconnect();
-                        
-                        // Vérifier après un délai
-                        setTimeout(() => {
-                          const newDiagnostics = getDiagnostics();
-                          console.log('🔍 Diagnostic après reconnexion:', newDiagnostics);
+              {/* Priorité à l'indicateur de frappe quand actif */}
+              {typingUsers.length > 0 && connectionStatus.isConnected ? (
+                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75" />
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150" />
+                  </div>
+                  <span className="font-medium">
+                    {typingUsers.length === 1 
+                      ? `${typingUsers[0]} écrit...`
+                      : typingUsers.length === 2
+                      ? `${typingUsers[0]} et ${typingUsers[1]} écrivent...`
+                      : `${typingUsers[0]} et ${typingUsers.length - 1} autres écrivent...`
+                    }
+                  </span>
+                </div>
+              ) : (
+                /* Indicateur de connexion par défaut */
+                <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
+                  connectionStatus.isConnected && connectionStatus.hasSocket
+                    ? 'bg-green-100/80 text-green-800 border border-green-200/60' 
+                    : 'bg-orange-100/80 text-orange-800 border border-orange-200/60'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${
+                    connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
+                  }`} />
+                  <span className="font-medium">
+                    Messages en temps réel
+                  </span>
+                  {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                    <span className="text-xs opacity-75">• Connexion en cours...</span>
+                  )}
+                  {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          console.log('🔄 Tentative de reconnexion manuelle...');
+                          const diagnostics = getDiagnostics();
+                          console.log('🔍 Diagnostic avant reconnexion:', diagnostics);
                           
-                          if (newDiagnostics.isConnected) {
-                            toast.success('✅ Reconnexion réussie !');
-                          } else {
-                            toast.error('❌ Reconnexion échouée - Vérifiez le serveur');
-                          }
-                        }, 2000);
-                      }}
-                      className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
-                    >
-                      Reconnecter
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const diagnostics = getDiagnostics();
-                        console.log('🔍 Diagnostic complet:', diagnostics);
-                        
-                        const message = `Diagnostic WebSocket:
+                          toast.info('🔄 Tentative de reconnexion...');
+                          reconnect();
+                          
+                          // Vérifier après un délai
+                          setTimeout(() => {
+                            const newDiagnostics = getDiagnostics();
+                            console.log('🔍 Diagnostic après reconnexion:', newDiagnostics);
+                            
+                            if (newDiagnostics.isConnected) {
+                              toast.success('✅ Reconnexion réussie !');
+                            } else {
+                              toast.error('❌ Reconnexion échouée - Vérifiez le serveur');
+                            }
+                          }, 2000);
+                        }}
+                        className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
+                      >
+                        Reconnecter
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const diagnostics = getDiagnostics();
+                          console.log('🔍 Diagnostic complet:', diagnostics);
+                          
+                          const message = `Diagnostic WebSocket:
 • Socket créé: ${diagnostics.hasSocket ? '✅' : '❌'}
 • Connecté: ${diagnostics.isConnected ? '✅' : '❌'}  
 • Token: ${diagnostics.hasToken ? '✅' : '❌'}
 • URL: ${diagnostics.url}`;
-                        
-                        toast.info(message, { duration: 8000 });
-                      }}
-                      className="ml-1 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
-                    >
-                      Debug
-                    </Button>
-                  </>
-                )}
-              </div>
+
+                          toast.info(message, { duration: TOAST_ERROR_DURATION });
+                        }}
+                        className="ml-1 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
+                      >
+                        Debug
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -962,6 +1101,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           <div className="relative min-h-[calc(100vh-16rem)] pt-20">
             {/* Container des messages avec padding pour la zone de saisie */}
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-40 pt-4">
+              
               <div 
                 ref={messagesContainerRef}
                 className="space-y-5 px-4 py-6"
@@ -976,6 +1116,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                     <p className="text-gray-500">
                       Soyez le premier à publier dans le stream global !
                     </p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      📍 Les nouveaux messages apparaîtront en haut de cette page
+                    </p>
                   </div>
                 ) : (
                   messages.map((message) => (
@@ -984,29 +1127,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                       message={message}
                       currentUser={user}
                       userLanguage={userLanguage}
+                      usedLanguages={usedLanguages}
                     />
                   ))
-                )}
-
-                {/* Indicateur des utilisateurs en train de taper */}
-                {typingUsers.length > 0 && connectionStatus.isConnected && (
-                  <div className="mt-4 p-3 bg-blue-50/50 rounded-xl border border-blue-200/30">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75" />
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150" />
-                      </div>
-                      <span className="text-sm text-blue-700">
-                        {typingUsers.length === 1 
-                          ? `${typingUsers[0]} est en train d'écrire...`
-                          : typingUsers.length === 2
-                          ? `${typingUsers[0]} et ${typingUsers[1]} sont en train d'écrire...`
-                          : `${typingUsers[0]} et ${typingUsers.length - 1} autres sont en train d'écrire...`
-                        }
-                      </span>
-                    </div>
-                  </div>
                 )}
 
                 {/* Espace supplémentaire réduit pour éviter que le dernier message soit caché */}
