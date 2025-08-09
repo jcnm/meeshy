@@ -11,7 +11,6 @@
     "dev:quick": "cd ../shared && npm run generate && npm run distribute && cd - && npx prisma db push --schema=libs/schema.prisma",
     "generate": "cd ../shared && prisma generate",
     "migrate": "prisma migrate dev --schema=libs/schema.prisma",
-    "seed": "tsx src/scripts/seed.ts",
     "test": "jest --config=jest.config.json",
     "test:watch": "jest --config=jest.config.json --watch",
     "test:coverage": "jest --config=jest.config.json --coverage",

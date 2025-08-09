@@ -5,6 +5,9 @@
 
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '../../libs/prisma/client';
+import { TranslationService } from '../services/TranslationService';
+import { ZMQTranslationClient } from '../services/zmq-translation-client';
+import { logger } from '../utils/logger';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -28,7 +31,16 @@ export class MeeshyWebSocketHandler {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly jwtSecret: string
-  ) {}
+  ) {
+    const zmqClient = new ZMQTranslationClient();
+    this.translationService = new TranslationService(this.prisma, zmqClient);
+    // Initialiser le service de traduction
+    this.translationService.initialize().catch((error) => 
+      logger.error('Failed to initialize translation service', error)
+    );
+  }
+
+  private readonly translationService: TranslationService;
 
   /**
    * Configure le WebSocket sur l'instance Fastify
@@ -50,57 +62,70 @@ export class MeeshyWebSocketHandler {
     const connectionId = uuidv4();
     let authenticatedConnection: AuthenticatedWebSocket | null = null;
 
-    // Timeout d'authentification (30 secondes)
-    const authTimeout = setTimeout(() => {
-      if (!authenticatedConnection) {
-        connection.socket.close(1008, 'Authentication timeout');
+    // Authentification immédiate via token en query parameter
+    try {
+      const token = (request.query as any)?.token as string;
+      if (!token) {
+        logger.warn(`WebSocket connection rejected: No token provided from ${request.ip}`);
+        connection.socket.close(4001, 'Authentication required: token parameter missing');
+        return;
       }
-    }, 30000);
+
+      authenticatedConnection = await this.authenticateConnection(
+        connectionId, 
+        connection, 
+        token
+      );
+      
+      if (!authenticatedConnection) {
+        return; // L'erreur a déjà été envoyée dans authenticateConnection
+      }
+
+      this.connections.set(connectionId, authenticatedConnection);
+      
+      // Ajouter à la map des connexions utilisateur
+      if (!this.userConnections.has(authenticatedConnection.userId)) {
+        this.userConnections.set(authenticatedConnection.userId, new Set());
+      }
+      this.userConnections.get(authenticatedConnection.userId)!.add(connectionId);
+
+      // Confirmer l'authentification
+      connection.socket.send(JSON.stringify({
+        type: 'authenticated',
+        data: {
+          userId: authenticatedConnection.userId,
+          username: authenticatedConnection.username
+        }
+      }));
+
+      // Mettre à jour le statut en ligne
+      await this.updateUserOnlineStatus(authenticatedConnection.userId, true);
+
+      // Rejoindre automatiquement la conversation globale "any"
+      await this.ensureGlobalConversationExists();
+      await this.addUserToGlobalConversation(authenticatedConnection.userId);
+      
+      authenticatedConnection.subscriptions.add('any');
+      if (!this.conversationMembers.has('any')) {
+        this.conversationMembers.set('any', new Set());
+      }
+      this.conversationMembers.get('any')!.add(authenticatedConnection.userId);
+
+      logger.info(`User ${authenticatedConnection.username} connected and joined global conversation`);
+
+    } catch (error) {
+      logger.error('WebSocket authentication error', error);
+      connection.socket.close(4002, 'Authentication failed');
+      return;
+    }
 
     // Gestionnaire de messages
     connection.socket.on('message', async (message: Buffer) => {
       try {
         const data = JSON.parse(message.toString());
-        
-        if (data.type === 'authenticate' && !authenticatedConnection) {
-          authenticatedConnection = await this.authenticateConnection(
-            connectionId, 
-            connection, 
-            data.token
-          );
-          
-          if (authenticatedConnection) {
-            clearTimeout(authTimeout);
-            this.connections.set(connectionId, authenticatedConnection);
-            
-            // Ajouter à la map des connexions utilisateur
-            if (!this.userConnections.has(authenticatedConnection.userId)) {
-              this.userConnections.set(authenticatedConnection.userId, new Set());
-            }
-            this.userConnections.get(authenticatedConnection.userId)!.add(connectionId);
-
-            // Confirmer l'authentification
-            connection.socket.send(JSON.stringify({
-              type: 'authenticated',
-              data: {
-                userId: authenticatedConnection.userId,
-                username: authenticatedConnection.username
-              }
-            }));
-
-            // Mettre à jour le statut en ligne
-            await this.updateUserOnlineStatus(authenticatedConnection.userId, true);
-          }
-        } else if (authenticatedConnection) {
-          await this.handleMessage(authenticatedConnection, data);
-        } else {
-          connection.socket.send(JSON.stringify({
-            type: 'error',
-            data: { message: 'Authentication required' }
-          }));
-        }
+        await this.handleMessage(authenticatedConnection!, data);
       } catch (error) {
-        console.error('WebSocket message error:', error);
+        logger.error('WebSocket message error', error);
         connection.socket.send(JSON.stringify({
           type: 'error',
           data: { message: 'Invalid message format' }
@@ -110,7 +135,6 @@ export class MeeshyWebSocketHandler {
 
     // Gestionnaire de fermeture
     connection.socket.on('close', async () => {
-      clearTimeout(authTimeout);
       if (authenticatedConnection) {
         await this.handleDisconnection(authenticatedConnection);
       }
@@ -118,7 +142,7 @@ export class MeeshyWebSocketHandler {
 
     // Gestionnaire d'erreur
     connection.socket.on('error', (error: Error) => {
-      console.error('WebSocket error:', error);
+      logger.error('WebSocket error', error);
     });
   }
 
@@ -145,13 +169,12 @@ export class MeeshyWebSocketHandler {
       });
 
       if (!user) {
-        connection.socket.send(JSON.stringify({
-          type: 'error',
-          data: { message: 'User not found' }
-        }));
+        logger.warn('User not found during authentication');
+        connection.socket.close(4002, 'User not found');
         return null;
       }
 
+      // Créer la connexion authentifiée
       return {
         id: connectionId,
         userId: user.id,
@@ -174,28 +197,33 @@ export class MeeshyWebSocketHandler {
    * Gère les messages WebSocket authentifiés
    */
   private async handleMessage(connection: AuthenticatedWebSocket, data: any): Promise<void> {
+    logger.debug(`Processing message type: ${data.type}`, { 
+      userId: connection.userId, 
+      conversationId: data.conversationId 
+    });
+
     switch (data.type) {
-      case 'join_conversation':
+      case 'join_chat':
         await this.handleJoinConversation(connection, data.conversationId);
         break;
         
-      case 'leave_conversation':
+      case 'leave_chat':
         await this.handleLeaveConversation(connection, data.conversationId);
         break;
         
-      case 'send_message':
+      case 'new_message':
         await this.handleSendMessage(connection, data);
         break;
         
-      case 'typing_start':
+      case 'start_typing':
         await this.handleTypingStart(connection, data.conversationId);
         break;
         
-      case 'typing_stop':
+      case 'stop_typing':
         await this.handleTypingStop(connection, data.conversationId);
         break;
         
-      case 'mark_read':
+      case 'read_message':
         await this.handleMarkRead(connection, data);
         break;
         
@@ -236,7 +264,7 @@ export class MeeshyWebSocketHandler {
     this.conversationMembers.get(conversationId)!.add(connection.userId);
 
     connection.socket.send(JSON.stringify({
-      type: 'conversation_joined',
+      type: 'chat_joined',
       data: { conversationId }
     }));
   }
@@ -256,7 +284,7 @@ export class MeeshyWebSocketHandler {
     await this.stopTyping(connection.userId, conversationId);
 
     connection.socket.send(JSON.stringify({
-      type: 'conversation_left',
+      type: 'chat_left',
       data: { conversationId }
     }));
   }
@@ -297,28 +325,148 @@ export class MeeshyWebSocketHandler {
         }
       });
 
-      // Broadcaster aux membres de la conversation
-      this.broadcastToConversation(conversationId, {
-        type: 'message_received',
+      // Marquer le message comme lu pour l'expéditeur
+      await this.prisma.messageReadStatus.create({
+        data: {
+          messageId: message.id,
+          userId: connection.userId
+        }
+      });
+
+      // Lancer la traduction via le service Translator (qui gère lui-même les langues des participants)
+      this.requestTranslationsAndBroadcast(message, conversationId, tempId);
+
+      // Broadcaster immédiatement le message original à l'expéditeur
+      connection.socket.send(JSON.stringify({
+        type: 'message_sent',
         data: {
           id: message.id,
           content: message.content,
+          originalLanguage: message.originalLanguage,
           sender: message.sender,
           conversationId: message.conversationId,
           createdAt: message.createdAt,
           tempId
         }
-      });
-
-      // TODO: Envoyer au service de traduction via gRPC
+      }));
 
     } catch (error) {
-      console.error('Error sending message:', error);
+      logger.error('Error sending message', error);
       connection.socket.send(JSON.stringify({
         type: 'error',
         data: { message: 'Failed to send message' }
       }));
     }
+  }
+
+  /**
+   * Demande les traductions au service Translator et broadcast le message avec toutes les traductions
+   */
+  private async requestTranslationsAndBroadcast(message: any, conversationId: string, tempId?: string): Promise<void> {
+    try {
+      // Récupérer les IDs des participants de la conversation
+      let participantIds: string[] = [];
+
+      if (conversationId === 'any') {
+        // Pour la conversation globale, tous les utilisateurs connectés
+        participantIds = Array.from(this.userConnections.keys());
+      } else {
+        // Pour les conversations normales
+        const participants = await this.prisma.conversationMember.findMany({
+          where: {
+            conversationId: conversationId,
+            isActive: true
+          },
+          select: {
+            userId: true
+          }
+        });
+        participantIds = participants.map(p => p.userId);
+      }
+
+      // Envoyer une requête de traduction au service Translator via ZMQ
+      // Le service Translator récupérera lui-même les langues des participants et traduira
+      const zmqClient = await this.getZMQClient();
+      
+      const translationRequest = {
+        messageId: message.id,
+        text: message.content,
+        sourceLanguage: message.originalLanguage,
+        targetLanguage: message.originalLanguage, // Langue source (le Translator déterminera les cibles)
+        modelType: this.getPredictedModelType(message.content.length),
+        conversationId: conversationId, // Le Translator utilisera ceci pour récupérer les participants
+        participantIds: participantIds, // Information pour optimisation
+        requestType: 'message_translation'
+      };
+
+      logger.debug(`Translation request for message ${message.id} to all participant languages`);
+      
+      // Envoyer la requête au service Translator
+      const translationResponse = await zmqClient.translateText(translationRequest);
+      
+      // Le service Translator retourne maintenant le message avec toutes ses traductions
+      // On broadcaste ce message complet à tous les participants
+      const messageWithTranslations = {
+        id: message.id,
+        content: message.content,
+        originalLanguage: message.originalLanguage,
+        sender: message.sender,
+        conversationId: message.conversationId,
+        createdAt: message.createdAt,
+        tempId,
+        translations: translationResponse.translations || [] // Toutes les traductions
+      };
+
+      // Broadcaster le message avec toutes les traductions à tous les participants
+      this.broadcastToConversation(conversationId, {
+        type: `message_received_${conversationId}`,
+        data: messageWithTranslations
+      }, message.senderId); // Exclure l'expéditeur qui a déjà reçu le message
+
+      logger.info(`Message ${message.id} broadcasted with ${translationResponse.translations?.length || 0} translations`);
+
+    } catch (error) {
+      logger.error('Translation request failed', error);
+      
+      // Fallback: broadcaster le message original sans traductions
+      this.broadcastToConversation(conversationId, {
+        type: `message_received_${conversationId}`,
+        data: {
+          id: message.id,
+          content: message.content,
+          originalLanguage: message.originalLanguage,
+          sender: message.sender,
+          conversationId: message.conversationId,
+          createdAt: message.createdAt,
+          tempId,
+          translations: [],
+          error: 'Translation service unavailable'
+        }
+      }, message.senderId);
+    }
+  }
+
+  /**
+   * Obtient une instance du client ZMQ
+   */
+  private async getZMQClient(): Promise<any> {
+    if (!this.zmqClient) {
+      const { ZMQTranslationClient } = await import('../services/zmq-translation-client');
+      this.zmqClient = new ZMQTranslationClient();
+      await this.zmqClient.initialize();
+    }
+    return this.zmqClient;
+  }
+
+  private zmqClient: any = null;
+
+  /**
+   * Prédit le type de modèle basé sur la longueur du texte
+   */
+  private getPredictedModelType(textLength: number): 'basic' | 'medium' | 'premium' {
+    if (textLength < 20) return 'basic';
+    if (textLength <= 100) return 'medium';
+    return 'premium';
   }
 
   /**
@@ -349,7 +497,7 @@ export class MeeshyWebSocketHandler {
 
     // Notifier les autres membres
     this.broadcastToConversation(conversationId, {
-      type: 'typing_status',
+      type: `typing_started_${conversationId}`,
       data: {
         conversationId,
         userId: connection.userId,
@@ -390,7 +538,7 @@ export class MeeshyWebSocketHandler {
 
       // Notifier les autres membres
       this.broadcastToConversation(conversationId, {
-        type: 'message_read',
+        type: `message_read_${conversationId}`,
         data: {
           messageId,
           conversationId,
@@ -401,7 +549,7 @@ export class MeeshyWebSocketHandler {
       }, connection.userId);
 
     } catch (error) {
-      console.error('Error marking message as read:', error);
+      logger.error('Error marking message as read', error);
     }
   }
 
@@ -409,7 +557,7 @@ export class MeeshyWebSocketHandler {
    * Gère la déconnexion d'un utilisateur
    */
   private async handleDisconnection(connection: AuthenticatedWebSocket): Promise<void> {
-    console.log(`User ${connection.username} disconnected`);
+    logger.debug(`User ${connection.username} disconnected`);
 
     // Supprimer de toutes les structures
     this.connections.delete(connection.id);
@@ -449,7 +597,7 @@ export class MeeshyWebSocketHandler {
 
     // Notifier les autres membres
     this.broadcastToConversation(conversationId, {
-      type: 'typing_status',
+      type: `typing_stopped_${conversationId}`,
       data: {
         conversationId,
         userId,
@@ -462,21 +610,45 @@ export class MeeshyWebSocketHandler {
    * Broadcaster un message à tous les membres d'une conversation
    */
   private broadcastToConversation(conversationId: string, message: any, excludeUserId?: string): void {
-    const members = this.conversationMembers.get(conversationId);
-    if (!members) return;
+    logger.debug(`Broadcasting message to conversation ${conversationId}`, {
+      type: message.type,
+      excludeUserId,
+      totalConnections: this.connections.size
+    });
 
-    for (const memberId of members) {
-      if (excludeUserId && memberId === excludeUserId) continue;
-      
-      const userConns = this.userConnections.get(memberId);
-      if (userConns) {
-        for (const connId of userConns) {
-          const connection = this.connections.get(connId);
-          if (connection && connection.subscriptions.has(conversationId)) {
-            try {
-              connection.socket.send(JSON.stringify(message));
-            } catch (error) {
-              console.error(`Error sending to connection ${connId}:`, error);
+    if (conversationId === 'any') {
+      // Pour la conversation globale, broadcaster à tous les utilisateurs connectés
+      for (const [connId, connection] of this.connections) {
+        if (excludeUserId && connection.userId === excludeUserId) continue;
+        
+        try {
+          connection.socket.send(JSON.stringify(message));
+          logger.debug(`Message sent to user ${connection.username} (${connection.userId})`);
+        } catch (error) {
+          logger.error(`Error sending to connection ${connId}`, error);
+        }
+      }
+    } else {
+      // Pour les conversations normales, utiliser la logique existante
+      const members = this.conversationMembers.get(conversationId);
+      if (!members) {
+        logger.warn(`No members found for conversation ${conversationId}`);
+        return;
+      }
+
+      for (const memberId of members) {
+        if (excludeUserId && memberId === excludeUserId) continue;
+        
+        const userConns = this.userConnections.get(memberId);
+        if (userConns) {
+          for (const connId of userConns) {
+            const connection = this.connections.get(connId);
+            if (connection && connection.subscriptions.has(conversationId)) {
+              try {
+                connection.socket.send(JSON.stringify(message));
+              } catch (error) {
+                logger.error(`Error sending to connection ${connId}`, error);
+              }
             }
           }
         }
@@ -498,7 +670,7 @@ export class MeeshyWebSocketHandler {
         }
       });
     } catch (error) {
-      console.error('Error updating user online status:', error);
+      logger.error('Error updating user online status', error);
     }
   }
 
@@ -514,7 +686,7 @@ export class MeeshyWebSocketHandler {
           try {
             connection.socket.send(JSON.stringify(message));
           } catch (error) {
-            console.error(`Error sending to user ${userId}:`, error);
+            logger.error(`Error sending to user ${userId}`, error);
           }
         }
       }
@@ -530,5 +702,60 @@ export class MeeshyWebSocketHandler {
       totalUsers: this.userConnections.size,
       totalConversations: this.conversationMembers.size
     };
+  }
+
+  /**
+   * S'assurer que la conversation globale "any" existe
+   */
+  private async ensureGlobalConversationExists(): Promise<void> {
+    try {
+      const existingConversation = await this.prisma.conversation.findUnique({
+        where: { id: 'any' }
+      });
+
+      if (!existingConversation) {
+        await this.prisma.conversation.create({
+          data: {
+            id: 'any',
+            title: 'Global Stream',
+            description: 'Conversation globale pour tous les utilisateurs',
+            type: 'global'
+          }
+        });
+        logger.info('Global conversation "any" created');
+      }
+    } catch (error) {
+      logger.error('Error creating global conversation', error);
+    }
+  }
+
+  /**
+   * Ajouter un utilisateur à la conversation globale
+   */
+  private async addUserToGlobalConversation(userId: string): Promise<void> {
+    try {
+      await this.prisma.conversationMember.upsert({
+        where: {
+          conversationId_userId: {
+            conversationId: 'any',
+            userId: userId
+          }
+        },
+        update: {
+          isActive: true,
+          joinedAt: new Date()
+        },
+        create: {
+          conversationId: 'any',
+          userId: userId,
+          role: 'MEMBER',
+          isActive: true,
+          joinedAt: new Date()
+        }
+      });
+      logger.debug(`User ${userId} added to global conversation`);
+    } catch (error) {
+      logger.error('Error adding user to global conversation', error);
+    }
   }
 }
