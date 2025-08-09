@@ -37,6 +37,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -221,6 +226,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState<string>('fr');
   const [userLanguage, setUserLanguage] = useState<string>(user.systemLanguage || 'fr');
+  const [selectedInputLanguage, setSelectedInputLanguage] = useState<string>(user.systemLanguage || 'fr');
   const [languageStats, setLanguageStats] = useState<LanguageStats[]>([]);
   const [isComposingEnabled, setIsComposingEnabled] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -233,6 +239,45 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     user?.regionalLanguage,
     user?.customDestinationLanguage
   ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user?.systemLanguage);
+
+  // Obtenir les choix de langues pour l'utilisateur
+  const getLanguageChoices = () => {
+    const choices = [
+      {
+        code: user.systemLanguage || 'fr',
+        name: 'Langue système',
+        description: SUPPORTED_LANGUAGES.find(l => l.code === user.systemLanguage)?.name || 'Français',
+        flag: SUPPORTED_LANGUAGES.find(l => l.code === user.systemLanguage)?.flag || '🇫🇷',
+        isDefault: true
+      }
+    ];
+
+    if (user.regionalLanguage && user.regionalLanguage !== user.systemLanguage) {
+      choices.push({
+        code: user.regionalLanguage,
+        name: 'Langue régionale',
+        description: SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.name || user.regionalLanguage,
+        flag: SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.flag || '🌍',
+        isDefault: false
+      });
+    }
+
+    if (user.customDestinationLanguage && 
+        user.customDestinationLanguage !== user.systemLanguage && 
+        user.customDestinationLanguage !== user.regionalLanguage) {
+      choices.push({
+        code: user.customDestinationLanguage,
+        name: 'Langue personnalisée',
+        description: SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.name || user.customDestinationLanguage,
+        flag: SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.flag || '🎯',
+        isDefault: false
+      });
+    }
+
+    return choices;
+  };
+
+  const languageChoices = getLanguageChoices();
 
   // État pour les utilisateurs en train de taper
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -498,29 +543,37 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, []);
 
-  // Détection automatique de langue
+  // Détection automatique de langue (désactivée au profit de la sélection manuelle)
+  // useEffect(() => {
+  //   if (newMessage.trim().length > 10) {
+  //     // Simulation de détection de langue basique
+  //     const detectLanguage = (text: string) => {
+  //       const patterns = {
+  //         fr: /\b(le|la|les|de|du|des|et|ou|un|une|ce|cette|pour|dans|avec|sur|par)\b/gi,
+  //         en: /\b(the|and|or|a|an|this|that|for|in|with|on|by|from|to)\b/gi,
+  //         es: /\b(el|la|los|las|de|del|y|o|un|una|este|esta|para|en|con|por)\b/gi,
+  //         de: /\b(der|die|das|und|oder|ein|eine|dieser|diese|für|in|mit|auf|von)\b/gi,
+  //       };
+
+  //       for (const [lang, pattern] of Object.entries(patterns)) {
+  //         if (pattern.test(text)) {
+  //           return lang;
+  //         }
+  //       }
+  //       return 'fr'; // Par défaut
+  //     };
+
+  //     setDetectedLanguage(detectLanguage(newMessage));
+  //   }
+  // }, [newMessage]);
+
+  // Mise à jour automatique de la langue sélectionnée si l'utilisateur change
   useEffect(() => {
-    if (newMessage.trim().length > 10) {
-      // Simulation de détection de langue basique
-      const detectLanguage = (text: string) => {
-        const patterns = {
-          fr: /\b(le|la|les|de|du|des|et|ou|un|une|ce|cette|pour|dans|avec|sur|par)\b/gi,
-          en: /\b(the|and|or|a|an|this|that|for|in|with|on|by|from|to)\b/gi,
-          es: /\b(el|la|los|las|de|del|y|o|un|una|este|esta|para|en|con|por)\b/gi,
-          de: /\b(der|die|das|und|oder|ein|eine|dieser|diese|für|in|mit|auf|von)\b/gi,
-        };
-
-        for (const [lang, pattern] of Object.entries(patterns)) {
-          if (pattern.test(text)) {
-            return lang;
-          }
-        }
-        return 'fr'; // Par défaut
-      };
-
-      setDetectedLanguage(detectLanguage(newMessage));
+    if (selectedInputLanguage !== user.systemLanguage && !languageChoices.find(choice => choice.code === selectedInputLanguage)) {
+      // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
+      setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
-  }, [newMessage]);
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, selectedInputLanguage, languageChoices]);
 
   // Mise à jour des statistiques de langues
   useEffect(() => {
@@ -552,8 +605,13 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     // Messages chargés depuis le serveur uniquement
   }, [userLanguage]);
 
-  // Cleanup timeout de frappe au démontage
+  // Cleanup timeout de frappe au démontage et initialisation de la hauteur du textarea
   useEffect(() => {
+    // Initialiser la hauteur du textarea au montage
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '80px'; // Hauteur minimale
+    }
+    
     return () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
@@ -727,6 +785,12 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
 
     const messageContent = newMessage.trim();
+    console.log('📤 Envoi du message avec langue sélectionnée:', {
+      content: messageContent.substring(0, 50) + '...',
+      sourceLanguage: selectedInputLanguage,
+      languageChoice: languageChoices.find(choice => choice.code === selectedInputLanguage)
+    });
+    
     setNewMessage(''); // Réinitialiser immédiatement pour éviter les doubles envois
     setIsTyping(false);
     
@@ -739,6 +803,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       // Essayer d'envoyer via le service WebSocket si connecté
       if (connectionStatus.isConnected) {
         try {
+          // TODO: Modifier sendMessageToService pour inclure la langue source (selectedInputLanguage)
+          // Cette langue sera propagée vers la gateway et utilisée comme langue source
+          // après vérification avec le profil utilisateur
           await sendMessageToService(messageContent);
           console.log('✅ Message envoyé via WebSocket - sera reçu via onNewMessage');
           // Suppression du toast automatique pour éviter les doublons
@@ -809,10 +876,26 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       }
     }
 
-    // Auto-resize textarea
+    // Auto-resize textarea avec gestion améliorée des retours à la ligne
     if (textareaRef.current) {
+      // Réinitialiser la hauteur pour obtenir la hauteur naturelle du contenu
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      
+      // Calculer la hauteur nécessaire avec une hauteur minimale
+      const minHeight = 80; // Correspond à min-h-[80px]
+      const maxHeight = 160; // Correspond à max-h-40 (40 * 4px = 160px)
+      const scrollHeight = textareaRef.current.scrollHeight;
+      
+      // Utiliser la hauteur calculée en respectant les limites
+      const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
+      textareaRef.current.style.height = `${newHeight}px`;
+      
+      // Si le contenu dépasse la hauteur maximale, permettre le scroll
+      if (scrollHeight > maxHeight) {
+        textareaRef.current.style.overflowY = 'auto';
+      } else {
+        textareaRef.current.style.overflowY = 'hidden';
+      }
     }
   };
 
@@ -1157,25 +1240,79 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                   onChange={(e) => handleTyping(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={`Partagez quelque chose avec le monde...`}
-                  className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-24 text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
+                  className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-28 pb-14 pt-3 pl-3 text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
                   maxLength={MAX_MESSAGE_LENGTH}
                   disabled={!isComposingEnabled}
                   style={{
                     borderRadius: '16px',
-                    boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)'
+                    boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
+                    paddingBottom: '56px' // Espace pour les éléments en bas
                   }}
                 />
                 
-                {/* Indicateurs dans le textarea */}
-                <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-600">
-                  {/* Indicateur de langue détectée */}
-                  <div className="flex items-center space-x-1">
-                    <Languages className="h-4 w-4" />
-                    <span>
-                      {SUPPORTED_LANGUAGES.find(l => l.code === detectedLanguage)?.flag}
-                      {detectedLanguage.toUpperCase()}
-                    </span>
-                  </div>
+                {/* Indicateurs dans le textarea - Positionnés plus bas pour éviter l'entrelacement */}
+                <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-600 pointer-events-auto">
+                  {/* Sélecteur de langue d'envoi */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center space-x-1 px-2 py-1 h-auto text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all"
+                      >
+                        <span className="text-base">
+                          {languageChoices.find(l => l.code === selectedInputLanguage)?.flag}
+                        </span>
+                        <span className="font-medium">
+                          {selectedInputLanguage.toUpperCase()}
+                        </span>
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-0" align="start">
+                      <div className="p-4">
+                        <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
+                          <Languages className="h-4 w-4 text-gray-600" />
+                          <span className="font-medium text-gray-900">Langue d'écriture</span>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          {languageChoices.map((choice) => {
+                            const isSelected = selectedInputLanguage === choice.code;
+                            
+                            return (
+                              <button
+                                key={choice.code}
+                                onClick={() => setSelectedInputLanguage(choice.code)}
+                                className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                                  isSelected 
+                                    ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-400' 
+                                    : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-lg">{choice.flag}</span>
+                                    <span className="font-medium text-gray-900">{choice.description}</span>
+                                    {choice.isDefault && (
+                                      <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800">Par défaut</Badge>
+                                    )}
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-500">{choice.name}</p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        
+                        <div className="mt-3 pt-3 border-t border-gray-100">
+                          <p className="text-xs text-gray-500">
+                            Cette langue sera utilisée comme langue source pour vos messages
+                          </p>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                   
                   {/* Localisation */}
                   {location && (
@@ -1186,15 +1323,15 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                   )}
                 </div>
 
-                {/* Bouton d'envoi */}
-                <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+                {/* Bouton d'envoi et compteur - Positionnés pour éviter l'entrelacement */}
+                <div className="absolute bottom-3 right-3 flex items-center space-x-2 pointer-events-auto">
                   {/* Compteur de caractères */}
-                  <span className={`text-xs ${
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm border ${
                     remainingChars < 50 
                       ? remainingChars < 0 
-                        ? 'text-red-600' 
-                        : 'text-orange-600'
-                      : 'text-gray-500'
+                        ? 'text-red-600 border-red-200 bg-red-50/80' 
+                        : 'text-orange-600 border-orange-200 bg-orange-50/80'
+                      : 'text-gray-500 border-gray-200 bg-white/80'
                   }`}>
                     {remainingChars}
                   </span>

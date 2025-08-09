@@ -188,7 +188,7 @@ export function BubbleMessage({
               </div>
             </div>
 
-            {/* Indicateur de langue avec traduction en cours */}
+            {/* Indicateur de langue originale seulement */}
             <div className="flex items-center space-x-2">
               {message.translations.some(t => t.status === 'translating') && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full">
@@ -197,7 +197,7 @@ export function BubbleMessage({
                 </div>
               )}
               
-              {/* Langue originale du message */}
+              {/* Langue originale du message uniquement */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge 
@@ -209,19 +209,8 @@ export function BubbleMessage({
                     {getLanguageInfo(message.originalLanguage).code.toUpperCase()}
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>Langue originale : {getLanguageInfo(message.originalLanguage).name}</TooltipContent>
+                <TooltipContent>Langue originale : {getLanguageInfo(message.originalLanguage).name} - Cliquer pour voir l'original</TooltipContent>
               </Tooltip>
-              
-              {/* Langue actuellement affichée (si différente de l'originale) */}
-              {currentDisplayLanguage !== message.originalLanguage && (
-                <Badge 
-                  variant="outline" 
-                  className="bg-green-50 border-green-200 text-green-800 font-medium"
-                >
-                  <span className="mr-1">{getLanguageInfo(currentDisplayLanguage).flag}</span>
-                  {getLanguageInfo(currentDisplayLanguage).code.toUpperCase()}
-                </Badge>
-              )}
             </div>
           </div>
 
@@ -246,18 +235,20 @@ export function BubbleMessage({
             </AnimatePresence>
           </div>
 
-          {/* Indicateur de traduction avec globe interactif - Disponible pour tous si traductions existent */}
+          {/* Indicateur de traduction avec icône Languages - Disponible pour tous si traductions existent */}
           {canSeeTranslations && (
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 {isTranslated ? (
                   <>
-                    <Languages className="h-4 w-4" />
                     <span>Traduit de {getLanguageInfo(message.originalLanguage).name}</span>
+                    <span className="mx-2">•</span>
+                    <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                      {getLanguageInfo(currentDisplayLanguage).name}
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Languages className="h-4 w-4" />
                     <span>Traductions disponibles</span>
                   </>
                 )}
@@ -270,7 +261,7 @@ export function BubbleMessage({
                       className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 h-auto ml-1"
                       onMouseEnter={() => setIsTranslationPopoverOpen(true)}
                     >
-                      <Globe2 className="h-4 w-4" />
+                      <Languages className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent 
@@ -298,7 +289,7 @@ export function BubbleMessage({
                               onClick={() => handleLanguageSwitch(version.language)}
                               className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
                                 isCurrentlyDisplayed 
-                                  ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-200' 
+                                  ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-400' 
                                   : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
                               }`}
                             >
