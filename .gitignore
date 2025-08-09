@@ -106,4 +106,4 @@ test_env/
 ./backend/build
 ./backend/coverage
 ./backend/logs
-./backend/cache
+./backend/cachegateway/libs/dev.db
