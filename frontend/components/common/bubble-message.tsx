@@ -13,8 +13,7 @@ import {
   MoreHorizontal,
   CheckCircle2,
   Loader2,
-  Eye,
-  EyeOff
+  Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +45,7 @@ interface BubbleMessageProps {
     location?: string;
     originalLanguage: string;
     translations: BubbleTranslation[];
+    originalContent: string; // Contenu original de l'auteur
   };
   currentUser: User;
   userLanguage: string;
@@ -72,8 +72,8 @@ export function BubbleMessage({
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [showLearningMode, setShowLearningMode] = useState(false);
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
+  const [isForceTranslationPopoverOpen, setIsForceTranslationPopoverOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const getLanguageInfo = (langCode: string) => {
@@ -92,9 +92,9 @@ export function BubbleMessage({
   }, [message.translations, currentUser.systemLanguage, message.originalLanguage]);
 
   const getCurrentContent = () => {
-    // Si on affiche la langue originale, retourner TOUJOURS le contenu original
+    // Si on affiche la langue originale, retourner TOUJOURS le contenu original de l'auteur
     if (currentDisplayLanguage === message.originalLanguage) {
-      return message.content;
+      return message.originalContent;
     }
     
     // Chercher la traduction pour la langue d'affichage actuelle
@@ -102,7 +102,7 @@ export function BubbleMessage({
       t.language === currentDisplayLanguage && t.status === 'completed'
     );
     
-    return translation?.content || message.content;
+    return translation?.content || message.originalContent;
   };
 
   const formatTimeAgo = (timestamp: string | Date) => {
@@ -121,6 +121,22 @@ export function BubbleMessage({
     setIsTranslationPopoverOpen(false);
   };
 
+  // Obtenir les langues manquantes (supportées mais pas traduites)
+  const getMissingLanguages = () => {
+    const translatedLanguages = new Set([
+      message.originalLanguage,
+      ...message.translations.map(t => t.language)
+    ]);
+    
+    return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
+  };
+
+  const handleForceTranslation = (targetLanguage: string) => {
+    setIsForceTranslationPopoverOpen(false);
+    toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
+    // Ici on déclencherait la traduction vers la langue cible
+  };
+
   const isOwnMessage = message.senderId === currentUser.id;
   const isUsedLanguage = usedLanguages?.includes(currentDisplayLanguage) || false;
 
@@ -128,7 +144,7 @@ export function BubbleMessage({
   const availableVersions = [
     {
       language: message.originalLanguage,
-      content: message.content, // TOUJOURS le contenu original, jamais une traduction
+      content: message.originalContent, // TOUJOURS le contenu original de l'auteur
       isOriginal: true,
       status: 'completed' as const,
       confidence: 1,
@@ -235,34 +251,99 @@ export function BubbleMessage({
             </AnimatePresence>
           </div>
 
-          {/* Indicateur de traduction avec icône Languages - Disponible pour tous si traductions existent */}
-          {canSeeTranslations && (
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                {isTranslated ? (
-                  <>
-                    <span>Traduit de {getLanguageInfo(message.originalLanguage).name}</span>
-                    <span className="mx-2">•</span>
-                    <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                      {getLanguageInfo(currentDisplayLanguage).name}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span>Traductions disponibles</span>
-                  </>
-                )}
-                
+          {/* Actions */}
+          <div className={`flex items-center justify-between transition-all duration-200 ${
+            isHovered ? 'opacity-100 transform translate-y-0' : 'opacity-40 transform translate-y-1'
+          }`}>
+            <div className="flex items-center space-x-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toast.info('Fonction de réponse à venir')}
+                    className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Répondre</TooltipContent>
+              </Tooltip>
+
+              {/* Icône de traduction - Force une nouvelle traduction */}
+              <Popover open={isForceTranslationPopoverOpen} onOpenChange={setIsForceTranslationPopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-500 hover:text-green-600 hover:bg-green-50 p-2 rounded-full"
+                      >
+                        <Languages className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Forcer traduction vers une nouvelle langue</TooltipContent>
+                  </Tooltip>
+                </PopoverTrigger>
+                <PopoverContent 
+                  className="w-72 p-0 shadow-xl border-0" 
+                  side="top" 
+                  align="start"
+                  sideOffset={8}
+                  style={{ zIndex: 9999 }}
+                >
+                  <div className="p-4 bg-white rounded-lg shadow-2xl border border-gray-200">
+                    <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
+                      <Languages className="h-4 w-4 text-green-600" />
+                      <span className="font-medium text-gray-900">Traduire vers</span>
+                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{getMissingLanguages().length}</Badge>
+                    </div>
+                    
+                    <div className="space-y-1 max-h-48 overflow-y-auto">
+                      {getMissingLanguages().length > 0 ? (
+                        getMissingLanguages().map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => handleForceTranslation(lang.code)}
+                            className="w-full p-3 rounded-lg border border-gray-100 text-left transition-all hover:shadow-sm hover:border-green-200 hover:bg-green-50"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <span className="text-lg">{lang.flag}</span>
+                              <div className="flex-1">
+                                <span className="font-medium text-gray-900">{lang.name}</span>
+                                <p className="text-xs text-gray-500 mt-1">Créer une traduction</p>
+                              </div>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="text-center p-4 text-gray-500">
+                          <Languages className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                          <p className="text-sm">Toutes les langues sont déjà traduites</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Icône globe - Voir les traductions disponibles */}
+              {canSeeTranslations && (
                 <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost" 
-                      size="sm"
-                      className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 h-auto ml-1"
-                      onMouseEnter={() => setIsTranslationPopoverOpen(true)}
-                    >
-                      <Languages className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full"
+                        >
+                          <Globe className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Voir les traductions disponibles</TooltipContent>
+                    </Tooltip>
                   </PopoverTrigger>
                   <PopoverContent 
                     className="w-80 p-0 shadow-xl border-0" 
@@ -273,9 +354,9 @@ export function BubbleMessage({
                   >
                     <div className="p-4 bg-white rounded-lg shadow-2xl border border-gray-200">
                       <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
-                        <Languages className="h-4 w-4 text-gray-600" />
+                        <Globe className="h-4 w-4 text-blue-600" />
                         <span className="font-medium text-gray-900">Versions disponibles</span>
-                        <Badge variant="outline" className="text-xs">{availableVersions.length}</Badge>
+                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">{availableVersions.length}</Badge>
                       </div>
                       
                       <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -330,103 +411,7 @@ export function BubbleMessage({
                     </div>
                   </PopoverContent>
                 </Popover>
-              </div>
-              
-              {/* Bouton pour revenir à l'original ou voir une traduction */}
-              {isTranslated ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleLanguageSwitch(message.originalLanguage)}
-                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm px-2 py-1 h-auto"
-                >
-                  <span className="mr-1">{getLanguageInfo(message.originalLanguage).flag}</span>
-                  Voir l'original
-                </Button>
-              ) : (
-                // Si on affiche l'original et qu'il y a des traductions, proposer de voir une traduction
-                availableVersions.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      // Prendre la première traduction disponible (probablement dans la langue système de l'utilisateur)
-                      const firstTranslation = availableVersions.find(v => !v.isOriginal);
-                      if (firstTranslation) {
-                        handleLanguageSwitch(firstTranslation.language);
-                      }
-                    }}
-                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm px-2 py-1 h-auto"
-                  >
-                    <Globe2 className="h-4 w-4 mr-1" />
-                    Voir traduction
-                  </Button>
-                )
               )}
-            </div>
-          )}
-
-          {/* Mode apprentissage */}
-          {isUsedLanguage && (
-            <AnimatePresence>
-              {showLearningMode && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg"
-                >
-                  <div className="text-sm space-y-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium text-green-800">Version originale :</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleLanguageSwitch(message.originalLanguage)}
-                        className="text-xs p-1 text-green-700 hover:text-green-900"
-                      >
-                        {getLanguageInfo(message.originalLanguage).flag} Voir
-                      </Button>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2 text-xs text-green-700">
-                      <span>Difficulté estimée:</span>
-                      <div className="flex space-x-1">
-                        {[1, 2, 3].map(level => (
-                          <div
-                            key={level}
-                            className={`w-2 h-2 rounded-full ${
-                              level <= 2 ? 'bg-green-400' : 'bg-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span>Facile</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          )}
-
-          {/* Actions */}
-          <div className={`flex items-center justify-between transition-all duration-200 ${
-            isHovered ? 'opacity-100 transform translate-y-0' : 'opacity-40 transform translate-y-1'
-          }`}>
-            <div className="flex items-center space-x-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toast.info('Fonction de réponse à venir')}
-                    className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Répondre</TooltipContent>
-              </Tooltip>
 
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -476,24 +461,6 @@ export function BubbleMessage({
                 </TooltipTrigger>
                 <TooltipContent>Signaler</TooltipContent>
               </Tooltip>
-
-              {isUsedLanguage && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowLearningMode(!showLearningMode)}
-                      className="text-gray-500 hover:text-green-600 hover:bg-green-50 p-2 rounded-full"
-                    >
-                      {showLearningMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {showLearningMode ? 'Masquer aide apprentissage' : 'Aide apprentissage'}
-                  </TooltipContent>
-                </Tooltip>
-              )}
             </div>
 
             {/* Menu plus d'options */}

@@ -45,6 +45,7 @@ import {
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
+import { useMessageTranslations } from '@/hooks/use-message-translations';
 import type { User, Message, BubbleTranslation } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
@@ -61,6 +62,7 @@ interface BubbleStreamMessage extends Message {
   isTranslated: boolean;
   translatedFrom?: string;
   translations: BubbleTranslation[];
+  originalContent: string; // Contenu original de l'auteur
 }
 
 interface BubbleStreamPageProps {
@@ -220,12 +222,22 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Hook pour la gestion des traductions
+  const {
+    processMessageWithTranslations,
+    getPreferredLanguageContent,
+    getUserLanguagePreferences,
+    resolveUserPreferredLanguage,
+    shouldRequestTranslation,
+    getRequiredTranslations
+  } = useMessageTranslations({ currentUser: user });
+
   // États
   const [messages, setMessages] = useState<BubbleStreamMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState<string>('fr');
-  const [userLanguage, setUserLanguage] = useState<string>(user.systemLanguage || 'fr');
+  const [userLanguage, setUserLanguage] = useState<string>(resolveUserPreferredLanguage());
   const [selectedInputLanguage, setSelectedInputLanguage] = useState<string>(user.systemLanguage || 'fr');
   const [languageStats, setLanguageStats] = useState<LanguageStats[]>([]);
   const [isComposingEnabled, setIsComposingEnabled] = useState(true);
@@ -235,10 +247,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
   // Langues utilisées par l'utilisateur (basées sur ses préférences)
-  const usedLanguages: string[] = [
-    user?.regionalLanguage,
-    user?.customDestinationLanguage
-  ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user?.systemLanguage);
+  const usedLanguages: string[] = getUserLanguagePreferences();
 
   // Obtenir les choix de langues pour l'utilisateur
   const getLanguageChoices = () => {
@@ -389,7 +398,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]);
 
-  // Handler pour les nouveaux messages reçus via WebSocket
+  // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
   const handleNewMessage = useCallback((message: Message) => {
     console.log('📩 Message reçu via WebSocket:', { id: message.id, content: message.content, senderId: message.senderId });
     
@@ -407,23 +416,20 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         return prev;
       }
 
-      const bubbleMessage: BubbleStreamMessage = {
-        ...message,
-        originalLanguage: message.originalLanguage || 'fr',
-        isTranslated: message.originalLanguage !== userLanguage,
-        translatedFrom: message.originalLanguage !== userLanguage ? message.originalLanguage : undefined,
-        location: (message as any).location || 'Paris', // Utilise la localisation du message ou par défaut
-        translations: [] // Initialiser avec un tableau vide
-      };
+      // Utiliser le hook pour traiter le message avec traductions
+      const bubbleMessage = processMessageWithTranslations(message);
 
-      console.log('✅ Nouveau message ajouté au stream:', bubbleMessage.id);
+      console.log('✅ Nouveau message ajouté au stream:', {
+        id: bubbleMessage.id,
+        isTranslated: bubbleMessage.isTranslated,
+        translationsCount: bubbleMessage.translations.length
+      });
+      
       // ⬆️ Les nouveaux messages sont placés EN HAUT de la liste (ordre chronologique inverse)
-      // Cela garantit que les messages les plus récents apparaissent en premier dans l'interface
       return [bubbleMessage, ...prev];
     });
     
     // Notification UNIQUEMENT pour les nouveaux messages d'autres utilisateurs
-    // ET seulement si ce n'est pas notre propre message
     if (message.senderId !== user.id) {
       toast.info(`📨 Nouveau message de ${message.sender?.firstName || 'Utilisateur'}`, {
         duration: TOAST_LONG_DURATION
@@ -441,12 +447,12 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       });
     }, 100);
     
-    console.log('📩 Nouveau message reçu:', {
+    console.log('📩 Traitement nouveau message terminé:', {
       from: message.sender?.username,
-      content: message.content,
+      content: message.content.substring(0, 50) + '...',
       isOwnMessage: message.senderId === user.id,
     });
-  }, [user.id, userLanguage]);
+  }, [user.id, processMessageWithTranslations]);
 
   // Hooks
   const { 
@@ -467,6 +473,9 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
   const { notifications, markAsRead } = useNotifications();
 
+  // Protection contre les toasts multiples
+  const [hasShownConnectionToast, setHasShownConnectionToast] = useState(false);
+
   // Initialisation de la connexion WebSocket en temps réel
   useEffect(() => {
     console.log('🚀 Initialisation de la connexion WebSocket...');
@@ -480,10 +489,11 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       const newDiagnostics = getDiagnostics();
       console.log('🔍 Diagnostic après délai:', newDiagnostics);
       
-      if (connectionStatus.isConnected && connectionStatus.hasSocket) {
+      if (connectionStatus.isConnected && connectionStatus.hasSocket && !hasShownConnectionToast) {
         console.log('✅ WebSocket connecté - Messages en temps réel');
         toast.success('🎉 Connexion établie ! Messages en temps réel activés');
-      } else {
+        setHasShownConnectionToast(true);
+      } else if (!connectionStatus.isConnected || !connectionStatus.hasSocket) {
         console.log('⚠️ WebSocket non connecté après délai');
         console.log('🔍 Diagnostic de connexion:', {
           hasSocket: connectionStatus.hasSocket,
@@ -496,7 +506,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }, 3000);
 
     return () => clearTimeout(initTimeout);
-  }, [getDiagnostics]);
+  }, [connectionStatus.isConnected, connectionStatus.hasSocket, hasShownConnectionToast]);
 
   // Surveillance du statut de connexion WebSocket
   useEffect(() => {
@@ -569,11 +579,14 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
   // Mise à jour automatique de la langue sélectionnée si l'utilisateur change
   useEffect(() => {
+    const newUserLanguage = resolveUserPreferredLanguage();
+    setUserLanguage(newUserLanguage);
+    
     if (selectedInputLanguage !== user.systemLanguage && !languageChoices.find(choice => choice.code === selectedInputLanguage)) {
       // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
-  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, selectedInputLanguage, languageChoices]);
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, selectedInputLanguage, languageChoices, resolveUserPreferredLanguage]);
 
   // Mise à jour des statistiques de langues
   useEffect(() => {
@@ -693,10 +706,10 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
     ]);
   }, []);
 
-  // Fonction pour charger les messages existants depuis le serveur
+  // Fonction pour charger les messages existants depuis le serveur avec traductions optimisées
   const loadExistingMessages = useCallback(async () => {
     try {
-      console.log('📥 Chargement des messages existants...');
+      console.log('📥 Chargement des messages existants avec traductions optimisées...');
       const token = localStorage.getItem('auth_token');
       
       if (!token) {
@@ -728,7 +741,29 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         }
         
         console.log('✅ Messages existants chargés:', existingMessages.length);
-        console.log('🔍 Debug: Premier message:', existingMessages[0]);
+        
+        // Log détaillé des traductions dans les messages bruts
+        if (existingMessages.length > 0) {
+          console.log('🔍 Debug: Premier message brut avec traductions:');
+          console.log('📦 Message brut:', existingMessages[0]);
+          console.log('🌐 Traductions brutes:', existingMessages[0]?.translations);
+          console.log('🔢 Nombre de traductions:', existingMessages[0]?.translations?.length || 0);
+          
+          // Analyser toutes les traductions disponibles
+          const allTranslations = existingMessages.reduce((acc: any[], msg: any) => {
+            if (msg.translations && Array.isArray(msg.translations)) {
+              acc.push(...msg.translations);
+            }
+            return acc;
+          }, []);
+          
+          console.log('📊 Analyse traductions brutes:', {
+            totalMessages: existingMessages.length,
+            totalTranslations: allTranslations.length,
+            languesDisponibles: [...new Set(allTranslations.map((t: any) => t.targetLanguage))],
+            exempleTraduction: allTranslations[0]
+          });
+        }
         
         // Vérifier que existingMessages est bien un tableau
         if (!Array.isArray(existingMessages)) {
@@ -737,20 +772,71 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           return;
         }
         
-        // Convertir en BubbleStreamMessage et trier par date décroissante (plus récents en premier)
+        // Utiliser le hook pour traiter les messages avec traductions
         const bubbleMessages: BubbleStreamMessage[] = existingMessages
-          .map((msg: any) => ({
-            ...msg,
-            originalLanguage: msg.originalLanguage || 'fr',
-            isTranslated: msg.originalLanguage !== userLanguage,
-            translatedFrom: msg.originalLanguage !== userLanguage ? msg.originalLanguage : undefined,
-            location: msg.location || 'Paris',
-            translations: msg.translations || [] // Initialiser avec un tableau vide si pas de traductions
-          }))
+          .map((msg: any, index: number) => {
+            // Log détaillé pour chaque message traité
+            const processed = processMessageWithTranslations(msg);
+            
+            if (index < 3) { // Log seulement les 3 premiers pour éviter le spam
+              console.log(`🔍 Message ${index + 1} traité:`, {
+                id: processed.id,
+                originalLanguage: processed.originalLanguage,
+                isTranslated: processed.isTranslated,
+                translatedFrom: processed.translatedFrom,
+                translationsCount: processed.translations.length,
+                content: processed.content.substring(0, 50) + '...',
+                translationLanguages: processed.translations.map(t => t.language)
+              });
+            }
+            
+            return processed;
+          })
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         
         setMessages(bubbleMessages);
-        toast.success(`📨 ${existingMessages.length} messages chargés`);
+        
+        // Compter les traductions disponibles et les traductions manquantes
+        const totalTranslations = bubbleMessages.reduce((sum, msg) => sum + msg.translations.length, 0);
+        const translatedMessages = bubbleMessages.filter(msg => msg.isTranslated).length;
+        
+        // Identifier les messages nécessitant des traductions
+        const messagesNeedingTranslation = bubbleMessages.filter(msg => {
+          const required = getRequiredTranslations(msg);
+          return required.length > 0;
+        });
+        
+        // Analyse détaillée des langues
+        const languageAnalysis = bubbleMessages.reduce((acc, msg) => {
+          // Langue originale
+          acc.originalLanguages[msg.originalLanguage] = (acc.originalLanguages[msg.originalLanguage] || 0) + 1;
+          
+          // Langues traduites
+          msg.translations.forEach(t => {
+            acc.translatedLanguages[t.language] = (acc.translatedLanguages[t.language] || 0) + 1;
+          });
+          
+          return acc;
+        }, { originalLanguages: {} as Record<string, number>, translatedLanguages: {} as Record<string, number> });
+        
+        console.log(`📊 Statistiques traductions détaillées:`, {
+          totalMessages: bubbleMessages.length,
+          totalTranslations,
+          translatedMessages,
+          messagesNeedingTranslation: messagesNeedingTranslation.length,
+          languageAnalysis,
+          userPreferredLanguage: resolveUserPreferredLanguage(),
+          userLanguagePreferences: getUserLanguagePreferences()
+        });
+        
+        toast.success(`📨 ${existingMessages.length} messages chargés (${totalTranslations} traductions, ${messagesNeedingTranslation.length} nécessitent traduction)`);
+        
+        // TODO: Déclencher la traduction automatique des messages manquants si activée
+        if (user.autoTranslateEnabled && messagesNeedingTranslation.length > 0) {
+          console.log(`🔄 ${messagesNeedingTranslation.length} messages à traduire automatiquement`);
+          // Ici on pourrait déclencher les traductions en arrière-plan
+        }
+        
       } else {
         console.log('⚠️ Impossible de charger les messages existants. Status:', response.status);
         try {
@@ -765,17 +851,20 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       console.error('❌ Erreur lors du chargement des messages:', error);
       toast.error('Erreur de connexion lors du chargement des messages');
     }
-  }, [userLanguage]);
+  }, [processMessageWithTranslations, getRequiredTranslations, resolveUserPreferredLanguage, getUserLanguagePreferences, user.autoTranslateEnabled]);
 
-  // Charger les messages existants dès la connexion
+  // Charger les messages existants dès la connexion avec debug amélioré
   useEffect(() => {
     if (connectionStatus.isConnected) {
       // Délai pour laisser le temps à la connexion de se stabiliser
       const loadTimeout = setTimeout(() => {
+        console.log('🚀 Déclenchement chargement messages existants...');
         loadExistingMessages();
       }, 1000);
       
       return () => clearTimeout(loadTimeout);
+    } else {
+      console.log('⏳ En attente de connexion pour charger les messages...');
     }
   }, [connectionStatus.isConnected, loadExistingMessages]);
 
