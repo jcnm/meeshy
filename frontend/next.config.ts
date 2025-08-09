@@ -39,15 +39,9 @@ const nextConfig: NextConfig = {
     ]
   },
   
-  // Configuration API
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/:path*`
-      }
-    ];
-  },
+  // Configuration API - Routes directes vers la gateway via buildApiUrl
+  // Les rewrites automatiques sont désactivés pour éviter la confusion
+  // Tous les appels API doivent passer par buildApiUrl() qui pointe directement vers la gateway
   
   // Variables d'environnement publiques
   env: {

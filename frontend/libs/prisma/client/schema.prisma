@@ -8,118 +8,73 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// Représente un utilisateur enregistré de la plateforme
-/// Supporte différents rôles et préférences linguistiques avancées
+/// Utilisateur enregistré de la plateforme
 model User {
-  /// Identifiant unique généré automatiquement (CUID)
-  id                          String                   @id @default(cuid())
-  /// Nom d'utilisateur unique pour la connexion
-  username                    String                   @unique
-  /// Prénom de l'utilisateur
+  id                          String    @id @default(cuid())
+  username                    String    @unique
   firstName                   String
-  /// Nom de famille de l'utilisateur
   lastName                    String
-  /// Adresse email unique pour la connexion et notifications
-  email                       String                   @unique
-  /// Numéro de téléphone optionnel (unique si fourni)
-  phoneNumber                 String?                  @unique
-  /// Mot de passe haché pour l'authentification
+  email                       String    @unique
+  phoneNumber                 String?   @unique
   password                    String
-  /// Nom d'affichage personnalisé (par défaut: firstName + lastName)
   displayName                 String?
-  /// URL de l'avatar de profil
   avatar                      String?
-  /// Indique si l'utilisateur est actuellement en ligne
-  isOnline                    Boolean                  @default(false)
-  /// Horodatage de la dernière fois que l'utilisateur a été vu en ligne
-  lastSeen                    DateTime                 @default(now())
-  /// Horodatage de la dernière activité de l'utilisateur
-  lastActiveAt                DateTime                 @default(now())
-  /// Langue principale du système pour l'interface utilisateur
-  systemLanguage              String                   @default("fr")
-  /// Langue régionale pour les contenus localisés
-  regionalLanguage            String                   @default("fr")
-  /// Langue de destination personnalisée pour les traductions
+  isOnline                    Boolean   @default(false)
+  lastSeen                    DateTime  @default(now())
+  lastActiveAt                DateTime  @default(now())
+  systemLanguage              String    @default("fr")
+  regionalLanguage            String    @default("fr")
   customDestinationLanguage   String?
-  /// Active/désactive la traduction automatique des messages reçus
-  autoTranslateEnabled        Boolean                  @default(true)
-  /// Traduit automatiquement vers la langue système
-  translateToSystemLanguage   Boolean                  @default(true)
-  /// Traduit automatiquement vers la langue régionale
-  translateToRegionalLanguage Boolean                  @default(false)
-  /// Utilise la destination personnalisée pour les traductions
-  useCustomDestination        Boolean                  @default(false)
-  /// Rôle de l'utilisateur dans le système
-  /// USER: Utilisateur standard
-  /// ADMIN: Administrateur système
-  /// MODO: Modérateur global
-  /// AUDIT: Auditeur (lecture seule étendue)
-  /// ANALYST: Analyste de données
-  /// BIGBOSS: Super administrateur
-  role                        String                   @default("USER")
-  /// Indique si le compte utilisateur est actif
-  isActive                    Boolean                  @default(true)
-  /// Date de désactivation du compte (si applicable)
+  autoTranslateEnabled        Boolean   @default(true)
+  translateToSystemLanguage   Boolean   @default(true)
+  translateToRegionalLanguage Boolean   @default(false)
+  useCustomDestination        Boolean   @default(false)
+  /// USER, ADMIN, MODO, AUDIT, ANALYST, BIGBOSS
+  role                        String    @default("USER")
+  isActive                    Boolean   @default(true)
   deactivatedAt               DateTime?
-  /// Date de création du compte
-  createdAt                   DateTime                 @default(now())
-  /// Date de dernière mise à jour du profil
-  updatedAt                   DateTime                 @updatedAt
-  createdCommunities          Community[]              @relation("CommunityCreator")
-  communityMemberships        CommunityMember[]
-  conversations               ConversationMember[]
-  conversationPreferences     ConversationPreference[]
-  createdShareLinks           ConversationShareLink[]  @relation("ShareLinkCreator")
-  receivedFriendRequests      FriendRequest[]          @relation("FriendRequestReceiver")
-  sentFriendRequests          FriendRequest[]          @relation("FriendRequestSender")
-  groupMemberships            GroupMember[]
-  createdGroups               Group[]                  @relation("GroupCreator")
-  messageReadStatus           MessageReadStatus[]
-  sentMessages                Message[]                @relation("MessageSender")
-  notifications               Notification[]
-  typingIndicators            TypingIndicator[]
-  preferences                 UserPreference[]
-  stats                       UserStats?
-  adminCommunities            Community[]              @relation("CommunityAdmins")
-  moderatorCommunities        Community[]              @relation("CommunityModerators")
-  adminGroups                 Group[]                  @relation("GroupAdmins")
-  moderatorGroups             Group[]                  @relation("GroupModerators")
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  createdCommunities      Community[]              @relation("CommunityCreator")
+  communityMemberships    CommunityMember[]
+  conversations           ConversationMember[]
+  conversationPreferences ConversationPreference[]
+  createdShareLinks       ConversationShareLink[]  @relation("ShareLinkCreator")
+  receivedFriendRequests  FriendRequest[]          @relation("FriendRequestReceiver")
+  sentFriendRequests      FriendRequest[]          @relation("FriendRequestSender")
+  groupMemberships        GroupMember[]
+  createdGroups           Group[]                  @relation("GroupCreator")
+  messageReadStatus       MessageReadStatus[]
+  sentMessages            Message[]                @relation("MessageSender")
+  notifications           Notification[]
+  typingIndicators        TypingIndicator[]
+  preferences             UserPreference[]
+  stats                   UserStats?
+  adminCommunities        Community[]              @relation("CommunityAdmins")
+  moderatorCommunities    Community[]              @relation("CommunityModerators")
+  adminGroups             Group[]                  @relation("GroupAdmins")
+  moderatorGroups         Group[]                  @relation("GroupModerators")
 
   @@map("users")
 }
 
-/// Représente une conversation entre utilisateurs
-/// Supporte différents types: directe, groupe, publique, globale
+/// Conversation entre utilisateurs (direct, group, public, global, shared)
 model Conversation {
-  /// Identifiant unique de la conversation
-  id                    String                   @id @default(cuid())
-  /// Type de conversation
-  /// "direct": Conversation privée entre 2 utilisateurs
-  /// "group": Conversation de groupe privée (invitation requise)
-  /// "public": Groupe public recherchable et rejoignable
-  /// "global": Groupe global ouvert à tous
-  /// "shared": Conversation accessible via lien de partage
-  type                  String
-  /// Titre de la conversation (optionnel pour les conversations directes)
-  title                 String?
-  /// Description de la conversation (visible dans les recherches)
-  description           String?
-  /// URL de l'image de couverture de la conversation
-  image                 String?
-  /// URL de l'avatar de la conversation
-  avatar                String?
-  /// Référence à la communauté parente (si applicable)
-  communityId           String?
-  /// Indique si la conversation est active
-  isActive              Boolean                  @default(true)
-  /// Indique si la conversation est archivée
-  isArchived            Boolean                  @default(false)
-  /// Horodatage du dernier message envoyé
-  lastMessageAt         DateTime                 @default(now())
-  /// Date de création de la conversation
-  createdAt             DateTime                 @default(now())
-  /// Date de dernière modification
-  updatedAt             DateTime                 @updatedAt
+  id            String   @id @default(cuid())
+  /// direct, group, public, global, shared
+  type          String
+  title         String?
+  description   String?
+  image         String?
+  avatar        String?
+  communityId   String?
+  isActive      Boolean  @default(true)
+  isArchived    Boolean  @default(false)
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
   anonymousParticipants AnonymousParticipant[]
   members               ConversationMember[]
   preferences           ConversationPreference[]
@@ -131,347 +86,215 @@ model Conversation {
   @@map("conversations")
 }
 
-/// Représente l'appartenance d'un utilisateur à une conversation
-/// Définit les rôles et permissions dans la conversation
+/// Appartenance d'un utilisateur à une conversation
 model ConversationMember {
-  /// Identifiant unique de l'appartenance
-  id               String       @id @default(cuid())
-  /// Référence à la conversation
+  id               String    @id @default(cuid())
   conversationId   String
-  /// Référence à l'utilisateur
   userId           String
-  /// Rôle dans la conversation
-  /// "admin": Administrateur (toutes permissions + gestion des membres)
-  /// "moderator": Modérateur (permissions étendues de modération)
-  /// "member": Membre standard
-  /// Note: Les conversations directes n'utilisent que "member"
-  role             String       @default("member")
-  /// Peut envoyer des messages texte
-  canSendMessage   Boolean      @default(true)
-  /// Peut envoyer des fichiers
-  canSendFiles     Boolean      @default(true)
-  /// Peut envoyer des images
-  canSendImages    Boolean      @default(true)
-  /// Peut envoyer des vidéos
-  canSendVideos    Boolean      @default(true)
-  /// Peut envoyer des messages vocaux
-  canSendAudios    Boolean      @default(true)
-  /// Peut partager sa localisation
-  canSendLocations Boolean      @default(true)
-  /// Peut partager des liens
-  canSendLinks     Boolean      @default(true)
-  /// Date d'entrée dans la conversation
-  joinedAt         DateTime     @default(now())
-  /// Date de sortie de la conversation (si applicable)
+  /// admin, moderator, member
+  role             String    @default("member")
+  canSendMessage   Boolean   @default(true)
+  canSendFiles     Boolean   @default(true)
+  canSendImages    Boolean   @default(true)
+  canSendVideos    Boolean   @default(true)
+  canSendAudios    Boolean   @default(true)
+  canSendLocations Boolean   @default(true)
+  canSendLinks     Boolean   @default(true)
+  joinedAt         DateTime  @default(now())
   leftAt           DateTime?
-  /// Indique si l'appartenance est active
-  isActive         Boolean      @default(true)
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  isActive         Boolean   @default(true)
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@map("conversation_members")
 }
 
-/// Représente un lien de partage pour accès anonyme à une conversation
-/// Permet à des utilisateurs non-enregistrés de participer à une conversation
+/// Lien de partage pour accès anonyme à une conversation
 model ConversationShareLink {
-  /// Identifiant unique interne
-  id                     String                 @id @default(cuid())
-  /// Identifiant public du lien (utilisé dans l'URL)
-  linkId                 String                 @unique
-  /// Référence à la conversation partagée
+  id                     String    @id @default(cuid())
+  linkId                 String    @unique
   conversationId         String
-  /// Référence à l'utilisateur créateur du lien
   createdBy              String
-  /// Nom descriptif du lien
   name                   String?
-  /// Description du lien et de son usage
   description            String?
-  /// Nombre maximum d'utilisations du lien (null = illimité)
   maxUses                Int?
-  /// Nombre d'utilisations actuelles du lien
-  currentUses            Int                    @default(0)
-  /// Nombre maximum de participants simultanés via ce lien (null = illimité)
+  currentUses            Int       @default(0)
   maxConcurrentUsers     Int?
-  /// Nombre de participants actuellement connectés via ce lien
-  currentConcurrentUsers Int                    @default(0)
-  /// Date d'expiration du lien (null = permanent)
+  currentConcurrentUsers Int       @default(0)
   expiresAt              DateTime?
-  /// Indique si le lien est actif
-  isActive               Boolean                @default(true)
-  /// Les utilisateurs anonymes peuvent envoyer des messages
-  allowAnonymousMessages Boolean                @default(true)
-  /// Les utilisateurs anonymes peuvent envoyer des fichiers
-  allowAnonymousFiles    Boolean                @default(false)
-  /// Les utilisateurs anonymes peuvent envoyer des images
-  allowAnonymousImages   Boolean                @default(true)
-  /// Les utilisateurs anonymes peuvent voir l'historique des messages
-  allowViewHistory       Boolean                @default(true)
-  /// Requiert un pseudonyme pour participer
-  requireNickname        Boolean                @default(true)
-  /// Requiert une adresse email pour participer
-  requireEmail           Boolean                @default(false)
-  /// Date de création du lien
-  createdAt              DateTime               @default(now())
-  /// Date de dernière modification du lien
-  updatedAt              DateTime               @updatedAt
-  anonymousParticipants  AnonymousParticipant[] @relation("ShareLinkParticipants")
-  creator                User                   @relation("ShareLinkCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  conversation           Conversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  isActive               Boolean   @default(true)
+  allowAnonymousMessages Boolean   @default(true)
+  allowAnonymousFiles    Boolean   @default(false)
+  allowAnonymousImages   Boolean   @default(true)
+  allowViewHistory       Boolean   @default(true)
+  requireNickname        Boolean   @default(true)
+  requireEmail           Boolean   @default(false)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  anonymousParticipants AnonymousParticipant[] @relation("ShareLinkParticipants")
+  creator               User                   @relation("ShareLinkCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  conversation          Conversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@map("conversation_share_links")
 }
 
-/// Représente un participant anonyme à une conversation via un lien de partage
-/// Permet de suivre l'identité temporaire et les permissions des utilisateurs non-enregistrés
+/// Participant anonyme via lien de partage
 model AnonymousParticipant {
-  /// Identifiant unique du participant anonyme
-  id              String                @id @default(cuid())
-  /// Référence à la conversation
+  id              String    @id @default(cuid())
   conversationId  String
-  /// Référence au lien de partage utilisé
   shareLinkId     String
-  /// Pseudonyme choisi par l'utilisateur anonyme
   nickname        String
-  /// Adresse email optionnelle pour contact/notifications
   email           String?
-  /// Token de session unique pour identifier l'utilisateur anonyme
-  sessionToken    String                @unique
-  /// Adresse IP du participant (pour modération)
+  sessionToken    String    @unique
   ipAddress       String?
-  /// Indique si le participant est actuellement connecté
-  isActive        Boolean               @default(true)
-  /// Indique si le participant est actuellement en ligne
-  isOnline        Boolean               @default(false)
-  /// Horodatage de la dernière activité
-  lastActiveAt    DateTime              @default(now())
-  /// Peut envoyer des messages (hérité du lien de partage)
-  canSendMessages Boolean               @default(true)
-  /// Peut envoyer des fichiers (hérité du lien de partage)
-  canSendFiles    Boolean               @default(false)
-  /// Peut envoyer des images (hérité du lien de partage)
-  canSendImages   Boolean               @default(true)
-  /// Date d'entrée dans la conversation
-  joinedAt        DateTime              @default(now())
-  /// Date de dernière activité
-  lastSeenAt      DateTime              @default(now())
-  /// Date de sortie de la conversation (si applicable)
+  isActive        Boolean   @default(true)
+  isOnline        Boolean   @default(false)
+  lastActiveAt    DateTime  @default(now())
+  canSendMessages Boolean   @default(true)
+  canSendFiles    Boolean   @default(false)
+  canSendImages   Boolean   @default(true)
+  joinedAt        DateTime  @default(now())
+  lastSeenAt      DateTime  @default(now())
   leftAt          DateTime?
-  shareLink       ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id], onDelete: Cascade)
-  conversation    Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sentMessages    Message[]             @relation("AnonymousMessageSender")
+
+  shareLink    ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id], onDelete: Cascade)
+  conversation Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sentMessages Message[]             @relation("AnonymousMessageSender")
 
   @@unique([conversationId, sessionToken])
   @@map("anonymous_participants")
 }
 
-/// Représente un message dans une conversation
-/// Supporte différents types de contenu et la traduction automatique
+/// Message dans une conversation
 model Message {
-  /// Identifiant unique du message
-  id                String                @id @default(cuid())
-  /// Référence à la conversation contenant le message
+  id                String    @id @default(cuid())
   conversationId    String
-  /// Référence à l'utilisateur expéditeur (null pour les anonymes)
   senderId          String?
-  /// Référence au participant anonyme expéditeur (null pour les utilisateurs enregistrés)
   anonymousSenderId String?
-  /// Contenu textuel du message
   content           String
-  /// Langue originale du message (détectée automatiquement)
-  originalLanguage  String                @default("fr")
-  /// Type de message
-  /// "text": Message textuel standard
-  /// "image": Message contenant une image
-  /// "file": Message contenant un fichier
-  /// "audio": Message vocal
-  /// "video": Message vidéo
-  /// "location": Partage de localisation
-  /// "system": Message généré par le système
-  messageType       String                @default("text")
-  /// Indique si le message a été modifié
-  isEdited          Boolean               @default(false)
-  /// Date de dernière modification (si applicable)
+  originalLanguage  String    @default("fr")
+  /// text, image, file, audio, video, location, system
+  messageType       String    @default("text")
+  isEdited          Boolean   @default(false)
   editedAt          DateTime?
-  /// Indique si le message a été supprimé
-  isDeleted         Boolean               @default(false)
-  /// Date de suppression (si applicable)
+  isDeleted         Boolean   @default(false)
   deletedAt         DateTime?
-  /// Référence au message parent (pour les réponses)
   replyToId         String?
-  /// Date de création du message
-  createdAt         DateTime              @default(now())
-  /// Date de dernière modification
-  updatedAt         DateTime              @updatedAt
-  readStatus        MessageReadStatus[]
-  translations      MessageTranslation[]
-  replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id])
-  replies           Message[]             @relation("MessageReplies")
-  anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id], onDelete: Cascade)
-  sender            User?                 @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  conversation      Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  readStatus      MessageReadStatus[]
+  translations    MessageTranslation[]
+  replyTo         Message?              @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies         Message[]             @relation("MessageReplies")
+  anonymousSender AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id], onDelete: Cascade)
+  sender          User?                 @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  conversation    Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@map("messages")
 }
 
-/// Représente une traduction d'un message dans une langue spécifique
-/// Utilise un système de cache pour optimiser les performances
+/// Traduction d'un message
 model MessageTranslation {
-  /// Identifiant unique de la traduction
   id                String   @id @default(cuid())
-  /// Référence au message original
   messageId         String
-  /// Langue source du message original
   sourceLanguage    String
-  /// Langue cible de la traduction
   targetLanguage    String
-  /// Contenu traduit
   translatedContent String
-  /// Modèle de traduction utilisé (ex: "t5-base", "nllb-200", "gpt-4")
   translationModel  String
-  /// Clé de cache unique pour éviter les traductions en double
   cacheKey          String   @unique
-  /// Score de confiance de la traduction (0.0 à 1.0)
   confidenceScore   Float?
-  /// Date de création de la traduction
   createdAt         DateTime @default(now())
-  message           Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, targetLanguage])
   @@map("message_translations")
 }
 
-/// Représente le statut de lecture d'un message par un utilisateur
-/// Permet de suivre qui a lu quoi et quand
+/// Statut de lecture d'un message par un utilisateur
 model MessageReadStatus {
-  /// Identifiant unique du statut de lecture
   id        String   @id @default(cuid())
-  /// Référence au message lu
   messageId String
-  /// Référence à l'utilisateur ayant lu le message
   userId    String
-  /// Horodatage de la lecture du message
   readAt    DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
   @@map("message_read_status")
 }
 
-/// Représente une demande d'amitié entre deux utilisateurs
-/// Gère le processus d'établissement de relations sociales
+/// Demande d'amitié entre utilisateurs
 model FriendRequest {
-  /// Identifiant unique de la demande d'amitié
   id         String   @id @default(cuid())
-  /// Référence à l'utilisateur envoyant la demande
   senderId   String
-  /// Référence à l'utilisateur recevant la demande
   receiverId String
-  /// Statut de la demande d'amitié
-  /// "pending": En attente de réponse
-  /// "accepted": Acceptée (amis)
-  /// "rejected": Rejetée
-  /// "blocked": Bloquée (utilisateur bloqué)
+  /// pending, accepted, rejected, blocked
   status     String   @default("pending")
-  /// Date d'envoi de la demande
   createdAt  DateTime @default(now())
-  /// Date de dernière modification du statut
   updatedAt  DateTime @updatedAt
-  receiver   User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  sender     User     @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
   @@map("friend_requests")
 }
 
-/// Représente l'indicateur de frappe d'un utilisateur dans une conversation
-/// Permet d'afficher en temps réel qui est en train d'écrire
+/// Indicateur de frappe en cours
 model TypingIndicator {
-  /// Identifiant unique de l'indicateur de frappe
-  id             String       @id @default(cuid())
-  /// Référence à la conversation
+  id             String   @id @default(cuid())
   conversationId String
-  /// Référence à l'utilisateur qui tape
   userId         String
-  /// Indique si l'utilisateur est actuellement en train de taper
-  isTyping       Boolean      @default(true)
-  /// Horodatage du début de la frappe
-  startedAt      DateTime     @default(now())
-  /// Horodatage de la dernière mise à jour
-  updatedAt      DateTime     @updatedAt
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  isTyping       Boolean  @default(true)
+  startedAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
   @@map("typing_indicators")
 }
 
-/// Représente une notification pour un utilisateur
-/// Gère tous les types d'alertes et messages système
+/// Notification pour un utilisateur
 model Notification {
-  /// Identifiant unique de la notification
   id        String    @id @default(cuid())
-  /// Référence à l'utilisateur destinataire
   userId    String
-  /// Type de notification
-  /// "new_conversation": Nouvelle conversation créée
-  /// "new_message": Nouveau message reçu
-  /// "message_edited": Message modifié
-  /// "message_deleted": Message supprimé
-  /// "friend_request": Demande d'amitié reçue
-  /// "friend_accepted": Demande d'amitié acceptée
-  /// "community_invite": Invitation à une communauté
-  /// "conversation_invite": Invitation à une conversation
-  /// "share_link_used": Lien de partage utilisé
-  /// "anonymous_joined": Participant anonyme rejoint
-  /// "system_announcement": Annonce système
+  /// new_conversation, new_message, message_edited, friend_request, etc.
   type      String
-  /// Titre de la notification
   title     String
-  /// Contenu détaillé de la notification
   content   String
-  /// Données additionnelles en JSON (références, métadonnées)
   data      String?
-  /// Priorité de la notification (low, normal, high, urgent)
   priority  String    @default("normal")
-  /// Indique si la notification a été lue
   isRead    Boolean   @default(false)
-  /// Indique si la notification a été envoyée par email
   emailSent Boolean   @default(false)
-  /// Indique si la notification push a été envoyée
   pushSent  Boolean   @default(false)
-  /// Date d'expiration de la notification (auto-suppression)
   expiresAt DateTime?
-  /// Date de création de la notification
   createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
 
-/// Représente une communauté d'utilisateurs
-/// Peut contenir plusieurs conversations et gérer des membres
+/// Communauté d'utilisateurs
 model Community {
-  /// Identifiant unique de la communauté
-  id            String            @id @default(cuid())
-  /// Titre de la communauté
-  title         String
-  /// Description de la communauté
-  description   String?
-  /// URL de l'image de la communauté
-  image         String?
-  /// Indique si la communauté est publique (découvrable)
-  isPublic      Boolean           @default(false)
-  /// Nombre maximum de membres (null = illimité)
-  maxMembers    Int?
-  /// Référence au créateur de la communauté
-  createdById   String
-  /// Date de création de la communauté
-  createdAt     DateTime          @default(now())
-  /// Date de dernière modification
-  updatedAt     DateTime          @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  image       String?
+  isPublic    Boolean  @default(false)
+  maxMembers  Int?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
   createdBy     User              @relation("CommunityCreator", fields: [createdById], references: [id])
   members       CommunityMember[]
   conversations Conversation[]
@@ -481,167 +304,112 @@ model Community {
   @@map("communities")
 }
 
-/// Représente l'appartenance d'un utilisateur à une communauté
+/// Appartenance à une communauté
 model CommunityMember {
-  /// Identifiant unique de l'appartenance
-  id          String    @id @default(cuid())
-  /// Référence à la communauté
+  id          String   @id @default(cuid())
   communityId String
-  /// Référence à l'utilisateur
   userId      String
-  /// Rôle dans la communauté
-  /// "member": Membre standard
-  /// "admin": Administrateur
-  /// "moderator": Modérateur
-  role        String    @default("member")
-  /// Date d'entrée dans la communauté
-  joinedAt    DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  role        String   @default("member")
+  joinedAt    DateTime @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
 
   @@unique([communityId, userId])
   @@map("community_members")
 }
 
-/// Modèle legacy pour les groupes - remplacé par le système de conversations
-/// Conservé pour la compatibilité avec les données existantes
+/// Groupe (legacy - remplacé par conversations)
 model Group {
-  /// Identifiant unique du groupe
-  id          String        @id @default(cuid())
-  /// Nom du groupe
+  id          String   @id @default(cuid())
   name        String
-  /// Description du groupe
   description String?
-  /// URL de l'avatar du groupe
   avatar      String?
-  /// Indique si le groupe est privé
-  isPrivate   Boolean       @default(true)
-  /// Référence au créateur du groupe
+  isPrivate   Boolean  @default(true)
   createdBy   String
-  /// Date de création
-  createdAt   DateTime      @default(now())
-  /// Date de modification
-  updatedAt   DateTime      @updatedAt
-  members     GroupMember[]
-  creator     User          @relation("GroupCreator", fields: [createdBy], references: [id])
-  admins      User[]        @relation("GroupAdmins")
-  moderators  User[]        @relation("GroupModerators")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members    GroupMember[]
+  creator    User          @relation("GroupCreator", fields: [createdBy], references: [id])
+  admins     User[]        @relation("GroupAdmins")
+  moderators User[]        @relation("GroupModerators")
 
   @@map("groups")
 }
 
-/// Appartenance legacy aux groupes
+/// Appartenance aux groupes (legacy)
 model GroupMember {
-  /// Identifiant unique
   id       String   @id @default(cuid())
-  /// Référence au groupe
   groupId  String
-  /// Référence à l'utilisateur
   userId   String
-  /// Date d'entrée
   joinedAt DateTime @default(now())
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@map("group_members")
 }
 
-/// Représente les statistiques d'utilisation d'un utilisateur
-/// Utilisé pour l'analyse et les métriques de performance
+/// Statistiques d'utilisation d'un utilisateur
 model UserStats {
-  /// Identifiant unique des statistiques
   id                       String   @id @default(cuid())
-  /// Référence à l'utilisateur (unique)
   userId                   String   @unique
-  /// Nombre total de messages envoyés
   messagesSent             Int      @default(0)
-  /// Nombre total de messages reçus
   messagesReceived         Int      @default(0)
-  /// Nombre total de caractères tapés
   charactersTyped          Int      @default(0)
-  /// Nombre de messages avec images envoyés
   imageMessagesSent        Int      @default(0)
-  /// Nombre de fichiers partagés
   filesShared              Int      @default(0)
-  /// Nombre de conversations rejointes
   conversationsJoined      Int      @default(0)
-  /// Nombre de groupes créés
   groupsCreated            Int      @default(0)
-  /// Nombre d'amis ajoutés
   friendsAdded             Int      @default(0)
-  /// Nombre de demandes d'amitié envoyées
   friendRequestsSent       Int      @default(0)
-  /// Nombre de traductions utilisées
   translationsUsed         Int      @default(0)
-  /// Nombre de langues différentes détectées dans les messages
   languagesDetected        Int      @default(0)
-  /// Temps total passé avec la traduction automatique activée (en minutes)
   autoTranslateTimeMinutes Int      @default(0)
-  /// Temps total passé en ligne (en minutes)
   totalOnlineTimeMinutes   Int      @default(0)
-  /// Nombre de sessions de connexion
   sessionCount             Int      @default(0)
-  /// Horodatage de la dernière activité enregistrée
   lastActiveAt             DateTime @default(now())
-  /// Date de création des statistiques
   createdAt                DateTime @default(now())
-  /// Date de dernière mise à jour
   updatedAt                DateTime @updatedAt
-  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_stats")
 }
 
-/// Représente une préférence utilisateur générale
-/// Système flexible de clé-valeur pour les paramètres personnalisés
+/// Préférence utilisateur générale
 model UserPreference {
-  /// Identifiant unique de la préférence
   id          String   @id @default(cuid())
-  /// Référence à l'utilisateur
   userId      String
-  /// Clé de la préférence (ex: "theme", "notifications_email", "language_preference")
   key         String
-  /// Valeur de la préférence (JSON pour les objets complexes)
   value       String
-  /// Type de la préférence pour validation
-  /// "string", "boolean", "number", "json", "array"
   valueType   String   @default("string")
-  /// Description de la préférence (pour documentation)
   description String?
-  /// Date de création de la préférence
   createdAt   DateTime @default(now())
-  /// Date de dernière modification
   updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, key])
   @@map("user_preferences")
 }
 
-/// Représente une préférence spécifique à une conversation
-/// Permet de personnaliser l'expérience par conversation
+/// Préférence spécifique à une conversation
 model ConversationPreference {
-  /// Identifiant unique de la préférence
-  id             String       @id @default(cuid())
-  /// Référence à la conversation
+  id             String   @id @default(cuid())
   conversationId String
-  /// Référence à l'utilisateur
   userId         String
-  /// Clé de la préférence (ex: "notifications", "auto_translate_target", "message_preview")
   key            String
-  /// Valeur de la préférence
   value          String
-  /// Type de la préférence
-  valueType      String       @default("string")
-  /// Description de la préférence
+  valueType      String   @default("string")
   description    String?
-  /// Date de création
-  createdAt      DateTime     @default(now())
-  /// Date de modification
-  updatedAt      DateTime     @updatedAt
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId, key])
   @@map("conversation_preferences")

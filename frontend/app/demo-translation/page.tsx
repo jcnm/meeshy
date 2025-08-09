@@ -198,7 +198,7 @@ export default function DemoTranslationPage() {
     const predictedModelType = getPredictedModel(text.trim().length);
 
     try {
-      const response = await fetch(buildApiUrl('/api/translate'), {
+      const response = await fetch(buildApiUrl('/translate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -130,6 +130,18 @@ export const useNativeMessaging = (options: UseNativeMessagingOptions = {}): Use
 
     // Listeners pour les événements de frappe et de statut
     const unsubscribeTyping = nativeWebSocketService.onTyping((event: any) => {
+      if (!event || typeof event !== 'object') {
+        console.warn('⚠️ useNativeMessaging: Événement de frappe invalide', event);
+        return;
+      }
+      
+      // Vérifier que l'événement a un conversationId valide
+      if (!event.conversationId) {
+        console.warn('⚠️ useNativeMessaging: Événement de frappe sans conversationId', event);
+        return;
+      }
+      
+      // Si on a un conversationId spécifique, filtrer les événements
       if (!conversationId || event.conversationId === conversationId) {
         onUserTyping?.(event.userId, event.username, event.isTyping);
       }

@@ -73,7 +73,7 @@ export default function ConversationsTestPage() {
         console.log('📥 Récupération des conversations...');
         
         const currentToken = localStorage.getItem('auth_token');
-        const convResponse = await fetch('http://localhost:3000/api/conversations', {
+        const convResponse = await fetch('http://localhost:3000/conversations', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

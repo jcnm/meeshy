@@ -52,7 +52,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
     setIsLoading(true);
     try {
       // Appel API pour sauvegarder les modifications
-      const response = await fetch('/api/users/me', {
+      const response = await fetch('/users/me', {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',

@@ -10,11 +10,13 @@ import { toast } from 'sonner';
 import type { Message, User } from '@/types';
 
 interface WebSocketMessage {
-  type: 'new_message' | 'message_edited' | 'message_deleted' | 'user_typing' | 'user_status' | 'join_conversation' | 'leave_conversation';
-  data: any;
+  type: 'new_message' | 'message_edited' | 'message_deleted' | 'user_typing' | 'user_status' | 'join_chat' | 'leave_chat' | 'new_message' | 'start_typing' | 'stop_typing' | 'read_message' | string;
+  data?: any;
   conversationId?: string;
   userId?: string;
   messageId?: string;
+  content?: string;
+  senderId?: string;
 }
 
 interface TypingEvent {
@@ -187,7 +189,17 @@ class NativeWebSocketService {
       case 'user_typing':
         this.typingListeners.forEach(listener => {
           try {
-            listener(message.data);
+            // Ajouter le conversationId aux données de l'événement
+            const typingEvent = {
+              ...message.data,
+              conversationId: message.conversationId || message.data?.conversationId
+            };
+            // Vérifier que l'événement est valide avant de l'envoyer
+            if (typingEvent.conversationId) {
+              listener(typingEvent);
+            } else {
+              console.warn('⚠️ NativeWebSocketService: Événement de frappe sans conversationId', message);
+            }
           } catch (error) {
             console.error('❌ NativeWebSocketService: Erreur dans listener de frappe', error);
           }
@@ -202,6 +214,72 @@ class NativeWebSocketService {
             console.error('❌ NativeWebSocketService: Erreur dans listener de statut', error);
           }
         });
+        break;
+
+      default:
+        // Gestion des messages broadcast avec conversation_id
+        if (typeof message.type === 'string') {
+          // Messages reçus : message_received_<conversation_id>
+          if (message.type.startsWith('message_received_')) {
+            const conversationId = message.type.replace('message_received_', '');
+            console.log(`📨 Message reçu pour conversation ${conversationId}`, message.data);
+            
+            this.messageListeners.forEach(listener => {
+              try {
+                listener(message.data);
+              } catch (error) {
+                console.error('❌ NativeWebSocketService: Erreur dans listener de message', error);
+              }
+            });
+            
+            // Notification toast si ce n'est pas notre message
+            if (this.currentUser && message.data?.senderId !== this.currentUser.id) {
+              toast.info(`Nouveau message de ${message.data?.sender?.firstName || 'Quelqu\'un'}`);
+            }
+          }
+          
+          // Frappe commencée : typing_started_<conversation_id>
+          else if (message.type.startsWith('typing_started_')) {
+            const conversationId = message.type.replace('typing_started_', '');
+            this.typingListeners.forEach(listener => {
+              try {
+                const typingEvent = {
+                  ...message.data,
+                  conversationId,
+                  isTyping: true
+                };
+                if (typingEvent.conversationId) {
+                  listener(typingEvent);
+                }
+              } catch (error) {
+                console.error('❌ NativeWebSocketService: Erreur dans listener de frappe', error);
+              }
+            });
+          }
+          
+          // Frappe arrêtée : typing_stopped_<conversation_id>
+          else if (message.type.startsWith('typing_stopped_')) {
+            const conversationId = message.type.replace('typing_stopped_', '');
+            this.typingListeners.forEach(listener => {
+              try {
+                const typingEvent = {
+                  ...message.data,
+                  conversationId,
+                  isTyping: false
+                };
+                if (typingEvent.conversationId) {
+                  listener(typingEvent);
+                }
+              } catch (error) {
+                console.error('❌ NativeWebSocketService: Erreur dans listener de frappe', error);
+              }
+            });
+          }
+          
+          else {
+            console.warn('⚠️ NativeWebSocketService: Type de message inconnu', message.type);
+          }
+        }
         break;
     }
   }
@@ -253,19 +331,17 @@ class NativeWebSocketService {
     }
   }
 
-  joinConversation(conversationId: string) {
+  joinConversation(conversationId: string): void {
     this.send({
-      type: 'join_conversation',
-      conversationId,
-      data: { userId: this.currentUser?.id }
+      type: 'join_chat',
+      conversationId
     });
   }
 
-  leaveConversation(conversationId: string) {
+  leaveConversation(conversationId: string): void {
     this.send({
-      type: 'leave_conversation',
-      conversationId,
-      data: { userId: this.currentUser?.id }
+      type: 'leave_chat',
+      conversationId
     });
   }
 
@@ -274,11 +350,8 @@ class NativeWebSocketService {
       this.send({
         type: 'new_message',
         conversationId,
-        data: {
-          content,
-          senderId: this.currentUser?.id,
-          conversationId
-        }
+        content,
+        senderId: this.currentUser?.id
       });
       return true;
     } catch (error) {
@@ -318,27 +391,17 @@ class NativeWebSocketService {
     }
   }
 
-  startTyping(conversationId: string) {
+  startTyping(conversationId: string): void {
     this.send({
-      type: 'user_typing',
-      conversationId,
-      data: {
-        userId: this.currentUser?.id,
-        username: this.currentUser?.username,
-        isTyping: true
-      }
+      type: 'start_typing',
+      conversationId
     });
   }
 
-  stopTyping(conversationId: string) {
+  stopTyping(conversationId: string): void {
     this.send({
-      type: 'user_typing',
-      conversationId,
-      data: {
-        userId: this.currentUser?.id,
-        username: this.currentUser?.username,
-        isTyping: false
-      }
+      type: 'stop_typing',
+      conversationId
     });
   }
 

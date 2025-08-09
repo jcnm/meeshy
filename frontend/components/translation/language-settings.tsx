@@ -55,7 +55,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
     setIsLoading(true);
     try {
       // Appel API pour sauvegarder les modifications des paramètres de langue
-      const response = await fetch('/api/users/me', {
+      const response = await fetch('/users/me', {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',

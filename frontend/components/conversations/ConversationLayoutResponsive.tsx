@@ -85,17 +85,18 @@ async function initializeTranslator() {
             throw new Error('Service de traduction indisponible');
         }
         c.log("API de traduction prête 🔥");
-        return true; // Juste un indicateur que l'API est prête
+        return translationService; // Retourner le service de traduction, pas un booléen
     } catch (error) {
         c.error("Failed to initialize translator:", error);
         throw error;
     }
 }
 
-async function translateText(text: string, src_lang: string, tgt_lang: string, translator: any) {
+async function translateText(text: string, src_lang: string, tgt_lang: string, translationService: any) {
     try {
-        const result = await translator(text, { src_lang, tgt_lang });
-        return result[0].translation_text;
+        // Utiliser le service de traduction au lieu d'une fonction
+        const result = await translationService.translate(text, tgt_lang, src_lang);
+        return result.translatedText;
     } catch (error) {
         c.error("Translation error:", error);
         throw error;
@@ -103,12 +104,12 @@ async function translateText(text: string, src_lang: string, tgt_lang: string, t
 }
 
 const main = async () => {
-    const translator = await initializeTranslator();
+    const translationService = await initializeTranslator();
     const text = "Hello, world!";
-    const src_lang = "eng_Latn";
-    const tgt_lang = "fra_Latn";
+    const src_lang = "en";
+    const tgt_lang = "fr";
     c.log(`Translating "${text}" from ${src_lang} to ${tgt_lang}...`);
-    const translatedText = await translateText(text, src_lang, tgt_lang, translator);
+    const translatedText = await translateText(text, src_lang, tgt_lang, translationService);
     c.log(`Translated text: ${translatedText}`);
 };
 

@@ -15,108 +15,92 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
 /**
  * Model User
- * Représente un utilisateur enregistré de la plateforme
- * Supporte différents rôles et préférences linguistiques avancées
+ * Utilisateur enregistré de la plateforme
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
  * Model Conversation
- * Représente une conversation entre utilisateurs
- * Supporte différents types: directe, groupe, publique, globale
+ * Conversation entre utilisateurs (direct, group, public, global, shared)
  */
 export type Conversation = $Result.DefaultSelection<Prisma.$ConversationPayload>
 /**
  * Model ConversationMember
- * Représente l'appartenance d'un utilisateur à une conversation
- * Définit les rôles et permissions dans la conversation
+ * Appartenance d'un utilisateur à une conversation
  */
 export type ConversationMember = $Result.DefaultSelection<Prisma.$ConversationMemberPayload>
 /**
  * Model ConversationShareLink
- * Représente un lien de partage pour accès anonyme à une conversation
- * Permet à des utilisateurs non-enregistrés de participer à une conversation
+ * Lien de partage pour accès anonyme à une conversation
  */
 export type ConversationShareLink = $Result.DefaultSelection<Prisma.$ConversationShareLinkPayload>
 /**
  * Model AnonymousParticipant
- * Représente un participant anonyme à une conversation via un lien de partage
- * Permet de suivre l'identité temporaire et les permissions des utilisateurs non-enregistrés
+ * Participant anonyme via lien de partage
  */
 export type AnonymousParticipant = $Result.DefaultSelection<Prisma.$AnonymousParticipantPayload>
 /**
  * Model Message
- * Représente un message dans une conversation
- * Supporte différents types de contenu et la traduction automatique
+ * Message dans une conversation
  */
 export type Message = $Result.DefaultSelection<Prisma.$MessagePayload>
 /**
  * Model MessageTranslation
- * Représente une traduction d'un message dans une langue spécifique
- * Utilise un système de cache pour optimiser les performances
+ * Traduction d'un message
  */
 export type MessageTranslation = $Result.DefaultSelection<Prisma.$MessageTranslationPayload>
 /**
  * Model MessageReadStatus
- * Représente le statut de lecture d'un message par un utilisateur
- * Permet de suivre qui a lu quoi et quand
+ * Statut de lecture d'un message par un utilisateur
  */
 export type MessageReadStatus = $Result.DefaultSelection<Prisma.$MessageReadStatusPayload>
 /**
  * Model FriendRequest
- * Représente une demande d'amitié entre deux utilisateurs
- * Gère le processus d'établissement de relations sociales
+ * Demande d'amitié entre utilisateurs
  */
 export type FriendRequest = $Result.DefaultSelection<Prisma.$FriendRequestPayload>
 /**
  * Model TypingIndicator
- * Représente l'indicateur de frappe d'un utilisateur dans une conversation
- * Permet d'afficher en temps réel qui est en train d'écrire
+ * Indicateur de frappe en cours
  */
 export type TypingIndicator = $Result.DefaultSelection<Prisma.$TypingIndicatorPayload>
 /**
  * Model Notification
- * Représente une notification pour un utilisateur
- * Gère tous les types d'alertes et messages système
+ * Notification pour un utilisateur
  */
 export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
 /**
  * Model Community
- * Représente une communauté d'utilisateurs
- * Peut contenir plusieurs conversations et gérer des membres
+ * Communauté d'utilisateurs
  */
 export type Community = $Result.DefaultSelection<Prisma.$CommunityPayload>
 /**
  * Model CommunityMember
- * Représente l'appartenance d'un utilisateur à une communauté
+ * Appartenance à une communauté
  */
 export type CommunityMember = $Result.DefaultSelection<Prisma.$CommunityMemberPayload>
 /**
  * Model Group
- * Modèle legacy pour les groupes - remplacé par le système de conversations
- * Conservé pour la compatibilité avec les données existantes
+ * Groupe (legacy - remplacé par conversations)
  */
 export type Group = $Result.DefaultSelection<Prisma.$GroupPayload>
 /**
  * Model GroupMember
- * Appartenance legacy aux groupes
+ * Appartenance aux groupes (legacy)
  */
 export type GroupMember = $Result.DefaultSelection<Prisma.$GroupMemberPayload>
 /**
  * Model UserStats
- * Représente les statistiques d'utilisation d'un utilisateur
- * Utilisé pour l'analyse et les métriques de performance
+ * Statistiques d'utilisation d'un utilisateur
  */
 export type UserStats = $Result.DefaultSelection<Prisma.$UserStatsPayload>
 /**
  * Model UserPreference
- * Représente une préférence utilisateur générale
- * Système flexible de clé-valeur pour les paramètres personnalisés
+ * Préférence utilisateur générale
  */
 export type UserPreference = $Result.DefaultSelection<Prisma.$UserPreferencePayload>
 /**
  * Model ConversationPreference
- * Représente une préférence spécifique à une conversation
- * Permet de personnaliser l'expérience par conversation
+ * Préférence spécifique à une conversation
  */
 export type ConversationPreference = $Result.DefaultSelection<Prisma.$ConversationPreferencePayload>
 
@@ -3391,107 +3375,32 @@ export namespace Prisma {
       moderatorGroups: Prisma.$GroupPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique généré automatiquement (CUID)
-       */
       id: string
-      /**
-       * Nom d'utilisateur unique pour la connexion
-       */
       username: string
-      /**
-       * Prénom de l'utilisateur
-       */
       firstName: string
-      /**
-       * Nom de famille de l'utilisateur
-       */
       lastName: string
-      /**
-       * Adresse email unique pour la connexion et notifications
-       */
       email: string
-      /**
-       * Numéro de téléphone optionnel (unique si fourni)
-       */
       phoneNumber: string | null
-      /**
-       * Mot de passe haché pour l'authentification
-       */
       password: string
-      /**
-       * Nom d'affichage personnalisé (par défaut: firstName + lastName)
-       */
       displayName: string | null
-      /**
-       * URL de l'avatar de profil
-       */
       avatar: string | null
-      /**
-       * Indique si l'utilisateur est actuellement en ligne
-       */
       isOnline: boolean
-      /**
-       * Horodatage de la dernière fois que l'utilisateur a été vu en ligne
-       */
       lastSeen: Date
-      /**
-       * Horodatage de la dernière activité de l'utilisateur
-       */
       lastActiveAt: Date
-      /**
-       * Langue principale du système pour l'interface utilisateur
-       */
       systemLanguage: string
-      /**
-       * Langue régionale pour les contenus localisés
-       */
       regionalLanguage: string
-      /**
-       * Langue de destination personnalisée pour les traductions
-       */
       customDestinationLanguage: string | null
-      /**
-       * Active/désactive la traduction automatique des messages reçus
-       */
       autoTranslateEnabled: boolean
-      /**
-       * Traduit automatiquement vers la langue système
-       */
       translateToSystemLanguage: boolean
-      /**
-       * Traduit automatiquement vers la langue régionale
-       */
       translateToRegionalLanguage: boolean
-      /**
-       * Utilise la destination personnalisée pour les traductions
-       */
       useCustomDestination: boolean
       /**
-       * Rôle de l'utilisateur dans le système
-       * USER: Utilisateur standard
-       * ADMIN: Administrateur système
-       * MODO: Modérateur global
-       * AUDIT: Auditeur (lecture seule étendue)
-       * ANALYST: Analyste de données
-       * BIGBOSS: Super administrateur
+       * USER, ADMIN, MODO, AUDIT, ANALYST, BIGBOSS
        */
       role: string
-      /**
-       * Indique si le compte utilisateur est actif
-       */
       isActive: boolean
-      /**
-       * Date de désactivation du compte (si applicable)
-       */
       deactivatedAt: Date | null
-      /**
-       * Date de création du compte
-       */
       createdAt: Date
-      /**
-       * Date de dernière mise à jour du profil
-       */
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -5121,58 +5030,20 @@ export namespace Prisma {
       typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de la conversation
-       */
       id: string
       /**
-       * Type de conversation
-       * "direct": Conversation privée entre 2 utilisateurs
-       * "group": Conversation de groupe privée (invitation requise)
-       * "public": Groupe public recherchable et rejoignable
-       * "global": Groupe global ouvert à tous
-       * "shared": Conversation accessible via lien de partage
+       * direct, group, public, global, shared
        */
       type: string
-      /**
-       * Titre de la conversation (optionnel pour les conversations directes)
-       */
       title: string | null
-      /**
-       * Description de la conversation (visible dans les recherches)
-       */
       description: string | null
-      /**
-       * URL de l'image de couverture de la conversation
-       */
       image: string | null
-      /**
-       * URL de l'avatar de la conversation
-       */
       avatar: string | null
-      /**
-       * Référence à la communauté parente (si applicable)
-       */
       communityId: string | null
-      /**
-       * Indique si la conversation est active
-       */
       isActive: boolean
-      /**
-       * Indique si la conversation est archivée
-       */
       isArchived: boolean
-      /**
-       * Horodatage du dernier message envoyé
-       */
       lastMessageAt: Date
-      /**
-       * Date de création de la conversation
-       */
       createdAt: Date
-      /**
-       * Date de dernière modification
-       */
       updatedAt: Date
     }, ExtArgs["result"]["conversation"]>
     composites: {}
@@ -6507,65 +6378,22 @@ export namespace Prisma {
       conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de l'appartenance
-       */
       id: string
-      /**
-       * Référence à la conversation
-       */
       conversationId: string
-      /**
-       * Référence à l'utilisateur
-       */
       userId: string
       /**
-       * Rôle dans la conversation
-       * "admin": Administrateur (toutes permissions + gestion des membres)
-       * "moderator": Modérateur (permissions étendues de modération)
-       * "member": Membre standard
-       * Note: Les conversations directes n'utilisent que "member"
+       * admin, moderator, member
        */
       role: string
-      /**
-       * Peut envoyer des messages texte
-       */
       canSendMessage: boolean
-      /**
-       * Peut envoyer des fichiers
-       */
       canSendFiles: boolean
-      /**
-       * Peut envoyer des images
-       */
       canSendImages: boolean
-      /**
-       * Peut envoyer des vidéos
-       */
       canSendVideos: boolean
-      /**
-       * Peut envoyer des messages vocaux
-       */
       canSendAudios: boolean
-      /**
-       * Peut partager sa localisation
-       */
       canSendLocations: boolean
-      /**
-       * Peut partager des liens
-       */
       canSendLinks: boolean
-      /**
-       * Date d'entrée dans la conversation
-       */
       joinedAt: Date
-      /**
-       * Date de sortie de la conversation (si applicable)
-       */
       leftAt: Date | null
-      /**
-       * Indique si l'appartenance est active
-       */
       isActive: boolean
     }, ExtArgs["result"]["conversationMember"]>
     composites: {}
@@ -7851,85 +7679,25 @@ export namespace Prisma {
       conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique interne
-       */
       id: string
-      /**
-       * Identifiant public du lien (utilisé dans l'URL)
-       */
       linkId: string
-      /**
-       * Référence à la conversation partagée
-       */
       conversationId: string
-      /**
-       * Référence à l'utilisateur créateur du lien
-       */
       createdBy: string
-      /**
-       * Nom descriptif du lien
-       */
       name: string | null
-      /**
-       * Description du lien et de son usage
-       */
       description: string | null
-      /**
-       * Nombre maximum d'utilisations du lien (null = illimité)
-       */
       maxUses: number | null
-      /**
-       * Nombre d'utilisations actuelles du lien
-       */
       currentUses: number
-      /**
-       * Nombre maximum de participants simultanés via ce lien (null = illimité)
-       */
       maxConcurrentUsers: number | null
-      /**
-       * Nombre de participants actuellement connectés via ce lien
-       */
       currentConcurrentUsers: number
-      /**
-       * Date d'expiration du lien (null = permanent)
-       */
       expiresAt: Date | null
-      /**
-       * Indique si le lien est actif
-       */
       isActive: boolean
-      /**
-       * Les utilisateurs anonymes peuvent envoyer des messages
-       */
       allowAnonymousMessages: boolean
-      /**
-       * Les utilisateurs anonymes peuvent envoyer des fichiers
-       */
       allowAnonymousFiles: boolean
-      /**
-       * Les utilisateurs anonymes peuvent envoyer des images
-       */
       allowAnonymousImages: boolean
-      /**
-       * Les utilisateurs anonymes peuvent voir l'historique des messages
-       */
       allowViewHistory: boolean
-      /**
-       * Requiert un pseudonyme pour participer
-       */
       requireNickname: boolean
-      /**
-       * Requiert une adresse email pour participer
-       */
       requireEmail: boolean
-      /**
-       * Date de création du lien
-       */
       createdAt: Date
-      /**
-       * Date de dernière modification du lien
-       */
       updatedAt: Date
     }, ExtArgs["result"]["conversationShareLink"]>
     composites: {}
@@ -9156,69 +8924,21 @@ export namespace Prisma {
       sentMessages: Prisma.$MessagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique du participant anonyme
-       */
       id: string
-      /**
-       * Référence à la conversation
-       */
       conversationId: string
-      /**
-       * Référence au lien de partage utilisé
-       */
       shareLinkId: string
-      /**
-       * Pseudonyme choisi par l'utilisateur anonyme
-       */
       nickname: string
-      /**
-       * Adresse email optionnelle pour contact/notifications
-       */
       email: string | null
-      /**
-       * Token de session unique pour identifier l'utilisateur anonyme
-       */
       sessionToken: string
-      /**
-       * Adresse IP du participant (pour modération)
-       */
       ipAddress: string | null
-      /**
-       * Indique si le participant est actuellement connecté
-       */
       isActive: boolean
-      /**
-       * Indique si le participant est actuellement en ligne
-       */
       isOnline: boolean
-      /**
-       * Horodatage de la dernière activité
-       */
       lastActiveAt: Date
-      /**
-       * Peut envoyer des messages (hérité du lien de partage)
-       */
       canSendMessages: boolean
-      /**
-       * Peut envoyer des fichiers (hérité du lien de partage)
-       */
       canSendFiles: boolean
-      /**
-       * Peut envoyer des images (hérité du lien de partage)
-       */
       canSendImages: boolean
-      /**
-       * Date d'entrée dans la conversation
-       */
       joinedAt: Date
-      /**
-       * Date de dernière activité
-       */
       lastSeenAt: Date
-      /**
-       * Date de sortie de la conversation (si applicable)
-       */
       leftAt: Date | null
     }, ExtArgs["result"]["anonymousParticipant"]>
     composites: {}
@@ -10439,68 +10159,22 @@ export namespace Prisma {
       conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique du message
-       */
       id: string
-      /**
-       * Référence à la conversation contenant le message
-       */
       conversationId: string
-      /**
-       * Référence à l'utilisateur expéditeur (null pour les anonymes)
-       */
       senderId: string | null
-      /**
-       * Référence au participant anonyme expéditeur (null pour les utilisateurs enregistrés)
-       */
       anonymousSenderId: string | null
-      /**
-       * Contenu textuel du message
-       */
       content: string
-      /**
-       * Langue originale du message (détectée automatiquement)
-       */
       originalLanguage: string
       /**
-       * Type de message
-       * "text": Message textuel standard
-       * "image": Message contenant une image
-       * "file": Message contenant un fichier
-       * "audio": Message vocal
-       * "video": Message vidéo
-       * "location": Partage de localisation
-       * "system": Message généré par le système
+       * text, image, file, audio, video, location, system
        */
       messageType: string
-      /**
-       * Indique si le message a été modifié
-       */
       isEdited: boolean
-      /**
-       * Date de dernière modification (si applicable)
-       */
       editedAt: Date | null
-      /**
-       * Indique si le message a été supprimé
-       */
       isDeleted: boolean
-      /**
-       * Date de suppression (si applicable)
-       */
       deletedAt: Date | null
-      /**
-       * Référence au message parent (pour les réponses)
-       */
       replyToId: string | null
-      /**
-       * Date de création du message
-       */
       createdAt: Date
-      /**
-       * Date de dernière modification
-       */
       updatedAt: Date
     }, ExtArgs["result"]["message"]>
     composites: {}
@@ -11775,41 +11449,14 @@ export namespace Prisma {
       message: Prisma.$MessagePayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de la traduction
-       */
       id: string
-      /**
-       * Référence au message original
-       */
       messageId: string
-      /**
-       * Langue source du message original
-       */
       sourceLanguage: string
-      /**
-       * Langue cible de la traduction
-       */
       targetLanguage: string
-      /**
-       * Contenu traduit
-       */
       translatedContent: string
-      /**
-       * Modèle de traduction utilisé (ex: "t5-base", "nllb-200", "gpt-4")
-       */
       translationModel: string
-      /**
-       * Clé de cache unique pour éviter les traductions en double
-       */
       cacheKey: string
-      /**
-       * Score de confiance de la traduction (0.0 à 1.0)
-       */
       confidenceScore: number | null
-      /**
-       * Date de création de la traduction
-       */
       createdAt: Date
     }, ExtArgs["result"]["messageTranslation"]>
     composites: {}
@@ -12862,21 +12509,9 @@ export namespace Prisma {
       message: Prisma.$MessagePayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique du statut de lecture
-       */
       id: string
-      /**
-       * Référence au message lu
-       */
       messageId: string
-      /**
-       * Référence à l'utilisateur ayant lu le message
-       */
       userId: string
-      /**
-       * Horodatage de la lecture du message
-       */
       readAt: Date
     }, ExtArgs["result"]["messageReadStatus"]>
     composites: {}
@@ -13947,33 +13582,14 @@ export namespace Prisma {
       sender: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de la demande d'amitié
-       */
       id: string
-      /**
-       * Référence à l'utilisateur envoyant la demande
-       */
       senderId: string
-      /**
-       * Référence à l'utilisateur recevant la demande
-       */
       receiverId: string
       /**
-       * Statut de la demande d'amitié
-       * "pending": En attente de réponse
-       * "accepted": Acceptée (amis)
-       * "rejected": Rejetée
-       * "blocked": Bloquée (utilisateur bloqué)
+       * pending, accepted, rejected, blocked
        */
       status: string
-      /**
-       * Date d'envoi de la demande
-       */
       createdAt: Date
-      /**
-       * Date de dernière modification du statut
-       */
       updatedAt: Date
     }, ExtArgs["result"]["friendRequest"]>
     composites: {}
@@ -15046,29 +14662,11 @@ export namespace Prisma {
       conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de l'indicateur de frappe
-       */
       id: string
-      /**
-       * Référence à la conversation
-       */
       conversationId: string
-      /**
-       * Référence à l'utilisateur qui tape
-       */
       userId: string
-      /**
-       * Indique si l'utilisateur est actuellement en train de taper
-       */
       isTyping: boolean
-      /**
-       * Horodatage du début de la frappe
-       */
       startedAt: Date
-      /**
-       * Horodatage de la dernière mise à jour
-       */
       updatedAt: Date
     }, ExtArgs["result"]["typingIndicator"]>
     composites: {}
@@ -16200,64 +15798,20 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de la notification
-       */
       id: string
-      /**
-       * Référence à l'utilisateur destinataire
-       */
       userId: string
       /**
-       * Type de notification
-       * "new_conversation": Nouvelle conversation créée
-       * "new_message": Nouveau message reçu
-       * "message_edited": Message modifié
-       * "message_deleted": Message supprimé
-       * "friend_request": Demande d'amitié reçue
-       * "friend_accepted": Demande d'amitié acceptée
-       * "community_invite": Invitation à une communauté
-       * "conversation_invite": Invitation à une conversation
-       * "share_link_used": Lien de partage utilisé
-       * "anonymous_joined": Participant anonyme rejoint
-       * "system_announcement": Annonce système
+       * new_conversation, new_message, message_edited, friend_request, etc.
        */
       type: string
-      /**
-       * Titre de la notification
-       */
       title: string
-      /**
-       * Contenu détaillé de la notification
-       */
       content: string
-      /**
-       * Données additionnelles en JSON (références, métadonnées)
-       */
       data: string | null
-      /**
-       * Priorité de la notification (low, normal, high, urgent)
-       */
       priority: string
-      /**
-       * Indique si la notification a été lue
-       */
       isRead: boolean
-      /**
-       * Indique si la notification a été envoyée par email
-       */
       emailSent: boolean
-      /**
-       * Indique si la notification push a été envoyée
-       */
       pushSent: boolean
-      /**
-       * Date d'expiration de la notification (auto-suppression)
-       */
       expiresAt: Date | null
-      /**
-       * Date de création de la notification
-       */
       createdAt: Date
     }, ExtArgs["result"]["notification"]>
     composites: {}
@@ -17409,41 +16963,14 @@ export namespace Prisma {
       moderators: Prisma.$UserPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de la communauté
-       */
       id: string
-      /**
-       * Titre de la communauté
-       */
       title: string
-      /**
-       * Description de la communauté
-       */
       description: string | null
-      /**
-       * URL de l'image de la communauté
-       */
       image: string | null
-      /**
-       * Indique si la communauté est publique (découvrable)
-       */
       isPublic: boolean
-      /**
-       * Nombre maximum de membres (null = illimité)
-       */
       maxMembers: number | null
-      /**
-       * Référence au créateur de la communauté
-       */
       createdById: string
-      /**
-       * Date de création de la communauté
-       */
       createdAt: Date
-      /**
-       * Date de dernière modification
-       */
       updatedAt: Date
     }, ExtArgs["result"]["community"]>
     composites: {}
@@ -18607,28 +18134,10 @@ export namespace Prisma {
       community: Prisma.$CommunityPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de l'appartenance
-       */
       id: string
-      /**
-       * Référence à la communauté
-       */
       communityId: string
-      /**
-       * Référence à l'utilisateur
-       */
       userId: string
-      /**
-       * Rôle dans la communauté
-       * "member": Membre standard
-       * "admin": Administrateur
-       * "moderator": Modérateur
-       */
       role: string
-      /**
-       * Date d'entrée dans la communauté
-       */
       joinedAt: Date
     }, ExtArgs["result"]["communityMember"]>
     composites: {}
@@ -19726,37 +19235,13 @@ export namespace Prisma {
       moderators: Prisma.$UserPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique du groupe
-       */
       id: string
-      /**
-       * Nom du groupe
-       */
       name: string
-      /**
-       * Description du groupe
-       */
       description: string | null
-      /**
-       * URL de l'avatar du groupe
-       */
       avatar: string | null
-      /**
-       * Indique si le groupe est privé
-       */
       isPrivate: boolean
-      /**
-       * Référence au créateur du groupe
-       */
       createdBy: string
-      /**
-       * Date de création
-       */
       createdAt: Date
-      /**
-       * Date de modification
-       */
       updatedAt: Date
     }, ExtArgs["result"]["group"]>
     composites: {}
@@ -20883,21 +20368,9 @@ export namespace Prisma {
       group: Prisma.$GroupPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique
-       */
       id: string
-      /**
-       * Référence au groupe
-       */
       groupId: string
-      /**
-       * Référence à l'utilisateur
-       */
       userId: string
-      /**
-       * Date d'entrée
-       */
       joinedAt: Date
     }, ExtArgs["result"]["groupMember"]>
     composites: {}
@@ -22190,81 +21663,24 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique des statistiques
-       */
       id: string
-      /**
-       * Référence à l'utilisateur (unique)
-       */
       userId: string
-      /**
-       * Nombre total de messages envoyés
-       */
       messagesSent: number
-      /**
-       * Nombre total de messages reçus
-       */
       messagesReceived: number
-      /**
-       * Nombre total de caractères tapés
-       */
       charactersTyped: number
-      /**
-       * Nombre de messages avec images envoyés
-       */
       imageMessagesSent: number
-      /**
-       * Nombre de fichiers partagés
-       */
       filesShared: number
-      /**
-       * Nombre de conversations rejointes
-       */
       conversationsJoined: number
-      /**
-       * Nombre de groupes créés
-       */
       groupsCreated: number
-      /**
-       * Nombre d'amis ajoutés
-       */
       friendsAdded: number
-      /**
-       * Nombre de demandes d'amitié envoyées
-       */
       friendRequestsSent: number
-      /**
-       * Nombre de traductions utilisées
-       */
       translationsUsed: number
-      /**
-       * Nombre de langues différentes détectées dans les messages
-       */
       languagesDetected: number
-      /**
-       * Temps total passé avec la traduction automatique activée (en minutes)
-       */
       autoTranslateTimeMinutes: number
-      /**
-       * Temps total passé en ligne (en minutes)
-       */
       totalOnlineTimeMinutes: number
-      /**
-       * Nombre de sessions de connexion
-       */
       sessionCount: number
-      /**
-       * Horodatage de la dernière activité enregistrée
-       */
       lastActiveAt: Date
-      /**
-       * Date de création des statistiques
-       */
       createdAt: Date
-      /**
-       * Date de dernière mise à jour
-       */
       updatedAt: Date
     }, ExtArgs["result"]["userStats"]>
     composites: {}
@@ -23364,38 +22780,13 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de la préférence
-       */
       id: string
-      /**
-       * Référence à l'utilisateur
-       */
       userId: string
-      /**
-       * Clé de la préférence (ex: "theme", "notifications_email", "language_preference")
-       */
       key: string
-      /**
-       * Valeur de la préférence (JSON pour les objets complexes)
-       */
       value: string
-      /**
-       * Type de la préférence pour validation
-       * "string", "boolean", "number", "json", "array"
-       */
       valueType: string
-      /**
-       * Description de la préférence (pour documentation)
-       */
       description: string | null
-      /**
-       * Date de création de la préférence
-       */
       createdAt: Date
-      /**
-       * Date de dernière modification
-       */
       updatedAt: Date
     }, ExtArgs["result"]["userPreference"]>
     composites: {}
@@ -24502,41 +23893,14 @@ export namespace Prisma {
       conversation: Prisma.$ConversationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      /**
-       * Identifiant unique de la préférence
-       */
       id: string
-      /**
-       * Référence à la conversation
-       */
       conversationId: string
-      /**
-       * Référence à l'utilisateur
-       */
       userId: string
-      /**
-       * Clé de la préférence (ex: "notifications", "auto_translate_target", "message_preview")
-       */
       key: string
-      /**
-       * Valeur de la préférence
-       */
       value: string
-      /**
-       * Type de la préférence
-       */
       valueType: string
-      /**
-       * Description de la préférence
-       */
       description: string | null
-      /**
-       * Date de création
-       */
       createdAt: Date
-      /**
-       * Date de modification
-       */
       updatedAt: Date
     }, ExtArgs["result"]["conversationPreference"]>
     composites: {}

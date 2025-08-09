@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useConversations } from '@/context/AppContext';
 import { useMessaging } from '@/hooks/use-messaging';
-import { buildApiUrl } from '@/lib/config';
 import { Conversation, Message } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -117,23 +116,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     try {
       setIsLoading(true);
       console.log('📥 Chargement des conversations...');
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl('/conversations'), {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Utiliser une référence stable pour setConversations
-        setConversations(data.conversations || []);
-        console.log(`✅ ${data.conversations?.length || 0} conversations chargées`);
-      } else {
-        console.error('Erreur lors du chargement des conversations:', response.status);
-        setConversations([]);
-      }
+      
+      const conversations = await conversationsService.getConversations();
+      setConversations(conversations);
+      console.log(`✅ ${conversations.length} conversations chargées`);
     } catch (error) {
       console.error('Erreur:', error);
       setConversations([]);

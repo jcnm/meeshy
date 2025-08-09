@@ -34,14 +34,14 @@ Cache Layer (Redis) + Database
 ### Service Responsibilities
 
 #### Gateway Service (Fastify)
-- **Read**: Messages (display only)
+- **Read**: Messages (create, update, delete, read but can only read MessageTranslations)
 - **CRUD**: Users, conversations, groups, preferences, presence
 - **Real-time**: WebSocket connections, message routing
 - **Language Filtering**: Send only messages in user's configured language
 - **Database**: Uses Prisma Client for all operations except message creation
 
 #### Translator Service (FastAPI)  
-- **CRUD**: Messages and MessageTranslations (create, update, delete, read)
+- **CRUD**: Messages and **MessageTranslations** (create, update, delete, read)
 - **Read**: Conversations, user preferences via Prisma
 - **Translation**: MT5/NLLB via Transformers - translates to ALL required languages
 - **Cache**: Robust translation caching system per language pair

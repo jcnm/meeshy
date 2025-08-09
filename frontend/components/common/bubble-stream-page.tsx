@@ -300,7 +300,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
           hasSocket: connectionStatus.hasSocket,
           isConnected: connectionStatus.isConnected,
           hasToken: !!localStorage.getItem('auth_token'),
-          wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
+          wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000/ws'
         });
         toast.warning('� Connexion WebSocket en cours...');
       }
@@ -493,7 +493,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         return;
       }
       
-      const response = await fetch(buildApiUrl(`/api/conversations/any/messages`), {
+      const response = await fetch(buildApiUrl(`/conversations/any/messages`), {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -501,8 +501,30 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       });
       
       if (response.ok) {
-        const existingMessages = await response.json();
+        const responseData = await response.json();
+        console.log('🔍 Debug: Structure complète de responseData:', responseData);
+        
+        // Gérer différents formats de réponse
+        let existingMessages = [];
+        if (responseData.data?.messages) {
+          existingMessages = responseData.data.messages;
+        } else if (responseData.messages) {
+          existingMessages = responseData.messages;
+        } else if (Array.isArray(responseData.data)) {
+          existingMessages = responseData.data;
+        } else if (Array.isArray(responseData)) {
+          existingMessages = responseData;
+        }
+        
         console.log('✅ Messages existants chargés:', existingMessages.length);
+        console.log('🔍 Debug: Premier message:', existingMessages[0]);
+        
+        // Vérifier que existingMessages est bien un tableau
+        if (!Array.isArray(existingMessages)) {
+          console.error('❌ existingMessages n\'est pas un tableau:', typeof existingMessages, existingMessages);
+          toast.error('Format de données invalide');
+          return;
+        }
         
         // Convertir en BubbleStreamMessage
         const bubbleMessages: BubbleStreamMessage[] = existingMessages.map((msg: any) => ({
@@ -516,10 +538,18 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         setMessages(bubbleMessages);
         toast.success(`📨 ${existingMessages.length} messages chargés`);
       } else {
-        console.log('⚠️ Impossible de charger les messages existants');
+        console.log('⚠️ Impossible de charger les messages existants. Status:', response.status);
+        try {
+          const errorData = await response.text();
+          console.log('🔍 Debug: Réponse d\'erreur:', errorData);
+        } catch (e) {
+          console.log('🔍 Debug: Impossible de lire la réponse d\'erreur');
+        }
+        toast.error('Erreur lors du chargement des messages');
       }
     } catch (error) {
       console.error('❌ Erreur lors du chargement des messages:', error);
+      toast.error('Erreur de connexion lors du chargement des messages');
     }
   }, [userLanguage]);
 

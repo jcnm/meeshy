@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SUPPORTED_LANGUAGES, JoinConversationResponse } from '@/types/frontend';
 import { toast } from 'sonner';
+import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 interface CreateAccountFormProps {
   linkId: string;
@@ -30,7 +31,7 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
     setLoading(true);
 
     try {
-      const response = await fetch('/api/conversation/join', {
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.JOIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

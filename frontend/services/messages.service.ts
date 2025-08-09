@@ -69,10 +69,23 @@ export const messagesService = {
     limit: number = 50
   ): Promise<ApiResponse<MessagesResponse>> {
     try {
-      const response = await apiService.get<MessagesResponse>(
-        `/messages/conversation/${conversationId}?page=${page}&limit=${limit}`
+      // Utiliser l'endpoint correct de la gateway
+      const response = await apiService.get<{messages: Message[], hasMore: boolean, userLanguage: string}>(
+        `/conversations/${conversationId}/messages?limit=${limit}&offset=${(page - 1) * limit}`
       );
-      return response;
+      
+      // Adapter la réponse au format attendu
+      return {
+        data: {
+          messages: response.data.messages,
+          total: response.data.messages.length, // Approximation
+          page: page,
+          limit: limit,
+          hasMore: response.data.hasMore
+        },
+        status: response.status,
+        message: response.message
+      };
     } catch (error) {
       console.error('Erreur lors de la récupération des messages:', error);
       throw error;

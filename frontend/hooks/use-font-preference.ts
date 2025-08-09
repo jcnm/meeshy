@@ -36,7 +36,7 @@ export function useFontPreference() {
         if (token && typeof window !== 'undefined') {
           try {
             const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000';
-            const response = await fetch(`${gatewayUrl}/api/users/preferences`, {
+            const response = await fetch(`${gatewayUrl}/users/preferences`, {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ export function useFontPreference() {
         if (token) {
           try {
             const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3001';
-            const response = await fetch(`${gatewayUrl}/api/users/preferences`, {
+            const response = await fetch(`${gatewayUrl}/users/preferences`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
