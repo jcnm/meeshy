@@ -13,6 +13,21 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Fonction de chargement du fichier .env
+load_env_file() {
+    local env_file=".env"
+    
+    if [[ -f "$env_file" ]]; then
+        echo -e "${GREEN}✅ [TRA] Chargement des variables depuis $env_file${NC}"
+        source "$env_file"
+    else
+        echo -e "${YELLOW}⚠️  [TRA] Fichier $env_file non trouvé, utilisation des valeurs par défaut${NC}"
+    fi
+}
+
+# Charger les variables d'environnement
+load_env_file
+
 echo -e "${BLUE}🐍 [TRA] Démarrage du translator Python Meeshy${NC}"
 echo "================================================="
 
@@ -36,16 +51,19 @@ if [[ ! -f ".venv/bin/uvicorn" ]]; then
     .venv/bin/pip install --no-cache-dir -r requirements.txt
 fi
 
-# Variables d'environnement
+
+# Variables d'environnement avec valeurs par défaut
 export NODE_ENV=${NODE_ENV:-development}
 export DATABASE_URL=${DATABASE_URL:-"file:./dev.db"}
 export REDIS_URL=${REDIS_URL:-"memory://"}
 export TRANSLATOR_CACHE_TYPE=${TRANSLATOR_CACHE_TYPE:-"memory"}
 
-echo -e "${BLUE}📊 [TRA] Configuration:${NC}"
+# Affichage amélioré de la configuration
+echo -e "${BLUE}📊 [TRA] Configuration chargée:${NC}"
 echo "   Port: 8000"
 echo "   Environment: $NODE_ENV"
 echo "   Database: $DATABASE_URL"
+echo "   Redis: $REDIS_URL"
 echo "   Cache: $TRANSLATOR_CACHE_TYPE"
 
 # Fonction de nettoyage

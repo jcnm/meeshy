@@ -2,7 +2,17 @@
 # Allow models to be copied for this service
 !models/
 node_modules/
-.env*
+**/*/node_modules/
+.venv/
+./**/*/.venv/
+./**/*/venv/
+venv/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.db
+*.sqlite3
 *.log
 .DS_Store
 .git/

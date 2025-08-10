@@ -37,15 +37,17 @@ except ImportError:
 
 from config.settings import get_settings, get_model_language_code, get_iso_language_code
 from .cache_service import CacheService
+from .database_service import DatabaseService
 
 logger = logging.getLogger(__name__)
 
 class TranslationService:
     """Service de traduction ML avec modèles réels"""
     
-    def __init__(self, cache_service: Optional[CacheService] = None):
+    def __init__(self, cache_service: Optional[CacheService] = None, database_service: Optional[DatabaseService] = None):
         self.settings = get_settings()
         self.cache_service = cache_service or CacheService()
+        self.database_service = database_service
         
         # État des modèles
         self.models: Dict[str, Any] = {}
@@ -105,9 +107,19 @@ class TranslationService:
         }
         return language_names.get(language_code, language_code.capitalize())
     
-    async def initialize(self):
+    async def initialize(self, database_service: Optional[DatabaseService] = None):
         """Initialise le service de traduction"""
         logger.info("🤖 Démarrage du service de traduction ML...")
+        
+        # Utiliser le service de base de données fourni
+        if database_service:
+            self.database_service = database_service
+        
+        # Logger le statut de la base de données
+        if self.database_service and self.database_service.is_connected:
+            logger.info("✅ Service de traduction connecté à la base de données")
+        else:
+            logger.warning("⚠️  Service de traduction initialisé sans connexion à la base de données")
         
         if not TRANSFORMERS_AVAILABLE:
             logger.warning("⚠️ Transformers non disponible - Mode détection de langue seulement")
@@ -117,7 +129,8 @@ class TranslationService:
                 "status": "initialized",
                 "mode": "language_detection_only",
                 "transformers_available": False,
-                "models_loaded": 0
+                "models_loaded": 0,
+                "database_connected": self.database_service.is_connected if self.database_service else False
             }
         
         try:
@@ -145,7 +158,8 @@ class TranslationService:
             "mode": "full_translation" if self.models else "degraded",
             "transformers_available": TRANSFORMERS_AVAILABLE,
             "models_loaded": len(self.models),
-            "device": self.device
+            "device": self.device,
+            "database_connected": self.database_service.is_connected if self.database_service else False
         }
     
     async def _load_models(self):
