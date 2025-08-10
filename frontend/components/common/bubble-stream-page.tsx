@@ -77,6 +77,7 @@ import {
 } from '@/lib/bubble-stream-modules';
 
 import { BubbleMessage } from '@/components/common/bubble-message';
+import { TrendingSection } from '@/components/common/trending-section';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
@@ -1282,39 +1283,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
               icon={<TrendingUp className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
-              <div className="space-y-2">
-                {/* Affichage des 6 premiers hashtags */}
-                {trendingHashtags.slice(0, 6).map((hashtag) => (
-                  <div
-                    key={hashtag}
-                    className="trending-hashtag flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
-                  >
-                    <span className="text-blue-600 hover:underline">{hashtag}</span>
-                    <Badge variant="outline" className="text-xs bg-white/50">
-                      {Math.floor(Math.random() * 100) + 10}
-                    </Badge>
-                  </div>
-                ))}
-                
-                {/* Section scrollable pour les hashtags restants */}
-                {trendingHashtags.length > 6 && (
-                  <div 
-                    className="max-h-32 overflow-y-auto space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2 scroll-hidden"
-                  >
-                    {trendingHashtags.slice(6).map((hashtag) => (
-                      <div
-                        key={hashtag}
-                        className="trending-hashtag flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
-                      >
-                        <span className="text-blue-600 hover:underline">{hashtag}</span>
-                        <Badge variant="outline" className="text-xs bg-white/50">
-                          {Math.floor(Math.random() * 100) + 10}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <TrendingSection hashtags={trendingHashtags} />
             </FoldableSection>
 
             {/* Section Utilisateurs Actifs - Foldable */}
