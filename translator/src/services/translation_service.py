@@ -2,28 +2,6 @@
 Service de traduction ML propre et fonctionnel
 Modèles: T5-Small + NLLB-200-Distilled-600M
 Sans mocks, avec gestion d'erreurs robuste
-"""    async def initialize(self, database_service: Optional[DatabaseService] = None):
-        """Initialise le service de traduction"""
-        logger.info("🤖 Démarrage du service de traduction ML...")
-        
-        # 1. Initialiser le service de base de données
-        if database_service:
-            self.database_service = database_service
-        else:
-            logger.info("🗄️  Initialisation du service de base de données...")
-            self.database_service = DatabaseService()
-            db_success = await self.database_service.initialize()
-            if not db_success:
-                logger.warning("⚠️  Service de base de données en mode dégradé")
-        
-        # 2. Afficher les statistiques de base de données
-        await self._display_database_statistics()
-        
-        # 3. Logger le statut de la base de données
-        if self.database_service and self.database_service.is_connected:
-            logger.info("✅ Service de traduction connecté à la base de données")
-        else:
-            logger.warning("⚠️  Service de traduction en mode dégradé (pas de base de données)")erreurs robuste
 """
 
 import asyncio
