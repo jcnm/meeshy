@@ -122,8 +122,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       {
         code: user.systemLanguage || 'fr',
         name: 'Langue système',
-        description: SUPPORTED_LANGUAGES.find(l => l.code === user.systemLanguage)?.name || 'Français',
-        flag: SUPPORTED_LANGUAGES.find(l => l.code === user.systemLanguage)?.flag || '🇫🇷',
+        description: getLanguageName(user.systemLanguage) || 'Français',
+        flag: getLanguageFlag(user.systemLanguage) || '🇫🇷',
         isDefault: true
       }
     ];
@@ -132,8 +132,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       choices.push({
         code: user.regionalLanguage,
         name: 'Langue régionale',
-        description: (SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.name || user.regionalLanguage) as any,
-        flag: (SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.flag || '🌍') as any,
+        description: getLanguageName(user.regionalLanguage) || user.regionalLanguage,
+        flag: getLanguageFlag(user.regionalLanguage) || '🌍',
         isDefault: false
       });
     }
@@ -144,8 +144,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       choices.push({
         code: user.customDestinationLanguage,
         name: 'Langue personnalisée',
-        description: (SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.name || user.customDestinationLanguage) as any,
-        flag: (SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.flag || '🎯') as any,
+        description: getLanguageName(user.customDestinationLanguage) || user.customDestinationLanguage,
+        flag: getLanguageFlag(user.customDestinationLanguage) || '🎯',
         isDefault: false
       });
     }
@@ -248,9 +248,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       );
       
       if (relevantTranslation) {
-        const langInfo = SUPPORTED_LANGUAGES.find(lang => 
-          lang.code === (relevantTranslation.language || relevantTranslation.targetLanguage)
-        );
+        const langInfo = getLanguageInfo(relevantTranslation.language || relevantTranslation.targetLanguage);
         
         console.log('✅ Toast pour traduction pertinente:', {
           langue: langInfo?.name,
