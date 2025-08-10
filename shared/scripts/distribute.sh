@@ -17,7 +17,7 @@ FRONTEND_DIR="$ROOT_DIR/frontend"
 TRANSLATOR_DIR="$ROOT_DIR/translator"
 
 # Vérifier que nous sommes dans le bon répertoire
-if [ ! -f "package.json" ] || [ ! -d "prisma/prisma" ]; then
+if [ ! -f "package.json" ] || [ ! -f "schema.prisma" ]; then
     echo "❌ Erreur: Ce script doit être exécuté depuis le répertoire shared/ après génération"
     exit 1
 fi
@@ -35,59 +35,44 @@ distribute_to_service() {
         return
     fi
     
+    # Nettoyer l'ancien contenu shared pour éviter les conflits
+    rm -rf "$service_dir/shared"
+    mkdir -p "$service_dir/shared"
+
     case $target_lang in
         "typescript")
             # Pour TypeScript (Gateway, Frontend)
-            echo "  📝 Distribution TypeScript vers $service_name"
-            mkdir -p "$service_dir/libs/prisma/client"
+            echo "  📝 Distribution shared vers $service_name/shared"
+            mkdir -p "$service_dir/shared/"
+            cp -pir ./* "$service_dir/shared/" 2>/dev/null || true
 
-            # Copier les fichiers Prisma générés (Client TypeScript)
-            if [ -d "prisma" ]; then
-                echo "  ✅ Copie des fichiers Prisma Client vers $service_name/libs/"
-                cp -pr prisma/* "$service_dir/libs/" 2>/dev/null || true
-            fi
-            
-            # Copier les fichiers Proto TypeScript
-            if [ -d "proto" ]; then
-                echo "  ✅ Copie des fichiers Proto TypeScript vers $service_name/libs/proto/"
-                mkdir -p "$service_dir/libs/proto"
-                cp proto/*.proto "$service_dir/libs/proto/" 2>/dev/null || true
-                
-                if [ -d "proto/generated" ]; then
-                    cp -r proto/generated/* "$service_dir/libs/proto/" 2>/dev/null || true
-                fi
-            fi
             ;;
             
         "python")
             # Pour Python (Translator)
             echo "  🐍 Distribution Python vers $service_name"
-            
-            # Nettoyer l'ancien contenu libs pour éviter les conflits
-            rm -rf "$service_dir/libs"
-            mkdir -p "$service_dir/libs"
-            
-            # Pour Python, on copie le schema Prisma (pas le client généré)
+    
+            # Pour Python, on copie le schema Prisma 
             if [ -f "prisma/schema.prisma" ]; then
                 echo "  ✅ Copie du schema Prisma vers $service_name/libs/"
                 mkdir -p "$service_dir/libs/prisma"
                 cp prisma/schema.prisma "$service_dir/libs/prisma/"
             fi
-            
+   
             # Copier les fichiers Proto source pour génération Python
             if [ -d "proto" ]; then
-                echo "  ✅ Copie des fichiers Proto source vers $service_name/libs/proto/"
-                mkdir -p "$service_dir/libs/proto"
-                cp proto/*.proto "$service_dir/libs/proto/" 2>/dev/null || true
+                echo "  ✅ Copie des fichiers Proto source vers $service_name/shared/proto/"
+                mkdir -p "$service_dir/shared/proto"
+                cp proto/*.proto "$service_dir/shared/proto/" 2>/dev/null || true
                 
                 # Copier les fichiers Python générés s'ils existent
-                find proto -name "*_pb2.py" -exec cp {} "$service_dir/libs/proto/" \; 2>/dev/null || true
-                find proto -name "*_pb2_grpc.py" -exec cp {} "$service_dir/libs/proto/" \; 2>/dev/null || true
+                find proto -name "*_pb2.py" -exec cp {} "$service_dir/shared/proto/" \; 2>/dev/null || true
+                find proto -name "*_pb2_grpc.py" -exec cp {} "$service_dir/shared/proto/" \; 2>/dev/null || true
             fi
-            
-            # Créer un __init__.py pour faire de libs un package Python
-            touch "$service_dir/libs/__init__.py"
-            touch "$service_dir/libs/proto/__init__.py" 2>/dev/null || true
+
+            # Créer un __init__.py pour faire de shared un package Python
+            touch "$service_dir/shared/__init__.py"
+            touch "$service_dir/shared/proto/__init__.py" 2>/dev/null || true
             ;;
     esac
     
@@ -110,8 +95,8 @@ fi
 
 # Copier le fichier de version vers chaque service
 for service_dir in "$GATEWAY_DIR" "$FRONTEND_DIR" "$TRANSLATOR_DIR"; do
-    if [ -d "$service_dir/libs" ]; then
-        echo "$VERSION" > "$service_dir/libs/version.txt"
+    if [ -d "$service_dir/shared" ]; then
+        echo "$VERSION" > "$service_dir/shared/version.txt"
     fi
 done
 
@@ -119,9 +104,10 @@ echo "🎉 Distribution terminée ! Version: $VERSION"
 echo ""
 echo "📋 Résumé:"
 echo "  TypeScript Services (Gateway, Frontend):"
-echo "    - Prisma Client généré -> */libs/"
-echo "    - Proto TypeScript -> */libs/proto/"
+echo "    - Prisma Client généré -> */shared/"
+echo "    - Proto TypeScript -> */shared/proto/"
+echo "    - Types TypeScript -> */shared/types/"
 echo "  Python Service (Translator):"
-echo "    - Schema Prisma -> translator/libs/prisma/"
-echo "    - Proto source + Python générés -> translator/libs/proto/"
+echo "    - Schema Prisma -> translator/shared/prisma/"
+echo "    - Proto source + Python générés -> translator/shared/proto/"
 echo "  - Version: $VERSION"
