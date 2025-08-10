@@ -6,10 +6,9 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { translationService, type TranslationResult } from '@/services/translation.service';
-import type { Message, TranslatedMessage, User, TranslationModelType } from '@/types';
+import type { Message, TranslatedMessage, User } from '@/types';
 
 interface TranslationOptions {
-  preferredModel?: TranslationModelType;
   useCache?: boolean;
 }
 
@@ -91,7 +90,7 @@ export const useTranslation = () => {
         targetLanguage,
         translationConfidence: result.confidence || 0.95,
         translatedAt: new Date(),
-        translationModel: options.preferredModel || 'api-service'
+        translationModel: 'api-service'
       } as TranslatedMessage;
     } catch (error) {
       console.error('Message translation error:', error);
@@ -106,40 +105,11 @@ export const useTranslation = () => {
     }
   }, []);
 
-  // Méthodes simplifiées pour compatibilité
-  const loadModel = useCallback(async (model: TranslationModelType): Promise<boolean> => {
-    // Service API - modèles toujours disponibles
-    return true;
-  }, []);
-
-  const isModelLoaded = useCallback((model: TranslationModelType): boolean => {
-    // Service API - modèles toujours disponibles
-    return true;
-  }, []);
-
-  const getLoadedModels = useCallback((): TranslationModelType[] => {
-    // Service API - retourner un modèle générique
-    return ['MT5_SMALL'];
-  }, []);
-
-  const getCacheStats = useCallback(() => {
-    // Service API - pas de statistiques de cache local
-    return {
-      size: 0,
-      totalTranslations: 0,
-      hitRate: 0
-    };
-  }, []);
-
   return {
     ...state,
     translateText,
     translate: translateText, // Alias pour compatibilité
     translateMessage,
-    abortTranslation,
-    loadModel,
-    isModelLoaded,
-    getLoadedModels,
-    getCacheStats
+    abortTranslation
   };
 };

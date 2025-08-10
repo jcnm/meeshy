@@ -37,24 +37,6 @@ interface MeeshyConfig {
     expiresIn: string;
   };
   
-  // ML Models
-  models: {
-    basic: string;
-    medium: string;
-    premium: string;
-    path: string;
-  };
-  
-  // Performance
-  performance: {
-    batchSize: number;
-    gpuMemoryFraction: number;
-    timeout: number;
-    maxTextLength: number;
-    concurrentTranslations: number;
-    workers: number;
-  };
-  
   // Langues
   languages: {
     default: string;
@@ -120,22 +102,6 @@ export const config: MeeshyConfig = {
   jwt: {
     secret: process.env.JWT_SECRET || 'meeshy-dev-secret-key-change-in-production',
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  },
-  
-  models: {
-    basic: process.env.BASIC_MODEL || 'mt5-small',
-    medium: process.env.MEDIUM_MODEL || 'nllb-200-distilled-600M',
-    premium: process.env.PREMIUM_MODEL || 'nllb-200-distilled-1.3B',
-    path: process.env.MODELS_PATH || '/Users/smpceo/Downloads/Meeshy/meeshy/public/models',
-  },
-  
-  performance: {
-    batchSize: parseInt(process.env.ML_BATCH_SIZE || '8'),
-    gpuMemoryFraction: parseFloat(process.env.GPU_MEMORY_FRACTION || '0.8'),
-    timeout: parseInt(process.env.TRANSLATION_TIMEOUT || '30'),
-    maxTextLength: parseInt(process.env.MAX_TEXT_LENGTH || '1000'),
-    concurrentTranslations: parseInt(process.env.CONCURRENT_TRANSLATIONS || '10'),
-    workers: parseInt(process.env.WORKERS || '4'),
   },
   
   languages: {

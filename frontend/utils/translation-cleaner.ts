@@ -12,9 +12,9 @@ export function cleanTranslationOutput(text: string): string {
   if (!text) return '';
   
   return text
-    // Nettoyer les tokens extra_id de MT5
+    // Nettoyer les tokens spéciaux de modèles de traduction
     .replace(/<extra_id_\d+>/g, '')
-    // Nettoyer les caractères spéciaux de tokenisation NLLB
+    // Nettoyer les caractères spéciaux de tokenisation
     .replace(/▁/g, ' ')
     // Nettoyer les tokens d'ouverture et fermeture
     .replace(/<pad>|<\/pad>/g, '')

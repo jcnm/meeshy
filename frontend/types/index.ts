@@ -1,70 +1,18 @@
 export type UserRole = 'BIGBOSS' | 'ADMIN' | 'MODO' | 'AUDIT' | 'ANALYST' | 'USER';
 
-// Import des types de modèles depuis la configuration unifiée
-import type {
-  TranslationModelType,
-  ModelCost
-} from '@/lib/unified-model-config';
+// ===== EXPORT DES NOUVEAUX TYPES SOCKET.IO =====
+export * from './socketio';
 
-export interface UserPermissions {
-  canAccessAdmin: boolean;
-  canManageUsers: boolean;
-  canManageGroups: boolean;
-  canManageConversations: boolean;
-  canViewAnalytics: boolean;
-  canModerateContent: boolean;
-  canViewAuditLogs: boolean;
-  canManageNotifications: boolean;
-  canManageTranslations: boolean;
-}
+// Import explicite pour éviter les conflits
+import type { Message, User, UserPermissions, TranslatedMessage } from './socketio';
 
-export interface User {
-  id: string;
-  username: string;
-  firstName?: string;
-  lastName?: string;
-  displayName?: string;
-  email: string;
-  phoneNumber?: string;
-  role: UserRole;
-  permissions: UserPermissions;
-  systemLanguage: string;
-  regionalLanguage: string;
-  customDestinationLanguage?: string;
-  autoTranslateEnabled: boolean;
-  translateToSystemLanguage: boolean;
-  translateToRegionalLanguage: boolean;
-  useCustomDestination: boolean;
-  isOnline: boolean;
-  avatar?: string;
-  lastSeen?: Date;
-  createdAt: Date;
-  lastActiveAt: Date;
-}
-
-export interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  senderName?: string;
-  senderAvatar?: string;
-  content: string;
-  originalLanguage: string;
-  isEdited: boolean;
-  isDeleted?: boolean;
-  editedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  sender: User;
-}
+// ===== TYPES COMPLÉMENTAIRES =====
 
 export interface Translation {
   language: string;
   content: string;
   flag: string;
   createdAt: Date;
-  modelUsed?: TranslationModelType;
-  modelCost?: ModelCost;
 }
 
 // Interface pour les traductions enrichies des bulles de message
@@ -83,21 +31,6 @@ export interface TranslationCache {
   targetLanguage: string;
   translatedMessage: string;
   timestamp: Date;
-  modelUsed: TranslationModelType;
-  modelCost: ModelCost;
-}
-
-export interface TranslatedMessage extends Message {
-  originalContent?: string;
-  translatedContent?: string;
-  targetLanguage?: string;
-  isTranslated?: boolean;
-  isTranslating?: boolean;
-  showingOriginal?: boolean;
-  translationError?: string;
-  translationFailed?: boolean;
-  translations?: Translation[];
-  modelUsed?: TranslationModelType;
 }
 
 export interface ChatRoom {
@@ -112,26 +45,6 @@ export interface SocketResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-
-// Import des types de modèles depuis la configuration unifiée
-export type {
-  TranslationModelType,
-  ModelCost,
-  ModelFamily,
-  ModelQuality,
-  ModelPerformance,
-  UnifiedModelConfig
-} from '@/lib/unified-model-config';
-
-// Export de la configuration unifiée pour compatibilité
-export {
-  UNIFIED_TRANSLATION_MODELS as TRANSLATION_MODELS,
-  getModelConfig,
-  getModelsByFamily,
-  recommendModel,
-  getCompatibleModels,
-  calculateTotalCost
-} from '@/lib/unified-model-config';
 
 export interface LanguageCode {
   code: string;
@@ -271,7 +184,7 @@ export interface Group {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'message' | 'group_invite' | 'conversation_invite' | 'system' | 'translation_error' | 'model_update' | 'user_joined' | 'user_left' | 'typing';
+  type: 'message' | 'group_invite' | 'conversation_invite' | 'system' | 'translation_error' | 'user_joined' | 'user_left' | 'typing';
   title: string;
   message: string;
   isRead: boolean;
@@ -302,14 +215,6 @@ export interface SocketEvent {
   userId?: string;
   conversationId?: string;
   groupId?: string;
-}
-
-export interface TypingEvent {
-  userId: string;
-  conversationId: string;
-  isTyping: boolean;
-  username: string;
-  timestamp: string;
 }
 
 export interface PresenceEvent {

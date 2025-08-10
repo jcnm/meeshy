@@ -1,10 +1,9 @@
 /**
- * Système de traduction unifié - Intégration avec HuggingFaceTranslationService
- * Maintient la compatibilité avec l'API existante tout en utilisant la nouvelle architecture
+ * Système de traduction unifié - Intégration avec le service API
+ * Maintient la compatibilité avec l'API existante
  */
 
 import { translationService } from '@/services/translation.service';
-import { selectBestModel } from '@/lib/unified-model-config';
 
 // Service de traduction global
 // const translationService = translationService; // Déjà importé
@@ -149,10 +148,6 @@ export async function translateMessage(
   }
 
   try {
-    // Sélectionner le meilleur modèle selon la longueur du message
-    const modelType = selectBestModel(text.length);
-    console.log(`🤖 Utilisation du modèle: ${modelType} pour "${text.substring(0, 50)}..."`);
-    
     // Utiliser le service API pour la traduction
     const result = await translationService.translateText({
       text, 
