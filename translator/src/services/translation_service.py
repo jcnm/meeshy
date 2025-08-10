@@ -36,8 +36,8 @@ except ImportError:
     LANGDETECT_AVAILABLE = False
 
 from config.settings import get_settings, get_model_language_code, get_iso_language_code
-from .cache_service import CacheService
-from .database_service import DatabaseService
+from services.cache_service import CacheService
+from services.database_service_temp import DatabaseService  # Utilisation temporaire
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +172,14 @@ class TranslationService:
                 models_to_load.append(model_name)
         
         logger.info(f"� Chargement de TOUS les modèles: {models_to_load}")
+        logger.info(f"🗂️ Chemin des modèles: {self.settings.models_path}")
+        
+        # Vérifier l'existence du chemin des modèles
+        models_path = Path(self.settings.models_path)
+        if not models_path.exists():
+            logger.error(f"❌ Le chemin des modèles n'existe pas: {models_path}")
+            logger.error(f"   Répertoire courant: {os.getcwd()}")
+            raise FileNotFoundError(f"Le répertoire des modèles n'existe pas: {models_path}")
         
         # Vérifier l'espace disque pour le modèle 1.3B
         import shutil

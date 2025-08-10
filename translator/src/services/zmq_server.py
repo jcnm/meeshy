@@ -165,6 +165,11 @@ class ZMQTranslationServer:
         
         logger.info("✅ Serveur ZMQ arrêté")
     
+    @property
+    def is_running(self) -> bool:
+        """Vérifie si le serveur ZMQ est en cours d'exécution"""
+        return self.running and self.socket is not None
+    
     async def health_check(self) -> bool:
         """Vérifie si le serveur ZMQ fonctionne"""
-        return self.running and self.socket is not None
+        return self.is_running

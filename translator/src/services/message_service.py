@@ -6,7 +6,7 @@ Interface avec la base de données Prisma
 import logging
 from typing import Dict, Any, Optional, List
 from datetime import datetime
-from .database_service import DatabaseService
+from services.database_service_temp import DatabaseService  # Utilisation temporaire
 
 logger = logging.getLogger(__name__)
 

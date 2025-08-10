@@ -5,14 +5,40 @@ Interface de connexion et test de la base de données pour le service Translator
 
 import logging
 import asyncio
+import importlib.util
 from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
 import sys
 import os
 
-# Import du client Prisma généré
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../generated'))
-from client import Prisma
+# Import du client Prisma généré de manière sécurisée
+import importlib.util
+generated_path = os.path.join(os.path.dirname(__file__), '../../generated')
+
+def import_prisma_client():
+    """Importe le client Prisma sans polluer le PYTHONPATH global"""
+    # Sauvegarder le sys.path actuel
+    original_path = sys.path.copy()
+    
+    try:
+        # Ajouter temporairement le chemin generated
+        if generated_path not in sys.path:
+            sys.path.insert(0, generated_path)
+        
+        # Importer le client
+        spec = importlib.util.spec_from_file_location("client", os.path.join(generated_path, "client.py"))
+        client_module = importlib.util.module_from_spec(spec)
+        
+        # Exécuter le module avec le PYTHONPATH élargi
+        spec.loader.exec_module(client_module)
+        return client_module.Prisma
+        
+    finally:
+        # Restaurer le sys.path original
+        sys.path[:] = original_path
+
+# Importer Prisma de manière sécurisée
+Prisma = import_prisma_client()
 
 logger = logging.getLogger(__name__)
 
