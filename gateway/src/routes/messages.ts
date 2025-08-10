@@ -1,5 +1,4 @@
 import { FastifyInstance, FastifyRequest, FastifyReply, RouteGenericInterface } from 'fastify';
-import '../types/fastify'; // Import types to extend Fastify interface
 
 export async function messageRoutes(fastify: FastifyInstance): Promise<void> {
   
