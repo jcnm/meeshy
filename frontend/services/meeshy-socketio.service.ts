@@ -7,62 +7,17 @@
 
 import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
-import type { Message, User } from '@/types';
-
-interface SocketIOMessage {
-  id: string;
-  conversationId: string;
-  senderId?: string;
-  content: string;
-  originalLanguage: string;
-  messageType: string;
-  isEdited: boolean;
-  isDeleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  sender?: User;
-}
-
-interface TypingEvent {
-  userId: string;
-  username: string;
-  conversationId: string;
-}
-
-interface UserStatusEvent {
-  userId: string;
-  username: string;
-  isOnline: boolean;
-}
-
-interface TranslationEvent {
-  messageId: string;
-  translations: any[];
-}
-
-interface ServerToClientEvents {
-  'message:new': (message: SocketIOMessage) => void;
-  'message:edited': (message: SocketIOMessage) => void;
-  'message:deleted': (data: { messageId: string; conversationId: string }) => void;
-  'message:translation': (data: TranslationEvent) => void;
-  'typing:start': (data: TypingEvent) => void;
-  'typing:stop': (data: TypingEvent) => void;
-  'user:status': (data: UserStatusEvent) => void;
-  'conversation:joined': (data: { conversationId: string; userId: string }) => void;
-  'conversation:left': (data: { conversationId: string; userId: string }) => void;
-  'error': (data: { message: string; code?: string }) => void;
-}
-
-interface ClientToServerEvents {
-  'message:send': (data: { conversationId: string; content: string }, callback?: (response: any) => void) => void;
-  'message:edit': (data: { messageId: string; content: string }, callback?: (response: any) => void) => void;
-  'message:delete': (data: { messageId: string }, callback?: (response: any) => void) => void;
-  'conversation:join': (data: { conversationId: string }) => void;
-  'conversation:leave': (data: { conversationId: string }) => void;
-  'typing:start': (data: { conversationId: string }) => void;
-  'typing:stop': (data: { conversationId: string }) => void;
-  'user:status': (data: { isOnline: boolean }) => void;
-}
+import type { 
+  Message, 
+  User,
+  SocketIOMessage,
+  TypingEvent,
+  UserStatusEvent,
+  TranslationEvent,
+  ServerToClientEvents,
+  ClientToServerEvents,
+  SocketIOResponse
+} from '@/types';
 
 class MeeshySocketIOService {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
@@ -300,9 +255,9 @@ class MeeshySocketIOService {
       senderId: socketMessage.senderId || '',
       content: socketMessage.content,
       originalLanguage: socketMessage.originalLanguage,
+      messageType: socketMessage.messageType,
       isEdited: socketMessage.isEdited,
       isDeleted: socketMessage.isDeleted,
-      editedAt: socketMessage.isEdited ? socketMessage.updatedAt : undefined,
       createdAt: socketMessage.createdAt,
       updatedAt: socketMessage.updatedAt,
       sender: socketMessage.sender || {
@@ -310,30 +265,24 @@ class MeeshySocketIOService {
         username: 'Utilisateur inconnu',
         firstName: '',
         lastName: '',
-        displayName: '',
+        displayName: 'Utilisateur inconnu',
         email: '',
         phoneNumber: '',
         role: 'USER',
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false
-        },
         systemLanguage: 'fr',
         regionalLanguage: 'fr',
+        customDestinationLanguage: undefined,
         autoTranslateEnabled: true,
         translateToSystemLanguage: true,
         translateToRegionalLanguage: false,
         useCustomDestination: false,
         isOnline: false,
+        avatar: undefined,
+        lastSeen: new Date(),
         createdAt: new Date(),
-        lastActiveAt: new Date()
+        lastActiveAt: new Date(),
+        isActive: true,
+        updatedAt: new Date()
       }
     };
   }

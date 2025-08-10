@@ -669,9 +669,11 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         translateToRegionalLanguage: false,
         useCustomDestination: false,
         isOnline: true,
+        isActive: true,
         lastSeen: new Date(),
         createdAt: new Date(),
-        lastActiveAt: new Date()
+        lastActiveAt: new Date(),
+        updatedAt: new Date()
       },
       { 
         id: '2', 
@@ -699,9 +701,11 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
         translateToRegionalLanguage: false,
         useCustomDestination: false,
         isOnline: true,
+        isActive: true,
         lastSeen: new Date(),
         createdAt: new Date(),
-        lastActiveAt: new Date()
+        lastActiveAt: new Date(),
+        updatedAt: new Date()
       }
     ]);
   }, []);

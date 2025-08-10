@@ -1,4 +1,5 @@
 import { apiService } from './api.service';
+import { socketIOUserToUser } from '@/utils/user-adapter';
 import type { 
   Conversation, 
   Message, 
@@ -72,9 +73,11 @@ export class ConversationsService {
       useCustomDestination: false,
       isOnline: false,
       avatar: undefined,
-      lastSeen: undefined,
+      lastSeen: new Date(),
       createdAt: new Date(),
       lastActiveAt: new Date(),
+      isActive: true,
+      updatedAt: new Date(),
     };
     
     return {
@@ -83,44 +86,12 @@ export class ConversationsService {
       senderId: String(msg.senderId),
       conversationId: String(msg.conversationId),
       originalLanguage: String(msg.originalLanguage) || 'fr',
+      messageType: String(msg.messageType) || 'text',
       isEdited: Boolean(msg.isEdited),
       isDeleted: Boolean(msg.isDeleted),
-      editedAt: msg.editedAt ? new Date(String(msg.editedAt)) : undefined,
       createdAt: new Date(String(msg.createdAt)),
       updatedAt: new Date(String(msg.updatedAt)),
-      sender: sender ? {
-        id: String(sender.id),
-        username: String(sender.username),
-        firstName: sender.firstName as string,
-        lastName: sender.lastName as string,
-        displayName: sender.displayName as string,
-        email: String(sender.email),
-        phoneNumber: sender.phoneNumber as string,
-        role: (sender.role as UserRole) || 'USER',
-        permissions: (sender.permissions as UserPermissions) || {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: String(sender.systemLanguage) || 'fr',
-        regionalLanguage: String(sender.regionalLanguage) || 'fr',
-        customDestinationLanguage: sender.customDestinationLanguage as string,
-        autoTranslateEnabled: Boolean(sender.autoTranslateEnabled),
-        translateToSystemLanguage: Boolean(sender.translateToSystemLanguage),
-        translateToRegionalLanguage: Boolean(sender.translateToRegionalLanguage),
-        useCustomDestination: Boolean(sender.useCustomDestination),
-        isOnline: Boolean(sender.isOnline),
-        avatar: sender.avatar as string,
-        lastSeen: sender.lastSeen ? new Date(String(sender.lastSeen)) : undefined,
-        createdAt: new Date(String(sender.createdAt)),
-        lastActiveAt: new Date(String(sender.lastActiveAt)),
-      } : defaultSender
+      sender: sender ? socketIOUserToUser(sender as any) : defaultSender
     };
   }
 
@@ -151,39 +122,7 @@ export class ConversationsService {
           userId: String(participant.userId),
           joinedAt: new Date(String(participant.joinedAt)),
           role: (participant.role as 'ADMIN' | 'MEMBER') || 'MEMBER',
-          user: {
-            id: String(user.id),
-            username: String(user.username),
-            firstName: user.firstName as string,
-            lastName: user.lastName as string,
-            displayName: user.displayName as string,
-            email: String(user.email),
-            phoneNumber: user.phoneNumber as string,
-            role: (user.role as UserRole) || 'USER',
-            permissions: (user.permissions as UserPermissions) || {
-              canAccessAdmin: false,
-              canManageUsers: false,
-              canManageGroups: false,
-              canManageConversations: false,
-              canViewAnalytics: false,
-              canModerateContent: false,
-              canViewAuditLogs: false,
-              canManageNotifications: false,
-              canManageTranslations: false,
-            },
-            systemLanguage: String(user.systemLanguage) || 'fr',
-            regionalLanguage: String(user.regionalLanguage) || 'fr',
-            customDestinationLanguage: user.customDestinationLanguage as string,
-            autoTranslateEnabled: Boolean(user.autoTranslateEnabled),
-            translateToSystemLanguage: Boolean(user.translateToSystemLanguage),
-            translateToRegionalLanguage: Boolean(user.translateToRegionalLanguage),
-            useCustomDestination: Boolean(user.useCustomDestination),
-            isOnline: Boolean(user.isOnline),
-            avatar: user.avatar as string,
-            lastSeen: user.lastSeen ? new Date(String(user.lastSeen)) : undefined,
-            createdAt: new Date(String(user.createdAt)),
-            lastActiveAt: new Date(String(user.lastActiveAt)),
-          }
+          user: socketIOUserToUser(user as any)
         };
       }) : [],
       lastMessage: conv.lastMessage ? this.transformMessageData(conv.lastMessage) : undefined,

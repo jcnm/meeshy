@@ -1,4 +1,5 @@
 import { UserRole, UserPermissions, User, DEFAULT_PERMISSIONS, ROLE_HIERARCHY } from '@/types';
+import { getDefaultPermissions } from '@/utils/user-adapter';
 
 /**
  * Service pour gérer les rôles et permissions utilisateur
@@ -8,7 +9,9 @@ export class PermissionsService {
    * Vérifie si un utilisateur a une permission spécifique
    */
   static hasPermission(user: User, permission: keyof UserPermissions): boolean {
-    return user.permissions[permission] === true;
+    // Générer les permissions basées sur le rôle au lieu d'utiliser user.permissions
+    const userPermissions = getDefaultPermissions(user.role as UserRole);
+    return userPermissions[permission] === true;
   }
 
   /**
@@ -22,7 +25,7 @@ export class PermissionsService {
    * Vérifie si un utilisateur a un rôle spécifique ou supérieur
    */
   static hasRoleOrHigher(user: User, requiredRole: UserRole): boolean {
-    const userLevel = ROLE_HIERARCHY[user.role];
+    const userLevel = ROLE_HIERARCHY[user.role as UserRole];
     const requiredLevel = ROLE_HIERARCHY[requiredRole];
     return userLevel >= requiredLevel;
   }
@@ -38,8 +41,8 @@ export class PermissionsService {
     if (!this.hasPermission(manager, 'canManageUsers')) return false;
 
     // Vérifie la hiérarchie des rôles
-    const managerLevel = ROLE_HIERARCHY[manager.role];
-    const targetLevel = ROLE_HIERARCHY[target.role];
+    const managerLevel = ROLE_HIERARCHY[manager.role as UserRole];
+    const targetLevel = ROLE_HIERARCHY[target.role as UserRole];
     
     return managerLevel > targetLevel;
   }
@@ -57,7 +60,7 @@ export class PermissionsService {
   static canAssignRole(manager: User, targetRole: UserRole): boolean {
     if (!this.hasPermission(manager, 'canManageUsers')) return false;
 
-    const managerLevel = ROLE_HIERARCHY[manager.role];
+    const managerLevel = ROLE_HIERARCHY[manager.role as UserRole];
     const targetLevel = ROLE_HIERARCHY[targetRole];
 
     // Ne peut assigner que des rôles inférieurs au sien
@@ -70,7 +73,7 @@ export class PermissionsService {
   static getAssignableRoles(manager: User): UserRole[] {
     if (!this.hasPermission(manager, 'canManageUsers')) return [];
 
-    const managerLevel = ROLE_HIERARCHY[manager.role];
+    const managerLevel = ROLE_HIERARCHY[manager.role as UserRole];
     
     return Object.entries(ROLE_HIERARCHY)
       .filter(([, level]) => level < managerLevel)
@@ -81,7 +84,7 @@ export class PermissionsService {
   /**
    * Obtient le nom d'affichage d'un rôle
    */
-  static getRoleDisplayName(role: UserRole): string {
+  static getRoleDisplayName(role: UserRole | string): string {
     const roleNames: Record<UserRole, string> = {
       BIGBOSS: 'Super Administrateur',
       ADMIN: 'Administrateur',
@@ -91,7 +94,7 @@ export class PermissionsService {
       USER: 'Utilisateur',
     };
 
-    return roleNames[role];
+    return roleNames[role as UserRole] || role;
   }
 
   /**
@@ -217,7 +220,7 @@ export class PermissionsService {
 
     return {
       role: this.getRoleDisplayName(user.role),
-      level: ROLE_HIERARCHY[user.role],
+      level: ROLE_HIERARCHY[user.role as UserRole],
       permissions,
       restrictions,
     };

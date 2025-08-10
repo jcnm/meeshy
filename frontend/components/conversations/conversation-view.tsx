@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
+import { TranslationData } from '../../shared/types';
 import { MessageBubble } from './message-bubble';
 import { useTranslation } from '@/hooks/use-translation';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
@@ -85,18 +86,23 @@ export function ConversationView({
       translations: translated?.translations ?? [],
       translationFailed: translated?.translationFailed ?? false,
       sender: sender || {
-        id: message.senderId,
+        id: message.senderId || 'unknown',
         username: 'Utilisateur inconnu',
+        firstName: 'Utilisateur',
+        lastName: 'Inconnu',
         email: '',
         displayName: 'Utilisateur inconnu',
         avatar: '',
         isOnline: false,
+        lastSeen: new Date(),
         systemLanguage: 'fr',
         regionalLanguage: 'fr',
         autoTranslateEnabled: false,
         translateToSystemLanguage: false,
         translateToRegionalLanguage: false,
         useCustomDestination: false,
+        isActive: true,
+        deactivatedAt: undefined,
         role: 'USER' as const,
         permissions: {
           canAccessAdmin: false,
@@ -110,7 +116,8 @@ export function ConversationView({
           canManageTranslations: false,
         },
         createdAt: new Date(),
-        lastActiveAt: new Date()
+        lastActiveAt: new Date(),
+        updatedAt: new Date()
       },
     };
   };
@@ -141,7 +148,7 @@ export function ConversationView({
       const currentTranslated = translatedMessages.get(messageId);
       
       // Si déjà traduit dans cette langue et pas de force-retranslation, basculer l'affichage
-      if (currentTranslated?.translations?.some(t => t.language === targetLanguage) && !forceRetranslate) {
+      if (currentTranslated?.translations?.some(t => t.targetLanguage === targetLanguage) && !forceRetranslate) {
         // Basculer entre original et traduction
         const currentlyShowingOriginal = showingOriginal.get(messageId) ?? true;
         setShowingOriginal(prev => new Map(prev.set(messageId, !currentlyShowingOriginal)));
@@ -170,21 +177,58 @@ export function ConversationView({
       const existingTranslations = existingTranslated?.translations || [];
       
       // Retirer l'ancienne traduction dans cette langue si elle existe
-      const filteredTranslations = existingTranslations.filter(t => t.language !== targetLanguage);
+      const filteredTranslations = existingTranslations.filter(t => t.targetLanguage !== targetLanguage);
       
-      // Ajouter la nouvelle traduction avec drapeau
-      const flag = SUPPORTED_LANGUAGES.find(lang => lang.code === targetLanguage)?.flag || '🌐';
-      const newTranslation: Translation = {
-        language: targetLanguage,
-        content: translatedMessage?.translatedContent || message.content,
-        flag,
-        createdAt: new Date(),
-        modelUsed: translatedMessage?.modelUsed
+      // Ajouter la nouvelle traduction
+      const newTranslation: TranslationData = {
+        messageId: messageId,
+        sourceLanguage: message.originalLanguage || 'fr',
+        targetLanguage: targetLanguage,
+        translatedContent: translatedMessage?.translatedContent || message.content,
+        translationModel: 'MT5_SMALL',
+        cacheKey: `${messageId}-${targetLanguage}`,
+        cached: false
       };
+      
+      const messageSender = conversation.participants?.find(p => p.userId === message.senderId)?.user;
       
       const updatedTranslatedMessage: TranslatedMessage = {
         ...message,
         ...translatedMessage,
+        sender: messageSender || {
+          id: message.senderId || 'unknown',
+          username: 'Utilisateur inconnu',
+          firstName: 'Utilisateur',
+          lastName: 'Inconnu',
+          email: '',
+          displayName: 'Utilisateur inconnu',
+          avatar: '',
+          isOnline: false,
+          lastSeen: new Date(),
+          systemLanguage: 'fr',
+          regionalLanguage: 'fr',
+          autoTranslateEnabled: false,
+          translateToSystemLanguage: false,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isActive: true,
+          deactivatedAt: undefined,
+          role: 'USER',
+          permissions: {
+            canAccessAdmin: false,
+            canManageUsers: false,
+            canManageGroups: false,
+            canManageConversations: false,
+            canViewAnalytics: false,
+            canModerateContent: false,
+            canViewAuditLogs: false,
+            canManageNotifications: false,
+            canManageTranslations: false,
+          },
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+          updatedAt: new Date()
+        },
         translations: [...filteredTranslations, newTranslation],
         isTranslating: false
       };

@@ -25,6 +25,7 @@ import { conversationsService } from '@/services/conversations.service';
 import { MessageBubble } from '@/components/conversations/message-bubble';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { translationService } from '@/services/translation.service';
+import { socketIOUserToUser, createDefaultUser } from '@/utils/user-adapter';
 import { cn } from '@/lib/utils';
 
 interface GlobalConversationPageProps {
@@ -100,6 +101,7 @@ export function GlobalConversationPage({ user }: GlobalConversationPageProps) {
           response.messages.map(async (msg: Message) => {
             const translatedMsg: TranslatedMessage = {
               ...msg,
+              sender: msg.sender ? socketIOUserToUser(msg.sender) : createDefaultUser(msg.senderId),
               isTranslated: false,
               isTranslating: false,
               showingOriginal: true,
@@ -139,6 +141,7 @@ export function GlobalConversationPage({ user }: GlobalConversationPageProps) {
           response.messages.map(async (msg: Message) => {
             const translatedMsg: TranslatedMessage = {
               ...msg,
+              sender: msg.sender ? socketIOUserToUser(msg.sender) : createDefaultUser(msg.senderId),
               isTranslated: false,
               isTranslating: false,
               showingOriginal: true,
@@ -235,6 +238,7 @@ export function GlobalConversationPage({ user }: GlobalConversationPageProps) {
       if (response) {
         const newMsg: TranslatedMessage = {
           ...response,
+          sender: response.sender ? socketIOUserToUser(response.sender) : createDefaultUser(response.senderId),
           isTranslated: false,
           isTranslating: false,
           showingOriginal: true,

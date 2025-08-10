@@ -18,21 +18,43 @@ import {
   Link2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Conversation, Message, TranslatedMessage } from '@/types';
+import type { 
+  Conversation, 
+  SocketIOMessage as Message, 
+  TranslationData,
+  User,
+  SocketIOUser 
+} from '@/types';
 import { conversationsService } from '@/services/conversations.service';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { cn } from '@/lib/utils';
 import { translationService } from '@/services/translation.service';
-import { type TranslationModelType } from '@/lib/unified-model-config';
-import { getAllActiveModels, ACTIVE_MODELS, getModelConfig } from '@/lib/unified-model-config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
-import { TranslationPerformanceTips } from '@/components/translation/translation-performance-tips';
-import { SystemPerformanceMonitor } from '@/components/translation/system-performance-monitor';
 import { cleanTranslationOutput } from '@/utils/translation-cleaner';
+import { socketIOUserToUser, createDefaultUser } from '@/utils/user-adapter';
+import { 
+  translationDataToBubbleTranslation, 
+  getUserTranslation,
+  type BubbleTranslation 
+} from '@/utils/translation-adapter';
+
+// Alias pour la compatibilité avec le code existant
+type TranslatedMessage = Message & {
+  translation?: BubbleTranslation;
+  originalContent?: string;
+  translatedContent?: string;
+  targetLanguage?: string;
+  isTranslated?: boolean;
+  isTranslating?: boolean;
+  showingOriginal?: boolean;
+  translationError?: string;
+  translationFailed?: boolean;
+  translations?: TranslationData[];
+};
 // Supprimé: import { pipeline, env } from '@xenova/transformers';
 // Supprimé: env.allowLocalModels = false; // Skip check for models hosted locally
 
@@ -64,7 +86,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
 
   // États de traduction
-  const [selectedTranslationModel, setSelectedTranslationModel] = useState<TranslationModelType>(ACTIVE_MODELS.highModel);
+  const [selectedTranslationModel, setSelectedTranslationModel] = useState<string>('api-service');
 
 const c = console;
 
@@ -262,40 +284,15 @@ const main = async () => {
         translationError: undefined,
         translationFailed: false,
         translations: [{
-          language: targetLanguage,
-          content: cleanTranslationOutput(translationResult.translatedText),
-          flag: '', // Drapeau par défaut
-          modelUsed: selectedTranslationModel,
-          createdAt: new Date()
+          messageId: messageId,
+          sourceLanguage: message.originalLanguage || 'fr',
+          targetLanguage: targetLanguage,
+          translatedContent: cleanTranslationOutput(translationResult.translatedText),
+          translationModel: selectedTranslationModel,
+          cacheKey: `${messageId}-${targetLanguage}`,
+          cached: false
         }],
-        sender: message.sender || {
-          id: message.senderId,
-          username: 'unknown',
-          firstName: 'Utilisateur',
-          lastName: 'Inconnu',
-          email: 'unknown@example.com',
-          role: 'USER',
-          permissions: {
-            canAccessAdmin: false,
-            canManageUsers: false,
-            canManageGroups: false,
-            canManageConversations: false,
-            canViewAnalytics: false,
-            canModerateContent: false,
-            canViewAuditLogs: false,
-            canManageNotifications: false,
-            canManageTranslations: false,
-          },
-          systemLanguage: 'fr',
-          regionalLanguage: 'fr',
-          autoTranslateEnabled: false,
-          translateToSystemLanguage: false,
-          translateToRegionalLanguage: false,
-          useCustomDestination: false,
-          isOnline: false,
-          createdAt: new Date(),
-          lastActiveAt: new Date(),
-        }
+        sender: message.sender ? socketIOUserToUser(message.sender) : createDefaultUser(message.senderId)
       };
 
       // Mettre à jour le message traduit dans la liste
@@ -329,65 +326,6 @@ const main = async () => {
       targetLanguage: user?.systemLanguage || 'fr',
     };
   }, [user?.systemLanguage]);
-
-  const createMockMessages = useCallback((conversationId: string): Message[] => {
-    return [
-      {
-        id: `mock-${conversationId}-1`,
-        content: "Salut ! Comment ça va ?",
-        senderId: 'user1',
-        conversationId,
-        originalLanguage: 'fr',
-        isEdited: false,
-        createdAt: new Date(Date.now() - 3600000), // 1h ago
-        updatedAt: new Date(Date.now() - 3600000),
-        sender: {
-          id: 'user1',
-          username: 'marie',
-          displayName: 'Marie Dubois',
-          email: 'marie@example.com',
-          role: 'USER',
-          permissions: { canAccessAdmin: false, canManageUsers: false, canManageGroups: false, canManageConversations: false, canViewAnalytics: false, canModerateContent: false, canViewAuditLogs: false, canManageNotifications: false, canManageTranslations: false },
-          systemLanguage: 'fr',
-          regionalLanguage: 'fr',
-          autoTranslateEnabled: true,
-          translateToSystemLanguage: true,
-          translateToRegionalLanguage: false,
-          useCustomDestination: false,
-          isOnline: true,
-          createdAt: new Date(),
-          lastActiveAt: new Date()
-        }
-      },
-      {
-        id: `mock-${conversationId}-2`,
-        content: "Très bien ! Et toi ?",
-        senderId: user?.id || 'current-user',
-        conversationId,
-        originalLanguage: 'fr',
-        isEdited: false,
-        createdAt: new Date(Date.now() - 1800000), // 30min ago
-        updatedAt: new Date(Date.now() - 1800000),
-        sender: user || {
-          id: 'current-user',
-          username: 'moi',
-          displayName: 'Moi',
-          email: 'moi@example.com',
-          role: 'USER',
-          permissions: { canAccessAdmin: false, canManageUsers: false, canManageGroups: false, canManageConversations: false, canViewAnalytics: false, canModerateContent: false, canViewAuditLogs: false, canManageNotifications: false, canManageTranslations: false },
-          systemLanguage: 'fr',
-          regionalLanguage: 'fr',
-          autoTranslateEnabled: true,
-          translateToSystemLanguage: true,
-          translateToRegionalLanguage: false,
-          useCustomDestination: false,
-          isOnline: true,
-          createdAt: new Date(),
-          lastActiveAt: new Date()
-        }
-      }
-    ];
-  }, [user]);
 
   // Charger les messages d'une conversation
   const loadMessages = useCallback(async (conversationId: string, isNewConversation = false) => {
@@ -457,23 +395,23 @@ const main = async () => {
       }
     } catch (error) {
       console.error('❌ Erreur lors du chargement des messages:', error);
-      console.log('🔄 Utilisation des messages mock pour le développement');
-
+      
+      // Ne plus utiliser de messages mock, juste afficher l'erreur et laisser vide
+      toast.error('Impossible de charger les messages');
+      
       // Vérifier si cette conversation est toujours celle demandée
       if (selectedConversation?.id !== conversationId) {
         console.log('🚫 Conversation changée pendant l\'erreur, abandon');
         return;
       }
 
-      // Messages mock pour le développement - ne pas afficher d'erreur
-      const mockMessages = createMockMessages(conversationId);
-      setMessages(mockMessages);
-      const convertedMockMessages = mockMessages.map(msg => convertToTranslatedMessage(msg));
-      setTranslatedMessages(convertedMockMessages);
+      // Laisser la liste de messages vide
+      setMessages([]);
+      setTranslatedMessages([]);
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [user, convertToTranslatedMessage, createMockMessages, selectedConversation?.id, messages.length]);
+  }, [user, convertToTranslatedMessage, selectedConversation?.id, messages.length]);
 
   // Charger les données initiales avec optimisations
   const loadData = useCallback(async () => {
@@ -546,53 +484,14 @@ const main = async () => {
         return;
       }
 
-      // Pas de toast d'erreur pour ne pas ralentir l'UI, juste les données mock
-      console.log('🔄 Utilisation des données mock pour le développement');
-
-      // Conversations mock pour le développement (plus rapide)
-      const mockConversations: Conversation[] = [
-        {
-          id: '1',
-          name: 'Conversation de test',
-          type: 'PRIVATE',
-          isGroup: false,
-          isActive: true,
-          participants: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          lastMessage: {
-            id: 'last-msg-1',
-            content: 'Message de test',
-            senderId: 'user1',
-            conversationId: '1',
-            originalLanguage: 'fr',
-            isEdited: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            sender: {
-              id: 'user1',
-              username: 'testuser',
-              displayName: 'Utilisateur Test',
-              email: 'test@example.com',
-              role: 'USER',
-              permissions: { canAccessAdmin: false, canManageUsers: false, canManageGroups: false, canManageConversations: false, canViewAnalytics: false, canModerateContent: false, canViewAuditLogs: false, canManageNotifications: false, canManageTranslations: false },
-              systemLanguage: 'fr',
-              regionalLanguage: 'fr',
-              autoTranslateEnabled: false,
-              translateToSystemLanguage: false,
-              translateToRegionalLanguage: false,
-              useCustomDestination: false,
-              isOnline: true,
-              createdAt: new Date(),
-              lastActiveAt: new Date()
-            }
-          },
-          unreadCount: 0
-        }
-      ];
-
+      // Afficher l'erreur à l'utilisateur
+      toast.error('Impossible de charger les conversations');
+      
+      // Laisser la liste de conversations vide pour utiliser les seeds de la DB
+      setConversations([]);
+      setIsLoading(false);
     }
-  }, [user, searchParams, selectedConversationId, isAuthChecking]);
+  }, [user, searchParams, selectedConversationId, isAuthChecking, router]);
 
   useEffect(() => {
     loadData();
@@ -747,46 +646,25 @@ const main = async () => {
                 </label>
                 <Select
                   value={selectedTranslationModel}
-                  onValueChange={(value) => setSelectedTranslationModel(value as TranslationModelType)}
+                  onValueChange={(value) => setSelectedTranslationModel(value)}
                 >
                   <SelectTrigger className="w-full h-8 text-sm">
                     <SelectValue placeholder="Choisir un modèle" />
                   </SelectTrigger>
                   <SelectContent>
-                    {getAllActiveModels().map((modelType) => {
-                      const config = getModelConfig(modelType);
-                      return (
-                      <SelectItem key={config.name} value={config.name}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: config.color }}
-                          />
-                          <span className="text-sm">{config.displayName}</span>
-                          <Badge variant="outline" className="text-xs px-1 py-0">
-                            {config.parameters}
-                          </Badge>
-                          {/* Supprimé: la vérification de modèle chargé n'est plus nécessaire avec l'API */}
-                          <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
-                            API
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                      );
-                    })}
+                    <SelectItem value="api-service">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full bg-green-500"
+                        />
+                        <span className="text-sm">Service API</span>
+                        <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
+                          Actif
+                        </Badge>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
-
-                {/* Moniteur de performance système */}
-                <SystemPerformanceMonitor />
-
-                {/* Conseils de performance */}
-                <div className="mt-2">
-                  <TranslationPerformanceTips
-                    currentModel={selectedTranslationModel}
-                    textLength={newMessage.length}
-                  />
-                </div>
               </div>
             </div>
 
@@ -955,14 +833,15 @@ const main = async () => {
                         const bubbleMessage = {
                           ...message,
                           originalLanguage: message.originalLanguage || 'fr',
+                          originalContent: message.originalContent || message.content,
                           isTranslated: message.isTranslated || false,
                           translatedFrom: message.isTranslated ? message.originalLanguage : undefined,
                           location: undefined, // Pas de localisation dans les conversations
                           translations: message.translations?.map(t => ({
-                            language: t.language,
-                            content: t.content,
+                            language: t.targetLanguage,
+                            content: t.translatedContent,
                             status: 'completed' as const,
-                            timestamp: t.createdAt,
+                            timestamp: new Date(),
                             confidence: 0.9
                           })) || []
                         };

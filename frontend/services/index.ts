@@ -24,4 +24,4 @@ export { translationService, default as TranslationService } from './translation
 export type { TranslationResult, TranslationRequest, TranslationError } from './translation.service';
 
 // Service mock pour les tests
-export { mockApiService } from './mock-api.service';
+

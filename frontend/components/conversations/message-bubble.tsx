@@ -13,7 +13,8 @@ import {
   Edit,
   RotateCcw,
 } from 'lucide-react';
-import { TranslatedMessage, SUPPORTED_LANGUAGES, TRANSLATION_MODELS } from '@/types';
+import { cn } from '@/lib/utils';
+import { TranslatedMessage, SUPPORTED_LANGUAGES } from '@/types';
 
 interface MessageBubbleProps {
   message: TranslatedMessage;
@@ -49,7 +50,7 @@ export function MessageBubble({
   
   // Languages already translated
   const translatedLanguages = hasTranslations 
-    ? message.translations!.map(t => t.language) 
+    ? message.translations!.map(t => t.targetLanguage) 
     : [];
   
   // Available languages for new translations (TOUTES les langues supportées)
@@ -57,11 +58,6 @@ export function MessageBubble({
   
   // Checks
   const canToggleView = hasTranslations;
-  
-  // Get model color for border
-  const modelBorderColor = message.translations && message.translations.length > 0 && message.translations[0].modelUsed
-    ? TRANSLATION_MODELS[message.translations[0].modelUsed]?.color || 'transparent'
-    : 'transparent';
 
   // Fonction pour nettoyer le contenu de traduction
   const cleanTranslationContent = (content: string): string => {
@@ -144,25 +140,25 @@ export function MessageBubble({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div 
-        className={`relative w-full max-w-xs lg:max-w-md xl:max-w-lg min-h-[80px] ${
-          isOwnMessage 
-            ? 'bg-blue-600 text-white' 
-            : 'bg-white text-gray-900 border border-gray-200'
-        } rounded-xl px-4 py-3 shadow-sm transition-all duration-200 hover:shadow-md`}
+      <div
+        className={cn(
+          "max-w-[70%] px-3 py-2 rounded-lg relative word-wrap break-words transition-all duration-200",
+          isOwnMessage
+            ? "bg-blue-500 text-white rounded-br-sm ml-auto"
+            : "bg-gray-200 text-gray-900 rounded-bl-sm"
+        )}
         style={{
-          borderRight: modelBorderColor !== 'transparent' 
-            ? `3px solid ${modelBorderColor}` 
-            : undefined
+          wordBreak: 'break-word',
+          overflowWrap: 'break-word',
+          hyphens: 'auto',
+          whiteSpace: 'pre-wrap'
         }}
-      >
-        
-        {/* Sender name for received messages */}
+      >        {/* Sender name for received messages */}
         {isReceivedMessage && (
           <p className="text-xs font-medium mb-2 opacity-70">
             {message.sender?.displayName || 
              `${message.sender?.firstName || ''} ${message.sender?.lastName || ''}`.trim() ||
-             message.senderName || 
+             message.sender?.username || 
              'Utilisateur'}
           </p>
         )}
@@ -215,13 +211,13 @@ export function MessageBubble({
                     <>
                       <span>De: {SUPPORTED_LANGUAGES.find(l => l.code === detectedLanguage)?.flag || '🔍'}</span>
                       <span>•</span>
-                      <span>Vers: {SUPPORTED_LANGUAGES.find(l => l.code === message.translations![0].language)?.flag || '?'}</span>
+                      <span>Vers: {SUPPORTED_LANGUAGES.find(l => l.code === message.translations![0].targetLanguage)?.flag || '?'}</span>
                     </>
                   ) : (
                     <>
                       <span>De: {SUPPORTED_LANGUAGES.find(l => l.code === message.originalLanguage)?.flag || '?'}</span>
                       <span>•</span>
-                      <span>Vers: {SUPPORTED_LANGUAGES.find(l => l.code === message.translations![0].language)?.flag || '?'}</span>
+                      <span>Vers: {SUPPORTED_LANGUAGES.find(l => l.code === message.translations![0].targetLanguage)?.flag || '?'}</span>
                     </>
                   )}
                 </div>
@@ -241,15 +237,15 @@ export function MessageBubble({
                 </div>
                 <div className="space-y-1">
                   {message.translations!.map((translation, index) => {
-                      const cleanedTranslation = cleanTranslationContent(translation.content);
+                      const cleanedTranslation = cleanTranslationContent(translation.translatedContent);
                       const displayTranslation = cleanedTranslation || 'Traduction non disponible';
                       
                       return (
                         <div 
-                          key={`${translation.language}-${index}`}
+                          key={`${translation.targetLanguage}-${index}`}
                           className="text-sm opacity-80 flex items-start gap-2"
                         >
-                          <span className="text-base">{translation.flag}:</span>
+                          <span className="text-base">{translation.targetLanguage.toUpperCase()}:</span>
                           <span className="flex-1 leading-relaxed">
                             {displayTranslation}
                           </span>

@@ -24,7 +24,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { User, Conversation, Message, TranslatedMessage, TranslationModelType } from '@/types';
+import { User, Conversation, Message, TranslatedMessage } from '@/types';
 import { MessageBubble } from './message-bubble';
 import { useTranslation } from '@/hooks/use-translation';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
@@ -84,8 +84,10 @@ export function ConversationViewSimple({
       targetLanguage: translated?.targetLanguage,
       translations: translated?.translations || [],
       sender: sender || {
-        id: message.senderId,
+        id: message.senderId || 'unknown',
         username: 'Utilisateur inconnu',
+        firstName: 'Utilisateur',
+        lastName: 'Inconnu',
         email: '',
         displayName: 'Utilisateur inconnu',
         avatar: '',
@@ -99,6 +101,8 @@ export function ConversationViewSimple({
         customDestinationLanguage: undefined,
         lastSeen: new Date(),
         role: 'USER',
+        isActive: true,
+        deactivatedAt: undefined,
         permissions: {
           canAccessAdmin: false,
           canManageUsers: false,
@@ -111,7 +115,8 @@ export function ConversationViewSimple({
           canManageNotifications: false
         },
         createdAt: new Date(),
-        lastActiveAt: new Date()
+        lastActiveAt: new Date(),
+        updatedAt: new Date()
       }
     };
   };
@@ -183,11 +188,13 @@ export function ConversationViewSimple({
         showingOriginal: false,
         translationError: undefined,
         translations: [{
-          language: targetLanguage,
-          content: translatedText,
-          flag: '🌍',
-          modelUsed: 'MT5_SMALL' as TranslationModelType,
-          createdAt: new Date()
+          messageId: messageId,
+          sourceLanguage: message.originalLanguage || 'fr',
+          targetLanguage: targetLanguage,
+          translatedContent: translatedText,
+          translationModel: 'MT5_SMALL',
+          cacheKey: `${messageId}-${targetLanguage}`,
+          cached: false
         }]
       };
 
