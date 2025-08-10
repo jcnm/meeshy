@@ -69,8 +69,8 @@ import {
   LanguageIndicators,
   SidebarLanguageHeader,
   getUserLanguageChoices,
-  resolveUserPreferredLanguage,
-  getUserLanguagePreferences,
+  resolveUserPreferredLanguage as resolveUserLanguage,
+  getUserLanguagePreferences as getUserLanguages,
   type BubbleStreamMessage,
   type BubbleStreamPageProps,
   type LanguageChoice
@@ -81,6 +81,7 @@ import { TrendingSection } from '@/components/common/trending-section';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
+import { detectLanguage } from '@/utils/language-detection';
 import type { User, Message, BubbleTranslation } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
@@ -105,7 +106,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState<string>('fr');
-  const [userLanguage, setUserLanguage] = useState<string>(resolveUserPreferredLanguage());
+  const [userLanguage, setUserLanguage] = useState<string>(resolveUserLanguage(user));
   const [selectedInputLanguage, setSelectedInputLanguage] = useState<string>(user.systemLanguage || 'fr');
   const [languageStats, setLanguageStats] = useState<LanguageStats[]>([]);
   const [isComposingEnabled, setIsComposingEnabled] = useState(true);
@@ -115,46 +116,10 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
   // Langues utilisées par l'utilisateur (basées sur ses préférences)
-  const usedLanguages: string[] = getUserLanguagePreferences();
+  const usedLanguages: string[] = getUserLanguages(user);
 
-  // Obtenir les choix de langues pour l'utilisateur
-  const getLanguageChoices = () => {
-    const choices = [
-      {
-        code: user.systemLanguage || 'fr',
-        name: 'Langue système',
-        description: getLanguageName(user.systemLanguage) || 'Français',
-        flag: getLanguageFlag(user.systemLanguage) || '🇫🇷',
-        isDefault: true
-      }
-    ];
-
-    if (user.regionalLanguage && user.regionalLanguage !== user.systemLanguage) {
-      choices.push({
-        code: user.regionalLanguage,
-        name: 'Langue régionale',
-        description: getLanguageName(user.regionalLanguage) || user.regionalLanguage,
-        flag: getLanguageFlag(user.regionalLanguage) || '🌍',
-        isDefault: false
-      });
-    }
-
-    if (user.customDestinationLanguage && 
-        user.customDestinationLanguage !== user.systemLanguage && 
-        user.customDestinationLanguage !== user.regionalLanguage) {
-      choices.push({
-        code: user.customDestinationLanguage,
-        name: 'Langue personnalisée',
-        description: getLanguageName(user.customDestinationLanguage) || user.customDestinationLanguage,
-        flag: getLanguageFlag(user.customDestinationLanguage) || '🎯',
-        isDefault: false
-      });
-    }
-
-    return choices;
-  };
-
-  const languageChoices = getLanguageChoices();
+  // Obtenir les choix de langues pour l'utilisateur via la fonction centralisée
+  const languageChoices = getUserLanguageChoices(user);
 
   // État pour les utilisateurs en train de taper
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -419,40 +384,31 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, []);
 
-  // Détection automatique de langue (désactivée au profit de la sélection manuelle)
-  // useEffect(() => {
-  //   if (newMessage.trim().length > 10) {
-  //     // Simulation de détection de langue basique
-  //     const detectLanguage = (text: string) => {
-  //       const patterns = {
-  //         fr: /\b(le|la|les|de|du|des|et|ou|un|une|ce|cette|pour|dans|avec|sur|par)\b/gi,
-  //         en: /\b(the|and|or|a|an|this|that|for|in|with|on|by|from|to)\b/gi,
-  //         es: /\b(el|la|los|las|de|del|y|o|un|una|este|esta|para|en|con|por)\b/gi,
-  //         de: /\b(der|die|das|und|oder|ein|eine|dieser|diese|für|in|mit|auf|von)\b/gi,
-  //       };
-
-  //       for (const [lang, pattern] of Object.entries(patterns)) {
-  //         if (pattern.test(text)) {
-  //           return lang;
-  //         }
-  //       }
-  //       return 'fr'; // Par défaut
-  //     };
-
-  //     setDetectedLanguage(detectLanguage(newMessage));
-  //   }
-  // }, [newMessage]);
+  // Détection automatique de langue pour mettre à jour le sélecteur
+  useEffect(() => {
+    if (newMessage.trim().length > 15) { // Seuil plus élevé pour une meilleure détection
+      const detectedLang = detectLanguage(newMessage);
+      setDetectedLanguage(detectedLang);
+      
+      // Mettre à jour automatiquement le sélecteur si la langue détectée est dans les choix disponibles
+      const availableLanguageCodes = languageChoices.map(choice => choice.code);
+      if (detectedLang && availableLanguageCodes.includes(detectedLang) && detectedLang !== selectedInputLanguage) {
+        console.log('🔍 Langue détectée:', detectedLang, 'Mise à jour du sélecteur');
+        setSelectedInputLanguage(detectedLang);
+      }
+    }
+  }, [newMessage, languageChoices, selectedInputLanguage]);
 
   // Mise à jour automatique de la langue sélectionnée si l'utilisateur change
   useEffect(() => {
-    const newUserLanguage = resolveUserPreferredLanguage();
+    const newUserLanguage = resolveUserLanguage(user);
     setUserLanguage(newUserLanguage);
     
     if (selectedInputLanguage !== user.systemLanguage && !languageChoices.find(choice => choice.code === selectedInputLanguage)) {
       // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
-  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, selectedInputLanguage, languageChoices, resolveUserPreferredLanguage]);
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, selectedInputLanguage, languageChoices]);
 
   // Mise à jour des statistiques de langues
   useEffect(() => {
@@ -695,8 +651,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
           translatedMessages,
           messagesNeedingTranslation: messagesNeedingTranslation.length,
           languageAnalysis,
-          userPreferredLanguage: resolveUserPreferredLanguage(),
-          userLanguagePreferences: getUserLanguagePreferences()
+          userPreferredLanguage: resolveUserLanguage(user),
+          userLanguagePreferences: getUserLanguages(user)
         });
         
         toast.success(`📨 ${existingMessages.length} messages chargés (${totalTranslations} traductions, ${messagesNeedingTranslation.length} nécessitent traduction)`);
@@ -721,7 +677,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       console.error('❌ Erreur lors du chargement des messages:', error);
       toast.error('Erreur de connexion lors du chargement des messages');
     }
-  }, [processMessageWithTranslations, getRequiredTranslations, resolveUserPreferredLanguage, getUserLanguagePreferences, user.autoTranslateEnabled]);
+  }, [processMessageWithTranslations, getRequiredTranslations, user.autoTranslateEnabled]);
 
   // Charger les messages existants dès la connexion avec debug amélioré
   useEffect(() => {
@@ -762,13 +718,24 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       // Essayer d'envoyer via le service WebSocket si connecté
       if (connectionStatus.isConnected) {
         try {
-          // TODO: Modifier sendMessageToService pour inclure la langue source (selectedInputLanguage)
-          // Cette langue sera propagée vers la gateway et utilisée comme langue source
-          // après vérification avec le profil utilisateur
+          // Préparer le message avec métadonnées de langue pour transmission
+          const messageWithLanguage = {
+            content: messageContent,
+            sourceLanguage: selectedInputLanguage,
+            detectedLanguage: detectedLanguage,
+            userLanguageChoices: languageChoices.map(c => c.code)
+          };
+          
+          console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
+          
+          // Pour l'instant, nous envoyons juste le contenu
+          // TODO: Modifier useSocketIOMessaging pour accepter les métadonnées de langue
           await sendMessageToService(messageContent);
           console.log('✅ Message envoyé via WebSocket - sera reçu via onNewMessage');
-          // Suppression du toast automatique pour éviter les doublons
-          // Le toast se fera lors de la réception via onNewMessage
+          
+          // Log pour le debug - La langue source sera utilisée côté serveur
+          console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
+          
         } catch (error) {
           console.error('❌ Erreur envoi WebSocket:', error);
           toast.error('Erreur lors de l\'envoi du message');
@@ -1218,6 +1185,14 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
                     placeholder="Langue d'écriture"
                     className="border-gray-200 hover:border-blue-300"
                   />
+                  
+                  {/* Indicateur de langue détectée */}
+                  {detectedLanguage && detectedLanguage !== selectedInputLanguage && newMessage.trim().length > 15 && (
+                    <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+                      <span>🔍</span>
+                      <span>Détecté: {getLanguageName(detectedLanguage)}</span>
+                    </div>
+                  )}
                   
                   {/* Localisation */}
                   {location && (
