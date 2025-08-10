@@ -196,3 +196,7 @@ tsconfig.tsbuildinfo
 # Temporary files
 *.tmp
 *.temp
+
+# Symbolic links conflict (we copy shared types explicitly during build)
+frontend/shared
+gateway/shared-types
