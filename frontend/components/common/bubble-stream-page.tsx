@@ -46,7 +46,6 @@ import {
 // Import des composants modulaires
 import {
   LanguageSelector,
-  LanguageSettings,
   TranslationStats
 } from '@/components/translation';
 
