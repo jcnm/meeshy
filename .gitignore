@@ -10,7 +10,6 @@
 !.yarn/releases
 !.yarn/versions
 backend/node_modules/
-
 # testing
 /coverage
 
@@ -61,6 +60,14 @@ next-env.d.ts
 */**/models/
 */**/venv 
 */**/__pycache__
+*/**/test_venv
+*/**/test_env
+# Python cache
+**/*/*.pyc
+**/*/*.pyo
+**/*/*.pyd
+**/*/__pycache__/
+*.pyc
 */**/node_modules
 */**/dist
 */**/build
