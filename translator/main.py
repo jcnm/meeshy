@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Imports locaux
 try:
-    from services.database_service_temp import DatabaseService  # Utilisation temporaire du service simplifié
+    from services.database_service import DatabaseService
     from services.translation_service import TranslationService
     from services.zmq_server import ZMQTranslationServer
     from api.translation_api import TranslationAPI
