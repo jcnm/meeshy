@@ -5,9 +5,8 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User } from '@/types';
-import { Globe, Brain } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { LanguageSelector } from '@/components/translation/language-selector';
-import { ModelsSettings } from './models-settings';
 
 interface UserSettingsContentProps {
   user: User | null;
@@ -42,14 +41,10 @@ export function UserSettingsContent({ user, localSettings, onSettingUpdate, chil
   return (
     <div className="w-full">
       <Tabs defaultValue="translation" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="translation" className="gap-2">
             <Globe className="h-4 w-4" />
             Traduction
-          </TabsTrigger>
-          <TabsTrigger value="models" className="gap-2">
-            <Brain className="h-4 w-4" />
-            Modèles
           </TabsTrigger>
         </TabsList>
 
@@ -176,10 +171,6 @@ export function UserSettingsContent({ user, localSettings, onSettingUpdate, chil
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="models" className="space-y-4">
-          <ModelsSettings />
         </TabsContent>
       </Tabs>
 

@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
-import { ModelsSettings } from './models-settings';
 import { ThemeSettings } from './theme-settings';
 import { FontSelector } from './font-selector';
 import { TranslationStats } from '@/components/translation/translation-stats';
@@ -68,12 +67,6 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
           </CardContent>
         </Card>
       )
-    },
-    {
-      value: "models",
-      label: "Modèles",
-      icon: <Brain className="h-3 w-3 lg:h-4 lg:w-4" />,
-      content: <ModelsSettings />
     },
     {
       value: "theme",

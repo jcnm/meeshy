@@ -16,7 +16,6 @@ export * from './groups';
 export * from './translation';
 export * from './settings';
 export * from './notifications';
-export * from './models';
 
 // Composants legacy à migrer (temporaire)
 export { NotFoundPage } from './not-found-page';

@@ -17,8 +17,6 @@ import {
 import { User as UserType } from '@/types';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
-import { UnifiedModelSettings } from './real-unified-model-settings';
-import { CacheManager } from '@/components/models/cache-manager';
 import { ThemeSettings } from './theme-settings';
 import { PrivacySettings } from './privacy-settings';
 import { NotificationSettings } from './notification-settings';
@@ -53,18 +51,6 @@ export function ConfigModal({ isOpen, onClose, currentUser, onUserUpdate }: Conf
       label: 'Langues & Traduction',
       icon: <Globe className="h-4 w-4" />,
       component: <LanguageSettings user={currentUser} onUserUpdate={onUserUpdate} />
-    },
-    {
-      id: 'models',
-      label: 'Modèles IA',
-      icon: <Brain className="h-4 w-4" />,
-      component: <UnifiedModelSettings />
-    },
-    {
-      id: 'cache',
-      label: 'Cache & Performance',
-      icon: <Database className="h-4 w-4" />,
-      component: <CacheManager />
     },
     {
       id: 'theme',
