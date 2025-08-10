@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, formatLanguageName } from '@/utils/language-detection';
+import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 
 interface LanguageSelectorProps {
   value: string;
@@ -25,6 +26,7 @@ interface LanguageSelectorProps {
   disabled?: boolean;
   placeholder?: string;
   className?: string;
+  choices?: LanguageChoice[]; // Choix de langues spécifiques ou utilise SUPPORTED_LANGUAGES par défaut
 }
 
 export function LanguageSelector({
@@ -33,11 +35,17 @@ export function LanguageSelector({
   disabled = false,
   placeholder = "Sélectionner une langue...",
   className,
+  choices,
 }: LanguageSelectorProps) {
   const [open, setOpen] = useState(false);
 
-  const selectedLanguage = SUPPORTED_LANGUAGES.find(
-    (language) => language.code === value
+  // Utiliser les choix fournis ou les langues supportées par défaut
+  const availableLanguages = choices 
+    ? choices.map(choice => SUPPORTED_LANGUAGES.find(lang => lang.code === choice.code)).filter(Boolean)
+    : SUPPORTED_LANGUAGES;
+
+  const selectedLanguage = availableLanguages.find(
+    (language) => language?.code === value
   );
 
   return (
@@ -75,24 +83,26 @@ export function LanguageSelector({
           <CommandList>
             <CommandEmpty>Aucune langue trouvée.</CommandEmpty>
             <CommandGroup>
-              {SUPPORTED_LANGUAGES.map((language) => (
+              {availableLanguages.map((language) => (
                 <CommandItem
-                  key={language.code}
-                  value={`${language.name} ${language.nativeName} ${language.code}`}
+                  key={language?.code}
+                  value={`${language?.name} ${language?.nativeName} ${language?.code}`}
                   onSelect={() => {
-                    onValueChange(language.code);
-                    setOpen(false);
+                    if (language?.code) {
+                      onValueChange(language.code);
+                      setOpen(false);
+                    }
                   }}
                   className="cursor-pointer"
                 >
                   <div className="flex items-center justify-between w-full">
                     <span className="flex items-center gap-2">
-                      {formatLanguageName(language.code)}
+                      {language?.code && formatLanguageName(language.code)}
                     </span>
                     <Check
                       className={cn(
                         "h-4 w-4",
-                        value === language.code ? "opacity-100" : "opacity-0"
+                        value === language?.code ? "opacity-100" : "opacity-0"
                       )}
                     />
                   </div>

@@ -384,31 +384,28 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, []);
 
-  // Détection automatique de langue pour mettre à jour le sélecteur
+  // Détection automatique de langue pour affichage informatif uniquement (pas de mise à jour automatique)
   useEffect(() => {
     if (newMessage.trim().length > 15) { // Seuil plus élevé pour une meilleure détection
       const detectedLang = detectLanguage(newMessage);
       setDetectedLanguage(detectedLang);
-      
-      // Mettre à jour automatiquement le sélecteur si la langue détectée est dans les choix disponibles
-      const availableLanguageCodes = languageChoices.map(choice => choice.code);
-      if (detectedLang && availableLanguageCodes.includes(detectedLang) && detectedLang !== selectedInputLanguage) {
-        console.log('🔍 Langue détectée:', detectedLang, 'Mise à jour du sélecteur');
-        setSelectedInputLanguage(detectedLang);
-      }
+      console.log('🔍 Langue détectée:', detectedLang, '(affichage informatif uniquement)');
     }
-  }, [newMessage, languageChoices, selectedInputLanguage]);
+  }, [newMessage]);
 
-  // Mise à jour automatique de la langue sélectionnée si l'utilisateur change
+  // Mise à jour de la langue sélectionnée basée sur les préférences utilisateur uniquement
   useEffect(() => {
     const newUserLanguage = resolveUserLanguage(user);
     setUserLanguage(newUserLanguage);
     
-    if (selectedInputLanguage !== user.systemLanguage && !languageChoices.find(choice => choice.code === selectedInputLanguage)) {
+    // Vérifier si la langue actuellement sélectionnée est encore valide dans les choix disponibles
+    const availableLanguageCodes = languageChoices.map(choice => choice.code);
+    if (!availableLanguageCodes.includes(selectedInputLanguage)) {
       // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
+      console.log('🔄 Langue sélectionnée non disponible, retour à la langue système:', user.systemLanguage);
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
-  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, selectedInputLanguage, languageChoices]);
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, languageChoices, selectedInputLanguage]);
 
   // Mise à jour des statistiques de langues
   useEffect(() => {
@@ -1178,12 +1175,13 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 
                 {/* Indicateurs dans le textarea - Positionnés plus bas pour éviter l'entrelacement */}
                 <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-600 pointer-events-auto">
-                  {/* Sélecteur de langue d'envoi */}
+                  {/* Sélecteur de langue d'envoi - Limité aux choix configurés par l'utilisateur */}
                   <LanguageSelector
                     value={selectedInputLanguage}
                     onValueChange={setSelectedInputLanguage}
                     placeholder="Langue d'écriture"
                     className="border-gray-200 hover:border-blue-300"
+                    choices={languageChoices}
                   />
                   
                   {/* Indicateur de langue détectée */}
