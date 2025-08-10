@@ -22,6 +22,7 @@ import { ZMQTranslationClient } from './services/zmq-translation-client';
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
+import { messageRoutes } from './routes/messages';
 import userPreferencesRoutes from './routes/user-preferences';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
@@ -497,6 +498,9 @@ class MeeshyServer {
     
     // Register conversation routes without prefix
     await this.server.register(conversationRoutes);
+    
+    // Register message routes without /api prefix (directly at root)
+    await this.server.register(messageRoutes);
     
     // Register user preferences routes with /users prefix
     await this.server.register(userPreferencesRoutes, { prefix: '/users' });

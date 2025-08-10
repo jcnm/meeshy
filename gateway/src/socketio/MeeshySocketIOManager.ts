@@ -11,73 +11,21 @@ import { logger } from '../utils/logger';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
-// Types Prisma générés
-type User = {
-  id: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  systemLanguage: string;
-  regionalLanguage: string;
-  customDestinationLanguage?: string;
-  autoTranslateEnabled: boolean;
-  translateToSystemLanguage: boolean;
-  translateToRegionalLanguage: boolean;
-  useCustomDestination: boolean;
-  isOnline: boolean;
-  lastSeen: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
+// Import des types partagés - SUPPRESSION DUPLICATION CODE
+import {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  SocketIOMessage,
+  SocketIOUser,
+  AuthenticatedSocket as BaseAuthenticatedSocket,
+  TranslationEvent,
+  TypingEvent,
+  UserStatusEvent,
+  SocketIOResponse
+} from '../shared-types/socketio-events';
 
-type Message = {
-  id: string;
-  conversationId: string;
-  senderId?: string;
-  content: string;
-  originalLanguage: string;
-  messageType: string;
-  isEdited: boolean;
-  isDeleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  sender?: User;
-};
-
-// Interface pour une connexion Socket.IO authentifiée
-interface AuthenticatedSocket extends Socket {
-  userId: string;
-  username: string;
-  userData: User;
-  connectedAt: Date;
-  currentConversations: Set<string>;
-}
-
-// Events Socket.IO
-interface ServerToClientEvents {
-  'message:new': (message: Message) => void;
-  'message:edited': (message: Message) => void;
-  'message:deleted': (data: { messageId: string; conversationId: string }) => void;
-  'message:translation': (data: { messageId: string; translations: any[] }) => void;
-  'typing:start': (data: { userId: string; username: string; conversationId: string }) => void;
-  'typing:stop': (data: { userId: string; username: string; conversationId: string }) => void;
-  'user:status': (data: { userId: string; username: string; isOnline: boolean }) => void;
-  'conversation:joined': (data: { conversationId: string; userId: string }) => void;
-  'conversation:left': (data: { conversationId: string; userId: string }) => void;
-  'error': (data: { message: string; code?: string }) => void;
-}
-
-interface ClientToServerEvents {
-  'message:send': (data: { conversationId: string; content: string }, callback?: (response: any) => void) => void;
-  'message:edit': (data: { messageId: string; content: string }, callback?: (response: any) => void) => void;
-  'message:delete': (data: { messageId: string }, callback?: (response: any) => void) => void;
-  'conversation:join': (data: { conversationId: string }) => void;
-  'conversation:leave': (data: { conversationId: string }) => void;
-  'typing:start': (data: { conversationId: string }) => void;
-  'typing:stop': (data: { conversationId: string }) => void;
-  'user:status': (data: { isOnline: boolean }) => void;
-}
+// Type étendu pour la gateway qui hérite de Socket.IO
+type AuthenticatedSocket = Socket<ClientToServerEvents, ServerToClientEvents> & BaseAuthenticatedSocket;
 
 export class MeeshySocketIOManager {
   private io!: Server<ClientToServerEvents, ServerToClientEvents>;
@@ -133,9 +81,9 @@ export class MeeshySocketIOManager {
         }
 
         // Ajouter les données utilisateur au socket
-        (socket as AuthenticatedSocket).userId = user.id;
-        (socket as AuthenticatedSocket).username = user.username;
-        (socket as AuthenticatedSocket).userData = {
+        (socket as any).userId = user.id;
+        (socket as any).username = user.username;
+        (socket as any).userData = {
           id: user.id,
           username: user.username,
           firstName: user.firstName,
@@ -153,8 +101,8 @@ export class MeeshySocketIOManager {
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
         };
-        (socket as AuthenticatedSocket).connectedAt = new Date();
-        (socket as AuthenticatedSocket).currentConversations = new Set();
+        (socket as any).connectedAt = new Date();
+        (socket as any).currentConversations = new Set();
 
         next();
       } catch (error) {
@@ -204,10 +152,10 @@ export class MeeshySocketIOManager {
    */
   private setupSocketEventHandlers(socket: AuthenticatedSocket): void {
     // Envoi de message
-    socket.on('message:send', async (data, callback) => {
+    socket.on('message:send', async (data: { conversationId: string; content: string }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => {
       try {
         const result = await this.handleNewMessage(socket, data);
-        callback?.({ success: true, messageId: result.messageId });
+        callback?.({ success: true, data: { messageId: result.messageId } });
       } catch (error) {
         logger.error('Erreur envoi message:', error);
         callback?.({ success: false, error: 'Erreur lors de l\'envoi du message' });
@@ -216,7 +164,7 @@ export class MeeshySocketIOManager {
     });
 
     // Édition de message
-    socket.on('message:edit', async (data, callback) => {
+    socket.on('message:edit', async (data: { messageId: string; content: string }, callback?: (response: SocketIOResponse) => void) => {
       try {
         await this.handleEditMessage(socket, data);
         callback?.({ success: true });
@@ -227,7 +175,7 @@ export class MeeshySocketIOManager {
     });
 
     // Suppression de message
-    socket.on('message:delete', async (data, callback) => {
+    socket.on('message:delete', async (data: { messageId: string }, callback?: (response: SocketIOResponse) => void) => {
       try {
         await this.handleDeleteMessage(socket, data);
         callback?.({ success: true });
@@ -238,26 +186,26 @@ export class MeeshySocketIOManager {
     });
 
     // Rejoindre une conversation
-    socket.on('conversation:join', (data) => {
+    socket.on('conversation:join', (data: { conversationId: string }) => {
       this.handleJoinConversation(socket, data.conversationId);
     });
 
     // Quitter une conversation
-    socket.on('conversation:leave', (data) => {
+    socket.on('conversation:leave', (data: { conversationId: string }) => {
       this.handleLeaveConversation(socket, data.conversationId);
     });
 
     // Événements de frappe
-    socket.on('typing:start', (data) => {
+    socket.on('typing:start', (data: { conversationId: string }) => {
       this.handleTypingStart(socket, data.conversationId);
     });
 
-    socket.on('typing:stop', (data) => {
+    socket.on('typing:stop', (data: { conversationId: string }) => {
       this.handleTypingStop(socket, data.conversationId);
     });
 
     // Statut utilisateur
-    socket.on('user:status', (data) => {
+    socket.on('user:status', (data: { isOnline: boolean }) => {
       this.updateUserOnlineStatus(socket.userId, data.isOnline);
     });
   }
@@ -330,7 +278,7 @@ export class MeeshySocketIOManager {
         createdAt: message.sender.createdAt,
         updatedAt: message.sender.updatedAt
       } : undefined
-    });
+    } as SocketIOMessage);
 
     // Démarrer le processus de traduction en arrière-plan si nécessaire
     this.requestTranslation(message, conversation.members);
@@ -400,7 +348,7 @@ export class MeeshySocketIOManager {
                 cacheKey,
                 cached: false
               }]
-            });
+            } as TranslationEvent);
 
             logger.info(`📤 Traduction émise pour message ${message.id} vers ${targetLang}`);
             
