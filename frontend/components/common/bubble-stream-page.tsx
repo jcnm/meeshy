@@ -42,6 +42,41 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+
+// Import des composants modulaires
+import {
+  LanguageSelector,
+  LanguageSettings,
+  TranslationStats
+} from '@/components/translation';
+
+// Import des constantes centralisées
+import {
+  SUPPORTED_LANGUAGES,
+  MAX_MESSAGE_LENGTH,
+  TOAST_SHORT_DURATION,
+  TOAST_LONG_DURATION,
+  TOAST_ERROR_DURATION,
+  TYPING_CANCELATION_DELAY,
+  getLanguageInfo,
+  getLanguageName,
+  getLanguageFlag,
+  type LanguageStats
+} from '@/lib/constants/languages';
+
+// Import des modules réutilisables extraits
+import {
+  FoldableSection,
+  LanguageIndicators,
+  SidebarLanguageHeader,
+  getUserLanguageChoices,
+  resolveUserPreferredLanguage,
+  getUserLanguagePreferences,
+  type BubbleStreamMessage,
+  type BubbleStreamPageProps,
+  type LanguageChoice
+} from '@/lib/bubble-stream-modules';
+
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -49,174 +84,7 @@ import { useMessageTranslations } from '@/hooks/use-message-translations';
 import type { User, Message, BubbleTranslation } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
-interface LanguageStats {
-  language: string;
-  flag: string;
-  count: number;
-  color: string;
-}
-
-interface BubbleStreamMessage extends Message {
-  location?: string;
-  originalLanguage: string;
-  isTranslated: boolean;
-  translatedFrom?: string;
-  translations: BubbleTranslation[];
-  originalContent: string; // Contenu original de l'auteur
-}
-
-interface BubbleStreamPageProps {
-  user: User;
-}
-
-const SUPPORTED_LANGUAGES = [
-  { code: 'fr', name: 'Français', flag: '🇫🇷', color: 'bg-blue-500' },
-  { code: 'en', name: 'English', flag: '🇬🇧', color: 'bg-red-500' },
-  { code: 'es', name: 'Español', flag: '🇪🇸', color: 'bg-yellow-500' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪', color: 'bg-gray-800' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹', color: 'bg-green-500' },
-  { code: 'zh', name: '中文', flag: '🇨🇳', color: 'bg-red-600' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵', color: 'bg-white border' },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦', color: 'bg-green-600' },
-];
-
-const MAX_MESSAGE_LENGTH = 300;
-const TOAST_SHORT_DURATION = 2000;
-const TOAST_LONG_DURATION = 3000;
-const TOAST_ERROR_DURATION = 5000;
-const TYPING_CANCELATION_DELAY = 2000; // Délai avant d'annuler l'indicateur de frappe
-// Composant pour les indicateurs de langues - affichage vertical seulement
-interface LanguageIndicatorsProps {
-  languageStats: LanguageStats[];
-}
-
-function LanguageIndicators({ languageStats }: LanguageIndicatorsProps) {
-  const sortedStats = [...languageStats].sort((a, b) => b.count - a.count);
-  
-  // Layout vertical pour la sidebar avec scroll après les 7 premiers
-  return (
-    <div className="space-y-2">
-      {/* Affichage des 7 premiers langages */}
-      {sortedStats.slice(0, 7).map((stat) => (
-        <div key={stat.language} className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
-          <div className="flex items-center space-x-2">
-            <span className="text-lg">{stat.flag}</span>
-            <span className="text-sm font-medium">
-              {SUPPORTED_LANGUAGES.find(l => l.code === stat.language)?.name || stat.language}
-            </span>
-          </div>
-          <Badge variant="outline" className="text-xs bg-white/50">
-            {stat.count}
-          </Badge>
-        </div>
-      ))}
-      
-      {/* Section scrollable pour les langages restants */}
-      {sortedStats.length > 7 && (
-        <div className="max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent space-y-2 pr-1">
-          {sortedStats.slice(7).map((stat) => (
-            <div key={stat.language} className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
-              <div className="flex items-center space-x-2">
-                <span className="text-lg">{stat.flag}</span>
-                <span className="text-sm font-medium">
-                  {SUPPORTED_LANGUAGES.find(l => l.code === stat.language)?.name || stat.language}
-                </span>
-              </div>
-              <Badge variant="outline" className="text-xs bg-white/50">
-                {stat.count}
-              </Badge>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Composant pour une section foldable générique
-interface FoldableSectionProps {
-  title: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  defaultExpanded?: boolean;
-}
-
-function FoldableSection({ title, icon, children, defaultExpanded = true }: FoldableSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-
-  return (
-    <Card className="mb-6 bg-white/80 backdrop-blur-sm border-gray-200/50 shadow-lg">
-      <CardContent className="p-0">
-        {/* Header cliquable */}
-        <div 
-          className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50/50 transition-colors"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          <h3 className="font-semibold text-gray-900 flex items-center">
-            {icon}
-            {title}
-          </h3>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-gray-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          )}
-        </div>
-        
-        {/* Contenu */}
-        {isExpanded && (
-          <div className="px-4 pb-4 border-t border-gray-100">
-            <div className="mt-3">
-              {children}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-// Composant pour les langues dans le header de la sidebar
-interface SidebarLanguageHeaderProps {
-  languageStats: LanguageStats[];
-  userLanguage: string;
-}
-
-function SidebarLanguageHeader({ languageStats, userLanguage }: SidebarLanguageHeaderProps) {
-  const topLanguages = [...languageStats]
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-
-  return (
-    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200/50">
-      <h2 className="font-semibold text-gray-900 mb-3 flex items-center">
-        <Globe2 className="h-4 w-4 mr-2" />
-        Communication Globale
-      </h2>
-      <div className="flex flex-wrap gap-2 mb-3">
-        {topLanguages.map((stat) => (
-          <div 
-            key={stat.language}
-            className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs transition-colors ${
-              stat.language === userLanguage 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-white/80 text-gray-700 hover:bg-white'
-            }`}
-          >
-            <span>{stat.flag}</span>
-            <span className="font-medium">{stat.count}</span>
-          </div>
-        ))}
-      </div>
-      <p className="text-xs text-gray-600">
-        <span className="font-medium">{languageStats.reduce((sum, stat) => sum + stat.count, 0)}</span> messages 
-        en <span className="font-medium">{languageStats.length}</span> langues actives
-      </p>
-    </div>
-  );
-}
-
-export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
+export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -265,8 +133,8 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       choices.push({
         code: user.regionalLanguage,
         name: 'Langue régionale',
-        description: SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.name || user.regionalLanguage,
-        flag: SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.flag || '🌍',
+        description: (SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.name || user.regionalLanguage) as any,
+        flag: (SUPPORTED_LANGUAGES.find(l => l.code === user.regionalLanguage)?.flag || '🌍') as any,
         isDefault: false
       });
     }
@@ -277,8 +145,8 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
       choices.push({
         code: user.customDestinationLanguage,
         name: 'Langue personnalisée',
-        description: SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.name || user.customDestinationLanguage,
-        flag: SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.flag || '🎯',
+        description: (SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.name || user.customDestinationLanguage) as any,
+        flag: (SUPPORTED_LANGUAGES.find(l => l.code === user.customDestinationLanguage)?.flag || '🎯') as any,
         isDefault: false
       });
     }
@@ -1346,66 +1214,12 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 {/* Indicateurs dans le textarea - Positionnés plus bas pour éviter l'entrelacement */}
                 <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-600 pointer-events-auto">
                   {/* Sélecteur de langue d'envoi */}
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="flex items-center space-x-1 px-2 py-1 h-auto text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-all"
-                      >
-                        <span className="text-base">
-                          {languageChoices.find(l => l.code === selectedInputLanguage)?.flag}
-                        </span>
-                        <span className="font-medium">
-                          {selectedInputLanguage.toUpperCase()}
-                        </span>
-                        <ChevronDown className="h-3 w-3" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 p-0" align="start">
-                      <div className="p-4">
-                        <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
-                          <Languages className="h-4 w-4 text-gray-600" />
-                          <span className="font-medium text-gray-900">Langue d'écriture</span>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          {languageChoices.map((choice) => {
-                            const isSelected = selectedInputLanguage === choice.code;
-                            
-                            return (
-                              <button
-                                key={choice.code}
-                                onClick={() => setSelectedInputLanguage(choice.code)}
-                                className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
-                                  isSelected 
-                                    ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-400' 
-                                    : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
-                                }`}
-                              >
-                                <div className="flex items-center justify-between mb-1">
-                                  <div className="flex items-center space-x-2">
-                                    <span className="text-lg">{choice.flag}</span>
-                                    <span className="font-medium text-gray-900">{choice.description}</span>
-                                    {choice.isDefault && (
-                                      <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800">Par défaut</Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <p className="text-xs text-gray-500">{choice.name}</p>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        
-                        <div className="mt-3 pt-3 border-t border-gray-100">
-                          <p className="text-xs text-gray-500">
-                            Cette langue sera utilisée comme langue source pour vos messages
-                          </p>
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                  <LanguageSelector
+                    value={selectedInputLanguage}
+                    onValueChange={setSelectedInputLanguage}
+                    placeholder="Langue d'écriture"
+                    className="border-gray-200 hover:border-blue-300"
+                  />
                   
                   {/* Localisation */}
                   {location && (
@@ -1462,43 +1276,7 @@ export function  BubbleStreamPage({ user }: BubbleStreamPageProps) {
               icon={<Languages className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
-              <div className="space-y-2">
-                {/* Affichage des 5 premiers langages */}
-                {[...languageStats].sort((a, b) => b.count - a.count).slice(0, 5).map((stat) => (
-                  <div key={stat.language} className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{stat.flag}</span>
-                      <span className="text-sm font-medium">
-                        {SUPPORTED_LANGUAGES.find(l => l.code === stat.language)?.name || stat.language}
-                      </span>
-                    </div>
-                    <Badge variant="outline" className="text-xs bg-white/50">
-                      {stat.count}
-                    </Badge>
-                  </div>
-                ))}
-                
-                {/* Section scrollable pour les langages restants */}
-                {languageStats.length > 5 && (
-                  <div 
-                    className="max-h-40 overflow-y-auto space-y-2 pr-1 border-t border-gray-100 pt-2 mt-2 scroll-hidden"
-                  >
-                    {[...languageStats].sort((a, b) => b.count - a.count).slice(5).map((stat) => (
-                      <div key={stat.language} className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-lg">{stat.flag}</span>
-                          <span className="text-sm font-medium">
-                            {SUPPORTED_LANGUAGES.find(l => l.code === stat.language)?.name || stat.language}
-                          </span>
-                        </div>
-                        <Badge variant="outline" className="text-xs bg-white/50">
-                          {stat.count}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <LanguageIndicators languageStats={languageStats} />
             </FoldableSection>
 
             {/* Section Tendances - Foldable */}
