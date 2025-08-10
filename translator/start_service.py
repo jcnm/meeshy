@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 """
-Script de démarrage qui gère correctement les imports pour éviter les problèmes
-avec les imports relatifs de Prisma
+Script de démarrage qui gère correctement les imports
 """
 
 import sys
 import os
 from pathlib import Path
 
-# Ajouter le répertoire racine au PYTHONPATH
+# Configuration des chemins
 current_dir = Path(__file__).parent
-project_root = current_dir
-sys.path.insert(0, str(project_root))
+src_dir = current_dir / "src"
 
-# NE PAS ajouter le répertoire generated pour éviter les conflits de modules
+# Ajouter src au PYTHONPATH
+if str(src_dir) not in sys.path:
+    sys.path.insert(0, str(src_dir))
 
-# Maintenant démarrer le service principal
+# Changer vers le répertoire src
+os.chdir(str(src_dir))
+
+# Maintenant exécuter main.py dans le bon contexte
 if __name__ == "__main__":
-    # Importer et démarrer le service principal
-    os.chdir(str(project_root / "src"))
-    exec(open(project_root / "main.py").read())
+    exec(open("main.py").read())

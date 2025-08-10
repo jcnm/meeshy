@@ -2,6 +2,28 @@
 Service de traduction ML propre et fonctionnel
 Modèles: T5-Small + NLLB-200-Distilled-600M
 Sans mocks, avec gestion d'erreurs robuste
+"""    async def initialize(self, database_service: Optional[DatabaseService] = None):
+        """Initialise le service de traduction"""
+        logger.info("🤖 Démarrage du service de traduction ML...")
+        
+        # 1. Initialiser le service de base de données
+        if database_service:
+            self.database_service = database_service
+        else:
+            logger.info("🗄️  Initialisation du service de base de données...")
+            self.database_service = DatabaseService()
+            db_success = await self.database_service.initialize()
+            if not db_success:
+                logger.warning("⚠️  Service de base de données en mode dégradé")
+        
+        # 2. Afficher les statistiques de base de données
+        await self._display_database_statistics()
+        
+        # 3. Logger le statut de la base de données
+        if self.database_service and self.database_service.is_connected:
+            logger.info("✅ Service de traduction connecté à la base de données")
+        else:
+            logger.warning("⚠️  Service de traduction en mode dégradé (pas de base de données)")erreurs robuste
 """
 
 import asyncio
@@ -37,7 +59,7 @@ except ImportError:
 
 from config.settings import get_settings, get_model_language_code, get_iso_language_code
 from services.cache_service import CacheService
-from services.database_service_temp import DatabaseService  # Utilisation temporaire
+from services.database_service import DatabaseService  # Service Prisma principal
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +183,60 @@ class TranslationService:
             "device": self.device,
             "database_connected": self.database_service.is_connected if self.database_service else False
         }
+    
+    async def _display_database_statistics(self):
+        """Affiche les statistiques de base de données au démarrage"""
+        try:
+            if not self.database_service or not hasattr(self.database_service, 'prisma') or not self.database_service.prisma:
+                logger.info("📊 Base de données: Aucune connexion disponible pour les statistiques")
+                return
+            
+            logger.info("📊 Collecte des statistiques de base de données...")
+            
+            # Compter les traductions totales
+            total_translations = await self.database_service.prisma.messagetranslation.count()
+            
+            # Compter les langues uniques (source et target)
+            # Requête pour les langues sources
+            source_languages = await self.database_service.prisma.messagetranslation.find_many(
+                distinct=['sourceLanguage'],
+                select={'sourceLanguage': True}
+            )
+            
+            # Requête pour les langues cibles
+            target_languages = await self.database_service.prisma.messagetranslation.find_many(
+                distinct=['targetLanguage'],
+                select={'targetLanguage': True}
+            )
+            
+            # Combiner et compter les langues uniques
+            all_languages = set()
+            for lang in source_languages:
+                all_languages.add(lang.sourceLanguage)
+            for lang in target_languages:
+                all_languages.add(lang.targetLanguage)
+            
+            unique_languages = len(all_languages)
+            
+            # Compter les messages totaux
+            total_messages = await self.database_service.prisma.message.count()
+            
+            # Affichage des statistiques
+            logger.info("📈 === STATISTIQUES DE BASE DE DONNÉES ===")
+            logger.info(f"📝 Total des traductions: {total_translations:,}")
+            logger.info(f"🌐 Langues uniques répertoriées: {unique_languages}")
+            logger.info(f"💬 Total des messages: {total_messages:,}")
+            if all_languages:
+                logger.info(f"🗣️  Langues détectées: {', '.join(sorted(all_languages))}")
+            logger.info("==========================================")
+            
+            # Mettre à jour les stats internes
+            self.stats['translations_count'] = total_translations
+            self.stats['languages_detected'] = unique_languages
+            
+        except Exception as e:
+            logger.warning(f"⚠️  Impossible de récupérer les statistiques de base de données: {e}")
+            logger.info("📊 Base de données: Statistiques non disponibles")
     
     async def _load_models(self):
         """Charge TOUS les modèles configurés au démarrage"""

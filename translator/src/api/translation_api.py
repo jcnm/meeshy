@@ -12,7 +12,6 @@ import asyncio
 
 # Import du health router
 from api.health import health_router, set_services
-from api.health_simple import simple_health_router
 
 logger = logging.getLogger(__name__)
 
@@ -83,9 +82,8 @@ class TranslationAPI:
             zmq_srv=zmq_server
         )
         
-        # Inclure seulement le routeur de santé simplifié (temporaire)
-        # self.app.include_router(health_router)  # Désactivé temporairement
-        self.app.include_router(simple_health_router)
+        # Inclure le routeur de santé principal
+        self.app.include_router(health_router)
         
         # Enregistrer les autres routes
         self._register_routes()
