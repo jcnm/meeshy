@@ -1,92 +1,82 @@
-# Frontend Dockerfile - ONNX WASM capable with Ubuntu base
-FROM ubuntu:22.04 AS base
+# Frontend Dockerfile - Meeshy Next.js Application (Autonomous Build)
+FROM node:22-alpine AS base
 
-ARG DEBIAN_FRONTEND=noninteractive
+# Install system dependencies and pnpm
+RUN apk add --no-cache \
+    tini \
+    curl \
+    git \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    && corepack enable pnpm \
+    && corepack prepare pnpm@latest --activate
 
-# Install Node.js 22 and basic dependencies
-RUN apt-get update --fix-missing && \
-    apt-get install -y curl git wget build-essential && \
-    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g pnpm && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+ENTRYPOINT ["/sbin/tini", "--"]
 
-# Install tini for proper init handling
-RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
-ENTRYPOINT ["/usr/bin/tini", "--"]
-
-# Install WASM/ONNX support dependencies
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip \
-    cmake make gcc g++ \
-    zlib1g-dev libncurses5-dev libgdbm-dev \
-    libnss3-dev libssl-dev libreadline-dev libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# === DEPENDENCIES STAGE ===
-FROM base AS deps
-WORKDIR /app
-
-# Copy package files for frontend
-COPY package.json pnpm-lock.yaml* ./
-# Install dependencies based on available lock file
-RUN \
-  if [ -f pnpm-lock.yaml ]; then \
-    corepack enable pnpm && pnpm install --no-frozen-lockfile; \
-  elif [ -f package-lock.json ]; then \
-    npm ci; \
-  else \
-    npm install; \
-  fi
-
-# === BUILDER STAGE ===
+# === BUILD STAGE ===
 FROM base AS builder
 WORKDIR /app
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy entire frontend application
+COPY . ./
+COPY .env.docker .env
 
-# Copy source code (node_modules and .next excluded via .dockerignore)
-COPY . .
-
-# Set environment variables for ONNX Runtime and production build
+# Environment variables for build
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
-ENV NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
 
+# Install all dependencies including dev dependencies for build
+RUN pnpm install --no-frozen-lockfile
+RUN ls -ila
 # Build the application
-# Note: node_modules and .next are excluded via .dockerignore to prevent copying
-RUN pnpm build
+RUN pnpm next build
 
 # === PRODUCTION STAGE ===
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Runtime environment variables
+ARG NODE_ENV=production
+ARG PORT=3100
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_BACKEND_URL
+ARG NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
+ARG NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
 
-# Create system user
-RUN groupadd --system --gid 1001 nodejs && \
-    useradd --system --uid 1001 --gid nodejs nextjs
+ENV NODE_ENV=${NODE_ENV}
+ENV PORT=${PORT}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
+ENV NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
+ENV NEXT_TELEMETRY_DISABLED=${NEXT_TELEMETRY_DISABLED}
+ENV NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION}
+ENV NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY}
 
-# Copy built application
-COPY --from=builder /app/public ./public
+# Create system user and logs directory
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -u 1001 -S -G nodejs nextjs && \
+    mkdir -p logs && \
+    chown -R nextjs:nodejs logs
+
+# Copy built application and shared libraries
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/shared ./shared
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --chown=nextjs:nodejs package.json ./
+COPY .env.docker .env
 
 USER nextjs
 
-EXPOSE 3100
-ENV PORT=3100
+EXPOSE ${PORT}
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3100', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Set environment for ONNX Runtime (disabled for client-side)
-ENV NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
-ENV NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
+  CMD node -e "require('http').get('http://localhost:${PORT}', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 CMD ["node", "server.js"]

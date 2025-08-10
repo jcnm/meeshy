@@ -3,6 +3,7 @@
 
 # Dependencies (will be installed during build)
 node_modules/
+**/*/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -63,3 +64,4 @@ README.md
 
 # Other
 *.tar.gz
+

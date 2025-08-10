@@ -27,7 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
 import { TranslationData } from '../../shared/types';
-import { MessageBubble } from './message-bubble';
+import { MessageBubbleAdapter } from './message-bubble-adapter';
 import { useTranslation } from '@/hooks/use-translation';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { toast } from 'sonner';
@@ -547,7 +547,7 @@ export function ConversationView({
               </div>
             ) : (
               messages.map((message) => (
-                <MessageBubble
+                <MessageBubbleAdapter
                   key={message.id}
                   message={convertToTranslatedMessage(message)}
                   currentUserId={currentUser.id}

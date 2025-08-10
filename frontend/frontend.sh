@@ -13,6 +13,21 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Fonction de chargement du fichier .env
+load_env_file() {
+    local env_file=".env"
+    
+    if [[ -f "$env_file" ]]; then
+        echo -e "${GREEN}✅ [GWY] Chargement des variables depuis $env_file${NC}"
+        source "$env_file"
+    else
+        echo -e "${YELLOW}⚠️  [GWY] Fichier $env_file non trouvé, utilisation des valeurs par défaut${NC}"
+    fi
+}
+
+# Charger les variables d'environnement
+load_env_file
+
 echo -e "${BLUE}🎨 [APP] Démarrage du frontend Next.js Meeshy${NC}"
 echo "================================================="
 
