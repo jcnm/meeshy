@@ -37,9 +37,9 @@ class Settings:
         self.supported_languages = os.getenv("SUPPORTED_LANGUAGES", "fr,en,es,de,pt,zh,ja,ar")
         self.auto_detect_language = os.getenv("AUTO_DETECT_LANGUAGE", "true").lower() == "true"
         
-        # Configuration des modèles de traduction - CORRIGÉ
-        # T5-small fonctionne mieux que MT5-small pour la traduction
-        self.basic_model = os.getenv("BASIC_MODEL", "t5-small")  # Corrigé: t5-small au lieu de mt5-small
+        # Configuration des modèles de traduction - NLLB pour multi-langues
+        # NLLB-600M est meilleur que T5-small pour les traductions multilingues
+        self.basic_model = os.getenv("BASIC_MODEL", "nllb-200-distilled-600M")  # Corrigé: NLLB au lieu de T5
         self.medium_model = os.getenv("MEDIUM_MODEL", "nllb-200-distilled-600M")
         self.premium_model = os.getenv("PREMIUM_MODEL", "nllb-200-distilled-1.3B")
         

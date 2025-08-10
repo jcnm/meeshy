@@ -4,7 +4,7 @@
  */
 
 // ===== IMPORT DES TYPES PARTAGÉS =====
-export * from '../../shared/types';
+export * from '../shared/types';
 
 // Alias pour rétrocompatibilité  
 import type { 

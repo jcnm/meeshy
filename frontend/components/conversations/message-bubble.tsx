@@ -12,6 +12,7 @@ import {
   Languages,
   Edit,
   RotateCcw,
+  Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TranslatedMessage, SUPPORTED_LANGUAGES } from '@/types';
@@ -43,6 +44,9 @@ export function MessageBubble({
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
   
   const isTranslating = message.isTranslating || isLocalTranslating;
+  {/* Show translation status */}
+  const [isGlobePopoverOpen, setIsGlobePopoverOpen] = useState(false);
+
   const isOwnMessage = message.senderId === currentUserId;
   const isReceivedMessage = !isOwnMessage;
   const hasTranslations = message.translations && message.translations.length > 0;
@@ -418,6 +422,117 @@ export function MessageBubble({
                               </span>
                             )}
                           </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+            
+            {/* Globe icon - View all available translations */}
+            {hasTranslations && (
+              <Popover open={isGlobePopoverOpen} onOpenChange={setIsGlobePopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-current hover:bg-black hover:bg-opacity-10 transition-all duration-200 cursor-pointer"
+                    title="Voir toutes les traductions disponibles"
+                  >
+                    <Globe className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0 shadow-xl border-0" side="top" align="start" sideOffset={8}>
+                  <div className="p-4 bg-white rounded-lg shadow-2xl border border-gray-200">
+                    <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
+                      <Globe className="h-4 w-4 text-blue-600" />
+                      <span className="font-medium text-gray-900">Traductions disponibles</span>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                        {message.translations!.length + 1}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {/* Original message */}
+                      <div className={`p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                        message.showingOriginal 
+                          ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-400' 
+                          : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                      }`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg">
+                              {SUPPORTED_LANGUAGES.find(l => l.code === message.originalLanguage)?.flag || '🌍'}
+                            </span>
+                            <span className="font-medium text-gray-900">
+                              {SUPPORTED_LANGUAGES.find(l => l.code === message.originalLanguage)?.name || message.originalLanguage}
+                            </span>
+                            <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-medium">
+                              Original
+                            </span>
+                            {message.showingOriginal && (
+                              <span className="text-blue-600 text-xs font-medium">✓ Affiché</span>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                          {message.content}
+                        </p>
+                        {!message.showingOriginal && (
+                          <button
+                            onClick={() => onToggleOriginal(message.id)}
+                            className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            Afficher cette version
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* All translations */}
+                      {message.translations!.map((translation, index) => {
+                        const langInfo = SUPPORTED_LANGUAGES.find(l => l.code === translation.targetLanguage);
+                        const cleanedTranslation = cleanTranslationContent(translation.translatedContent);
+                        const isCurrentlyShown = !message.showingOriginal && message.translatedContent === translation.translatedContent;
+                        
+                        return (
+                          <div 
+                            key={`${translation.targetLanguage}-${index}`}
+                            className={`p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                              isCurrentlyShown
+                                ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-400' 
+                                : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-lg">{langInfo?.flag || '🌍'}</span>
+                                <span className="font-medium text-gray-900">
+                                  {langInfo?.name || translation.targetLanguage}
+                                </span>
+                                {isCurrentlyShown && (
+                                  <span className="text-blue-600 text-xs font-medium">✓ Affiché</span>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                              {cleanedTranslation || 'Traduction non disponible'}
+                            </p>
+                            {!isCurrentlyShown && cleanedTranslation && (
+                              <button
+                                onClick={() => {
+                                  // Switch to this translation by toggling original view if needed
+                                  if (message.showingOriginal) {
+                                    onToggleOriginal(message.id);
+                                  }
+                                  setIsGlobePopoverOpen(false);
+                                }}
+                                className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                              >
+                                Afficher cette version
+                              </button>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
