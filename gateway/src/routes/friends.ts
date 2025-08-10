@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { logError } from '../utils/logger';
 
 // Schémas de validation
 const createFriendRequestSchema = z.object({
@@ -92,7 +93,7 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Create friend request error:', error);
+      logError(fastify.log, 'Create friend request error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -137,7 +138,7 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get received friend requests error:', error);
+      logError(fastify.log, 'Get received friend requests error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -181,7 +182,7 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get sent friend requests error:', error);
+      logError(fastify.log, 'Get sent friend requests error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -289,7 +290,7 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Update friend request error:', error);
+      logError(fastify.log, 'Update friend request error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -334,7 +335,7 @@ export async function friendRequestRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Delete friend request error:', error);
+      logError(fastify.log, 'Delete friend request error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'

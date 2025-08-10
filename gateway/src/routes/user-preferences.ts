@@ -4,6 +4,7 @@
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { logError } from '../utils/logger';
 
 interface UserPreferenceBody {
   key: string;
@@ -33,7 +34,7 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Error fetching user preferences:', error);
+      logError(fastify.log, 'Error fetching user preferences:', error);
       reply.code(500).send({
         success: false,
         message: 'Erreur lors de la récupération des préférences'
@@ -71,7 +72,7 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Error fetching user preference:', error);
+      logError(fastify.log, 'Error fetching user preference:', error);
       reply.code(500).send({
         success: false,
         message: 'Erreur lors de la récupération de la préférence'
@@ -137,7 +138,7 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Error saving user preference:', error);
+      logError(fastify.log, 'Error saving user preference:', error);
       reply.code(500).send({
         success: false,
         message: 'Erreur lors de la sauvegarde de la préférence'
@@ -175,7 +176,7 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Error deleting user preference:', error);
+      logError(fastify.log, 'Error deleting user preference:', error);
       reply.code(500).send({
         success: false,
         message: 'Erreur lors de la suppression de la préférence'
@@ -200,7 +201,7 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Error resetting user preferences:', error);
+      logError(fastify.log, 'Error resetting user preferences:', error);
       reply.code(500).send({
         success: false,
         message: 'Erreur lors de la réinitialisation des préférences'

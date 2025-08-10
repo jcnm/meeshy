@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { logError } from '../utils/logger';
 
 // Schémas de validation
 const createNotificationSchema = z.object({
@@ -76,7 +77,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get notifications error:', error);
+      logError(fastify.log, 'Get notifications error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -114,7 +115,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Mark notification as read error:', error);
+      logError(fastify.log, 'Mark notification as read error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -143,7 +144,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Mark all notifications as read error:', error);
+      logError(fastify.log, 'Mark all notifications as read error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -180,7 +181,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Delete notification error:', error);
+      logError(fastify.log, 'Delete notification error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -208,7 +209,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Delete read notifications error:', error);
+      logError(fastify.log, 'Delete read notifications error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -253,7 +254,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get notification preferences error:', error);
+      logError(fastify.log, 'Get notification preferences error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -327,7 +328,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Update notification preferences error:', error);
+      logError(fastify.log, 'Update notification preferences error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -367,7 +368,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Create test notification error:', error);
+      logError(fastify.log, 'Create test notification error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -414,7 +415,7 @@ export async function notificationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get notification stats error:', error);
+      logError(fastify.log, 'Get notification stats error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'

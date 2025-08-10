@@ -16,9 +16,10 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
-import { PrismaClient } from '../libs/prisma/client'; // Import Prisma client from shared library
+import { PrismaClient } from '../shared/prisma/client'; // Import Prisma client from shared library
 import winston from 'winston';
 import { ZMQTranslationClient } from './services/zmq-translation-client';
+import { TranslationService } from './services/TranslationService';
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
@@ -31,16 +32,15 @@ import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 // CONFIGURATION & ENVIRONMENT
 // ============================================================================
 
-interface ServerConfig {
-  nodeEnv: string;
+interface Config {
   isDev: boolean;
   jwtSecret: string;
   port: number;
-  translationServicePort: number;
   databaseUrl: string;
+  nodeEnv: string;
 }
 
-function loadConfiguration(): ServerConfig {
+function loadConfiguration(): Config {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const isDev = nodeEnv === 'development';
   const dbUrl = process.env.DATABASE_URL || '';
@@ -50,7 +50,6 @@ function loadConfiguration(): ServerConfig {
     isDev,
     jwtSecret: process.env.JWT_SECRET || 'meeshy-secret-key-dev',
     port: parseInt(process.env.PORT || process.env.GATEWAY_PORT || '3000'),
-    translationServicePort: parseInt(process.env.TRANSLATION_SERVICE_PORT || '5555'),
     databaseUrl: process.env.DATABASE_URL || ''
   };
 }
@@ -204,6 +203,7 @@ class MeeshyServer {
   private server: FastifyInstance;
   private prisma: PrismaClient;
   private translationClient: ZMQTranslationClient;
+  private translationService: TranslationService;
   private socketIOHandler: MeeshySocketIOHandler;
 
   constructor() {
@@ -216,7 +216,9 @@ class MeeshyServer {
       log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error']
     });
     
-    this.translationClient = new ZMQTranslationClient(config.translationServicePort);
+    // Utiliser les variables d'environnement par défaut
+    this.translationClient = new ZMQTranslationClient();
+    this.translationService = new TranslationService(this.prisma, this.translationClient);
     this.socketIOHandler = new MeeshySocketIOHandler(this.prisma, config.jwtSecret);
   }
 
@@ -300,6 +302,7 @@ class MeeshyServer {
 
     // Decorators for dependency injection
     this.server.decorate('prisma', this.prisma);
+    this.server.decorate('translationService', this.translationService);
     this.server.decorate('authenticate', this.createAuthMiddleware());
 
     logger.info('✓ Middleware configured successfully');
@@ -536,7 +539,11 @@ class MeeshyServer {
       await this.translationClient.initialize();
       const isHealthy = await this.translationClient.healthCheck();
       if (isHealthy) {
-        logger.info('✓ Translation service connected successfully');
+        logger.info('✓ Translation client connected successfully');
+        
+        // Initialize TranslationService
+        await this.translationService.initialize();
+        logger.info('✓ Translation service initialized successfully');
       } else {
         throw new Error('Translation service health check failed');
       }
@@ -552,7 +559,7 @@ class MeeshyServer {
   
   private displayStartupBanner(): void {
     const dbStatus = config.databaseUrl ? 'Connected' : 'Not configured'.padEnd(48);
-    const translateUrl = `tcp://0.0.0.0:${config.translationServicePort.toString().padEnd(37)}`;
+    const translateUrl = `tcp://0.0.0.0:${(process.env.ZMQ_TRANSLATOR_PORT || '5555').padEnd(37)}`;
     const banner = `
 ╔══════════════════════════════════════════════════════════════════╗
 ║                       🌍 MEESHY GATEWAY 🌍                       ║
@@ -580,7 +587,7 @@ class MeeshyServer {
       logger.info('Configuration loaded:', {
         environment: config.nodeEnv,
         port: config.port,
-        translationPort: config.translationServicePort,
+        translationPort: parseInt(process.env.ZMQ_TRANSLATOR_PORT || '5555'),
         development: config.isDev
       });
 

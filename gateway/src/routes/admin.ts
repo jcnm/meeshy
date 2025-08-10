@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { logError } from '../utils/logger';
 
 // Types pour les rôles et permissions
 type UserRole = 'BIGBOSS' | 'ADMIN' | 'MODO' | 'AUDIT' | 'ANALYST' | 'USER';
@@ -211,7 +212,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get admin dashboard error:', error);
+      logError(fastify.log, 'Get admin dashboard error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -307,7 +308,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get admin users error:', error);
+      logError(fastify.log, 'Get admin users error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -363,7 +364,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get user details error:', error);
+      logError(fastify.log, 'Get user details error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -444,7 +445,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Update user role error:', error);
+      logError(fastify.log, 'Update user role error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -522,7 +523,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Update user status error:', error);
+      logError(fastify.log, 'Update user status error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -646,7 +647,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get analytics error:', error);
+      logError(fastify.log, 'Get analytics error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'

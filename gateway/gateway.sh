@@ -10,8 +10,24 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+
+# Fonction de chargement du fichier .env
+load_env_file() {
+    local env_file=".env"
+    
+    if [[ -f "$env_file" ]]; then
+        echo -e "${GREEN}✅ [GWY] Chargement des variables depuis $env_file${NC}"
+        source "$env_file"
+    else
+        echo -e "${YELLOW}⚠️  [GWY] Fichier $env_file non trouvé, utilisation des valeurs par défaut${NC}"
+    fi
+}
+
+# Charger les variables d'environnement
+load_env_file
 
 echo -e "${BLUE}🚀 [GWY] Démarrage du serveur Fastify Meeshy${NC}"
 echo "================================================="
@@ -31,11 +47,11 @@ if [[ ! -d "node_modules" ]]; then
 fi
 
 # Vérifier la génération Prisma
-if [[ ! -d "../shared/prisma/client" ]]; then
+if [[ ! -d "./shared/prisma/client" ]]; then
     echo -e "${YELLOW}🔧 [GWY] Génération du client Prisma...${NC}"
-    cd ../shared
+    cd ./shared
     pnpm prisma generate
-    cd ../gateway
+    cd ..
 fi
 
 # Variables d'environnement

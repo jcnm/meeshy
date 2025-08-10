@@ -42,4 +42,43 @@ class MeeshyLogger implements Logger {
 // Instance singleton
 export const logger = new MeeshyLogger();
 
+// Utility pour les logs d'erreur avec compatibilité Fastify
+export function logError(logger: any, message: string, error: unknown | any): void {
+  try {
+    // Essaie d'abord avec le logger Fastify
+    if (logger && typeof logger.error === 'function') {
+      logger.error(message);
+      if (error instanceof Error) {
+        logger.error(error.message);
+        logger.error(error.stack);
+      } else {
+        logger.error(String(error));
+      }
+    } else {
+      // Fallback vers console
+      console.error(message, error);
+    }
+  } catch (e) {
+    // Dernier recours
+    console.error(message, error);
+  }
+}
+
+export function logWarn(logger: any, message: string, error: unknown | any): void {
+  try {
+    if (logger && typeof logger.warn === 'function') {
+      logger.warn(message);
+      if (error instanceof Error) {
+        logger.warn(error.message);
+      } else {
+        logger.warn(String(error));
+      }
+    } else {
+      console.warn(message, error);
+    }
+  } catch (e) {
+    console.warn(message, error);
+  }
+}
+
 export default logger;

@@ -4,7 +4,7 @@
  */
 
 import { Server, Socket } from 'socket.io';
-import { PrismaClient } from '../../libs/prisma/client';
+import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService } from '../services/TranslationService';
 import { ZMQTranslationClient } from '../services/zmq-translation-client';
 import { logger } from '../utils/logger';
@@ -22,7 +22,7 @@ import {
   TypingEvent,
   UserStatusEvent,
   SocketIOResponse
-} from '../shared-types/socketio-events';
+} from '../../shared/types/socketio-events';
 
 // Type étendu pour la gateway qui hérite de Socket.IO
 type AuthenticatedSocket = Socket<ClientToServerEvents, ServerToClientEvents> & BaseAuthenticatedSocket;
@@ -281,7 +281,10 @@ export class MeeshySocketIOManager {
     } as SocketIOMessage);
 
     // Démarrer le processus de traduction en arrière-plan si nécessaire
-    this.requestTranslation(message, conversation.members);
+    // IMPORTANT: Ne pas attendre (await) pour ne pas bloquer la réponse au client
+    this.requestTranslation(message, conversation.members).catch(error => {
+      logger.error('❌ Erreur traduction en arrière-plan:', error);
+    });
 
     return { messageId: message.id };
   }
@@ -298,76 +301,14 @@ export class MeeshySocketIOManager {
       logger.info(`🎯 Langues requises pour traduction:`, requiredLanguages);
       
       if (requiredLanguages.length > 0) {
-        // Utiliser le ZMQ client directement pour traduction
-        const zmqClient = new ZMQTranslationClient();
-        await zmqClient.initialize();
-        
-        // Process translations asynchronously
+        // Traiter les traductions séquentiellement pour éviter les conflits ZMQ
+        // ZMQ ne permet qu'une seule opération d'envoi à la fois par socket
         for (const targetLang of requiredLanguages) {
           try {
-            logger.info(`🔄 Traduction ${message.originalLanguage} → ${targetLang} pour: "${message.content}"`);
-            
-            const translationResult = await zmqClient.translateText({
-              messageId: message.id,
-              text: message.content,
-              sourceLanguage: message.originalLanguage,
-              targetLanguage: targetLang,
-              conversationId: message.conversationId,
-              requestType: 'conversation_translation'
-            });
-
-            logger.info(`✅ Traduction reçue:`, {
-              messageId: translationResult.messageId,
-              translatedText: translationResult.translatedText,
-              targetLanguage: targetLang
-            });
-
-            // Sauvegarder la traduction en cache
-            const cacheKey = `${message.id}_${message.originalLanguage}_${targetLang}`;
-            await this.prisma.messageTranslation.create({
-              data: {
-                messageId: message.id,
-                sourceLanguage: message.originalLanguage,
-                targetLanguage: targetLang,
-                translatedContent: translationResult.translatedText,
-                translationModel: translationResult.metadata?.modelUsed || 'basic',
-                cacheKey,
-                confidenceScore: translationResult.metadata?.confidenceScore
-              }
-            });
-
-            // Émettre la traduction aux clients
-            this.emitToConversation(message.conversationId, 'message:translation', {
-              messageId: message.id,
-              translations: [{
-                messageId: message.id,
-                sourceLanguage: message.originalLanguage,
-                targetLanguage: targetLang,
-                translatedContent: translationResult.translatedText,
-                translationModel: translationResult.metadata?.modelUsed || 'basic',
-                cacheKey,
-                cached: false
-              }]
-            } as TranslationEvent);
-
-            logger.info(`📤 Traduction émise pour message ${message.id} vers ${targetLang}`);
-            
+            await this.translateMessage(message, targetLang);
           } catch (error) {
             logger.error(`❌ Erreur traduction vers ${targetLang}:`, error);
-            
-            // Émettre une traduction d'erreur
-            this.emitToConversation(message.conversationId, 'message:translation', {
-              messageId: message.id,
-              translations: [{
-                messageId: message.id,
-                sourceLanguage: message.originalLanguage,
-                targetLanguage: targetLang,
-                translatedContent: `[ERREUR-TRADUCTION] ${message.content}`,
-                translationModel: 'error-fallback',
-                cacheKey: `${message.id}_${message.originalLanguage}_${targetLang}`,
-                cached: false
-              }]
-            });
+            await this.handleTranslationError(message, targetLang, error);
           }
         }
       } else {
@@ -376,6 +317,90 @@ export class MeeshySocketIOManager {
     } catch (error) {
       logger.error('❌ Erreur lors de la requête de traduction:', error);
     }
+  }
+
+  /**
+   * Traite la traduction d'un message vers une langue cible
+   */
+  private async translateMessage(message: any, targetLang: string): Promise<void> {
+    logger.info(`🔄 Traduction ${message.originalLanguage} → ${targetLang} pour: "${message.content}"`);
+    
+    // Créer un nouveau client ZMQ pour chaque traduction
+    const zmqClient = new ZMQTranslationClient();
+    
+    try {
+      await zmqClient.initialize();
+      
+      const translationResult = await zmqClient.translateText({
+        messageId: message.id,
+        text: message.content,
+        sourceLanguage: message.originalLanguage,
+        targetLanguage: targetLang,
+        conversationId: message.conversationId,
+        requestType: 'conversation_translation'
+      });
+
+      logger.info(`✅ Traduction reçue:`, {
+        messageId: translationResult.messageId,
+        translatedText: translationResult.translatedText,
+        targetLanguage: targetLang
+      });
+
+      // Sauvegarder la traduction en cache
+      const cacheKey = `${message.id}_${message.originalLanguage}_${targetLang}`;
+      await this.prisma.messageTranslation.create({
+        data: {
+          messageId: message.id,
+          sourceLanguage: message.originalLanguage,
+          targetLanguage: targetLang,
+          translatedContent: translationResult.translatedText,
+          translationModel: translationResult.metadata?.modelUsed || 'basic',
+          cacheKey,
+          confidenceScore: translationResult.metadata?.confidenceScore
+        }
+      });
+
+      // Émettre la traduction aux clients
+      this.emitToConversation(message.conversationId, 'message:translation', {
+        messageId: message.id,
+        translations: [{
+          messageId: message.id,
+          sourceLanguage: message.originalLanguage,
+          targetLanguage: targetLang,
+          translatedContent: translationResult.translatedText,
+          translationModel: translationResult.metadata?.modelUsed || 'basic',
+          cacheKey,
+          cached: false
+        }]
+      } as TranslationEvent);
+
+      logger.info(`📤 Traduction émise pour message ${message.id} vers ${targetLang}`);
+      
+    } finally {
+      // Toujours fermer le client ZMQ dans le finally
+      await zmqClient.close();
+    }
+  }
+
+  /**
+   * Gère les erreurs de traduction
+   */
+  private async handleTranslationError(message: any, targetLang: string, error: any): Promise<void> {
+    logger.error(`❌ Erreur traduction vers ${targetLang}:`, error);
+    
+    // Émettre une traduction d'erreur
+    this.emitToConversation(message.conversationId, 'message:translation', {
+      messageId: message.id,
+      translations: [{
+        messageId: message.id,
+        sourceLanguage: message.originalLanguage,
+        targetLanguage: targetLang,
+        translatedContent: `[ERREUR-TRADUCTION] ${message.content}`,
+        translationModel: 'error-fallback',
+        cacheKey: `${message.id}_${message.originalLanguage}_${targetLang}`,
+        cached: false
+      }]
+    });
   }
 
   /**

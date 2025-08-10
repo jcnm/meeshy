@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { ZMQTranslationClient } from '../services/zmq-translation-client';
 import { randomUUID } from 'crypto';
+import { logError } from '../utils/logger';
 
 // Schémas de validation
 const TranslateRequestSchema = z.object({
@@ -43,10 +44,8 @@ let zmqClient: ZMQTranslationClient | null = null;
 // Initialiser le client ZMQ
 async function getZMQClient(): Promise<ZMQTranslationClient> {
   if (!zmqClient) {
-    const port = parseInt(process.env.ZMQ_PORT || '5555');
-    const host = process.env.ZMQ_HOST || 'localhost';
-    
-    zmqClient = new ZMQTranslationClient(port, host);
+    // Utilise les variables d'environnement standardisées
+    zmqClient = new ZMQTranslationClient();
     await zmqClient.initialize();
   }
   return zmqClient;
@@ -139,7 +138,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      request.log.error('Translation error:', error);
+      logError(request.log, 'Translation error:', error);
       
       // Extraction sécurisée des données de la requête
       const requestBody = request.body as Partial<{ 
@@ -225,7 +224,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown language detection error';
-      request.log.error('Language detection error:', error);
+      logError(request.log, 'Language detection error:', error);
       return reply.status(500).send({
         success: false,
         error: errorMessage

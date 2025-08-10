@@ -37,20 +37,62 @@ export class ZMQTranslationClient {
   private TranslateRequest: protobuf.Type | null = null;
   private TranslateResponse: protobuf.Type | null = null;
   private isInitialized = false;
+  private readonly port: number;
+  private host: string;
+  private readonly timeout: number;
   
-  constructor(private port = 5555, private host = 'localhost') {}
+  constructor(
+    port?: number, 
+    host?: string,
+    timeout?: number
+  ) {
+    // Configuration via variables d'environnement avec fallback
+    console.log(`🔍 Debug variables d'environnement ZMQ:`);
+    console.log(`   ZMQ_TRANSLATOR_HOST: "${process.env.ZMQ_TRANSLATOR_HOST}"`);
+    console.log(`   ZMQ_TRANSLATOR_PORT: "${process.env.ZMQ_TRANSLATOR_PORT}"`);
+    console.log(`   ZMQ_TIMEOUT: "${process.env.ZMQ_TIMEOUT}"`);
+    console.log(`   Paramètres constructor - host: ${host}, port: ${port}, timeout: ${timeout}`);
+    
+    this.port = port ?? parseInt(process.env.ZMQ_TRANSLATOR_PORT || '5555', 10);
+    this.host = host ?? (process.env.ZMQ_TRANSLATOR_HOST || 'translator');
+    this.timeout = timeout ?? parseInt(process.env.ZMQ_TIMEOUT || '30000', 10);
+    
+    console.log(`🔧 Configuration ZMQ Client finale:`);
+    console.log(`   🌐 Host: ${this.host}`);
+    console.log(`   🔌 Port: ${this.port}`);
+    console.log(`   ⏱️  Timeout: ${this.timeout}ms`);
+  }
   
   async initialize(): Promise<void> {
     try {
       console.log('🔌 Initialisation du client ZMQ traduction...');
       
-      // 1. Créer le socket REQ
-      this.socket = new zmq.Request();
-      await this.socket.connect(`tcp://${this.host}:${this.port}`);
+      // Double vérification des variables d'environnement au moment de l'initialisation
+      console.log(`🔍 Variables d'environnement au moment de l'initialisation:`);
+      console.log(`   ZMQ_TRANSLATOR_HOST: "${process.env.ZMQ_TRANSLATOR_HOST}"`);
+      console.log(`   ZMQ_TRANSLATOR_PORT: "${process.env.ZMQ_TRANSLATOR_PORT}"`);
+      console.log(`   ZMQ_TIMEOUT: "${process.env.ZMQ_TIMEOUT}"`);
       
-      // 2. Marquer comme initialisé (pas besoin de Protobuf pour JSON)
+      // Re-vérifier la configuration au cas où les variables d'environnement ont changé
+      if (process.env.ZMQ_TRANSLATOR_HOST && this.host === 'localhost') {
+        this.host = process.env.ZMQ_TRANSLATOR_HOST;
+        console.log(`⚠️  Host mis à jour: ${this.host}`);
+      }
+      
+      // 1. Créer le socket REQ avec configuration
+      this.socket = new zmq.Request();
+      
+      // 2. Configuration du socket avec timeout
+      this.socket.receiveTimeout = this.timeout;
+      this.socket.sendTimeout = this.timeout;
+      
+      // 3. Connexion au service translator
+      const zmqUrl = `tcp://${this.host}:${this.port}`;
+      await this.socket.connect(zmqUrl);
+      
+      // 4. Marquer comme initialisé (pas besoin de Protobuf pour JSON)
       this.isInitialized = true;
-      console.log(`✅ Client ZMQ initialisé sur tcp://${this.host}:${this.port} (mode JSON)`);
+      console.log(`✅ Client ZMQ initialisé sur ${zmqUrl} (mode JSON, timeout: ${this.timeout}ms)`);
       
     } catch (error) {
       console.error('❌ Erreur initialisation client ZMQ:', error);
@@ -106,45 +148,55 @@ export class ZMQTranslationClient {
       
       console.log(`📤 Envoi traduction: "${request.text}" (${request.sourceLanguage} → ${request.targetLanguage})`);
       
-      // 3. Envoyer et attendre la réponse
+      // 3. Envoyer et attendre la réponse avec gestion du timeout
+      const startTime = Date.now();
       await this.socket.send(requestBuffer);
-      console.log(`   📨 Requête envoyée, attente de la réponse...`);
+      console.log(`   📨 Requête envoyée, attente de la réponse (timeout: ${this.timeout}ms)...`);
       
-      const [responseBuffer] = await this.socket.receive();
-      console.log(`   📥 Réponse reçue: ${responseBuffer.length} octets`);
-      
-      // 4. Désérialiser la réponse JSON
-      const responseText = responseBuffer.toString('utf-8');
-      const responseObj = JSON.parse(responseText);
-      
-      console.log(`   📦 Réponse JSON désérialisée:`, responseObj);
-      
-      const response: TranslationResponse = {
-        messageId: responseObj.messageId as string,
-        translatedText: responseObj.translatedText as string,
-        detectedSourceLanguage: responseObj.detectedSourceLanguage as string,
-        status: responseObj.status as number
-      };
-      
-      // Ajouter les métadonnées si disponibles
-      if (responseObj.metadata) {
-        const metadata = responseObj.metadata;
-        response.metadata = {
-          confidenceScore: metadata.confidenceScore as number,
-          fromCache: metadata.fromCache as boolean,
-          modelUsed: metadata.modelUsed as string
+      try {
+        const [responseBuffer] = await this.socket.receive();
+        const elapsedTime = Date.now() - startTime;
+        console.log(`   📥 Réponse reçue: ${responseBuffer.length} octets (${elapsedTime}ms)`);
+        
+        // 4. Désérialiser la réponse JSON
+        const responseText = responseBuffer.toString('utf-8');
+        const responseObj = JSON.parse(responseText);
+        
+        console.log(`   📦 Réponse JSON désérialisée:`, responseObj);
+        
+        const response: TranslationResponse = {
+          messageId: responseObj.messageId as string,
+          translatedText: responseObj.translatedText as string,
+          detectedSourceLanguage: responseObj.detectedSourceLanguage as string,
+          status: responseObj.status as number
         };
+        
+        // Ajouter les métadonnées si disponibles
+        if (responseObj.metadata) {
+          const metadata = responseObj.metadata;
+          response.metadata = {
+            confidenceScore: metadata.confidenceScore as number,
+            fromCache: metadata.fromCache as boolean,
+            modelUsed: metadata.modelUsed as string
+          };
+        }
+        
+        console.log(`   ✅ TRADUCTION FINALE CLIENT ZMQ:`);
+        console.log(`      📝 Texte original: "${request.text}"`);
+        console.log(`      🌟 Texte traduit: "${response.translatedText}"`);
+        console.log(`      🎯 Modèle utilisé: ${response.metadata?.modelUsed || 'N/A'}`);
+        console.log(`      💫 Confiance: ${response.metadata?.confidenceScore || 'N/A'}`);
+        
+        console.log(`📥 Traduction reçue: "${response.translatedText}" (confiance: ${response.metadata?.confidenceScore || 'N/A'})`);
+        
+        return response;
+        
+      } catch (timeoutError) {
+        const elapsedTime = Date.now() - startTime;
+        const errorMessage = timeoutError instanceof Error ? timeoutError.message : String(timeoutError);
+        console.error(`❌ Timeout ZMQ après ${elapsedTime}ms (limite: ${this.timeout}ms):`, timeoutError);
+        throw new Error(`ZMQ timeout après ${elapsedTime}ms: ${errorMessage}`);
       }
-      
-      console.log(`   ✅ TRADUCTION FINALE CLIENT ZMQ:`);
-      console.log(`      📝 Texte original: "${request.text}"`);
-      console.log(`      🌟 Texte traduit: "${response.translatedText}"`);
-      console.log(`      🎯 Modèle utilisé: ${response.metadata?.modelUsed || 'N/A'}`);
-      console.log(`      💫 Confiance: ${response.metadata?.confidenceScore || 'N/A'}`);
-      
-      console.log(`📥 Traduction reçue: "${response.translatedText}" (confiance: ${response.metadata?.confidenceScore || 'N/A'})`);
-      
-      return response;
       
     } catch (error) {
       console.error('❌ Erreur traduction ZMQ:', error);
@@ -215,6 +267,54 @@ export class ZMQTranslationClient {
     if (length < 20) return 'basic';
     if (length <= 100) return 'medium';
     return 'premium';
+  }
+  
+  /**
+   * Obtient la configuration actuelle du client ZMQ
+   */
+  getConfiguration(): { host: string; port: number; timeout: number; isInitialized: boolean } {
+    return {
+      host: this.host,
+      port: this.port,
+      timeout: this.timeout,
+      isInitialized: this.isInitialized
+    };
+  }
+  
+  /**
+   * Test de connectivité sans traduction
+   */
+  async testConnection(): Promise<{ success: boolean; latency?: number; error?: string }> {
+    if (!this.isInitialized || !this.socket) {
+      return { success: false, error: 'Client non initialisé' };
+    }
+    
+    const startTime = Date.now();
+    try {
+      // Ping simple avec une traduction très courte
+      const testRequest = {
+        messageId: 'connection-test',
+        text: 'Hi',
+        sourceLanguage: 'en',
+        targetLanguage: 'fr',
+        modelType: 'basic'
+      };
+      
+      const requestBuffer = Buffer.from(JSON.stringify(testRequest), 'utf-8');
+      await this.socket.send(requestBuffer);
+      
+      const [responseBuffer] = await this.socket.receive();
+      const latency = Date.now() - startTime;
+      
+      console.log(`✅ Test de connexion ZMQ réussi (${latency}ms)`);
+      return { success: true, latency };
+      
+    } catch (error) {
+      const latency = Date.now() - startTime;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`❌ Test de connexion ZMQ échoué après ${latency}ms:`, error);
+      return { success: false, latency, error: errorMessage };
+    }
   }
   
   async close(): Promise<void> {

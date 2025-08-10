@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { InitService } from '../services/init.service';
+import { logError, logWarn } from '../utils/logger';
 
 // Schémas de validation
 const loginSchema = z.object({
@@ -116,7 +117,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Login error:', error);
+      logError(fastify.log, 'Login error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -185,7 +186,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       try {
         await InitService.addUserToGlobalConversation(newUser.id);
       } catch (error) {
-        fastify.log.warn(`Échec de l'ajout de l'utilisateur ${newUser.id} à la conversation globale:`, error);
+        logWarn(fastify.log, `Échec de l'ajout de l'utilisateur ${newUser.id} à la conversation globale:`, error);
         // Ne pas bloquer l'inscription si l'ajout à la conversation échoue
       }
 
@@ -209,7 +210,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Register error:', error);
+      logError(fastify.log, 'Register error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -239,7 +240,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Logout error:', error);
+      logError(fastify.log, 'Logout error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -284,7 +285,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Verify token error:', error);
+      logError(fastify.log, 'Verify token error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -329,7 +330,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       return reply.send(user);
 
     } catch (error) {
-      fastify.log.error('Get user profile error:', error);
+      logError(fastify.log, 'Get user profile error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'

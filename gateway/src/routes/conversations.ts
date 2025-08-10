@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
-import { PrismaClient } from '../../libs/prisma/client';
+import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService } from '../services/TranslationService';
 import { ZMQTranslationClient } from '../services/zmq-translation-client';
 

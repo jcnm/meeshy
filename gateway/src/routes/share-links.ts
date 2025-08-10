@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { logError } from '../utils/logger';
 
 // Schémas de validation
 const createShareLinkSchema = z.object({
@@ -91,7 +92,7 @@ export async function shareLinksRoutes(fastify: FastifyInstance) {
         });
       }
 
-      fastify.log.error('Create share link error:', error);
+      logError(fastify.log, 'Create share link error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -176,7 +177,7 @@ export async function shareLinksRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get share link error:', error);
+      logError(fastify.log, 'Get share link error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -306,7 +307,7 @@ export async function shareLinksRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Join via share link error:', error);
+      logError(fastify.log, 'Join via share link error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -342,7 +343,7 @@ export async function shareLinksRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Get user share links error:', error);
+      logError(fastify.log, 'Get user share links error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -401,7 +402,7 @@ export async function shareLinksRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Deactivate share link error:', error);
+      logError(fastify.log, 'Deactivate share link error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'
@@ -459,7 +460,7 @@ export async function shareLinksRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      fastify.log.error('Delete share link error:', error);
+      logError(fastify.log, 'Delete share link error:', error);
       return reply.status(500).send({
         success: false,
         message: 'Erreur interne du serveur'

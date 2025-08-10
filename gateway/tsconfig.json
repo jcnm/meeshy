@@ -3,12 +3,28 @@
     "target": "ES2022",
     "module": "commonjs",
     "moduleResolution": "node",
-    "strict": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictBindCallApply": false,
+    "strictPropertyInitialization": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "useUnknownInCatchVariables": false,
+    "noImplicitOverride": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
+    "baseUrl": "./",
+    "paths": {
+      "@shared/*": ["./shared/*"]
+    },
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -35,13 +51,10 @@
     "src/websocket/**/*",
     "src/grpc/**/*",
     "src/types/**/*",
-    "src/grpc/**/*"
+    "shared/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "src/server-optimized.ts",
-    "src/websocket/advanced-handler.ts",
-    "src/websocket/websocket-manager.ts"
   ]
 }

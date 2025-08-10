@@ -3,7 +3,7 @@
  * Gère les traductions de messages avec cache et détection de langue
  */
 
-import { PrismaClient } from '../../libs/prisma/client';
+import { PrismaClient } from '../../shared/prisma/client';
 import { ZMQTranslationClient } from './zmq-translation-client';
 
 export interface TranslationRequest {
