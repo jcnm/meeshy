@@ -19,7 +19,19 @@ load_env_file() {
     
     if [[ -f "$env_file" ]]; then
         echo -e "${GREEN}✅ [TRA] Chargement des variables depuis $env_file${NC}"
-        source "$env_file"
+        # Lire le fichier .env et exporter les variables
+        while IFS='=' read -r key value; do
+            # Ignorer les commentaires et les lignes vides
+            if [[ ! "$key" =~ ^[[:space:]]*# ]] && [[ -n "$key" ]]; then
+                # Supprimer les guillemets et espaces en début/fin
+                key=$(echo "$key" | xargs)
+                value=$(echo "$value" | xargs)
+                value=${value#\"}  # Supprimer guillemet de début
+                value=${value%\"}  # Supprimer guillemet de fin
+                export "$key=$value"
+                echo "  - $key=$value"
+            fi
+        done < "$env_file"
     else
         echo -e "${YELLOW}⚠️  [TRA] Fichier $env_file non trouvé, utilisation des valeurs par défaut${NC}"
     fi
@@ -84,8 +96,8 @@ echo -e "${GREEN}🚀 [TRA] Démarrage du translator intégré (FastAPI + ZMQ)..
 echo "   Utilisez Ctrl+C pour arrêter"
 echo "================================================="
 
-# Démarrer avec Python directement (main.py gère FastAPI + ZMQ)
-.venv/bin/python main.py &
+# Démarrer avec notre script de démarrage personnalisé
+.venv/bin/python start_service.py &
 TRANSLATOR_PID=$!
 
 # Attendre le démarrage
