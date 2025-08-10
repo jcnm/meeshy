@@ -403,7 +403,7 @@ const config = {
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "schemaEnvPath": "../../../../gateway/.env"
   },
   "relativePath": "../..",
   "clientVersion": "6.13.0",

@@ -145,7 +145,7 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">Bienvenue, {user.displayName || user.username}</h1>
+              <h1 className="text-2xl font-bold">Bienvenue, {user.displayName || (user.firstName ? `${user.firstName} ${user.lastName}` : user.username)}</h1>
               <p className="text-purple-100 mt-1">
                 Niveau d&apos;accès: {userInfo?.role || user.role} - Administration Meeshy
               </p>
