@@ -10,6 +10,10 @@ from typing import Optional, List, Dict, Any
 import logging
 import asyncio
 
+# Import du health router
+from api.health import health_router, set_services
+from api.health_simple import simple_health_router
+
 logger = logging.getLogger(__name__)
 
 # ===== MODÈLES PYDANTIC =====
@@ -50,8 +54,11 @@ class ErrorResponse(BaseModel):
 class TranslationAPI:
     """API FastAPI pour le service de traduction"""
     
-    def __init__(self, translation_service):
+    def __init__(self, translation_service, database_service=None, zmq_server=None):
         self.translation_service = translation_service
+        self.database_service = database_service
+        self.zmq_server = zmq_server
+        
         self.app = FastAPI(
             title="Meeshy Translation API",
             description="Service de traduction multi-langues avec ML",
@@ -69,7 +76,18 @@ class TranslationAPI:
             allow_headers=["*"],
         )
         
-        # Enregistrer les routes
+        # Configurer les services pour le health check
+        set_services(
+            trans_service=translation_service,
+            db_service=database_service,
+            zmq_srv=zmq_server
+        )
+        
+        # Inclure seulement le routeur de santé simplifié (temporaire)
+        # self.app.include_router(health_router)  # Désactivé temporairement
+        self.app.include_router(simple_health_router)
+        
+        # Enregistrer les autres routes
         self._register_routes()
         
         # Variables de monitoring
@@ -87,38 +105,6 @@ class TranslationAPI:
         @self.app.on_event("shutdown")
         async def shutdown_event():
             logger.info("🛑 API FastAPI arrêtée")
-        
-        # ===== ROUTES DE SANTÉ =====
-        
-        @self.app.get("/health", response_model=HealthResponse)
-        async def health_check():
-            """Vérification de santé du service"""
-            import time
-            uptime = time.time() - (self.start_time or time.time())
-            
-            models_status = {}
-            if hasattr(self.translation_service, 'models_loaded'):
-                models_status = self.translation_service.models_loaded
-            
-            return HealthResponse(
-                status="healthy" if self.translation_service else "unhealthy",
-                version="1.0.0",
-                models_loaded=models_status,
-                uptime_seconds=uptime
-            )
-        
-        @self.app.get("/ready")
-        async def readiness_check():
-            """Vérification de préparation du service"""
-            if not self.translation_service:
-                raise HTTPException(status_code=503, detail="Service not initialized")
-            
-            return {"status": "ready", "message": "Service is ready to handle requests"}
-        
-        @self.app.get("/live")
-        async def liveness_check():
-            """Vérification de vivacité du service"""
-            return {"status": "alive", "timestamp": __import__('time').time()}
         
         # ===== ROUTES DE TRADUCTION =====
         
