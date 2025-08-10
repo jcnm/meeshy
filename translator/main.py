@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Imports locaux
 try:
-    from services.database_service import DatabaseService
+    from services.database_service_temp import DatabaseService  # Utilisation temporaire du service simplifié
     from services.translation_service import TranslationService
     from services.zmq_server import ZMQTranslationServer
     from api.translation_api import TranslationAPI
@@ -86,9 +86,11 @@ class MeeshyTranslationServer:
             )
             logger.info(f"✅ Serveur ZMQ configuré sur port {zmq_port}")
             
-            # 4. Initialise l'API FastAPI
+            # 4. Initialise l'API FastAPI avec tous les services
             self.translation_api = TranslationAPI(
-                translation_service=self.translation_service
+                translation_service=self.translation_service,
+                database_service=self.database_service,
+                zmq_server=self.zmq_server
             )
             logger.info("✅ API FastAPI configurée")
             
