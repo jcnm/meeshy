@@ -32,8 +32,12 @@ coverage/
 
 # Models - Très volumineux (seront copiés spécifiquement dans translator)
 translator/models/
-!translator/models/README.md
-!translator/models/index.json
+translator/models/README.md
+translator/models/index.json
+models
+./*/**/models
+./*/models
+./.models
 
 # Développement
 .vscode/

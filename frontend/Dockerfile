@@ -49,6 +49,7 @@ ARG NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
 
 ENV NODE_ENV=${NODE_ENV}
 ENV PORT=${PORT}
+ENV HOSTNAME=0.0.0.0
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
 ENV NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL}
@@ -77,6 +78,6 @@ EXPOSE ${PORT}
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:${PORT}', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://0.0.0.0:${PORT}', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 CMD ["node", "server.js"]

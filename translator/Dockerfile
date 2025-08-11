@@ -50,9 +50,10 @@ RUN if [ -f shared/prisma/schema.prisma ]; then \
     fi
 
 # Install Node.js dependencies for shared libraries if needed
-RUN if [ -f shared/package.json ]; then \
-        cd shared && pnpm install --no-frozen-lockfile && pnpm run generate; \
-    fi
+# RUN if [ -f shared/package.json ]; then \
+#         cd shared && pnpm install --no-frozen-lockfile && pnpm run generate; \
+#     fi
+
 
 # === PRODUCTION STAGE ===
 FROM base AS runner
@@ -128,10 +129,9 @@ RUN groupadd -g 1001 translator && \
 # Copy built application and dependencies including generated Prisma client
 COPY --from=builder --chown=translator:translator /app/src ./src
 COPY --from=builder --chown=translator:translator /app/start_service.py ./start_service.py
-COPY --from=builder --chown=translator:translator /app/models ./models
 COPY --from=builder --chown=translator:translator /app/shared ./shared
 # Copy the generated schema if it exists (from shared/prisma distribution)
-COPY --from=builder --chown=translator:translator /app/schema.prisma ./schema.prisma
+# COPY --from=builder --chown=translator:translator /app/schema.prisma ./schema.prisma
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --chown=translator:translator requirements.txt ./
