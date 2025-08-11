@@ -82,8 +82,8 @@ EOF
                 echo "  📝 Schema Prisma Python généré avec client 'prisma-client-py'"
                 
                 # Aussi copier le schema Python directement dans le translator pour utilisation immédiate
-                cp "$python_schema" "$service_dir/schema.prisma"
-                echo "  ✅ Schema copié vers $service_name/schema.prisma pour génération immédiate"
+                # cp "$python_schema" "$service_dir/schema.prisma"
+                # echo "  ✅ Schema copié vers $service_name/schema.prisma pour génération immédiate"
             fi
    
             # Copier les fichiers Proto source pour génération Python
