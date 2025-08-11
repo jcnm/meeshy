@@ -37,7 +37,7 @@ except ImportError:
 
 from config.settings import get_settings, get_model_language_code, get_iso_language_code
 from services.cache_service import CacheService
-from services.database_service import DatabaseService  # Service Prisma principal
+from services.database_service_real import DatabaseServiceReal as DatabaseService
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +118,8 @@ class TranslationService:
         # Logger le statut de la base de données
         if self.database_service and self.database_service.is_connected:
             logger.info("✅ Service de traduction connecté à la base de données")
+            # Afficher les statistiques de traduction au démarrage
+            await self._display_database_statistics()
         else:
             logger.warning("⚠️  Service de traduction initialisé sans connexion à la base de données")
         
@@ -165,52 +167,13 @@ class TranslationService:
     async def _display_database_statistics(self):
         """Affiche les statistiques de base de données au démarrage"""
         try:
-            if not self.database_service or not hasattr(self.database_service, 'prisma') or not self.database_service.prisma:
+            if not self.database_service:
                 logger.info("📊 Base de données: Aucune connexion disponible pour les statistiques")
                 return
             
-            logger.info("📊 Collecte des statistiques de base de données...")
-            
-            # Compter les traductions totales
-            total_translations = await self.database_service.prisma.messagetranslation.count()
-            
-            # Compter les langues uniques (source et target)
-            # Requête pour les langues sources
-            source_languages = await self.database_service.prisma.messagetranslation.find_many(
-                distinct=['sourceLanguage'],
-                select={'sourceLanguage': True}
-            )
-            
-            # Requête pour les langues cibles
-            target_languages = await self.database_service.prisma.messagetranslation.find_many(
-                distinct=['targetLanguage'],
-                select={'targetLanguage': True}
-            )
-            
-            # Combiner et compter les langues uniques
-            all_languages = set()
-            for lang in source_languages:
-                all_languages.add(lang.sourceLanguage)
-            for lang in target_languages:
-                all_languages.add(lang.targetLanguage)
-            
-            unique_languages = len(all_languages)
-            
-            # Compter les messages totaux
-            total_messages = await self.database_service.prisma.message.count()
-            
-            # Affichage des statistiques
-            logger.info("📈 === STATISTIQUES DE BASE DE DONNÉES ===")
-            logger.info(f"📝 Total des traductions: {total_translations:,}")
-            logger.info(f"🌐 Langues uniques répertoriées: {unique_languages}")
-            logger.info(f"💬 Total des messages: {total_messages:,}")
-            if all_languages:
-                logger.info(f"🗣️  Langues détectées: {', '.join(sorted(all_languages))}")
-            logger.info("==========================================")
-            
-            # Mettre à jour les stats internes
-            self.stats['translations_count'] = total_translations
-            self.stats['languages_detected'] = unique_languages
+            # Notre service de base de données simplifié gère déjà l'affichage des statistiques
+            # dans sa méthode display_statistics() appelée depuis initialize()
+            logger.info("✅ Statistiques de traduction affichées par le service de base de données")
             
         except Exception as e:
             logger.warning(f"⚠️  Impossible de récupérer les statistiques de base de données: {e}")
@@ -226,14 +189,28 @@ class TranslationService:
                 models_to_load.append(model_name)
         
         logger.info(f"� Chargement de TOUS les modèles: {models_to_load}")
-        logger.info(f"🗂️ Chemin des modèles: {self.settings.models_path}")
+        logger.info(f"🗂️ Chemin des modèles configuré: {self.settings.models_path}")
         
         # Vérifier l'existence du chemin des modèles
         models_path = Path(self.settings.models_path)
+        logger.info(f"📁 Vérification du répertoire: {models_path.absolute()}")
+        
         if not models_path.exists():
-            logger.error(f"❌ Le chemin des modèles n'existe pas: {models_path}")
-            logger.error(f"   Répertoire courant: {os.getcwd()}")
-            raise FileNotFoundError(f"Le répertoire des modèles n'existe pas: {models_path}")
+            logger.warning(f"⚠️ Le chemin des modèles n'existe pas: {models_path.absolute()}")
+            logger.info(f"📂 Répertoire courant: {os.getcwd()}")
+            logger.info(f"🔧 Création du répertoire des modèles...")
+            
+            try:
+                models_path.mkdir(parents=True, exist_ok=True)
+                logger.info(f"✅ Répertoire des modèles créé: {models_path.absolute()}")
+            except Exception as e:
+                logger.error(f"❌ Impossible de créer le répertoire des modèles: {e}")
+                logger.warning("🔄 Continuation en mode dégradé sans modèles locaux")
+                # Ne pas lever d'exception, juste passer en mode dégradé
+                self.models = {}
+                self.tokenizers = {}
+                self.pipelines = {}
+                return
         
         # Vérifier l'espace disque pour le modèle 1.3B
         import shutil
@@ -404,7 +381,19 @@ class TranslationService:
             
             # 5. Mise à jour des statistiques
             processing_time = time.time() - start_time
+            processing_time_ms = int(processing_time * 1000)
             self._update_stats(processing_time, success=not translation_result.get('error'))
+            
+            # 6. Enregistrer dans la base de données si connectée
+            if self.database_service and self.database_service.is_connected and not translation_result.get('error'):
+                await self.database_service.record_translation(
+                    source_lang=source_language,
+                    target_lang=target_language,
+                    model_used=translation_result.get('model_used', model_type),
+                    text_length=len(text),
+                    confidence_score=translation_result.get('confidence', 0.0),
+                    processing_time_ms=processing_time_ms
+                )
             
             return {
                 **translation_result,

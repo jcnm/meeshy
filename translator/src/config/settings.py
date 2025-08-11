@@ -30,7 +30,15 @@ class Settings:
         # Configuration ML
         self.ml_batch_size = int(os.getenv("ML_BATCH_SIZE", "32"))
         self.gpu_memory_fraction = float(os.getenv("GPU_MEMORY_FRACTION", "0.8"))
-        self.models_path = os.getenv("MODELS_PATH", "models")  # Chemin local corrigé
+        # Chemin des modèles - absolu depuis la racine du projet
+        models_path_env = os.getenv("MODELS_PATH", "models")
+        if os.path.isabs(models_path_env):
+            self.models_path = models_path_env
+        else:
+            # Si chemin relatif, le calculer depuis la racine du projet (parent de src)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(os.path.dirname(current_dir))  # remonte de src/config vers racine
+            self.models_path = os.path.join(project_root, models_path_env)
         
         # Configuration des langues
         self.default_language = os.getenv("DEFAULT_LANGUAGE", "fr")
