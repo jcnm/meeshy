@@ -24,7 +24,7 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('translator.log')
+        logging.FileHandler('translator.log', mode='w')  # Mode 'w' pour écraser le fichier
     ]
 )
 
@@ -51,13 +51,16 @@ class MeeshyTranslationServer:
             logger.info(f"✅ Service de traduction haute performance initialisé avec {max_workers} workers")
             
             # 2. Initialiser le serveur ZMQ haute performance
-            zmq_port = int(self.settings.zmq_port or 5555)
             self.zmq_server = ZMQTranslationServer(
-                translation_service=self.translation_service,
-                port=zmq_port,
-                max_workers=max_workers
+                gateway_pub_port=5557,  # Port PUB du Gateway (requêtes) - Translator SUB se connecte
+                gateway_sub_port=5555,  # Port SUB du Gateway (résultats) - Translator PUB se connecte
+                normal_workers=max_workers // 2,
+                any_workers=max_workers // 4,
+                translation_service=self.translation_service  # Passer le service de traduction
             )
-            logger.info(f"✅ Serveur ZMQ haute performance configuré sur port {zmq_port}")
+            # Initialiser le serveur ZMQ
+            await self.zmq_server.initialize()
+            logger.info(f"✅ Serveur ZMQ haute performance configuré: Gateway PUB 5557, Gateway SUB 5555")
             
             # 3. Initialiser l'API FastAPI (interface REST)
             self.translation_api = TranslationAPI(
@@ -80,9 +83,18 @@ class MeeshyTranslationServer:
         """Démarre le serveur ZMQ haute performance"""
         try:
             logger.info("🔌 Démarrage du serveur ZMQ haute performance...")
-            await self.zmq_server.start()
+            # Marquer le serveur comme démarré
+            self.zmq_server.running = True
+            logger.info(f"✅ Serveur ZMQ marqué comme démarré (running={self.zmq_server.running})")
+            # Démarrer le serveur ZMQ en arrière-plan
+            task = asyncio.create_task(self.zmq_server.start())
+            logger.info("✅ Tâche serveur ZMQ créée avec succès")
+            return task
         except Exception as e:
             logger.error(f"❌ Erreur serveur ZMQ: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
     
     async def start_api_server(self):
         """Démarre l'API FastAPI"""
@@ -90,8 +102,8 @@ class MeeshyTranslationServer:
             logger.info("🌐 Démarrage de l'API FastAPI...")
             import uvicorn
             
-            host = self.settings.api_host or "0.0.0.0"
-            port = int(self.settings.api_port or 8000)
+            host = "0.0.0.0"
+            port = int(self.settings.fastapi_port or 8000)
             
             config = uvicorn.Config(
                 app=self.translation_api.app,
@@ -116,16 +128,23 @@ class MeeshyTranslationServer:
         try:
             logger.info("🚀 Démarrage du serveur de traduction haute performance...")
             
-            # Démarrer les serveurs en parallèle
-            await asyncio.gather(
-                self.start_zmq_server(),
-                self.start_api_server()
-            )
+            # Démarrer le serveur ZMQ en arrière-plan
+            zmq_task = await self.start_zmq_server()
+            if not zmq_task:
+                logger.error("❌ Impossible de démarrer le serveur ZMQ")
+                return
+            
+            logger.info("✅ Serveur ZMQ démarré avec succès")
+            
+            # Démarrer l'API FastAPI (bloquant)
+            await self.start_api_server()
             
         except KeyboardInterrupt:
             logger.info("🛑 Arrêt demandé par l'utilisateur")
         except Exception as e:
             logger.error(f"❌ Erreur serveur: {e}")
+            import traceback
+            traceback.print_exc()
         finally:
             await self.stop()
     

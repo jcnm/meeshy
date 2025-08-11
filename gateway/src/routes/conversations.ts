@@ -1,14 +1,24 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService } from '../services/TranslationService';
-import { ZMQTranslationClient } from '../services/zmq-translation-client';
+import { ZMQSingleton } from '../services/zmq-singleton';
 
 const prisma = new PrismaClient();
-const zmqClient = new ZMQTranslationClient();
-const translationService = new TranslationService(prisma, zmqClient);
+let zmqClient: any = null;
+let translationService: TranslationService | null = null;
 
-// Initialiser le service de traduction
-translationService.initialize().catch(console.error);
+async function initializeServices() {
+  if (!zmqClient) {
+    zmqClient = await ZMQSingleton.getInstance();
+  }
+  if (!translationService) {
+    translationService = new TranslationService(prisma);
+    await translationService.initialize();
+  }
+  return { zmqClient, translationService };
+}
+
+
 
 // Fonction utilitaire pour prédire le type de modèle
 function getPredictedModelType(textLength: number): 'basic' | 'medium' | 'premium' {
@@ -48,6 +58,8 @@ interface MessagesQuery {
 }
 
 export async function conversationRoutes(fastify: FastifyInstance) {
+  // Initialiser les services
+  const { translationService } = await initializeServices();
   
   // Route pour obtenir toutes les conversations de l'utilisateur
   fastify.get('/conversations', {

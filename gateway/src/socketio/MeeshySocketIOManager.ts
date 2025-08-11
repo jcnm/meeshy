@@ -64,8 +64,7 @@ export class MeeshySocketIOManager {
       // Configurer les événements Socket.IO
       this._setupSocketEvents();
       
-      // Écouter les événements de traduction terminée
-      this.translationService.on('translationReady', this._handleTranslationReady.bind(this));
+      // Note: Les événements de traduction sont gérés via le singleton ZMQ
       
       console.log('✅ MeeshySocketIOManager initialisé avec succès');
       

@@ -113,12 +113,14 @@ class TranslationAPI:
                 import time
                 start_time = time.time()
                 
+                logger.info(f"🌐 [TRANSLATOR-API] Requête REST reçue: texte='{request.text[:50]}...', source={request.source_language}, target={request.target_language}, modèle={request.model_type}")
+                
                 # Validation des paramètres
                 if not request.text.strip():
                     raise HTTPException(status_code=400, detail="Text cannot be empty")
                 
                 # Appel au service de traduction
-                result = await self.translation_service.translate_text(
+                result = await self.translation_service.translate(
                     text=request.text,
                     source_language=request.source_language,
                     target_language=request.target_language,
@@ -126,6 +128,8 @@ class TranslationAPI:
                 )
                 
                 processing_time = int((time.time() - start_time) * 1000)
+                
+                logger.info(f"✅ [TRANSLATOR-API] Traduction REST terminée: '{request.text[:30]}...' → '{result.get('translated_text', '')[:30]}...' ({processing_time}ms)")
                 
                 return TranslationResponse(
                     original_text=request.text,
@@ -140,6 +144,8 @@ class TranslationAPI:
                 
             except Exception as e:
                 logger.error(f"❌ Erreur traduction API: {e}")
+                import traceback
+                traceback.print_exc()
                 raise HTTPException(
                     status_code=500, 
                     detail=f"Translation failed: {str(e)}"

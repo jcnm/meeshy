@@ -18,7 +18,7 @@ import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import { PrismaClient } from '../shared/prisma/client'; // Import Prisma client from shared library
 import winston from 'winston';
-import { ZMQTranslationClient } from './services/zmq-translation-client';
+import { ZMQSingleton } from './services/zmq-singleton';
 import { TranslationService } from './services/TranslationService';
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
@@ -26,6 +26,7 @@ import { conversationRoutes } from './routes/conversations';
 import { messageRoutes } from './routes/messages';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
+import { translationRoutes } from './routes/translation';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -203,7 +204,6 @@ declare module 'fastify' {
 class MeeshyServer {
   private server: FastifyInstance;
   private prisma: PrismaClient;
-  private translationClient: ZMQTranslationClient;
   private translationService: TranslationService;
   private socketIOHandler: MeeshySocketIOHandler;
 
@@ -217,9 +217,8 @@ class MeeshyServer {
       log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error']
     });
     
-    // Utiliser les variables d'environnement par défaut
-    this.translationClient = new ZMQTranslationClient();
-    this.translationService = new TranslationService(this.prisma, this.translationClient);
+    // Initialiser le service de traduction
+    this.translationService = new TranslationService(this.prisma);
     this.socketIOHandler = new MeeshySocketIOHandler(this.prisma, config.jwtSecret);
   }
 
@@ -380,7 +379,7 @@ class MeeshyServer {
       try {
         const [userCount, translationHealthy] = await Promise.all([
           this.prisma.user.count(),
-          this.translationClient.healthCheck().catch(() => false)
+          this.translationService.healthCheck().catch(() => false)
         ]);
         
         const health = {
@@ -428,79 +427,14 @@ class MeeshyServer {
       };
     });
 
-    // Translation REST API
-    this.server.post<{ Body: TranslationRequest }>('/translate', {
-      schema: {
-        body: {
-          type: 'object',
-          required: ['text', 'source_language', 'target_language'],
-          properties: {
-            text: { type: 'string', minLength: 1, maxLength: 5000 },
-            source_language: { type: 'string', pattern: '^[a-z]{2}$' },
-            target_language: { type: 'string', pattern: '^[a-z]{2}$' }
-          }
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              translated_text: { type: 'string' },
-              original_text: { type: 'string' },
-              source_language: { type: 'string' },
-              target_language: { type: 'string' },
-              confidence: { type: 'number' },
-              timestamp: { type: 'string' },
-              processing_time_ms: { type: 'number' }
-            }
-          }
-        }
-      }
-    }, async (request, reply) => {
-      const startTime = Date.now();
+    // Register translation routes with the translation service
+    await this.server.register(async (fastify) => {
+      // Attacher le service de traduction à l'instance fastify
+      (fastify as any).translationService = this.translationService;
       
-      try {
-        const { text, source_language, target_language } = request.body;
-        
-        // Validation supplémentaire
-        if (!text.trim()) {
-          throw new ValidationError('Text cannot be empty');
-        }
-        
-        logger.info(`REST API translation request: "${text}" (${source_language} → ${target_language})`);
-        
-        const result = await this.translationClient.translateText({
-          messageId: `api_${Date.now()}`,
-          text,
-          sourceLanguage: source_language,
-          targetLanguage: target_language
-        });
-        
-        const processingTime = Date.now() - startTime;
-        
-        const response = {
-          translated_text: result.translatedText,
-          original_text: text,
-          source_language,
-          target_language,
-          confidence: result.metadata?.confidenceScore || 0,
-          timestamp: new Date().toISOString(),
-          processing_time_ms: processingTime
-        };
-        
-        logger.info(`REST API translation completed in ${processingTime}ms`);
-        return response;
-        
-      } catch (error) {
-        const processingTime = Date.now() - startTime;
-        logger.error(`REST API translation failed after ${processingTime}ms:`, error);
-        
-        if (error instanceof ValidationError) {
-          throw error; // Will be handled by global error handler
-        }
-        
-        throw new TranslationError(error instanceof Error ? error.message : 'Unknown error');
-      }
-    });
+      // Enregistrer les routes de traduction
+      await fastify.register(translationRoutes);
+    }, { prefix: '' });
     
     // Register authentication routes with /auth prefix
     await this.server.register(authRoutes, { prefix: '/auth' });
@@ -545,13 +479,9 @@ class MeeshyServer {
 
     // Initialize translation service
     try {
-      await this.translationClient.initialize();
-      const isHealthy = await this.translationClient.healthCheck();
+      await this.translationService.initialize();
+      const isHealthy = await this.translationService.healthCheck();
       if (isHealthy) {
-        logger.info('✓ Translation client connected successfully');
-        
-        // Initialize TranslationService
-        await this.translationService.initialize();
         logger.info('✓ Translation service initialized successfully');
       } else {
         throw new Error('Translation service health check failed');
@@ -596,7 +526,7 @@ class MeeshyServer {
       logger.info('Configuration loaded:', {
         environment: config.nodeEnv,
         port: config.port,
-        translationPort: parseInt(process.env.ZMQ_TRANSLATOR_PORT || '5555'),
+        translationPort: parseInt(process.env.ZMQ_TRANSLATOR_PORT || '5558'),
         development: config.isDev
       });
 
@@ -628,8 +558,8 @@ class MeeshyServer {
     logger.info('🛑 Shutting down server...');
 
     try {
-      if (this.translationClient) {
-        await this.translationClient.close();
+      if (this.translationService) {
+        await this.translationService.close();
         logger.info('✓ Translation service connection closed');
       }
 

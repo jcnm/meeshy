@@ -88,15 +88,15 @@ export class ZMQTranslationClient extends EventEmitter {
 
   constructor(
     host: string = 'localhost',
-    pubPort: number = 5555,
-    subPort: number = 5556
+    pubPort: number = 5557,  // Port PUB Gateway - se lie ici pour envoyer requêtes au Translator
+    subPort: number = 5555   // Port SUB Gateway - se connecte au Translator PUB sur ce port
   ) {
     super();
     this.host = host;
     this.pubPort = pubPort;
     this.subPort = subPort;
     
-    logger.info(`ZMQTranslationClient initialisé: PUB ${host}:${pubPort}, SUB ${host}:${subPort}`);
+    logger.info(`[ZMQ-Client] ZMQTranslationClient initialisé: PUB bind ${host}:${pubPort} (envoi requêtes), SUB connect ${host}:${subPort} (réception résultats)`);
   }
 
   async initialize(): Promise<void> {
@@ -104,20 +104,22 @@ export class ZMQTranslationClient extends EventEmitter {
       // Créer le contexte ZMQ
       this.context = new zmq.Context();
       
-      // Socket PUB pour envoyer les requêtes de traduction
+      // Socket PUB pour envoyer les requêtes de traduction (se lie au port 5557)
       this.pubSocket = new zmq.Publisher();
       await this.pubSocket.bind(`tcp://${this.host}:${this.pubPort}`);
       
-      // Socket SUB pour recevoir les résultats
+      // Socket SUB pour recevoir les résultats (se lie au port 5555 pour que le Translator se connecte)
       this.subSocket = new zmq.Subscriber();
-      await this.subSocket.connect(`tcp://${this.host}:${this.subPort}`);
+      await this.subSocket.bind(`tcp://${this.host}:${this.subPort}`);
       await this.subSocket.subscribe(''); // S'abonner à tous les messages
       
       // Démarrer l'écoute des résultats
       this._startResultListener();
       
       this.running = true;
-      logger.info('✅ ZMQTranslationClient initialisé avec succès');
+      logger.info('✅ [ZMQ-Client] ZMQTranslationClient initialisé avec succès');
+      logger.info(`🔌 [ZMQ-Client] Socket PUB lié: ${this.host}:${this.pubPort} (envoi requêtes)`);
+      logger.info(`🔌 [ZMQ-Client] Socket SUB lié: ${this.host}:${this.subPort} (réception résultats)`);
       
     } catch (error) {
       logger.error(`❌ Erreur initialisation ZMQTranslationClient: ${error}`);
@@ -130,7 +132,7 @@ export class ZMQTranslationClient extends EventEmitter {
       throw new Error('Socket SUB non initialisé');
     }
 
-    logger.info('🎧 Démarrage écoute des résultats de traduction...');
+    logger.info('🎧 [ZMQ-Client] Démarrage écoute des résultats de traduction...');
 
     (async () => {
       try {
@@ -159,8 +161,10 @@ export class ZMQTranslationClient extends EventEmitter {
       
       this.stats.results_received++;
       
+      logger.info(`📥 [ZMQ-Client] Résultat ZMQ reçu: type=${event.type}, taskId=${event.taskId || 'N/A'}`);
+      
       if (event.type === 'translation_completed') {
-        logger.info(`📥 Résultat reçu: ${event.taskId} -> ${event.targetLanguage}`);
+        logger.info(`✅ [ZMQ-Client] Traduction terminée: ${event.taskId} -> ${event.targetLanguage}`);
         
         // Émettre l'événement de traduction terminée
         this.emit('translationCompleted', {
@@ -177,10 +181,10 @@ export class ZMQTranslationClient extends EventEmitter {
         
         if (event.error === 'translation pool full') {
           this.stats.pool_full_rejections++;
-          logger.warning(`⚠️ Pool de traduction pleine pour ${event.messageId}`);
+          logger.warning(`⚠️ [ZMQ-Client] Pool de traduction pleine pour ${event.messageId}`);
         }
         
-        logger.error(`❌ Erreur de traduction: ${event.error} pour ${event.messageId}`);
+        logger.error(`❌ [ZMQ-Client] Erreur de traduction: ${event.error} pour ${event.messageId}`);
         
         // Émettre l'événement d'erreur
         this.emit('translationError', {
@@ -195,7 +199,7 @@ export class ZMQTranslationClient extends EventEmitter {
       }
       
     } catch (error) {
-      logger.error(`❌ Erreur traitement résultat: ${error}`);
+      logger.error(`❌ [ZMQ-Client] Erreur traitement résultat: ${error}`);
     }
   }
 
@@ -231,7 +235,7 @@ export class ZMQTranslationClient extends EventEmitter {
         timestamp: Date.now()
       });
       
-      logger.info(`📤 Requête envoyée: ${taskId} pour ${request.conversationId} (${request.targetLanguages.length} langues)`);
+      logger.info(`📤 [ZMQ-Client] Requête ZMQ envoyée: taskId=${taskId}, conversationId=${request.conversationId}, langues=${request.targetLanguages.length}, message=${JSON.stringify(requestMessage)}`);
       
       return taskId;
       
