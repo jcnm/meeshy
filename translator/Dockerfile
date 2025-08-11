@@ -33,9 +33,14 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=1
 RUN rm -rf /app/.venv /app/venv
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies and generate Prisma client
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir prisma python-dotenv && \
+    pip install --default-timeout=300 --no-cache-dir -r requirements.txt
+
+# Copy schema.prisma and generate Prisma Python client
+COPY schema.prisma ./
+RUN prisma generate
 
 # Install Node.js dependencies for shared libraries if needed
 RUN if [ -f shared/package.json ]; then \
@@ -113,11 +118,12 @@ RUN groupadd -g 1001 translator && \
     mkdir -p logs cache models && \
     chown -R translator:translator logs cache models
 
-# Copy built application and dependencies
+# Copy built application and dependencies including generated Prisma client
 COPY --from=builder --chown=translator:translator /app/src ./src
-COPY --from=builder --chown=translator:translator /app/main.py ./main.py
+COPY --from=builder --chown=translator:translator /app/start_service.py ./start_service.py
 COPY --from=builder --chown=translator:translator /app/models ./models
 COPY --from=builder --chown=translator:translator /app/shared ./shared
+COPY --from=builder --chown=translator:translator /app/schema.prisma ./schema.prisma
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --chown=translator:translator requirements.txt ./
@@ -135,4 +141,4 @@ EXPOSE ${HTTP_PORT} ${GRPC_PORT} ${ZMQ_PORT}
 HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=5 \
     CMD python3 -c "import requests; requests.get('http://localhost:${HTTP_PORT}/health', timeout=10)" || exit 1
 
-CMD ["python3", "main.py"]
+CMD ["python3", "start_service.py"]

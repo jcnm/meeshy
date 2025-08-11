@@ -60,8 +60,14 @@ fi
 # Activer l'environnement virtuel et installer les dépendances
 if [[ ! -f ".venv/bin/uvicorn" ]]; then
     echo -e "${YELLOW}📦 [TRA] Installation des dépendances...${NC}"
-    .venv/bin/pip install --no-cache-dir -r requirements.txt
+    .venv/bin/pip install --upgrade pip
+    .venv/bin/pip install --no-cache-dir prisma python-dotenv
+    .venv/bin/pip install --default-timeout=300 --no-cache-dir -r requirements.txt
 fi
+
+# Génération du client Prisma Python
+echo -e "${CYAN}⚙️  [TRA] Génération du client Prisma Python...${NC}"
+.venv/bin/prisma generate || echo -e "${YELLOW}⚠️  [TRA] Génération Prisma échouée, utilisation du service direct${NC}"
 
 
 # Variables d'environnement avec valeurs par défaut

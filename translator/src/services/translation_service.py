@@ -37,7 +37,11 @@ except ImportError:
 
 from config.settings import get_settings, get_model_language_code, get_iso_language_code
 from services.cache_service import CacheService
-from services.database_service_real import DatabaseServiceReal as DatabaseService
+# Import conditionnel du service de base de données
+try:
+    from services.database_service_prisma import DatabaseServicePrisma as DatabaseService
+except ImportError:
+    from services.database_service_real import DatabaseServiceReal as DatabaseService
 
 logger = logging.getLogger(__name__)
 

@@ -26,7 +26,14 @@ logger = logging.getLogger(__name__)
 
 # Imports locaux
 try:
-    from services.database_service_real import DatabaseServiceReal as DatabaseService
+    # Tenter d'utiliser le service Prisma Python en premier
+    try:
+        from services.database_service_prisma import DatabaseServicePrisma as DatabaseService
+        logger.info("🎯 Utilisation du service Prisma Python")
+    except ImportError:
+        logger.warning("⚠️  Service Prisma Python non disponible, fallback vers service direct")
+        from services.database_service_real import DatabaseServiceReal as DatabaseService
+    
     from services.translation_service import TranslationService
     from services.zmq_server import ZMQTranslationServer
     from api.translation_api import TranslationAPI
