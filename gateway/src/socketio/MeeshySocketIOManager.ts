@@ -294,38 +294,120 @@ export class MeeshySocketIOManager {
    */
   private async requestTranslation(message: any, conversationMembers: any[]): Promise<void> {
     try {
-      logger.info(`🌐 Démarrage traduction pour message ${message.id}: "${message.content}"`);
+      logger.info(`🌐 Démarrage traduction haute performance pour message ${message.id}: "${message.content}"`);
       
       // Déterminer les langues nécessaires en excluant la langue source
       const requiredLanguages = this.getRequiredLanguages(conversationMembers, message.originalLanguage);
       logger.info(`🎯 Langues requises pour traduction:`, requiredLanguages);
       
       if (requiredLanguages.length > 0) {
-        // Traiter les traductions séquentiellement pour éviter les conflits ZMQ
-        // ZMQ ne permet qu'une seule opération d'envoi à la fois par socket
-        for (const targetLang of requiredLanguages) {
-          try {
-            await this.translateMessage(message, targetLang);
-          } catch (error) {
-            logger.error(`❌ Erreur traduction vers ${targetLang}:`, error);
-            await this.handleTranslationError(message, targetLang, error);
-          }
-        }
+        // Utiliser la nouvelle méthode haute performance pour traduction multi-langues
+        await this.translateMessageToMultipleLanguages(message, requiredLanguages);
       } else {
         logger.info(`ℹ️ Aucune traduction requise pour le message ${message.id}`);
       }
     } catch (error) {
-      logger.error('❌ Erreur lors de la requête de traduction:', error);
+      logger.error('❌ Erreur lors de la requête de traduction haute performance:', error);
     }
   }
 
   /**
-   * Traite la traduction d'un message vers une langue cible
+   * Traduit un message vers plusieurs langues en parallèle (haute performance)
+   */
+  private async translateMessageToMultipleLanguages(message: any, targetLanguages: string[]): Promise<void> {
+    logger.info(`🚀 Traduction haute performance ${message.originalLanguage} → [${targetLanguages.join(', ')}] pour: "${message.content}"`);
+    
+    try {
+      // Utiliser le service de traduction haute performance
+      const multiTranslationResult = await this.translationService.translateToMultipleLanguages({
+        messageId: message.id,
+        content: message.content,
+        sourceLanguage: message.originalLanguage,
+        targetLanguages: targetLanguages,
+        conversationId: message.conversationId,
+        participantIds: conversationMembers.map(m => m.userId),
+        modelType: this.getPredictedModelType(message.content)
+      });
+
+      logger.info(`✅ Traduction multi-langues terminée: ${multiTranslationResult.translations.length} langues`);
+
+      // Traiter chaque traduction et envoyer aux clients appropriés
+      for (const translation of multiTranslationResult.translations) {
+        await this.handleTranslationResult(message, translation);
+      }
+
+    } catch (error) {
+      logger.error(`❌ Erreur traduction haute performance:`, error);
+      
+      // Fallback: traduction séquentielle en cas d'erreur
+      await this.fallbackSequentialTranslation(message, targetLanguages);
+    }
+  }
+
+  /**
+   * Traite le résultat d'une traduction et l'envoie aux clients
+   */
+  private async handleTranslationResult(message: any, translation: any): Promise<void> {
+    try {
+      logger.info(`📤 Envoi traduction ${translation.targetLanguage}: "${translation.translatedContent}"`);
+
+      // Trouver les utilisateurs qui ont besoin de cette traduction
+      const targetUsers = conversationMembers.filter(member => 
+        member.user.systemLanguage === translation.targetLanguage ||
+        member.user.regionalLanguage === translation.targetLanguage ||
+        (member.user.customDestinationLanguage === translation.targetLanguage && member.user.useCustomDestination)
+      );
+
+      // Envoyer la traduction à chaque utilisateur concerné
+      for (const user of targetUsers) {
+        const socket = this.getUserSocket(user.userId);
+        if (socket) {
+          socket.emit('message_translated', {
+            messageId: message.id,
+            conversationId: message.conversationId,
+            originalText: message.content,
+            translatedText: translation.translatedContent,
+            sourceLanguage: message.originalLanguage,
+            targetLanguage: translation.targetLanguage,
+            translationModel: translation.translationModel,
+            confidenceScore: translation.confidenceScore || 0.8,
+            processingTime: translation.processingTime,
+            taskId: translation.taskId
+          });
+        }
+      }
+
+      // Sauvegarder la traduction en base de données (déjà fait par le service)
+      logger.info(`✅ Traduction ${translation.targetLanguage} traitée et envoyée`);
+
+    } catch (error) {
+      logger.error(`❌ Erreur traitement traduction ${translation.targetLanguage}:`, error);
+    }
+  }
+
+  /**
+   * Fallback: traduction séquentielle en cas d'erreur de la méthode haute performance
+   */
+  private async fallbackSequentialTranslation(message: any, targetLanguages: string[]): Promise<void> {
+    logger.warn(`⚠️ Utilisation du fallback séquentiel pour ${targetLanguages.length} langues`);
+    
+    for (const targetLang of targetLanguages) {
+      try {
+        await this.translateMessage(message, targetLang);
+      } catch (error) {
+        logger.error(`❌ Erreur traduction fallback vers ${targetLang}:`, error);
+        await this.handleTranslationError(message, targetLang, error);
+      }
+    }
+  }
+
+  /**
+   * Traite la traduction d'un message vers une langue cible (méthode legacy pour fallback)
    */
   private async translateMessage(message: any, targetLang: string): Promise<void> {
-    logger.info(`🔄 Traduction ${message.originalLanguage} → ${targetLang} pour: "${message.content}"`);
+    logger.info(`🔄 Traduction fallback ${message.originalLanguage} → ${targetLang} pour: "${message.content}"`);
     
-    // Créer un nouveau client ZMQ pour chaque traduction
+    // Créer un nouveau client ZMQ pour chaque traduction (fallback)
     const zmqClient = new ZMQTranslationClient();
     
     try {
@@ -340,7 +422,7 @@ export class MeeshySocketIOManager {
         requestType: 'conversation_translation'
       });
 
-      logger.info(`✅ Traduction reçue:`, {
+      logger.info(`✅ Traduction fallback reçue:`, {
         messageId: translationResult.messageId,
         translatedText: translationResult.translatedText,
         targetLanguage: targetLang
@@ -360,26 +442,61 @@ export class MeeshySocketIOManager {
         }
       });
 
-      // Émettre la traduction aux clients
-      this.emitToConversation(message.conversationId, 'message:translation', {
-        messageId: message.id,
-        translations: [{
-          messageId: message.id,
-          sourceLanguage: message.originalLanguage,
-          targetLanguage: targetLang,
-          translatedContent: translationResult.translatedText,
-          translationModel: translationResult.metadata?.modelUsed || 'basic',
-          cacheKey,
-          cached: false
-        }]
-      } as TranslationEvent);
+      // Envoyer aux clients
+      await this.sendTranslationToClients(message, targetLang, translationResult.translatedText);
 
-      logger.info(`📤 Traduction émise pour message ${message.id} vers ${targetLang}`);
-      
+    } catch (error) {
+      logger.error(`❌ Erreur traduction fallback vers ${targetLang}:`, error);
+      throw error;
     } finally {
-      // Toujours fermer le client ZMQ dans le finally
       await zmqClient.close();
     }
+  }
+
+  /**
+   * Envoie une traduction aux clients concernés
+   */
+  private async sendTranslationToClients(message: any, targetLang: string, translatedText: string): Promise<void> {
+    try {
+      // Trouver les utilisateurs qui ont besoin de cette traduction
+      const targetUsers = conversationMembers.filter(member => 
+        member.user.systemLanguage === targetLang ||
+        member.user.regionalLanguage === targetLang ||
+        (member.user.customDestinationLanguage === targetLang && member.user.useCustomDestination)
+      );
+
+      // Envoyer la traduction à chaque utilisateur concerné
+      for (const user of targetUsers) {
+        const socket = this.getUserSocket(user.userId);
+        if (socket) {
+          socket.emit('message_translated', {
+            messageId: message.id,
+            conversationId: message.conversationId,
+            originalText: message.content,
+            translatedText: translatedText,
+            sourceLanguage: message.originalLanguage,
+            targetLanguage: targetLang,
+            translationModel: 'basic',
+            confidenceScore: 0.8
+          });
+        }
+      }
+
+      logger.info(`📤 Traduction ${targetLang} envoyée à ${targetUsers.length} utilisateurs`);
+
+    } catch (error) {
+      logger.error(`❌ Erreur envoi traduction ${targetLang} aux clients:`, error);
+    }
+  }
+
+  /**
+   * Détermine le type de modèle à utiliser selon la complexité du texte
+   */
+  private getPredictedModelType(text: string): 'basic' | 'medium' | 'premium' {
+    const length = text.length;
+    if (length < 20) return 'basic';
+    if (length <= 100) return 'medium';
+    return 'premium';
   }
 
   /**
