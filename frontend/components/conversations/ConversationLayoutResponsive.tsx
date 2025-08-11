@@ -114,26 +114,28 @@ async function initializeTranslator() {
     }
 }
 
-async function translateText(text: string, src_lang: string, tgt_lang: string, translationService: any) {
-    try {
-        // Utiliser le service de traduction au lieu d'une fonction
-        const result = await translationService.translate(text, tgt_lang, src_lang);
-        return result.translatedText;
-    } catch (error) {
-        c.error("Translation error:", error);
-        throw error;
-    }
-}
+// Supprimer cette fonction qui utilise un service Python inexistant
+// async function translateText(text: string, src_lang: string, tgt_lang: string, translationService: any) {
+//     try {
+//         // Utiliser le service de traduction au lieu d'une fonction
+//         const result = await translationService.translate(text, tgt_lang, src_lang);
+//         return result.translatedText;
+//     } catch (error) {
+//         c.error("Translation error:", error);
+//         throw error;
+//     }
+// }
 
-const main = async () => {
-    const translationService = await initializeTranslator();
-    const text = "Hello, world!";
-    const src_lang = "en";
-    const tgt_lang = "fr";
-    c.log(`Translating "${text}" from ${src_lang} to ${tgt_lang}...`);
-    const translatedText = await translateText(text, src_lang, tgt_lang, translationService);
-    c.log(`Translated text: ${translatedText}`);
-};
+// Supprimer cette fonction main qui utilise des services Python
+// const main = async () => {
+//     const translationService = await initializeTranslator();
+//     const text = "Hello, world!";
+//     const src_lang = "en";
+//     const tgt_lang = "fr";
+//     c.log(`Translating "${text}" from ${src_lang} to ${tgt_lang}...`);
+//     const translatedText = await translateText(text, src_lang, tgt_lang, translationService);
+//     c.log(`Translated text: ${translatedText}`);
+// };
 
 
   // translationCache.set(cacheKey, translation);
@@ -330,7 +332,7 @@ const main = async () => {
   // Charger les messages d'une conversation
   const loadMessages = useCallback(async (conversationId: string, isNewConversation = false) => {
     if (!user) return;
-    main().catch(error => c.error("Error in main function:", error));
+    // Supprimé l'appel à main() qui utilisait un service Python inexistant
     // Pour une nouvelle conversation, toujours charger
     // Pour une conversation existante, vérifier si c'est déjà chargé
     if (!isNewConversation && selectedConversation?.id === conversationId && messages.length > 0) {
