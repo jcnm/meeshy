@@ -160,6 +160,9 @@ export function BubbleMessage({
   
   // Permettre à l'émetteur de voir les traductions de son propre message
   const canSeeTranslations = availableVersions.length > 1;
+  
+  // Améliorer la visibilité de l'icône globe avec un badge
+  const translationCount = availableVersions.length - 1; // Exclure l'original
 
   return (
     <TooltipProvider>
@@ -337,12 +340,26 @@ export function BubbleMessage({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full"
+                          className={`relative p-2 rounded-full transition-all duration-200 ${
+                            translationCount > 0 
+                              ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-100' 
+                              : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                          }`}
                         >
-                          <Globe className="h-4 w-4" />
+                          <Globe className={`h-4 w-4 transition-transform duration-200 ${
+                            translationCount > 0 ? 'animate-pulse' : ''
+                          }`} />
+                          {/* Badge pour indiquer le nombre de traductions */}
+                          {translationCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-bounce">
+                              {translationCount}
+                            </span>
+                          )}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Voir les traductions disponibles</TooltipContent>
+                      <TooltipContent>
+                        Voir les {translationCount} traduction{translationCount > 1 ? 's' : ''} disponible{translationCount > 1 ? 's' : ''}
+                      </TooltipContent>
                     </Tooltip>
                   </PopoverTrigger>
                   <PopoverContent 
@@ -359,7 +376,7 @@ export function BubbleMessage({
                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">{availableVersions.length}</Badge>
                       </div>
                       
-                      <div className="space-y-1 max-h-60 overflow-y-auto">
+                      <div className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin">
                         {availableVersions.map((version) => {
                           const langInfo = getLanguageInfo(version.language);
                           const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
@@ -379,22 +396,37 @@ export function BubbleMessage({
                                   <span className="text-lg">{langInfo.flag}</span>
                                   <span className="font-medium text-gray-900">{langInfo.name}</span>
                                   {version.isOriginal && (
-                                    <Badge variant="outline" className="text-xs bg-gray-100">Original</Badge>
+                                    <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700">Original</Badge>
                                   )}
                                   {isCurrentlyDisplayed && (
                                     <CheckCircle2 className="h-4 w-4 text-blue-600" />
                                   )}
                                 </div>
                                 {!version.isOriginal && (
-                                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                  <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded font-medium">
                                     {Math.round(version.confidence * 100)}%
                                   </span>
                                 )}
                               </div>
                               
-                              <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                              <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
                                 {version.content}
                               </p>
+                              
+                              {/* Indicateur de qualité pour les traductions */}
+                              {!version.isOriginal && (
+                                <div className="mt-2 flex items-center space-x-1">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-1">
+                                    <div 
+                                      className="bg-green-500 h-1 rounded-full transition-all"
+                                      style={{ width: `${Math.round(version.confidence * 100)}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-gray-500">
+                                    Qualité: {Math.round(version.confidence * 100)}%
+                                  </span>
+                                </div>
+                              )}
                             </button>
                           );
                         })}
