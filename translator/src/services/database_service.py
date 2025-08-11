@@ -14,42 +14,20 @@ import os
 logger = logging.getLogger(__name__)
 
 # Import du client Prisma généré de manière sécurisée
-import importlib.util
-generated_path = os.path.join(os.path.dirname(__file__), '../../generated')
-
-def import_prisma_client():
-    """Importe le client Prisma sans polluer le PYTHONPATH global"""
+try:
+    # Essayer d'importer Prisma depuis le chemin généré local
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../generated'))
+    from client import Prisma
+    logger.info("✅ Client Prisma importé depuis generated/")
+except ImportError:
     try:
-        # Sauvegarder le sys.path actuel
-        original_path = sys.path.copy()
-        
-        try:
-            # Ajouter temporairement le chemin generated
-            if generated_path not in sys.path:
-                sys.path.insert(0, generated_path)
-            
-            # Importer le client
-            spec = importlib.util.spec_from_file_location("client", os.path.join(generated_path, "client.py"))
-            if spec is None:
-                raise ImportError("Client Prisma non trouvé")
-                
-            client_module = importlib.util.module_from_spec(spec)
-            
-            # Exécuter le module avec le PYTHONPATH élargi
-            spec.loader.exec_module(client_module)
-            return client_module.Prisma
-            
-        finally:
-            # Restaurer le sys.path original
-            sys.path[:] = original_path
-            
-    except Exception as e:
+        # Essayer d'importer depuis le package prisma global
+        from prisma import Prisma
+        logger.info("✅ Client Prisma importé depuis package global")
+    except ImportError as e:
         logger.warning(f"⚠️  Impossible d'importer le client Prisma: {e}")
         logger.info("🔄 Mode dégradé activé")
-        return None
-
-# Importer Prisma de manière sécurisée
-Prisma = import_prisma_client()
+        Prisma = None
 
 class DatabaseService:
     """Service de gestion de la connexion à la base de données avec Prisma"""
