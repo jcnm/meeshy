@@ -75,6 +75,7 @@ export function BubbleMessage({
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
   const [isForceTranslationPopoverOpen, setIsForceTranslationPopoverOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   const getLanguageInfo = (langCode: string) => {
     return SUPPORTED_LANGUAGES.find(lang => lang.code === langCode) || SUPPORTED_LANGUAGES[0];
@@ -90,6 +91,26 @@ export function BubbleMessage({
       setCurrentDisplayLanguage(currentUser.systemLanguage);
     }
   }, [message.translations, currentUser.systemLanguage, message.originalLanguage]);
+
+  // Fermer le popover quand le message quitte l'écran
+  useEffect(() => {
+    if (!isTranslationPopoverOpen) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          setIsTranslationPopoverOpen(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (messageRef.current) {
+      observer.observe(messageRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isTranslationPopoverOpen]);
 
   const getCurrentContent = () => {
     // Si on affiche la langue originale, retourner TOUJOURS le contenu original de l'auteur
@@ -188,11 +209,16 @@ export function BubbleMessage({
   return (
     <TooltipProvider>
       <Card 
+        ref={messageRef}
         className={`bubble-message relative transition-all duration-300 hover:shadow-lg ${
           isOwnMessage ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
         } ${isUsedLanguage ? 'ring-2 ring-green-200 ring-opacity-50' : ''}`}
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          // Fermer le popover quand on quitte la zone du message
+          setTimeout(() => setIsTranslationPopoverOpen(false), 300);
+        }}
       >
         <CardContent className="p-4">
           {/* Header */}
@@ -381,112 +407,102 @@ export function BubbleMessage({
           {translationCount}
         </span>
       )}
-      {/* Indicateur de debug temporaire */}
-      <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-red-600 bg-red-100 px-1 rounded whitespace-nowrap">
-        {isTranslationPopoverOpen ? 'OUVERT' : 'FERMÉ'}
-      </span>
+             {/* Indicateur de debug temporaire */}
+       {/* <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-red-600 bg-red-100 px-1 rounded whitespace-nowrap">
+         {isTranslationPopoverOpen ? 'OUVERT' : 'FERMÉ'}
+       </span> */}
     </Button>
   </PopoverTrigger>
-  <PopoverContent 
-    className="w-80 p-0 shadow-2xl border border-gray-300" 
-    side="top" 
-    align="start"
-    sideOffset={12}
-    alignOffset={0}
-    avoidCollisions={true}
-    style={{ 
-      zIndex: 99999, // Z-index très élevé
-      backgroundColor: 'white',
-      position: 'relative'
-    }}
-    onOpenAutoFocus={(e) => e.preventDefault()}
-    onInteractOutside={(e) => {
-      console.log('🌐 Click outside popover');
-      setIsTranslationPopoverOpen(false);
-    }}
-  >
-    <div className="p-4 bg-white rounded-lg shadow-2xl border border-gray-200 relative z-50">
-      <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
-        <Globe className="h-4 w-4 text-blue-600" />
-        <span className="font-medium text-gray-900">
-          {availableVersions.length > 0 ? 'Versions disponibles' : 'Traductions'}
-        </span>
-        <Badge variant="outline" className={`text-xs ${
-          availableVersions.length > 0 
-            ? 'bg-blue-50 text-blue-700' 
-            : 'bg-gray-50 text-gray-600'
-        }`}>
-          {availableVersions.length > 0 ? availableVersions.length : '0'}
-        </Badge>
-      </div>
+     <PopoverContent 
+     className="w-72 p-0 shadow-2xl border border-gray-200 bg-white/95 backdrop-blur-sm" 
+     side="top" 
+     align="start"
+     sideOffset={8}
+     alignOffset={0}
+     avoidCollisions={true}
+     style={{ 
+       zIndex: 99999,
+       backgroundColor: 'rgba(255, 255, 255, 0.95)',
+       backdropFilter: 'blur(8px)'
+     }}
+     onOpenAutoFocus={(e) => e.preventDefault()}
+     onInteractOutside={(e) => {
+       console.log('🌐 Click outside popover');
+       setIsTranslationPopoverOpen(false);
+     }}
+   >
+     <div className="p-3 bg-transparent relative">
       
-      <div className="space-y-2 max-h-60 overflow-y-auto">
-        {availableVersions.length > 0 ? (
-          availableVersions.map((version) => {
-            const langInfo = getLanguageInfo(version.language);
-            const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
-            
-            return (
-              <button
-                key={version.language}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  console.log('🌐 Switch vers langue:', version.language);
-                  handleLanguageSwitch(version.language);
-                }}
-                className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
-                  isCurrentlyDisplayed 
-                    ? 'bg-blue-50 border-blue-200 ring-2 ring-blue-400' 
-                    : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">{langInfo.flag}</span>
-                    <span className="font-medium text-gray-900">{langInfo.name}</span>
-                    {version.isOriginal && (
-                      <Badge variant="outline" className="text-xs bg-gray-100 text-gray-700">Original</Badge>
-                    )}
-                    {isCurrentlyDisplayed && (
-                      <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                    )}
-                  </div>
-                  {!version.isOriginal && (
-                    <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded font-medium">
-                      {Math.round(version.confidence * 100)}%
-                    </span>
-                  )}
-                </div>
-                
-                <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
-                  {version.content}
-                </p>
-                
-                {/* Indicateur de qualité pour les traductions */}
-                {!version.isOriginal && (
-                  <div className="mt-2 flex items-center space-x-1">
-                    <div className="flex-1 bg-gray-200 rounded-full h-1">
-                      <div 
-                        className="bg-green-500 h-1 rounded-full transition-all"
-                        style={{ width: `${Math.round(version.confidence * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-500">
-                      Qualité: {Math.round(version.confidence * 100)}%
-                    </span>
-                  </div>
-                )}
-              </button>
-            );
-          })
-        ) : (
-          <div className="text-center p-6 text-gray-500">
-            <Globe className="h-8 w-8 mx-auto mb-3 text-gray-400" />
-            <p className="text-sm font-medium mb-2">Aucune traduction disponible</p>
-            <p className="text-xs">Les traductions apparaîtront ici une fois générées</p>
-          </div>
-        )}
-      </div>
+             <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin">
+         {availableVersions.length > 0 ? (
+           availableVersions.map((version) => {
+             const langInfo = getLanguageInfo(version.language);
+             const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
+             
+             return (
+               <button
+                 key={version.language}
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   console.log('🌐 Switch vers langue:', version.language);
+                   handleLanguageSwitch(version.language);
+                   setIsTranslationPopoverOpen(false);
+                 }}
+                 className={`w-full p-2.5 rounded-lg text-left transition-all duration-200 group ${
+                   isCurrentlyDisplayed 
+                     ? 'bg-blue-50/80 border border-blue-200/60' 
+                     : 'bg-white/60 border border-transparent hover:bg-white/80 hover:border-gray-200/60'
+                 }`}
+               >
+                 <div className="flex items-center justify-between mb-1.5">
+                   <div className="flex items-center space-x-2">
+                     <span className="text-base">{langInfo.flag}</span>
+                     <span className={`font-medium text-sm ${
+                       isCurrentlyDisplayed ? 'text-blue-700' : 'text-gray-700'
+                     }`}>
+                       {langInfo.name}
+                     </span>
+                     {version.isOriginal && (
+                       <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
+                         Original
+                       </span>
+                     )}
+                     {isCurrentlyDisplayed && (
+                       <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
+                     )}
+                   </div>
+                   {!version.isOriginal && (
+                     <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
+                       {Math.round(version.confidence * 100)}%
+                     </span>
+                   )}
+                 </div>
+                 
+                 <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 group-hover:text-gray-800">
+                   {version.content}
+                 </p>
+                 
+                 {/* Indicateur de qualité discret */}
+                 {!version.isOriginal && (
+                   <div className="mt-1.5 flex items-center space-x-1">
+                     <div className="flex-1 bg-gray-200/40 rounded-full h-0.5">
+                       <div 
+                         className="bg-green-400 h-0.5 rounded-full transition-all duration-300"
+                         style={{ width: `${Math.round(version.confidence * 100)}%` }}
+                       />
+                     </div>
+                   </div>
+                 )}
+               </button>
+             );
+           })
+         ) : (
+           <div className="text-center p-4 text-gray-400">
+             <Globe className="h-6 w-6 mx-auto mb-2 opacity-60" />
+             <p className="text-xs">Aucune traduction disponible</p>
+           </div>
+         )}
+       </div>
       
       {message.translations.some(t => t.status === 'translating') && (
         <div className="mt-3 pt-3 border-t border-gray-100">
