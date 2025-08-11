@@ -147,9 +147,6 @@ export const APP_CONFIG = {
   BACKEND_PORT: config.backend.port,
   
   getBackendUrl: () => {
-    if (typeof window !== 'undefined') {
-      return config.backend.url;
-    }
     return config.backend.url;
   },
   

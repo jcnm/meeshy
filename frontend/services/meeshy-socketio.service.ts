@@ -6,6 +6,7 @@
 'use client';
 
 import { io, Socket } from 'socket.io-client';
+import { getWebSocketUrl } from '@/lib/runtime-urls';
 import { toast } from 'sonner';
 import type { 
   Message, 
@@ -69,7 +70,7 @@ class MeeshySocketIOService {
       return;
     }
 
-    const serverUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000';
+    const serverUrl = getWebSocketUrl();
     
     console.log('🔌 MeeshySocketIOService: Initialisation connexion Socket.IO...', {
       serverUrl,

@@ -4,6 +4,7 @@
  */
 
 import axios from 'axios';
+import { buildApiUrl } from '@/lib/runtime-urls';
 
 // === TYPES ET INTERFACES ===
 export interface ForceTranslationRequest {
@@ -30,7 +31,7 @@ export interface MessageTranslationStatus {
 }
 
 // === CONFIGURATION ===
-const API_BASE_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000';
+const API_BASE_URL = buildApiUrl('');
 const TIMEOUT = 30000; // 30 secondes
 
 // === SERVICE DE TRADUCTION DE MESSAGES ===
