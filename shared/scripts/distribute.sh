@@ -52,11 +52,38 @@ distribute_to_service() {
             # Pour Python (Translator)
             echo "  🐍 Distribution Python vers $service_name"
     
-            # Pour Python, on copie le schema Prisma 
-            if [ -f "prisma/schema.prisma" ]; then
-                echo "  ✅ Copie du schema Prisma vers $service_name/libs/"
-                mkdir -p "$service_dir/libs/prisma"
-                cp prisma/schema.prisma "$service_dir/libs/prisma/"
+            # Pour Python, on copie le schema Prisma avec générateur Python
+            if [ -f "schema.prisma" ]; then
+                echo "  ✅ Création du schema Prisma Python vers $service_name/shared/prisma/"
+                mkdir -p "$service_dir/shared/prisma"
+                
+                # Créer une version Python du schema avec l'en-tête modifié
+                python_schema="$service_dir/shared/prisma/schema.prisma"
+                
+                # Écrire l'en-tête Python
+                cat > "$python_schema" << 'EOF'
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+EOF
+                
+                # Ajouter le reste du schema (modèles et enums)
+                # Extraire tout après la première ligne vide qui suit datasource
+                awk '/^datasource/,/^$/ {next} /^generator/,/^$/ {next} NR > 10 {print}' schema.prisma >> "$python_schema"
+                
+                echo "  📝 Schema Prisma Python généré avec client 'prisma-client-py'"
+                
+                # Aussi copier le schema Python directement dans le translator pour utilisation immédiate
+                cp "$python_schema" "$service_dir/schema.prisma"
+                echo "  ✅ Schema copié vers $service_name/schema.prisma pour génération immédiate"
             fi
    
             # Copier les fichiers Proto source pour génération Python
@@ -85,13 +112,9 @@ distribute_to_service "Frontend" "$FRONTEND_DIR" "typescript"
 distribute_to_service "Translator" "$TRANSLATOR_DIR" "python"
 
 # Créer un fichier de version pour tracking
-VERSION_FILE="$SHARED_DIR/prisma/prisma/client/version.txt"
-if [ -f "$VERSION_FILE" ]; then
-    VERSION=$(cat "$VERSION_FILE")
-else
-    VERSION=$(date '+%Y%m%d_%H%M%S')
-    echo "$VERSION" > "$VERSION_FILE"
-fi
+VERSION=$(date '+%Y%m%d_%H%M%S')
+mkdir -p "$SHARED_DIR/dist"
+echo "$VERSION" > "$SHARED_DIR/dist/version.txt"
 
 # Copier le fichier de version vers chaque service
 for service_dir in "$GATEWAY_DIR" "$FRONTEND_DIR" "$TRANSLATOR_DIR"; do
@@ -104,10 +127,11 @@ echo "🎉 Distribution terminée ! Version: $VERSION"
 echo ""
 echo "📋 Résumé:"
 echo "  TypeScript Services (Gateway, Frontend):"
-echo "    - Prisma Client généré -> */shared/"
+echo "    - Prisma Client JS généré -> */shared/"
 echo "    - Proto TypeScript -> */shared/proto/"
 echo "    - Types TypeScript -> */shared/types/"
 echo "  Python Service (Translator):"
-echo "    - Schema Prisma -> translator/shared/prisma/"
+echo "    - Schema Prisma Python -> translator/shared/prisma/ + translator/schema.prisma"
+echo "    - Generator: prisma-client-py avec interface asyncio"
 echo "    - Proto source + Python générés -> translator/shared/proto/"
 echo "  - Version: $VERSION"
