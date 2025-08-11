@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 # Imports locaux
 try:
+    from services.database_service_real import DatabaseServiceReal as DatabaseService
     from services.translation_service import TranslationService
     from services.zmq_server import ZMQTranslationServer
     from api.translation_api import TranslationAPI
@@ -42,6 +43,7 @@ class MeeshyTranslationServer:
     
     def __init__(self):
         self.settings = get_settings()
+        self.database_service = None
         self.translation_service = None
         self.zmq_server = None
         self.translation_api = None
@@ -57,9 +59,30 @@ class MeeshyTranslationServer:
             Path("logs").mkdir(exist_ok=True)
             Path("cache").mkdir(exist_ok=True)
             
-            # Service de traduction (cœur métier)
-            self.translation_service = TranslationService()
-            await self.translation_service.initialize()
+            # 1. Initialise le service de base de données en premier
+            logger.info("🗄️  Initialisation du service de base de données...")
+            self.database_service = DatabaseService()
+            db_initialized = await self.database_service.initialize()
+            
+            if db_initialized:
+                logger.info("✅ Service de base de données PostgreSQL initialisé avec succès")
+                logger.info("")
+                logger.info("🎯 AFFICHAGE DES STATISTIQUES DE DÉMARRAGE")
+                logger.info("=" * 60)
+                await self.database_service.display_statistics()
+                logger.info("=" * 60)
+                logger.info("🏁 FIN DES STATISTIQUES DE DÉMARRAGE")
+                logger.info("")
+            else:
+                logger.warning("⚠️  Service de base de données non disponible - Mode dégradé")
+            
+            # 2. Initialise le service de traduction avec la base de données
+            if db_initialized:
+                self.translation_service = TranslationService(database_service=self.database_service)
+                await self.translation_service.initialize(database_service=self.database_service)
+            else:
+                self.translation_service = TranslationService()
+                await self.translation_service.initialize()
             logger.info("✅ Service de traduction initialisé")
             
             # Serveur ZMQ (communication avec gateway)
@@ -175,6 +198,11 @@ class MeeshyTranslationServer:
         if self.translation_service:
             await self.translation_service.cleanup()
             logger.info("✅ Service de traduction arrêté")
+        
+        # Arrêter service de base de données
+        if self.database_service:
+            await self.database_service.cleanup()
+            logger.info("✅ Service de base de données arrêté")
 
 async def main():
     """Fonction principale"""
