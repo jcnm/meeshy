@@ -840,11 +840,11 @@ async function initializeTranslator() {
                           translatedFrom: message.isTranslated ? message.originalLanguage : undefined,
                           location: undefined, // Pas de localisation dans les conversations
                           translations: message.translations?.map(t => ({
-                            language: t.targetLanguage,
-                            content: t.translatedContent,
+                            language: t.targetLanguage || 'unknown',
+                            content: t.translatedContent || '',
                             status: 'completed' as const,
                             timestamp: new Date(),
-                            confidence: 0.9
+                            confidence: t.confidenceScore || 0.9
                           })) || []
                         };
 
