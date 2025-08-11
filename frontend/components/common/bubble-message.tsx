@@ -347,17 +347,18 @@ export function BubbleMessage({
 
               {/* Icône globe - Voir les traductions disponibles */}
               {/* Toujours afficher l'icône globe, mais avec des états différents */}
-              <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
-                {/* Debug: afficher un indicateur visuel */}
-                <div className="text-xs text-red-500 bg-red-100 px-1 rounded">
-                  GLOBE
-                </div>
-                  <PopoverTrigger asChild>
+              <Popover 
+                open={isTranslationPopoverOpen} 
+                onOpenChange={setIsTranslationPopoverOpen}
+              >
+                <PopoverTrigger asChild>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
+                          onMouseEnter={() => setIsTranslationPopoverOpen(true)}
+                          onMouseLeave={() => setTimeout(() => setIsTranslationPopoverOpen(false), 200)}
                           className={`relative p-2 rounded-full transition-all duration-200 ${
                             translationCount > 0 
                               ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-100' 
@@ -373,6 +374,10 @@ export function BubbleMessage({
                               {translationCount}
                             </span>
                           )}
+                          {/* Indicateur de debug */}
+                          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-red-600 bg-red-100 px-1 rounded whitespace-nowrap">
+                            GLOBE
+                          </div>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -389,6 +394,8 @@ export function BubbleMessage({
                     align="start"
                     sideOffset={8}
                     style={{ zIndex: 9999 }}
+                    onMouseEnter={() => setIsTranslationPopoverOpen(true)}
+                    onMouseLeave={() => setIsTranslationPopoverOpen(false)}
                   >
                     <div className="p-4 bg-white rounded-lg shadow-2xl border border-gray-200">
                       <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
