@@ -172,7 +172,10 @@ export function BubbleMessage({
     completedTranslations: message.translations.filter(t => t.status === 'completed').length,
     availableVersions: availableVersions.length,
     canSeeTranslations,
-    translationCount
+    translationCount,
+    messageTranslations: message.translations,
+    hasOriginalContent: !!message.originalContent,
+    messageKeys: Object.keys(message)
   });
 
   return (
@@ -345,6 +348,10 @@ export function BubbleMessage({
               {/* Icône globe - Voir les traductions disponibles */}
               {/* Toujours afficher l'icône globe, mais avec des états différents */}
               <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
+                {/* Debug: afficher un indicateur visuel */}
+                <div className="text-xs text-red-500 bg-red-100 px-1 rounded">
+                  GLOBE
+                </div>
                   <PopoverTrigger asChild>
                     <Tooltip>
                       <TooltipTrigger asChild>
