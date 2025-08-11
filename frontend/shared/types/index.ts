@@ -161,6 +161,29 @@ export interface TranslationStats {
   modelUsage: Record<TranslationModel, number>;
 }
 
+// ===== TYPES POUR MISE À JOUR UTILISATEUR =====
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+  email?: string;
+  phoneNumber?: string;
+  systemLanguage?: string;
+  regionalLanguage?: string;
+  customDestinationLanguage?: string;
+  autoTranslateEnabled?: boolean;
+  translateToSystemLanguage?: boolean;
+  translateToRegionalLanguage?: boolean;
+  useCustomDestination?: boolean;
+}
+
+export interface UpdateUserResponse {
+  success: boolean;
+  data?: Partial<SocketIOUser>;
+  error?: string;
+  message?: string;
+}
+
 // ===== RE-EXPORTS POUR RÉTROCOMPATIBILITÉ =====
 export type {
   SocketIOMessage as Message,

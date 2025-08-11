@@ -43,10 +43,24 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
   }, [user]);
 
   const handleSettingChange = (key: string, value: boolean | string) => {
-    setSettings(prev => ({
-      ...prev,
+    let newSettings = {
+      ...settings,
       [key]: value
-    }));
+    };
+
+    // Logique exclusive pour les options de traduction
+    if (key === 'translateToSystemLanguage' && value === true) {
+      newSettings.translateToRegionalLanguage = false;
+      newSettings.useCustomDestination = false;
+    } else if (key === 'translateToRegionalLanguage' && value === true) {
+      newSettings.translateToSystemLanguage = false;
+      newSettings.useCustomDestination = false;
+    } else if (key === 'useCustomDestination' && value === true) {
+      newSettings.translateToSystemLanguage = false;
+      newSettings.translateToRegionalLanguage = false;
+    }
+
+    setSettings(newSettings);
   };
 
   const handleSave = async () => {
@@ -59,28 +73,29 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assurez-vous que le token est disponible
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}` // Utiliser auth_token comme dans la page principale
         },
         body: JSON.stringify(settings)
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la mise à jour des paramètres de langue');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de la mise à jour des paramètres de langue');
       }
 
-      const updatedUserData = await response.json();
+      const responseData = await response.json();
       
       // Mettre à jour l'utilisateur avec les données retournées par l'API
       const updatedUser: UserType = {
         ...user,
-        ...updatedUserData
+        ...responseData.data
       };
       
       onUserUpdate(updatedUser);
-      toast.success('Paramètres de langue mis à jour');
+      toast.success(responseData.message || 'Paramètres de langue mis à jour');
     } catch (err) {
       console.error('Erreur lors de la mise à jour:', err);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(err instanceof Error ? err.message : 'Erreur lors de la mise à jour');
     } finally {
       setIsLoading(false);
     }
@@ -226,13 +241,19 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
 
           {settings.autoTranslateEnabled && (
             <div className="space-y-4 sm:space-y-6">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-xs sm:text-sm text-blue-800 font-medium">
+                  ⚠️ Mode exclusif : Activez une seule option de traduction à la fois.
+                </p>
+              </div>
+
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1 flex-1">
-                  <Label htmlFor="translateToSystemLanguage" className="text-sm sm:text-base">
-                    Traduire vers la langue système
+                  <Label htmlFor="translateToSystemLanguage" className="text-sm sm:text-base font-medium">
+                    Traduire vers la langue système uniquement
                   </Label>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Traduit les messages vers {getLanguageFlag(settings.systemLanguage)} {getLanguageName(settings.systemLanguage)}
+                    Traduit les messages vers {getLanguageFlag(settings.systemLanguage)} {getLanguageName(settings.systemLanguage)} seulement
                   </p>
                 </div>
                 <Switch
@@ -244,11 +265,11 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1 flex-1">
-                  <Label htmlFor="translateToRegionalLanguage" className="text-sm sm:text-base">
-                    Traduire vers la langue régionale
+                  <Label htmlFor="translateToRegionalLanguage" className="text-sm sm:text-base font-medium">
+                    Traduire vers la langue régionale uniquement
                   </Label>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Traduit les messages vers {getLanguageFlag(settings.regionalLanguage)} {getLanguageName(settings.regionalLanguage)}
+                    Traduit les messages vers {getLanguageFlag(settings.regionalLanguage)} {getLanguageName(settings.regionalLanguage)} seulement
                   </p>
                 </div>
                 <Switch
@@ -260,14 +281,14 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1 flex-1">
-                  <Label htmlFor="useCustomDestination" className="text-sm sm:text-base">
-                    Utiliser la langue personnalisée
+                  <Label htmlFor="useCustomDestination" className="text-sm sm:text-base font-medium">
+                    Traduire vers la langue personnalisée uniquement
                   </Label>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {settings.customDestinationLanguage ? (
-                      <>Traduit les messages vers {getLanguageFlag(settings.customDestinationLanguage)} {getLanguageName(settings.customDestinationLanguage)}</>
+                      <>Traduit les messages vers {getLanguageFlag(settings.customDestinationLanguage)} {getLanguageName(settings.customDestinationLanguage)} seulement</>
                     ) : (
-                      'Aucune langue personnalisée définie'
+                      'Aucune langue personnalisée définie - définissez-en une ci-dessus'
                     )}
                   </p>
                 </div>
@@ -277,6 +298,12 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   onCheckedChange={(checked) => handleSettingChange('useCustomDestination', checked)}
                   disabled={!settings.customDestinationLanguage}
                 />
+              </div>
+
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-xs sm:text-sm text-amber-800">
+                  <strong>💡 Astuce :</strong> Si aucune option n'est sélectionnée, les messages seront traduits vers toutes vos langues configurées (système + régionale + personnalisée).
+                </p>
               </div>
             </div>
           )}

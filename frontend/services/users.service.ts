@@ -1,5 +1,7 @@
 import { apiService, ApiResponse } from './api.service';
 import { User } from '@/types';
+// Importer les types partagés pour cohérence
+import type { UpdateUserRequest, UpdateUserResponse } from '../shared/types';
 
 export interface UserStats {
   messagesSent: number;
@@ -11,17 +13,9 @@ export interface UserStats {
   lastActivity: Date;
 }
 
-export interface UpdateUserDto {
-  firstName?: string;
-  lastName?: string;
-  displayName?: string;
+// Utiliser le type partagé pour cohérence, avec extension pour l'avatar
+export interface UpdateUserDto extends UpdateUserRequest {
   avatar?: string;
-  systemLanguage?: string;
-  regionalLanguage?: string;
-  autoTranslateEnabled?: boolean;
-  translateToSystemLanguage?: boolean;
-  translateToRegionalLanguage?: boolean;
-  useCustomDestination?: boolean;
 }
 
 export interface SearchUsersResponse {

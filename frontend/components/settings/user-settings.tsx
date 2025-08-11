@@ -56,28 +56,29 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assurez-vous que le token est disponible
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}` // Utiliser auth_token comme dans la page principale
         },
         body: JSON.stringify(formData)
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la mise à jour du profil');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de la mise à jour du profil');
       }
 
-      const updatedUserData = await response.json();
+      const responseData = await response.json();
       
       // Mettre à jour l'utilisateur avec les données retournées par l'API
       const updatedUser: UserType = {
         ...user,
-        ...updatedUserData
+        ...responseData.data
       };
       
       onUserUpdate(updatedUser);
-      toast.success('Profil mis à jour avec succès');
+      toast.success(responseData.message || 'Profil mis à jour avec succès');
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      toast.error('Erreur lors de la mise à jour du profil');
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la mise à jour du profil');
     } finally {
       setIsLoading(false);
     }
