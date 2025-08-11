@@ -22,6 +22,7 @@ import {
   Star,
   Filter
 } from 'lucide-react';
+import { buildApiUrl } from '@/lib/runtime-urls';
 import { User, Group, Message } from '@/types';
 
 interface SearchResults {
@@ -96,14 +97,14 @@ export function SearchPageContent() {
       }
 
       // Rechercher les utilisateurs
-      const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/users/search?q=${encodeURIComponent(searchQuery)}`, {
+      const usersResponse = await fetch(`${buildApiUrl('/users/search')}?q=${encodeURIComponent(searchQuery)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
       // Rechercher les groupes
-      const groupsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/groups/search?q=${encodeURIComponent(searchQuery)}`, {
+      const groupsResponse = await fetch(`${buildApiUrl('/groups/search')}?q=${encodeURIComponent(searchQuery)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -194,7 +195,7 @@ export function SearchPageContent() {
   const handleJoinGroup = async (groupId: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/groups/${groupId}/join`, {
+      const response = await fetch(buildApiUrl(`/groups/${groupId}/join`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -219,7 +220,7 @@ export function SearchPageContent() {
   const handleStartConversation = async (userId: string) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/conversation`, {
+      const response = await fetch(buildApiUrl('/conversation'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

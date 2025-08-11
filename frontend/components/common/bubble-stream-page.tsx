@@ -330,7 +330,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
           hasSocket: connectionStatus.hasSocket,
           isConnected: connectionStatus.isConnected,
           hasToken: !!localStorage.getItem('auth_token'),
-          wsUrl: process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000/ws'
+          wsUrl: (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000') : 'ws://gateway:3000') + '/ws'
         });
         toast.warning('� Connexion WebSocket en cours...');
       }

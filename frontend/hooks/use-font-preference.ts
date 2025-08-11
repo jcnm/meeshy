@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FontFamily, defaultFont, getFontConfig } from '@/lib/fonts';
+import { buildApiUrl } from '@/lib/runtime-urls';
 
 const FONT_PREFERENCE_KEY = 'font-family';
 
@@ -35,8 +36,7 @@ export function useFontPreference() {
         const token = localStorage.getItem('auth_token');
         if (token && typeof window !== 'undefined') {
           try {
-            const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3000';
-            const response = await fetch(`${gatewayUrl}/users/preferences`, {
+            const response = await fetch(buildApiUrl('/users/preferences'), {
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -129,8 +129,7 @@ export function useFontPreference() {
         const token = localStorage.getItem('auth_token');
         if (token) {
           try {
-            const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:3001';
-            const response = await fetch(`${gatewayUrl}/users/preferences`, {
+            const response = await fetch(buildApiUrl('/users/preferences'), {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,

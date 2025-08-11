@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { buildApiUrl } from '@/lib/runtime-urls';
 
 export default function AuthDebugPage() {
   const [status, setStatus] = useState<string>('Initializing...');
@@ -23,7 +24,7 @@ export default function AuthDebugPage() {
           setStatus('No token found, attempting auto-login...');
           
           // Automatic login
-          const loginResponse = await fetch('http://localhost:3000/auth/login', {
+          const loginResponse = await fetch(buildApiUrl('/auth/login'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -52,7 +53,7 @@ export default function AuthDebugPage() {
         setStatus('Testing /auth/me endpoint...');
         const currentToken = localStorage.getItem('auth_token');
         
-        const meResponse = await fetch('http://localhost:3000/auth/me', {
+        const meResponse = await fetch(buildApiUrl('/auth/me'), {
           headers: {
             'Authorization': `Bearer ${currentToken}`
           }

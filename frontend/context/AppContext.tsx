@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { buildApiUrl } from '@/lib/runtime-urls';
 import { User, Conversation, Group, Notification } from '@/types';
 
 // Types pour le state global
@@ -168,8 +169,7 @@ export function AppProvider({ children }: AppProviderProps) {
         // Si on a un token mais pas d'utilisateur en localStorage, 
         // récupérer l'utilisateur depuis l'API
         try {
-          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000';
-          const response = await fetch(`${backendUrl}/auth/me`, {
+          const response = await fetch(buildApiUrl('/auth/me'), {
             headers: {
               'Authorization': `Bearer ${token}`
             }
