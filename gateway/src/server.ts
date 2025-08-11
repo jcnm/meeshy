@@ -24,6 +24,7 @@ import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import { messageRoutes } from './routes/messages';
+import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
@@ -241,7 +242,12 @@ class MeeshyServer {
     await this.server.register(cors, {
       origin: config.isDev ? true : (origin, cb) => {
         // Add your production domains here
-        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+        const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || 
+                               process.env.ALLOWED_ORIGINS?.split(',') || 
+                               ['http://localhost:3100'];
+        
+        logger.info(`CORS check: origin="${origin}", allowed="${allowedOrigins.join(',')}"`);
+        
         if (!origin || allowedOrigins.includes(origin)) {
           return cb(null, true);
         }
@@ -504,6 +510,9 @@ class MeeshyServer {
     
     // Register message routes without /api prefix (directly at root)
     await this.server.register(messageRoutes);
+    
+    // Register user routes
+    await this.server.register(userRoutes);
     
     // Register user preferences routes with /users prefix
     await this.server.register(userPreferencesRoutes, { prefix: '/users' });
