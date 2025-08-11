@@ -70,7 +70,11 @@ class ZMQTranslationServer:
             'errors': 0,
             'avg_processing_time': 0.0
         }
-    
+        
+        # Timestamps pour les statistiques
+        self._start_time = time.time()
+        self._last_stats_time = self._start_time
+
     async def start(self):
         """Démarre le serveur ZMQ haute performance"""
         logger.info(f"🚀 Démarrage serveur ZMQ haute performance sur port {self.port}")
@@ -143,7 +147,12 @@ class ZMQTranslationServer:
             request_data = json.loads(request_text)
             
             self.stats['requests_received'] += 1
-            logger.info(f"📥 ZMQ Requête reçue #{self.stats['requests_received']}: {request_data.get('text', '')[:50]}...")
+            request_id = self.stats['requests_received']
+            
+            # Log détaillé avec performance
+            logger.info(f"📥 ZMQ Requête #{request_id}: {request_data.get('text', '')[:30]}... "
+                       f"({request_data.get('sourceLanguage', 'auto')} → {request_data.get('targetLanguage', 'en')}) "
+                       f"[Queue: {self.task_queue.qsize()}, Active: {len(self.active_tasks)}]")
             
             # Extraire les données de la requête
             text = request_data.get('text', '')
@@ -159,6 +168,7 @@ class ZMQTranslationServer:
                 # Réponse immédiate pour erreur de validation
                 error_response = self._create_error_response("Text and target language are required")
                 await self.rep_socket.send(error_response)
+                logger.warning(f"❌ Requête #{request_id} rejetée: données manquantes")
                 return
             
             # Créer une tâche de traduction
@@ -179,17 +189,23 @@ class ZMQTranslationServer:
             await self.task_queue.put(task)
             self.active_tasks[task_id] = task
             
+            # Calculer le temps de traitement estimé
+            estimated_time = self._estimate_processing_time(text, model_type)
+            
             # Réponse immédiate avec task_id
             response_data = {
                 "taskId": task_id,
                 "messageId": message_id,
                 "status": "queued",
-                "estimatedProcessingTime": self._estimate_processing_time(text, model_type)
+                "estimatedProcessingTime": estimated_time,
+                "queuePosition": self.task_queue.qsize(),
+                "activeTasks": len(self.active_tasks)
             }
             
             await self.rep_socket.send(json.dumps(response_data).encode('utf-8'))
             
-            logger.info(f"✅ Tâche {task_id} ajoutée à la file d'attente")
+            logger.info(f"✅ Tâche #{request_id} ajoutée: {task_id} "
+                       f"(est. {estimated_time}ms, queue: {self.task_queue.qsize()})")
             
         except json.JSONDecodeError as e:
             logger.error(f"❌ Erreur JSON dans requête ZMQ: {e}")
@@ -204,6 +220,12 @@ class ZMQTranslationServer:
     async def _worker_loop(self):
         """Boucle de travail pour les workers"""
         worker_id = id(asyncio.current_task())
+        worker_stats = {
+            'tasks_processed': 0,
+            'total_processing_time': 0.0,
+            'errors': 0
+        }
+        
         logger.info(f"👷 Worker {worker_id} démarré")
         
         while self.running:
@@ -214,10 +236,18 @@ class ZMQTranslationServer:
                     timeout=1.0
                 )
                 
-                logger.info(f"👷 Worker {worker_id} traite tâche {task.task_id}")
+                worker_stats['tasks_processed'] += 1
+                start_time = time.time()
+                
+                logger.info(f"👷 Worker {worker_id} traite tâche {task.task_id} "
+                           f"(#{worker_stats['tasks_processed']}, queue: {self.task_queue.qsize()})")
                 
                 # Traiter la traduction
                 result = await self._process_translation(task)
+                
+                # Calculer le temps de traitement
+                processing_time = time.time() - start_time
+                worker_stats['total_processing_time'] += processing_time
                 
                 # Stocker le résultat
                 self.task_results[task.task_id] = result
@@ -231,16 +261,29 @@ class ZMQTranslationServer:
                 
                 self.stats['translations_completed'] += 1
                 
-                logger.info(f"✅ Worker {worker_id} terminé tâche {task.task_id}")
+                # Log de performance
+                avg_processing = worker_stats['total_processing_time'] / worker_stats['tasks_processed']
+                logger.info(f"✅ Worker {worker_id} terminé tâche {task.task_id} "
+                           f"({processing_time:.3f}s, moy: {avg_processing:.3f}s, "
+                           f"queue: {self.task_queue.qsize()}, active: {len(self.active_tasks)})")
                 
             except asyncio.TimeoutError:
                 # Timeout normal, continuer
                 continue
             except Exception as e:
-                logger.error(f"❌ Erreur worker {worker_id}: {e}")
+                worker_stats['errors'] += 1
                 self.stats['errors'] += 1
+                logger.error(f"❌ Erreur worker {worker_id}: {e}")
                 await asyncio.sleep(0.1)
-    
+        
+        # Log final du worker
+        if worker_stats['tasks_processed'] > 0:
+            avg_time = worker_stats['total_processing_time'] / worker_stats['tasks_processed']
+            logger.info(f"👷 Worker {worker_id} arrêté: "
+                       f"{worker_stats['tasks_processed']} tâches, "
+                       f"moy: {avg_time:.3f}s, "
+                       f"erreurs: {worker_stats['errors']}")
+
     async def _process_translation(self, task: TranslationTask) -> Dict:
         """Traite une traduction"""
         start_time = time.time()
@@ -271,11 +314,14 @@ class ZMQTranslationServer:
                     "fromCache": translation_result.get('from_cache', False),
                     "modelUsed": translation_result.get('model_used', task.model_type),
                     "processingTimeMs": int(processing_time * 1000),
-                    "workerId": id(asyncio.current_task())
+                    "workerId": id(asyncio.current_task()),
+                    "queueTimeMs": int((time.time() - task.created_at) * 1000)
                 }
             }
             
-            logger.info(f"📤 Traduction terminée {task.task_id}: {result['translatedText'][:50]}...")
+            logger.info(f"📤 Traduction terminée {task.task_id}: "
+                       f"{task.text[:30]}... → {result['translatedText'][:30]}... "
+                       f"({processing_time:.3f}s, cache: {result['metadata']['fromCache']})")
             return result
             
         except Exception as e:
@@ -293,7 +339,8 @@ class ZMQTranslationServer:
                     "confidenceScore": 0.0,
                     "fromCache": False,
                     "modelUsed": "error",
-                    "processingTimeMs": int(processing_time * 1000)
+                    "processingTimeMs": int(processing_time * 1000),
+                    "workerId": id(asyncio.current_task())
                 }
             }
     
@@ -304,13 +351,19 @@ class ZMQTranslationServer:
                 "type": "translation_completed",
                 "taskId": task_id,
                 "result": result,
-                "timestamp": time.time()
+                "timestamp": time.time(),
+                "serverStats": {
+                    "queueSize": self.task_queue.qsize(),
+                    "activeTasks": len(self.active_tasks),
+                    "completedTasks": self.stats['translations_completed'],
+                    "avgProcessingTime": self.stats['avg_processing_time']
+                }
             }
             
             message = json.dumps(notification).encode('utf-8')
             await self.pub_socket.send(message)
             
-            logger.info(f"📤 Notification publiée pour tâche {task_id}")
+            logger.debug(f"📤 Notification publiée pour tâche {task_id}")
             
         except Exception as e:
             logger.error(f"❌ Erreur publication notification {task_id}: {e}")
@@ -360,11 +413,23 @@ class ZMQTranslationServer:
     
     async def get_stats(self) -> Dict:
         """Récupère les statistiques du serveur"""
+        current_time = time.time()
+        
+        # Calculer les requêtes par seconde
+        if hasattr(self, '_last_stats_time'):
+            time_diff = current_time - self._last_stats_time
+            if time_diff > 0:
+                self.stats['requests_per_second'] = self.stats['requests_received'] / time_diff
+        self._last_stats_time = current_time
+        
         return {
             **self.stats,
             "queue_size": self.task_queue.qsize(),
             "active_tasks": len(self.active_tasks),
-            "cached_results": len(self.task_results)
+            "cached_results": len(self.task_results),
+            "uptime_seconds": current_time - getattr(self, '_start_time', current_time),
+            "worker_count": self.max_workers,
+            "memory_usage_mb": self._get_memory_usage()
         }
     
     async def stop(self):
@@ -397,3 +462,12 @@ class ZMQTranslationServer:
     async def health_check(self) -> bool:
         """Vérifie si le serveur ZMQ fonctionne"""
         return self.is_running
+
+    def _get_memory_usage(self) -> float:
+        """Récupère l'utilisation mémoire en MB"""
+        try:
+            import psutil
+            process = psutil.Process()
+            return process.memory_info().rss / 1024 / 1024
+        except ImportError:
+            return 0.0
