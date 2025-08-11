@@ -10,7 +10,22 @@
     "install": "pip install -r requirements.txt",
     "generate": "cd ../shared && prisma generate --generator=client-py"
   },
-  "keywords": ["fastapi", "translation", "ml", "multilingual", "grpc"],
+  "keywords": [
+    "fastapi",
+    "translation",
+    "ml",
+    "multilingual",
+    "grpc"
+  ],
   "author": "Meeshy Team",
-  "private": true
+  "private": true,
+  "main": "index.js",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "prisma": "^6.13.0"
+  },
+  "dependencies": {
+    "@prisma/client": "6.13.0"
+  }
 }
