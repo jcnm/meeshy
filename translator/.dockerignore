@@ -1,6 +1,9 @@
 # Translator specific .dockerignore
 # Allow models to be copied for this service
-!models/
+models/
+./**/*/models
+./*/**/models/
+./.models
 node_modules/
 **/*/node_modules/
 .venv/

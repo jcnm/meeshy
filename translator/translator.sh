@@ -49,6 +49,12 @@ if ! command -v python3 >/dev/null 2>&1; then
     exit 1
 fi
 
+# Vérifier Prisma
+if ! command -v prisma >/dev/null 2>&1; then
+    echo -e "${RED}❌ Installation de prisma non trouvé${NC}"
+    npm install -g prisma
+fi
+
 echo -e "${GREEN}✅ [TRA] Python version: $(python3 --version)${NC}"
 
 # Vérifier l'environnement virtuel
@@ -65,9 +71,19 @@ if [[ ! -f ".venv/bin/uvicorn" ]]; then
     .venv/bin/pip install --default-timeout=300 --no-cache-dir -r requirements.txt
 fi
 
-# Génération du client Prisma Python
+# Génération du client Prisma Python depuis shared/prisma
 echo -e "${CYAN}⚙️  [TRA] Génération du client Prisma Python...${NC}"
-.venv/bin/prisma generate || echo -e "${YELLOW}⚠️  [TRA] Génération Prisma échouée, utilisation du service direct${NC}"
+if [[ -f "shared/prisma/schema.prisma" ]]; then
+    echo -e "${GREEN}✅ [TRA] Utilisation du schema distribué depuis shared/prisma/${NC}"
+    cp shared/prisma/schema.prisma ./schema.prisma
+    .venv/bin/prisma generate || echo -e "${YELLOW}⚠️  [TRA] Génération Prisma échouée${NC}"
+elif [[ -f "schema.prisma" ]]; then
+    echo -e "${YELLOW}⚠️  [TRA] Utilisation du schema local (fallback)${NC}"
+    .venv/bin/prisma generate || echo -e "${YELLOW}⚠️  [TRA] Génération Prisma échouée${NC}"
+else
+    echo -e "${RED}❌ [TRA] Aucun schema Prisma trouvé${NC}"
+    echo -e "${YELLOW}💡 [TRA] Exécutez 'cd ../shared && ./scripts/distribute.sh' pour générer les schemas${NC}"
+fi
 
 
 # Variables d'environnement avec valeurs par défaut

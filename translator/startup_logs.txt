@@ -1,0 +1,110 @@
+[0;32m✅ [TRA] Chargement des variables depuis .env[0m
+  - DEBUG=true
+  - WORKERS=4
+  - FASTAPI_PORT=8000
+  - GRPC_PORT=50051
+  - ZMQ_PORT=5555
+  - DATABASE_URL=postgresql://meeshy:MeeshyP%40ssword@127.0.0.1:5432/meeshy
+  - PRISMA_POOL_SIZE=15
+  - REDIS_URL=memory://
+  - TRANSLATION_CACHE_TTL=3600
+  - CACHE_MAX_ENTRIES=10000
+  - ML_BATCH_SIZE=32
+  - GPU_MEMORY_FRACTION=0.8
+  - MODELS_PATH=models
+  - DEFAULT_LANGUAGE=fr
+  - SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
+  - AUTO_DETECT_LANGUAGE=true
+  - BASIC_MODEL=nllb-200-distilled-600M
+  - MEDIUM_MODEL=nllb-200-distilled-600M
+  - PREMIUM_MODEL=nllb-200-distilled-1.3B
+  - TRANSLATION_TIMEOUT=30
+  - MAX_TEXT_LENGTH=1000
+  - CONCURRENT_TRANSLATIONS=10
+[0;34m🐍 [TRA] Démarrage du translator Python Meeshy[0m
+=================================================
+[0;32m✅ [TRA] Python version: Python 3.13.5[0m
+[0;34m📊 [TRA] Configuration chargée:[0m
+   Port: 8000
+   Environment: development
+   Database: postgresql://meeshy:MeeshyP%40ssword@127.0.0.1:5432/meeshy
+   Redis: memory://
+   Cache: memory
+[0;32m🚀 [TRA] Démarrage du translator intégré (FastAPI + ZMQ)...[0m
+   Utilisez Ctrl+C pour arrêter
+=================================================
+2025-08-11 08:43:12,189 - __main__ - INFO - 🌟 Démarrage Meeshy Translation Service
+2025-08-11 08:43:12,189 - __main__ - INFO - 🤖 Initialisation du serveur de traduction Meeshy...
+2025-08-11 08:43:12,189 - services.translation_service - INFO - 🤖 Démarrage du service de traduction ML...
+2025-08-11 08:43:12,189 - services.translation_service - WARNING - ⚠️  Service de traduction initialisé sans connexion à la base de données
+2025-08-11 08:43:12,189 - services.translation_service - INFO - 🖥️ Utilisation du CPU
+2025-08-11 08:43:12,189 - services.translation_service - INFO - � Chargement de TOUS les modèles: ['t5-small', 'nllb-200-distilled-600M', 'nllb-200-distilled-1.3B']
+2025-08-11 08:43:12,189 - services.translation_service - INFO - 🗂️ Chemin des modèles configuré: /Users/smpceo/Downloads/Meeshy/meeshy/translator/models
+2025-08-11 08:43:12,189 - services.translation_service - INFO - 📁 Vérification du répertoire: /Users/smpceo/Downloads/Meeshy/meeshy/translator/models
+2025-08-11 08:43:12,189 - services.translation_service - INFO - � Espace suffisant pour NLLB-1.3B: 95.5GB libres
+2025-08-11 08:43:12,189 - services.translation_service - INFO - ⏳ Chargement du modèle t5-small...
+2025-08-11 08:43:12,189 - services.translation_service - INFO - 📁 Utilisation du modèle local: /Users/smpceo/Downloads/Meeshy/meeshy/translator/models/t5-small
+2025-08-11 08:43:12,189 - services.translation_service - INFO - 🔧 Création du pipeline T5 pour t5-small...
+Device set to use cpu
+2025-08-11 08:43:12,306 - services.translation_service - INFO - ✅ Pipeline t5 créé pour t5-small
+2025-08-11 08:43:12,306 - services.translation_service - INFO - ✅ Modèle t5-small chargé
+2025-08-11 08:43:12,306 - services.translation_service - INFO - ⏳ Chargement du modèle nllb-200-distilled-600M...
+2025-08-11 08:43:12,306 - services.translation_service - INFO - 📁 Utilisation du modèle local: /Users/smpceo/Downloads/Meeshy/meeshy/translator/models/nllb-200-distilled-600M
+2025-08-11 08:43:12,306 - services.translation_service - INFO - 🔧 Création du pipeline NLLB pour nllb-200-distilled-600M...
+Device set to use cpu
+2025-08-11 08:43:12,830 - services.translation_service - INFO - ✅ Pipeline nllb créé pour nllb-200-distilled-600M
+2025-08-11 08:43:12,830 - services.translation_service - INFO - ✅ Modèle nllb-200-distilled-600M chargé
+2025-08-11 08:43:12,830 - services.translation_service - INFO - ⏳ Chargement du modèle nllb-200-distilled-1.3B...
+2025-08-11 08:43:12,830 - services.translation_service - INFO - 📁 Utilisation du modèle local: /Users/smpceo/Downloads/Meeshy/meeshy/translator/models/nllb-200-distilled-1.3B
+2025-08-11 08:43:12,830 - services.translation_service - INFO - 🔧 Création du pipeline NLLB pour nllb-200-distilled-1.3B...
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  8.31it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 15.83it/s]
+Device set to use cpu
+2025-08-11 08:43:13,506 - services.translation_service - INFO - ✅ Pipeline nllb créé pour nllb-200-distilled-1.3B
+2025-08-11 08:43:13,506 - services.translation_service - INFO - ✅ Modèle nllb-200-distilled-1.3B chargé
+2025-08-11 08:43:13,506 - services.translation_service - INFO - ✅ Service de traduction ML initialisé
+2025-08-11 08:43:13,506 - __main__ - INFO - ✅ Service de traduction initialisé
+2025-08-11 08:43:13,506 - __main__ - INFO - ✅ Serveur ZMQ configuré sur port 5555
+2025-08-11 08:43:13,508 - __main__ - INFO - ✅ API FastAPI configurée
+2025-08-11 08:43:13,508 - __main__ - INFO - 🚀 Démarrage du serveur Meeshy Translation...
+2025-08-11 08:43:13,508 - services.translation_service - INFO - 🔄 DÉBUT TRADUCTION ML (Pipeline):
+2025-08-11 08:43:13,508 - services.translation_service - INFO -    📝 Texte: 'Hello Meeshy'
+2025-08-11 08:43:13,508 - services.translation_service - INFO -    🌐 en → fr
+2025-08-11 08:43:13,508 - services.translation_service - INFO -    🤖 Type de modèle demandé: basic
+2025-08-11 08:43:13,508 - services.translation_service - INFO -    🎯 Modèle 'basic' demandé → T5-small (12 chars)
+2025-08-11 08:43:13,509 - services.translation_service - INFO - 🎯 Sélection du modèle pour type: t5-small
+2025-08-11 08:43:13,509 - services.translation_service - INFO - 📊 Modèles disponibles dans pipelines: ['t5-small', 'nllb-200-distilled-600M', 'nllb-200-distilled-1.3B']
+2025-08-11 08:43:13,509 - services.translation_service - INFO - ⚙️ Settings: basic=nllb-200-distilled-600M, medium=nllb-200-distilled-600M, premium=nllb-200-distilled-1.3B
+2025-08-11 08:43:13,509 - services.translation_service - INFO - ✅ Modèle direct trouvé: t5-small
+2025-08-11 08:43:13,509 - services.translation_service - INFO -    🎯 Modèle sélectionné: t5-small
+2025-08-11 08:43:13,509 - services.translation_service - INFO -    📊 Config modèle: type=t5, max_length=512
+2025-08-11 08:43:13,509 - services.translation_service - INFO -    ⚙️ Paramètres pipeline: {'max_new_tokens': 32, 'num_beams': 4, 'do_sample': False, 'early_stopping': True, 'repetition_penalty': 1.1, 'length_penalty': 1.0}
+2025-08-11 08:43:13,509 - services.translation_service - INFO -    📝 Instruction T5 explicite: 'translate English to French: Hello Meeshy'
+2025-08-11 08:43:13,509 - services.translation_service - INFO -    ⚙️ Paramètres T5: {'max_new_tokens': 32, 'num_beams': 4, 'do_sample': False, 'early_stopping': True, 'pad_token_id': 1, 'temperature': 1.0, 'repetition_penalty': 1.2}
+2025-08-11 08:43:13,610 - services.translation_service - INFO -    📤 T5 résultat nettoyé: 'Bonjour Meeshy'
+2025-08-11 08:43:13,610 - services.translation_service - INFO -    ✅ TRADUCTION FINALE: 'Bonjour Meeshy'
+2025-08-11 08:43:13,610 - __main__ - INFO - 🧪 Test de traduction: {'translated_text': 'Bonjour Meeshy', 'source_language': 'en', 'target_language': 'fr', 'model_used': 't5-small', 'confidence': 0.9, 'cache_key': None, 'processing_time': 0.10207366943359375, 'from_cache': False}
+2025-08-11 08:43:13,611 - __main__ - INFO - 🚀 Démarrage du serveur FastAPI...
+2025-08-11 08:43:13,611 - __main__ - INFO - ✅ Serveur FastAPI démarré en arrière-plan
+2025-08-11 08:43:13,611 - __main__ - INFO - ✅ Serveur Meeshy Translation prêt
+2025-08-11 08:43:13,612 - __main__ - INFO - 📍 REST API: http://0.0.0.0:8000
+2025-08-11 08:43:13,612 - __main__ - INFO - 📍 ZMQ Server: tcp://0.0.0.0:5555
+2025-08-11 08:43:13,612 - __main__ - INFO - 🔌 Démarrage du serveur ZMQ...
+2025-08-11 08:43:13,612 - services.zmq_server - INFO - 🔌 Démarrage serveur ZMQ sur port 5555
+2025-08-11 08:43:13,613 - services.zmq_server - ERROR - ❌ Erreur serveur ZMQ: Address already in use (addr='tcp://*:5555')
+2025-08-11 08:43:13,613 - services.zmq_server - INFO - 🛑 Arrêt du serveur ZMQ...
+2025-08-11 08:43:13,613 - services.zmq_server - INFO - ✅ Serveur ZMQ arrêté
+INFO:     Started server process [45705]
+INFO:     Waiting for application startup.
+2025-08-11 08:43:13,635 - api.translation_api - INFO - 🚀 API FastAPI démarrée
+INFO:     Application startup complete.
+ERROR:    [Errno 48] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
+INFO:     Waiting for application shutdown.
+2025-08-11 08:43:13,635 - api.translation_api - INFO - 🛑 API FastAPI arrêtée
+INFO:     Application shutdown complete.
+[0;32m✅ [TRA] Translator démarré avec succès (PID: 45705)[0m
+[0;34m🌐 [TRA] API disponible sur http://localhost:8000[0m
+[1;33m💡 [TRA] Endpoints disponibles:[0m
+   GET  /health              - Status du service
+   POST /translate           - Traduction de texte
+   POST /detect-language     - Détection de langue
+   GET  /docs               - Documentation API

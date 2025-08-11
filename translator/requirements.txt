@@ -26,7 +26,7 @@ sentencepiece>=0.1.99
 
 # Cache et base de données
 redis==5.0.1
-prisma==0.11.0
+prisma
 
 # Détection de langue et analyse de texte
 langdetect==1.0.9

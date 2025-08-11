@@ -14,6 +14,8 @@ generated/
 __pycache__/
 *.pyc
 *.pyo
+models
+.models
 
 # Development services
 src/services/database_service_simple.py
