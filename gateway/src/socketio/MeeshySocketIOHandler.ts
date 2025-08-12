@@ -8,6 +8,7 @@ import { Server as HTTPServer } from 'http';
 import { MeeshySocketIOManager } from './MeeshySocketIOManager';
 import { PrismaClient } from '../../shared/prisma/client';
 import { logger } from '../utils/logger';
+import { SERVER_EVENTS } from '../../shared/types/socketio-events';
 
 export class MeeshySocketIOHandler {
   private socketIOManager: MeeshySocketIOManager | null = null;
@@ -112,7 +113,7 @@ export class MeeshySocketIOHandler {
   public async sendNotificationToUser(userId: string, notification: any): Promise<void> {
     try {
       if (this.socketIOManager) {
-        const sent = this.socketIOManager.sendToUser(userId, 'notification', notification);
+        const sent = this.socketIOManager.sendToUser(userId, SERVER_EVENTS.NOTIFICATION, notification);
         if (sent) {
           logger.info(`📱 Notification envoyée à l'utilisateur ${userId}`, notification);
         } else {
@@ -130,7 +131,7 @@ export class MeeshySocketIOHandler {
   public async broadcastMessage(message: any): Promise<void> {
     try {
       if (this.socketIOManager) {
-        this.socketIOManager.broadcast('system_message', message);
+        this.socketIOManager.broadcast(SERVER_EVENTS.SYSTEM_MESSAGE, message);
         logger.info('📢 Broadcast message à tous les utilisateurs', message);
       }
     } catch (error) {

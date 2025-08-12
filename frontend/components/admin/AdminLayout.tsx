@@ -48,7 +48,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, currentPage }) => {
     try {
       await logout();
       toast.success('Déconnexion réussie');
-      router.push('/login');
+      // La redirection se fait automatiquement dans la fonction logout
     } catch (error) {
       console.error('Erreur déconnexion:', error);
       toast.error('Erreur lors de la déconnexion');

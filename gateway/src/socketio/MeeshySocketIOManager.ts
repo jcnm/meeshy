@@ -16,6 +16,7 @@ import type {
   TypingEvent,
   TranslationEvent
 } from '../../shared/types/socketio-events';
+import { CLIENT_EVENTS, SERVER_EVENTS } from '../../shared/types/socketio-events';
 
 export interface SocketUser {
   id: string;
@@ -96,12 +97,12 @@ export class MeeshySocketIOManager {
       this._handleTokenAuthentication(socket);
       
       // Authentification manuelle (fallback)
-      socket.on('authenticate', async (data: { userId?: string; sessionToken?: string; language?: string }) => {
+      socket.on(CLIENT_EVENTS.AUTHENTICATE, async (data: { userId?: string; sessionToken?: string; language?: string }) => {
         await this._handleAuthentication(socket, data);
       });
       
       // Réception d'un nouveau message
-      socket.on('message:send', async (data: {
+      socket.on(CLIENT_EVENTS.MESSAGE_SEND, async (data: {
         conversationId: string;
         content: string;
         originalLanguage?: string;
@@ -112,7 +113,7 @@ export class MeeshySocketIOManager {
       });
       
       // Demande de traduction spécifique
-      socket.on('request_translation', async (data: { messageId: string; targetLanguage: string }) => {
+      socket.on(CLIENT_EVENTS.REQUEST_TRANSLATION, async (data: { messageId: string; targetLanguage: string }) => {
         await this._handleTranslationRequest(socket, data);
       });
       
@@ -122,11 +123,11 @@ export class MeeshySocketIOManager {
       });
       
       // Événements de frappe
-      socket.on('typing:start', (data: { conversationId: string }) => {
+      socket.on(CLIENT_EVENTS.TYPING_START, (data: { conversationId: string }) => {
         this._handleTypingStart(socket, data);
       });
       
-      socket.on('typing:stop', (data: { conversationId: string }) => {
+      socket.on(CLIENT_EVENTS.TYPING_STOP, (data: { conversationId: string }) => {
         this._handleTypingStop(socket, data);
       });
     });
@@ -158,7 +159,7 @@ export class MeeshySocketIOManager {
 
       if (!dbUser) {
         console.log(`❌ Utilisateur ${decoded.userId} non trouvé en base`);
-        socket.emit('error', { message: 'User not found' });
+        socket.emit(SERVER_EVENTS.ERROR, { message: 'User not found' });
         return;
       }
 
@@ -181,7 +182,7 @@ export class MeeshySocketIOManager {
 
     } catch (error) {
       console.error(`❌ Erreur authentification token:`, error);
-      socket.emit('error', { message: 'Invalid token' });
+      socket.emit(SERVER_EVENTS.ERROR, { message: 'Invalid token' });
     }
   }
 
@@ -229,17 +230,17 @@ export class MeeshySocketIOManager {
         // Rejoindre les conversations de l'utilisateur
         await this._joinUserConversations(socket, user.id, user.isAnonymous);
         
-        socket.emit('authenticated', { success: true, user: { id: user.id, language: user.language } });
+        socket.emit(SERVER_EVENTS.AUTHENTICATED, { success: true, user: { id: user.id, language: user.language } });
         console.log(`✅ Utilisateur authentifié: ${user.id} (${user.isAnonymous ? 'anonyme' : 'connecté'})`);
         
       } else {
-        socket.emit('authenticated', { success: false, error: 'Authentication failed' });
+        socket.emit(SERVER_EVENTS.AUTHENTICATED, { success: false, error: 'Authentication failed' });
         console.log(`❌ Échec authentification pour socket ${socket.id}`);
       }
       
     } catch (error) {
       console.error(`❌ Erreur authentification: ${error}`);
-      socket.emit('authenticated', { success: false, error: 'Authentication error' });
+      socket.emit(SERVER_EVENTS.AUTHENTICATED, { success: false, error: 'Authentication error' });
     }
   }
 
@@ -310,7 +311,7 @@ export class MeeshySocketIOManager {
       this.stats.messages_processed++;
       
       // 2. NOTIFIER LE CLIENT QUE LE MESSAGE EST SAUVEGARDÉ
-      socket.emit('message_sent', {
+      socket.emit(SERVER_EVENTS.MESSAGE_SENT, {
         messageId: result.messageId,
         status: result.status,
         timestamp: new Date().toISOString()
@@ -328,7 +329,7 @@ export class MeeshySocketIOManager {
         createdAt: new Date().toISOString()
       };
       
-      socket.to(`conversation_${data.conversationId}`).emit('message:new', messagePayload);
+      socket.to(`conversation_${data.conversationId}`).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
       
       console.log(`✅ Message ${result.messageId} sauvegardé et diffusé`);
       
@@ -338,7 +339,7 @@ export class MeeshySocketIOManager {
     } catch (error) {
       console.error(`❌ Erreur traitement message: ${error}`);
       this.stats.errors++;
-      socket.emit('error', { message: 'Failed to send message' });
+      socket.emit(SERVER_EVENTS.ERROR, { message: 'Failed to send message' });
     }
   }
 
@@ -346,7 +347,7 @@ export class MeeshySocketIOManager {
     try {
       const userId = this.socketToUser.get(socket.id);
       if (!userId) {
-        socket.emit('error', { message: 'User not authenticated' });
+        socket.emit(SERVER_EVENTS.ERROR, { message: 'User not authenticated' });
         return;
       }
       
@@ -356,7 +357,7 @@ export class MeeshySocketIOManager {
       const translation = await this.translationService.getTranslation(data.messageId, data.targetLanguage);
       
       if (translation) {
-        socket.emit('translation_received', {
+        socket.emit(SERVER_EVENTS.TRANSLATION_RECEIVED, {
           messageId: data.messageId,
           translatedText: translation.translatedText,
           targetLanguage: data.targetLanguage,
@@ -367,7 +368,7 @@ export class MeeshySocketIOManager {
         console.log(`✅ Traduction envoyée: ${data.messageId} -> ${data.targetLanguage}`);
         
       } else {
-        socket.emit('translation_error', {
+        socket.emit(SERVER_EVENTS.TRANSLATION_ERROR, {
           messageId: data.messageId,
           targetLanguage: data.targetLanguage,
           error: 'Translation not available'
@@ -379,7 +380,7 @@ export class MeeshySocketIOManager {
     } catch (error) {
       console.error(`❌ Erreur demande traduction: ${error}`);
       this.stats.errors++;
-      socket.emit('error', { message: 'Failed to get translation' });
+      socket.emit(SERVER_EVENTS.ERROR, { message: 'Failed to get translation' });
     }
   }
 
@@ -396,7 +397,7 @@ export class MeeshySocketIOManager {
       for (const user of targetUsers) {
         const userSocket = this.io.sockets.sockets.get(user.socketId);
         if (userSocket) {
-          userSocket.emit('message_translated', {
+          userSocket.emit(SERVER_EVENTS.MESSAGE_TRANSLATED, {
             messageId: result.messageId,
             translations: [{
               messageId: result.messageId,

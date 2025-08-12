@@ -54,7 +54,7 @@ export function Navigation({ className }: NavigationProps) {
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, setUser } = useUser();
+  const { user, logout } = useUser();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -70,9 +70,8 @@ export function Navigation({ className }: NavigationProps) {
   }, []);
 
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    router.push('/');
+    logout();
+    // La redirection se fait automatiquement dans la fonction logout
   };
 
   const isActive = (href: string) => {

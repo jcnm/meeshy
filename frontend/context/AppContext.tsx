@@ -253,7 +253,12 @@ export function useUser() {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('auth_token');
-    // Redirection sera gérée par le composant appelant
+    localStorage.removeItem('token'); // Nettoyer aussi l'ancien token
+    
+    // Redirection universelle vers la page d'accueil
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
   };
 
   return { 

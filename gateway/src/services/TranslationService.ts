@@ -3,7 +3,7 @@
  * Utilise l'architecture ZMQ PUB/SUB + REQ/REP avec pool de connexions
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../shared/prisma/client';
 import { ZMQTranslationClient, TranslationRequest, TranslationResult } from './zmq-translation-client';
 import { ZMQSingleton } from './zmq-singleton';
 
@@ -459,6 +459,8 @@ export class TranslationService {
       console.error(`❌ Erreur sauvegarde traduction: ${error}`);
     }
   }
+
+
 
   async getTranslation(messageId: string, targetLanguage: string): Promise<TranslationResult | null> {
     try {

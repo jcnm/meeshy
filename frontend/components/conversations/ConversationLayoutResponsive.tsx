@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
@@ -89,6 +89,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<string>('api-service');
+
+  // Ref pour le scroll automatique vers le dernier message
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
 const c = console;
 
@@ -234,6 +237,22 @@ async function initializeTranslator() {
       setShowConversationList(true);
     }
   }, [isMobile, selectedConversation]);
+
+  // Fonction pour scroller vers le bas
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, []);
+
+  // Scroll automatique quand les messages changent
+  useEffect(() => {
+    if (messages.length > 0) {
+      // Délai court pour permettre au DOM de se mettre à jour
+      const timeout = setTimeout(scrollToBottom, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [messages, scrollToBottom]);
 
 
   // Handlers pour MessageBubble
@@ -599,6 +618,9 @@ async function initializeTranslator() {
         
         // Déclencher l'arrêt de l'indicateur de frappe
         messaging.stopTyping();
+        
+        // Scroller vers le bas après l'envoi
+        setTimeout(scrollToBottom, 200);
       } else {
         throw new Error('Échec de l\'envoi du message');
       }
@@ -908,6 +930,8 @@ async function initializeTranslator() {
                           />
                         );
                       })}
+                      {/* Élément invisible pour le scroll automatique */}
+                      <div ref={messagesEndRef} />
                     </div>
                   )}
                 </div>

@@ -178,7 +178,7 @@ class MeeshySocketIOService {
     });
 
     // Événements de frappe - gestion intelligente avec état
-    this.socket.on('user_typing_start', (event) => {
+    this.socket.on('typing:start', (event) => {
       console.log('⌨️ MeeshySocketIOService: Frappe commencée', { userId: event.userId, conversationId: event.conversationId });
       
       // Ajouter l'utilisateur à la liste des tapeurs pour cette conversation

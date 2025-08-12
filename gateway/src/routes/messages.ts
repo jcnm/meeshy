@@ -51,20 +51,20 @@ export async function messageRoutes(fastify: FastifyInstance): Promise<void> {
 
         // Traduire via TranslationService
         try {
-          const result = await fastify.translationService.translateMessage({
-            messageId: messageId,
-            content: message.content,
-            sourceLanguage: message.originalLanguage,
-            targetLanguage: targetLanguage
-          });
+          const result = await fastify.translationService.translateTextDirectly(
+            message.content,
+            message.originalLanguage,
+            targetLanguage,
+            'basic'
+          );
 
           return reply.status(200).send({
             success: true,
             messageId: messageId,
             targetLanguage: targetLanguage,
-            translatedContent: result.translatedContent,
-            cached: result.cached,
-            translationModel: result.translationModel
+            translatedContent: result.translatedText,
+            cached: false, // translateTextDirectly ne retourne pas l'info de cache
+            translationModel: result.modelType
           });
 
         } catch (translationError) {

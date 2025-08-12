@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { useUser } from '@/context/AppContext';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -44,58 +45,39 @@ export function DashboardLayout({
   hideSearch = false
 }: DashboardLayoutProps) {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, logout } = useUser();
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Charger les données utilisateur
+  // Gérer l'état de chargement basé sur l'utilisateur du hook
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-          router.push('/');
-          return;
-        }
-
-        const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-          localStorage.removeItem('auth_token');
-          router.push('/');
-          return;
-        }
-
-        const userData = await response.json();
-        setUser(userData);
-      } catch (error) {
-        console.error('Erreur lors du chargement utilisateur:', error);
-        router.push('/');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUser();
-  }, [router]);
+    // Si l'utilisateur est défini ou si la vérification d'auth est terminée
+    if (user || !user) {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     try {
+      // Appeler l'API de déconnexion si possible
       const token = localStorage.getItem('auth_token');
       if (token) {
-        await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGOUT), {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        try {
+          await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGOUT), {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (error) {
+          console.error('Erreur API déconnexion:', error);
+        }
       }
+      
+      // Utiliser la fonction logout centralisée
+      logout();
+      toast.success('Déconnexion réussie');
     } catch (error) {
       console.error('Erreur déconnexion:', error);
-    } finally {
-      localStorage.removeItem('auth_token');
-      router.push('/');
-      toast.success('Déconnexion réussie');
+      toast.error('Erreur lors de la déconnexion');
     }
   };
 

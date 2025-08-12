@@ -1,0 +1,46 @@
+---
+description: Project structure guidelines and organization
+globs: 
+alwaysApply: false
+---
+# Project Structure Guidelines
+
+## Directory Organization
+- Project Type: microservices
+- Source Directory: src/
+- Component Organization: feature-based
+
+## File Naming Conventions
+- Components: PascalCase
+- Files: kebab-case
+- Import Style: absolute
+
+## Structure Requirements
+
+- Service-oriented architecture
+- Clear API boundaries between services
+- Independent scaling and deployment
+
+
+## Best Practices
+- Keep related files together
+- Use consistent naming across the project
+- Maintain clear import/export patterns
+- Document architectural decisions
+
+## Code Examples:
+
+```
+src/
+
+├── features/
+│   ├── auth/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   └── services/
+│   └── dashboard/
+│       ├── components/
+│       ├── hooks/
+│       └── services/
+
+```

@@ -751,38 +751,45 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
 
     try {
-      // Essayer d'envoyer via le service WebSocket si connecté
-      if (connectionStatus.isConnected) {
-        try {
-          // Préparer le message avec métadonnées de langue pour transmission
-          const messageWithLanguage = {
-            content: messageContent,
-            sourceLanguage: selectedInputLanguage,
-            detectedLanguage: detectedLanguage,
-            userLanguageChoices: languageChoices.map(c => c.code)
-          };
-          
-          console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
-          
-          // Pour l'instant, nous envoyons juste le contenu
-          // TODO: Modifier useSocketIOMessaging pour accepter les métadonnées de langue
-          await sendMessageToService(messageContent);
-          console.log('✅ Message envoyé via WebSocket - sera reçu via onNewMessage');
+      // Vérifier l'état de la connexion avant l'envoi
+      if (!connectionStatus.isConnected) {
+        console.log('⚠️ WebSocket non connecté - Impossible d\'envoyer le message');
+        toast.warning('Connexion en cours - Veuillez patienter...');
+        // Restaurer le message pour permettre un nouvel essai
+        setNewMessage(messageContent);
+        return;
+      }
+
+      // Essayer d'envoyer via le service WebSocket
+      try {
+        // Préparer le message avec métadonnées de langue pour transmission
+        const messageWithLanguage = {
+          content: messageContent,
+          sourceLanguage: selectedInputLanguage,
+          detectedLanguage: detectedLanguage,
+          userLanguageChoices: languageChoices.map(c => c.code)
+        };
+        
+        console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
+        
+        // Pour l'instant, nous envoyons juste le contenu
+        // TODO: Modifier useSocketIOMessaging pour accepter les métadonnées de langue
+        const sendResult = await sendMessageToService(messageContent);
+        
+        if (sendResult) {
+          console.log('✅ Message envoyé via WebSocket avec succès');
+          toast.success('Message envoyé !');
           
           // Log pour le debug - La langue source sera utilisée côté serveur
           console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
-          
-        } catch (error) {
-          console.error('❌ Erreur envoi WebSocket:', error);
-          toast.error('Erreur lors de l\'envoi du message');
-          // Restaurer le message en cas d'erreur
-          setNewMessage(messageContent);
-          return;
+        } else {
+          throw new Error('L\'envoi du message a échoué');
         }
-      } else {
-        console.log('📡 WebSocket non connecté - Message en attente');
-        toast.warning('Connexion en cours - Message sera envoyé dès la reconnexion');
-        // Restaurer le message pour permettre un nouvel essai
+        
+      } catch (wsError) {
+        console.error('❌ Erreur envoi WebSocket:', wsError);
+        toast.error('Erreur lors de l\'envoi du message');
+        // Restaurer le message en cas d'erreur
         setNewMessage(messageContent);
         return;
       }
