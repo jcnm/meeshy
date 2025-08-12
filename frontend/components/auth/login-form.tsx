@@ -70,7 +70,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           required
         />
         <p className="text-xs text-gray-500">
-          Comptes de test : testuser, alice.martin@email.com, bob.johnson@email.com
+          Comptes de test : alice@meeshy.com, bob@meeshy.com, carlos@meeshy.com, dieter@meeshy.com, li@meeshy.com, yuki@meeshy.com, maria@meeshy.com
         </p>
       </div>
 

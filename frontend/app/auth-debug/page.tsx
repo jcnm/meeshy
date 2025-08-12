@@ -30,7 +30,7 @@ export default function AuthDebugPage() {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              email: 'admin@meeshy.com',
+              username: 'alice@meeshy.com',
               password: 'password123'
             })
           });

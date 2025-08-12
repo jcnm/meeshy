@@ -18,13 +18,15 @@ export default function QuickLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  // Utilisateurs de test prédéfinis
+  // Utilisateurs de test prédéfinis (correspondant aux seeds)
   const testUsers = [
-    { username: 'testuser', name: 'Test User' },
-    { username: 'alice.martin@email.com', name: 'Alice Martin' },
-    { username: 'bob.johnson@email.com', name: 'Bob Johnson' },
-    { username: 'carlos.rodriguez@email.com', name: 'Carlos Rodriguez' },
-    { username: 'diana.chen@email.com', name: 'Diana Chen' }
+    { username: 'alice@meeshy.com', name: 'Alice Dubois (Admin - Français)' },
+    { username: 'bob@meeshy.com', name: 'Bob Johnson (Anglais)' },
+    { username: 'carlos@meeshy.com', name: 'Carlos García (Espagnol)' },
+    { username: 'dieter@meeshy.com', name: 'Dieter Schmidt (Allemand)' },
+    { username: 'li@meeshy.com', name: 'Li Wei (Chinois)' },
+    { username: 'yuki@meeshy.com', name: 'Yuki Tanaka (Japonais)' },
+    { username: 'maria@meeshy.com', name: 'Maria Silva (Portugais)' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
