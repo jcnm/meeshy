@@ -6,15 +6,15 @@ Tous les comptes utilisent le mot de passe : **`password123`**
 
 ### 👥 Utilisateurs Disponibles
 
-| Utilisateur | Email | Nom Complet | Langue | Rôle |
-|-------------|-------|-------------|--------|------|
-| **Alice** | `alice@meeshy.com` | Alice Dubois | Français | **ADMIN** |
-| **Bob** | `bob@meeshy.com` | Bob Johnson | Anglais | User |
-| **Carlos** | `carlos@meeshy.com` | Carlos García | Espagnol | User |
-| **Dieter** | `dieter@meeshy.com` | Dieter Schmidt | Allemand | User |
-| **Li** | `li@meeshy.com` | Li Wei | Chinois | User |
-| **Yuki** | `yuki@meeshy.com` | Yuki Tanaka | Japonais | User |
-| **Maria** | `maria@meeshy.com` | Maria Silva | Portugais | User |
+| Utilisateur | Username | Email | Nom Complet | Langue | Rôle |
+|-------------|----------|-------|-------------|--------|------|
+| **Alice** | `alice_fr` | `alice@meeshy.com` | Alice Dubois | Français | **ADMIN** |
+| **Bob** | `bob_en` | `bob@meeshy.com` | Bob Johnson | Anglais | User |
+| **Carlos** | `carlos_es` | `carlos@meeshy.com` | Carlos García | Espagnol | User |
+| **Dieter** | `dieter_de` | `dieter@meeshy.com` | Dieter Schmidt | Allemand | User |
+| **Li** | `li_zh` | `li@meeshy.com` | Li Wei | Chinois | User |
+| **Yuki** | `yuki_ja` | `yuki@meeshy.com` | Yuki Tanaka | Japonais | User |
+| **Maria** | `maria_pt` | `maria@meeshy.com` | Maria Silva | Portugais | User |
 
 ## 🚀 Connexion Rapide
 
@@ -28,7 +28,7 @@ Tous les comptes utilisent le mot de passe : **`password123`**
 curl -X POST http://localhost:3001/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "username": "alice@meeshy.com",
+    "username": "alice_fr",
     "password": "password123"
   }'
 ```

@@ -20,13 +20,13 @@ export default function QuickLoginPage() {
 
   // Utilisateurs de test prédéfinis (correspondant aux seeds)
   const testUsers = [
-    { username: 'alice@meeshy.com', name: 'Alice Dubois (Admin - Français)' },
-    { username: 'bob@meeshy.com', name: 'Bob Johnson (Anglais)' },
-    { username: 'carlos@meeshy.com', name: 'Carlos García (Espagnol)' },
-    { username: 'dieter@meeshy.com', name: 'Dieter Schmidt (Allemand)' },
-    { username: 'li@meeshy.com', name: 'Li Wei (Chinois)' },
-    { username: 'yuki@meeshy.com', name: 'Yuki Tanaka (Japonais)' },
-    { username: 'maria@meeshy.com', name: 'Maria Silva (Portugais)' }
+    { username: 'alice_fr', name: 'Alice Dubois (Admin - Français)', email: 'alice@meeshy.com' },
+    { username: 'bob_en', name: 'Bob Johnson (Anglais)', email: 'bob@meeshy.com' },
+    { username: 'carlos_es', name: 'Carlos García (Espagnol)', email: 'carlos@meeshy.com' },
+    { username: 'dieter_de', name: 'Dieter Schmidt (Allemand)', email: 'dieter@meeshy.com' },
+    { username: 'li_zh', name: 'Li Wei (Chinois)', email: 'li@meeshy.com' },
+    { username: 'yuki_ja', name: 'Yuki Tanaka (Japonais)', email: 'yuki@meeshy.com' },
+    { username: 'maria_pt', name: 'Maria Silva (Portugais)', email: 'maria@meeshy.com' }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,13 +128,13 @@ export default function QuickLoginPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xs text-gray-600 space-y-1">
-              <p><strong>Alice (Admin)</strong> - alice@meeshy.com - Français</p>
-              <p><strong>Bob</strong> - bob@meeshy.com - Anglais</p>
-              <p><strong>Carlos</strong> - carlos@meeshy.com - Espagnol</p>
-              <p><strong>Dieter</strong> - dieter@meeshy.com - Allemand</p>
-              <p><strong>Li</strong> - li@meeshy.com - Chinois</p>
-              <p><strong>Yuki</strong> - yuki@meeshy.com - Japonais</p>
-              <p><strong>Maria</strong> - maria@meeshy.com - Portugais</p>
+              <p><strong>Alice (Admin)</strong> - alice_fr / alice@meeshy.com - Français</p>
+              <p><strong>Bob</strong> - bob_en / bob@meeshy.com - Anglais</p>
+              <p><strong>Carlos</strong> - carlos_es / carlos@meeshy.com - Espagnol</p>
+              <p><strong>Dieter</strong> - dieter_de / dieter@meeshy.com - Allemand</p>
+              <p><strong>Li</strong> - li_zh / li@meeshy.com - Chinois</p>
+              <p><strong>Yuki</strong> - yuki_ja / yuki@meeshy.com - Japonais</p>
+              <p><strong>Maria</strong> - maria_pt / maria@meeshy.com - Portugais</p>
             </div>
           </CardContent>
         </Card>
@@ -161,12 +161,12 @@ export default function QuickLoginPage() {
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  placeholder="alice@meeshy.com, bob@meeshy.com..."
+                  placeholder="alice_fr, bob_en, carlos_es..."
                   disabled={isLoading}
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Utilisez l'email complet ou cliquez sur "Connexion rapide" ci-dessous
+                  Utilisez le username (ex: alice_fr) ou cliquez sur "Connexion rapide" ci-dessous
                 </p>
               </div>
 
@@ -233,8 +233,8 @@ export default function QuickLoginPage() {
                 >
                   <div className="text-left w-full">
                     <p className="font-medium">{user.name}</p>
-                    <p className="text-sm text-gray-500">Email: {user.username}</p>
-                    <p className="text-xs text-blue-600">Username: {user.username.split('@')[0]}</p>
+                    <p className="text-sm text-gray-500">Email: {user.email}</p>
+                    <p className="text-xs text-blue-600">Username: {user.username}</p>
                   </div>
                 </Button>
               ))}
