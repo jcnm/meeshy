@@ -235,12 +235,13 @@ class TranslationPoolManager:
         try:
             # Utiliser le service de traduction partagé
             if self.translation_service:
-                # Effectuer la vraie traduction
+                # Effectuer la vraie traduction avec le service ML unifié
                 result = await self.translation_service.translate(
                     text=task.text,
                     source_language=task.source_language,
                     target_language=target_language,
-                    model_type=task.model_type
+                    model_type=task.model_type,
+                    source_channel='zmq'  # Identifier le canal source
                 )
                 
                 processing_time = time.time() - start_time
@@ -366,14 +367,14 @@ class ZMQTranslationServer:
     async def initialize(self):
         """Initialise les sockets ZMQ"""
         try:
-            # Socket SUB pour recevoir les requêtes du Gateway (se connecte au port PUB du Gateway)
+            # Socket SUB pour recevoir les requêtes du Gateway (se lie au port 5557)
             self.sub_socket = self.context.socket(zmq.SUB)
-            self.sub_socket.connect(f"tcp://{self.host}:{self.gateway_pub_port}")
+            self.sub_socket.bind(f"tcp://{self.host}:{self.gateway_pub_port}")
             self.sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")  # S'abonner à tous les messages
             
-            # Socket PUB pour publier les résultats vers le Gateway (se connecte au port SUB du Gateway)
+            # Socket PUB pour publier les résultats vers le Gateway (se lie au port 5555)
             self.pub_socket = self.context.socket(zmq.PUB)
-            self.pub_socket.connect(f"tcp://{self.host}:{self.gateway_sub_port}")
+            self.pub_socket.bind(f"tcp://{self.host}:{self.gateway_sub_port}")
             
             # Petit délai pour établir les connexions ZMQ
             await asyncio.sleep(0.1)
@@ -382,8 +383,8 @@ class ZMQTranslationServer:
             self.worker_tasks = await self.pool_manager.start_workers()
             
             logger.info("ZMQTranslationServer initialisé avec succès")
-            logger.info(f"🔌 Socket SUB connecté au Gateway PUB: {self.host}:{self.gateway_pub_port}")
-            logger.info(f"🔌 Socket PUB connecté au Gateway SUB: {self.host}:{self.gateway_sub_port}")
+            logger.info(f"🔌 Socket SUB lié au port: {self.host}:{self.gateway_pub_port}")
+            logger.info(f"🔌 Socket PUB lié au port: {self.host}:{self.gateway_sub_port}")
             
         except Exception as e:
             logger.error(f"Erreur lors de l'initialisation: {e}")

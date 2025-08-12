@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test WebSocket Diagnostics</title>
+    <script>
+        // Simuler l'environnement Next.js pour les variables d'environnement
+        window.process = {
+            env: {
+                NEXT_PUBLIC_WS_URL: 'ws://localhost:3000',
+                NEXT_PUBLIC_BACKEND_URL: 'http://localhost:3000'
+            }
+        };
+        
+        // Simuler localStorage avec un token
+        localStorage.setItem('auth_token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test');
+        
+        // Test de la fonction getWebSocketUrl (simplifiée)
+        function getWebSocketUrl() {
+            const fromEnv = window.process.env.NEXT_PUBLIC_WS_URL;
+            if (fromEnv) return fromEnv.replace(/\/$/, '');
+            return 'ws://localhost:3000';
+        }
+        
+        // Test de la fonction getConnectionDiagnostics (simplifiée)
+        function getConnectionDiagnostics() {
+            const token = localStorage.getItem('auth_token');
+            const url = getWebSocketUrl();
+            
+            return {
+                isConnected: false,
+                hasSocket: false,
+                hasToken: !!token,
+                url: url,
+                socketId: null,
+                transport: null,
+                reconnectAttempts: 0,
+                currentUser: null,
+                listenersCount: {
+                    message: 0,
+                    edit: 0,
+                    delete: 0,
+                    translation: 0,
+                    typing: 0,
+                    status: 0
+                }
+            };
+        }
+        
+        function testDiagnostics() {
+            const diagnostics = getConnectionDiagnostics();
+            console.log('🔍 Diagnostic complet:', diagnostics);
+            
+            const message = `Diagnostic WebSocket:
+• Socket créé: ${diagnostics.hasSocket ? '✅' : '❌'}
+• Connecté: ${diagnostics.isConnected ? '✅' : '❌'}  
+• Token: ${diagnostics.hasToken ? '✅' : '❌'}
+• URL: ${diagnostics.url}`;
+
+            document.getElementById('result').innerHTML = `<pre>${message}</pre>`;
+            console.log(message);
+        }
+        
+        window.onload = function() {
+            testDiagnostics();
+        };
+    </script>
+</head>
+<body>
+    <h1>Test WebSocket Diagnostics</h1>
+    <button onclick="testDiagnostics()">Test Diagnostics</button>
+    <div id="result"></div>
+</body>
+</html>

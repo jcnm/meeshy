@@ -224,7 +224,7 @@ export class TranslationService {
         sourceLanguage: message.originalLanguage,
         targetLanguages: targetLanguages,
         conversationId: message.conversationId,
-        modelType: 'basic'
+        modelType: (message as any).modelType || ((message.content?.length ?? 0) < 80 ? 'medium' : 'premium')
       };
       
       const taskId = await this.zmqClient.sendTranslationRequest(request);
@@ -287,7 +287,7 @@ export class TranslationService {
         sourceLanguage: existingMessage.originalLanguage,
         targetLanguages: targetLanguages,
         conversationId: existingMessage.conversationId,
-        modelType: 'basic'
+        modelType: (messageData as any).modelType || ((existingMessage.content?.length ?? 0) < 80 ? 'medium' : 'premium')
       };
       
       const taskId = await this.zmqClient.sendTranslationRequest(request);

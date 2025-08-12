@@ -7,6 +7,15 @@ import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
+import jwt from 'jsonwebtoken';
+import type { 
+  ServerToClientEvents, 
+  ClientToServerEvents,
+  SocketIOMessage,
+  SocketIOUser,
+  TypingEvent,
+  TranslationEvent
+} from '../../shared/types/socketio-events';
 
 export interface SocketUser {
   id: string;
@@ -23,7 +32,7 @@ export interface TranslationNotification {
 }
 
 export class MeeshySocketIOManager {
-  private io: SocketIOServer;
+  private io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>;
   private prisma: PrismaClient;
   private translationService: TranslationService;
   
@@ -44,8 +53,8 @@ export class MeeshySocketIOManager {
     this.prisma = prisma;
     this.translationService = new TranslationService(prisma);
     
-    // Initialiser Socket.IO
-    this.io = new SocketIOServer(httpServer, {
+    // Initialiser Socket.IO avec les types shared
+    this.io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
       path: "/socket.io/",
       transports: ["websocket", "polling"],
       cors: {
@@ -83,13 +92,16 @@ export class MeeshySocketIOManager {
       this.stats.total_connections++;
       this.stats.active_connections++;
       
-      // Authentification de l'utilisateur
+      // Authentification automatique via le token envoyé dans socket.auth
+      this._handleTokenAuthentication(socket);
+      
+      // Authentification manuelle (fallback)
       socket.on('authenticate', async (data: { userId?: string; sessionToken?: string; language?: string }) => {
         await this._handleAuthentication(socket, data);
       });
       
       // Réception d'un nouveau message
-      socket.on('send_message', async (data: {
+      socket.on('message:send', async (data: {
         conversationId: string;
         content: string;
         originalLanguage?: string;
@@ -110,14 +122,67 @@ export class MeeshySocketIOManager {
       });
       
       // Événements de frappe
-      socket.on('typing_start', (data: { conversationId: string }) => {
+      socket.on('typing:start', (data: { conversationId: string }) => {
         this._handleTypingStart(socket, data);
       });
       
-      socket.on('typing_stop', (data: { conversationId: string }) => {
+      socket.on('typing:stop', (data: { conversationId: string }) => {
         this._handleTypingStop(socket, data);
       });
     });
+  }
+
+  private async _handleTokenAuthentication(socket: any): Promise<void> {
+    try {
+      const token = socket.auth?.token;
+      if (!token) {
+        console.log(`⚠️ Aucun token fourni pour socket ${socket.id}`);
+        return;
+      }
+
+      // Vérifier et décoder le token JWT
+      const jwtSecret = process.env.JWT_SECRET || 'default-secret';
+      const decoded = jwt.verify(token, jwtSecret) as any;
+      
+      console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId}`);
+
+      // Récupérer l'utilisateur depuis la base de données
+      const dbUser = await this.prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: { 
+          id: true, 
+          username: true,
+          systemLanguage: true 
+        }
+      });
+
+      if (!dbUser) {
+        console.log(`❌ Utilisateur ${decoded.userId} non trouvé en base`);
+        socket.emit('error', { message: 'User not found' });
+        return;
+      }
+
+      // Créer l'utilisateur Socket.IO
+      const user: SocketUser = {
+        id: dbUser.id,
+        socketId: socket.id,
+        isAnonymous: false,
+        language: dbUser.systemLanguage
+      };
+
+      // Enregistrer l'utilisateur
+      this.connectedUsers.set(user.id, user);
+      this.socketToUser.set(socket.id, user.id);
+
+      // Rejoindre les conversations de l'utilisateur
+      await this._joinUserConversations(socket, user.id, false);
+
+      console.log(`✅ Utilisateur authentifié automatiquement: ${user.id}`);
+
+    } catch (error) {
+      console.error(`❌ Erreur authentification token:`, error);
+      socket.emit('error', { message: 'Invalid token' });
+    }
   }
 
   private async _handleAuthentication(socket: any, data: { userId?: string; sessionToken?: string; language?: string }) {
@@ -263,7 +328,7 @@ export class MeeshySocketIOManager {
         createdAt: new Date().toISOString()
       };
       
-      socket.to(`conversation_${data.conversationId}`).emit('new_message', messagePayload);
+      socket.to(`conversation_${data.conversationId}`).emit('message:new', messagePayload);
       
       console.log(`✅ Message ${result.messageId} sauvegardé et diffusé`);
       
@@ -333,10 +398,16 @@ export class MeeshySocketIOManager {
         if (userSocket) {
           userSocket.emit('message_translated', {
             messageId: result.messageId,
-            translatedText: result.translatedText,
-            targetLanguage: targetLanguage,
-            confidenceScore: result.confidenceScore,
-            processingTime: result.processingTime
+            translations: [{
+              messageId: result.messageId,
+              sourceLanguage: 'auto',
+              targetLanguage: targetLanguage,
+              translatedContent: result.translatedText,
+              translationModel: 'basic',
+              cacheKey: `${result.messageId}-${targetLanguage}`,
+              cached: false,
+              confidenceScore: result.confidenceScore
+            }]
           });
           
           this.stats.translations_sent++;
@@ -379,8 +450,10 @@ export class MeeshySocketIOManager {
   private _handleTypingStart(socket: any, data: { conversationId: string }) {
     const userId = this.socketToUser.get(socket.id);
     if (userId) {
-      socket.to(`conversation_${data.conversationId}`).emit('user_typing_start', {
+      const user = this.connectedUsers.get(userId);
+      socket.to(`conversation_${data.conversationId}`).emit('typing:start', {
         userId: userId,
+        username: user?.id || 'unknown',
         conversationId: data.conversationId
       });
     }
@@ -389,8 +462,10 @@ export class MeeshySocketIOManager {
   private _handleTypingStop(socket: any, data: { conversationId: string }) {
     const userId = this.socketToUser.get(socket.id);
     if (userId) {
-      socket.to(`conversation_${data.conversationId}`).emit('user_typing_stop', {
+      const user = this.connectedUsers.get(userId);
+      socket.to(`conversation_${data.conversationId}`).emit('typing:stop', {
         userId: userId,
+        username: user?.id || 'unknown',
         conversationId: data.conversationId
       });
     }
@@ -424,12 +499,16 @@ export class MeeshySocketIOManager {
   /**
    * Envoie une notification à un utilisateur spécifique
    */
-  sendToUser(userId: string, event: string, data: any): boolean {
+  sendToUser<K extends keyof ServerToClientEvents>(
+    userId: string, 
+    event: K, 
+    ...args: Parameters<ServerToClientEvents[K]>
+  ): boolean {
     const user = this.connectedUsers.get(userId);
     if (user) {
       const socket = this.io.sockets.sockets.get(user.socketId);
       if (socket) {
-        socket.emit(event, data);
+        socket.emit(event, ...args);
         return true;
       }
     }
@@ -439,8 +518,11 @@ export class MeeshySocketIOManager {
   /**
    * Broadcast un message à tous les utilisateurs connectés
    */
-  broadcast(event: string, data: any): void {
-    this.io.emit(event, data);
+  broadcast<K extends keyof ServerToClientEvents>(
+    event: K, 
+    ...args: Parameters<ServerToClientEvents[K]>
+  ): void {
+    this.io.emit(event, ...args);
   }
 
   /**

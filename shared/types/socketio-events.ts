@@ -11,11 +11,14 @@ export interface ServerToClientEvents {
   'message:edited': (message: SocketIOMessage) => void;
   'message:deleted': (data: { messageId: string; conversationId: string }) => void;
   'message:translation': (data: TranslationEvent) => void;
+  'message_translated': (data: TranslationEvent) => void; // Alias pour compatibilité
   'typing:start': (data: TypingEvent) => void;
   'typing:stop': (data: TypingEvent) => void;
   'user:status': (data: UserStatusEvent) => void;
   'conversation:joined': (data: { conversationId: string; userId: string }) => void;
   'conversation:left': (data: { conversationId: string; userId: string }) => void;
+  'authenticated': (data: { success: boolean; user?: any; error?: string }) => void;
+  'message_sent': (data: { messageId: string; status: string; timestamp: string }) => void;
   'error': (data: { message: string; code?: string }) => void;
 }
 
@@ -29,6 +32,8 @@ export interface ClientToServerEvents {
   'typing:start': (data: { conversationId: string }) => void;
   'typing:stop': (data: { conversationId: string }) => void;
   'user:status': (data: { isOnline: boolean }) => void;
+  'authenticate': (data: { userId?: string; sessionToken?: string; language?: string }) => void;
+  'request_translation': (data: { messageId: string; targetLanguage: string }) => void;
 }
 
 // ===== STRUCTURES DE DONNÉES =====

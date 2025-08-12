@@ -9,6 +9,14 @@ import os
 import sys
 from pathlib import Path
 
+# Charger les variables d'environnement
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("✅ Variables d'environnement .env chargées")
+except ImportError:
+    print("⚠️ python-dotenv non disponible, utilisation des variables système")
+
 # Ajouter le répertoire src au path
 src_path = Path(__file__).parent
 sys.path.insert(0, str(src_path))
@@ -16,6 +24,7 @@ sys.path.insert(0, str(src_path))
 from config.settings import Settings
 from services.zmq_server import ZMQTranslationServer
 from services.translation_service import HighPerformanceTranslationService
+from services.unified_ml_service import get_unified_ml_service
 from api.translation_api import TranslationAPI
 
 # Configuration du logging
@@ -41,35 +50,44 @@ class MeeshyTranslationServer:
         self.is_initialized = False
     
     async def initialize(self) -> bool:
-        """Initialise le serveur de traduction"""
+        """Initialise le serveur de traduction avec architecture unifiée"""
         try:
-            logger.info("🚀 Initialisation du serveur de traduction haute performance...")
+            logger.info("🚀 Initialisation du serveur de traduction avec ML unifié...")
             
-            # 1. Initialiser le service de traduction haute performance
-            max_workers = int(os.getenv('TRANSLATION_WORKERS', '20'))
-            self.translation_service = HighPerformanceTranslationService(max_workers=max_workers)
-            logger.info(f"✅ Service de traduction haute performance initialisé avec {max_workers} workers")
+            # 1. Initialiser le service ML unifié (Singleton)
+            max_workers = int(os.getenv('TRANSLATION_WORKERS', '10'))
+            self.translation_service = get_unified_ml_service(max_workers=max_workers)
             
-            # 2. Initialiser le serveur ZMQ haute performance
+            # Charger les modèles ML au démarrage
+            logger.info("📚 Chargement des modèles ML...")
+            ml_initialized = await self.translation_service.initialize()
+            if not ml_initialized:
+                logger.warning("⚠️ Modèles ML non disponibles, fonctionnement en mode fallback")
+            else:
+                logger.info("✅ Service ML unifié initialisé avec succès")
+            
+            # 2. Initialiser le serveur ZMQ avec le service ML unifié
             self.zmq_server = ZMQTranslationServer(
                 gateway_pub_port=5557,  # Port PUB du Gateway (requêtes) - Translator SUB se connecte
                 gateway_sub_port=5555,  # Port SUB du Gateway (résultats) - Translator PUB se connecte
                 normal_workers=max_workers // 2,
                 any_workers=max_workers // 4,
-                translation_service=self.translation_service  # Passer le service de traduction
+                translation_service=self.translation_service  # Service ML unifié
             )
             # Initialiser le serveur ZMQ
             await self.zmq_server.initialize()
-            logger.info(f"✅ Serveur ZMQ haute performance configuré: Gateway PUB 5557, Gateway SUB 5555")
+            logger.info(f"✅ Serveur ZMQ configuré avec service ML unifié")
             
-            # 3. Initialiser l'API FastAPI (interface REST)
+            # 3. Initialiser l'API FastAPI avec le service ML unifié
             self.translation_api = TranslationAPI(
-                translation_service=self.translation_service
+                translation_service=self.translation_service,  # Service ML unifié
+                zmq_server=self.zmq_server
             )
-            logger.info("✅ API FastAPI configurée")
+            logger.info("✅ API FastAPI configurée avec service ML unifié")
             
             self.is_initialized = True
-            logger.info("✅ Serveur de traduction haute performance initialisé avec succès")
+            logger.info("✅ Architecture unifiée initialisée avec succès")
+            logger.info("🎯 Tous les canaux (ZMQ, REST) utilisent le même service ML")
             
             return True
             
@@ -136,8 +154,11 @@ class MeeshyTranslationServer:
             
             logger.info("✅ Serveur ZMQ démarré avec succès")
             
-            # Démarrer l'API FastAPI (bloquant)
-            await self.start_api_server()
+            # Démarrer l'API FastAPI en parallèle avec ZMQ
+            api_task = asyncio.create_task(self.start_api_server())
+            
+            # Attendre que l'une des tâches se termine
+            await asyncio.gather(zmq_task, api_task, return_exceptions=True)
             
         except KeyboardInterrupt:
             logger.info("🛑 Arrêt demandé par l'utilisateur")

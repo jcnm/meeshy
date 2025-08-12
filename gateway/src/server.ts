@@ -18,8 +18,11 @@ import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import { PrismaClient } from '../shared/prisma/client'; // Import Prisma client from shared library
 import winston from 'winston';
-import { ZMQSingleton } from './services/zmq-singleton';
 import { TranslationService } from './services/TranslationService';
+import type { 
+  ServerToClientEvents, 
+  ClientToServerEvents 
+} from '../shared/types/socketio-events';
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';

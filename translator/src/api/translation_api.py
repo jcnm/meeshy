@@ -119,12 +119,13 @@ class TranslationAPI:
                 if not request.text.strip():
                     raise HTTPException(status_code=400, detail="Text cannot be empty")
                 
-                # Appel au service de traduction
+                # Appel au service de traduction unifié
                 result = await self.translation_service.translate(
                     text=request.text,
                     source_language=request.source_language,
                     target_language=request.target_language,
-                    model_type=request.model_type
+                    model_type=request.model_type,
+                    source_channel='rest'  # Identifier le canal source
                 )
                 
                 processing_time = int((time.time() - start_time) * 1000)

@@ -87,16 +87,16 @@ export class ZMQTranslationClient extends EventEmitter {
   }> = new Map();
 
   constructor(
-    host: string = 'localhost',
-    pubPort: number = 5557,  // Port PUB Gateway - se lie ici pour envoyer requêtes au Translator
-    subPort: number = 5555   // Port SUB Gateway - se connecte au Translator PUB sur ce port
+    host: string = process.env.ZMQ_TRANSLATOR_HOST || 'localhost',
+    pubPort: number = parseInt(process.env.ZMQ_TRANSLATOR_PUB_PORT || '5557'),  // Port PUB Translator - Gateway SUB se connecte ici
+    subPort: number = parseInt(process.env.ZMQ_TRANSLATOR_SUB_PORT || '5555')   // Port SUB Translator - Gateway PUB se connecte ici
   ) {
     super();
     this.host = host;
     this.pubPort = pubPort;
     this.subPort = subPort;
     
-    logger.info(`[ZMQ-Client] ZMQTranslationClient initialisé: PUB bind ${host}:${pubPort} (envoi requêtes), SUB connect ${host}:${subPort} (réception résultats)`);
+    logger.info(`[ZMQ-Client] ZMQTranslationClient initialisé: PUB connect ${host}:${pubPort} (envoi requêtes), SUB connect ${host}:${subPort} (réception résultats)`);
   }
 
   async initialize(): Promise<void> {
@@ -104,13 +104,13 @@ export class ZMQTranslationClient extends EventEmitter {
       // Créer le contexte ZMQ
       this.context = new zmq.Context();
       
-      // Socket PUB pour envoyer les requêtes de traduction (se lie au port 5557)
+      // Socket PUB pour envoyer les requêtes de traduction (se connecte au port 5557 du Translator)
       this.pubSocket = new zmq.Publisher();
-      await this.pubSocket.bind(`tcp://${this.host}:${this.pubPort}`);
+      await this.pubSocket.connect(`tcp://${this.host}:${this.pubPort}`);
       
-      // Socket SUB pour recevoir les résultats (se lie au port 5555 pour que le Translator se connecte)
+      // Socket SUB pour recevoir les résultats (se connecte au port 5555 du Translator)
       this.subSocket = new zmq.Subscriber();
-      await this.subSocket.bind(`tcp://${this.host}:${this.subPort}`);
+      await this.subSocket.connect(`tcp://${this.host}:${this.subPort}`);
       await this.subSocket.subscribe(''); // S'abonner à tous les messages
       
       // Démarrer l'écoute des résultats
@@ -118,8 +118,8 @@ export class ZMQTranslationClient extends EventEmitter {
       
       this.running = true;
       logger.info('✅ [ZMQ-Client] ZMQTranslationClient initialisé avec succès');
-      logger.info(`🔌 [ZMQ-Client] Socket PUB lié: ${this.host}:${this.pubPort} (envoi requêtes)`);
-      logger.info(`🔌 [ZMQ-Client] Socket SUB lié: ${this.host}:${this.subPort} (réception résultats)`);
+      logger.info(`🔌 [ZMQ-Client] Socket PUB connecté: ${this.host}:${this.pubPort} (envoi requêtes)`);
+      logger.info(`🔌 [ZMQ-Client] Socket SUB connecté: ${this.host}:${this.subPort} (réception résultats)`);
       
     } catch (error) {
       logger.error(`❌ Erreur initialisation ZMQTranslationClient: ${error}`);

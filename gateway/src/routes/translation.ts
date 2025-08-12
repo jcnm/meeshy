@@ -68,7 +68,9 @@ export async function translationRoutes(fastify: FastifyInstance) {
       const startTime = Date.now();
       
       // Déterminer le type de modèle automatiquement si non spécifié ou si 'basic'
-      const finalModelType = validatedData.model_type === 'basic' ? getPredictedModelType(validatedData.text.length) : validatedData.model_type || 'basic';
+      const finalModelType = validatedData.model_type === 'basic'
+        ? getPredictedModelType(validatedData.text.length)
+        : (validatedData.model_type || 'basic');
       
       let result: any;
       let messageId: string;
@@ -87,7 +89,8 @@ export async function translationRoutes(fastify: FastifyInstance) {
           conversationId: validatedData.conversation_id || 'rest-retranslation',
           content: validatedData.text,
           originalLanguage: validatedData.source_language || 'auto',
-          targetLanguage: validatedData.target_language // Passer la langue cible
+          targetLanguage: validatedData.target_language, // Passer la langue cible
+          modelType: finalModelType
         };
         
         // Appeler handleNewMessage qui gère la retraduction
@@ -128,7 +131,8 @@ export async function translationRoutes(fastify: FastifyInstance) {
           conversationId: validatedData.conversation_id,
           content: validatedData.text,
           originalLanguage: validatedData.source_language || 'auto',
-          targetLanguage: validatedData.target_language // Passer la langue cible
+          targetLanguage: validatedData.target_language, // Passer la langue cible
+          modelType: finalModelType
         };
         
         // Appeler handleNewMessage qui gère le nouveau message
