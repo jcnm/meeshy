@@ -50,6 +50,7 @@ interface BubbleMessageProps {
   currentUser: User;
   userLanguage: string;
   usedLanguages: string[];
+  onForceTranslation?: (messageId: string, targetLanguage: string) => Promise<void>;
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -67,7 +68,8 @@ export function BubbleMessage({
   message, 
   currentUser, 
   userLanguage, 
-  usedLanguages = []
+  usedLanguages = [],
+  onForceTranslation
 }: BubbleMessageProps) {
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
   const [isHovered, setIsHovered] = useState(false);
@@ -152,10 +154,20 @@ export function BubbleMessage({
     return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
   };
 
-  const handleForceTranslation = (targetLanguage: string) => {
+  const handleForceTranslation = async (targetLanguage: string) => {
     setIsForceTranslationPopoverOpen(false);
-    toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
-    // Ici on déclencherait la traduction vers la langue cible
+    
+    if (onForceTranslation) {
+      try {
+        await onForceTranslation(message.id, targetLanguage);
+      } catch (error) {
+        console.error('❌ Erreur lors de la traduction forcée:', error);
+        toast.error('Erreur lors de la demande de traduction');
+      }
+    } else {
+      toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
+      console.log('⚠️ Pas de callback onForceTranslation fourni');
+    }
   };
 
   const isOwnMessage = message.senderId === currentUser.id;
