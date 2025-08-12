@@ -61,9 +61,23 @@ class MeeshySocketIOService {
       return;
     }
 
+    // Vérifier que l'utilisateur est configuré avant de se connecter
+    if (!this.currentUser) {
+      console.warn('🔒 MeeshySocketIOService: Aucun utilisateur configuré, connexion différée');
+      this.isConnecting = false;
+      return;
+    }
+
     this.isConnecting = true;
 
     const token = localStorage.getItem('auth_token');
+    console.log('🔍 MeeshySocketIOService: Vérification du token', {
+      hasToken: !!token,
+      tokenLength: token?.length,
+      tokenPreview: token ? token.substring(0, 30) + '...' : 'none',
+      localStorageKeys: Object.keys(localStorage).filter(key => key.includes('auth') || key.includes('token'))
+    });
+    
     if (!token) {
       console.warn('🔒 MeeshySocketIOService: Aucun token JWT trouvé');
       this.isConnecting = false;
@@ -323,6 +337,19 @@ class MeeshySocketIOService {
       userId: user.id,
       username: user.username
     });
+
+    // Vérifier que le token est disponible
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      console.warn('🔒 MeeshySocketIOService: Token non disponible, connexion différée');
+      // Attendre un peu et réessayer
+      setTimeout(() => {
+        if (this.currentUser) {
+          this.initializeConnection();
+        }
+      }, 1000);
+      return;
+    }
 
     if (!this.socket || !this.isConnected) {
       this.initializeConnection();

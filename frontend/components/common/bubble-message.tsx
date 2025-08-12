@@ -332,98 +332,176 @@ export function BubbleMessage({
                 <TooltipContent>Répondre</TooltipContent>
               </Tooltip>
 
-              {/* Icône de traduction - Force une nouvelle traduction */}
-              <Popover open={isForceTranslationPopoverOpen} onOpenChange={setIsForceTranslationPopoverOpen}>
+              {/* Icône de traduction unifiée */}
+              <Popover 
+                open={isTranslationPopoverOpen} 
+                onOpenChange={setIsTranslationPopoverOpen}
+              >
                 <PopoverTrigger asChild>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-500 hover:text-green-600 hover:bg-green-50 p-2 rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsTranslationPopoverOpen(!isTranslationPopoverOpen);
+                        }}
+                        className={`relative p-2 rounded-full transition-all duration-200 ${
+                          translationCount > 0 
+                            ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-100' 
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
                       >
-                        <Languages className="h-4 w-4" />
+                        <Globe className={`h-4 w-4 transition-transform duration-200 ${
+                          translationCount > 0 ? 'animate-pulse' : ''
+                        }`} />
+                        {/* Badge pour indiquer le nombre de traductions */}
+                        {translationCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                            {translationCount}
+                          </span>
+                        )}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Forcer traduction vers une nouvelle langue</TooltipContent>
+                    <TooltipContent>
+                      {translationCount > 0 ? `${translationCount} traductions disponibles` : 'Gérer les traductions'}
+                    </TooltipContent>
                   </Tooltip>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className="w-72 p-0 shadow-xl border-0" 
+                  className="w-80 p-0 shadow-2xl border border-gray-200 bg-white/95 backdrop-blur-sm" 
                   side="top" 
                   align="start"
                   sideOffset={8}
-                  style={{ zIndex: 9999 }}
+                  style={{ zIndex: 99999 }}
+                  onInteractOutside={() => setIsTranslationPopoverOpen(false)}
                 >
-                  <div className="p-4 bg-white rounded-lg shadow-2xl border border-gray-200">
-                    <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
-                      <Languages className="h-4 w-4 text-green-600" />
-                      <span className="font-medium text-gray-900">Traduire vers</span>
-                      <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{getMissingLanguages().length}</Badge>
-                    </div>
-                    
-                    <div className="space-y-1 max-h-48 overflow-y-auto">
-                      {getMissingLanguages().length > 0 ? (
-                        getMissingLanguages().map((lang) => (
-                          <button
-                            key={lang.code}
-                            onClick={() => handleForceTranslation(lang.code)}
-                            className="w-full p-3 rounded-lg border border-gray-100 text-left transition-all hover:shadow-sm hover:border-green-200 hover:bg-green-50"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <span className="text-lg">{lang.flag}</span>
-                              <div className="flex-1">
-                                <span className="font-medium text-gray-900">{lang.name}</span>
-                                <p className="text-xs text-gray-500 mt-1">Créer une traduction</p>
-                              </div>
-                            </div>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="text-center p-4 text-gray-500">
-                          <Languages className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                          <p className="text-sm">Toutes les langues sont déjà traduites</p>
+                  <div className="p-4">
+                    {/* Section 1: Traductions disponibles */}
+                    {availableVersions.length > 1 && (
+                      <div className="mb-4">
+                        <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-100">
+                          <Globe className="h-4 w-4 text-blue-600" />
+                          <span className="font-medium text-gray-900">Traductions disponibles</span>
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                            {availableVersions.length - 1}
+                          </Badge>
                         </div>
-                      )}
-                    </div>
+                        
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {availableVersions.map((version) => {
+                            const langInfo = getLanguageInfo(version.language);
+                            const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
+                            
+                            return (
+                              <button
+                                key={version.language}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleLanguageSwitch(version.language);
+                                  setIsTranslationPopoverOpen(false);
+                                }}
+                                className={`w-full p-2.5 rounded-lg text-left transition-all duration-200 ${
+                                  isCurrentlyDisplayed 
+                                    ? 'bg-blue-50 border border-blue-200' 
+                                    : 'bg-gray-50 border border-transparent hover:bg-white hover:border-gray-200'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-base">{langInfo.flag}</span>
+                                    <span className={`font-medium text-sm ${
+                                      isCurrentlyDisplayed ? 'text-blue-700' : 'text-gray-700'
+                                    }`}>
+                                      {langInfo.name}
+                                    </span>
+                                    {version.isOriginal && (
+                                      <Badge variant="outline" className="text-xs bg-gray-100">
+                                        Original
+                                      </Badge>
+                                    )}
+                                    {isCurrentlyDisplayed && (
+                                      <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
+                                    )}
+                                  </div>
+                                  {!version.isOriginal && (
+                                    <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                      {Math.round(version.confidence * 100)}%
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                                  {version.content.substring(0, 100)}{version.content.length > 100 ? '...' : ''}
+                                </p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Barre de séparation */}
+                    {availableVersions.length > 1 && getMissingLanguages().length > 0 && (
+                      <div className="flex items-center my-4">
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                        <div className="px-3">
+                          <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+                            Nouvelles traductions
+                          </span>
+                        </div>
+                        <div className="flex-1 h-px bg-gray-200"></div>
+                      </div>
+                    )}
+
+                    {/* Section 2: Langues pour nouvelles traductions */}
+                    {getMissingLanguages().length > 0 && (
+                      <div>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <Languages className="h-4 w-4 text-green-600" />
+                          <span className="font-medium text-gray-900">Traduire vers</span>
+                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                            {getMissingLanguages().length}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {getMissingLanguages().map((lang) => (
+                            <button
+                              key={lang.code}
+                              onClick={() => handleForceTranslation(lang.code)}
+                              className="w-full p-3 rounded-lg border border-gray-100 text-left transition-all hover:shadow-sm hover:border-green-200 hover:bg-green-50"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <span className="text-lg">{lang.flag}</span>
+                                <div className="flex-1">
+                                  <span className="font-medium text-gray-900">{lang.name}</span>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Traduire ce message en {lang.name.toLowerCase()}
+                                  </p>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Message si aucune action disponible */}
+                    {availableVersions.length <= 1 && getMissingLanguages().length === 0 && (
+                      <div className="text-center p-4 text-gray-500">
+                        <Globe className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm">Toutes les langues sont déjà traduites</p>
+                      </div>
+                    )}
                   </div>
                 </PopoverContent>
               </Popover>
+      </Popover>
 
-{/* Icône globe - Voir les traductions disponibles */}
-<Popover 
-  open={isTranslationPopoverOpen} 
-  onOpenChange={setIsTranslationPopoverOpen}
->
-  <PopoverTrigger asChild>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={(e) => {
-        e.stopPropagation(); // Empêcher la propagation
-        console.log('🌐 Click sur globe, état actuel:', isTranslationPopoverOpen);
-        setIsTranslationPopoverOpen(!isTranslationPopoverOpen);
-      }}
-      className={`relative p-2 rounded-full transition-all duration-200 ${
-        translationCount > 0 
-          ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-100' 
-          : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-      }`}
-    >
-      <Globe className={`h-4 w-4 transition-transform duration-200 ${
-        translationCount > 0 ? 'animate-pulse' : ''
-      }`} />
-      {/* Badge pour indiquer le nombre de traductions */}
-      {translationCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-bounce">
-          {translationCount}
-        </span>
-      )}
-             {/* Indicateur de debug temporaire */}
-       {/* <span className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-red-600 bg-red-100 px-1 rounded whitespace-nowrap">
-         {isTranslationPopoverOpen ? 'OUVERT' : 'FERMÉ'}
-       </span> */}
-    </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
   </PopoverTrigger>
      <PopoverContent 
      className="w-72 p-0 shadow-2xl border border-gray-200 bg-white/95 backdrop-blur-sm" 

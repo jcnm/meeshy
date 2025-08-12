@@ -135,6 +135,14 @@ export class MeeshySocketIOManager {
 
   private async _handleTokenAuthentication(socket: any): Promise<void> {
     try {
+      console.log(`🔍 Authentification pour socket ${socket.id}:`, {
+        hasAuth: !!socket.auth,
+        authKeys: socket.auth ? Object.keys(socket.auth) : [],
+        tokenExists: !!socket.auth?.token,
+        tokenLength: socket.auth?.token?.length,
+        tokenPreview: socket.auth?.token ? socket.auth.token.substring(0, 30) + '...' : 'none'
+      });
+      
       const token = socket.auth?.token;
       if (!token) {
         console.log(`⚠️ Aucun token fourni pour socket ${socket.id}`);
