@@ -118,26 +118,7 @@ export default function QuickLoginPage() {
           <p className="text-gray-600 mt-2">Connectez-vous à votre compte</p>
         </div>
 
-        {/* Informations des comptes de test */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">🧪 Comptes de Test</CardTitle>
-            <CardDescription>
-              Utilisez ces comptes pour tester Meeshy. Mot de passe pour tous : <code className="bg-gray-100 px-1 rounded text-xs">password123</code>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-gray-600 space-y-1">
-              <p><strong>Alice (Admin)</strong> - alice_fr / alice@meeshy.com - Français</p>
-              <p><strong>Bob</strong> - bob_en / bob@meeshy.com - Anglais</p>
-              <p><strong>Carlos</strong> - carlos_es / carlos@meeshy.com - Espagnol</p>
-              <p><strong>Dieter</strong> - dieter_de / dieter@meeshy.com - Allemand</p>
-              <p><strong>Li</strong> - li_zh / li@meeshy.com - Chinois</p>
-              <p><strong>Yuki</strong> - yuki_ja / yuki@meeshy.com - Japonais</p>
-              <p><strong>Maria</strong> - maria_pt / maria@meeshy.com - Portugais</p>
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* Formulaire de connexion */}
         <Card>
@@ -218,7 +199,7 @@ export default function QuickLoginPage() {
           <CardHeader>
             <CardTitle className="text-lg">Connexion rapide</CardTitle>
             <CardDescription>
-              Cliquez sur un utilisateur pour vous connecter automatiquement
+              Cliquez sur un utilisateur pour vous connecter automatiquement. Mot de passe pour tous : <code className="bg-gray-100 px-1 rounded text-xs">password123</code>
             </CardDescription>
           </CardHeader>
           <CardContent>
