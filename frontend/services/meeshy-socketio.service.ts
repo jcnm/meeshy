@@ -524,9 +524,14 @@ class MeeshySocketIOService {
    * Obtient des diagnostics de connexion
    */
   public getConnectionDiagnostics(): any {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const url = typeof window !== 'undefined' ? getWebSocketUrl() : 'N/A (server-side)';
+    
     return {
       isConnected: this.isConnected,
       hasSocket: !!this.socket,
+      hasToken: !!token,
+      url: url,
       socketId: this.socket?.id,
       transport: this.socket?.io.engine?.transport.name,
       reconnectAttempts: this.reconnectAttempts,

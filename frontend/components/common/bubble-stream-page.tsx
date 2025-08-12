@@ -78,6 +78,7 @@ import {
 
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { TrendingSection } from '@/components/common/trending-section';
+import { LoadingState } from '@/components/common/LoadingStates';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
@@ -101,7 +102,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     getRequiredTranslations
   } = useMessageTranslations({ currentUser: user });
 
-  // États
+  // États de base
   const [messages, setMessages] = useState<BubbleStreamMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -114,6 +115,11 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [location, setLocation] = useState<string>('');
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
+
+  // États de chargement
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [hasLoadedMessages, setHasLoadedMessages] = useState(false);
+  const [hasEstablishedConnection, setHasEstablishedConnection] = useState(false);
 
   // Langues utilisées par l'utilisateur (basées sur ses préférences)
   const usedLanguages: string[] = getUserLanguages(user);
@@ -537,6 +543,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       
       if (!token) {
         console.log('⚠️ Pas de token d\'authentification disponible');
+        setHasLoadedMessages(true); // Considérer comme chargé même sans token
         return;
       }
       
@@ -592,6 +599,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         if (!Array.isArray(existingMessages)) {
           console.error('❌ existingMessages n\'est pas un tableau:', typeof existingMessages, existingMessages);
           toast.error('Format de données invalide');
+          setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
           return;
         }
         
@@ -654,6 +662,9 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         
         toast.success(`📨 ${existingMessages.length} messages chargés (${totalTranslations} traductions, ${messagesNeedingTranslation.length} nécessitent traduction)`);
         
+        // Marquer les messages comme chargés
+        setHasLoadedMessages(true);
+        
         // TODO: Déclencher la traduction automatique des messages manquants si activée
         if (user.autoTranslateEnabled && messagesNeedingTranslation.length > 0) {
           console.log(`🔄 ${messagesNeedingTranslation.length} messages à traduire automatiquement`);
@@ -669,16 +680,20 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
           console.log('🔍 Debug: Impossible de lire la réponse d\'erreur');
         }
         toast.error('Erreur lors du chargement des messages');
+        setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
       }
     } catch (error) {
       console.error('❌ Erreur lors du chargement des messages:', error);
       toast.error('Erreur de connexion lors du chargement des messages');
+      setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
     }
   }, [processMessageWithTranslations, getRequiredTranslations, user.autoTranslateEnabled]);
 
   // Charger les messages existants dès la connexion avec debug amélioré
   useEffect(() => {
     if (connectionStatus.isConnected) {
+      setHasEstablishedConnection(true);
+      
       // Délai pour laisser le temps à la connexion de se stabiliser
       const loadTimeout = setTimeout(() => {
         console.log('🚀 Déclenchement chargement messages existants...');
@@ -690,6 +705,28 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       console.log('⏳ En attente de connexion pour charger les messages...');
     }
   }, [connectionStatus.isConnected, loadExistingMessages]);
+
+  // Gérer l'état d'initialisation global
+  useEffect(() => {
+    if (hasEstablishedConnection && hasLoadedMessages) {
+      setIsInitializing(false);
+      console.log('✅ Initialisation terminée : connexion établie et messages chargés');
+    }
+  }, [hasEstablishedConnection, hasLoadedMessages]);
+
+  // Afficher l'écran de chargement pendant l'initialisation
+  if (isInitializing) {
+    return (
+      <LoadingState 
+        message={
+          !hasEstablishedConnection 
+            ? "Connexion au serveur en cours..." 
+            : "Chargement des messages..."
+        }
+        fullScreen={true}
+      />
+    );
+  }
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || newMessage.length > MAX_MESSAGE_LENGTH) {
