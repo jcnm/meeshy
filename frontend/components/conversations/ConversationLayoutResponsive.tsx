@@ -31,6 +31,7 @@ import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { cn } from '@/lib/utils';
 import { translationService } from '@/services/translation.service';
+import { messageTranslationService } from '@/services/message-translation.service';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
@@ -41,6 +42,7 @@ import {
   getUserTranslation,
   type BubbleTranslation 
 } from '@/utils/translation-adapter';
+import { TypingIndicator } from '@/components/conversations/typing-indicator';
 
 // Alias pour la compatibilité avec le code existant
 type TranslatedMessage = Message & {
@@ -566,24 +568,45 @@ async function initializeTranslator() {
       return;
     }
 
+    const messageContent = newMessage.trim();
     setIsSending(true);
+    setNewMessage(''); // Vider immédiatement pour éviter les doubles envois
 
     try {
-      console.log('📤 Envoi du message:', newMessage);
+      console.log('📤 Envoi du message:', messageContent);
+
+      // Détecter la langue du message si possible
+      let detectedLanguage = 'fr'; // Langue par défaut
+      if (messageContent.length > 10) {
+        try {
+          const detections = detectAll(messageContent);
+          if (detections.length > 0) {
+            detectedLanguage = detections[0].lang;
+          }
+        } catch (e) {
+          console.warn('⚠️ Détection de langue échouée, utilisation de la langue par défaut');
+        }
+      }
+
+      console.log('🔤 Langue détectée pour le message:', detectedLanguage);
 
       // Utiliser le hook unifié pour envoyer le message
-      const success = await messaging.sendMessage(newMessage.trim());
+      const success = await messaging.sendMessage(messageContent);
 
       if (success) {
-        setNewMessage('');
         toast.success('Message envoyé !');
         console.log('✅ Message envoyé avec succès');
+        
+        // Déclencher l'arrêt de l'indicateur de frappe
+        messaging.stopTyping();
       } else {
         throw new Error('Échec de l\'envoi du message');
       }
     } catch (error) {
       console.error('❌ Erreur lors de l\'envoi du message:', error);
       toast.error('Erreur lors de l\'envoi du message');
+      // Restaurer le message en cas d'erreur
+      setNewMessage(messageContent);
     } finally {
       setIsSending(false);
     }
@@ -809,12 +832,18 @@ async function initializeTranslator() {
                       <h2 className="font-bold text-lg text-foreground">
                         {getConversationDisplayName(selectedConversation)}
                       </h2>
-                      <p className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {selectedConversation.isGroup
                           ? `${selectedConversation.participants?.length || 0} personnes`
                           : 'En ligne'
                         }
-                      </p>
+                        {/* Indicateur de frappe pour cette conversation */}
+                        <TypingIndicator 
+                          chatId={selectedConversation.id}
+                          currentUserId={user.id}
+                          className="mt-1"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -861,6 +890,21 @@ async function initializeTranslator() {
                             currentUser={user}
                             userLanguage={user.systemLanguage}
                             usedLanguages={usedLanguages}
+                            onForceTranslation={async (messageId: string, targetLanguage: string) => {
+                              try {
+                                console.log('🔄 Forcer la traduction dans conversation:', { messageId, targetLanguage });
+                                const result = await messageTranslationService.requestTranslation({
+                                  messageId,
+                                  targetLanguage,
+                                  model: 'basic'
+                                });
+                                console.log('✅ Traduction forcée demandée:', result);
+                                toast.success(`Traduction en cours...`);
+                              } catch (error) {
+                                console.error('❌ Erreur traduction forcée:', error);
+                                toast.error('Erreur lors de la demande de traduction');
+                              }
+                            }}
                           />
                         );
                       })}
@@ -873,7 +917,24 @@ async function initializeTranslator() {
                   <form onSubmit={handleSendMessage} className="flex gap-3">
                     <Input
                       value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setNewMessage(value);
+                        
+                        // Gérer l'indicateur de frappe
+                        if (value.trim()) {
+                          messaging.startTyping();
+                        } else {
+                          messaging.stopTyping();
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage(e);
+                        }
+                      }}
+                      onBlur={() => messaging.stopTyping()}
                       placeholder="Écris ton message..."
                       className="flex-1 rounded-2xl h-12 px-4 border-2 border-border/30 focus:border-primary/50 bg-background/50"
                       disabled={isSending}

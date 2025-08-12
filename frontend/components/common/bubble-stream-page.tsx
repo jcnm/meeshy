@@ -85,6 +85,8 @@ import { useMessageTranslations } from '@/hooks/use-message-translations';
 import { detectLanguage } from '@/utils/language-detection';
 import type { User, Message, BubbleTranslation } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { messageTranslationService } from '@/services/message-translation.service';
+import { TypingIndicator } from '@/components/conversations/typing-indicator';
 
 export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const router = useRouter();
@@ -1054,21 +1056,11 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
             <div className="pointer-events-auto">
               {/* Priorité à l'indicateur de frappe quand actif */}
               {typingUsers.length > 0 && connectionStatus.isConnected ? (
-                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75" />
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150" />
-                  </div>
-                  <span className="font-medium">
-                    {typingUsers.length === 1 
-                      ? `${typingUsers[0]} écrit...`
-                      : typingUsers.length === 2
-                      ? `${typingUsers[0]} et ${typingUsers[1]} écrivent...`
-                      : `${typingUsers[0]} et ${typingUsers.length - 1} autres écrivent...`
-                    }
-                  </span>
-                </div>
+                <TypingIndicator 
+                  chatId="any" 
+                  currentUserId={user.id}
+                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all"
+                />
               ) : (
                 /* Indicateur de connexion par défaut */
                 <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
@@ -1165,13 +1157,28 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
                   </div>
                 ) : (
                   messages.map((message) => (
-                    <BubbleMessage
-                      key={message.id}
-                      message={message}
-                      currentUser={user}
-                      userLanguage={userLanguage}
-                      usedLanguages={usedLanguages}
-                    />
+                                          <BubbleMessage
+                        key={message.id}
+                        message={message}
+                        currentUser={user}
+                        userLanguage={userLanguage}
+                        usedLanguages={usedLanguages}
+                        onForceTranslation={async (messageId: string, targetLanguage: string) => {
+                          try {
+                            console.log('🔄 Forcer la traduction:', { messageId, targetLanguage });
+                            const result = await messageTranslationService.requestTranslation({
+                              messageId,
+                              targetLanguage,
+                              model: 'basic'
+                            });
+                            console.log('✅ Traduction forcée demandée:', result);
+                            toast.success(`Traduction en ${getLanguageName(targetLanguage)} demandée`);
+                          } catch (error) {
+                            console.error('❌ Erreur traduction forcée:', error);
+                            toast.error('Erreur lors de la demande de traduction');
+                          }
+                        }}
+                      />
                   ))
                 )}
 
