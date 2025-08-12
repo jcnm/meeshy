@@ -92,6 +92,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Ref pour le scroll automatique vers le dernier message
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
 const c = console;
 
@@ -239,20 +240,35 @@ async function initializeTranslator() {
   }, [isMobile, selectedConversation]);
 
   // Fonction pour scroller vers le bas
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
+  const scrollToBottom = useCallback((force = false) => {
+    setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: force ? 'auto' : 'smooth', 
+          block: 'end' 
+        });
+      } else if (messagesContainerRef.current) {
+        // Fallback: scroller le conteneur directement
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }
+    }, force ? 50 : 100);
   }, []);
 
   // Scroll automatique quand les messages changent
   useEffect(() => {
     if (messages.length > 0) {
-      // Délai court pour permettre au DOM de se mettre à jour
-      const timeout = setTimeout(scrollToBottom, 100);
-      return () => clearTimeout(timeout);
+      const lastMessage = messages[messages.length - 1];
+      
+      // Si c'est notre propre message, forcer le scroll immédiatement
+      if (lastMessage && lastMessage.senderId === user?.id) {
+        console.log('🔽 Scroll forcé vers le bas (message envoyé)');
+        scrollToBottom(true);
+      } else {
+        // Scroll normal pour les autres messages
+        scrollToBottom();
+      }
     }
-  }, [messages, scrollToBottom]);
+  }, [messages, user?.id, scrollToBottom]);
 
 
   // Handlers pour MessageBubble
@@ -526,6 +542,14 @@ async function initializeTranslator() {
       const token = localStorage.getItem('auth_token');
       if (!user && !token) {
         router.push('/login');
+      } else if (user && token) {
+        // Debug: vérifier que l'utilisateur est bien configuré
+        console.log('🔐 ConversationLayoutResponsive: Utilisateur authentifié', {
+          userId: user.id,
+          username: user.username,
+          hasToken: !!token,
+          tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+        });
       }
     }
   }, [user, isAuthChecking, router]);
@@ -871,7 +895,7 @@ async function initializeTranslator() {
                 </div>
 
                 {/* Messages scrollables */}
-                <div className="flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm">
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm">
                   {isLoadingMessages ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">

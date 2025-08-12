@@ -103,6 +103,17 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
         userId: currentUser.id, 
         username: currentUser.username 
       });
+      
+      // Vérifier que le service est bien connecté
+      const status = meeshySocketIOService.getConnectionStatus();
+      console.log('🔌 useSocketIOMessaging: Statut de connexion', status);
+      
+      if (!status.isConnected) {
+        console.warn('⚠️ useSocketIOMessaging: Service non connecté, tentative de reconnexion...');
+        meeshySocketIOService.reconnect();
+      }
+    } else {
+      console.warn('⚠️ useSocketIOMessaging: Aucun utilisateur fourni');
     }
   }, [currentUser]);
 
