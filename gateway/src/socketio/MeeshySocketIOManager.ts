@@ -5,7 +5,7 @@
 
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 
 export interface SocketUser {
@@ -46,11 +46,14 @@ export class MeeshySocketIOManager {
     
     // Initialiser Socket.IO
     this.io = new SocketIOServer(httpServer, {
+      path: "/socket.io/",
+      transports: ["websocket", "polling"],
       cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      },
-      transports: ['websocket', 'polling']
+        origin: '*',
+        methods: ["GET", "POST"],
+        allowedHeaders: ['authorization', 'content-type','websocket', 'polling'],
+        credentials: true
+      }
     });
     
     console.log('🚀 MeeshySocketIOManager initialisé');
@@ -400,6 +403,51 @@ export class MeeshySocketIOManager {
       connected_users: this.connectedUsers.size,
       translation_service_stats: this.translationService.getStats()
     };
+  }
+
+  /**
+   * Déconnecte un utilisateur spécifique
+   */
+  disconnectUser(userId: string): boolean {
+    const user = this.connectedUsers.get(userId);
+    if (user) {
+      const socket = this.io.sockets.sockets.get(user.socketId);
+      if (socket) {
+        socket.disconnect(true);
+        console.log(`🔌 Utilisateur ${userId} déconnecté par admin`);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Envoie une notification à un utilisateur spécifique
+   */
+  sendToUser(userId: string, event: string, data: any): boolean {
+    const user = this.connectedUsers.get(userId);
+    if (user) {
+      const socket = this.io.sockets.sockets.get(user.socketId);
+      if (socket) {
+        socket.emit(event, data);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Broadcast un message à tous les utilisateurs connectés
+   */
+  broadcast(event: string, data: any): void {
+    this.io.emit(event, data);
+  }
+
+  /**
+   * Obtient la liste des utilisateurs connectés
+   */
+  getConnectedUsers(): string[] {
+    return Array.from(this.connectedUsers.keys());
   }
 
   async healthCheck(): Promise<boolean> {

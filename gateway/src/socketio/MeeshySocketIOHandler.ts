@@ -10,13 +10,13 @@ import { PrismaClient } from '../../shared/prisma/client';
 import { logger } from '../utils/logger';
 
 export class MeeshySocketIOHandler {
-  private socketIOManager: MeeshySocketIOManager;
+  private socketIOManager: MeeshySocketIOManager | null = null;
 
   constructor(
     private readonly prisma: PrismaClient,
     private readonly jwtSecret: string
   ) {
-    this.socketIOManager = new MeeshySocketIOManager(this.prisma, this.jwtSecret);
+    // Ne pas initialiser le manager ici, attendre setupSocketIO
   }
 
   /**
@@ -27,7 +27,8 @@ export class MeeshySocketIOHandler {
     const httpServer = fastify.server as HTTPServer;
 
     // Initialiser Socket.IO avec le serveur HTTP
-    this.socketIOManager.initialize(httpServer);
+    this.socketIOManager = new MeeshySocketIOManager(httpServer, this.prisma);
+    this.socketIOManager.initialize();
 
     // Ajouter une route pour les statistiques Socket.IO
     fastify.get('/api/socketio/stats', async (request, reply) => {
@@ -67,12 +68,25 @@ export class MeeshySocketIOHandler {
         //   return reply.status(403).send({ success: false, error: 'Permission refusée' });
         // }
 
-        this.socketIOManager.disconnectUser(userId);
-
-        reply.send({
-          success: true,
-          message: `Utilisateur ${userId} déconnecté`
-        });
+        if (this.socketIOManager) {
+          const disconnected = this.socketIOManager.disconnectUser(userId);
+          if (disconnected) {
+            reply.send({
+              success: true,
+              message: `Utilisateur ${userId} déconnecté`
+            });
+          } else {
+            reply.status(404).send({
+              success: false,
+              error: `Utilisateur ${userId} non trouvé ou non connecté`
+            });
+          }
+        } else {
+          reply.status(500).send({
+            success: false,
+            error: 'Socket.IO non initialisé'
+          });
+        }
       } catch (error) {
         logger.error('Erreur déconnexion utilisateur:', error);
         reply.status(500).send({
@@ -88,7 +102,7 @@ export class MeeshySocketIOHandler {
   /**
    * Accès au manager Socket.IO pour des opérations avancées
    */
-  public getManager(): MeeshySocketIOManager {
+  public getManager(): MeeshySocketIOManager | null {
     return this.socketIOManager;
   }
 
@@ -97,12 +111,14 @@ export class MeeshySocketIOHandler {
    */
   public async sendNotificationToUser(userId: string, notification: any): Promise<void> {
     try {
-      // Utiliser le manager pour envoyer la notification
-      // Le manager devrait avoir une méthode pour envoyer à un utilisateur spécifique
-      logger.info(`📱 Envoi notification à l'utilisateur ${userId}`, notification);
-      
-      // TODO: Implémenter l'envoi de notification via le manager
-      // this.socketIOManager.sendToUser(userId, 'notification', notification);
+      if (this.socketIOManager) {
+        const sent = this.socketIOManager.sendToUser(userId, 'notification', notification);
+        if (sent) {
+          logger.info(`📱 Notification envoyée à l'utilisateur ${userId}`, notification);
+        } else {
+          logger.warn(`⚠️ Utilisateur ${userId} non connecté pour notification`);
+        }
+      }
     } catch (error) {
       logger.error('Erreur envoi notification:', error);
     }
@@ -113,10 +129,10 @@ export class MeeshySocketIOHandler {
    */
   public async broadcastMessage(message: any): Promise<void> {
     try {
-      logger.info('📢 Broadcast message à tous les utilisateurs', message);
-      
-      // TODO: Implémenter le broadcast via le manager
-      // this.socketIOManager.broadcast('system_message', message);
+      if (this.socketIOManager) {
+        this.socketIOManager.broadcast('system_message', message);
+        logger.info('📢 Broadcast message à tous les utilisateurs', message);
+      }
     } catch (error) {
       logger.error('Erreur broadcast message:', error);
     }
@@ -127,8 +143,9 @@ export class MeeshySocketIOHandler {
    */
   public getConnectedUsers(): string[] {
     try {
-      const stats = this.socketIOManager.getStats();
-      // TODO: Retourner la liste des utilisateurs connectés
+      if (this.socketIOManager) {
+        return this.socketIOManager.getConnectedUsers();
+      }
       return [];
     } catch (error) {
       logger.error('Erreur récupération utilisateurs connectés:', error);
