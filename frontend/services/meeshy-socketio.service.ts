@@ -97,6 +97,9 @@ class MeeshySocketIOService {
         auth: {
           token
         },
+        extraHeaders: {
+          'Authorization': `Bearer ${token}`
+        },
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
@@ -128,6 +131,17 @@ class MeeshySocketIOService {
         socketId: this.socket?.id,
         transport: this.socket?.io.engine?.transport.name
       });
+      
+      // Envoyer le token d'authentification après la connexion
+      const token = localStorage.getItem('auth_token');
+      if (token && this.currentUser) {
+        console.log('🔐 MeeshySocketIOService: Envoi du token d\'authentification');
+        this.socket?.emit('authenticate', { 
+          sessionToken: token,
+          userId: this.currentUser.id,
+          language: this.currentUser.systemLanguage 
+        });
+      }
       
       // Toast de connexion uniquement, pas pour chaque message
       toast.success('Connexion établie', { duration: 2000 });

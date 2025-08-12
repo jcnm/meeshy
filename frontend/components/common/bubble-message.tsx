@@ -54,14 +54,14 @@ interface BubbleMessageProps {
 }
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷', translateText: 'Traduire ce message en français' },
+  { code: 'en', name: 'English', flag: '🇬🇧', translateText: 'Translate this message to English' },
+  { code: 'es', name: 'Español', flag: '🇪🇸', translateText: 'Traducir este mensaje al español' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪', translateText: 'Diese Nachricht ins Deutsche übersetzen' },
+  { code: 'pt', name: 'Português', flag: '🇵🇹', translateText: 'Traduzir esta mensagem para português' },
+  { code: 'zh', name: '中文', flag: '🇨🇳', translateText: '将此消息翻译成中文' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵', translateText: 'このメッセージを日本語に翻訳' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦', translateText: 'ترجمة هذه الرسالة إلى العربية' },
 ];
 
 export function BubbleMessage({ 
@@ -75,7 +75,6 @@ export function BubbleMessage({
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
-  const [isForceTranslationPopoverOpen, setIsForceTranslationPopoverOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -155,11 +154,12 @@ export function BubbleMessage({
   };
 
   const handleForceTranslation = async (targetLanguage: string) => {
-    setIsForceTranslationPopoverOpen(false);
+    setIsTranslationPopoverOpen(false);
     
     if (onForceTranslation) {
       try {
         await onForceTranslation(message.id, targetLanguage);
+        toast.success(`Traduction en cours vers ${getLanguageInfo(targetLanguage).name}`);
       } catch (error) {
         console.error('❌ Erreur lors de la traduction forcée:', error);
         toast.error('Erreur lors de la demande de traduction');
@@ -196,27 +196,6 @@ export function BubbleMessage({
   
   // Améliorer la visibilité de l'icône globe avec un badge
   const translationCount = availableVersions.length - 1; // Exclure l'original
-  
-  // Debug: afficher les informations de traduction
-  console.log('🔍 BubbleMessage Debug:', {
-    messageId: message.id,
-    originalLanguage: message.originalLanguage,
-    translationsCount: message.translations.length,
-    completedTranslations: message.translations.filter(t => t.status === 'completed').length,
-    availableVersions: availableVersions.length,
-    canSeeTranslations,
-    translationCount,
-    messageTranslations: message.translations,
-    hasOriginalContent: !!message.originalContent,
-    messageKeys: Object.keys(message)
-  });
-
-  // Debug: afficher quand le popover s'ouvre
-  console.log('🎯 Popover state:', {
-    isTranslationPopoverOpen,
-    translationCount,
-    availableVersions: availableVersions.length
-  });
 
   return (
     <TooltipProvider>
@@ -478,7 +457,7 @@ export function BubbleMessage({
                                 <div className="flex-1">
                                   <span className="font-medium text-gray-900">{lang.name}</span>
                                   <p className="text-xs text-gray-500 mt-1">
-                                    Traduire ce message en {lang.name.toLowerCase()}
+                                    {lang.translateText}
                                   </p>
                                 </div>
                               </div>
@@ -498,113 +477,7 @@ export function BubbleMessage({
                   </div>
                 </PopoverContent>
               </Popover>
-      </Popover>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-  </PopoverTrigger>
-     <PopoverContent 
-     className="w-72 p-0 shadow-2xl border border-gray-200 bg-white/95 backdrop-blur-sm" 
-     side="top" 
-     align="start"
-     sideOffset={8}
-     alignOffset={0}
-     avoidCollisions={true}
-     style={{ 
-       zIndex: 99999,
-       backgroundColor: 'rgba(255, 255, 255, 0.95)',
-       backdropFilter: 'blur(8px)'
-     }}
-     onOpenAutoFocus={(e) => e.preventDefault()}
-     onInteractOutside={(e) => {
-       console.log('🌐 Click outside popover');
-       setIsTranslationPopoverOpen(false);
-     }}
-   >
-     <div className="p-3 bg-transparent relative">
-      
-             <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin">
-         {availableVersions.length > 0 ? (
-           availableVersions.map((version) => {
-             const langInfo = getLanguageInfo(version.language);
-             const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
-             
-             return (
-               <button
-                 key={version.language}
-                 onClick={(e) => {
-                   e.stopPropagation();
-                   console.log('🌐 Switch vers langue:', version.language);
-                   handleLanguageSwitch(version.language);
-                   setIsTranslationPopoverOpen(false);
-                 }}
-                 className={`w-full p-2.5 rounded-lg text-left transition-all duration-200 group ${
-                   isCurrentlyDisplayed 
-                     ? 'bg-blue-50/80 border border-blue-200/60' 
-                     : 'bg-white/60 border border-transparent hover:bg-white/80 hover:border-gray-200/60'
-                 }`}
-               >
-                 <div className="flex items-center justify-between mb-1.5">
-                   <div className="flex items-center space-x-2">
-                     <span className="text-base">{langInfo.flag}</span>
-                     <span className={`font-medium text-sm ${
-                       isCurrentlyDisplayed ? 'text-blue-700' : 'text-gray-700'
-                     }`}>
-                       {langInfo.name}
-                     </span>
-                     {version.isOriginal && (
-                       <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
-                         Original
-                       </span>
-                     )}
-                     {isCurrentlyDisplayed && (
-                       <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
-                     )}
-                   </div>
-                   {!version.isOriginal && (
-                     <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
-                       {Math.round(version.confidence * 100)}%
-                     </span>
-                   )}
-                 </div>
-                 
-                 <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 group-hover:text-gray-800">
-                   {version.content}
-                 </p>
-                 
-                 {/* Indicateur de qualité discret */}
-                 {!version.isOriginal && (
-                   <div className="mt-1.5 flex items-center space-x-1">
-                     <div className="flex-1 bg-gray-200/40 rounded-full h-0.5">
-                       <div 
-                         className="bg-green-400 h-0.5 rounded-full transition-all duration-300"
-                         style={{ width: `${Math.round(version.confidence * 100)}%` }}
-                       />
-                     </div>
-                   </div>
-                 )}
-               </button>
-             );
-           })
-         ) : (
-           <div className="text-center p-4 text-gray-400">
-             <Globe className="h-6 w-6 mx-auto mb-2 opacity-60" />
-             <p className="text-xs">Aucune traduction disponible</p>
-           </div>
-         )}
-       </div>
-      
-      {message.translations.some(t => t.status === 'translating') && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center space-x-2 text-sm text-blue-700 bg-blue-50 p-2 rounded">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            <span>Traductions en cours...</span>
-          </div>
-        </div>
-      )}
-    </div>
-  </PopoverContent>
-</Popover>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button

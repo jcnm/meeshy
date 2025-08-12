@@ -135,15 +135,27 @@ export class MeeshySocketIOManager {
 
   private async _handleTokenAuthentication(socket: any): Promise<void> {
     try {
+      // Essayer de récupérer le token depuis différentes sources
+      let token = socket.auth?.token;
+      
+      // Si pas dans auth, essayer dans les headers
+      if (!token && socket.handshake?.headers?.authorization) {
+        const authHeader = socket.handshake.headers.authorization;
+        if (authHeader.startsWith('Bearer ')) {
+          token = authHeader.substring(7);
+        }
+      }
+      
       console.log(`🔍 Authentification pour socket ${socket.id}:`, {
         hasAuth: !!socket.auth,
         authKeys: socket.auth ? Object.keys(socket.auth) : [],
-        tokenExists: !!socket.auth?.token,
-        tokenLength: socket.auth?.token?.length,
-        tokenPreview: socket.auth?.token ? socket.auth.token.substring(0, 30) + '...' : 'none'
+        tokenExists: !!token,
+        tokenLength: token?.length,
+        tokenPreview: token ? token.substring(0, 30) + '...' : 'none',
+        hasAuthHeader: !!socket.handshake?.headers?.authorization,
+        authHeaderPreview: socket.handshake?.headers?.authorization ? socket.handshake.headers.authorization.substring(0, 30) + '...' : 'none'
       });
       
-      const token = socket.auth?.token;
       if (!token) {
         console.log(`⚠️ Aucun token fourni pour socket ${socket.id}`);
         return;
@@ -198,8 +210,54 @@ export class MeeshySocketIOManager {
     try {
       let user: SocketUser | null = null;
       
-      if (data.userId) {
-        // Utilisateur authentifié
+      if (data.sessionToken) {
+        // Vérifier si c'est un token JWT pour un utilisateur authentifié
+        try {
+          const jwtSecret = process.env.JWT_SECRET || 'default-secret';
+          const decoded = jwt.verify(data.sessionToken, jwtSecret) as any;
+          
+          console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId}`);
+          
+          // Récupérer l'utilisateur depuis la base de données
+          const dbUser = await this.prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { 
+              id: true, 
+              username: true,
+              systemLanguage: true 
+            }
+          });
+
+          if (dbUser) {
+            user = {
+              id: dbUser.id,
+              socketId: socket.id,
+              isAnonymous: false,
+              language: data.language || dbUser.systemLanguage
+            };
+          } else {
+            console.log(`❌ Utilisateur ${decoded.userId} non trouvé en base`);
+          }
+        } catch (jwtError) {
+          console.log(`⚠️ Token JWT invalide, tentative comme sessionToken anonyme`);
+          
+          // Si ce n'est pas un JWT valide, essayer comme sessionToken anonyme
+          const anonymousUser = await this.prisma.anonymousParticipant.findUnique({
+            where: { sessionToken: data.sessionToken },
+            select: { id: true }
+          });
+          
+          if (anonymousUser) {
+            user = {
+              id: anonymousUser.id,
+              socketId: socket.id,
+              isAnonymous: true,
+              language: data.language || 'fr'
+            };
+          }
+        }
+      } else if (data.userId) {
+        // Utilisateur authentifié (fallback)
         const dbUser = await this.prisma.user.findUnique({
           where: { id: data.userId },
           select: { id: true, systemLanguage: true }
@@ -211,21 +269,6 @@ export class MeeshySocketIOManager {
             socketId: socket.id,
             isAnonymous: false,
             language: data.language || dbUser.systemLanguage
-          };
-        }
-      } else if (data.sessionToken) {
-        // Participant anonyme
-        const anonymousUser = await this.prisma.anonymousParticipant.findUnique({
-          where: { sessionToken: data.sessionToken },
-          select: { id: true }
-        });
-        
-        if (anonymousUser) {
-          user = {
-            id: anonymousUser.id,
-            socketId: socket.id,
-            isAnonymous: true,
-            language: data.language || 'fr'
           };
         }
       }
