@@ -118,6 +118,27 @@ export default function QuickLoginPage() {
           <p className="text-gray-600 mt-2">Connectez-vous à votre compte</p>
         </div>
 
+        {/* Informations des comptes de test */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">🧪 Comptes de Test</CardTitle>
+            <CardDescription>
+              Utilisez ces comptes pour tester Meeshy. Mot de passe pour tous : <code className="bg-gray-100 px-1 rounded text-xs">password123</code>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-xs text-gray-600 space-y-1">
+              <p><strong>Alice (Admin)</strong> - alice@meeshy.com - Français</p>
+              <p><strong>Bob</strong> - bob@meeshy.com - Anglais</p>
+              <p><strong>Carlos</strong> - carlos@meeshy.com - Espagnol</p>
+              <p><strong>Dieter</strong> - dieter@meeshy.com - Allemand</p>
+              <p><strong>Li</strong> - li@meeshy.com - Chinois</p>
+              <p><strong>Yuki</strong> - yuki@meeshy.com - Japonais</p>
+              <p><strong>Maria</strong> - maria@meeshy.com - Portugais</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Formulaire de connexion */}
         <Card>
           <CardHeader>
@@ -140,10 +161,13 @@ export default function QuickLoginPage() {
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  placeholder="admin, alice, bob..."
+                  placeholder="alice@meeshy.com, bob@meeshy.com..."
                   disabled={isLoading}
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Utilisez l'email complet ou cliquez sur "Connexion rapide" ci-dessous
+                </p>
               </div>
 
               <div>
@@ -207,9 +231,10 @@ export default function QuickLoginPage() {
                   disabled={isLoading}
                   className="justify-start h-auto p-3"
                 >
-                  <div className="text-left">
+                  <div className="text-left w-full">
                     <p className="font-medium">{user.name}</p>
-                    <p className="text-sm text-gray-500">@{user.username}</p>
+                    <p className="text-sm text-gray-500">Email: {user.username}</p>
+                    <p className="text-xs text-blue-600">Username: {user.username.split('@')[0]}</p>
                   </div>
                 </Button>
               ))}
