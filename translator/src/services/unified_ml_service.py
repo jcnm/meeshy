@@ -319,30 +319,46 @@ class UnifiedMLTranslationService:
             return await self._fallback_translate(text, source_language, target_language, model_type, source_channel)
     
     async def _ml_translate(self, text: str, source_lang: str, target_lang: str, model_type: str) -> str:
-        """Traduction avec le vrai modèle ML - pipeline créé à la demande"""
+        """Traduction avec le vrai modèle ML - tokenizers thread-local pour éviter 'Already borrowed'"""
         try:
             if model_type not in self.models:
                 raise Exception(f"Modèle {model_type} non chargé")
             
-            model = self.models[model_type]
-            tokenizer = self.tokenizers[model_type]
             model_name = self.model_configs[model_type]['model_name']
             
-            # Traduction dans un thread avec pipeline à la demande
+            # Traduction dans un thread - NOUVEAU: tokenizer thread-local
             def translate():
                 try:
+                    from transformers import pipeline, AutoTokenizer
+                    import threading
+                    
+                    # SOLUTION: Créer un tokenizer unique pour ce thread
+                    thread_id = threading.current_thread().ident
+                    cache_key = f"{model_type}_{thread_id}"
+                    
+                    # Modèle partagé (thread-safe en lecture) mais tokenizer local
+                    shared_model = self.models[model_type]
+                    model_path = self.model_configs[model_type]['local_path']
+                    
+                    # Créer un tokenizer frais pour ce thread spécifique
+                    thread_tokenizer = AutoTokenizer.from_pretrained(
+                        str(model_path),
+                        cache_dir=str(self.models_path),
+                        local_files_only=True  # Utiliser le modèle local
+                    )
+                    
                     # Différencier T5 et NLLB avec pipelines appropriés
                     if "t5" in model_name.lower():
-                        # T5: utiliser text2text-generation
+                        # T5: utiliser text2text-generation avec tokenizer thread-local
                         temp_pipeline = pipeline(
                             "text2text-generation",
-                            model=model,
-                            tokenizer=tokenizer,
+                            model=shared_model,
+                            tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
                             max_length=128
                         )
                         
-                        # T5: format avec noms complets de langues (comme votre exemple)
+                        # T5: format avec noms complets de langues
                         source_name = self.language_names.get(source_lang, source_lang.capitalize())
                         target_name = self.language_names.get(target_lang, target_lang.capitalize())
                         instruction = f"translate {source_name} to {target_name}: {text}"
@@ -383,11 +399,11 @@ class UnifiedMLTranslationService:
                             translated = f"[T5-No-Result] {text}"
                             
                     else:
-                        # NLLB: utiliser translation avec codes de langue
+                        # NLLB: utiliser translation avec tokenizer thread-local
                         temp_pipeline = pipeline(
                             "translation",
-                            model=model,
-                            tokenizer=tokenizer,
+                            model=shared_model,
+                            tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
                             max_length=128
                         )
@@ -409,7 +425,8 @@ class UnifiedMLTranslationService:
                         else:
                             translated = f"[NLLB-No-Result] {text}"
                     
-                    # Nettoyer le pipeline temporaire
+                    # Nettoyer tokenizer et pipeline temporaires
+                    del thread_tokenizer
                     del temp_pipeline
                     
                     return translated
