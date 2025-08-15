@@ -62,26 +62,44 @@ cleanup() {
     # Nettoyer les processus enfants potentiels
     echo -e "${YELLOW}🧹 [MEESHY] Nettoyage des processus enfants...${NC}"
     
-    # Tuer les processus Node.js liés à la gateway
-    pkill -f "tsx watch" 2>/dev/null || true
-    pkill -f "pnpm run dev" 2>/dev/null || true
-    pkill -f "node.*src/server.ts" 2>/dev/null || true
+    # Tuer les processus Node.js liés à la gateway avec plus de précision
+    pkill -f "tsx.*watch.*src/server.ts" 2>/dev/null || true
+    pkill -f "pnpm run dev.*gateway" 2>/dev/null || true
+    pkill -f "node.*src/server.ts.*dotenv" 2>/dev/null || true
+    pkill -f "fastify.*gateway" 2>/dev/null || true
+    pkill -f "gateway.sh" 2>/dev/null || true
     
     # Tuer les processus Python liés au traducteur
     pkill -f "start_service.py" 2>/dev/null || true
-    pkill -f "uvicorn" 2>/dev/null || true
+    pkill -f "uvicorn.*translator" 2>/dev/null || true
     pkill -f "python.*start_service.py" 2>/dev/null || true
+    pkill -f "translator.sh" 2>/dev/null || true
     
     # Tuer tous les processus du script lui-même
     pkill -f "start_meeshy_services.sh" 2>/dev/null || true
     
+    # Nettoyer les ports utilisés
+    echo -e "${YELLOW}🧹 [MEESHY] Nettoyage des ports...${NC}"
+    lsof -ti:3000 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    lsof -ti:8000 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    lsof -ti:5555 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    lsof -ti:5558 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    
     # Attendre un peu pour que les processus se terminent
-    sleep 2
+    sleep 3
     
     # Forcer l'arrêt si nécessaire
-    pkill -9 -f "tsx watch" 2>/dev/null || true
+    pkill -9 -f "tsx.*watch.*src/server.ts" 2>/dev/null || true
     pkill -9 -f "start_service.py" 2>/dev/null || true
     pkill -9 -f "start_meeshy_services.sh" 2>/dev/null || true
+    pkill -9 -f "gateway.sh" 2>/dev/null || true
+    pkill -9 -f "translator.sh" 2>/dev/null || true
+    
+    # Forcer l'arrêt des ports
+    lsof -ti:3000 2>/dev/null | xargs kill -KILL 2>/dev/null || true
+    lsof -ti:8000 2>/dev/null | xargs kill -KILL 2>/dev/null || true
+    lsof -ti:5555 2>/dev/null | xargs kill -KILL 2>/dev/null || true
+    lsof -ti:5558 2>/dev/null | xargs kill -KILL 2>/dev/null || true
     
     echo -e "${GREEN}✅ [MEESHY] Tous les services arrêtés proprement${NC}"
     exit 0

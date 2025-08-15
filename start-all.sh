@@ -22,7 +22,7 @@ echo "=============================================="
 cleanup() {
     echo -e "\n${YELLOW}🛑 Arrêt de tous les services...${NC}"
     
-    # Tuer tous les processus enfants
+    # Tuer tous les processus enfants directement
     if [[ ! -z "$FRONTEND_PID" ]]; then
         echo -e "   Arrêt du frontend (PID: $FRONTEND_PID)..."
         kill -TERM $FRONTEND_PID 2>/dev/null || true
@@ -47,6 +47,32 @@ cleanup() {
         kill -KILL $TRANSLATOR_PID 2>/dev/null || true
     fi
     
+    # Nettoyer tous les processus Meeshy spécifiques
+    echo -e "   Nettoyage des processus Meeshy..."
+    
+    # Processus Node.js/Next.js du frontend
+    pkill -f "next dev.*turbopack" 2>/dev/null || true
+    pkill -f "next-server" 2>/dev/null || true
+    pkill -f "meeshy-frontend" 2>/dev/null || true
+    
+    # Processus TSX/Node.js du gateway
+    pkill -f "tsx.*watch.*src/server.ts" 2>/dev/null || true
+    pkill -f "node.*tsx.*gateway" 2>/dev/null || true
+    pkill -f "fastify.*gateway" 2>/dev/null || true
+    
+    # Processus Python du translator
+    pkill -f "start_service.py" 2>/dev/null || true
+    pkill -f "uvicorn.*translator" 2>/dev/null || true
+    pkill -f "python.*translator" 2>/dev/null || true
+    
+    # Processus des scripts de démarrage
+    pkill -f "frontend.sh" 2>/dev/null || true
+    pkill -f "gateway.sh" 2>/dev/null || true
+    pkill -f "translator.sh" 2>/dev/null || true
+    
+    # Attendre que les processus se terminent proprement
+    sleep 3
+    
     # Tuer tous les processus sur les ports utilisés par Meeshy
     echo -e "   Nettoyage des ports Meeshy..."
     lsof -ti:3000 2>/dev/null | xargs kill -TERM 2>/dev/null || true
@@ -60,7 +86,12 @@ cleanup() {
     pkill -P $$ 2>/dev/null || true
     
     # Attendre que tous les processus se terminent
-    sleep 3
+    sleep 2
+    
+    # Forcer l'arrêt des processus récalcitrants
+    pkill -9 -f "tsx.*watch.*src/server.ts" 2>/dev/null || true
+    pkill -9 -f "start_service.py" 2>/dev/null || true
+    pkill -9 -f "next dev.*turbopack" 2>/dev/null || true
     
     # Forcer l'arrêt des ports si nécessaire
     lsof -ti:3000 2>/dev/null | xargs kill -KILL 2>/dev/null || true

@@ -1,69 +1,26 @@
-# Translator Dockerfile - Meeshy FastAPI Service (Autonomous Build)
-FROM python:3.12-slim AS base
+# Translator Dockerfile - Meeshy FastAPI Service (Optimized)
+FROM python:3.12-slim
 
-# Install system dependencies including GPU support and Node.js for Prisma
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    git \
-    protobuf-compiler \
-    wget \
-    unzip \
-    gnupg \
-    tini \
-    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g pnpm \
-    && npm install -g prisma \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+# Configuration des arguments de build
+ARG DEBIAN_FRONTEND=noninteractive
+ARG NODE_VERSION=22
+ARG PNPM_VERSION=latest
 
-ENTRYPOINT ["/usr/bin/tini", "--"]
+# Variables d'environnement pour l'application
+ENV PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    CACHE_DIR=/app/cache \
+    LOG_DIR=/app/logs \
+    MODELS_PATH=/app/models \
+    MODEL_DIR=/app/models \
+    MODEL_CACHE_DIR=/app/models \
+    TORCH_HOME=/app/models \
+    HF_HOME=/app/models \
+    TRANSFORMERS_CACHE=/app/models
 
-# === BUILD STAGE ===
-FROM base AS builder
-WORKDIR /app
-
-# Copy entire translator application (including shared that was pre-copied)
-COPY . ./
-COPY .env.docker .env
-
-# Environment variables for build
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PIP_NO_CACHE_DIR=1
-RUN rm -rf /app/.venv /app/venv
-# Install Python dependencies and generate Prisma client
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir prisma python-dotenv && \
-    pip install --default-timeout=300 --no-cache-dir -r requirements.txt
-
-# Copy shared directory with Prisma schema and generate client
-COPY shared/ ./shared/
-RUN if [ -f shared/prisma/schema.prisma ]; then \
-        echo "✅ Using distributed Prisma schema from shared/prisma/"; \
-        cp shared/prisma/schema.prisma ./schema.prisma; \
-        prisma generate; \
-    else \
-        echo "⚠️  Schema shared/prisma/schema.prisma not found, skipping Prisma generation"; \
-    fi
-
-# Install Node.js dependencies for shared libraries if needed
-# RUN if [ -f shared/package.json ]; then \
-#         cd shared && pnpm install --no-frozen-lockfile && pnpm run generate; \
-#     fi
-
-
-# === PRODUCTION STAGE ===
-FROM base AS runner
-WORKDIR /app
-
-# Runtime environment variables
-ARG DATABASE_URL
-ARG REDIS_URL
-ARG PYTHONPATH=/app
-ARG PYTHONUNBUFFERED=1
+# Variables d'environnement configurables via build args
 ARG GRPC_HOST=0.0.0.0
 ARG GRPC_PORT=50051
 ARG HTTP_PORT=8000
@@ -85,68 +42,86 @@ ARG AUTO_CLEANUP_CORRUPTED_MODELS=true
 ARG FORCE_MODEL_REDOWNLOAD=false
 ARG TRANSLATION_CACHE_TTL=3600
 
-ENV DATABASE_URL=${DATABASE_URL}
-ENV REDIS_URL=${REDIS_URL}
-ENV PYTHONPATH=${PYTHONPATH}
-ENV PYTHONUNBUFFERED=${PYTHONUNBUFFERED}
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PIP_NO_CACHE_DIR=1
-ENV GRPC_HOST=${GRPC_HOST}
-ENV GRPC_PORT=${GRPC_PORT}
-ENV HTTP_PORT=${HTTP_PORT}
-ENV ZMQ_PORT=${ZMQ_PORT}
-ENV LOG_LEVEL=${LOG_LEVEL}
-ENV CACHE_DIR=/app/cache
-ENV LOG_DIR=/app/logs
-ENV MODELS_PATH=/app/models
-ENV MODEL_DIR=/app/models
-ENV MODEL_CACHE_DIR=/app/models
-ENV TORCH_HOME=/app/models
-ENV HF_HOME=/app/models
-ENV TRANSFORMERS_CACHE=/app/models
-ENV SUPPORTED_LANGUAGES=${SUPPORTED_LANGUAGES}
-ENV DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE}
-ENV MAX_TEXT_LENGTH=${MAX_TEXT_LENGTH}
-ENV BASIC_MODEL=${BASIC_MODEL}
-ENV MEDIUM_MODEL=${MEDIUM_MODEL}
-ENV PREMIUM_MODEL=${PREMIUM_MODEL}
-ENV DEVICE=${DEVICE}
-ENV ML_BATCH_SIZE=${ML_BATCH_SIZE}
-ENV GPU_MEMORY_FRACTION=${GPU_MEMORY_FRACTION}
-ENV TRANSLATION_TIMEOUT=${TRANSLATION_TIMEOUT}
-ENV CONCURRENT_TRANSLATIONS=${CONCURRENT_TRANSLATIONS}
-ENV WORKERS=${WORKERS}
-ENV AUTO_CLEANUP_CORRUPTED_MODELS=${AUTO_CLEANUP_CORRUPTED_MODELS}
-ENV FORCE_MODEL_REDOWNLOAD=${FORCE_MODEL_REDOWNLOAD}
-ENV TRANSLATION_CACHE_TTL=${TRANSLATION_CACHE_TTL}
+# Configuration des variables d'environnement depuis les args
+ENV GRPC_HOST=${GRPC_HOST} \
+    GRPC_PORT=${GRPC_PORT} \
+    HTTP_PORT=${HTTP_PORT} \
+    ZMQ_PORT=${ZMQ_PORT} \
+    LOG_LEVEL=${LOG_LEVEL} \
+    SUPPORTED_LANGUAGES=${SUPPORTED_LANGUAGES} \
+    DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE} \
+    MAX_TEXT_LENGTH=${MAX_TEXT_LENGTH} \
+    BASIC_MODEL=${BASIC_MODEL} \
+    MEDIUM_MODEL=${MEDIUM_MODEL} \
+    PREMIUM_MODEL=${PREMIUM_MODEL} \
+    DEVICE=${DEVICE} \
+    ML_BATCH_SIZE=${ML_BATCH_SIZE} \
+    GPU_MEMORY_FRACTION=${GPU_MEMORY_FRACTION} \
+    TRANSLATION_TIMEOUT=${TRANSLATION_TIMEOUT} \
+    CONCURRENT_TRANSLATIONS=${CONCURRENT_TRANSLATIONS} \
+    WORKERS=${WORKERS} \
+    AUTO_CLEANUP_CORRUPTED_MODELS=${AUTO_CLEANUP_CORRUPTED_MODELS} \
+    FORCE_MODEL_REDOWNLOAD=${FORCE_MODEL_REDOWNLOAD} \
+    TRANSLATION_CACHE_TTL=${TRANSLATION_CACHE_TTL}
 
-# Create system user and logs directory
-RUN groupadd -g 1001 translator && \
-    useradd -u 1001 -g translator translator && \
-    mkdir -p logs cache models && \
-    chown -R translator:translator logs cache models
+# Installation en une seule layer avec cleanup
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        wget \
+        unzip \
+        gnupg \
+        tini \
+        curl \
+    && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g pnpm@${PNPM_VERSION} prisma \
+    && groupadd -g 1001 translator \
+    && useradd -u 1001 -g translator -m translator \
+    && mkdir -p /app/{logs,cache,models,shared} \
+    && chown -R translator:translator /app \
+    && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && npm cache clean --force
 
-# Copy built application and dependencies including generated Prisma client
-COPY --from=builder --chown=translator:translator /app/src ./src
-COPY --from=builder --chown=translator:translator /app/start_service.py ./start_service.py
-COPY --from=builder --chown=translator:translator /app/shared ./shared
-# Copy the generated schema if it exists (from shared/prisma distribution)
-# COPY --from=builder --chown=translator:translator /app/schema.prisma ./schema.prisma
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
+WORKDIR /app
+
+# Copie des fichiers de dépendances d'abord (pour le cache Docker)
 COPY --chown=translator:translator requirements.txt ./
-COPY .env.docker .env
+COPY --chown=translator:translator .env.docker ./.env
 
-# Ensure models directory has correct permissions
-RUN chown -R translator:translator models && \
-    chmod -R 755 models
+# Installation des dépendances Python en une seule layer
+RUN pip install --upgrade pip --no-cache-dir \
+    && pip install --no-cache-dir prisma python-dotenv \
+    && pip install --default-timeout=300 --no-cache-dir -r requirements.txt \
+    && rm -rf ~/.cache/pip
+
+# Copie du code source et du schéma Prisma
+COPY --chown=translator:translator src/ ./src/
+COPY --chown=translator:translator shared/ ./shared/
+COPY --chown=translator:translator start_service.py ./
+
+# Génération du client Prisma (conditionnel)
+RUN if [ -f shared/prisma/schema.prisma ]; then \
+        echo "✅ Génération du client Prisma..." \
+        && cp shared/prisma/schema.prisma ./schema.prisma \
+        && prisma generate; \
+    else \
+        echo "⚠️  Schema Prisma non trouvé, génération ignorée"; \
+    fi
+
+# Configuration finale des permissions
+RUN chown -R translator:translator /app \
+    && chmod -R 755 /app/models
 
 USER translator
 
 EXPOSE ${HTTP_PORT} ${GRPC_PORT} ${ZMQ_PORT}
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=5 \
-    CMD python3 -c "import requests; requests.get('http://localhost:${HTTP_PORT}/health', timeout=10)" || exit 1
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Health check optimisé
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python3 -c "import requests; requests.get(f'http://localhost:{os.getenv(\"HTTP_PORT\", \"8000\")}/health', timeout=5)" || exit 1
 
 CMD ["python3", "start_service.py"]
