@@ -45,7 +45,7 @@ import { ConversationParticipantsPopover } from '@/components/conversations/conv
 import { CreateLinkButton } from '@/components/conversations/create-link-button';
 import { getUserLanguageChoices } from '@/utils/user-language-preferences';
 import { useMessageLoader } from '@/hooks/use-message-loader';
-import AuthDiagnostic from '@/components/debug/auth-diagnostic';
+
 
 // Alias pour la compatibilité avec le code existant
 type TranslatedMessage = Message & {
@@ -729,7 +729,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   return (
     <DashboardLayout title="Conversations">
-      <AuthDiagnostic />
+
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">

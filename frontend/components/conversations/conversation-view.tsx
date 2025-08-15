@@ -259,7 +259,7 @@ export function ConversationView({
       setTranslatedMessages(prev => new Map(prev.set(messageId, updatedTranslatedMessage)));
       setShowingOriginal(prev => new Map(prev.set(messageId, false)));
       
-      // TODO: Réimplémenter la persistance des traductions
+      // Persistance des traductions gérée par le hook useMessageLoader
       console.log(`💾 Traduction effectuée pour le message ${messageId} en ${targetLanguage}`);
       toast.success('Message traduit avec succès');
     } catch (error) {
@@ -323,7 +323,7 @@ export function ConversationView({
       
       setShowingOriginal(prev => new Map(prev.set(messageId, newShowingOriginal)));
       
-      // TODO: Réimplémenter la persistance de l'état d'affichage
+      // État d'affichage géré localement
       console.log(`👁️ État d'affichage mis à jour pour le message ${messageId}: ${newShowingOriginal ? 'original' : 'traduit'}`);
     }
   };

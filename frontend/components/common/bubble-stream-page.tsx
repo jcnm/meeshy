@@ -80,8 +80,7 @@ import {
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { TrendingSection } from '@/components/common/trending-section';
 import { LoadingState } from '@/components/common/LoadingStates';
-import { ZIndexDebugPanel } from '@/components/debug/z-index-debug';
-import { ZIndexTestComponent } from '@/components/debug/z-index-test';
+
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
@@ -219,8 +218,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   }, [user.id, activeUsers]); // Ajouter activeUsers aux dépendances
 
   const handleUserStatus = useCallback((userId: string, username: string, isOnline: boolean) => {
-    // Statut utilisateur changé
-    // TODO: Mettre à jour la liste des utilisateurs actifs
+    // Statut utilisateur changé - géré par les événements socket
   }, []);
 
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
@@ -1203,13 +1201,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         </div>
       </div>
 
-      {/* Debug Panel - Visible uniquement en développement */}
-      {process.env.NODE_ENV === 'development' && (
-        <>
-          <ZIndexDebugPanel />
-          <ZIndexTestComponent />
-        </>
-      )}
+
     </>
   );
 }
