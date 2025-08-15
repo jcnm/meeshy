@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
-import type { User, Message, TranslatedMessage } from '@/types';
+import type { User, Message, TranslatedMessage, MessageWithTranslations } from '@/types';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 
 interface UseMessageLoaderProps {
@@ -241,13 +241,33 @@ export function useMessageLoader({
   const updateMessageTranslations = useCallback((messageId: string, translations: any[]) => {
     console.log('🌐 Mise à jour traductions pour message:', messageId, translations);
     
-    // Mettre à jour les messages bruts si nécessaire
+    // Mettre à jour les messages bruts - FUSION des traductions existantes avec les nouvelles
     setMessages(prev => prev.map(msg => {
       if (msg.id === messageId) {
+        const msgWithTranslations = msg as MessageWithTranslations;
+        const existingTranslations = msgWithTranslations.translations || [];
+        
+        // Fusionner les traductions - garder les existantes et ajouter les nouvelles
+        const mergedTranslations = [...existingTranslations];
+        
+        translations.forEach(newTranslation => {
+          const existingIndex = mergedTranslations.findIndex(
+            existing => existing.targetLanguage === newTranslation.targetLanguage
+          );
+          
+          if (existingIndex >= 0) {
+            // Remplacer la traduction existante par la nouvelle
+            mergedTranslations[existingIndex] = newTranslation;
+          } else {
+            // Ajouter la nouvelle traduction
+            mergedTranslations.push(newTranslation);
+          }
+        });
+        
         return {
           ...msg,
-          translations: translations || []
-        };
+          translations: mergedTranslations
+        } as MessageWithTranslations;
       }
       return msg;
     }));
@@ -255,13 +275,57 @@ export function useMessageLoader({
     // Mettre à jour les messages traduits
     setTranslatedMessages(prev => prev.map(msg => {
       if (msg.id === messageId) {
-        // Retraiter le message avec les nouvelles traductions
+        const existingTranslations = msg.translations || [];
+
+        // Normaliser les traductions existantes (BubbleTranslation -> TranslationData)
+        const normalizedExisting = existingTranslations.map((t: any) => {
+          if (t && typeof t === 'object' && 'targetLanguage' in t && 'translatedContent' in t) {
+            return t; // Déjà au format TranslationData
+          }
+          // Convertir BubbleTranslation { language, content, confidence } -> TranslationData
+          return {
+            messageId,
+            sourceLanguage: (msg as any).originalLanguage || 'auto',
+            targetLanguage: t.language,
+            translatedContent: t.content,
+            translationModel: 'basic',
+            cacheKey: `${messageId}_${t.language}`,
+            cached: true,
+            confidenceScore: t.confidence ?? 0.9
+          } as any;
+        });
+
+        // Fusionner les traductions normalisées avec les nouvelles
+        const mergedTranslations = [...normalizedExisting];
+
+        translations.forEach((newTranslation: any) => {
+          const idx = mergedTranslations.findIndex(
+            (existing: any) => existing.targetLanguage === newTranslation.targetLanguage
+          );
+          if (idx >= 0) {
+            mergedTranslations[idx] = newTranslation;
+          } else {
+            mergedTranslations.push(newTranslation);
+          }
+        });
+        
+        // Retraiter le message avec les traductions fusionnées
         const updatedMessage = {
           ...msg,
-          translations: translations || []
+          translations: mergedTranslations
         };
         
-        return processMessageWithTranslations(updatedMessage) as unknown as TranslatedMessage;
+        const reprocessedMessage = processMessageWithTranslations(updatedMessage) as unknown as TranslatedMessage;
+        console.log('🔄 Message retraité avec traductions fusionnées:', {
+          messageId,
+          originalContent: updatedMessage.content,
+          translatedContent: reprocessedMessage.translatedContent,
+          isTranslated: reprocessedMessage.isTranslated,
+          translationsCount: mergedTranslations.length,
+          newTranslationsAdded: translations.length
+        });
+        
+        return reprocessedMessage;
       }
       return msg;
     }));
