@@ -72,13 +72,7 @@ RUN pnpm install --no-frozen-lockfile --prod=false \
 
 # === APPLICATION BUILD ===
 # Copie du code source et ressources
-COPY --chown=nextjs:nodejs src/ ./src/
-COPY --chown=nextjs:nodejs public/ ./public/
-COPY --chown=nextjs:nodejs shared/ ./shared/
-COPY --chown=nextjs:nodejs next.config.* ./
-COPY --chown=nextjs:nodejs tsconfig.json* ./
-COPY --chown=nextjs:nodejs tailwind.config.* ./
-COPY --chown=nextjs:nodejs postcss.config.* ./
+COPY --chown=nextjs:nodejs . ./
 
 # Build Next.js avec optimisations
 RUN echo "🚀 Building Next.js application..." \

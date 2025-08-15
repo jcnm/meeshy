@@ -103,7 +103,7 @@ build_images() {
         --build-arg ANY_POOL_SIZE="${ANY_POOL_SIZE:-10000}" \
         --build-arg NORMAL_WORKERS="${NORMAL_WORKERS:-3}" \
         --build-arg ANY_WORKERS="${ANY_WORKERS:-2}" \
-        -f translator/Dockerfile \
+        -f ./Dockerfile \
         -t meeshy-translator:latest \
         .
 
@@ -135,7 +135,7 @@ build_images() {
         --build-arg ZMQ_TRANSLATOR_SUB_PORT="${ZMQ_TRANSLATOR_SUB_PORT:-5558}" \
         --build-arg ZMQ_TRANSLATOR_PORT="${ZMQ_TRANSLATOR_PORT:-5555}" \
         --build-arg ZMQ_TIMEOUT="${ZMQ_TIMEOUT:-30000}" \
-        -f gateway/Dockerfile \
+        -f ./Dockerfile \
         -t meeshy-gateway:latest \
         .
     
@@ -151,7 +151,7 @@ build_images() {
         --build-arg NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION="true" \
         --build-arg NEXT_PUBLIC_USE_API_TRANSLATION_ONLY="true" \
         --build-arg DATABASE_URL="${DATABASE_URL}" \
-        -f frontend/Dockerfile \
+        -f ./Dockerfile \
         -t meeshy-frontend:latest \
         .
     

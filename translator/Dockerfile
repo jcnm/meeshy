@@ -143,10 +143,16 @@ RUN if [ -f shared/prisma/schema.prisma ]; then \
         echo "⚠️  Schema Prisma non trouvé, génération ignorée"; \
     fi
 
-# Configuration finale des permissions
-RUN chown -R translator:translator /app \
-    && chmod -R 755 /app/models
-
+# Génération du client Prisma (conditionnel)
+RUN if [ ! -d /app/models ]; then \
+        mkdir /app/models \
+        && chmod -R 755 /app/models; \
+    else \
+        echo "⚠️  /app/models existe déjà , l'image risque de grossir"; \
+        chmod -R 755 /app/models; \
+    fi \
+    && chown -R translator:translator /app 
+    
 USER translator
 
 EXPOSE ${HTTP_PORT} ${GRPC_PORT} ${ZMQ_PUSH_PORT} ${ZMQ_SUB_PORT}
