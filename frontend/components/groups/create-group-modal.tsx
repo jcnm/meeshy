@@ -140,10 +140,10 @@ export function CreateGroupModal({
     onClose();
   };
 
-  const filteredUsers = availableUsers.filter(user =>
+  const filteredUsers = Array.isArray(availableUsers) ? availableUsers.filter(user =>
     (user.displayName || user.username).toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

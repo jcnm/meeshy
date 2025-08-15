@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/context/AppContext';
+import { Z_CLASSES } from '@/lib/z-index';
 import { 
   Avatar, 
   AvatarFallback, 
@@ -95,7 +96,7 @@ export function Navigation({ className }: NavigationProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="fixed top-4 left-4 z-50 md:hidden"
+          className={`fixed top-4 left-4 ${Z_CLASSES.HEADER} md:hidden`}
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -108,7 +109,7 @@ export function Navigation({ className }: NavigationProps) {
           'flex flex-col h-full bg-card border-r border-border transition-all duration-300',
           isMobile
             ? cn(
-                'fixed inset-y-0 left-0 z-40 w-64 transform',
+                `fixed inset-y-0 left-0 ${Z_CLASSES.NAVIGATION_SIDEBAR} w-64 transform`,
                 isOpen ? 'translate-x-0' : '-translate-x-full'
               )
             : 'w-64',
@@ -230,7 +231,7 @@ export function Navigation({ className }: NavigationProps) {
       {/* Mobile Overlay */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30"
+          className={`fixed inset-0 bg-background/80 backdrop-blur-sm ${Z_CLASSES.MOBILE_OVERLAY} mobile-overlay`}
           onClick={() => setIsOpen(false)}
         />
       )}

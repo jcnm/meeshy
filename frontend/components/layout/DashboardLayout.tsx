@@ -14,8 +14,7 @@ import {
   UserPlus,
   Link as LinkIcon,
   ChevronDown,
-  Shield,
-  Brain
+  Shield
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -45,17 +44,17 @@ export function DashboardLayout({
   hideSearch = false
 }: DashboardLayoutProps) {
   const router = useRouter();
-  const { user, logout } = useUser();
+  const { user, logout, isAuthChecking } = useUser();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
 
   // Gérer l'état de chargement basé sur l'utilisateur du hook
   useEffect(() => {
-    // Si l'utilisateur est défini ou si la vérification d'auth est terminée
-    if (user || !user) {
-      setIsLoading(false);
+    // Si la vérification d'auth est terminée et qu'il n'y a pas d'utilisateur,
+    // rediriger vers la page de connexion
+    if (!isAuthChecking && !user) {
+      router.push('/');
     }
-  }, [user]);
+  }, [user, isAuthChecking, router]);
 
   const handleLogout = async () => {
     try {
@@ -69,15 +68,18 @@ export function DashboardLayout({
           });
         } catch (error) {
           console.error('Erreur API déconnexion:', error);
+          // Continuer même si l'API échoue
         }
       }
       
-      // Utiliser la fonction logout centralisée
+      // Utiliser la fonction logout centralisée (elle gère la redirection)
       logout();
       toast.success('Déconnexion réussie');
     } catch (error) {
       console.error('Erreur déconnexion:', error);
       toast.error('Erreur lors de la déconnexion');
+      // En cas d'erreur, forcer la redirection quand même
+      logout();
     }
   };
 
@@ -88,15 +90,21 @@ export function DashboardLayout({
     }
   };
 
-  if (isLoading) {
+  if (isAuthChecking) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement...</p>
+          <p className="text-gray-600">Vérification de l'authentification...</p>
         </div>
       </div>
     );
+  }
+
+  // Si la vérification d'auth est terminée mais qu'il n'y a pas d'utilisateur,
+  // on ne rend rien car le useEffect va rediriger
+  if (!user) {
+    return null;
   }
 
   if (!user) {
@@ -106,7 +114,7 @@ export function DashboardLayout({
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header fixe */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b">
+      <header className="fixed top-0 left-0 right-0 z-[50] bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo et titre */}
@@ -203,11 +211,6 @@ export function DashboardLayout({
                   <DropdownMenuItem onClick={() => router.push('/links')}>
                     <LinkIcon className="mr-2 h-4 w-4" />
                     <span>Liens</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => router.push('/models')}>
-                    <Brain className="mr-2 h-4 w-4" />
-                    <span>Modèles</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuSeparator />

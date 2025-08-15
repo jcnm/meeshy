@@ -165,10 +165,10 @@ export function GroupsLayout({ currentUser, initialGroupId }: GroupsLayoutProps)
   };
 
   // Filtrer les groupes
-  const filteredGroups = groups.filter(group =>
+  const filteredGroups = Array.isArray(groups) ? groups.filter(group =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     group.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   useEffect(() => {
     loadGroups();
