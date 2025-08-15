@@ -74,23 +74,34 @@ build_images() {
         --build-arg GRPC_HOST="${GRPC_HOST:-0.0.0.0}" \
         --build-arg GRPC_PORT="${GRPC_PORT:-50051}" \
         --build-arg HTTP_PORT="${HTTP_PORT:-8000}" \
-        --build-arg ZMQ_PORT="${ZMQ_PORT:-5555}" \
+        --build-arg FASTAPI_PORT="${FASTAPI_PORT:-8000}" \
+        --build-arg ZMQ_PUSH_PORT="${ZMQ_PUSH_PORT:-5555}" \
+        --build-arg ZMQ_SUB_PORT="${ZMQ_SUB_PORT:-5558}" \
         --build-arg LOG_LEVEL="${LOG_LEVEL:-info}" \
-        --build-arg SUPPORTED_LANGUAGES="${SUPPORTED_LANGUAGES}" \
+        --build-arg DEBUG="${DEBUG:-false}" \
+        --build-arg SUPPORTED_LANGUAGES="${SUPPORTED_LANGUAGES:-fr,en,es,de,pt,zh,ja,ar}" \
         --build-arg DEFAULT_LANGUAGE="${DEFAULT_LANGUAGE:-fr}" \
         --build-arg MAX_TEXT_LENGTH="${MAX_TEXT_LENGTH:-5000}" \
-        --build-arg BASIC_MODEL="${BASIC_MODEL}" \
-        --build-arg MEDIUM_MODEL="${MEDIUM_MODEL}" \
-        --build-arg PREMIUM_MODEL="${PREMIUM_MODEL}" \
+        --build-arg BASIC_MODEL="${BASIC_MODEL:-t5-small}" \
+        --build-arg MEDIUM_MODEL="${MEDIUM_MODEL:-nllb-200-distilled-600M}" \
+        --build-arg PREMIUM_MODEL="${PREMIUM_MODEL:-nllb-200-distilled-1.3B}" \
         --build-arg DEVICE="${DEVICE:-cpu}" \
-        --build-arg ML_BATCH_SIZE="${ML_BATCH_SIZE:-8}" \
+        --build-arg ML_BATCH_SIZE="${ML_BATCH_SIZE:-32}" \
         --build-arg GPU_MEMORY_FRACTION="${GPU_MEMORY_FRACTION:-0.8}" \
         --build-arg TRANSLATION_TIMEOUT="${TRANSLATION_TIMEOUT:-30}" \
         --build-arg CONCURRENT_TRANSLATIONS="${CONCURRENT_TRANSLATIONS:-10}" \
         --build-arg WORKERS="${WORKERS:-4}" \
+        --build-arg TRANSLATION_WORKERS="${TRANSLATION_WORKERS:-10}" \
+        --build-arg PRISMA_POOL_SIZE="${PRISMA_POOL_SIZE:-15}" \
+        --build-arg CACHE_MAX_ENTRIES="${CACHE_MAX_ENTRIES:-10000}" \
+        --build-arg AUTO_DETECT_LANGUAGE="${AUTO_DETECT_LANGUAGE:-true}" \
         --build-arg AUTO_CLEANUP_CORRUPTED_MODELS="${AUTO_CLEANUP_CORRUPTED_MODELS:-true}" \
         --build-arg FORCE_MODEL_REDOWNLOAD="${FORCE_MODEL_REDOWNLOAD:-false}" \
         --build-arg TRANSLATION_CACHE_TTL="${TRANSLATION_CACHE_TTL:-3600}" \
+        --build-arg NORMAL_POOL_SIZE="${NORMAL_POOL_SIZE:-10000}" \
+        --build-arg ANY_POOL_SIZE="${ANY_POOL_SIZE:-10000}" \
+        --build-arg NORMAL_WORKERS="${NORMAL_WORKERS:-3}" \
+        --build-arg ANY_WORKERS="${ANY_WORKERS:-2}" \
         -f translator/Dockerfile \
         -t meeshy-translator:latest \
         .
