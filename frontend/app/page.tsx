@@ -25,7 +25,9 @@ import {
   Link2,
   ArrowRight,
   Languages,
-  Sparkles
+  Sparkles,
+  Building2,
+  GraduationCap
 } from 'lucide-react';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
@@ -321,6 +323,26 @@ export default function LandingPage() {
                 <CardTitle>Interface Moderne</CardTitle>
                 <CardDescription>
                   Design responsive et intuitive pour une expérience utilisateur optimale.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <Building2 className="h-12 w-12 text-orange-600 mb-4" />
+                <CardTitle>Collègues Internationaux</CardTitle>
+                <CardDescription>
+                  Communiquez avec vos collègues étrangers sans vous soucier de la barrière linguistique.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <GraduationCap className="h-12 w-12 text-teal-600 mb-4" />
+                <CardTitle>Salles de Classe Multilingues</CardTitle>
+                <CardDescription>
+                  Échangez avec vos camarades de classe dans leur langue maternelle, peu importe d'où ils viennent.
                 </CardDescription>
               </CardHeader>
             </Card>

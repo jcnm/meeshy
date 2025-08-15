@@ -48,9 +48,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       const result = await response.json();
 
-      if (response.ok && result.user && result.token) {
+      if (response.ok && result.success && result.data?.user && result.data?.token) {
         toast.success(`Bienvenue ${formData.firstName} !`);
-        onSuccess(result.user, result.token);
+        onSuccess(result.data.user, result.data.token);
       } else {
         toast.error(result.message || 'Erreur lors de la création du compte');
       }
