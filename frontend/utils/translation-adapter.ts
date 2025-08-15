@@ -88,6 +88,11 @@ export function resolveUserLanguage(user: User): string {
  * Filtre les traductions valides
  */
 export function filterValidTranslations(translations: TranslationData[]): TranslationData[] {
+  // S'assurer que translations est un tableau
+  if (!Array.isArray(translations)) {
+    return [];
+  }
+  
   return translations.filter(t => 
     t.translatedContent && 
     t.targetLanguage && 
