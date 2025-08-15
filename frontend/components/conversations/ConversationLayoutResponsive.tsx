@@ -212,6 +212,94 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     return () => clearInterval(interval);
   }, []);
 
+  // Callbacks stabilisés pour éviter les re-renders en boucle
+  const handleUserStatus = useCallback((userId: string, _username: string, isOnline: boolean) => {
+    setConversationParticipants(prev => prev.map(p =>
+      p.user.id === userId ? { ...p, user: { ...p.user, isOnline } } : p
+    ));
+  }, []);
+
+  const handleConversationStats = useCallback((data: { conversationId: string; stats: any }) => {
+    // si stats contiennent des participants, on peut les utiliser; sinon ignoré
+  }, []);
+
+  const handleConversationOnlineStats = useCallback((data: { conversationId: string; onlineUsers: Array<{ id: string }>; updatedAt: Date }) => {
+    if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
+    const onlineSet = new Set((data.onlineUsers || []).map(u => u.id));
+    setConversationParticipants(prev => prev.map(p => ({
+      ...p,
+      user: { ...p.user, isOnline: onlineSet.has(p.user.id) }
+    })));
+  }, [selectedConversation?.id]);
+
+  const handleConversationJoined = useCallback((data: { conversationId: string; participant: ThreadMember }) => {
+    if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
+    setConversationParticipants(prev => {
+      const exists = prev.some(p => p.user.id === data.participant.user.id);
+      if (exists) return prev;
+      return [...prev, data.participant];
+    });
+  }, [selectedConversation?.id]);
+
+  const handleConversationLeft = useCallback((data: { conversationId: string; userId: string }) => {
+    if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
+    setConversationParticipants(prev => prev.filter(p => p.user.id !== data.userId));
+  }, [selectedConversation?.id]);
+
+  const handleNewMessage = useCallback((message: Message) => {
+    // Vérifier que le message appartient à la conversation active
+    if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
+      console.log('📬 Message ignoré - appartient à une autre conversation');
+      return;
+    }
+
+    console.log('📬 Nouveau message reçu pour la conversation active:', message.id);
+
+    // Ajouter le message en temps réel à la liste affichée
+    addMessage(message);
+
+    // Mettre à jour la conversation avec le dernier message (optimisé et idempotent)
+    setConversationsIfChanged(prev => prev.map(
+      (conv) => conv.id === message.conversationId
+        ? { ...conv, lastMessage: message, updatedAt: new Date() }
+        : conv
+    ));
+
+    // Scroller vers le bas pour voir le nouveau message (optimisé)
+    setTimeout(() => {
+      try {
+        const container = messagesContainerRef.current;
+        if (container) {
+          // Vérifier si l'utilisateur est déjà en bas de la conversation
+          const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+          if (isAtBottom) {
+            container.scrollTop = container.scrollHeight;
+          }
+        }
+      } catch (error) {
+        console.log('Erreur lors du scroll automatique:', error);
+      }
+    }, 50);
+  }, [selectedConversation?.id, addMessage, setConversationsIfChanged]);
+
+  const handleTranslation = useCallback((messageId: string, translations: TranslationData[]) => {
+    console.log('🌐 [Conversation] Traductions reçues pour message:', messageId, translations);
+    // Appliquer les traductions au message concerné via le loader commun
+    updateMessageTranslations(messageId, translations);
+  }, [updateMessageTranslations]);
+
+  const handleMessageSent = useCallback((content: string, language: string) => {
+    console.log('✅ Message envoyé avec succès:', { content: content.substring(0, 50) + '...', language });
+    // Scroller vers le bas après l'envoi
+    setTimeout(scrollToBottom, 200);
+  }, []);
+
+  const handleMessageFailed = useCallback((content: string, error: Error) => {
+    console.error('❌ Échec d\'envoi du message:', { content: content.substring(0, 50) + '...', error });
+    // Restaurer le message en cas d'erreur
+    setNewMessage(content);
+  }, []);
+
   // Hook de messagerie réutilisable basé sur BubbleStreamPage
   const {
     isSending,
@@ -222,84 +310,15 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     conversationId: selectedConversation?.id,
     currentUser: user!, // user est garanti d'exister
     onUserTyping: handleUserTyping, // Ajouter le gestionnaire de frappe
-    onUserStatus: (userId: string, _username: string, isOnline: boolean) => {
-      setConversationParticipants(prev => prev.map(p =>
-        p.user.id === userId ? { ...p, user: { ...p.user, isOnline } } : p
-      ));
-    },
-    onConversationStats: (data: { conversationId: string; stats: any }) => {
-      // si stats contiennent des participants, on peut les utiliser; sinon ignoré
-    },
-    onConversationOnlineStats: (data: { conversationId: string; onlineUsers: Array<{ id: string }>; updatedAt: Date }) => {
-      if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
-      const onlineSet = new Set((data.onlineUsers || []).map(u => u.id));
-      setConversationParticipants(prev => prev.map(p => ({
-        ...p,
-        user: { ...p.user, isOnline: onlineSet.has(p.user.id) }
-      })));
-    },
-    onConversationJoined: (data: { conversationId: string; participant: ThreadMember }) => {
-      if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
-      setConversationParticipants(prev => {
-        const exists = prev.some(p => p.user.id === data.participant.user.id);
-        if (exists) return prev;
-        return [...prev, data.participant];
-      });
-    },
-    onConversationLeft: (data: { conversationId: string; userId: string }) => {
-      if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
-      setConversationParticipants(prev => prev.filter(p => p.user.id !== data.userId));
-    },
-    onNewMessage: (message: Message) => {
-      // Vérifier que le message appartient à la conversation active
-      if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
-        console.log('📬 Message ignoré - appartient à une autre conversation');
-        return;
-      }
-
-      console.log('📬 Nouveau message reçu pour la conversation active:', message.id);
-
-      // Ajouter le message en temps réel à la liste affichée
-      addMessage(message);
-
-      // Mettre à jour la conversation avec le dernier message (optimisé et idempotent)
-      setConversationsIfChanged(prev => prev.map(
-        (conv) => conv.id === message.conversationId
-          ? { ...conv, lastMessage: message, updatedAt: new Date() }
-          : conv
-      ));
-
-      // Scroller vers le bas pour voir le nouveau message (optimisé)
-      setTimeout(() => {
-        try {
-          const container = messagesContainerRef.current;
-          if (container) {
-            // Vérifier si l'utilisateur est déjà en bas de la conversation
-            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-            if (isAtBottom) {
-              container.scrollTop = container.scrollHeight;
-            }
-          }
-        } catch (error) {
-          console.log('Erreur lors du scroll automatique:', error);
-        }
-      }, 50);
-    },
-    onTranslation: (messageId: string, translations: TranslationData[]) => {
-      console.log('🌐 [Conversation] Traductions reçues pour message:', messageId, translations);
-      // Appliquer les traductions au message concerné via le loader commun
-      updateMessageTranslations(messageId, translations);
-    },
-    onMessageSent: (content: string, language: string) => {
-      console.log('✅ Message envoyé avec succès:', { content: content.substring(0, 50) + '...', language });
-      // Scroller vers le bas après l'envoi
-      setTimeout(scrollToBottom, 200);
-    },
-    onMessageFailed: (content: string, error: Error) => {
-      console.error('❌ Échec d\'envoi du message:', { content: content.substring(0, 50) + '...', error });
-      // Restaurer le message en cas d'erreur
-      setNewMessage(content);
-    }
+    onUserStatus: handleUserStatus,
+    onConversationStats: handleConversationStats,
+    onConversationOnlineStats: handleConversationOnlineStats,
+    onConversationJoined: handleConversationJoined,
+    onConversationLeft: handleConversationLeft,
+    onNewMessage: handleNewMessage,
+    onTranslation: handleTranslation,
+    onMessageSent: handleMessageSent,
+    onMessageFailed: handleMessageFailed
   });
 
   // Fonction utilitaire pour obtenir le nom d'affichage d'une conversation
@@ -691,7 +710,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     } else {
       console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
     }
-  }, [selectedConversation?.id, loadMessages, clearMessages, messages.length, messages]);
+  }, [selectedConversation?.id, loadMessages, clearMessages, messages.length]);
 
   // Effet 2: chargement des participants uniquement quand l'ID de conversation change
   useEffect(() => {
