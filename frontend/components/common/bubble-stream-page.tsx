@@ -88,7 +88,7 @@ import { useMessageTranslations } from '@/hooks/use-message-translations';
 import { useTranslationStats } from '@/hooks/use-translation-stats';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
-import type { User, Message, BubbleTranslation } from '@/types';
+import type { User, Message, BubbleTranslation } from '@/shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { conversationsService } from '@/services';
@@ -977,14 +977,28 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
                       usedLanguages={usedLanguages}
                       onForceTranslation={async (messageId: string, targetLanguage: string) => {
                         try {
-                          console.log('🔄 Forcer la traduction:', { messageId, targetLanguage });
+                          console.log('🔄 Forcer la traduction dans bubble-stream:', { messageId, targetLanguage });
+                          
+                          // Récupérer la langue source du message
+                          const message = messages.find(m => m.id === messageId);
+                          const sourceLanguage = message?.originalLanguage || 'fr';
+                          
+                          console.log('🔤 Détails de la traduction forcée (bubble-stream):', {
+                            messageId,
+                            targetLanguage,
+                            sourceLanguage,
+                            messageFound: !!message,
+                            messageContent: message?.content?.substring(0, 50) + '...'
+                          });
+
                           const result = await messageTranslationService.requestTranslation({
                             messageId,
                             targetLanguage,
+                            sourceLanguage,
                             model: 'basic'
                           });
                           console.log('✅ Traduction forcée demandée:', result);
-                          toast.success(`✅ Traduction en ${getLanguageName(targetLanguage)} envoyée au service`);
+                          toast.success(`Traduction en cours...`);
                         } catch (error) {
                           console.error('❌ Erreur traduction forcée:', error);
                           toast.error('Erreur lors de la demande de traduction');
