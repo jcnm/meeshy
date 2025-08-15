@@ -18,36 +18,63 @@ cd "$SCRIPT_DIR"
 echo -e "${PURPLE}🚀 Démarrage de Meeshy - Tous les services${NC}"
 echo "=============================================="
 
-# Fonction de nettoyage
+# Fonction de nettoyage améliorée
 cleanup() {
     echo -e "\n${YELLOW}🛑 Arrêt de tous les services...${NC}"
     
-    # Arrêter le frontend
+    # Tuer tous les processus enfants
     if [[ ! -z "$FRONTEND_PID" ]]; then
-        echo -e "   Arrêt du frontend..."
-        kill $FRONTEND_PID 2>/dev/null || true
+        echo -e "   Arrêt du frontend (PID: $FRONTEND_PID)..."
+        kill -TERM $FRONTEND_PID 2>/dev/null || true
+        # Forcer l'arrêt si nécessaire
+        sleep 2
+        kill -KILL $FRONTEND_PID 2>/dev/null || true
     fi
     
-    # Arrêter le gateway
     if [[ ! -z "$GATEWAY_PID" ]]; then
-        echo -e "   Arrêt du gateway..."
-        kill $GATEWAY_PID 2>/dev/null || true
+        echo -e "   Arrêt du gateway (PID: $GATEWAY_PID)..."
+        kill -TERM $GATEWAY_PID 2>/dev/null || true
+        # Forcer l'arrêt si nécessaire
+        sleep 2
+        kill -KILL $GATEWAY_PID 2>/dev/null || true
     fi
     
-    # Arrêter le translator
     if [[ ! -z "$TRANSLATOR_PID" ]]; then
-        echo -e "   Arrêt du translator..."
-        kill $TRANSLATOR_PID 2>/dev/null || true
+        echo -e "   Arrêt du translator (PID: $TRANSLATOR_PID)..."
+        kill -TERM $TRANSLATOR_PID 2>/dev/null || true
+        # Forcer l'arrêt si nécessaire
+        sleep 2
+        kill -KILL $TRANSLATOR_PID 2>/dev/null || true
     fi
+    
+    # Tuer tous les processus sur les ports utilisés par Meeshy
+    echo -e "   Nettoyage des ports Meeshy..."
+    lsof -ti:3000 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    lsof -ti:3100 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    lsof -ti:8000 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    lsof -ti:5555 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    lsof -ti:5558 2>/dev/null | xargs kill -TERM 2>/dev/null || true
+    
+    # Tuer tous les processus enfants de ce script
+    echo -e "   Nettoyage des processus enfants..."
+    pkill -P $$ 2>/dev/null || true
     
     # Attendre que tous les processus se terminent
     sleep 3
+    
+    # Forcer l'arrêt des ports si nécessaire
+    lsof -ti:3000 2>/dev/null | xargs kill -KILL 2>/dev/null || true
+    lsof -ti:3100 2>/dev/null | xargs kill -KILL 2>/dev/null || true
+    lsof -ti:8000 2>/dev/null | xargs kill -KILL 2>/dev/null || true
+    lsof -ti:5555 2>/dev/null | xargs kill -KILL 2>/dev/null || true
+    lsof -ti:5558 2>/dev/null | xargs kill -KILL 2>/dev/null || true
     
     echo -e "${GREEN}✅ Tous les services arrêtés proprement${NC}"
     exit 0
 }
 
-trap cleanup SIGINT SIGTERM
+# Capturer tous les signaux d'interruption
+trap cleanup SIGINT SIGTERM SIGQUIT SIGHUP EXIT
 
 # 1. Démarrer le Translator (port 8000)
 echo -e "${BLUE}1/3 🐍 Démarrage du Translator...${NC}"
