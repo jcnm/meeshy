@@ -222,6 +222,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     conversationId: selectedConversation?.id,
     currentUser: user!, // user est garanti d'exister
     onUserTyping: handleUserTyping, // Ajouter le gestionnaire de frappe
+    onUserStatus: (userId: string, _username: string, isOnline: boolean) => {
+      setConversationParticipants(prev => prev.map(p =>
+        p.user.id === userId ? { ...p, user: { ...p.user, isOnline } } : p
+      ));
+    },
     onNewMessage: (message: Message) => {
       // Vérifier que le message appartient à la conversation active
       if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
