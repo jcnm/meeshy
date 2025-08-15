@@ -40,10 +40,9 @@ export function useMessageLoader({
   const loadMessages = useCallback(async (targetConversationId: string, isNewConversation = false) => {
     if (!currentUser) return;
     
-    // Pour une nouvelle conversation, toujours charger
-    // Pour une conversation existante, vérifier si c'est déjà chargé
-    if (!isNewConversation && conversationId === targetConversationId && messages.length > 0) {
-      console.log('📬 Messages déjà chargés pour cette conversation');
+    // Vérifier si les messages sont déjà chargés pour cette conversation
+    if (conversationId === targetConversationId && messages.length > 0) {
+      console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
       return;
     }
 
@@ -220,22 +219,36 @@ export function useMessageLoader({
   const addMessage = useCallback((message: Message) => {
     console.log('📬 Ajout nouveau message en temps réel:', message.id);
     
+    // Vérifier que le message appartient à la conversation actuelle
+    if (conversationId && message.conversationId !== conversationId) {
+      console.log('📬 Message ignoré - appartient à une autre conversation');
+      return;
+    }
+    
     // Traiter le message avec les traductions
     const processedMessage = processMessageWithTranslations(message);
     
-    // Mettre à jour les messages bruts et traduits
+    // Mettre à jour les messages bruts et traduits de manière optimisée
     setMessages(prev => {
       // Éviter les doublons
-      if (prev.some(m => m.id === message.id)) return prev;
-      return [message, ...prev]; // Nouveau message en haut (ordre inversé)
+      if (prev.some(m => m.id === message.id)) {
+        console.log('📬 Message déjà présent, pas de doublon');
+        return prev;
+      }
+      // Ajouter le nouveau message à la fin (ordre chronologique)
+      return [...prev, message];
     });
     
     setTranslatedMessages(prev => {
       // Éviter les doublons
-      if (prev.some(m => m.id === message.id)) return prev;
-      return [processedMessage as unknown as TranslatedMessage, ...prev]; // Nouveau message en haut
+      if (prev.some(m => m.id === message.id)) {
+        console.log('📬 Message traduit déjà présent, pas de doublon');
+        return prev;
+      }
+      // Ajouter le nouveau message traduit à la fin (ordre chronologique)
+      return [...prev, processedMessage as unknown as TranslatedMessage];
     });
-  }, [processMessageWithTranslations]);
+  }, [processMessageWithTranslations, conversationId]);
 
   // Fonction pour mettre à jour les traductions d'un message existant
   const updateMessageTranslations = useCallback((messageId: string, translations: any[]) => {

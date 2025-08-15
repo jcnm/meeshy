@@ -179,28 +179,37 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     onNewMessage: (message: Message) => {
       // Vérifier que le message appartient à la conversation active
       if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
+        console.log('📬 Message ignoré - appartient à une autre conversation');
         return;
       }
+
+      console.log('📬 Nouveau message reçu pour la conversation active:', message.id);
 
       // Ajouter le message en temps réel à la liste affichée
       addMessage(message);
 
-      // Mettre à jour la conversation avec le dernier message
+      // Mettre à jour la conversation avec le dernier message (optimisé)
       setConversations(prev => prev.map(
         conv => conv.id === message.conversationId
           ? { ...conv, lastMessage: message, updatedAt: new Date() }
           : conv
       ));
 
-      // Scroller vers le bas pour voir le nouveau message
+      // Scroller vers le bas pour voir le nouveau message (optimisé)
       setTimeout(() => {
         try {
           const container = messagesContainerRef.current;
           if (container) {
-            container.scrollTop = container.scrollHeight;
+            // Vérifier si l'utilisateur est déjà en bas de la conversation
+            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+            if (isAtBottom) {
+              container.scrollTop = container.scrollHeight;
+            }
           }
-        } catch {}
-      }, 100);
+        } catch (error) {
+          console.log('Erreur lors du scroll automatique:', error);
+        }
+      }, 50);
     },
     onTranslation: (messageId: string, translations: any[]) => {
       console.log('🌐 [Conversation] Traductions reçues pour message:', messageId, translations);
@@ -607,7 +616,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   useEffect(() => {
     // Si on a une conversation sélectionnée, charger ses messages et participants
     if (selectedConversation?.id) {
-      loadMessages(selectedConversation.id, true);
+      // Charger les messages seulement si c'est une nouvelle conversation ou si aucun message n'est chargé
+      const shouldLoadMessages = messages.length === 0 || messages[0]?.conversationId !== selectedConversation.id;
+      
+      if (shouldLoadMessages) {
+        console.log('📬 Chargement des messages pour la nouvelle conversation:', selectedConversation.id);
+        loadMessages(selectedConversation.id, true);
+      } else {
+        console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
+      }
+      
       loadConversationParticipants(selectedConversation.id);
     } else {
       // Aucune conversation sélectionnée, vider les messages et participants
@@ -615,7 +633,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setConversationParticipants([]);
       setOnlineParticipants([]);
     }
-  }, [selectedConversation?.id, loadMessages, clearMessages, loadConversationParticipants]);
+  }, [selectedConversation?.id, loadMessages, clearMessages, loadConversationParticipants, messages.length]);
 
   return (
     <DashboardLayout title="Conversations">
@@ -925,6 +943,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     <CreateLinkButton
                       conversationId={selectedConversation.id}
                       isGroup={selectedConversation.isGroup || false}
+                      conversationType={selectedConversation.type}
                       onLinkCreated={(link) => {
                         console.log('Lien créé:', link);
                       }}
@@ -936,6 +955,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       participants={conversationParticipants}
                       currentUser={user}
                       isGroup={selectedConversation.isGroup || false}
+                      conversationType={selectedConversation.type}
                       onParticipantRemoved={(userId) => {
                         console.log('Participant supprimé:', userId);
                         // Recharger les participants
@@ -1114,9 +1134,32 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         isOpen={isCreateConversationModalOpen}
         onClose={() => setIsCreateConversationModalOpen(false)}
         currentUser={user}
-        onConversationCreated={() => {
-          console.log('Conversation créée');
-          loadData();
+        onConversationCreated={(conversationId) => {
+          console.log('Conversation créée:', conversationId);
+          
+          // Charger la nouvelle conversation depuis le serveur
+          conversationsService.getConversation(conversationId).then((newConversation) => {
+            // Ajouter la nouvelle conversation à la liste locale
+            setConversations(prev => {
+              // Vérifier si la conversation n'est pas déjà présente
+              if (prev.some(c => c.id === newConversation.id)) {
+                return prev;
+              }
+              
+              // Ajouter la nouvelle conversation en haut de la liste
+              return [newConversation, ...prev];
+            });
+            
+            // Sélectionner automatiquement la nouvelle conversation
+            setSelectedConversation(newConversation);
+            
+            // Rediriger vers la nouvelle conversation
+            router.push(`/conversations?id=${newConversation.id}`);
+          }).catch((error) => {
+            console.error('Erreur lors du chargement de la nouvelle conversation:', error);
+            // En cas d'erreur, recharger toutes les conversations
+            loadData();
+          });
         }}
       />
 
