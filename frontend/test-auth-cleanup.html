@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Nettoyage Authentification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Test Nettoyage Authentification</h1>
+    
+    <div class="test-section info">
+        <h3>État actuel</h3>
+        <div id="current-state">Chargement...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>Actions de test</h3>
+        <button class="btn-primary" onclick="setInvalidToken()">Définir un token invalide</button>
+        <button class="btn-primary" onclick="setValidToken()">Définir un token valide</button>
+        <button class="btn-danger" onclick="clearAllAuth()">Nettoyer toutes les données</button>
+        <button class="btn-success" onclick="refreshState()">Actualiser l'état</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Logs</h3>
+        <div id="logs" style="background: #f8f9fa; padding: 10px; border-radius: 3px; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function updateState() {
+            const stateDiv = document.getElementById('current-state');
+            const authToken = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            
+            stateDiv.innerHTML = `
+                <p><strong>auth_token:</strong> ${authToken ? 'Présent' : 'Absent'}</p>
+                <p><strong>user:</strong> ${user ? 'Présent' : 'Absent'}</p>
+                <p><strong>token:</strong> ${token ? 'Présent' : 'Absent'}</p>
+                <p><strong>Total items:</strong> ${localStorage.length}</p>
+            `;
+        }
+
+        function setInvalidToken() {
+            localStorage.setItem('auth_token', 'invalid_token_123');
+            localStorage.setItem('user', JSON.stringify({
+                id: '1',
+                username: 'testuser',
+                email: 'test@example.com'
+            }));
+            log('Token invalide défini');
+            updateState();
+        }
+
+        function setValidToken() {
+            localStorage.setItem('auth_token', 'valid_token_456');
+            localStorage.setItem('user', JSON.stringify({
+                id: '1',
+                username: 'testuser',
+                email: 'test@example.com'
+            }));
+            log('Token valide défini');
+            updateState();
+        }
+
+        function clearAllAuth() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            log('Toutes les données d\'authentification nettoyées');
+            updateState();
+        }
+
+        function refreshState() {
+            updateState();
+            log('État actualisé');
+        }
+
+        // Initialisation
+        updateState();
+        log('Page de test chargée');
+    </script>
+</body>
+</html>
