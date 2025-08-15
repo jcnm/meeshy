@@ -1048,7 +1048,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         return (
                           <BubbleMessage
                             key={`message-${message.id}`}
-                            message={message as any}
+                            message={toBubbleMessage(message)}
                             currentUser={user}
                             userLanguage={user.systemLanguage}
                             usedLanguages={usedLanguages}

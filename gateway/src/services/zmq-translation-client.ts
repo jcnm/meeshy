@@ -100,7 +100,7 @@ export class ZMQTranslationClient extends EventEmitter {
   private processedResults = new Set<string>();
 
   constructor(
-    host: string = process.env.ZMQ_TRANSLATOR_HOST || 'localhost',
+    host: string = process.env.ZMQ_TRANSLATOR_HOST || '0.0.0.0',
     pushPort: number = parseInt(process.env.ZMQ_TRANSLATOR_PUSH_PORT || '5555'),  // Port où Gateway PUSH connect (Translator PULL bind)
     subPort: number = parseInt(process.env.ZMQ_TRANSLATOR_SUB_PORT || '5558')     // Port où Gateway SUB connect (Translator PUB bind)
   ) {
