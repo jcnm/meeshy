@@ -584,7 +584,7 @@ export class MeeshySocketIOManager {
               targetLanguage: targetLanguage,
               translatedContent: result.translatedText,
               translationModel: 'basic',
-              cacheKey: `${result.messageId}-${targetLanguage}`,
+              cacheKey: `${result.messageId}_auto_${targetLanguage}`,
               cached: false,
               confidenceScore: result.confidenceScore
             }]
@@ -604,7 +604,7 @@ export class MeeshySocketIOManager {
             targetLanguage: targetLanguage,
             translatedContent: result.translatedText,
             translationModel: 'basic',
-            cacheKey: `${result.messageId}-${targetLanguage}`,
+            cacheKey: `${result.messageId}_auto_${targetLanguage}`,
             cached: false,
             confidenceScore: result.confidenceScore
           }]

@@ -95,17 +95,18 @@ export function useMessageTranslations({
       .filter((t: any) => t && t.targetLanguage && t.translatedContent) // Filtrer les traductions valides
       .map((t: any) => {
         const translation: BubbleTranslation = {
-          language: t.targetLanguage || t.language,
-          content: t.translatedContent || t.content,
+          language: t.targetLanguage, // BubbleTranslation utilise 'language' pour la langue cible
+          content: t.translatedContent, // BubbleTranslation utilise 'content' pour le contenu traduit
           status: 'completed' as const,
           timestamp: new Date(t.createdAt || message.createdAt),
           confidence: t.confidenceScore || 0.9
         };
         
-        console.log(`  📝 Traduction ${t.targetLanguage}:`, {
+        console.log(`  📝 Traduction ${translation.language}:`, {
           language: translation.language,
           content: translation.content.substring(0, 50) + '...',
-          status: translation.status
+          status: translation.status,
+          confidence: translation.confidence
         });
         
         return translation;

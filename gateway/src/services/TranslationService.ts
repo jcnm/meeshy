@@ -465,11 +465,14 @@ export class TranslationService extends EventEmitter {
       this.stats.translations_received++;
       
       // Mettre en cache avec métadonnées (écrase l'ancienne traduction)
-      const cacheKey = `${data.result.messageId}_${data.targetLanguage}`;
+      const cacheKey = `${data.result.messageId}_${data.result.sourceLanguage}_${data.targetLanguage}`;
       this._addToCache(cacheKey, data.result);
       
       // Sauvegarder en base avec informations techniques (upsert = mise à jour si existe)
       await this._saveTranslationToDatabase(data.result, data.metadata);
+      
+      // Incrémenter le compteur de traductions pour l'utilisateur
+      await this._incrementUserTranslationStats(data.result.messageId);
       
       // Émettre événement avec métadonnées
       console.log(`📡 [TranslationService] Émission événement translationReady pour ${data.result.messageId} -> ${data.targetLanguage}`);
@@ -506,6 +509,39 @@ export class TranslationService extends EventEmitter {
     }
     
     this.memoryCache.set(key, result);
+  }
+
+  /**
+   * Incrémente le compteur de traductions pour l'utilisateur qui a envoyé le message
+   */
+  private async _incrementUserTranslationStats(messageId: string) {
+    try {
+      // Récupérer le message pour obtenir l'ID de l'utilisateur
+      const message = await this.prisma.message.findUnique({
+        where: { id: messageId },
+        select: { senderId: true }
+      });
+      
+      if (message && message.senderId) {
+        // Incrémenter le compteur de traductions utilisées
+        await this.prisma.userStats.upsert({
+          where: { userId: message.senderId },
+          update: {
+            translationsUsed: {
+              increment: 1
+            }
+          },
+          create: {
+            userId: message.senderId,
+            translationsUsed: 1
+          }
+        });
+        
+        console.log(`📊 [TranslationService] Compteur de traductions incrémenté pour l'utilisateur ${message.senderId}`);
+      }
+    } catch (error) {
+      console.error(`❌ [TranslationService] Erreur lors de l'incrémentation des stats: ${error}`);
+    }
   }
 
   /**
@@ -552,23 +588,20 @@ export class TranslationService extends EventEmitter {
 
   private async _saveTranslationToDatabase(result: TranslationResult, metadata?: any) {
     try {
-      const cacheKey = `${result.messageId}_${result.targetLanguage}`;
+      const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
       
-      await this.prisma.messageTranslation.upsert({
-        where: { 
-          messageId_targetLanguage: {
-            messageId: result.messageId,
-            targetLanguage: result.targetLanguage
-          }
-        },
-        update: {
-          translatedContent: result.translatedText,
-          confidenceScore: result.confidenceScore,
-          // Stocker les informations techniques dans le champ translationModel
-          // Format: "modelType|workerId|poolType|translationTime|queueTime|memoryUsage|cpuUsage"
-          translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
-        },
-        create: {
+      // First, try to delete any existing record with the same cacheKey to avoid conflicts
+      try {
+        await this.prisma.messageTranslation.deleteMany({
+          where: { cacheKey: cacheKey }
+        });
+      } catch (error) {
+        // Ignore errors if no record exists
+      }
+      
+      // Now create the new record
+      await this.prisma.messageTranslation.create({
+        data: {
           messageId: result.messageId,
           sourceLanguage: result.sourceLanguage,
           targetLanguage: result.targetLanguage,
@@ -576,6 +609,7 @@ export class TranslationService extends EventEmitter {
           confidenceScore: result.confidenceScore,
           cacheKey: cacheKey,
           // Stocker les informations techniques dans le champ translationModel
+          // Format: "modelType|workerId|poolType|translationTime|queueTime|memoryUsage|cpuUsage"
           translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
         }
       });
@@ -590,10 +624,12 @@ export class TranslationService extends EventEmitter {
 
 
 
-  async getTranslation(messageId: string, targetLanguage: string): Promise<TranslationResult | null> {
+  async getTranslation(messageId: string, targetLanguage: string, sourceLanguage?: string): Promise<TranslationResult | null> {
     try {
       // Vérifier le cache mémoire
-      const cacheKey = `${messageId}_${targetLanguage}`;
+      const cacheKey = sourceLanguage 
+        ? `${messageId}_${sourceLanguage}_${targetLanguage}`
+        : `${messageId}_${targetLanguage}`;
       const cachedResult = this.memoryCache.get(cacheKey);
       
       if (cachedResult) {
@@ -601,10 +637,27 @@ export class TranslationService extends EventEmitter {
         return cachedResult;
       }
       
-      // Vérifier la base de données
-      const dbTranslation = await this.prisma.messageTranslation.findUnique({
-        where: { cacheKey: cacheKey }
-      });
+      // Vérifier la base de données - try multiple cache key formats
+      let dbTranslation = null;
+      
+      if (sourceLanguage) {
+        // Try with source language first
+        dbTranslation = await this.prisma.messageTranslation.findUnique({
+          where: { cacheKey: cacheKey }
+        });
+      }
+      
+      if (!dbTranslation) {
+        // Try with composite key as fallback
+        dbTranslation = await this.prisma.messageTranslation.findUnique({
+          where: { 
+            messageId_targetLanguage: {
+              messageId: messageId,
+              targetLanguage: targetLanguage
+            }
+          }
+        });
+      }
       
       if (dbTranslation) {
         // Extraire les informations techniques du champ translationModel

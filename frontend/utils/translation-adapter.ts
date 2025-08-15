@@ -27,7 +27,7 @@ export function translationDataToBubbleTranslation(
   isOriginal: boolean = false
 ): BubbleTranslation {
   return {
-    id: `${translation.messageId}-${translation.targetLanguage}`,
+    id: `${translation.messageId}_${translation.targetLanguage}`,
     messageId: translation.messageId,
     targetLanguage: translation.targetLanguage,
     translatedContent: translation.translatedContent,
