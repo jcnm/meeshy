@@ -123,7 +123,8 @@ export function CreateConversationModal({
       });
 
       if (response.ok) {
-        const conversation = await response.json();
+        const responseData = await response.json();
+        const conversation = responseData.data;
         toast.success('Conversation créée avec succès');
         onConversationCreated(conversation.id);
         handleClose();
