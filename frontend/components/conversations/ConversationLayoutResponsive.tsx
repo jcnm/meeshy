@@ -115,6 +115,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<string>('api-service');
+  // États typing (centralisés)
+  interface TypingUserState {
+    userId: string;
+    username: string;
+    conversationId: string;
+    timestamp: number;
+  }
+  const [typingUsers, setTypingUsers] = useState<TypingUserState[]>([]);
 
   // Helper: mise à jour idempotente des conversations pour éviter des re-renders inutiles
   const setConversationsIfChanged = useCallback((updater: Conversation[] | ((prev: Conversation[]) => Conversation[])) => {
@@ -184,9 +192,25 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       conversationId: selectedConversation?.id 
     });
     
-    // Ici on pourrait ajouter une logique pour afficher l'indicateur de frappe
-    // Par exemple, mettre à jour un état local pour l'affichage
+    // Mettre à jour l'état local de frappe (3s timeout géré ci-dessous)
+    setTypingUsers(prev => {
+      const now = Date.now();
+      const filtered = prev.filter(u => !(u.userId === userId && u.conversationId === selectedConversation?.id));
+      if (isTyping && selectedConversation?.id) {
+        return [...filtered, { userId, username: displayName, conversationId: selectedConversation.id, timestamp: now }];
+      }
+      return filtered;
+    });
   }, [user?.id, conversationParticipants, selectedConversation?.id]);
+
+  // Nettoyage périodique des indicateurs de frappe
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setTypingUsers(prev => prev.filter(u => now - u.timestamp < 3000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Hook de messagerie réutilisable basé sur BubbleStreamPage
   const {
@@ -976,6 +1000,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           participants={conversationParticipants}
                           currentUser={user}
                           isGroup={selectedConversation.isGroup || false}
+                          typingUsers={typingUsers.map(u => ({ userId: u.userId, conversationId: u.conversationId }))}
                           className="mt-1"
                         />
                       </div>

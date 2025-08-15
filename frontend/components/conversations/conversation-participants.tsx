@@ -15,8 +15,8 @@ import {
   Crown, 
   Loader2
 } from 'lucide-react';
-import { SocketIOUser as User, ThreadMember } from '@/types';
-import { useTypingIndicator } from '@/hooks/use-typing-indicator';
+import { SocketIOUser as User, ThreadMember } from '@/shared/types';
+// import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
 
@@ -26,6 +26,7 @@ interface ConversationParticipantsProps {
   currentUser: User;
   isGroup: boolean;
   className?: string;
+  typingUsers?: Array<{ userId: string; conversationId: string }>;
 }
 
 export function ConversationParticipants({
@@ -33,15 +34,15 @@ export function ConversationParticipants({
   participants,
   currentUser,
   isGroup,
-  className = ""
+  className = "",
+  typingUsers = []
 }: ConversationParticipantsProps) {
 
 
-  // Hook pour l'indicateur de frappe
-  const { typingUsers } = useTypingIndicator(conversationId, currentUser.id);
+  // Les typing users sont désormais passés par props pour éviter des abonnements socket multiples
 
   // Filtrer les utilisateurs qui tapent dans cette conversation (exclure l'utilisateur actuel)
-  const usersTypingInChat = typingUsers.filter(typingUser => 
+  const usersTypingInChat = (typingUsers || []).filter((typingUser: { userId: string; conversationId: string }) => 
     typingUser.conversationId === conversationId && 
     typingUser.userId !== currentUser.id
   );
@@ -56,7 +57,7 @@ export function ConversationParticipants({
 
 
   // Obtenir les noms des utilisateurs qui tapent
-  const typingUserNames = usersTypingInChat.map(typingUser => {
+  const typingUserNames = usersTypingInChat.map((typingUser: { userId: string; conversationId: string }) => {
     const participant = participants.find(p => p.userId === typingUser.userId);
     return participant?.user.displayName || participant?.user.username || typingUser.userId;
   });
