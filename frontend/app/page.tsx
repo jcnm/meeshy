@@ -31,48 +31,55 @@ import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { JoinConversationForm } from '@/components/auth/join-conversation-form';
 import { BubbleStreamPage } from '@/components/common';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { useUser } from '@/context/AppContext';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 
 export default function LandingPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user, isAuthChecking, setUser } = useUser();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  // Nettoyer les données d'authentification invalides au chargement
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
+    const cleanupInvalidAuth = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        try {
+          const response = await fetch(buildApiUrl('/auth/me'), {
             headers: { Authorization: `Bearer ${token}` }
           });
           
-          if (response.ok) {
-            const userData = await response.json();
-            setCurrentUser(userData);
-            // Rediriger vers le Bubble Stream si connecté
-            return;
-          } else {
+          if (!response.ok) {
+            // Token invalide, nettoyer les données
+            console.log('[LANDING] Token invalide détecté, nettoyage');
             localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            setUser(null);
           }
+        } catch (error) {
+          console.error('Erreur vérification token:', error);
+          // En cas d'erreur, nettoyer aussi
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          setUser(null);
         }
-      } catch (error) {
-        console.error('Erreur vérification auth:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    checkAuth();
-  }, [router]);
+    cleanupInvalidAuth();
+  }, [setUser]);
 
   const handleAuthSuccess = (user: User, token: string) => {
+    // Sauvegarder le token et l'utilisateur
     localStorage.setItem('auth_token', token);
-    setCurrentUser(user);
-    // Rediriger vers le Bubble Stream après connexion réussie
+    localStorage.setItem('user', JSON.stringify(user));
+    
+    // Mettre à jour le contexte immédiatement
+    setUser(user);
   };
 
   const quickLogin = async (email: string) => {
@@ -103,7 +110,7 @@ export default function LandingPage() {
     }
   };
 
-  if (isLoading) {
+  if (isAuthChecking) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
@@ -111,8 +118,12 @@ export default function LandingPage() {
     );
   }
 
-  if (currentUser) {
-    return <BubbleStreamPage user={currentUser} />;
+  if (user) {
+    return (
+      <DashboardLayout title="Accueil">
+        <BubbleStreamPage user={user} />
+      </DashboardLayout>
+    );
   }
 
   return (

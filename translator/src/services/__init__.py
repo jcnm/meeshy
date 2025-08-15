@@ -1,18 +1,15 @@
 """
 Meeshy Translation Services Module
-Contient tous les services du système de traduction
+Contient les services essentiels du système de traduction
+
+✅ Migration terminée : UnifiedMLTranslationService actif
 """
 
-from services.database_service_real import DatabaseServiceReal as DatabaseService
-from services.translation_service import HighPerformanceTranslationService as TranslationService
-from services.cache_service import CacheService
-from services.message_service import MessageService
+from services.unified_ml_service import get_unified_ml_service, UnifiedMLTranslationService
 from services.zmq_server import ZMQTranslationServer
 
 __all__ = [
-    "DatabaseService",
-    "TranslationService",
-    "CacheService", 
-    "MessageService",
+    "get_unified_ml_service",
+    "UnifiedMLTranslationService",
     "ZMQTranslationServer"
 ]
