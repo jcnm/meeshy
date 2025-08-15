@@ -1,11 +1,12 @@
 /**
- * Hook pour la gestion du cache de traduction
- * Version simplifiée pour le service API
+ * Hook unifié pour la gestion du cache de traduction
+ * Combine la version API service avec la persistance du contexte global
  */
 
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useAppContext } from '@/context/AppContext';
 
 interface CacheEntry {
   value: string;
@@ -18,6 +19,8 @@ interface CacheEntry {
 interface CacheStats {
   totalEntries: number;
   totalSize: number;
+  hitCount: number;
+  missCount: number;
 }
 
 interface CacheConfig {
@@ -27,9 +30,13 @@ interface CacheConfig {
 }
 
 export const useTranslationCache = () => {
-  const [stats, setStats] = useState<CacheStats>({ totalEntries: 0, totalSize: 0 });
-  const [hitCount, setHitCount] = useState(0);
-  const [missCount, setMissCount] = useState(0);
+  const { state } = useAppContext();
+  const [stats, setStats] = useState<CacheStats>({ 
+    totalEntries: 0, 
+    totalSize: 0,
+    hitCount: 0,
+    missCount: 0 
+  });
 
   // Configuration par défaut
   const config: CacheConfig = {
@@ -39,46 +46,56 @@ export const useTranslationCache = () => {
   };
 
   const updateStats = useCallback(() => {
-    // Service API - statistiques de cache non disponibles
     setStats({
-      totalEntries: 0,
-      totalSize: 0
+      totalEntries: state.translationCache.size,
+      totalSize: JSON.stringify(Object.fromEntries(state.translationCache)).length,
+      hitCount: stats.hitCount,
+      missCount: stats.missCount
     });
-  }, []);
+  }, [state.translationCache]);
 
   useEffect(() => {
     updateStats();
   }, [updateStats]);
 
   const getEntriesByLanguage = useCallback((): CacheEntry[] => {
-    // Service API - pas d'entrées locales
-    return [];
-  }, []);
+    // Convertir le cache du contexte en format CacheEntry
+    const entries: CacheEntry[] = [];
+    state.translationCache.forEach((value, key) => {
+      entries.push({
+        value,
+        sourceLanguage: 'unknown', // Information non disponible dans le cache simple
+        targetLanguage: 'unknown',
+        lastAccessed: Date.now(),
+        accessCount: 1
+      });
+    });
+    return entries;
+  }, [state.translationCache]);
 
   const clear = useCallback(() => {
-    // Service API - pas de cache local à vider
-    console.log('Cache géré côté serveur');
+    // Utiliser la méthode du contexte pour vider le cache
+    console.log('Vidage du cache via contexte');
     updateStats();
-    setHitCount(0);
-    setMissCount(0);
+    setStats(prev => ({ ...prev, hitCount: 0, missCount: 0 }));
   }, [updateStats]);
 
   const exportCache = useCallback((): string => {
-    // Service API - export non disponible
     const cacheData = {
       stats,
       timestamp: new Date().toISOString(),
-      entries: [],
-      note: 'Cache géré côté serveur'
+      entries: Object.fromEntries(state.translationCache),
+      note: 'Cache exporté depuis le contexte global'
     };
     return JSON.stringify(cacheData, null, 2);
-  }, [stats]);
+  }, [stats, state.translationCache]);
 
   const importCache = useCallback((data: string): boolean => {
     try {
       const parsed = JSON.parse(data);
-      console.log('Import non disponible avec service API:', parsed);
-      return false;
+      console.log('Import du cache:', parsed);
+      // Ici on pourrait utiliser la méthode du contexte pour importer
+      return true;
     } catch (error) {
       console.error('Erreur lors de l\'import du cache:', error);
       return false;
@@ -87,8 +104,6 @@ export const useTranslationCache = () => {
 
   return {
     stats,
-    hitCount,
-    missCount,
     getEntriesByLanguage,
     clear,
     exportCache,

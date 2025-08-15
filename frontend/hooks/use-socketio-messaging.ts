@@ -25,11 +25,13 @@ interface UseSocketIOMessagingOptions {
   onUserTyping?: (userId: string, username: string, isTyping: boolean) => void;
   onUserStatus?: (userId: string, username: string, isOnline: boolean) => void;
   onTranslation?: (messageId: string, translations: any[]) => void;
+  onConversationStats?: (data: { conversationId: string; stats: any }) => void;
+  onConversationOnlineStats?: (data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void;
 }
 
 interface UseSocketIOMessagingReturn {
   // Actions
-  sendMessage: (content: string) => Promise<boolean>;
+  sendMessage: (content: string, originalLanguage?: string) => Promise<boolean>;
   editMessage: (messageId: string, newContent: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
   
@@ -65,7 +67,9 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     onMessageDeleted,
     onUserTyping,
     onUserStatus,
-    onTranslation
+    onTranslation,
+    onConversationStats,
+    onConversationOnlineStats
   } = options;
 
   const [connectionStatus, setConnectionStatus] = useState(meeshySocketIOService.getConnectionStatus());
@@ -77,7 +81,9 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     onMessageDeleted,
     onUserTyping,
     onUserStatus,
-    onTranslation
+    onTranslation,
+    onConversationStats,
+    onConversationOnlineStats
   });
 
   // Mettre à jour les refs quand les callbacks changent
@@ -87,7 +93,9 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     onMessageDeleted,
     onUserTyping,
     onUserStatus,
-    onTranslation
+    onTranslation,
+    onConversationStats,
+    onConversationOnlineStats
   };
 
   // Configuration de l'utilisateur actuel
@@ -97,21 +105,37 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       return;
     }
     
+    console.log('🔧 useSocketIOMessaging: Configuration utilisateur...', {
+      hasUser: !!currentUser,
+      userId: currentUser?.id,
+      username: currentUser?.username
+    });
+    
     if (currentUser) {
+      // Vérifier d'abord que le token est présent
+      const token = localStorage.getItem('auth_token');
+      console.log('🔍 useSocketIOMessaging: Vérification token avant configuration', {
+        hasToken: !!token,
+        tokenLength: token?.length,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+      });
+      
       meeshySocketIOService.setCurrentUser(currentUser);
       console.log('🔧 useSocketIOMessaging: Utilisateur configuré', { 
         userId: currentUser.id, 
         username: currentUser.username 
       });
       
-      // Vérifier que le service est bien connecté
-      const status = meeshySocketIOService.getConnectionStatus();
-      console.log('🔌 useSocketIOMessaging: Statut de connexion', status);
-      
-      if (!status.isConnected) {
-        console.warn('⚠️ useSocketIOMessaging: Service non connecté, tentative de reconnexion...');
-        meeshySocketIOService.reconnect();
-      }
+      // Attendre un peu puis vérifier la connexion
+      setTimeout(() => {
+        const status = meeshySocketIOService.getConnectionStatus();
+        console.log('🔌 useSocketIOMessaging: Statut de connexion après configuration', status);
+        
+        if (!status.isConnected) {
+          console.warn('⚠️ useSocketIOMessaging: Service non connecté après configuration, tentative de reconnexion...');
+          meeshySocketIOService.reconnect();
+        }
+      }, 2000);
     } else {
       console.warn('⚠️ useSocketIOMessaging: Aucun utilisateur fourni');
     }
@@ -183,6 +207,13 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       callbacksRef.current.onTranslation?.(data.messageId, data.translations);
     });
 
+    const unsubscribeConvStats = meeshySocketIOService.onConversationStats((data) => {
+      callbacksRef.current.onConversationStats?.(data);
+    });
+    const unsubscribeOnlineStats = meeshySocketIOService.onConversationOnlineStats((data) => {
+      callbacksRef.current.onConversationOnlineStats?.(data);
+    });
+
     // Listeners pour les événements de frappe - avec distinction start/stop
     const unsubscribeTyping = meeshySocketIOService.onTyping((event: TypingEvent) => {
       if (!event || typeof event !== 'object') {
@@ -234,6 +265,8 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       unsubscribeEdit();
       unsubscribeDelete();
       unsubscribeTranslation();
+      unsubscribeConvStats();
+      unsubscribeOnlineStats();
       unsubscribeTyping();
       unsubscribeStatus();
       clearInterval(statusInterval);
@@ -241,7 +274,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
   }, [conversationId]); // Suppression des callbacks des dépendances pour éviter les cycles
 
   // Actions
-  const sendMessage = useCallback(async (content: string): Promise<boolean> => {
+  const sendMessage = useCallback(async (content: string, originalLanguage?: string): Promise<boolean> => {
     if (!conversationId) {
       console.error('❌ useSocketIOMessaging: Impossible d\'envoyer - aucune conversation active');
       return false;
@@ -250,10 +283,11 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     console.log('📤 useSocketIOMessaging: Envoi message', { 
       conversationId, 
       contentLength: content.length,
+      originalLanguage,
       content: content.substring(0, 50) + '...'
     });
 
-    return await meeshySocketIOService.sendMessage(conversationId, content);
+    return await meeshySocketIOService.sendMessage(conversationId, content, originalLanguage);
   }, [conversationId]);
 
   const editMessage = useCallback(async (messageId: string, newContent: string): Promise<boolean> => {
