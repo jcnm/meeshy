@@ -95,7 +95,16 @@ function BubbleMessageInner({
   const messageRef = useRef<HTMLDivElement>(null);
   const filterInputRef = useRef<HTMLInputElement>(null);
 
-  const getLanguageInfo = (langCode: string) => {
+  const getLanguageInfo = (langCode: string | undefined | null) => {
+    // Gérer les cas où langCode est undefined, null ou vide
+    if (!langCode || typeof langCode !== 'string') {
+      return {
+        code: 'unknown',
+        name: 'Langue inconnue',
+        flag: '🌐'
+      };
+    }
+    
     const found = SUPPORTED_LANGUAGES.find(lang => lang.code === langCode);
     if (found) return found;
     

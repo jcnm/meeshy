@@ -43,6 +43,7 @@ distribute_to_service() {
         "typescript")
             # Pour TypeScript (Gateway, Frontend)
             echo "  📝 Distribution shared vers $service_name/shared"
+            rm -rf "$service_dir/shared/*" 2>/dev/null || true
             mkdir -p "$service_dir/shared/"
             cp -pir ./* "$service_dir/shared/" 2>/dev/null || true
 
@@ -55,6 +56,7 @@ distribute_to_service() {
             # Pour Python, on copie le schema Prisma avec générateur Python
             if [ -f "schema.prisma" ]; then
                 echo "  ✅ Création du schema Prisma Python vers $service_name/shared/prisma/"
+                rm -rf "$service_dir/shared"
                 mkdir -p "$service_dir/shared/prisma"
                 
                 # Créer une version Python du schema avec l'en-tête modifié

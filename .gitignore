@@ -114,3 +114,14 @@ test_env/
 ./backend/coverage
 ./backend/logs
 ./backend/cachegateway/libs/dev.db
+./shared/dist
+./shared/build
+./shared/.cache
+./shared/.eslintcache
+./shared/.next
+./shared/out
+./shared/prisma
+./shared/prisma/**/*
+./shared/*d.ts
+./shared/**/*.d.ts
+ */

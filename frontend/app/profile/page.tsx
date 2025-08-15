@@ -112,7 +112,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
+  if (!user || !user.firstName || !user.lastName || !user.username) {
     return null;
   }
 
@@ -213,7 +213,13 @@ export default function ProfilePage() {
                 <Calendar className="h-4 w-4 text-gray-400" />
                 <div>
                   <p className="text-sm font-medium">Membre depuis</p>
-                  <p className="text-gray-600">{formatDate(user.createdAt.toString())}</p>
+                  <p className="text-gray-600">
+                    {user.createdAt ? formatDate(
+                      typeof user.createdAt === 'string' 
+                        ? user.createdAt 
+                        : user.createdAt.toString()
+                    ) : 'Date non disponible'}
+                  </p>
                 </div>
               </div>
             </CardContent>

@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { 
   Bell, 
@@ -38,7 +37,7 @@ export default function NotificationsPage() {
       setNotifications(response.data.notifications);
     } catch (error) {
       console.error('Erreur lors du chargement des notifications:', error);
-      toast.error('Impossible de charger les notifications');
+      console.log('Impossible de charger les notifications');
     }
   };
 
@@ -48,7 +47,7 @@ export default function NotificationsPage() {
       setPreferences(response.data.preferences);
     } catch (error) {
       console.error('Erreur lors du chargement des préférences:', error);
-      toast.error('Impossible de charger les préférences');
+      console.log('Impossible de charger les préférences');
     } finally {
       setLoading(false);
     }
@@ -58,10 +57,10 @@ export default function NotificationsPage() {
     try {
       await notificationsService.markAsRead(notificationId);
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      toast.success('Notification marquée comme lue');
+      console.log('Notification marquée comme lue');
     } catch (error) {
       console.error('Erreur lors du marquage:', error);
-      toast.error('Impossible de marquer la notification');
+      console.log('Impossible de marquer la notification');
     }
   };
 
@@ -69,10 +68,10 @@ export default function NotificationsPage() {
     try {
       await notificationsService.markAllAsRead();
       setNotifications([]);
-      toast.success('Toutes les notifications ont été marquées comme lues');
+      console.log('Toutes les notifications ont été marquées comme lues');
     } catch (error) {
       console.error('Erreur lors du marquage global:', error);
-      toast.error('Impossible de marquer toutes les notifications');
+      console.log('Impossible de marquer toutes les notifications');
     }
   };
 
@@ -82,10 +81,10 @@ export default function NotificationsPage() {
     try {
       const response = await notificationsService.updatePreferences(newPreferences);
       setPreferences(response.data.preferences);
-      toast.success('Préférences mises à jour');
+      console.log('Préférences mises à jour');
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
-      toast.error('Impossible de mettre à jour les préférences');
+      console.log('Impossible de mettre à jour les préférences');
     }
   };
 
@@ -337,10 +336,10 @@ export default function NotificationsPage() {
                   onClick={async () => {
                     try {
                       await notificationsService.sendTestNotification();
-                      toast.success('Notification test envoyée');
+                      console.log('Notification test envoyée');
                       loadNotifications();
                     } catch {
-                      toast.error('Erreur lors de l\'envoi');
+                      console.log('Erreur lors de l\'envoi');
                     }
                   }}
                 >
