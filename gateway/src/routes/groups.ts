@@ -1,5 +1,24 @@
+/**
+ * Routes Groupes / Communautés
+ *
+ * Ce module regroupe les endpoints liés à la gestion des communautés ("groups").
+ * Une communauté est un conteneur logique permettant de rassembler des membres,
+ * d'organiser des permissions et (à terme) d'agréger des conversations associées.
+ *
+ * Points clés:
+ * - Les routes sont préfixées par `/groups`.
+ * - Les conversations d'une communauté sont exposées via `GET /groups/:id/conversations`.
+ * - Le schéma actuel n'établit pas encore une relation directe Group → Conversation.
+ *   L'endpoint est donc présent pour compatibilité frontend et pourra être complété
+ *   quand la relation sera définie (création/association de conversations au niveau
+ *   d'une communauté).
+ */
 import { FastifyInstance } from 'fastify';
 
+/**
+ * Enregistre les routes de gestion des communautés (groups).
+ * @param fastify Instance Fastify injectée par le serveur
+ */
 export async function groupRoutes(fastify: FastifyInstance) {
   // Route pour obtenir tous les groupes
   fastify.get('/groups', async (request, reply) => {
