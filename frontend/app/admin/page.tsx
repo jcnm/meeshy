@@ -57,7 +57,7 @@ const AdminDashboard: React.FC = () => {
         setLoading(true);
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          router.push('/');
+          router.push('/login');
           return;
         }
 
@@ -68,7 +68,7 @@ const AdminDashboard: React.FC = () => {
 
         if (!userResponse.ok) {
           localStorage.removeItem('auth_token');
-          router.push('/');
+          router.push('/login');
           return;
         }
 

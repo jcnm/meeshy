@@ -38,7 +38,7 @@ export default function ProfilePage() {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          router.push('/');
+          router.push('/login');
           return;
         }
 
@@ -48,7 +48,7 @@ export default function ProfilePage() {
 
         if (!response.ok) {
           localStorage.removeItem('auth_token');
-          router.push('/');
+          router.push('/login');
           return;
         }
 
@@ -66,7 +66,7 @@ export default function ProfilePage() {
       } catch (error) {
         console.error('Erreur lors du chargement du profil:', error);
         toast.error('Erreur lors du chargement du profil');
-        router.push('/dashboard');
+        router.push('/login');
       } finally {
         setIsLoading(false);
       }

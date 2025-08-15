@@ -17,7 +17,7 @@ export default function GroupsPage() {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          router.push('/');
+          router.push('/login');
           return;
         }
 
@@ -31,12 +31,12 @@ export default function GroupsPage() {
         } else {
           localStorage.removeItem('auth_token');
           toast.error('Session expirée, veuillez vous reconnecter');
-          router.push('/');
+          router.push('/login');
         }
       } catch (error) {
         console.error('Erreur vérification auth:', error);
         toast.error('Erreur de connexion');
-        router.push('/');
+        router.push('/login');
       } finally {
         setIsLoading(false);
       }

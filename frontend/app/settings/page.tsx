@@ -17,7 +17,7 @@ export default function SettingsPage() {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          router.push('/');
+          router.push('/login');
           return;
         }
 
@@ -30,11 +30,11 @@ export default function SettingsPage() {
           setCurrentUser(userData);
         } else {
           localStorage.removeItem('auth_token');
-          router.push('/');
+          router.push('/login');
         }
       } catch (error) {
         console.error('Erreur chargement paramètres:', error);
-        router.push('/');
+        router.push('/login');
       } finally {
         setIsLoading(false);
       }

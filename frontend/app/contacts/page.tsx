@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { toast } from 'sonner';
+import { buildApiUrl } from '@/lib/config';
 import { 
   Search,
   UserPlus,
@@ -35,17 +36,48 @@ export default function ContactsPage() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
 
   useEffect(() => {
-    loadContacts();
-  }, []);
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          router.push('/login');
+          return;
+        }
+
+        const response = await fetch(buildApiUrl('/auth/me'), {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+          localStorage.removeItem('auth_token');
+          toast.error('Session expirée, veuillez vous reconnecter');
+          router.push('/login');
+          return;
+        }
+        
+        // Si l'authentification est valide, charger les contacts
+        loadContacts();
+      } catch (error) {
+        console.error('Erreur vérification auth:', error);
+        toast.error('Erreur de connexion');
+        router.push('/login');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const loadContacts = async () => {
     try {
       // Pour l'instant, on charge tous les utilisateurs comme contacts potentiels
       const response = await usersService.getAllUsers();
-      setContacts(response.data);
+      // S'assurer que response.data est un tableau
+      const contactsData = Array.isArray(response.data) ? response.data : [];
+      setContacts(contactsData);
     } catch (error) {
       console.error('Erreur lors du chargement des contacts:', error);
       toast.error('Erreur lors du chargement des contacts');
+      setContacts([]); // Initialiser avec un tableau vide en cas d'erreur
     } finally {
       setLoading(false);
     }
@@ -59,10 +91,13 @@ export default function ContactsPage() {
 
     try {
       const response = await usersService.searchUsers(query);
-      setSearchResults(response.data);
+      // S'assurer que response.data est un tableau
+      const searchData = Array.isArray(response.data) ? response.data : [];
+      setSearchResults(searchData);
     } catch (error) {
       console.error('Erreur lors de la recherche:', error);
       toast.error('Erreur lors de la recherche');
+      setSearchResults([]); // Initialiser avec un tableau vide en cas d'erreur
     }
   };
 
@@ -80,11 +115,11 @@ export default function ContactsPage() {
     return `${user.firstName} ${user.lastName}`.trim() || user.username;
   };
 
-  const filteredContacts = contacts.filter(contact =>
+  const filteredContacts = Array.isArray(contacts) ? contacts.filter(contact =>
     getUserDisplayName(contact).toLowerCase().includes(searchQuery.toLowerCase()) ||
     contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     contact.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   const displayedUsers = searchQuery ? searchResults : filteredContacts;
 
