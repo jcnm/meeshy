@@ -522,6 +522,113 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, [hasLoadedMessages, isLoadingMessages]);
 
+  // Calculer les statistiques de langues à partir des messages chargés
+  useEffect(() => {
+    if (translatedMessages.length > 0) {
+      console.log('📊 Calcul des statistiques de langues à partir des messages chargés...');
+      
+      // Calculer les statistiques des langues des messages
+      const languageCounts: { [key: string]: number } = {};
+      const userLanguages: { [key: string]: Set<string> } = {}; // Pour les langues des utilisateurs
+      
+      translatedMessages.forEach(message => {
+        // Compter les langues originales des messages
+        const originalLang = message.originalLanguage || 'fr';
+        languageCounts[originalLang] = (languageCounts[originalLang] || 0) + 1;
+        
+        // Simuler les langues des utilisateurs (en réalité, on devrait avoir les préférences des utilisateurs)
+        if (message.sender?.id) {
+          if (!userLanguages[originalLang]) {
+            userLanguages[originalLang] = new Set();
+          }
+          userLanguages[originalLang].add(message.sender.id);
+        }
+      });
+      
+      // Convertir en format LanguageStats pour les messages
+      const messageStats: LanguageStats[] = Object.entries(languageCounts)
+        .map(([code, count], index) => ({
+          language: code,
+          flag: getLanguageFlag(code),
+          count: count,
+          color: `hsl(${(index * 137.5) % 360}, 60%, 60%)` // Couleurs automatiques
+        }))
+        .filter(stat => stat.count > 0)
+        .sort((a, b) => b.count - a.count);
+      
+      // Convertir en format LanguageStats pour les utilisateurs actifs
+      const userStats: LanguageStats[] = Object.entries(userLanguages)
+        .map(([code, users], index) => ({
+          language: code,
+          flag: getLanguageFlag(code),
+          count: users.size,
+          color: `hsl(${(index * 137.5) % 360}, 50%, 50%)` // Couleurs automatiques
+        }))
+        .filter(stat => stat.count > 0)
+        .sort((a, b) => b.count - a.count);
+      
+      console.log('📊 Statistiques calculées:', {
+        messageStats: messageStats.length,
+        userStats: userStats.length,
+        totalMessages: translatedMessages.length
+      });
+      
+      setMessageLanguageStats(messageStats);
+      setActiveLanguageStats(userStats);
+      
+      // Simuler quelques utilisateurs actifs si pas déjà définis
+      if (activeUsers.length === 0 && translatedMessages.length > 0) {
+        const uniqueSenders = Array.from(new Set(
+          translatedMessages
+            .map(m => m.sender)
+            .filter(Boolean)
+            .map(sender => sender!.id)
+        ));
+        
+        const simulatedUsers: User[] = uniqueSenders.slice(0, 8).map((senderId, index) => {
+          const message = translatedMessages.find(m => m.sender?.id === senderId);
+          const sender = message?.sender;
+          
+          return {
+            id: senderId,
+            username: sender?.username || `user${index + 1}`,
+            firstName: sender?.firstName || `User`,
+            lastName: sender?.lastName || `${index + 1}`,
+            email: `${sender?.username || `user${index + 1}`}@example.com`,
+            avatar: '',
+            role: 'USER' as const,
+            permissions: {
+              canAccessAdmin: false,
+              canManageUsers: false,
+              canManageGroups: false,
+              canManageConversations: false,
+              canViewAnalytics: false,
+              canModerateContent: false,
+              canViewAuditLogs: false,
+              canManageNotifications: false,
+              canManageTranslations: false,
+            },
+            systemLanguage: message?.originalLanguage || 'fr',
+            regionalLanguage: 'fr',
+            autoTranslateEnabled: true,
+            translateToSystemLanguage: true,
+            translateToRegionalLanguage: false,
+            useCustomDestination: false,
+            isOnline: Math.random() > 0.3, // 70% chance d'être en ligne
+            isActive: true,
+            lastSeen: new Date(),
+            createdAt: new Date(),
+            lastActiveAt: new Date(),
+            updatedAt: new Date()
+          };
+        });
+        
+        setActiveUsers(simulatedUsers);
+        console.log('👥 Utilisateurs actifs simulés:', simulatedUsers.length);
+      }
+    }
+  }, [translatedMessages]);
+
   // Afficher l'écran de chargement pendant l'initialisation
   if (isInitializing) {
     return (
@@ -1025,17 +1132,29 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
               </div>
             </FoldableSection>
 
-            {/* Section Tendances - Foldable - Déplacée en dernière position, dépliée et grisée */}
+            {/* Section Tendances - Statique non-interactive, grisée */}
             <div className="opacity-60 saturate-50 bg-gray-50/50 rounded-lg p-2">
-              <FoldableSection
-                title="Tendances"
-                icon={<TrendingUp className="h-4 w-4 mr-2 text-gray-400" />}
-                defaultExpanded={false}
-              >
-                <div className="opacity-70">
-                  <TrendingSection hashtags={trendingHashtags} />
-                </div>
-              </FoldableSection>
+              <Card className="mb-6 bg-white/80 backdrop-blur-sm border-gray-200/50 shadow-lg">
+                <CardContent className="p-0">
+                  {/* Header non-cliquable */}
+                  <div className="flex items-center justify-between p-4 bg-gray-50/80">
+                    <h3 className="font-semibold text-gray-500 flex items-center">
+                      <TrendingUp className="h-4 w-4 mr-2 text-gray-400" />
+                      Tendances
+                    </h3>
+                    <ChevronDown className="h-4 w-4 text-gray-300" />
+                  </div>
+                  
+                  {/* Contenu statique (non-visible car fermé) */}
+                  <div className="hidden">
+                    <div className="px-4 pb-4 border-t border-gray-100">
+                      <div className="mt-3 opacity-70">
+                        <TrendingSection hashtags={trendingHashtags} />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
