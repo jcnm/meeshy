@@ -1250,4 +1250,325 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  // Route pour ajouter un participant à une conversation
+  fastify.post<{
+    Params: { id: string };
+    Body: { userId: string };
+  }>('/conversations/:id/participants', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const { userId } = request.body;
+      const currentUserId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que l'utilisateur actuel a les droits pour ajouter des participants
+      const currentUserMembership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: id,
+          userId: currentUserId,
+          isActive: true
+        }
+      });
+
+      if (!currentUserMembership) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Vérifier que l'utilisateur à ajouter existe
+      const userToAdd = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      if (!userToAdd) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Utilisateur non trouvé'
+        });
+      }
+
+      // Vérifier que l'utilisateur n'est pas déjà membre
+      const existingMembership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: id,
+          userId: userId,
+          isActive: true
+        }
+      });
+
+      if (existingMembership) {
+        return reply.status(400).send({
+          success: false,
+          error: 'L\'utilisateur est déjà membre de cette conversation'
+        });
+      }
+
+      // Ajouter le participant
+      await prisma.conversationMember.create({
+        data: {
+          conversationId: id,
+          userId: userId,
+          role: 'MEMBER',
+          joinedAt: new Date()
+        }
+      });
+
+      reply.send({
+        success: true,
+        message: 'Participant ajouté avec succès'
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error adding participant:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de l\'ajout du participant'
+      });
+    }
+  });
+
+  // Route pour supprimer un participant d'une conversation
+  fastify.delete<{
+    Params: { id: string; userId: string };
+  }>('/conversations/:id/participants/:userId', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id, userId } = request.params;
+      const currentUserId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que l'utilisateur actuel a les droits pour supprimer des participants
+      const currentUserMembership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: id,
+          userId: currentUserId,
+          isActive: true
+        },
+        include: {
+          user: true
+        }
+      });
+
+      if (!currentUserMembership) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Seuls les admins ou le créateur peuvent supprimer des participants
+      const isAdmin = currentUserMembership.user.role === 'ADMIN' || currentUserMembership.user.role === 'BIGBOSS';
+      const isCreator = currentUserMembership.role === 'CREATOR';
+
+      if (!isAdmin && !isCreator) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous n\'avez pas les droits pour supprimer des participants'
+        });
+      }
+
+      // Empêcher de se supprimer soi-même
+      if (userId === currentUserId) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Vous ne pouvez pas vous supprimer de la conversation'
+        });
+      }
+
+      // Supprimer le participant
+      await prisma.conversationMember.updateMany({
+        where: {
+          conversationId: id,
+          userId: userId,
+          isActive: true
+        },
+        data: {
+          isActive: false,
+          leftAt: new Date()
+        }
+      });
+
+      reply.send({
+        success: true,
+        message: 'Participant supprimé avec succès'
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error removing participant:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la suppression du participant'
+      });
+    }
+  });
+
+  // Route pour créer un lien d'invitation
+  fastify.post<{
+    Params: { id: string };
+  }>('/conversations/:id/invite-link', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const currentUserId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que l'utilisateur a accès à cette conversation
+      const membership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: id,
+          userId: currentUserId,
+          isActive: true
+        }
+      });
+
+      if (!membership) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Générer un lien d'invitation unique
+      const inviteCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3100'}/join/${inviteCode}`;
+
+      // Stocker le lien d'invitation (optionnel)
+      // Pour l'instant, on retourne juste le lien généré
+
+      reply.send({
+        success: true,
+        data: {
+          link: inviteLink,
+          code: inviteCode
+        }
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error creating invite link:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la création du lien d\'invitation'
+      });
+    }
+  });
+
+  // Route pour mettre à jour une conversation
+  fastify.patch<{
+    Params: { id: string };
+    Body: {
+      title?: string;
+      description?: string;
+      type?: 'direct' | 'group' | 'public' | 'global';
+    };
+  }>('/conversations/:id', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const { title, description, type } = request.body;
+      const currentUserId = (request as any).user.userId || (request as any).user.id;
+
+      console.log('[GATEWAY] Update conversation request:', {
+        conversationId: id,
+        currentUserId,
+        title,
+        description,
+        type
+      });
+
+      // Vérifier que l'utilisateur a accès à cette conversation
+      const membership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: id,
+          userId: currentUserId,
+          isActive: true
+        },
+        include: {
+          user: true
+        }
+      });
+
+      if (!membership) {
+        console.log('[GATEWAY] User not found in conversation members:', {
+          conversationId: id,
+          currentUserId,
+          membership: null
+        });
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      console.log('[GATEWAY] User membership found:', {
+        conversationId: id,
+        currentUserId,
+        userRole: membership.user.role,
+        memberRole: membership.role,
+        isActive: membership.isActive
+      });
+
+      // Pour la modification du nom, permettre à tous les membres de la conversation
+      // Seuls les admins ou créateurs peuvent modifier le type de conversation
+      if (type !== undefined) {
+        const isAdmin = membership.user.role === 'ADMIN' || membership.user.role === 'BIGBOSS';
+        const isCreator = membership.role === 'CREATOR';
+        
+        if (!isAdmin && !isCreator) {
+          return reply.status(403).send({
+            success: false,
+            error: 'Seuls les administrateurs peuvent modifier le type de conversation'
+          });
+        }
+      }
+
+      // Préparer les données de mise à jour
+      const updateData: any = {};
+      if (title !== undefined) updateData.title = title;
+      if (description !== undefined) updateData.description = description;
+      if (type !== undefined) updateData.type = type;
+
+      // Mettre à jour la conversation
+      const updatedConversation = await prisma.conversation.update({
+        where: { id },
+        data: updateData,
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  firstName: true,
+                  lastName: true,
+                  avatar: true,
+                  systemLanguage: true,
+                  isOnline: true,
+                  lastSeen: true,
+                  role: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      reply.send({
+        success: true,
+        data: updatedConversation
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error updating conversation:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la mise à jour de la conversation'
+      });
+    }
+  });
 }

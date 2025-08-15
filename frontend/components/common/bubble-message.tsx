@@ -328,7 +328,8 @@ export function BubbleMessage({
                     <Timer className="h-3 w-3 mr-1" />
                     {formatTimeAgo(message.createdAt)}
                   </span>
-                  {message.location && (
+                  {/* Indicateur de position temporairement désactivé - à réactiver plus tard */}
+                  {/* {message.location && (
                     <>
                       <span className="text-gray-400">•</span>
                       <span className="text-sm text-gray-500 flex items-center">
@@ -336,7 +337,7 @@ export function BubbleMessage({
                         {message.location}
                       </span>
                     </>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
