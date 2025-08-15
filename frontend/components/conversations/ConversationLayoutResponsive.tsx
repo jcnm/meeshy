@@ -238,6 +238,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         user: { ...p.user, isOnline: onlineSet.has(p.user.id) }
       })));
     },
+    onConversationJoined: (data: { conversationId: string; participant: ThreadMember }) => {
+      if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
+      setConversationParticipants(prev => {
+        const exists = prev.some(p => p.user.id === data.participant.user.id);
+        if (exists) return prev;
+        return [...prev, data.participant];
+      });
+    },
+    onConversationLeft: (data: { conversationId: string; userId: string }) => {
+      if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
+      setConversationParticipants(prev => prev.filter(p => p.user.id !== data.userId));
+    },
     onNewMessage: (message: Message) => {
       // Vérifier que le message appartient à la conversation active
       if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {

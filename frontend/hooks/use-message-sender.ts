@@ -29,6 +29,8 @@ interface UseMessageSenderOptions {
   onTranslation?: (messageId: string, translations: any[]) => void;
   onConversationStats?: (data: any) => void;
   onConversationOnlineStats?: (data: any) => void;
+  onConversationJoined?: (data: { conversationId: string; participant: any }) => void;
+  onConversationLeft?: (data: { conversationId: string; userId: string }) => void;
 }
 
 interface UseMessageSenderReturn {
