@@ -38,14 +38,14 @@ class ZMQSingleton {
 
   private static async initializeInstance(): Promise<void> {
     try {
-      console.log('[ZMQ-Singleton] Initialisation de l\'instance ZMQ partagée...');
+      console.log('[GATEWAY] Initialisation de l\'instance ZMQ partagée...');
       
       this.instance = new ZMQTranslationClient();
       await this.instance.initialize();
       
-      console.log('[ZMQ-Singleton] Instance ZMQ partagée initialisée avec succès');
+      console.log('[GATEWAY] Instance ZMQ partagée initialisée avec succès');
     } catch (error) {
-      console.error('[ZMQ-Singleton] Erreur lors de l\'initialisation:', error);
+      console.error('[GATEWAY] Erreur lors de l\'initialisation:', error);
       this.instance = null;
       throw error;
     }
@@ -55,9 +55,9 @@ class ZMQSingleton {
     if (this.instance) {
       try {
         await this.instance.close();
-        console.log('[ZMQ-Singleton] Instance ZMQ fermée');
+        console.log('[GATEWAY] Instance ZMQ fermée');
       } catch (error) {
-        console.error('[ZMQ-Singleton] Erreur lors de la fermeture:', error);
+        console.error('[GATEWAY] Erreur lors de la fermeture:', error);
       } finally {
         this.instance = null;
       }

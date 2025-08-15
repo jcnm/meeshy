@@ -24,7 +24,7 @@ export class InitService {
    */
   static async initializeGlobalConversation(): Promise<void> {
     try {
-      console.log('🚀 Initialisation de la conversation globale "Meeshy"...');
+      console.log('[GATEWAY] 🚀 Initialisation de la conversation globale "Meeshy"...');
 
       // Vérifier si la conversation globale existe déjà
       const existingGlobalConversation = await prisma.conversation.findUnique({
@@ -46,17 +46,17 @@ export class InitService {
           }
         });
 
-        console.log('✅ Conversation globale "Meeshy" créée avec succès');
+        console.log('[GATEWAY] ✅ Conversation globale "Meeshy" créée avec succès');
       } else {
         globalConversation = existingGlobalConversation;
-        console.log('ℹ️  Conversation globale "Meeshy" déjà existante');
+        console.log('[GATEWAY] ℹ️  Conversation globale "Meeshy" déjà existante');
       }
 
       // Auto-ajouter tous les utilisateurs existants à la conversation globale
       await this.addAllUsersToGlobalConversation();
 
     } catch (error) {
-      console.error('❌ Erreur lors de l\'initialisation de la conversation globale:', error);
+      console.error('[GATEWAY] ❌ Erreur lors de l\'initialisation de la conversation globale:', error);
       throw error;
     }
   }
@@ -75,7 +75,7 @@ export class InitService {
       });
 
       if (users.length === 0) {
-        console.log('ℹ️  Aucun utilisateur à ajouter à la conversation globale');
+        console.log('[GATEWAY] ℹ️  Aucun utilisateur à ajouter à la conversation globale');
         return;
       }
 
@@ -93,7 +93,7 @@ export class InitService {
       const usersToAdd = users.filter((user: User) => !existingMemberIds.has(user.id));
 
       if (usersToAdd.length === 0) {
-        console.log('ℹ️  Tous les utilisateurs sont déjà membres de la conversation globale');
+        console.log('[GATEWAY] ℹ️  Tous les utilisateurs sont déjà membres de la conversation globale');
         return;
       }
 
@@ -107,10 +107,10 @@ export class InitService {
         }))
       });
 
-      console.log(`✅ ${usersToAdd.length} utilisateurs ajoutés à la conversation globale "Meeshy"`);
+      console.log(`[GATEWAY] ✅ ${usersToAdd.length} utilisateurs ajoutés à la conversation globale "Meeshy"`);
 
     } catch (error) {
-      console.error('❌ Erreur lors de l\'ajout des utilisateurs à la conversation globale:', error);
+      console.error('[GATEWAY] ❌ Erreur lors de l\'ajout des utilisateurs à la conversation globale:', error);
       throw error;
     }
   }
@@ -145,7 +145,7 @@ export class InitService {
               leftAt: null
             }
           });
-          console.log(`✅ Utilisateur ${userId} réactivé dans la conversation globale`);
+          console.log(`[GATEWAY] ✅ Utilisateur ${userId} réactivé dans la conversation globale`);
         }
         return;
       }
@@ -160,10 +160,10 @@ export class InitService {
         }
       });
 
-      console.log(`✅ Utilisateur ${userId} ajouté automatiquement à la conversation globale "Meeshy"`);
+      console.log(`[GATEWAY] ✅ Utilisateur ${userId} ajouté automatiquement à la conversation globale "Meeshy"`);
 
     } catch (error) {
-      console.error(`❌ Erreur lors de l'ajout de l'utilisateur ${userId} à la conversation globale:`, error);
+      console.error(`[GATEWAY] ❌ Erreur lors de l'ajout de l'utilisateur ${userId} à la conversation globale:`, error);
       // Ne pas relancer l'erreur pour ne pas bloquer l'inscription/connexion
     }
   }
@@ -215,11 +215,11 @@ export class InitService {
           }
         });
 
-        console.log('✅ Message de bienvenue créé dans la conversation globale');
+        console.log('[GATEWAY] ✅ Message de bienvenue créé dans la conversation globale');
       }
 
     } catch (error) {
-      console.error('❌ Erreur lors de la création du message de bienvenue:', error);
+      console.error('[GATEWAY] ❌ Erreur lors de la création du message de bienvenue:', error);
       // Ne pas relancer l'erreur
     }
   }
@@ -229,14 +229,14 @@ export class InitService {
    */
   static async initialize(): Promise<void> {
     try {
-      console.log('🚀 Démarrage de l\'initialisation de la Gateway...');
+      console.log('[GATEWAY] 🚀 Démarrage de l\'initialisation de la Gateway...');
       
       await this.initializeGlobalConversation();
       await this.createWelcomeMessage();
       
-      console.log('✅ Initialisation de la Gateway terminée avec succès');
+      console.log('[GATEWAY] ✅ Initialisation de la Gateway terminée avec succès');
     } catch (error) {
-      console.error('❌ Erreur lors de l\'initialisation de la Gateway:', error);
+      console.error('[GATEWAY] ❌ Erreur lors de l\'initialisation de la Gateway:', error);
       throw error;
     }
   }

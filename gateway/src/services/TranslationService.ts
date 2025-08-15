@@ -3,6 +3,7 @@
  * Utilise l'architecture ZMQ PUB/SUB + REQ/REP avec pool de connexions
  */
 
+import { EventEmitter } from 'events';
 import { PrismaClient } from '../../shared/prisma/client';
 import { ZMQTranslationClient, TranslationRequest, TranslationResult } from './zmq-translation-client';
 import { ZMQSingleton } from './zmq-singleton';
@@ -30,7 +31,7 @@ export interface TranslationServiceStats {
   memory_usage_mb: number;
 }
 
-export class TranslationService {
+export class TranslationService extends EventEmitter {
   private prisma: PrismaClient;
   private zmqClient: ZMQTranslationClient | null = null;
   private startTime: number = Date.now();
@@ -51,23 +52,40 @@ export class TranslationService {
     memory_usage_mb: 0
   };
 
+  private processedMessages = new Set<string>();
+  private processedTasks = new Set<string>();
+
   constructor(prisma: PrismaClient) {
+    super(); // Appel au constructeur EventEmitter
     this.prisma = prisma;
-    console.log('🚀 TranslationService initialisé avec architecture PUB/SUB');
+    console.log('[GATEWAY] 🚀 TranslationService initialisé avec architecture PUB/SUB');
   }
 
   async initialize(): Promise<void> {
     try {
+      console.log('[GATEWAY] 🔧 Initialisation TranslationService...');
+      
       // Utiliser le singleton ZMQ
       this.zmqClient = await ZMQSingleton.getInstance();
+      console.log('[GATEWAY] ✅ ZMQ Client obtenu:', this.zmqClient ? 'OK' : 'NULL');
       
       // Écouter les événements de traduction terminée
       this.zmqClient.on('translationCompleted', this._handleTranslationCompleted.bind(this));
       this.zmqClient.on('translationError', this._handleTranslationError.bind(this));
       
-      console.log('✅ TranslationService initialisé avec succès');
+      // Test de réception après initialisation
+      setTimeout(async () => {
+        try {
+          console.log('[GATEWAY] 🧪 Test de réception après initialisation...');
+          await this.zmqClient.testReception();
+        } catch (error) {
+          console.error('[GATEWAY] ❌ Erreur test réception:', error);
+        }
+      }, 3000);
+      
+      console.log('[GATEWAY] ✅ TranslationService initialisé avec succès');
     } catch (error) {
-      console.error('❌ Erreur initialisation TranslationService:', error);
+      console.error('[GATEWAY] ❌ Erreur initialisation TranslationService:', error);
       throw error;
     }
   }
@@ -118,19 +136,25 @@ export class TranslationService {
       };
       
       // 3. TRAITER LES TRADUCTIONS EN ASYNCHRONE (non-bloquant)
+      console.log(`🔄 [TranslationService] Déclenchement traitement asynchrone pour ${messageId}...`);
       setImmediate(async () => {
         try {
+          console.log(`🔄 [TranslationService] Début traitement asynchrone...`);
           if (isRetranslation) {
             // Pour une retraduction, on utilise les données du message existant
+            console.log(`🔄 [TranslationService] Traitement retraduction...`);
             await this._processRetranslationAsync(messageId, messageData);
           } else {
             // Pour un nouveau message, on récupère les données complètes
+            console.log(`🔄 [TranslationService] Traitement nouveau message...`);
             const savedMessage = await this.prisma.message.findUnique({
               where: { id: messageId }
             });
             if (savedMessage) {
               // Passer la langue cible spécifiée par le client
               await this._processTranslationsAsync(savedMessage, messageData.targetLanguage);
+            } else {
+              console.error(`❌ [TranslationService] Message ${messageId} non trouvé en base`);
             }
           }
         } catch (error) {
@@ -197,6 +221,12 @@ export class TranslationService {
   private async _processTranslationsAsync(message: any, targetLanguage?: string) {
     try {
       console.log(`🔄 Démarrage traitement asynchrone des traductions pour ${message.id}`);
+      console.log(`🔧 ZMQ Client disponible:`, this.zmqClient ? 'OUI' : 'NON');
+      
+      if (!this.zmqClient) {
+        console.error('[GATEWAY] ❌ ZMQ Client non disponible pour les traductions');
+        return;
+      }
       
       // 1. DÉTERMINER LES LANGUES CIBLES
       let targetLanguages: string[];
@@ -227,6 +257,7 @@ export class TranslationService {
         modelType: (message as any).modelType || ((message.content?.length ?? 0) < 80 ? 'medium' : 'premium')
       };
       
+      console.log(`📤 Tentative d'envoi de requête ZMQ...`);
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
@@ -243,7 +274,12 @@ export class TranslationService {
    */
   private async _processRetranslationAsync(messageId: string, messageData: MessageData) {
     try {
-      console.log(`🔄 Démarrage retraduction pour le message ${messageId}`);
+      console.log(`🔄 [TranslationService] Démarrage retraduction pour le message ${messageId}`);
+      console.log(`🔍 [TranslationService] Données de retraduction:`, {
+        messageId,
+        targetLanguage: messageData.targetLanguage,
+        modelType: (messageData as any).modelType
+      });
       
       // Récupérer le message existant depuis la base
       const existingMessage = await this.prisma.message.findUnique({
@@ -391,24 +427,63 @@ export class TranslationService {
     }
   }
 
-  private async _handleTranslationCompleted(data: { taskId: string; result: TranslationResult; targetLanguage: string }) {
+  private async _handleTranslationCompleted(data: { 
+    taskId: string; 
+    result: TranslationResult; 
+    targetLanguage: string;
+    metadata?: any;
+  }) {
     try {
-      console.log(`📥 Traduction reçue: ${data.result.messageId} -> ${data.targetLanguage}`);
+      // Utiliser taskId pour la déduplication (permet la retraduction avec un nouveau taskId)
+      const taskKey = `${data.taskId}_${data.targetLanguage}`;
+      
+      // Vérifier si ce taskId a déjà été traité (évite les doublons accidentels)
+      if (this.processedTasks.has(taskKey)) {
+        console.log(`🔄 [TranslationService] Task déjà traité, ignoré: ${taskKey}`);
+        return;
+      }
+      
+      // Marquer ce task comme traité
+      this.processedTasks.add(taskKey);
+      
+      // Nettoyer les anciens tasks traités (garder seulement les 1000 derniers)
+      if (this.processedTasks.size > 1000) {
+        const firstKey = this.processedTasks.values().next().value;
+        this.processedTasks.delete(firstKey);
+      }
+      
+      console.log(`📥 [TranslationService] Traduction reçue: ${data.result.messageId} -> ${data.targetLanguage} (taskId: ${data.taskId})`);
+      console.log(`🔧 [TranslationService] Informations techniques:`);
+      console.log(`   📋 Modèle: ${data.result.translatorModel || 'unknown'}`);
+      console.log(`   📋 Worker: ${data.result.workerId || 'unknown'}`);
+      console.log(`   📋 Pool: ${data.result.poolType || 'unknown'}`);
+      console.log(`   📋 Performance: ${data.result.translationTime || 0}ms`);
+      console.log(`   📋 Queue: ${data.result.queueTime || 0}ms`);
+      console.log(`   📋 Mémoire: ${data.result.memoryUsage || 0}MB`);
+      console.log(`   📋 CPU: ${data.result.cpuUsage || 0}%`);
       
       this.stats.translations_received++;
       
-      // Mettre en cache le résultat
+      // Mettre en cache avec métadonnées (écrase l'ancienne traduction)
       const cacheKey = `${data.result.messageId}_${data.targetLanguage}`;
       this._addToCache(cacheKey, data.result);
       
-      // Sauvegarder en base de données
-      await this._saveTranslationToDatabase(data.result);
+      // Sauvegarder en base avec informations techniques (upsert = mise à jour si existe)
+      await this._saveTranslationToDatabase(data.result, data.metadata);
       
-      // Ici, vous pouvez émettre un événement WebSocket pour notifier les clients
-      // this.emit('translationReady', data);
+      // Émettre événement avec métadonnées
+      console.log(`📡 [TranslationService] Émission événement translationReady pour ${data.result.messageId} -> ${data.targetLanguage}`);
+      this.emit('translationReady', {
+        taskId: data.taskId,
+        result: data.result,
+        targetLanguage: data.targetLanguage,
+        metadata: data.metadata || {}
+      });
+      console.log(`✅ [TranslationService] Événement translationReady émis avec métadonnées`);
       
     } catch (error) {
-      console.error(`❌ Erreur traitement traduction terminée: ${error}`);
+      console.error(`❌ [TranslationService] Erreur traitement: ${error}`);
+      console.error(`📋 [TranslationService] Données reçues: ${JSON.stringify(data, null, 2)}`);
       this.stats.errors++;
     }
   }
@@ -433,30 +508,83 @@ export class TranslationService {
     this.memoryCache.set(key, result);
   }
 
-  private async _saveTranslationToDatabase(result: TranslationResult) {
+  /**
+   * Extrait les informations techniques du champ translationModel
+   * Format: "modelType|workerId|poolType|translationTime|queueTime|memoryUsage|cpuUsage"
+   */
+  private _extractTechnicalInfo(translationModel: string): {
+    modelType: string;
+    workerId: string;
+    poolType: string;
+    translationTime: number;
+    queueTime: number;
+    memoryUsage: number;
+    cpuUsage: number;
+  } {
+    try {
+      const parts = translationModel.split('|');
+      if (parts.length >= 7) {
+        return {
+          modelType: parts[0],
+          workerId: parts[1],
+          poolType: parts[2],
+          translationTime: parseFloat(parts[3]) || 0,
+          queueTime: parseFloat(parts[4]) || 0,
+          memoryUsage: parseFloat(parts[5]) || 0,
+          cpuUsage: parseFloat(parts[6]) || 0
+        };
+      }
+    } catch (error) {
+      console.error(`❌ [TranslationService] Erreur extraction infos techniques: ${error}`);
+    }
+    
+    // Valeurs par défaut si le format n'est pas reconnu
+    return {
+      modelType: translationModel,
+      workerId: 'unknown',
+      poolType: 'normal',
+      translationTime: 0,
+      queueTime: 0,
+      memoryUsage: 0,
+      cpuUsage: 0
+    };
+  }
+
+  private async _saveTranslationToDatabase(result: TranslationResult, metadata?: any) {
     try {
       const cacheKey = `${result.messageId}_${result.targetLanguage}`;
       
       await this.prisma.messageTranslation.upsert({
-        where: { cacheKey: cacheKey },
+        where: { 
+          messageId_targetLanguage: {
+            messageId: result.messageId,
+            targetLanguage: result.targetLanguage
+          }
+        },
         update: {
           translatedContent: result.translatedText,
           confidenceScore: result.confidenceScore,
-          translationModel: result.modelType
+          // Stocker les informations techniques dans le champ translationModel
+          // Format: "modelType|workerId|poolType|translationTime|queueTime|memoryUsage|cpuUsage"
+          translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
         },
         create: {
           messageId: result.messageId,
           sourceLanguage: result.sourceLanguage,
           targetLanguage: result.targetLanguage,
           translatedContent: result.translatedText,
-          translationModel: result.modelType,
           confidenceScore: result.confidenceScore,
-          cacheKey: cacheKey
+          cacheKey: cacheKey,
+          // Stocker les informations techniques dans le champ translationModel
+          translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
         }
       });
       
+      console.log(`💾 [TranslationService] Traduction sauvegardée avec métadonnées: ${cacheKey}`);
+      console.log(`🔧 [TranslationService] Informations techniques stockées: ${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`);
+      
     } catch (error) {
-      console.error(`❌ Erreur sauvegarde traduction: ${error}`);
+      console.error(`❌ [TranslationService] Erreur sauvegarde: ${error}`);
     }
   }
 
@@ -479,18 +607,31 @@ export class TranslationService {
       });
       
       if (dbTranslation) {
+        // Extraire les informations techniques du champ translationModel
+        const technicalInfo = this._extractTechnicalInfo(dbTranslation.translationModel);
+        
         const result: TranslationResult = {
           messageId: dbTranslation.messageId,
           translatedText: dbTranslation.translatedContent,
           sourceLanguage: dbTranslation.sourceLanguage,
           targetLanguage: dbTranslation.targetLanguage,
           confidenceScore: dbTranslation.confidenceScore || 0,
-          processingTime: 0,
-          modelType: dbTranslation.translationModel
+          processingTime: technicalInfo.translationTime,
+          modelType: technicalInfo.modelType,
+          // Ajouter les informations techniques enrichies
+          translatorModel: technicalInfo.modelType,
+          workerId: technicalInfo.workerId,
+          poolType: technicalInfo.poolType,
+          translationTime: technicalInfo.translationTime,
+          queueTime: technicalInfo.queueTime,
+          memoryUsage: technicalInfo.memoryUsage,
+          cpuUsage: technicalInfo.cpuUsage
         };
         
         // Mettre en cache
         this._addToCache(cacheKey, result);
+        
+        console.log(`📋 [TranslationService] Traduction récupérée avec infos techniques: ${technicalInfo.modelType}|${technicalInfo.workerId}|${technicalInfo.poolType}|${technicalInfo.translationTime}ms|${technicalInfo.queueTime}ms|${technicalInfo.memoryUsage}MB|${technicalInfo.cpuUsage}%`);
         
         return result;
       }
@@ -604,7 +745,7 @@ export class TranslationService {
   async close(): Promise<void> {
     try {
       await this.zmqClient.close();
-      console.log('✅ TranslationService fermé');
+      console.log('[GATEWAY] ✅ TranslationService fermé');
     } catch (error) {
       console.error(`❌ Erreur fermeture TranslationService: ${error}`);
     }

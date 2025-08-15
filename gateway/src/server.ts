@@ -16,7 +16,7 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import sensible from '@fastify/sensible'; // Ajout pour httpErrors
-import { PrismaClient } from '../shared/prisma/client'; // Import Prisma client from shared library
+import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
 import { TranslationService } from './services/TranslationService';
 import type { 
@@ -26,7 +26,7 @@ import type {
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
-import { messageRoutes } from './routes/messages';
+
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import { translationRoutes } from './routes/translation';
@@ -49,7 +49,7 @@ function loadConfiguration(): Config {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const isDev = nodeEnv === 'development';
   const dbUrl = process.env.DATABASE_URL || '';
-  console.log(`Loading configuration for environment: ${dbUrl}`);
+  console.log(`[GATEWAY] Loading configuration for environment: ${dbUrl}`);
   return {
     nodeEnv,
     isDev,
@@ -445,8 +445,7 @@ class MeeshyServer {
     // Register conversation routes without prefix
     await this.server.register(conversationRoutes);
     
-    // Register message routes without /api prefix (directly at root)
-    await this.server.register(messageRoutes);
+
     
     // Register user routes
     await this.server.register(userRoutes);
@@ -518,8 +517,10 @@ class MeeshyServer {
 ╚══════════════════════════════════════════════════════════════════╝
     `.trim();
     
-    console.log(banner);
+    console.log(`[GATEWAY] ${banner}`);
   }
+
+
 
   public async start(): Promise<void> {
     try {
