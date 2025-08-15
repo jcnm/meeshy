@@ -156,18 +156,8 @@ export function AppProvider({ children }: AppProviderProps) {
       const savedUser = localStorage.getItem('user');
       const token = localStorage.getItem('auth_token');
 
-      if (savedUser) {
-        try {
-          const user = JSON.parse(savedUser);
-          dispatch({ type: 'SET_USER', payload: user });
-        } catch (error) {
-          console.error('Erreur lors du chargement de l\'utilisateur:', error);
-        } finally {
-          dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
-        }
-      } else if (token) {
-        // Si on a un token mais pas d'utilisateur en localStorage, 
-        // récupérer l'utilisateur depuis l'API
+      // Si on a un token, on doit toujours vérifier sa validité côté serveur
+      if (token) {
         try {
           const response = await fetch(buildApiUrl('/auth/me'), {
             headers: {
@@ -178,16 +168,33 @@ export function AppProvider({ children }: AppProviderProps) {
           if (response.ok) {
             const userData = await response.json();
             dispatch({ type: 'SET_USER', payload: userData });
+            // Mettre à jour localStorage avec les données fraîches
+            localStorage.setItem('user', JSON.stringify(userData));
           } else {
-            // Token invalide, le supprimer
+            // Token invalide, nettoyer toutes les données d'authentification
+            console.log('[AUTH] Token invalide, nettoyage des données');
             localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            dispatch({ type: 'SET_USER', payload: null });
           }
         } catch (error) {
           console.error('Erreur lors de la vérification du token:', error);
+          // En cas d'erreur réseau, nettoyer aussi les données
           localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+          dispatch({ type: 'SET_USER', payload: null });
         } finally {
           dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
         }
+      } else if (savedUser) {
+        // Si on a un utilisateur sauvegardé mais pas de token, c'est incohérent
+        // On nettoie les données
+        console.log('[AUTH] Utilisateur sauvegardé sans token, nettoyage');
+        localStorage.removeItem('user');
+        dispatch({ type: 'SET_USER', payload: null });
+        dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
       } else {
         // Aucun token ni utilisateur sauvegardé
         dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
@@ -297,28 +304,7 @@ export function useConversations() {
   };
 }
 
-export function useNotifications() {
-  const { state, dispatch } = useAppContext();
-  
-  const setNotifications = (notifications: Notification[]) => {
-    dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications });
-  };
-
-  const addNotification = (notification: Notification) => {
-    dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
-  };
-
-  const removeNotification = (id: string) => {
-    dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
-  };
-
-  return {
-    notifications: state.notifications,
-    setNotifications,
-    addNotification,
-    removeNotification,
-  };
-}
+// useNotifications moved to /hooks/use-notifications.ts for unified approach
 
 export function useTranslationCache() {
   const { state, dispatch } = useAppContext();

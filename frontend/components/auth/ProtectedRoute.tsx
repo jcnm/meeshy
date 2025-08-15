@@ -13,7 +13,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ 
   children, 
-  redirectTo = '/', 
+  redirectTo = '/login', 
   requireAuth = true 
 }: ProtectedRouteProps) {
   const { user, isAuthChecking } = useUser();
