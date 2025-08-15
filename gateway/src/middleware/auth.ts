@@ -44,7 +44,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
     // (pour l'instant on fait confiance au token)
     
   } catch (error) {
-    console.error('Authentication failed:', error);
+    console.error('[GATEWAY] Authentication failed:', error);
     reply.code(401).send({ 
       success: false,
       message: 'Token invalide ou manquant' 
@@ -59,7 +59,7 @@ export function requireRole(allowedRoles: string | string[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       // Pour l'instant, on passe la vérification - à implémenter
-      console.log('Role verification - to be implemented', allowedRoles);
+      console.log('[GATEWAY] Role verification - to be implemented', allowedRoles);
     } catch (error) {
       reply.code(403).send({ error: 'Insufficient permissions' });
     }
@@ -79,7 +79,7 @@ export const requireAnalyst = requireRole(['BIGBOSS', 'ADMIN', 'ANALYST']);
 export async function requireEmailVerification(request: FastifyRequest, reply: FastifyReply) {
   try {
     // Pour l'instant, on passe la vérification - à implémenter
-    console.log('Email verification - to be implemented');
+    console.log('[GATEWAY] Email verification - to be implemented');
   } catch (error) {
     reply.code(403).send({ error: 'Email verification required' });
   }
@@ -91,7 +91,7 @@ export async function requireEmailVerification(request: FastifyRequest, reply: F
 export async function requireActiveAccount(request: FastifyRequest, reply: FastifyReply) {
   try {
     // Pour l'instant, on passe la vérification - à implémenter
-    console.log('Account status verification - to be implemented');
+    console.log('[GATEWAY] Account status verification - to be implemented');
   } catch (error) {
     reply.code(403).send({ error: 'Account is not active' });
   }

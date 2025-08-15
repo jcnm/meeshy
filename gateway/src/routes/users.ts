@@ -1,7 +1,7 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { UpdateUserRequest } from '../../shared/types';
 import { logError } from '../utils/logger';
+import { UpdateUserRequest } from '../../shared/types';
 
 // Schéma de validation pour la mise à jour utilisateur
 const updateUserSchema = z.object({
@@ -23,6 +23,234 @@ export async function userRoutes(fastify: FastifyInstance) {
   // Route pour obtenir les informations utilisateur
   fastify.get('/users/me', async (request, reply) => {
     reply.send({ message: 'User routes - to be implemented' });
+  });
+
+  // Route pour obtenir les statistiques du tableau de bord de l'utilisateur connecté
+  fastify.get('/users/me/dashboard-stats', {
+    onRequest: [fastify.authenticate]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { userId } = request.user as any;
+
+      // Récupérer les statistiques en parallèle
+      const [
+        // Conversations où l'utilisateur est membre actif
+        totalConversations,
+        activeConversations,
+        recentConversations,
+        
+        // Groupes où l'utilisateur est membre actif  
+        totalGroups,
+        recentGroups,
+        
+        // Messages envoyés par l'utilisateur
+        totalMessages,
+        messagesThisWeek,
+        
+        // Liens de partage créés par l'utilisateur
+        totalLinks,
+        
+        // Traductions effectuées (estimation basée sur les messages)
+        translationsToday
+      ] = await Promise.all([
+        // Total conversations
+        fastify.prisma.conversationMember.count({
+          where: {
+            userId,
+            isActive: true
+          }
+        }),
+        
+        // Conversations actives (avec messages récents)
+        fastify.prisma.conversationMember.count({
+          where: {
+            userId,
+            isActive: true,
+            conversation: {
+              messages: {
+                some: {
+                  createdAt: {
+                    gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24h
+                  },
+                  isDeleted: false
+                }
+              }
+            }
+          }
+        }),
+        
+        // Conversations récentes
+        fastify.prisma.conversation.findMany({
+          where: {
+            members: {
+              some: {
+                userId,
+                isActive: true
+              }
+            }
+          },
+          include: {
+            messages: {
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                sender: {
+                  select: {
+                    username: true,
+                    displayName: true
+                  }
+                }
+              }
+            },
+            members: {
+              where: { isActive: true },
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                    isOnline: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { updatedAt: 'desc' },
+          take: 5
+        }),
+        
+        // Total groupes
+        fastify.prisma.groupMember.count({
+          where: {
+            userId
+          }
+        }),
+        
+        // Groupes récents
+        fastify.prisma.group.findMany({
+          where: {
+            members: {
+              some: {
+                userId
+              }
+            }
+          },
+          include: {
+            members: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { updatedAt: 'desc' },
+          take: 5
+        }),
+        
+        // Total messages de l'utilisateur
+        fastify.prisma.message.count({
+          where: {
+            senderId: userId,
+            isDeleted: false
+          }
+        }),
+        
+        // Messages cette semaine
+        fastify.prisma.message.count({
+          where: {
+            senderId: userId,
+            isDeleted: false,
+            createdAt: {
+              gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // 7 jours
+            }
+          }
+        }),
+        
+        // Total liens créés
+        fastify.prisma.conversationShareLink.count({
+          where: {
+            createdBy: userId
+          }
+        }),
+        
+        // Estimation des traductions aujourd'hui (basée sur les messages multilingues)
+        fastify.prisma.message.count({
+          where: {
+            senderId: userId,
+            isDeleted: false,
+            createdAt: {
+              gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24h
+            },
+            // Approximation: messages avec traductions
+            translations: {
+              some: {}
+            }
+          }
+        })
+      ]);
+
+      // Transformer les données pour le frontend
+      const stats = {
+        totalConversations,
+        totalGroups,
+        totalMessages: messagesThisWeek, // Messages cette semaine
+        activeConversations,
+        translationsToday,
+        totalLinks,
+        lastUpdated: new Date()
+      };
+
+      // Transformer les conversations récentes
+      const transformedConversations = recentConversations.map(conv => ({
+        id: conv.id,
+        name: conv.title || `Conversation ${conv.id.slice(-4)}`,
+        type: conv.type,
+        isActive: activeConversations > 0,
+        lastMessage: conv.messages && conv.messages.length > 0 ? {
+          content: conv.messages[0].content,
+          createdAt: conv.messages[0].createdAt,
+          sender: conv.messages[0].sender
+        } : null,
+        members: conv.members.map(member => member.user)
+      }));
+
+      // Transformer les groupes récents
+      const transformedGroups = recentGroups.map(group => ({
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        isPrivate: group.isPrivate,
+        members: group.members.map(member => member.user),
+        memberCount: group.members.length
+      }));
+
+      return reply.send({
+        success: true,
+        data: {
+          stats,
+          recentConversations: transformedConversations,
+          recentGroups: transformedGroups
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get user dashboard stats error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
   });
 
   // Route pour mettre à jour le profil utilisateur connecté
@@ -149,6 +377,91 @@ export async function userRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({
         success: false,
         error: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Route pour rechercher des utilisateurs
+  fastify.get('/users/search', {
+    onRequest: [fastify.authenticate]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { q } = request.query as { q?: string };
+      
+      if (!q || q.trim().length < 2) {
+        return reply.send([]);
+      }
+      
+      const searchTerm = q.trim();
+      
+      // Rechercher les utilisateurs par nom, prénom, username ou email
+      const users = await fastify.prisma.user.findMany({
+        where: {
+          AND: [
+            {
+              isActive: true // Seulement les utilisateurs actifs
+            },
+            {
+              OR: [
+                {
+                  firstName: {
+                    contains: searchTerm,
+                    mode: 'insensitive'
+                  }
+                },
+                {
+                  lastName: {
+                    contains: searchTerm,
+                    mode: 'insensitive'
+                  }
+                },
+                {
+                  username: {
+                    contains: searchTerm,
+                    mode: 'insensitive'
+                  }
+                },
+                {
+                  email: {
+                    contains: searchTerm,
+                    mode: 'insensitive'
+                  }
+                },
+                {
+                  displayName: {
+                    contains: searchTerm,
+                    mode: 'insensitive'
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          displayName: true,
+          email: true,
+          isOnline: true,
+          lastSeen: true,
+          systemLanguage: true
+        },
+        orderBy: [
+          { isOnline: 'desc' },
+          { firstName: 'asc' },
+          { lastName: 'asc' }
+        ],
+        take: 20 // Limiter à 20 résultats
+      });
+      
+      reply.send(users);
+    } catch (error) {
+      logError(fastify.log, 'Erreur lors de la recherche d\'utilisateurs', error);
+      reply.status(500).send({ 
+        error: 'Erreur interne du serveur',
+        message: 'Impossible de rechercher les utilisateurs'
       });
     }
   });

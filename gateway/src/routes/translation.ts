@@ -5,12 +5,17 @@ import { logError } from '../utils/logger';
 
 // Schémas de validation
 const TranslateRequestSchema = z.object({
-  text: z.string().min(1).max(1000),
+  text: z.string().min(1).max(1000).optional(), // Optional si message_id est fourni
   source_language: z.string().min(2).max(5).optional(),
   target_language: z.string().min(2).max(5),
   model_type: z.enum(['basic', 'medium', 'premium']).optional(), // Optional car on peut le prédire automatiquement
   message_id: z.string().optional(), // ID du message pour retraduction
   conversation_id: z.string().optional() // ID de conversation pour nouveaux messages
+}).refine((data) => {
+  // Soit text est fourni, soit message_id est fourni
+  return (data.text !== undefined && data.text.length > 0) || (data.message_id !== undefined);
+}, {
+  message: "Either 'text' or 'message_id' must be provided"
 });
 
 interface TranslateRequest {
@@ -80,16 +85,61 @@ export async function translationRoutes(fastify: FastifyInstance) {
         // Cas 1: Retraduction d'un message existant
         console.log(`🔄 [GATEWAY] Retraduction du message ${validatedData.message_id}`);
         
-        // Utiliser le modèle medium pour les retraductions
-        const retranslationModelType = 'medium';
+        // Récupérer le message depuis la base de données
+        console.log(`🔍 [GATEWAY] Recherche du message ${validatedData.message_id} en base...`);
+        const existingMessage = await fastify.prisma.message.findUnique({
+          where: { id: validatedData.message_id },
+          include: {
+            conversation: {
+              include: {
+                members: true
+              }
+            }
+          }
+        });
+        
+        console.log(`🔍 [GATEWAY] Message trouvé:`, existingMessage ? {
+          id: existingMessage.id,
+          content: existingMessage.content?.substring(0, 50) + '...',
+          originalLanguage: existingMessage.originalLanguage,
+          conversationId: existingMessage.conversationId
+        } : 'NULL');
+        
+        if (!existingMessage) {
+          return reply.status(404).send({
+            success: false,
+            error: 'Message not found'
+          });
+        }
+        
+        // Vérifier l'accès (optionnel, selon vos besoins)
+        const userId = (request as any).user?.id;
+        if (userId) {
+          const hasAccess = existingMessage.conversation.members.some((member: any) => member.userId === userId);
+          if (!hasAccess) {
+            return reply.status(403).send({
+              success: false,
+              error: 'Access denied to this message'
+            });
+          }
+        }
+        
+        // Utiliser le texte du message existant si pas fourni
+        const messageText = validatedData.text || existingMessage.content;
+        const messageSourceLanguage = validatedData.source_language || existingMessage.originalLanguage;
+        
+        // Déterminer le type de modèle pour le texte récupéré
+        const finalModelType = validatedData.model_type === 'basic'
+          ? getPredictedModelType(messageText.length)
+          : (validatedData.model_type || 'basic');
         
         // Créer les données du message pour retraduction
         const messageData: any = {
           id: validatedData.message_id,
-          conversationId: validatedData.conversation_id || 'rest-retranslation',
-          content: validatedData.text,
-          originalLanguage: validatedData.source_language || 'auto',
-          targetLanguage: validatedData.target_language, // Passer la langue cible
+          conversationId: existingMessage.conversationId,
+          content: messageText,
+          originalLanguage: messageSourceLanguage,
+          targetLanguage: validatedData.target_language,
           modelType: finalModelType
         };
         
@@ -106,8 +156,8 @@ export async function translationRoutes(fastify: FastifyInstance) {
         if (!result) {
           // Fallback si la traduction n'est pas encore disponible
           result = {
-            translatedText: `[${validatedData.target_language.toUpperCase()}] ${validatedData.text}`,
-            sourceLanguage: validatedData.source_language || 'auto',
+            translatedText: `[${validatedData.target_language.toUpperCase()}] ${messageText}`,
+            sourceLanguage: messageSourceLanguage,
             targetLanguage: validatedData.target_language,
             confidenceScore: 0.1,
             processingTime: 0.001,

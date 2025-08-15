@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService } from '../services/TranslationService';
+import { conversationStatsService } from '../services/ConversationStatsService';
 import { ZMQSingleton } from '../services/zmq-singleton';
 
 const prisma = new PrismaClient();
@@ -156,7 +157,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      console.error('Error fetching conversations:', error);
+      console.error('[GATEWAY] Error fetching conversations:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la récupération des conversations'
@@ -225,13 +226,25 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Ajouter les statistiques de conversation dans les métadonnées (via cache 1h)
+      const stats = await conversationStatsService.getOrCompute(
+        prisma,
+        id,
+        () => [] // REST ne connaît pas les sockets ici; la partie onlineUsers sera vide si non connue par cache
+      );
+
       reply.send({
         success: true,
-        data: conversation
+        data: {
+          ...conversation,
+          meta: {
+            conversationStats: stats
+          }
+        }
       });
 
     } catch (error) {
-      console.error('Error fetching conversation:', error);
+      console.error('[GATEWAY] Error fetching conversation:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la récupération de la conversation'
@@ -304,7 +317,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      console.error('Error creating conversation:', error);
+      console.error('[GATEWAY] Error creating conversation:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la création de la conversation'
@@ -474,28 +487,38 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       if (messages.length > 0) {
         const messageIds = messages.map(m => m.id);
         try {
-          // Vérifier quels messages ne sont pas encore marqués comme lus
-          const existingReadStatus = await prisma.messageReadStatus.findMany({
-            where: {
-              messageId: { in: messageIds },
-              userId: userId
-            },
-            select: { messageId: true }
+          // Vérifier que l'utilisateur existe avant de marquer les messages comme lus
+          const userExists = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true }
           });
           
-          const alreadyReadMessageIds = new Set(existingReadStatus.map(r => r.messageId));
-          const unreadMessageIds = messageIds.filter(id => !alreadyReadMessageIds.has(id));
-          
-          if (unreadMessageIds.length > 0) {
-            await prisma.messageReadStatus.createMany({
-              data: unreadMessageIds.map(messageId => ({
-                messageId,
-                userId
-              }))
+          if (!userExists) {
+            console.warn('[GATEWAY] Cannot mark messages as read: user not found:', userId);
+          } else {
+            // Vérifier quels messages ne sont pas encore marqués comme lus
+            const existingReadStatus = await prisma.messageReadStatus.findMany({
+              where: {
+                messageId: { in: messageIds },
+                userId: userId
+              },
+              select: { messageId: true }
             });
+            
+            const alreadyReadMessageIds = new Set(existingReadStatus.map(r => r.messageId));
+            const unreadMessageIds = messageIds.filter(id => !alreadyReadMessageIds.has(id));
+            
+            if (unreadMessageIds.length > 0) {
+              await prisma.messageReadStatus.createMany({
+                data: unreadMessageIds.map(messageId => ({
+                  messageId,
+                  userId
+                }))
+              });
+            }
           }
         } catch (error) {
-          console.warn('Error marking messages as read:', error);
+          console.warn('[GATEWAY] Error marking messages as read:', error);
         }
       }
 
@@ -509,7 +532,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('[GATEWAY] Error fetching messages:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la récupération des messages'
@@ -650,17 +673,28 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
         console.log(`Translations requested for message ${message.id} in conversation ${id}`);
       } catch (error) {
-        console.error('Error requesting translations:', error);
+        console.error('[GATEWAY] Error requesting translations:', error);
         // Ne pas faire échouer l'envoi du message si la traduction échoue
       }
 
+      // Mettre à jour les stats dans le cache (et les calculer si entrée absente)
+      const stats = await conversationStatsService.updateOnNewMessage(
+        prisma,
+        id,
+        originalLanguage,
+        () => []
+      );
+
       reply.status(201).send({
         success: true,
-        data: message
+        data: {
+          ...message,
+          meta: { conversationStats: stats }
+        }
       });
 
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('[GATEWAY] Error sending message:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de l\'envoi du message'
@@ -742,13 +776,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Note: Les traductions ne sont PAS modifiées ici - elles restent dans l'état du service Translator
       // Selon les instructions Copilot, seul le service Translator peut modifier les traductions
 
+      // Invalider et recalculer les stats pour refléter l'édition
+      const stats = await conversationStatsService.getOrCompute(
+        prisma,
+        id,
+        () => []
+      );
+
       reply.send({
         success: true,
-        data: updatedMessage
+        data: { ...updatedMessage, meta: { conversationStats: stats } }
       });
 
     } catch (error) {
-      console.error('Error updating message:', error);
+      console.error('[GATEWAY] Error updating message:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la modification du message'
@@ -792,13 +833,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
+      // Invalider et recalculer les stats
+      const stats = await conversationStatsService.getOrCompute(
+        prisma,
+        id,
+        () => []
+      );
+
       reply.send({
         success: true,
-        data: { messageId, deleted: true }
+        data: { messageId, deleted: true, meta: { conversationStats: stats } }
       });
 
     } catch (error) {
-      console.error('Error deleting message:', error);
+      console.error('[GATEWAY] Error deleting message:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la suppression du message'
@@ -871,7 +919,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      console.error('Error updating conversation:', error);
+      console.error('[GATEWAY] Error updating conversation:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la mise à jour de la conversation'
@@ -924,7 +972,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      console.error('Error deleting conversation:', error);
+      console.error('[GATEWAY] Error deleting conversation:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la suppression de la conversation'
@@ -1014,10 +1062,127 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
-      console.error('Error updating message:', error);
+      console.error('[GATEWAY] Error updating message:', error);
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la modification du message'
+      });
+    }
+  });
+
+  // Route pour récupérer les participants d'une conversation
+  fastify.get<{
+    Params: { id: string };
+  }>('/conversations/:id/participants', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const userId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que l'utilisateur a accès à cette conversation
+      if (id !== 'any') {
+        const membership = await prisma.conversationMember.findFirst({
+          where: {
+            conversationId: id,
+            userId: userId,
+            isActive: true
+          }
+        });
+
+        if (!membership) {
+          return reply.status(403).send({
+            success: false,
+            error: 'Accès non autorisé à cette conversation'
+          });
+        }
+      }
+
+      // Récupérer tous les participants de la conversation
+      const participants = await prisma.conversationMember.findMany({
+        where: {
+          conversationId: id,
+          isActive: true
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true,
+              email: true,
+              role: true,
+              isOnline: true,
+              lastSeen: true,
+              lastActiveAt: true,
+              systemLanguage: true,
+              regionalLanguage: true,
+              customDestinationLanguage: true,
+              autoTranslateEnabled: true,
+              translateToSystemLanguage: true,
+              translateToRegionalLanguage: true,
+              useCustomDestination: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          }
+        },
+        orderBy: {
+          joinedAt: 'asc'
+        }
+      });
+
+      // Transformer les données pour correspondre au format attendu
+      const formattedParticipants = participants.map(participant => ({
+        id: participant.user.id,
+        username: participant.user.username,
+        firstName: participant.user.firstName,
+        lastName: participant.user.lastName,
+        displayName: participant.user.displayName,
+        avatar: participant.user.avatar,
+        email: participant.user.email,
+        role: participant.user.role,
+        isOnline: participant.user.isOnline,
+        lastSeen: participant.user.lastSeen,
+        lastActiveAt: participant.user.lastActiveAt,
+        systemLanguage: participant.user.systemLanguage,
+        regionalLanguage: participant.user.regionalLanguage,
+        customDestinationLanguage: participant.user.customDestinationLanguage,
+        autoTranslateEnabled: participant.user.autoTranslateEnabled,
+        translateToSystemLanguage: participant.user.translateToSystemLanguage,
+        translateToRegionalLanguage: participant.user.translateToRegionalLanguage,
+        useCustomDestination: participant.user.useCustomDestination,
+        isActive: participant.user.isActive,
+        createdAt: participant.user.createdAt,
+        updatedAt: participant.user.updatedAt,
+        // Permissions par défaut si non définies
+        permissions: {
+          canAccessAdmin: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canManageUsers: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canManageGroups: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canManageConversations: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canViewAnalytics: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canModerateContent: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canViewAuditLogs: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canManageNotifications: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+          canManageTranslations: participant.user.role === 'ADMIN' || participant.user.role === 'BIGBOSS',
+        }
+      }));
+
+      reply.send({
+        success: true,
+        data: formattedParticipants
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error fetching conversation participants:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la récupération des participants'
       });
     }
   });
