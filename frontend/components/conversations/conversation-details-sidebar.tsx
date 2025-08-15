@@ -4,23 +4,36 @@ import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import {
-  Users,
-  MessageSquare,
-  Calendar,
-  Globe,
-  Settings,
-  UserPlus,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
   X,
-  ChevronDown,
-  ChevronRight
+  Edit,
+  Save,
+  Languages,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, User, Message } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
+import { toast } from 'sonner';
+
+// Import des composants de la sidebar de BubbleStreamPage
+import {
+  FoldableSection,
+  LanguageIndicators,
+  SidebarLanguageHeader,
+  type LanguageStats
+} from '@/lib/bubble-stream-modules';
 
 interface ConversationDetailsSidebarProps {
   conversation: Conversation;
@@ -30,14 +43,7 @@ interface ConversationDetailsSidebarProps {
   onClose: () => void;
 }
 
-interface ConversationStats {
-  totalMessages: number;
-  participantsCount: number;
-  messagesPerLanguage: Record<string, number>;
-  participantsPerLanguage: Record<string, number>;
-  createdAt: Date;
-  lastActivity: Date;
-}
+
 
 export function ConversationDetailsSidebar({
   conversation,
@@ -46,46 +52,79 @@ export function ConversationDetailsSidebar({
   isOpen,
   onClose
 }: ConversationDetailsSidebarProps) {
-  const [stats, setStats] = useState<ConversationStats | null>(null);
-  const [isParticipantsExpanded, setIsParticipantsExpanded] = useState(true);
-  const [isStatsExpanded, setIsStatsExpanded] = useState(true);
+  
+  // États pour la gestion des conversations
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [conversationName, setConversationName] = useState(conversation.title || conversation.name || '');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Calculer les statistiques à partir des messages et conversation
+  // États pour les statistiques de langues
+  const [messageLanguageStats, setMessageLanguageStats] = useState<LanguageStats[]>([]);
+  const [activeLanguageStats, setActiveLanguageStats] = useState<LanguageStats[]>([]);
+  const [activeUsers, setActiveUsers] = useState<User[]>([]);
+
+  // Vérifier si l'utilisateur actuel est admin/créateur
+  const currentUserParticipant = conversation.participants?.find(p => p.userId === currentUser.id);
+  const isAdmin = currentUserParticipant?.role === 'ADMIN';
+
+  // Calculer les statistiques de langues des messages et participants (comme dans BubbleStreamPage)
   useEffect(() => {
-    const calculateStats = () => {
+    const calculateLanguageStats = () => {
+      // Calculer les langues des messages
       const messagesPerLanguage: Record<string, number> = {};
-      const participantsPerLanguage: Record<string, number> = {};
-
-      // Compter les messages par langue
       messages.forEach(message => {
         const lang = message.originalLanguage || 'fr';
         messagesPerLanguage[lang] = (messagesPerLanguage[lang] || 0) + 1;
       });
 
-      // Compter les participants par langue système
-      if (conversation.participants) {
+      const messageStats: LanguageStats[] = Object.entries(messagesPerLanguage)
+        .map(([language, count], index) => ({
+          language,
+          flag: getLanguageFlag(language),
+          count,
+          color: `hsl(${(index * 137.5) % 360}, 50%, 50%)`
+        }))
+        .filter(stat => stat.count > 0)
+        .sort((a, b) => b.count - a.count);
+
+      setMessageLanguageStats(messageStats);
+
+      // Calculer les langues des participants comme dans BubbleStreamPage
+      if (conversation.participants && conversation.participants.length > 0) {
+        const userLanguages: { [key: string]: Set<string> } = {};
+        
         conversation.participants.forEach(participant => {
           const lang = participant.user?.systemLanguage || 'fr';
-          participantsPerLanguage[lang] = (participantsPerLanguage[lang] || 0) + 1;
+          if (!userLanguages[lang]) {
+            userLanguages[lang] = new Set();
+          }
+          userLanguages[lang].add(participant.userId);
         });
+        
+        const userStats: LanguageStats[] = Object.entries(userLanguages)
+          .map(([code, users], index) => ({
+            language: code,
+            flag: getLanguageFlag(code),
+            count: users.size,
+            color: `hsl(${(index * 137.5) % 360}, 50%, 50%)`
+          }))
+          .filter(stat => stat.count > 0)
+          .sort((a, b) => b.count - a.count);
+        
+        setActiveLanguageStats(userStats);
+        console.log('👥 Statistiques langues participants calculées:', userStats);
+        
+        // Calculer les utilisateurs actifs
+        const activeParticipants = conversation.participants
+          .filter(p => p.user?.isOnline)
+          .map(p => p.user)
+          .filter(Boolean) as User[];
+        setActiveUsers(activeParticipants);
       }
-
-      const conversationStats: ConversationStats = {
-        totalMessages: messages.length,
-        participantsCount: conversation.participants?.length || 0,
-        messagesPerLanguage,
-        participantsPerLanguage,
-        createdAt: new Date(conversation.createdAt),
-        lastActivity: messages.length > 0 
-          ? new Date(Math.max(...messages.map(m => new Date(m.createdAt).getTime())))
-          : new Date(conversation.createdAt)
-      };
-
-      setStats(conversationStats);
     };
 
-    calculateStats();
-  }, [conversation, messages]);
+    calculateLanguageStats();
+  }, [conversation.participants, messages]);
 
   const getConversationDisplayName = (conv: Conversation) => {
     if (conv.isGroup) {
@@ -100,14 +139,36 @@ export function ConversationDetailsSidebar({
     return 'Conversation';
   };
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+  // Fonctions pour la gestion des conversations
+  const handleSaveName = async () => {
+    try {
+      setIsLoading(true);
+      await conversationsService.updateConversation(conversation.id, {
+        title: conversationName
+      });
+      setIsEditingName(false);
+      toast.success('Nom de la conversation mis à jour');
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du nom:', error);
+      toast.error('Erreur lors de la mise à jour du nom');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveParticipant = async (userId: string) => {
+    if (!isAdmin) return;
+    
+    try {
+      setIsLoading(true);
+      await conversationsService.removeParticipant(conversation.id, userId);
+      toast.success('Participant supprimé de la conversation');
+    } catch (error) {
+      console.error('Erreur lors de la suppression du participant:', error);
+      toast.error('Erreur lors de la suppression du participant');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -135,16 +196,75 @@ export function ConversationDetailsSidebar({
               <Avatar className="h-16 w-16 mx-auto ring-2 ring-primary/20">
                 <AvatarImage />
                 <AvatarFallback className="bg-primary/20 text-primary font-bold text-lg">
-                  {conversation.isGroup ? (
-                    <Users className="h-8 w-8" />
-                  ) : (
-                    getConversationDisplayName(conversation).charAt(0).toUpperCase()
-                  )}
+                  {getConversationDisplayName(conversation).charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold text-lg">{getConversationDisplayName(conversation)}</h3>
-                <p className="text-sm text-muted-foreground">
+                {isEditingName ? (
+                  <div className="flex items-center gap-2 justify-center">
+                    <Input
+                      value={conversationName}
+                      onChange={(e) => setConversationName(e.target.value)}
+                      className="h-8 text-sm"
+                      placeholder="Nom de la conversation"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveName();
+                        } else if (e.key === 'Escape') {
+                          setIsEditingName(false);
+                          setConversationName(conversation.title || conversation.name || '');
+                        }
+                      }}
+                      onBlur={handleSaveName}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleSaveName}
+                      disabled={isLoading}
+                      className="h-8 px-2"
+                    >
+                      <Save className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsEditingName(false);
+                        setConversationName(conversation.title || conversation.name || '');
+                      }}
+                      className="h-8 px-2"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 justify-center">
+                    <h3 
+                      className="font-semibold text-lg cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => {
+                        setIsEditingName(true);
+                        setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
+                      }}
+                      title="Cliquer pour modifier le nom"
+                    >
+                      {getConversationDisplayName(conversation)}
+                    </h3>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsEditingName(true);
+                        setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
+                      }}
+                      className="h-6 w-6 p-0"
+                      title="Modifier le nom"
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground text-center">
                   {conversation.isGroup ? 'Conversation de groupe' : 'Conversation privée'}
                 </p>
               </div>
@@ -152,162 +272,68 @@ export function ConversationDetailsSidebar({
 
             <Separator />
 
-            {/* Participants */}
-            <div>
-              <Button
-                variant="ghost"
-                onClick={() => setIsParticipantsExpanded(!isParticipantsExpanded)}
-                className="w-full justify-between p-0 h-auto font-semibold"
-              >
-                <div className="flex items-center">
-                  <Users className="h-4 w-4 mr-2" />
-                  Participants ({stats?.participantsCount || 0})
-                </div>
-                {isParticipantsExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </Button>
-              
-              {isParticipantsExpanded && (
-                <div className="mt-3 space-y-2">
-                  {conversation.participants?.map((participant) => (
-                    <div key={participant.userId} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage />
-                        <AvatarFallback className="text-xs">
-                          {participant.user?.firstName?.charAt(0)}{participant.user?.lastName?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {participant.user?.firstName} {participant.user?.lastName}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {getLanguageFlag(participant.user?.systemLanguage || 'fr')} {getLanguageDisplayName(participant.user?.systemLanguage || 'fr')}
-                          </span>
-                          {participant.user?.isOnline && (
-                            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                          )}
-                        </div>
-                      </div>
+            {/* Header avec langues globales */}
+            <SidebarLanguageHeader 
+              languageStats={messageLanguageStats} 
+              userLanguage={currentUser.systemLanguage}
+            />
+
+            {/* Section Langues Actives - Foldable */}
+            <FoldableSection
+              title="Langues Actives"
+              icon={<Languages className="h-4 w-4 mr-2" />}
+              defaultExpanded={true}
+            >
+              <LanguageIndicators languageStats={activeLanguageStats} />
+            </FoldableSection>
+
+            {/* Section Utilisateurs Actifs - Foldable */}
+            <FoldableSection
+              title={`Utilisateurs Actifs (${activeUsers.length})`}
+              icon={<Users className="h-4 w-4 mr-2" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-3">
+                {activeUsers.slice(0, 6).map((user) => (
+                  <div key={user.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar} alt={user.firstName} />
+                      <AvatarFallback className="bg-green-100 text-green-800 text-xs font-medium">
+                        {(user.firstName || user.username || 'U').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {user.firstName && user.lastName 
+                          ? `${user.firstName} ${user.lastName}` 
+                          : user.username}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {getLanguageDisplayName(user.systemLanguage)} {getLanguageFlag(user.systemLanguage)}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Statistiques */}
-            <div>
-              <Button
-                variant="ghost"
-                onClick={() => setIsStatsExpanded(!isStatsExpanded)}
-                className="w-full justify-between p-0 h-auto font-semibold"
-              >
-                <div className="flex items-center">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Statistiques
-                </div>
-                {isStatsExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </Button>
-              
-              {isStatsExpanded && stats && (
-                <div className="mt-3 space-y-4">
-                  {/* Messages totaux */}
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                    <span className="text-sm font-medium">Messages totaux</span>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      {stats.totalMessages}
-                    </Badge>
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   </div>
-
-                  {/* Messages par langue */}
-                  {Object.keys(stats.messagesPerLanguage).length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Messages par langue</h4>
-                      <div className="space-y-2">
-                        {Object.entries(stats.messagesPerLanguage)
-                          .sort(([,a], [,b]) => b - a)
-                          .map(([lang, count]) => (
-                          <div key={lang} className="flex justify-between items-center text-sm">
-                            <div className="flex items-center gap-2">
-                              <span>{getLanguageFlag(lang)}</span>
-                              <span>{getLanguageDisplayName(lang)}</span>
-                            </div>
-                            <Badge variant="outline">{count}</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Participants par langue */}
-                  {Object.keys(stats.participantsPerLanguage).length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Participants par langue</h4>
-                      <div className="space-y-2">
-                        {Object.entries(stats.participantsPerLanguage)
-                          .sort(([,a], [,b]) => b - a)
-                          .map(([lang, count]) => (
-                          <div key={lang} className="flex justify-between items-center text-sm">
-                            <div className="flex items-center gap-2">
-                              <span>{getLanguageFlag(lang)}</span>
-                              <span>{getLanguageDisplayName(lang)}</span>
-                            </div>
-                            <Badge variant="outline">{count}</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <Separator />
-
-            {/* Informations générales */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-semibold flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                Informations
-              </h4>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Créée le</span>
-                  <span>{stats ? formatDate(stats.createdAt) : '-'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Dernière activité</span>
-                  <span>{stats ? formatDate(stats.lastActivity) : '-'}</span>
-                </div>
+                ))}
+                
+                {activeUsers.length > 6 && (
+                  <div className="text-center pt-2">
+                    <p className="text-xs text-gray-500">
+                      +{activeUsers.length - 6} autres utilisateurs actifs
+                    </p>
+                  </div>
+                )}
+                
+                {activeUsers.length === 0 && (
+                  <div className="text-center py-4">
+                    <Users className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-500">Aucun utilisateur actif</p>
+                  </div>
+                )}
               </div>
-            </div>
+            </FoldableSection>
           </div>
         </ScrollArea>
-
-        {/* Actions */}
-        <div className="p-4 border-t border-border/30 space-y-2">
-          {conversation.isGroup && (
-            <Button variant="outline" size="sm" className="w-full">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Ajouter un participant
-            </Button>
-          )}
-          <Button variant="outline" size="sm" className="w-full">
-            <Settings className="h-4 w-4 mr-2" />
-            Paramètres de conversation
-          </Button>
-        </div>
       </div>
     </div>
   );
