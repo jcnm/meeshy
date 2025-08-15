@@ -64,8 +64,8 @@ build_images() {
     
     # Construction de l'image shared (dépendance commune)
     log "Génération du client Prisma pour shared..."
-    cd shared && pnpm install && pnpm run generate && cd ..
-    
+    cd shared && pnpm install && pnpm run generate && ../distribute.sh && cd ..
+    cd translator
     # Construction des images principales
     log "Construction de l'image Translator..."
     docker build \
