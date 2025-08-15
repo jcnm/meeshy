@@ -1111,7 +1111,15 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                 
                                 // Récupérer la langue source du message
                                 const message = messages.find(m => m.id === messageId);
-                                const sourceLanguage = message?.originalLanguage || message?.content ? 'fr' : undefined;
+                                const sourceLanguage = message?.originalLanguage || 'fr';
+                                
+                                console.log('🔤 Détails de la traduction forcée:', {
+                                  messageId,
+                                  targetLanguage,
+                                  sourceLanguage,
+                                  messageFound: !!message,
+                                  messageContent: message?.content?.substring(0, 50) + '...'
+                                });
                                 
                                 console.log('🔤 Langue source détectée pour la traduction forcée:', sourceLanguage);
 
