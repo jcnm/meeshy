@@ -23,7 +23,9 @@ export const SERVER_EVENTS = {
   TRANSLATION_RECEIVED: 'translation_received',
   TRANSLATION_ERROR: 'translation_error',
   NOTIFICATION: 'notification',
-  SYSTEM_MESSAGE: 'system_message'
+  SYSTEM_MESSAGE: 'system_message',
+  CONVERSATION_STATS: 'conversation:stats',
+  CONVERSATION_ONLINE_STATS: 'conversation:online_stats'
 } as const;
 
 // Événements du client vers le serveur
@@ -65,6 +67,8 @@ export interface ServerToClientEvents {
   [SERVER_EVENTS.TRANSLATION_ERROR]: (data: { messageId: string; targetLanguage: string; error: string }) => void;
   [SERVER_EVENTS.NOTIFICATION]: (data: any) => void;
   [SERVER_EVENTS.SYSTEM_MESSAGE]: (data: any) => void;
+  [SERVER_EVENTS.CONVERSATION_STATS]: (data: { conversationId: string; stats: ConversationStatsDTO }) => void;
+  [SERVER_EVENTS.CONVERSATION_ONLINE_STATS]: (data: { conversationId: string; onlineUsers: ConversationOnlineUser[]; updatedAt: Date }) => void;
 }
 
 // Événements du client vers le serveur
@@ -97,6 +101,18 @@ export interface SocketIOMessage {
   sender?: SocketIOUser;
 }
 
+export interface UserPermissions {
+  canAccessAdmin: boolean;
+  canManageUsers: boolean;
+  canManageGroups: boolean;
+  canManageConversations: boolean;
+  canViewAnalytics: boolean;
+  canModerateContent: boolean;
+  canViewAuditLogs: boolean;
+  canManageNotifications: boolean;
+  canManageTranslations: boolean;
+}
+
 export interface SocketIOUser {
   id: string;
   username: string;
@@ -107,6 +123,7 @@ export interface SocketIOUser {
   displayName?: string;
   avatar?: string;
   role: string;
+  permissions?: UserPermissions; // Optionnel pour la rétrocompatibilité
   isOnline: boolean;
   lastSeen: Date;
   lastActiveAt: Date;
@@ -156,6 +173,23 @@ export interface UserStatusEvent {
   userId: string;
   username: string;
   isOnline: boolean;
+}
+
+// ===== TYPES POUR LES STATISTIQUES DE CONVERSATION =====
+
+export interface ConversationOnlineUser {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface ConversationStatsDTO {
+  messagesPerLanguage: Record<string, number>;
+  participantCount: number;
+  participantsPerLanguage: Record<string, number>;
+  onlineUsers: ConversationOnlineUser[];
+  updatedAt: Date;
 }
 
 // ===== TYPES DE CONFIGURATION =====
