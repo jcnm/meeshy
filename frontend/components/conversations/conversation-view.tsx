@@ -7,6 +7,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -22,7 +27,9 @@ import {
   UserPlus,
   Phone,
   Video,
-  Info
+  Info,
+  Users as UsersIcon,
+  Search
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { User, 
@@ -67,6 +74,10 @@ export function ConversationView({
   const [translatedMessages, setTranslatedMessages] = useState<Map<string, TranslatedMessage>>(new Map());
   const [showingOriginal, setShowingOriginal] = useState<Map<string, boolean>>(new Map());
   const processedMessageIds = useRef<Set<string>>(new Set());
+
+  // État pour le popover des participants
+  const [isParticipantsOpen, setIsParticipantsOpen] = useState(false);
+  const [participantsFilter, setParticipantsFilter] = useState('');
 
   // Hooks pour la traduction et services
   const { translateMessage } = useTranslation();
@@ -427,6 +438,28 @@ export function ConversationView({
     return 'Aucun message';
   };
 
+  const getDisplayName = (user?: User) => {
+    if (!user) return 'Utilisateur';
+    return (
+      user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'Utilisateur'
+    );
+  };
+
+  const participants = conversation.participants || [];
+  const onlineParticipants = participants.filter(p => p.user?.isOnline);
+  const offlineParticipants = participants.filter(p => !p.user?.isOnline);
+
+  const filteredOnline = onlineParticipants.filter(p => {
+    if (!participantsFilter.trim()) return true;
+    const target = `${p.user?.username || ''} ${getDisplayName(p.user)}`.toLowerCase();
+    return target.includes(participantsFilter.toLowerCase());
+  });
+  const filteredOffline = offlineParticipants.filter(p => {
+    if (!participantsFilter.trim()) return true;
+    const target = `${p.user?.username || ''} ${getDisplayName(p.user)}`.toLowerCase();
+    return target.includes(participantsFilter.toLowerCase());
+  });
+
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header de la conversation */}
@@ -524,10 +557,137 @@ export function ConversationView({
           </div>
         </div>
 
-        {/* Indicateur d'activité */}
-        <div className="mt-2 text-xs text-gray-500">
-          {getActivityIndicator()}
-        </div>
+        {/* Indicateur d'activité ou liste des en ligne + popover participants */}
+        {typingUsers.length > 0 ? (
+          <div className="mt-2 text-xs text-gray-500">
+            {getActivityIndicator()}
+          </div>
+        ) : (
+          <div className="mt-2 flex items-center gap-2">
+            {/* Bouton popover participants à gauche */}
+            <Popover open={isParticipantsOpen} onOpenChange={setIsParticipantsOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 px-2">
+                  <UsersIcon className="h-4 w-4 mr-1" />
+                  <span className="text-xs">Participants</span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-80 p-0 shadow-2xl border border-gray-200 bg-white/95 backdrop-blur-sm"
+                side="bottom"
+                align="start"
+                sideOffset={8}
+                alignOffset={0}
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <div className="p-3">
+                  {/* Barre de recherche */}
+                  <div className="mb-3">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                      <Input
+                        placeholder="Rechercher..."
+                        value={participantsFilter}
+                        onChange={(e) => setParticipantsFilter(e.target.value)}
+                        className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 border-gray-200/60 focus:bg-white focus:border-blue-300"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="max-h-64 overflow-y-auto space-y-3">
+                    {/* Section en ligne */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-semibold text-gray-600">En ligne</span>
+                        <Badge variant="secondary" className="text-[10px]">
+                          {filteredOnline.length}
+                        </Badge>
+                      </div>
+                      {filteredOnline.length === 0 ? (
+                        <div className="text-xs text-gray-400">Personne en ligne</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {filteredOnline.map((p) => (
+                            <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+                              <div className="relative">
+                                <Avatar className="h-7 w-7">
+                                  <AvatarImage src={p.user?.avatar} />
+                                  <AvatarFallback className="text-[10px] bg-primary/20 text-primary">
+                                    {getDisplayName(p.user).slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium truncate">{getDisplayName(p.user)}</div>
+                                <div className="text-xs text-gray-500 truncate">@{p.user?.username}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Section hors ligne */}
+                    <div>
+                      <div className="flex items-center justify-between mt-2 mb-1">
+                        <span className="text-xs font-semibold text-gray-600">Hors ligne</span>
+                        <Badge variant="outline" className="text-[10px]">
+                          {filteredOffline.length}
+                        </Badge>
+                      </div>
+                      {filteredOffline.length === 0 ? (
+                        <div className="text-xs text-gray-400">Aucun participant hors ligne</div>
+                      ) : (
+                        <div className="space-y-1">
+                          {filteredOffline.map((p) => (
+                            <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+                              <div className="relative">
+                                <Avatar className="h-7 w-7">
+                                  <AvatarImage src={p.user?.avatar} />
+                                  <AvatarFallback className="text-[10px] bg-gray-100 text-gray-600">
+                                    {getDisplayName(p.user).slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-gray-400 rounded-full border-2 border-white" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium truncate">{getDisplayName(p.user)}</div>
+                                <div className="text-xs text-gray-500 truncate">@{p.user?.username}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Liste horizontale des en ligne */}
+            <div className="flex items-center gap-1 overflow-x-auto">
+              {onlineParticipants.length === 0 ? (
+                <span className="text-xs text-gray-500">Personne en ligne</span>
+              ) : (
+                onlineParticipants.slice(0, 10).map((p) => (
+                  <div key={p.id} className="relative">
+                    <Avatar className="h-7 w-7">
+                      <AvatarImage src={p.user?.avatar} />
+                      <AvatarFallback className="text-[10px] bg-primary/20 text-primary">
+                        {getDisplayName(p.user).slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-0 -right-0 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-white" />
+                  </div>
+                ))
+              )}
+              {onlineParticipants.length > 10 && (
+                <Badge variant="secondary" className="ml-1 text-[10px]">+{onlineParticipants.length - 10}</Badge>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Messages */}
