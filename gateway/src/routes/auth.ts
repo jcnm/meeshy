@@ -19,7 +19,9 @@ const registerSchema = z.object({
   lastName: z.string().min(1).max(100),
   email: z.string().email(),
   password: z.string().min(6),
-  phoneNumber: z.string().optional()
+  phoneNumber: z.string().optional(),
+  systemLanguage: z.string().optional().default('fr'),
+  regionalLanguage: z.string().optional().default('fr')
 });
 
 export async function authRoutes(fastify: FastifyInstance) {
@@ -166,6 +168,8 @@ export async function authRoutes(fastify: FastifyInstance) {
           email: body.email,
           password: hashedPassword,
           phoneNumber: body.phoneNumber,
+          systemLanguage: body.systemLanguage || 'fr',
+          regionalLanguage: body.regionalLanguage || 'fr',
           displayName: `${body.firstName} ${body.lastName}`,
           isOnline: true,
           lastActiveAt: new Date()

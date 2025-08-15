@@ -31,33 +31,31 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
     setLoading(true);
 
     try {
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.JOIN), {
+      // Utiliser l'endpoint d'inscription standard avec les bonnes clés de langue
+      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.REGISTER), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          linkId,
-          userData: {
-            ...formData,
-            conversationLinkId: linkId,
-          },
+          username: formData.email.split('@')[0], // Générer un username à partir de l'email
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: 'password123', // Mot de passe temporaire pour les tests
+          phoneNumber: formData.phoneNumber,
+          systemLanguage: formData.spokenLanguage,
+          regionalLanguage: formData.receiveLanguage,
         }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        toast.success(
-          result.data.existingUserFound 
-            ? 'Compte existant trouvé ! Connexion en cours...'
-            : result.data.isNewUser 
-            ? 'Compte créé avec succès !'
-            : 'Connexion réussie !'
-        );
+        toast.success('Compte créé avec succès !');
         onSuccess(result.data);
       } else {
-        toast.error(result.error || 'Erreur lors de la création du compte');
+        toast.error(result.message || 'Erreur lors de la création du compte');
       }
     } catch (error) {
       console.error('Erreur:', error);
@@ -117,13 +115,12 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Numéro de téléphone *</Label>
+            <Label htmlFor="phoneNumber">Numéro de téléphone (optionnel)</Label>
             <Input
               id="phoneNumber"
               type="tel"
               value={formData.phoneNumber}
               onChange={(e) => updateFormData('phoneNumber', e.target.value)}
-              required
               placeholder="+33123456789"
             />
           </div>
@@ -163,7 +160,7 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={loading || !formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber || !formData.spokenLanguage || !formData.receiveLanguage}
+            disabled={loading || !formData.firstName || !formData.lastName || !formData.email || !formData.spokenLanguage || !formData.receiveLanguage}
           >
             {loading ? 'Création en cours...' : 'Créer le compte et rejoindre'}
           </Button>

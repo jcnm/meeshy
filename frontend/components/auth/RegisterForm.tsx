@@ -165,14 +165,13 @@ export function RegisterForm({ onSuccess, redirectTo = '/dashboard' }: RegisterF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Téléphone</Label>
+            <Label htmlFor="phoneNumber">Téléphone (optionnel)</Label>
             <Input
               id="phoneNumber"
               type="tel"
               value={formData.phoneNumber}
               onChange={handleChange('phoneNumber')}
               placeholder="+33 1 23 45 67 89"
-              required
               disabled={isLoading}
             />
           </div>
