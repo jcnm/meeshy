@@ -17,6 +17,7 @@ import {
   Shield,
   Brain,
   Globe2,
+  Globe,
   Send,
   Languages,
   MapPin, 
@@ -46,8 +47,7 @@ import {
 
 // Import des composants modulaires
 import {
-  LanguageSelector,
-  TranslationStats
+  LanguageSelector
 } from '@/components/translation';
 
 // Import des constantes centralisées
@@ -85,11 +85,13 @@ import { ZIndexTestComponent } from '@/components/debug/z-index-test';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
+import { useTranslationStats } from '@/hooks/use-translation-stats';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import type { User, Message, BubbleTranslation } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
+import { conversationsService } from '@/services';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useMessageLoader } from '@/hooks/use-message-loader';
 
@@ -140,6 +142,28 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
+  // Fonction pour charger les utilisateurs en ligne
+  const loadActiveUsers = useCallback(async () => {
+    try {
+      const onlineUsers = await conversationsService.getParticipants('any', { onlineOnly: true });
+      setActiveUsers(onlineUsers);
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs actifs:', error);
+      // En cas d'erreur, on garde les données WebSocket si disponibles
+    }
+  }, []);
+
+  // Fonction pour charger tous les participants (pour les statistiques)
+  const loadAllParticipants = useCallback(async () => {
+    try {
+      const allParticipants = await conversationsService.getParticipants('any');
+      return allParticipants;
+    } catch (error) {
+      console.error('Erreur lors du chargement des participants:', error);
+      return [];
+    }
+  }, []);
+
   // États de chargement
   const [isInitializing, setIsInitializing] = useState(true);
   const [hasLoadedMessages, setHasLoadedMessages] = useState(false);
@@ -163,10 +187,28 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
         if (prev.some(u => u.id === userId)) return prev;
         
-        // Utiliser le username s'il est fourni, sinon utiliser l'ID avec un formatage plus convivial
-        const displayName = username && username !== userId 
-          ? username 
-          : `Utilisateur ${userId.slice(-6)}`; // Prendre les 6 derniers caractères de l'ID
+        // Rechercher l'utilisateur dans la liste des utilisateurs connectés pour obtenir son vrai nom
+        const connectedUser = activeUsers.find(u => u.id === userId);
+        let displayName: string;
+        
+        if (connectedUser) {
+          // Utiliser le nom complet de l'utilisateur connecté
+          if (connectedUser.displayName) {
+            displayName = connectedUser.displayName;
+          } else if (connectedUser.firstName || connectedUser.lastName) {
+            displayName = `${connectedUser.firstName || ''} ${connectedUser.lastName || ''}`.trim();
+          } else {
+            displayName = connectedUser.username;
+          }
+        } else if (username && username !== userId) {
+          // Fallback sur le username fourni par l'événement
+          displayName = username;
+        } else {
+          // Fallback final avec un ID formaté
+          displayName = `Utilisateur ${userId.slice(-6)}`;
+        }
+        
+        console.log('✍️ Utilisateur en train de taper:', { userId, displayName, connectedUser: !!connectedUser });
         
         return [...prev, { id: userId, displayName }];
       } else {
@@ -174,7 +216,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         return prev.filter(u => u.id !== userId);
       }
     });
-  }, [user.id]);
+  }, [user.id, activeUsers]); // Ajouter activeUsers aux dépendances
 
   const handleUserStatus = useCallback((userId: string, username: string, isOnline: boolean) => {
     console.log('👤 Statut utilisateur changé:', { userId, username, isOnline });
@@ -183,6 +225,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
 
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
     console.log('🌐 Traductions reçues pour message:', messageId, translations);
+    
+    console.log('🔄 Traductions reçues:', translations);
     
     // Mettre à jour le message avec les nouvelles traductions
     updateMessageTranslations(messageId, translations);
@@ -195,17 +239,20 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     ].filter(Boolean); // Enlever les valeurs undefined/null
 
     const relevantTranslation = translations.find(t => 
-      userLanguages.includes(t.language || t.targetLanguage)
+      userLanguages.includes(t.targetLanguage)
     );
     
     if (relevantTranslation) {
-      const langInfo = getLanguageInfo(relevantTranslation.language || relevantTranslation.targetLanguage);
+      const langInfo = getLanguageInfo(relevantTranslation.targetLanguage);
       
       console.log('✅ Toast pour traduction pertinente:', {
         langue: langInfo?.name,
         userLanguages,
-        translationLanguage: relevantTranslation.language || relevantTranslation.targetLanguage
+        translationLanguage: relevantTranslation.targetLanguage
       });
+      
+      // Incrémenter les statistiques de traduction
+      incrementTranslationCount(relevantTranslation.targetLanguage);
       
       toast.success(`🌐 Message traduit en ${langInfo?.name || 'votre langue'}`, {
         duration: TOAST_SHORT_DURATION
@@ -240,6 +287,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   }, [addMessage, user.id]);
 
   // Hooks
+  const { stats: translationStats, incrementTranslationCount } = useTranslationStats();
+  
   const { 
     sendMessage: sendMessageToService,
     connectionStatus,
@@ -522,6 +571,11 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, [hasLoadedMessages, isLoadingMessages]);
 
+  // Charger les utilisateurs actifs au démarrage
+  useEffect(() => {
+    loadActiveUsers();
+  }, [loadActiveUsers]);
+
   // Calculer les statistiques de langues à partir des messages chargés
   useEffect(() => {
     if (translatedMessages.length > 0) {
@@ -576,58 +630,41 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       setMessageLanguageStats(messageStats);
       setActiveLanguageStats(userStats);
       
-      // Simuler quelques utilisateurs actifs si pas déjà définis
-      if (activeUsers.length === 0 && translatedMessages.length > 0) {
-        const uniqueSenders = Array.from(new Set(
-          translatedMessages
-            .map(m => m.sender)
-            .filter(Boolean)
-            .map(sender => sender!.id)
-        ));
-        
-        const simulatedUsers: User[] = uniqueSenders.slice(0, 8).map((senderId, index) => {
-          const message = translatedMessages.find(m => m.sender?.id === senderId);
-          const sender = message?.sender;
-          
-          return {
-            id: senderId,
-            username: sender?.username || `user${index + 1}`,
-            firstName: sender?.firstName || `User`,
-            lastName: sender?.lastName || `${index + 1}`,
-            email: `${sender?.username || `user${index + 1}`}@example.com`,
-            avatar: '',
-            role: 'USER' as const,
-            permissions: {
-              canAccessAdmin: false,
-              canManageUsers: false,
-              canManageGroups: false,
-              canManageConversations: false,
-              canViewAnalytics: false,
-              canModerateContent: false,
-              canViewAuditLogs: false,
-              canManageNotifications: false,
-              canManageTranslations: false,
-            },
-            systemLanguage: message?.originalLanguage || 'fr',
-            regionalLanguage: 'fr',
-            autoTranslateEnabled: true,
-            translateToSystemLanguage: true,
-            translateToRegionalLanguage: false,
-            useCustomDestination: false,
-            isOnline: Math.random() > 0.3, // 70% chance d'être en ligne
-            isActive: true,
-            lastSeen: new Date(),
-            createdAt: new Date(),
-            lastActiveAt: new Date(),
-            updatedAt: new Date()
-          };
-        });
-        
-        setActiveUsers(simulatedUsers);
-        console.log('👥 Utilisateurs actifs simulés:', simulatedUsers.length);
+      // Charger les utilisateurs actifs depuis l'API au lieu de simuler
+      if (activeUsers.length === 0) {
+        loadActiveUsers();
       }
+      
+      // Charger tous les participants pour calculer les statistiques des utilisateurs
+      loadAllParticipants().then(allParticipants => {
+        if (allParticipants.length > 0) {
+          // Recalculer les statistiques des utilisateurs avec les vraies données
+          const realUserLanguages: { [key: string]: Set<string> } = {};
+          
+          allParticipants.forEach(participant => {
+            const lang = participant.systemLanguage || 'fr';
+            if (!realUserLanguages[lang]) {
+              realUserLanguages[lang] = new Set();
+            }
+            realUserLanguages[lang].add(participant.id);
+          });
+          
+          const realUserStats: LanguageStats[] = Object.entries(realUserLanguages)
+            .map(([code, users], index) => ({
+              language: code,
+              flag: getLanguageFlag(code),
+              count: users.size,
+              color: `hsl(${(index * 137.5) % 360}, 50%, 50%)`
+            }))
+            .filter(stat => stat.count > 0)
+            .sort((a, b) => b.count - a.count);
+          
+          setActiveLanguageStats(realUserStats);
+          console.log('👥 Statistiques utilisateurs réelles calculées:', realUserStats);
+        }
+      });
     }
-  }, [translatedMessages]);
+  }, [translatedMessages, activeUsers, loadActiveUsers, loadAllParticipants]);
 
   // Afficher l'écran de chargement pendant l'initialisation
   if (isInitializing) {
