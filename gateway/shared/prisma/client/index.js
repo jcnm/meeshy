@@ -393,7 +393,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/smpceo/Downloads/Meeshy/meeshy/shared/prisma/client",
+      "value": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/prisma/client",
       "fromEnvVar": null
     },
     "config": {
@@ -427,12 +427,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/smpceo/Downloads/Meeshy/meeshy/shared/schema.prisma",
+    "sourceFilePath": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../.env"
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "../..",
   "clientVersion": "6.13.0",
@@ -441,7 +441,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -460,8 +459,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
+    "shared/prisma/client",
     "prisma/client",
-    "client",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -491,23 +490,23 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
-path.join(process.cwd(), "prisma/client/libquery_engine-darwin-arm64.dylib.node")
+path.join(process.cwd(), "shared/prisma/client/libquery_engine-darwin-arm64.dylib.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node");
-path.join(process.cwd(), "prisma/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node")
+path.join(process.cwd(), "shared/prisma/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-linux-musl.so.node");
-path.join(process.cwd(), "prisma/client/libquery_engine-linux-musl.so.node")
+path.join(process.cwd(), "shared/prisma/client/libquery_engine-linux-musl.so.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-linux-musl-openssl-3.0.x.so.node");
-path.join(process.cwd(), "prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node")
+path.join(process.cwd(), "shared/prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-linux-musl-arm64-openssl-1.1.x.so.node");
-path.join(process.cwd(), "prisma/client/libquery_engine-linux-musl-arm64-openssl-1.1.x.so.node")
+path.join(process.cwd(), "shared/prisma/client/libquery_engine-linux-musl-arm64-openssl-1.1.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "prisma/client/schema.prisma")
+path.join(process.cwd(), "shared/prisma/client/schema.prisma")
