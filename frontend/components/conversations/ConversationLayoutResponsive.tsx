@@ -227,6 +227,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         p.user.id === userId ? { ...p, user: { ...p.user, isOnline } } : p
       ));
     },
+    onConversationStats: (data: { conversationId: string; stats: any }) => {
+      // si stats contiennent des participants, on peut les utiliser; sinon ignoré
+    },
+    onConversationOnlineStats: (data: { conversationId: string; onlineUsers: Array<{ id: string }>; updatedAt: Date }) => {
+      if (!selectedConversation?.id || data.conversationId !== selectedConversation.id) return;
+      const onlineSet = new Set((data.onlineUsers || []).map(u => u.id));
+      setConversationParticipants(prev => prev.map(p => ({
+        ...p,
+        user: { ...p.user, isOnline: onlineSet.has(p.user.id) }
+      })));
+    },
     onNewMessage: (message: Message) => {
       // Vérifier que le message appartient à la conversation active
       if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
