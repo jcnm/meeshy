@@ -80,7 +80,7 @@ class TranslationPoolManager:
         self.normal_workers_running = False
         self.any_workers_running = False
         
-        logger.info(f"TranslationPoolManager initialisé: normal_pool({normal_pool_size}), any_pool({any_pool_size}), normal_workers({normal_workers}), any_workers({any_workers})")
+        logger.info(f"[TRANSLATOR] TranslationPoolManager initialisé: normal_pool({normal_pool_size}), any_pool({any_pool_size}), normal_workers({normal_workers}), any_workers({any_workers})")
     
     async def enqueue_task(self, task: TranslationTask) -> bool:
         """Enfile une tâche dans la pool appropriée"""
@@ -129,7 +129,7 @@ class TranslationPoolManager:
             for i in range(self.any_workers)
         ]
         
-        logger.info(f"Workers démarrés: {self.normal_workers} normal, {self.any_workers} any")
+        logger.info(f"[TRANSLATOR] Workers démarrés: {self.normal_workers} normal, {self.any_workers} any")
         return normal_worker_tasks + any_worker_tasks
     
     async def stop_workers(self):
@@ -212,6 +212,9 @@ class TranslationPoolManager:
             for target_language, translation_task in translation_tasks:
                 try:
                     result = await translation_task
+                    # Ajouter le type de pool au résultat
+                    result['poolType'] = 'any' if task.conversation_id == 'any' else 'normal'
+                    result['created_at'] = task.created_at
                     # Publier le résultat via PUB
                     await self._publish_translation_result(task.task_id, result, target_language)
                     self.stats['translations_completed'] += 1
@@ -235,6 +238,7 @@ class TranslationPoolManager:
         try:
             # Utiliser le service de traduction partagé
             if self.translation_service:
+                logger.info(f"🔧 [TRANSLATOR] Avant appel ML service: {worker_name}")
                 # Effectuer la vraie traduction avec le service ML unifié
                 result = await self.translation_service.translate(
                     text=task.text,
@@ -243,15 +247,26 @@ class TranslationPoolManager:
                     model_type=task.model_type,
                     source_channel='zmq'  # Identifier le canal source
                 )
+                logger.info(f"🔧 [TRANSLATOR] Après appel ML service: {worker_name}, résultat: {type(result)}")
                 
                 processing_time = time.time() - start_time
+                
+                # Vérifier si le résultat est None ou invalide
+                if result is None:
+                    logger.error(f"❌ [TRANSLATOR] Service ML a retourné None pour {worker_name}")
+                    raise Exception("Service de traduction a retourné None")
+                
+                # Vérifier que le résultat contient les clés attendues
+                if not isinstance(result, dict) or 'translated_text' not in result:
+                    logger.error(f"❌ [TRANSLATOR] Résultat invalide pour {worker_name}: {result}")
+                    raise Exception(f"Résultat de traduction invalide: {result}")
                 
                 logger.info(f"✅ [TRANSLATOR] Traduction terminée: worker={worker_name}, '{task.text[:30]}...' → '{result['translated_text'][:30]}...' ({processing_time:.3f}s)")
                 
                 return {
                     'messageId': task.message_id,
                     'translatedText': result['translated_text'],
-                    'sourceLanguage': result['detected_language'],
+                    'sourceLanguage': result.get('detected_language', task.source_language),
                     'targetLanguage': target_language,
                     'confidenceScore': result.get('confidence', 0.95),
                     'processingTime': processing_time,
@@ -329,8 +344,8 @@ class ZMQTranslationServer:
     
     def __init__(self, 
                  host: str = "localhost",
-                 gateway_pub_port: int = 5557,  # Port PUB du Gateway (requêtes) - Translator SUB se connecte ici
-                 gateway_sub_port: int = 5555,  # Port SUB du Gateway (résultats) - Translator PUB se connecte ici
+                 gateway_push_port: int = 5555,  # Port où Translator PULL bind (Gateway PUSH connect ici)
+                 gateway_sub_port: int = 5558,   # Port où Translator PUB bind (Gateway SUB connect ici)
                  normal_pool_size: int = 10000,
                  any_pool_size: int = 10000,
                  normal_workers: int = 3,
@@ -338,13 +353,13 @@ class ZMQTranslationServer:
                  translation_service=None):
         
         self.host = host
-        self.gateway_pub_port = gateway_pub_port  # Port PUB du Gateway - Translator SUB se connecte
-        self.gateway_sub_port = gateway_sub_port  # Port SUB du Gateway - Translator PUB se connecte
+        self.gateway_push_port = gateway_push_port  # Port pour PULL (recevoir commandes)
+        self.gateway_sub_port = gateway_sub_port    # Port pour PUB (envoyer réponses)
         self.context = zmq.asyncio.Context()
         
         # Sockets
-        self.sub_socket = None  # Pour recevoir les requêtes de traduction
-        self.pub_socket = None  # Pour publier les résultats
+        self.pull_socket = None  # PULL pour recevoir les commandes de traduction
+        self.pub_socket = None   # PUB pour publier les résultats (inchangé)
         
         # Pool manager
         self.pool_manager = TranslationPoolManager(
@@ -362,17 +377,16 @@ class ZMQTranslationServer:
         self.running = False
         self.worker_tasks = []
         
-        logger.info(f"ZMQTranslationServer initialisé: Gateway PUB {host}:{gateway_pub_port} (SUB connecte), Gateway SUB {host}:{gateway_sub_port} (PUB connecte)")
+        logger.info(f"ZMQTranslationServer initialisé: Gateway PUSH {host}:{gateway_push_port} (PULL bind), Gateway SUB {host}:{gateway_sub_port} (PUB bind)")
 
     async def initialize(self):
-        """Initialise les sockets ZMQ"""
+        """Initialise les sockets ZMQ avec architecture PUSH/PULL + PUB/SUB"""
         try:
-            # Socket SUB pour recevoir les requêtes du Gateway (se lie au port 5557)
-            self.sub_socket = self.context.socket(zmq.SUB)
-            self.sub_socket.bind(f"tcp://{self.host}:{self.gateway_pub_port}")
-            self.sub_socket.setsockopt_string(zmq.SUBSCRIBE, "")  # S'abonner à tous les messages
+            # Socket PULL pour recevoir les commandes du Gateway (remplace SUB)
+            self.pull_socket = self.context.socket(zmq.PULL)
+            self.pull_socket.bind(f"tcp://{self.host}:{self.gateway_push_port}")
             
-            # Socket PUB pour publier les résultats vers le Gateway (se lie au port 5555)
+            # Socket PUB pour publier les résultats vers le Gateway (inchangé)
             self.pub_socket = self.context.socket(zmq.PUB)
             self.pub_socket.bind(f"tcp://{self.host}:{self.gateway_sub_port}")
             
@@ -383,7 +397,7 @@ class ZMQTranslationServer:
             self.worker_tasks = await self.pool_manager.start_workers()
             
             logger.info("ZMQTranslationServer initialisé avec succès")
-            logger.info(f"🔌 Socket SUB lié au port: {self.host}:{self.gateway_pub_port}")
+            logger.info(f"🔌 Socket PULL lié au port: {self.host}:{self.gateway_push_port}")
             logger.info(f"🔌 Socket PUB lié au port: {self.host}:{self.gateway_sub_port}")
             
         except Exception as e:
@@ -392,21 +406,35 @@ class ZMQTranslationServer:
     
     async def start(self):
         """Démarre le serveur"""
-        if not self.sub_socket or not self.pub_socket:
+        if not self.pull_socket or not self.pub_socket:
             await self.initialize()
         
         self.running = True
         logger.info("ZMQTranslationServer démarré")
-        logger.info(f"🔧 État du serveur: running={self.running}")
-        logger.info(f"🔧 Socket SUB connecté: {self.sub_socket is not None}")
+        logger.info(f"[TRANSLATOR] 🔧 État du serveur: running={self.running}")
+        logger.info(f"🔧 Socket PULL lié: {self.pull_socket is not None}")
         logger.info(f"🔧 Socket PUB lié: {self.pub_socket is not None}")
         
         try:
             while self.running:
                 try:
-                    logger.info("🎧 En attente de messages ZMQ...")
-                    # Recevoir une requête de traduction
-                    message = await self.sub_socket.recv()
+                    # LOG DÉTAILLÉ DES OBJETS AVANT COMMUNICATION
+                    logger.info("🔍 [TRANSLATOR] VÉRIFICATION OBJETS ZMQ AVANT RÉCEPTION:")
+                    logger.info(f"   📋 self.pull_socket: {self.pull_socket}")
+                    logger.info(f"   📋 self.pub_socket: {self.pub_socket}")
+                    logger.info(f"   📋 self.context: {self.context}")
+                    logger.info(f"   📋 self.running: {self.running}")
+                    logger.info(f"   📋 Socket PULL fermé?: {self.pull_socket.closed if self.pull_socket else 'N/A'}")
+                    logger.info(f"   📋 Socket PUB fermé?: {self.pub_socket.closed if self.pub_socket else 'N/A'}")
+                    
+                    logger.info("🎧 En attente de commandes ZMQ...")
+                    # Recevoir une commande de traduction via PULL
+                    message = await self.pull_socket.recv()
+                    
+                    logger.info("🔍 [TRANSLATOR] VÉRIFICATION OBJETS APRÈS RÉCEPTION:")
+                    logger.info(f"   📋 Message reçu (taille): {len(message)} bytes")
+                    logger.info(f"   📋 self.pull_socket encore valide: {self.pull_socket is not None}")
+                    
                     await self._handle_translation_request(message)
                     
                 except zmq.ZMQError as e:
@@ -428,7 +456,7 @@ class ZMQTranslationServer:
         try:
             request_data = json.loads(message.decode('utf-8'))
             
-            logger.info(f"📥 [TRANSLATOR] Requête ZMQ reçue: {request_data}")
+            logger.info(f"📥 [TRANSLATOR] Commande PULL reçue: {request_data}")
             
             # Créer la tâche de traduction
             task = TranslationTask(
@@ -469,27 +497,102 @@ class ZMQTranslationServer:
             logger.error(f"Erreur lors du traitement de la requête: {e}")
     
     async def _publish_translation_result(self, task_id: str, result: dict, target_language: str):
-        """Publie un résultat de traduction via PUB vers la gateway"""
+        """Publie un résultat de traduction via PUB vers la gateway avec informations techniques complètes"""
         try:
+            # LOG DÉTAILLÉ DES OBJETS AVANT ENVOI
+            logger.info("🔍 [TRANSLATOR] VÉRIFICATION OBJETS ZMQ AVANT ENVOI PUB:")
+            logger.info(f"   📋 self.pub_socket: {self.pub_socket}")
+            logger.info(f"   📋 self.pub_socket type: {type(self.pub_socket)}")
+            logger.info(f"   📋 Socket PUB fermé?: {self.pub_socket.closed if self.pub_socket else 'N/A'}")
+            logger.info(f"   📋 self.context: {self.context}")
+            logger.info(f"   📋 self.context term?: {self.context.closed if hasattr(self.context, 'closed') else 'N/A'}")
+            
+            # Récupérer les informations techniques du système
+            import socket
+            import uuid
+            
+            # Calculer le temps d'attente en queue
+            queue_time = time.time() - result.get('created_at', time.time())
+            
+            # Récupérer les métriques système
+            memory_usage = psutil.Process().memory_info().rss / 1024 / 1024  # MB
+            cpu_usage = psutil.Process().cpu_percent()
+            # Attendre un peu pour avoir une mesure CPU valide
+            await asyncio.sleep(0.1)
+            cpu_usage = psutil.Process().cpu_percent()
+            
+            # Enrichir le résultat avec toutes les informations techniques
+            enriched_result = {
+                # Informations applicatives existantes
+                'messageId': result.get('messageId'),
+                'translatedText': result.get('translatedText'),
+                'sourceLanguage': result.get('sourceLanguage'),
+                'targetLanguage': result.get('targetLanguage'),
+                'confidenceScore': result.get('confidenceScore', 0.0),
+                'processingTime': result.get('processingTime', 0.0),
+                'modelType': result.get('modelType', 'basic'),
+                'workerName': result.get('workerName', 'unknown'),
+                
+                # NOUVELLES INFORMATIONS TECHNIQUES
+                'translatorModel': result.get('modelType', 'basic'),  # Modèle ML utilisé
+                'workerId': result.get('workerName', 'unknown'),      # Worker qui a traité
+                'poolType': result.get('poolType', 'normal'),         # Pool utilisée (normal/any)
+                'translationTime': result.get('processingTime', 0.0), # Temps de traduction
+                'queueTime': queue_time,                              # Temps d'attente en queue
+                'memoryUsage': memory_usage,                          # Usage mémoire (MB)
+                'cpuUsage': cpu_usage,                                # Usage CPU (%)
+                'timestamp': time.time(),
+                'version': '1.0.0'  # Version du Translator
+            }
+            
+            # Créer le message enrichi
             message = {
                 'type': 'translation_completed',
                 'taskId': task_id,
-                'result': result,
+                'result': enriched_result,
                 'targetLanguage': target_language,
-                'timestamp': time.time()
+                'timestamp': time.time(),
+                # MÉTADONNÉES TECHNIQUES
+                'metadata': {
+                    'translatorVersion': '1.0.0',
+                    'modelVersion': result.get('modelType', 'basic'),
+                    'processingNode': socket.gethostname(),
+                    'sessionId': str(uuid.uuid4()),
+                    'requestId': task_id,
+                    'protocol': 'ZMQ_PUB_SUB',
+                    'encoding': 'UTF-8'
+                }
             }
             
-            logger.info(f"📤 [TRANSLATOR] Envoi résultat vers gateway: taskId={task_id}, target={target_language}, result={result}")
+            logger.info(f"📤 [TRANSLATOR] Préparation envoi résultat enrichi vers gateway:")
+            logger.info(f"   📋 taskId: {task_id}")
+            logger.info(f"   📋 target: {target_language}")
+            logger.info(f"   📋 message size: {len(json.dumps(message))} chars")
+            logger.info(f"   📋 modèle: {enriched_result['translatorModel']}")
+            logger.info(f"   📋 worker: {enriched_result['workerId']}")
+            logger.info(f"   📋 temps traduction: {enriched_result['translationTime']:.3f}s")
+            logger.info(f"   📋 temps queue: {enriched_result['queueTime']:.3f}s")
+            logger.info(f"   📋 mémoire: {enriched_result['memoryUsage']:.1f}MB")
+            logger.info(f"   📋 CPU: {enriched_result['cpuUsage']:.1f}%")
             
             # Utiliser le socket PUB configuré pour envoyer à la gateway
             if self.pub_socket:
+                logger.info("🔍 [TRANSLATOR] ENVOI VIA PUB SOCKET:")
+                logger.info(f"   📋 Socket state avant envoi: {self.pub_socket}")
+                
                 await self.pub_socket.send(json.dumps(message).encode('utf-8'))
-                logger.info(f"📤 [TRANSLATOR] Résultat envoyé vers gateway: {task_id} -> {target_language}")
+                
+                logger.info("🔍 [TRANSLATOR] VÉRIFICATION APRÈS ENVOI:")
+                logger.info(f"   📋 Socket state après envoi: {self.pub_socket}")
+                logger.info(f"   📋 Envoi réussi pour taskId: {task_id}")
+                logger.info(f"📤 [TRANSLATOR] Résultat enrichi envoyé vers gateway: {task_id} -> {target_language}")
             else:
                 logger.error("❌ Socket PUB non initialisé")
             
         except Exception as e:
-            logger.error(f"Erreur lors de la publication du résultat: {e}")
+            logger.error(f"Erreur lors de la publication du résultat enrichi: {e}")
+            import traceback
+            traceback.print_exc()
     
     async def stop(self):
         """Arrête le serveur"""
@@ -503,8 +606,8 @@ class ZMQTranslationServer:
             await asyncio.gather(*self.worker_tasks, return_exceptions=True)
         
         # Fermer les sockets
-        if self.sub_socket:
-            self.sub_socket.close()
+        if self.pull_socket:
+            self.pull_socket.close()
         if self.pub_socket:
             self.pub_socket.close()
         
@@ -516,7 +619,7 @@ class ZMQTranslationServer:
         
         return {
             'server_status': 'running' if self.running else 'stopped',
-            'gateway_pub_port': self.gateway_pub_port,
+            'gateway_push_port': self.gateway_push_port,
             'gateway_sub_port': self.gateway_sub_port,
             'normal_workers': self.pool_manager.normal_workers,
             'any_workers': self.pool_manager.any_workers,

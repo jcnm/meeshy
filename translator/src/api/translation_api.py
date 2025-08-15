@@ -98,11 +98,11 @@ class TranslationAPI:
         async def startup_event():
             import time
             self.start_time = time.time()
-            logger.info("🚀 API FastAPI démarrée")
+            logger.info("[TRANSLATOR] 🚀 API FastAPI démarrée")
         
         @self.app.on_event("shutdown")
         async def shutdown_event():
-            logger.info("🛑 API FastAPI arrêtée")
+            logger.info("[TRANSLATOR] 🛑 API FastAPI arrêtée")
         
         # ===== ROUTES DE TRADUCTION =====
         
@@ -144,7 +144,7 @@ class TranslationAPI:
                 )
                 
             except Exception as e:
-                logger.error(f"❌ Erreur traduction API: {e}")
+                logger.error(f"[TRANSLATOR] ❌ Erreur traduction API: {e}")
                 import traceback
                 traceback.print_exc()
                 raise HTTPException(

@@ -316,7 +316,20 @@ class UnifiedMLTranslationService:
         except Exception as e:
             logger.error(f"❌ Erreur traduction ML [{source_channel}]: {e}")
             # Fallback en cas d'erreur
-            return await self._fallback_translate(text, source_language, target_language, model_type, source_channel)
+            fallback_result = await self._fallback_translate(text, source_language, target_language, model_type, source_channel)
+            if fallback_result is None:
+                # Double fallback si même le fallback échoue
+                logger.error(f"❌ Fallback a aussi échoué pour [{source_channel}], utilisation du fallback d'urgence")
+                return {
+                    'translated_text': f"[ERROR-{source_language}→{target_language}] {text}",
+                    'detected_language': source_language,
+                    'confidence': 0.0,
+                    'model_used': f"{model_type}_emergency_fallback",
+                    'from_cache': False,
+                    'processing_time': time.time() - start_time,
+                    'source_channel': source_channel
+                }
+            return fallback_result
     
     async def _ml_translate(self, text: str, source_lang: str, target_lang: str, model_type: str) -> str:
         """Traduction avec le vrai modèle ML - tokenizers thread-local pour éviter 'Already borrowed'"""
@@ -439,6 +452,11 @@ class UnifiedMLTranslationService:
             loop = asyncio.get_event_loop()
             translated = await loop.run_in_executor(self.executor, translate)
             
+            # Vérification que la traduction n'est pas None
+            if translated is None:
+                logger.error(f"❌ Traduction ML a retourné None pour {model_type}")
+                return f"[ML-None-Result] {text}"
+            
             return translated
             
         except Exception as e:
@@ -498,7 +516,7 @@ class UnifiedMLTranslationService:
         
         self._update_stats(0.001, source_channel)
         
-        return {
+        result = {
             'translated_text': translated_text,
             'detected_language': source_lang,
             'confidence': 0.3,  # Faible confiance pour fallback
@@ -507,6 +525,21 @@ class UnifiedMLTranslationService:
             'processing_time': 0.001,
             'source_channel': source_channel
         }
+        
+        # Vérification finale pour s'assurer qu'on ne retourne jamais None
+        if result is None or 'translated_text' not in result:
+            logger.error(f"❌ Fallback a produit un résultat invalide: {result}")
+            return {
+                'translated_text': f"[FALLBACK-ERROR-{source_lang}→{target_lang}] {text}",
+                'detected_language': source_lang,
+                'confidence': 0.0,
+                'model_used': f"{model_type}_error_fallback",
+                'from_cache': False,
+                'processing_time': 0.001,
+                'source_channel': source_channel
+            }
+        
+        return result
     
     def _update_stats(self, processing_time: float, source_channel: str):
         """Met à jour les statistiques globales"""
