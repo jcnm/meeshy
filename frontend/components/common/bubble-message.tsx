@@ -3,17 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { 
   MessageCircle,
-  Globe2,
   Star,
   Copy,
   AlertTriangle,
-  MapPin,
   Timer,
   Languages,
   MoreHorizontal,
   CheckCircle2,
   Loader2,
-  Globe,
   ArrowUp,
   Search,
   X
@@ -42,7 +39,7 @@ import {
 } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Message, User, BubbleTranslation } from '@/types';
+import type { Message, User, BubbleTranslation } from '@/shared/types';
 import { Z_CLASSES } from '@/lib/z-index';
 
 interface BubbleMessageProps {

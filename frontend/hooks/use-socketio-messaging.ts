@@ -19,6 +19,16 @@ interface TypingEvent {
 interface UseSocketIOMessagingOptions {
   conversationId?: string;
   currentUser?: User;
+  events?: {
+    message?: boolean;
+    edit?: boolean;
+    delete?: boolean;
+    translation?: boolean;
+    typing?: boolean;
+    status?: boolean;
+    conversationStats?: boolean;
+    onlineStats?: boolean;
+  };
   onNewMessage?: (message: Message) => void;
   onMessageEdited?: (message: Message) => void;
   onMessageDeleted?: (messageId: string) => void;
@@ -62,6 +72,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
   const {
     conversationId,
     currentUser,
+    events,
     onNewMessage,
     onMessageEdited,
     onMessageDeleted,
@@ -148,7 +159,8 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       return;
     }
     
-    if (conversationId) {
+    // Rejoindre uniquement si un utilisateur courant est fourni (évite les doubles joins via sous-composants)
+    if (conversationId && currentUser) {
       console.log('🚪 useSocketIOMessaging: Rejoindre conversation', { conversationId });
       meeshySocketIOService.joinConversation(conversationId);
 
@@ -157,7 +169,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
         meeshySocketIOService.leaveConversation(conversationId);
       };
     }
-  }, [conversationId]);
+  }, [conversationId, currentUser]);
 
   // Setup des listeners
   useEffect(() => {
@@ -168,7 +180,16 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     
     console.log('🎧 useSocketIOMessaging: Installation des listeners');
     
-    const unsubscribeMessage = meeshySocketIOService.onNewMessage((message) => {
+    const shouldListenMessage = events?.message ?? true;
+    const shouldListenEdit = events?.edit ?? true;
+    const shouldListenDelete = events?.delete ?? true;
+    const shouldListenTranslation = events?.translation ?? true;
+    const shouldListenTyping = events?.typing ?? true;
+    const shouldListenStatus = events?.status ?? true;
+    const shouldListenConvStats = events?.conversationStats ?? true;
+    const shouldListenOnlineStats = events?.onlineStats ?? true;
+
+    const unsubscribeMessage = shouldListenMessage ? meeshySocketIOService.onNewMessage((message) => {
       console.log('📨 useSocketIOMessaging: Nouveau message reçu', { 
         messageId: message.id, 
         conversationId: message.conversationId,
@@ -184,38 +205,38 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
           currentConversationId: conversationId
         });
       }
-    });
+    }) : () => {};
 
-    const unsubscribeEdit = meeshySocketIOService.onMessageEdited((message) => {
+    const unsubscribeEdit = shouldListenEdit ? meeshySocketIOService.onMessageEdited((message) => {
       console.log('✏️ useSocketIOMessaging: Message modifié', { messageId: message.id });
       if (!conversationId || message.conversationId === conversationId) {
         callbacksRef.current.onMessageEdited?.(message);
       }
-    });
+    }) : () => {};
 
-    const unsubscribeDelete = meeshySocketIOService.onMessageDeleted((messageId) => {
+    const unsubscribeDelete = shouldListenDelete ? meeshySocketIOService.onMessageDeleted((messageId) => {
       console.log('🗑️ useSocketIOMessaging: Message supprimé', { messageId });
       callbacksRef.current.onMessageDeleted?.(messageId);
-    });
+    }) : () => {};
 
     // Listener pour les traductions
-    const unsubscribeTranslation = meeshySocketIOService.onTranslation((data) => {
+    const unsubscribeTranslation = shouldListenTranslation ? meeshySocketIOService.onTranslation((data) => {
       console.log('🌐 useSocketIOMessaging: Traductions reçues', { 
         messageId: data.messageId, 
         translationsCount: data.translations.length 
       });
       callbacksRef.current.onTranslation?.(data.messageId, data.translations);
-    });
+    }) : () => {};
 
-    const unsubscribeConvStats = meeshySocketIOService.onConversationStats((data) => {
+    const unsubscribeConvStats = shouldListenConvStats ? meeshySocketIOService.onConversationStats((data) => {
       callbacksRef.current.onConversationStats?.(data);
-    });
-    const unsubscribeOnlineStats = meeshySocketIOService.onConversationOnlineStats((data) => {
+    }) : () => {};
+    const unsubscribeOnlineStats = shouldListenOnlineStats ? meeshySocketIOService.onConversationOnlineStats((data) => {
       callbacksRef.current.onConversationOnlineStats?.(data);
-    });
+    }) : () => {};
 
     // Listeners pour les événements de frappe - avec distinction start/stop
-    const unsubscribeTyping = meeshySocketIOService.onTyping((event: TypingEvent) => {
+    const unsubscribeTyping = shouldListenTyping ? meeshySocketIOService.onTyping((event: TypingEvent) => {
       if (!event || typeof event !== 'object') {
         console.warn('⚠️ useSocketIOMessaging: Événement de frappe invalide', event);
         return;
@@ -237,27 +258,31 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
         });
         callbacksRef.current.onUserTyping?.(event.userId, event.username, isTyping);
       }
-    });
+    }) : () => {};
 
-    const unsubscribeStatus = meeshySocketIOService.onUserStatus((event) => {
+    const unsubscribeStatus = shouldListenStatus ? meeshySocketIOService.onUserStatus((event) => {
       callbacksRef.current.onUserStatus?.(event.userId, event.username, event.isOnline);
-    });
+    }) : () => {};
 
-    // Mise à jour du statut de connexion (moins fréquente pour éviter les re-renders)
-    const statusInterval = setInterval(() => {
+    // Mises à jour de statut événementielles: courte fenêtre d'init, pas de polling continu
+    const updateStatus = () => {
       const newStatus = meeshySocketIOService.getConnectionStatus();
-      setConnectionStatus(prevStatus => {
-        // Ne mettre à jour que si le statut a changé
-        if (
-          prevStatus.isConnected !== newStatus.isConnected ||
-          prevStatus.hasSocket !== newStatus.hasSocket ||
-          prevStatus.currentUser !== newStatus.currentUser
-        ) {
-          return newStatus;
-        }
-        return prevStatus;
-      });
-    }, 2000); // Réduit de 1s à 2s pour moins de charge
+      setConnectionStatus(prev => (
+        prev.isConnected !== newStatus.isConnected ||
+        prev.hasSocket !== newStatus.hasSocket ||
+        prev.currentUser !== newStatus.currentUser
+      ) ? newStatus : prev);
+    };
+
+    const bootstrapInterval = setInterval(updateStatus, 1000);
+    let bootstrapTicks = 0;
+    const bootstrapStopper = setInterval(() => {
+      bootstrapTicks++;
+      if (bootstrapTicks >= 5) {
+        clearInterval(bootstrapInterval);
+        clearInterval(bootstrapStopper);
+      }
+    }, 1000);
 
     return () => {
       console.log('🎧 useSocketIOMessaging: Nettoyage des listeners');
@@ -269,7 +294,8 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       unsubscribeOnlineStats();
       unsubscribeTyping();
       unsubscribeStatus();
-      clearInterval(statusInterval);
+      clearInterval(bootstrapInterval);
+      clearInterval(bootstrapStopper);
     };
   }, [conversationId]); // Suppression des callbacks des dépendances pour éviter les cycles
 

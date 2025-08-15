@@ -343,7 +343,7 @@ class ZMQTranslationServer:
     """Serveur ZMQ pour la traduction avec architecture PUB/SUB"""
     
     def __init__(self, 
-                 host: str = "localhost",
+                 host: str = "0.0.0.0",
                  gateway_push_port: int = 5555,  # Port où Translator PULL bind (Gateway PUSH connect ici)
                  gateway_sub_port: int = 5558,   # Port où Translator PUB bind (Gateway SUB connect ici)
                  normal_pool_size: int = 10000,
@@ -377,7 +377,8 @@ class ZMQTranslationServer:
         self.running = False
         self.worker_tasks = []
         
-        logger.info(f"ZMQTranslationServer initialisé: Gateway PUSH {host}:{gateway_push_port} (PULL bind), Gateway SUB {host}:{gateway_sub_port} (PUB bind)")
+        logger.info(f"ZMQTranslationServer initialisé: Gateway PUSH {host}:{gateway_push_port} (PULL bind)")
+        logger.info(f"ZMQTranslationServer initialisé: Gateway SUB {host}:{gateway_sub_port} (PUB bind)")
 
     async def initialize(self):
         """Initialise les sockets ZMQ avec architecture PUSH/PULL + PUB/SUB"""

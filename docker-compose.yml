@@ -107,7 +107,7 @@ services:
     ports:
       - "${TRANSLATOR_HTTP_PORT:-8000}:8000"
       - "${TRANSLATOR_GRPC_PORT:-50051}:50051"
-      - "${TRANSLATOR_ZMQ_PORT:-5555}:5555"
+      - "${TRANSLATOR_ZMQ_PULL_PORT:-5555}:5555"
       - "${TRANSLATOR_ZMQ_PUB_PORT:-5557}:5557"
     volumes:
       - translator_cache:/app/cache

@@ -7,25 +7,24 @@ import { useUser } from '@/context/AppContext';
 import { useMessageSender } from '@/hooks/use-message-sender';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   MessageSquare,
   Users,
   Plus,
-  Send,
+  
   ArrowLeft,
   Link2,
   Info
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { 
-  Conversation, 
-  Message, 
+import type {
+  Conversation,
+  Message,
   TranslationData,
   SocketIOUser as User,
   ThreadMember
-} from '@/types';
+} from '@/shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { MessageComposer, MessageComposerRef } from '@/components/common/message-composer';
@@ -40,12 +39,7 @@ import { Badge } from '@/components/ui/badge';
 import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
 import { cleanTranslationOutput } from '@/utils/translation-cleaner';
 import { socketIOUserToUser, createDefaultUser } from '@/utils/user-adapter';
-import { 
-  translationDataToBubbleTranslation, 
-  getUserTranslation,
-  type BubbleTranslation 
-} from '@/utils/translation-adapter';
-import { TypingIndicator } from '@/components/conversations/typing-indicator';
+import type { BubbleTranslation } from '@/shared/types';
 import { ConversationParticipants } from '@/components/conversations/conversation-participants';
 import { ConversationParticipantsPopover } from '@/components/conversations/conversation-participants-popover';
 import { CreateLinkButton } from '@/components/conversations/create-link-button';
@@ -106,8 +100,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [conversationParticipants, setConversationParticipants] = useState<ThreadMember[]>([]);
-  const [onlineParticipants, setOnlineParticipants] = useState<ThreadMember[]>([]);
-  const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('fr'); // Langue pour l'envoi des messages
   const [isLoading, setIsLoading] = useState(true);
@@ -123,6 +115,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<string>('api-service');
+
+  // Helper: mise à jour idempotente des conversations pour éviter des re-renders inutiles
+  const setConversationsIfChanged = useCallback((updater: Conversation[] | ((prev: Conversation[]) => Conversation[])) => {
+    setConversations((prev) => {
+      const next = typeof updater === 'function' ? (updater as (p: Conversation[]) => Conversation[])(prev) : updater;
+      if (prev === next) return prev;
+      if (prev.length !== next.length) return next;
+      // Comparaison superficielle par id et updatedAt
+      const same = prev.every((p, i) => p.id === next[i].id && String(p.updatedAt) === String(next[i].updatedAt));
+      return same ? prev : next;
+    });
+  }, []);
 
   // Hook pour le chargement des messages
   const {
@@ -187,12 +191,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // Hook de messagerie réutilisable basé sur BubbleStreamPage
   const {
     isSending,
-    connectionStatus,
     sendMessage: sendMessageToService,
     startTyping,
     stopTyping,
-    reconnect,
-    getDiagnostics
   } = useMessageSender({
     conversationId: selectedConversation?.id,
     currentUser: user!, // user est garanti d'exister
@@ -209,9 +210,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Ajouter le message en temps réel à la liste affichée
       addMessage(message);
 
-      // Mettre à jour la conversation avec le dernier message (optimisé)
-      setConversations(prev => prev.map(
-        conv => conv.id === message.conversationId
+      // Mettre à jour la conversation avec le dernier message (optimisé et idempotent)
+      setConversationsIfChanged(prev => prev.map(
+        (conv) => conv.id === message.conversationId
           ? { ...conv, lastMessage: message, updatedAt: new Date() }
           : conv
       ));
@@ -232,7 +233,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         }
       }, 50);
     },
-    onTranslation: (messageId: string, translations: any[]) => {
+    onTranslation: (messageId: string, translations: TranslationData[]) => {
       console.log('🌐 [Conversation] Traductions reçues pour message:', messageId, translations);
       // Appliquer les traductions au message concerné via le loader commun
       updateMessageTranslations(messageId, translations);
@@ -474,7 +475,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         conversationsWithAny = [anyConversation, ...conversationsData];
       }
 
-      setConversations(sanitizeConversations(conversationsWithAny));
+      setConversationsIfChanged(sanitizeConversations(conversationsWithAny));
 
       // Sélectionner une conversation seulement si spécifiée dans l'URL
       const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
@@ -598,12 +599,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     try {
       // Charger tous les participants
       const allParticipants = await conversationsService.getParticipants(conversationId);
-      
-      // Charger les participants en ligne
-      const onlineParticipants = await conversationsService.getParticipants(conversationId, { onlineOnly: true });
-      
+
       // Transformer tous les participants en ThreadMember
-      const allThreadMembers: ThreadMember[] = allParticipants.map((user, index) => ({
+      const allThreadMembers: ThreadMember[] = allParticipants.map((user) => ({
         id: `participant-${conversationId}-${user.id}`,
         conversationId: conversationId,
         userId: user.id,
@@ -611,57 +609,69 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         role: 'MEMBER' as const, // On n'a pas cette info pour l'instant
         user: user
       }));
-      
-      // Transformer les participants en ligne en ThreadMember
-      const onlineThreadMembers: ThreadMember[] = onlineParticipants.map((user, index) => ({
-        id: `participant-${conversationId}-${user.id}`,
-        conversationId: conversationId,
-        userId: user.id,
-        joinedAt: new Date(),
-        role: 'MEMBER' as const,
-        user: user
-      }));
-      
+
       setConversationParticipants(allThreadMembers);
-      setOnlineParticipants(onlineThreadMembers);
       
-      console.log(`📊 Participants chargés: ${allThreadMembers.length} total, ${onlineThreadMembers.length} en ligne`);
+      console.log(`📊 Participants chargés: ${allThreadMembers.length} total`);
     } catch (error) {
       console.error('Erreur lors du chargement des participants:', error);
       setConversationParticipants([]);
-      setOnlineParticipants([]);
     }
   }, []);
 
-  // Effet pour gérer le changement de conversation
+  // Effet 1: gestion du chargement/vidage des messages lorsque la conversation change
   useEffect(() => {
-    // Si on a une conversation sélectionnée, charger ses messages et participants
+    if (!selectedConversation?.id) {
+      clearMessages();
+      return;
+    }
+
+    const isDifferentConversation = messages[0]?.conversationId && messages[0]?.conversationId !== selectedConversation.id;
+    if (isDifferentConversation) {
+      console.log('🧹 Nettoyage des messages de l\'ancienne conversation');
+      clearMessages();
+    }
+
+    const hasNoMessages = messages.length === 0;
+    if (hasNoMessages || isDifferentConversation) {
+      console.log('📬 Chargement des messages pour la conversation:', selectedConversation.id);
+      loadMessages(selectedConversation.id, true);
+    } else {
+      console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
+    }
+  }, [selectedConversation?.id, loadMessages, clearMessages, messages.length, messages]);
+
+  // Effet 2: chargement des participants uniquement quand l'ID de conversation change
+  useEffect(() => {
     if (selectedConversation?.id) {
-      // Charger les messages seulement si c'est une nouvelle conversation ou si aucun message n'est chargé
-      const shouldLoadMessages = messages.length === 0 || messages[0]?.conversationId !== selectedConversation.id;
-      
-      if (shouldLoadMessages) {
-        console.log('📬 Chargement des messages pour la nouvelle conversation:', selectedConversation.id);
-        
-        // Vider d'abord les messages existants si c'est une conversation différente
-        if (messages.length > 0 && messages[0]?.conversationId !== selectedConversation.id) {
-          console.log('🧹 Nettoyage des messages de l\'ancienne conversation');
-          clearMessages();
-        }
-        
-        loadMessages(selectedConversation.id, true);
-      } else {
-        console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
-      }
-      
       loadConversationParticipants(selectedConversation.id);
     } else {
-      // Aucune conversation sélectionnée, vider les messages et participants
-      clearMessages();
       setConversationParticipants([]);
-      setOnlineParticipants([]);
     }
-  }, [selectedConversation?.id, loadMessages, clearMessages, loadConversationParticipants, messages.length]);
+  }, [selectedConversation?.id, loadConversationParticipants]);
+
+  // Adapter local: convertit TranslatedMessage -> forme attendue par BubbleMessage
+  type BubbleMessageShape = Message & {
+    location?: string;
+    originalLanguage: string;
+    translations: BubbleTranslation[];
+    originalContent: string;
+  };
+
+  const toBubbleMessage = useCallback((msg: TranslatedMessage): BubbleMessageShape => {
+    const translations: BubbleTranslation[] = (msg.translations || []).map((t) => ({
+      language: t.targetLanguage,
+      content: t.translatedContent,
+      status: 'completed',
+      timestamp: new Date(),
+      confidence: (t as any).confidenceScore ?? 0.9,
+    }));
+    return {
+      ...msg,
+      originalContent: msg.content,
+      translations,
+    };
+  }, []);
 
   return (
     <DashboardLayout title="Conversations">

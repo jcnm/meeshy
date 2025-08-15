@@ -2,7 +2,7 @@
  * Interface pour les extensions de Message avec traductions
  * Utilisé dans les composants BubbleMessage et stream pages
  */
-import type { Message, User, BubbleTranslation } from '@/types';
+import type { Message, User, BubbleTranslation } from '@/shared/types';
 
 export interface BubbleStreamMessage extends Message {
   location?: string;

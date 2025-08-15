@@ -160,6 +160,7 @@ export interface TranslationData {
   cacheKey: string;
   cached: boolean;
   confidenceScore?: number;
+  createdAt?: Date;
 }
 
 export interface TypingEvent {

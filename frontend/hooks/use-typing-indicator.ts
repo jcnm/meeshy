@@ -23,7 +23,17 @@ export function useTypingIndicator(conversationId: string, currentUserId: string
   // Hook de messagerie Socket.IO
   const messaging = useSocketIOMessaging({
     conversationId,
-    currentUser: undefined, // sera récupéré du contexte par le hook
+    currentUser: undefined, // pas de user ici pour éviter les join/leave duplicatifs
+    events: {
+      typing: true,
+      status: false,
+      message: false,
+      edit: false,
+      delete: false,
+      translation: false,
+      conversationStats: false,
+      onlineStats: false,
+    },
     onUserTyping: (userId: string, username: string, isTyping: boolean) => {
       if (userId === currentUserId) return; // Ignorer ses propres événements
       
