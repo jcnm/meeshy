@@ -25,11 +25,16 @@ import {
   Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { User, Conversation, Message, TranslatedMessage, Translation, SUPPORTED_LANGUAGES } from '@/types';
-import { TranslationData } from '../../shared/types';
+import { User, 
+  Conversation, 
+  Message, 
+  TranslatedMessage,
+  Translation, 
+  SUPPORTED_LANGUAGES } from '@/types';
+import { TranslationData } from '@/shared/types';
 import { MessageBubbleAdapter } from './message-bubble-adapter';
 import { useTranslation } from '@/hooks/use-translation';
-import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
+import { useMessageSender } from '@/hooks/use-message-sender';
 import { toast } from 'sonner';
 
 interface ConversationViewProps {
@@ -65,7 +70,14 @@ export function ConversationView({
 
   // Hooks pour la traduction et services
   const { translateMessage } = useTranslation();
-  const messaging = useSocketIOMessaging({
+  const {
+    isSending,
+    connectionStatus,
+    sendMessage: sendMessageToService,
+    editMessage,
+    startTyping,
+    stopTyping
+  } = useMessageSender({
     conversationId: conversation.id,
     currentUser: currentUser || undefined
   });
@@ -281,7 +293,7 @@ export function ConversationView({
       }
 
       // Utiliser le service de messagerie unifié pour l'édition
-      await messaging.editMessage(messageId, newContent.trim());
+      await editMessage(messageId, newContent.trim());
       toast.success('Message modifié avec succès');
     } catch (error) {
       console.error('Erreur lors de l\'édition:', error);
@@ -582,20 +594,20 @@ export function ConversationView({
               value={newMessage}
               onChange={(e) => onNewMessageChange(e.target.value)}
               onKeyPress={onKeyPress}
-              disabled={!messaging.connectionStatus.isConnected}
+              disabled={!connectionStatus.isConnected}
               className="bg-white"
             />
           </div>
           <Button 
             onClick={onSendMessage} 
-            disabled={!newMessage.trim() || !messaging.connectionStatus.isConnected}
+            disabled={!newMessage.trim() || !connectionStatus.isConnected}
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Statut connexion */}
-        {!messaging.connectionStatus.isConnected && (
+        {!connectionStatus.isConnected && (
           <div className="flex items-center space-x-2 text-xs text-red-500 mt-2">
             <div className="h-2 w-2 rounded-full bg-red-500" />
             <span>Connexion perdue, reconnexion en cours...</span>

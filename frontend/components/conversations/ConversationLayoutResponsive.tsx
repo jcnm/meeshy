@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
-import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
+import { useMessageSender } from '@/hooks/use-message-sender';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,20 +15,23 @@ import {
   Plus,
   Send,
   ArrowLeft,
-  Link2
+  Link2,
+  Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { 
   Conversation, 
-  SocketIOMessage as Message, 
+  Message, 
   TranslationData,
-  User,
-  SocketIOUser 
+  SocketIOUser as User,
+  ThreadMember
 } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
 import { BubbleMessage } from '@/components/common/bubble-message';
+import { MessageComposer, MessageComposerRef } from '@/components/common/message-composer';
 import { CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
+import { ConversationDetailsSidebar } from './conversation-details-sidebar';
 import { cn } from '@/lib/utils';
 import { translationService } from '@/services/translation.service';
 import { messageTranslationService } from '@/services/message-translation.service';
@@ -43,6 +46,10 @@ import {
   type BubbleTranslation 
 } from '@/utils/translation-adapter';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
+import { ConversationParticipants } from '@/components/conversations/conversation-participants';
+import { getUserLanguageChoices } from '@/utils/user-language-preferences';
+import { useMessageLoader } from '@/hooks/use-message-loader';
+import AuthDiagnostic from '@/components/debug/auth-diagnostic';
 
 // Alias pour la compatibilité avec le code existant
 type TranslatedMessage = Message & {
@@ -57,8 +64,6 @@ type TranslatedMessage = Message & {
   translationFailed?: boolean;
   translations?: TranslationData[];
 };
-// Supprimé: import { pipeline, env } from '@xenova/transformers';
-// Supprimé: env.allowLocalModels = false; // Skip check for models hosted locally
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -67,17 +72,20 @@ interface ConversationLayoutResponsiveProps {
 export function ConversationLayoutResponsive({ selectedConversationId }: ConversationLayoutResponsiveProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthChecking } = useUser();
+  const { user } = useUser(); // user est garanti d'exister grâce au wrapper
+
+  // Assertion de sécurité : user est garanti non-null par le wrapper
+  if (!user) {
+    throw new Error('ConversationLayoutResponsive: user should not be null when wrapped by ConversationLayoutWrapper');
+  }
 
   // États principaux
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [translatedMessages, setTranslatedMessages] = useState<TranslatedMessage[]>([]);
+  const [conversationParticipants, setConversationParticipants] = useState<ThreadMember[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('fr'); // Langue pour l'envoi des messages
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [isSending, setIsSending] = useState(false);
 
   // États UI responsive
   const [showConversationList, setShowConversationList] = useState(true);
@@ -86,90 +94,54 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // États modaux
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
+  const [isDetailsSidebarOpen, setIsDetailsSidebarOpen] = useState(false);
 
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<string>('api-service');
 
+  // Hook pour le chargement des messages
+  const {
+    messages,
+    translatedMessages,
+    isLoadingMessages,
+    loadMessages,
+    clearMessages,
+    addMessage,
+    updateMessageTranslations
+  } = useMessageLoader({
+    currentUser: user!, // user est garanti d'exister après les checks
+    conversationId: selectedConversation?.id
+  });
+
   // Ref pour le scroll automatique vers le dernier message
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messageComposerRef = useRef<MessageComposerRef>(null);
 
-const c = console;
-
-function progress_callback(x: any) {
-    if (x.status === "done") {
-        c.log(`Done: ${x.file}`);
+  // Initialiser la langue sélectionnée avec la langue système de l'utilisateur
+  useEffect(() => {
+    if (user?.systemLanguage) {
+      setSelectedLanguage(user.systemLanguage);
     }
-    if (x.status === "ready") {
-        c.log("Translator ready 🔥");
-    }
-}
+  }, [user?.systemLanguage]);
 
-async function initializeTranslator() {
-    try {
-        // Plus besoin d'initialiser un modèle local, on utilise l'API
-        const isHealthy = await translationService.checkHealth();
-        if (!isHealthy) {
-            throw new Error('Service de traduction indisponible');
-        }
-        c.log("API de traduction prête 🔥");
-        return translationService; // Retourner le service de traduction, pas un booléen
-    } catch (error) {
-        c.error("Failed to initialize translator:", error);
-        throw error;
-    }
-}
-
-// Supprimer cette fonction qui utilise un service Python inexistant
-// async function translateText(text: string, src_lang: string, tgt_lang: string, translationService: any) {
-//     try {
-//         // Utiliser le service de traduction au lieu d'une fonction
-//         const result = await translationService.translate(text, tgt_lang, src_lang);
-//         return result.translatedText;
-//     } catch (error) {
-//         c.error("Translation error:", error);
-//         throw error;
-//     }
-// }
-
-// Supprimer cette fonction main qui utilise des services Python
-// const main = async () => {
-//     const translationService = await initializeTranslator();
-//     const text = "Hello, world!";
-//     const src_lang = "en";
-//     const tgt_lang = "fr";
-//     c.log(`Translating "${text}" from ${src_lang} to ${tgt_lang}...`);
-//     const translatedText = await translateText(text, src_lang, tgt_lang, translationService);
-//     c.log(`Translated text: ${translatedText}`);
-// };
-
-
-  // translationCache.set(cacheKey, translation);
-// }
-
-// export { initializeTranslator, translateText };
-
-  // Hook de messagerie Socket.IO pour la gestion des connexions temps réel
-  const messaging = useSocketIOMessaging({
+  // Hook de messagerie réutilisable basé sur BubbleStreamPage
+  const {
+    isSending,
+    connectionStatus,
+    sendMessage: sendMessageToService,
+    startTyping,
+    stopTyping,
+    reconnect,
+    getDiagnostics
+  } = useMessageSender({
     conversationId: selectedConversation?.id,
-    currentUser: user || undefined,
+    currentUser: user!, // user est garanti d'exister
     onNewMessage: (message: Message) => {
       // Vérifier que le message appartient à la conversation active
       if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
         return;
       }
-
-      // Ajouter le nouveau message à la liste
-      setMessages(prev => {
-        // Vérifier si le message existe déjà
-        if (prev.some(m => m.id === message.id)) {
-          return prev;
-        }
-        // Ajouter le message et maintenir l'ordre chronologique
-        return [...prev, message].sort((a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-      });
 
       // Mettre à jour la conversation avec le dernier message
       setConversations(prev => prev.map(
@@ -181,6 +153,16 @@ async function initializeTranslator() {
     onTranslation: (messageId: string, translations: any[]) => {
       console.log('🌐 Traductions reçues pour message:', messageId, translations);
       // Gérer les traductions reçues via Socket.IO
+    },
+    onMessageSent: (content: string, language: string) => {
+      console.log('✅ Message envoyé avec succès:', { content: content.substring(0, 50) + '...', language });
+      // Scroller vers le bas après l'envoi
+      setTimeout(scrollToBottom, 200);
+    },
+    onMessageFailed: (content: string, error: Error) => {
+      console.error('❌ Échec d\'envoi du message:', { content: content.substring(0, 50) + '...', error });
+      // Restaurer le message en cas d'erreur
+      setNewMessage(content);
     }
   });
 
@@ -241,17 +223,35 @@ async function initializeTranslator() {
 
   // Fonction pour scroller vers le bas
   const scrollToBottom = useCallback((force = false) => {
+    // Détection Safari
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    
     setTimeout(() => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ 
-          behavior: force ? 'auto' : 'smooth', 
-          block: 'end' 
-        });
-      } else if (messagesContainerRef.current) {
-        // Fallback: scroller le conteneur directement
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      if (isSafari || force) {
+        // Pour Safari, utilisation directe de scrollTop qui est plus fiable
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
+      } else {
+        // Pour les autres navigateurs, essai de scrollIntoView avec fallback
+        if (messagesEndRef.current) {
+          try {
+            messagesEndRef.current.scrollIntoView({ 
+              behavior: force ? 'auto' : 'smooth', 
+              block: 'end' 
+            });
+          } catch (e) {
+            // Fallback en cas d'erreur
+            if (messagesContainerRef.current) {
+              messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+            }
+          }
+        } else if (messagesContainerRef.current) {
+          // Fallback: scroller le conteneur directement
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
       }
-    }, force ? 50 : 100);
+    }, isSafari ? 150 : (force ? 50 : 100)); // Délai plus long pour Safari
   }, []);
 
   // Scroll automatique quand les messages changent
@@ -334,13 +334,7 @@ async function initializeTranslator() {
         sender: message.sender ? socketIOUserToUser(message.sender) : createDefaultUser(message.senderId)
       };
 
-      // Mettre à jour le message traduit dans la liste
-      setTranslatedMessages(prev => {
-        const filtered = prev.filter(m => m.id !== messageId);
-        return [...filtered, translatedMsg].sort((a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-        );
-      });
+
 
       console.log(`✅ Message traduit avec ${selectedTranslationModel}: ${translationResult.translatedText}`);
       toast.success(`Message traduit avec ${selectedTranslationModel}`, { id: `translate-${messageId}` });
@@ -366,133 +360,43 @@ async function initializeTranslator() {
     };
   }, [user?.systemLanguage]);
 
-  // Charger les messages d'une conversation
-  const loadMessages = useCallback(async (conversationId: string, isNewConversation = false) => {
-    if (!user) return;
-    // Supprimé l'appel à main() qui utilisait un service Python inexistant
-    // Pour une nouvelle conversation, toujours charger
-    // Pour une conversation existante, vérifier si c'est déjà chargé
-    if (!isNewConversation && selectedConversation?.id === conversationId && messages.length > 0) {
-      console.log('📬 Messages déjà chargés pour cette conversation');
-      return;
-    }
+  
 
-    try {
-      setIsLoadingMessages(true);
-      console.log(`📬 Chargement des messages pour la conversation ${conversationId}`);
-
-      const messagesData = await conversationsService.getMessages(conversationId);
-
-      // Vérifier si la conversation sélectionnée n'a pas changé
-      if (selectedConversation?.id !== conversationId) {
-        console.log('🚫 Conversation changée pendant le chargement, abandon');
-        return;
-      }
-
-      const rawMessages = messagesData?.messages || [];
-
-      // Trier les messages par date de création
-      const sortedMessages = rawMessages.sort((a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-
-      // Mettre à jour les messages APRÈS avoir vérifié la cohérence
-      setMessages(sortedMessages);
-
-      // NE TRADUIRE QUE SI L'UTILISATEUR A ACTIVÉ LA TRADUCTION AUTO
-      // Sinon, juste convertir sans traduire pour gagner du temps
-      if (user.autoTranslateEnabled && sortedMessages.length > 0) {
-        console.log('🔄 Traduction automatique activée, traduction en arrière-plan...');
-        // Convertir d'abord sans traduction pour affichage immédiat
-        const convertedMessages = sortedMessages.map(msg => convertToTranslatedMessage(msg));
-        setTranslatedMessages(convertedMessages);
-
-        // Puis traduire en arrière-plan
-        setTimeout(async () => {
-          try {
-            // Vérifier encore une fois si la conversation n'a pas changé
-            if (selectedConversation?.id !== conversationId) {
-              console.log('🚫 Conversation changée pendant la traduction, abandon');
-              return;
-            }
-
-            // Pas de traduction automatique pour l'instant - TODO: implémenter avec le modèle sélectionné
-            // const translated = await translateMessages(sortedMessages, user.systemLanguage);
-            // setTranslatedMessages(translated);
-            const convertedMessages = sortedMessages.map(msg => convertToTranslatedMessage(msg));
-            setTranslatedMessages(convertedMessages);
-            console.log('✅ Messages chargés sans traduction automatique');
-          } catch (error) {
-            console.warn('⚠️ Erreur traduction automatique:', error);
-            // Garder les messages non traduits
-          }
-        }, 500); // Délai pour ne pas bloquer l'UI
-      } else {
-        // Pas de traduction automatique, affichage direct
-        const convertedMessages = sortedMessages.map(msg => convertToTranslatedMessage(msg));
-        setTranslatedMessages(convertedMessages);
-      }
-    } catch (error) {
-      console.error('❌ Erreur lors du chargement des messages:', error);
-      
-      // Ne plus utiliser de messages mock, juste afficher l'erreur et laisser vide
-      toast.error('Impossible de charger les messages');
-      
-      // Vérifier si cette conversation est toujours celle demandée
-      if (selectedConversation?.id !== conversationId) {
-        console.log('🚫 Conversation changée pendant l\'erreur, abandon');
-        return;
-      }
-
-      // Laisser la liste de messages vide
-      setMessages([]);
-      setTranslatedMessages([]);
-    } finally {
-      setIsLoadingMessages(false);
-    }
-  }, [user, convertToTranslatedMessage, selectedConversation?.id, messages.length]);
-
-  // Charger les données initiales avec optimisations
+  // Charger les données initiales
   const loadData = useCallback(async () => {
-    // Si on est encore en train de vérifier l'auth, attendre
-    if (isAuthChecking) {
-      return;
-    }
-    
-    // Si pas d'utilisateur mais token présent, essayer de charger quand même
-    const token = localStorage.getItem('auth_token');
-    if (!user && !token) {
-      return;
-    }
-
     try {
       setIsLoading(true);
 
       // Démarrer le chargement des conversations immédiatement
       const conversationsData = await conversationsService.getConversations();
 
-      setConversations(conversationsData);
+      // Ajouter la conversation globale "any" si elle n'est pas déjà présente
+      let conversationsWithAny = [...conversationsData];
+      const hasAnyConversation = conversationsData.some(c => c.id === 'any');
+      
+      if (!hasAnyConversation) {
+        const anyConversation: Conversation = {
+          id: 'any',
+          name: 'Meeshy',
+          title: 'Meeshy',
+          type: 'global',
+          isGroup: true,
+          isActive: true,
+          participants: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          unreadCount: 0
+        };
+        // Ajouter en premier dans la liste
+        conversationsWithAny = [anyConversation, ...conversationsData];
+      }
+
+      setConversations(conversationsWithAny);
 
       // Sélectionner une conversation seulement si spécifiée dans l'URL
       const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
       if (conversationIdFromUrl) {
-        let conversation = conversationsData.find(c => c.id === conversationIdFromUrl);
-        
-        // Si c'est la conversation globale "any" et qu'elle n'est pas dans la liste, la créer
-        if (!conversation && conversationIdFromUrl === 'any') {
-          conversation = {
-            id: 'any',
-            name: 'Meeshy',
-            title: 'Meeshy',
-            type: 'global',
-            isGroup: true,
-            isActive: true,
-            participants: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            unreadCount: 0
-          };
-        }
+        let conversation = conversationsWithAny.find(c => c.id === conversationIdFromUrl);
         
         if (conversation) {
           setSelectedConversation(conversation);
@@ -530,48 +434,25 @@ async function initializeTranslator() {
       setConversations([]);
       setIsLoading(false);
     }
-  }, [user, searchParams, selectedConversationId, isAuthChecking, router]);
+  }, [user, searchParams, selectedConversationId, router]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // Redirection si pas d'utilisateur et vérification terminée
+  // Redirection automatique (optionnelle)
   useEffect(() => {
-    if (!isAuthChecking) {
-      const token = localStorage.getItem('auth_token');
-      if (!user && !token) {
-        router.push('/login');
-      } else if (user && token) {
-        // Debug: vérifier que l'utilisateur est bien configuré
-        console.log('🔐 ConversationLayoutResponsive: Utilisateur authentifié', {
-          userId: user.id,
-          username: user.username,
-          hasToken: !!token,
-          tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
-        });
-      }
+    const token = localStorage.getItem('auth_token');
+    if (user && token) {
+      // Debug: vérifier que l'utilisateur est bien configuré
+      console.log('🔐 ConversationLayoutResponsive: Utilisateur authentifié', {
+        userId: user.id,
+        username: user.username,
+        hasToken: !!token,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+      });
     }
-  }, [user, isAuthChecking, router]);
-
-  // Si en cours de vérification d'authentification, afficher un loader
-  if (isAuthChecking) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  // Si pas d'utilisateur, ne rien afficher (la redirection va s'effectuer)
-  if (!user) {
-    return null;
-  }
+  }, [user, router]);
 
   // Sélectionner une conversation
   const handleSelectConversation = (conversation: Conversation) => {
@@ -603,83 +484,68 @@ async function initializeTranslator() {
     }
   };
 
-  // Envoyer un message
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Envoyer un message (simplifié grâce au hook réutilisable)
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
 
     if (!newMessage.trim() || !selectedConversation || !user) {
       return;
     }
 
     const messageContent = newMessage.trim();
-    setIsSending(true);
     setNewMessage(''); // Vider immédiatement pour éviter les doubles envois
 
-    try {
-      console.log('📤 Envoi du message:', messageContent);
+    console.log('📤 Envoi du message:', messageContent);
+    console.log('🔤 Langue sélectionnée par l\'utilisateur:', selectedLanguage);
 
-      // Détecter la langue du message si possible
-      let detectedLanguage = 'fr'; // Langue par défaut
-      if (messageContent.length > 10) {
-        try {
-          const detections = detectAll(messageContent);
-          if (detections.length > 0) {
-            detectedLanguage = detections[0].lang;
-          }
-        } catch (e) {
-          console.warn('⚠️ Détection de langue échouée, utilisation de la langue par défaut');
-        }
-      }
+    // Utiliser le hook réutilisable pour envoyer le message
+    // La gestion d'erreurs, les toasts, et la restauration du message sont gérés par le hook
+    const success = await sendMessageToService(messageContent, selectedLanguage);
 
-      console.log('🔤 Langue détectée pour le message:', detectedLanguage);
-
-      // Utiliser le hook unifié pour envoyer le message
-      const success = await messaging.sendMessage(messageContent);
-
-      if (success) {
-        toast.success('Message envoyé !');
-        console.log('✅ Message envoyé avec succès');
-        
-        // Déclencher l'arrêt de l'indicateur de frappe
-        messaging.stopTyping();
-        
-        // Scroller vers le bas après l'envoi
-        setTimeout(scrollToBottom, 200);
-      } else {
-        throw new Error('Échec de l\'envoi du message');
-      }
-    } catch (error) {
-      console.error('❌ Erreur lors de l\'envoi du message:', error);
-      toast.error('Erreur lors de l\'envoi du message');
-      // Restaurer le message en cas d'erreur
-      setNewMessage(messageContent);
-    } finally {
-      setIsSending(false);
+    if (success) {
+      // Déclencher l'arrêt de l'indicateur de frappe
+      stopTyping();
     }
   };
 
+  // Fonction pour charger les participants d'une conversation
+  const loadConversationParticipants = useCallback(async (conversationId: string) => {
+    try {
+      const participants = await conversationsService.getParticipants(conversationId);
+      // Transformer les participants en ThreadMember
+      const threadMembers: ThreadMember[] = participants.map((user, index) => ({
+        id: `participant-${conversationId}-${user.id}`,
+        conversationId: conversationId,
+        userId: user.id,
+        joinedAt: new Date(), // On n'a pas cette info pour l'instant
+        role: 'MEMBER' as const, // On n'a pas cette info pour l'instant
+        user: user
+      }));
+      setConversationParticipants(threadMembers);
+    } catch (error) {
+      console.error('Erreur lors du chargement des participants:', error);
+      setConversationParticipants([]);
+    }
+  }, []);
+
   // Effet pour gérer le changement de conversation
   useEffect(() => {
-    // Si on a une conversation sélectionnée, charger ses messages
+    // Si on a une conversation sélectionnée, charger ses messages et participants
     if (selectedConversation?.id) {
-      // Ne pas vider immédiatement les messages pour éviter le scintillement
-      // Les messages seront remplacés une fois les nouveaux chargés
-      setIsLoadingMessages(true);
       loadMessages(selectedConversation.id, true);
+      loadConversationParticipants(selectedConversation.id);
     } else {
-      // Aucune conversation sélectionnée, vider les messages
-      setMessages([]);
-      setTranslatedMessages([]);
-      setIsLoadingMessages(false);
+      // Aucune conversation sélectionnée, vider les messages et participants
+      clearMessages();
+      setConversationParticipants([]);
     }
-  }, [selectedConversation?.id, loadMessages]);
-
-  if (!user) {
-    return null;
-  }
+  }, [selectedConversation?.id, loadMessages, clearMessages, loadConversationParticipants]);
 
   return (
     <DashboardLayout title="Conversations">
+      <AuthDiagnostic />
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
@@ -763,59 +629,151 @@ async function initializeTranslator() {
                 </div>
               ) : (
                 <div className="p-2">
-                  {conversations.map((conversation) => (
-                    <div
-                      key={conversation.id}
-                      onClick={() => handleSelectConversation(conversation)}
-                      className={cn(
-                        "flex items-center p-4 rounded-2xl cursor-pointer transition-all mb-2 border-2",
-                        selectedConversation?.id === conversation.id
-                          ? "bg-primary/20 border-primary/40 shadow-md"
-                          : "hover:bg-accent/50 border-transparent hover:border-border/30"
-                      )}
-                    >
-                      <div className="relative">
-                        <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                          <AvatarImage />
-                          <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                            {conversation.isGroup ? (
-                              <Users className="h-6 w-6" />
-                            ) : (
-                              getConversationAvatar(conversation)
-                            )}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
-                      </div>
+                  {/* Séparer les conversations en publiques et privées */}
+                  {(() => {
+                    const publicConversations = conversations.filter(conv => 
+                      conv.id === 'any' || conv.type === 'GLOBAL' || !conv.isPrivate
+                    );
+                    const privateConversations = conversations.filter(conv => 
+                      conv.id !== 'any' && conv.type !== 'GLOBAL' && conv.isPrivate
+                    );
 
-                      <div className="ml-4 flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-bold text-foreground truncate">
-                            {getConversationDisplayName(conversation)}
-                          </h3>
-                          {conversation.lastMessage && (
-                            <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                              {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          )}
-                        </div>
-                        {conversation.lastMessage && (
-                          <p className="text-sm text-muted-foreground truncate">
-                            {conversation.lastMessage.content}
-                          </p>
+                    return (
+                      <>
+                        {/* Section Conversations Publiques */}
+                        {publicConversations.length > 0 && (
+                          <div className="mb-6">
+                            <div className="px-4 py-2 mb-3">
+                              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                                Public
+                              </h3>
+                            </div>
+                            <div className="space-y-2">
+                              {publicConversations.map((conversation) => (
+                                <div
+                                  key={conversation.id}
+                                  onClick={() => handleSelectConversation(conversation)}
+                                  className={cn(
+                                    "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                                    selectedConversation?.id === conversation.id
+                                      ? "bg-primary/20 border-primary/40 shadow-md"
+                                      : "hover:bg-accent/50 border-transparent hover:border-border/30"
+                                  )}
+                                >
+                                  <div className="relative">
+                                    <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                                      <AvatarImage />
+                                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                        {conversation.isGroup ? (
+                                          <Users className="h-6 w-6" />
+                                        ) : (
+                                          getConversationAvatar(conversation)
+                                        )}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
+                                  </div>
+
+                                  <div className="ml-4 flex-1 min-w-0">
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="font-bold text-foreground truncate">
+                                        {getConversationDisplayName(conversation)}
+                                      </h3>
+                                      {conversation.lastMessage && (
+                                        <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                                          {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {conversation.lastMessage && (
+                                      <p className="text-sm text-muted-foreground truncate">
+                                        {conversation.lastMessage.content}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {(conversation.unreadCount || 0) > 0 && (
+                                    <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
+                                      {conversation.unreadCount}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
-                      </div>
 
-                      {(conversation.unreadCount || 0) > 0 && (
-                        <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
-                          {conversation.unreadCount}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        {/* Section Conversations Privées */}
+                        {privateConversations.length > 0 && (
+                          <div className="mb-6">
+                            <div className="px-4 py-2 mb-3">
+                              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                                Privé
+                              </h3>
+                            </div>
+                            <div className="space-y-2">
+                              {privateConversations.map((conversation) => (
+                                <div
+                                  key={conversation.id}
+                                  onClick={() => handleSelectConversation(conversation)}
+                                  className={cn(
+                                    "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                                    selectedConversation?.id === conversation.id
+                                      ? "bg-primary/20 border-primary/40 shadow-md"
+                                      : "hover:bg-accent/50 border-transparent hover:border-border/30"
+                                  )}
+                                >
+                                  <div className="relative">
+                                    <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                                      <AvatarImage />
+                                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                        {conversation.isGroup ? (
+                                          <Users className="h-6 w-6" />
+                                        ) : (
+                                          getConversationAvatar(conversation)
+                                        )}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
+                                  </div>
+
+                                  <div className="ml-4 flex-1 min-w-0">
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="font-bold text-foreground truncate">
+                                        {getConversationDisplayName(conversation)}
+                                      </h3>
+                                      {conversation.lastMessage && (
+                                        <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                                          {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {conversation.lastMessage && (
+                                      <p className="text-sm text-muted-foreground truncate">
+                                        {conversation.lastMessage.content}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {(conversation.unreadCount || 0) > 0 && (
+                                    <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
+                                      {conversation.unreadCount}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
             </div>
@@ -879,23 +837,31 @@ async function initializeTranslator() {
                         {getConversationDisplayName(selectedConversation)}
                       </h2>
                       <div className="text-sm text-muted-foreground">
-                        {selectedConversation.isGroup
-                          ? `${selectedConversation.participants?.length || 0} personnes`
-                          : 'En ligne'
-                        }
-                        {/* Indicateur de frappe pour cette conversation */}
-                        <TypingIndicator 
-                          chatId={selectedConversation.id}
-                          currentUserId={user.id}
+                        <ConversationParticipants
+                          conversationId={selectedConversation.id}
+                          participants={conversationParticipants}
+                          currentUser={user}
+                          isGroup={selectedConversation.isGroup || false}
                           className="mt-1"
                         />
                       </div>
                     </div>
+                    
+                    {/* Bouton pour ouvrir les détails */}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setIsDetailsSidebarOpen(true)}
+                      className="rounded-full h-10 w-10 p-0 hover:bg-accent/50"
+                      title="Détails de la conversation"
+                    >
+                      <Info className="h-5 w-5" />
+                    </Button>
                   </div>
                 </div>
 
                 {/* Messages scrollables */}
-                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm">
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm messages-container scroll-optimized scrollbar-thin">
                   {isLoadingMessages ? (
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
@@ -906,23 +872,6 @@ async function initializeTranslator() {
                   ) : (
                     <div className="space-y-4">
                       {translatedMessages.map((message) => {
-                        // Transformer le message pour BubbleMessage
-                        const bubbleMessage = {
-                          ...message,
-                          originalLanguage: message.originalLanguage || 'fr',
-                          originalContent: message.originalContent || message.content,
-                          isTranslated: message.isTranslated || false,
-                          translatedFrom: message.isTranslated ? message.originalLanguage : undefined,
-                          location: undefined, // Pas de localisation dans les conversations
-                          translations: message.translations?.map(t => ({
-                            language: t.targetLanguage || 'unknown',
-                            content: t.translatedContent || '',
-                            status: 'completed' as const,
-                            timestamp: new Date(),
-                            confidence: t.confidenceScore || 0.9
-                          })) || []
-                        };
-
                         // Langues utilisées (similaire à bubble-stream-page)
                         const usedLanguages: string[] = [
                           user.regionalLanguage,
@@ -932,16 +881,24 @@ async function initializeTranslator() {
                         return (
                           <BubbleMessage
                             key={message.id}
-                            message={bubbleMessage}
+                            message={message as any}
                             currentUser={user}
                             userLanguage={user.systemLanguage}
                             usedLanguages={usedLanguages}
                             onForceTranslation={async (messageId: string, targetLanguage: string) => {
                               try {
                                 console.log('🔄 Forcer la traduction dans conversation:', { messageId, targetLanguage });
+                                
+                                // Récupérer la langue source du message
+                                const message = messages.find(m => m.id === messageId);
+                                const sourceLanguage = message?.originalLanguage || message?.content ? 'fr' : undefined;
+                                
+                                console.log('🔤 Langue source détectée pour la traduction forcée:', sourceLanguage);
+
                                 const result = await messageTranslationService.requestTranslation({
                                   messageId,
                                   targetLanguage,
+                                  sourceLanguage,
                                   model: 'basic'
                                 });
                                 console.log('✅ Traduction forcée demandée:', result);
@@ -962,44 +919,33 @@ async function initializeTranslator() {
 
                 {/* Zone de saisie fixe en bas */}
                 <div className="flex-shrink-0 p-4 border-t border-border/30 bg-white/90 backdrop-blur-sm rounded-br-2xl">
-                  <form onSubmit={handleSendMessage} className="flex gap-3">
-                    <Input
-                      value={newMessage}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setNewMessage(value);
-                        
-                        // Gérer l'indicateur de frappe
-                        if (value.trim()) {
-                          messaging.startTyping();
-                        } else {
-                          messaging.stopTyping();
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage(e);
-                        }
-                      }}
-                      onBlur={() => messaging.stopTyping()}
-                      placeholder="Écris ton message..."
-                      className="flex-1 rounded-2xl h-12 px-4 border-2 border-border/30 focus:border-primary/50 bg-background/50"
-                      disabled={isSending}
-                    />
-                    <Button
-                      type="submit"
-                      size="sm"
-                      disabled={!newMessage.trim() || isSending}
-                      className="rounded-2xl h-12 w-12 p-0 bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all"
-                    >
-                      {isSending ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      ) : (
-                        <Send className="h-5 w-5" />
-                      )}
-                    </Button>
-                  </form>
+                  <MessageComposer
+                    ref={messageComposerRef}
+                    value={newMessage}
+                    onChange={(value) => {
+                      setNewMessage(value);
+                      
+                      // Gérer l'indicateur de frappe
+                      if (value.trim()) {
+                        startTyping();
+                      } else {
+                        stopTyping();
+                      }
+                    }}
+                    onSend={handleSendMessage}
+                    selectedLanguage={selectedLanguage}
+                    onLanguageChange={setSelectedLanguage}
+                    isComposingEnabled={!isSending}
+                    placeholder="Écris ton message..."
+                    choices={user ? getUserLanguageChoices(user) : undefined}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    className="w-full"
+                  />
                 </div>
               </>
             ) : (
@@ -1069,6 +1015,17 @@ async function initializeTranslator() {
           loadData();
         }}
       />
+
+      {/* Sidebar des détails de conversation */}
+      {selectedConversation && (
+        <ConversationDetailsSidebar
+          conversation={selectedConversation}
+          currentUser={user}
+          messages={translatedMessages}
+          isOpen={isDetailsSidebarOpen}
+          onClose={() => setIsDetailsSidebarOpen(false)}
+        />
+      )}
     </DashboardLayout>
   );
 }
