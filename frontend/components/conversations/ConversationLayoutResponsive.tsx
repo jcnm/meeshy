@@ -47,6 +47,8 @@ import {
 } from '@/utils/translation-adapter';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { ConversationParticipants } from '@/components/conversations/conversation-participants';
+import { ConversationParticipantsPopover } from '@/components/conversations/conversation-participants-popover';
+import { CreateLinkButton } from '@/components/conversations/create-link-button';
 import { getUserLanguageChoices } from '@/utils/user-language-preferences';
 import { useMessageLoader } from '@/hooks/use-message-loader';
 import AuthDiagnostic from '@/components/debug/auth-diagnostic';
@@ -83,6 +85,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [conversationParticipants, setConversationParticipants] = useState<ThreadMember[]>([]);
+  const [onlineParticipants, setOnlineParticipants] = useState<ThreadMember[]>([]);
+  const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('fr'); // Langue pour l'envoi des messages
   const [isLoading, setIsLoading] = useState(true);
@@ -125,6 +129,40 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [user?.systemLanguage]);
 
+  // Fonction pour gérer les événements de frappe avec résolution de noms
+  const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean) => {
+    if (userId === user?.id) return; // Ignorer nos propres événements de frappe
+    
+    // Rechercher l'utilisateur dans la liste des participants pour obtenir son vrai nom
+    const participant = conversationParticipants.find(p => p.userId === userId);
+    let displayName: string;
+    
+    if (participant?.user) {
+      const userInfo = participant.user;
+      if (userInfo.displayName) {
+        displayName = userInfo.displayName;
+      } else if (userInfo.firstName || userInfo.lastName) {
+        displayName = `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim();
+      } else {
+        displayName = userInfo.username;
+      }
+    } else if (username && username !== userId) {
+      displayName = username;
+    } else {
+      displayName = `Utilisateur ${userId.slice(-6)}`;
+    }
+    
+    console.log('✍️ [Conversation] Utilisateur en train de taper:', { 
+      userId, 
+      displayName, 
+      participantFound: !!participant,
+      conversationId: selectedConversation?.id 
+    });
+    
+    // Ici on pourrait ajouter une logique pour afficher l'indicateur de frappe
+    // Par exemple, mettre à jour un état local pour l'affichage
+  }, [user?.id, conversationParticipants, selectedConversation?.id]);
+
   // Hook de messagerie réutilisable basé sur BubbleStreamPage
   const {
     isSending,
@@ -137,11 +175,15 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   } = useMessageSender({
     conversationId: selectedConversation?.id,
     currentUser: user!, // user est garanti d'exister
+    onUserTyping: handleUserTyping, // Ajouter le gestionnaire de frappe
     onNewMessage: (message: Message) => {
       // Vérifier que le message appartient à la conversation active
       if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
         return;
       }
+
+      // Ajouter le message en temps réel à la liste affichée
+      addMessage(message);
 
       // Mettre à jour la conversation avec le dernier message
       setConversations(prev => prev.map(
@@ -149,10 +191,21 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           ? { ...conv, lastMessage: message, updatedAt: new Date() }
           : conv
       ));
+
+      // Scroller vers le bas pour voir le nouveau message
+      setTimeout(() => {
+        try {
+          const container = messagesContainerRef.current;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        } catch {}
+      }, 100);
     },
     onTranslation: (messageId: string, translations: any[]) => {
-      console.log('🌐 Traductions reçues pour message:', messageId, translations);
-      // Gérer les traductions reçues via Socket.IO
+      console.log('🌐 [Conversation] Traductions reçues pour message:', messageId, translations);
+      // Appliquer les traductions au message concerné via le loader commun
+      updateMessageTranslations(messageId, translations);
     },
     onMessageSent: (content: string, language: string) => {
       console.log('✅ Message envoyé avec succès:', { content: content.substring(0, 50) + '...', language });
@@ -513,9 +566,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // Fonction pour charger les participants d'une conversation
   const loadConversationParticipants = useCallback(async (conversationId: string) => {
     try {
-      const participants = await conversationsService.getParticipants(conversationId);
-      // Transformer les participants en ThreadMember
-      const threadMembers: ThreadMember[] = participants.map((user, index) => ({
+      // Charger tous les participants
+      const allParticipants = await conversationsService.getParticipants(conversationId);
+      
+      // Charger les participants en ligne
+      const onlineParticipants = await conversationsService.getParticipants(conversationId, { onlineOnly: true });
+      
+      // Transformer tous les participants en ThreadMember
+      const allThreadMembers: ThreadMember[] = allParticipants.map((user, index) => ({
         id: `participant-${conversationId}-${user.id}`,
         conversationId: conversationId,
         userId: user.id,
@@ -523,10 +581,25 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         role: 'MEMBER' as const, // On n'a pas cette info pour l'instant
         user: user
       }));
-      setConversationParticipants(threadMembers);
+      
+      // Transformer les participants en ligne en ThreadMember
+      const onlineThreadMembers: ThreadMember[] = onlineParticipants.map((user, index) => ({
+        id: `participant-${conversationId}-${user.id}`,
+        conversationId: conversationId,
+        userId: user.id,
+        joinedAt: new Date(),
+        role: 'MEMBER' as const,
+        user: user
+      }));
+      
+      setConversationParticipants(allThreadMembers);
+      setOnlineParticipants(onlineThreadMembers);
+      
+      console.log(`📊 Participants chargés: ${allThreadMembers.length} total, ${onlineThreadMembers.length} en ligne`);
     } catch (error) {
       console.error('Erreur lors du chargement des participants:', error);
       setConversationParticipants([]);
+      setOnlineParticipants([]);
     }
   }, []);
 
@@ -540,6 +613,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Aucune conversation sélectionnée, vider les messages et participants
       clearMessages();
       setConversationParticipants([]);
+      setOnlineParticipants([]);
     }
   }, [selectedConversation?.id, loadMessages, clearMessages, loadConversationParticipants]);
 
@@ -847,6 +921,36 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       </div>
                     </div>
                     
+                    {/* Bouton pour créer un lien */}
+                    <CreateLinkButton
+                      conversationId={selectedConversation.id}
+                      isGroup={selectedConversation.isGroup || false}
+                      onLinkCreated={(link) => {
+                        console.log('Lien créé:', link);
+                      }}
+                    />
+
+                    {/* Bouton pour afficher les participants */}
+                    <ConversationParticipantsPopover
+                      conversationId={selectedConversation.id}
+                      participants={conversationParticipants}
+                      currentUser={user}
+                      isGroup={selectedConversation.isGroup || false}
+                      onParticipantRemoved={(userId) => {
+                        console.log('Participant supprimé:', userId);
+                        // Recharger les participants
+                        loadConversationParticipants(selectedConversation.id);
+                      }}
+                      onParticipantAdded={(userId) => {
+                        console.log('Participant ajouté:', userId);
+                        // Recharger les participants
+                        loadConversationParticipants(selectedConversation.id);
+                      }}
+                      onLinkCreated={(link) => {
+                        console.log('Lien créé depuis popover:', link);
+                      }}
+                    />
+
                     {/* Bouton pour ouvrir les détails */}
                     <Button
                       size="sm"

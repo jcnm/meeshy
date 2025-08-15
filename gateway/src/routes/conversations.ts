@@ -1073,11 +1073,18 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   // Route pour récupérer les participants d'une conversation
   fastify.get<{
     Params: { id: string };
+    Querystring: { 
+      onlineOnly?: string;
+      role?: string;
+      search?: string;
+      limit?: string;
+    };
   }>('/conversations/:id/participants', {
     preValidation: [fastify.authenticate]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
+      const { onlineOnly, role, search, limit } = request.query;
       const userId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier que l'utilisateur a accès à cette conversation
@@ -1098,12 +1105,65 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       }
 
-      // Récupérer tous les participants de la conversation
-      const participants = await prisma.conversationMember.findMany({
-        where: {
-          conversationId: id,
+      // Construire les filtres dynamiquement
+      const whereConditions: any = {
+        conversationId: id,
+        isActive: true,
+        user: {
           isActive: true
-        },
+        }
+      };
+
+      // Filtre par statut en ligne
+      if (onlineOnly === 'true') {
+        whereConditions.user.isOnline = true;
+      }
+
+      // Filtre par rôle
+      if (role) {
+        whereConditions.user.role = role.toUpperCase();
+      }
+
+      // Filtre par recherche (nom, prénom, username, email)
+      if (search && search.trim().length > 0) {
+        const searchTerm = search.trim();
+        whereConditions.user.OR = [
+          {
+            firstName: {
+              contains: searchTerm,
+              mode: 'insensitive'
+            }
+          },
+          {
+            lastName: {
+              contains: searchTerm,
+              mode: 'insensitive'
+            }
+          },
+          {
+            username: {
+              contains: searchTerm,
+              mode: 'insensitive'
+            }
+          },
+          {
+            email: {
+              contains: searchTerm,
+              mode: 'insensitive'
+            }
+          },
+          {
+            displayName: {
+              contains: searchTerm,
+              mode: 'insensitive'
+            }
+          }
+        ];
+      }
+
+      // Récupérer les participants avec filtres
+      const participants = await prisma.conversationMember.findMany({
+        where: whereConditions,
         include: {
           user: {
             select: {
@@ -1131,9 +1191,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             }
           }
         },
-        orderBy: {
-          joinedAt: 'asc'
-        }
+        orderBy: [
+          { user: { isOnline: 'desc' } }, // Utilisateurs en ligne en premier
+          { user: { firstName: 'asc' } },  // Puis par prénom
+          { user: { lastName: 'asc' } },   // Puis par nom
+          { joinedAt: 'asc' }              // Enfin par date d'entrée
+        ],
+        ...(limit && { take: parseInt(limit, 10) }) // Limite optionnelle
       });
 
       // Transformer les données pour correspondre au format attendu

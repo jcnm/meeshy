@@ -9,6 +9,7 @@ export { dashboardService } from './dashboard.service';
 
 // Export des types
 export type { ApiResponse, ApiError, ApiConfig } from './api.service';
+export type { ParticipantsFilters } from './conversations.service';
 export type {
   CreateGroupDto,
   UpdateGroupDto,

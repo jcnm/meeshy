@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { toast } from 'sonner';
@@ -26,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
-import { usersService } from '@/services';
+import { usersService, conversationsService, type ParticipantsFilters } from '@/services';
 
 export default function ContactsPage() {
   const router = useRouter();
@@ -34,6 +36,8 @@ export default function ContactsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [onlineOnly, setOnlineOnly] = useState(false);
+  const [filters, setFilters] = useState<ParticipantsFilters>({});
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -67,13 +71,14 @@ export default function ContactsPage() {
     checkAuth();
   }, [router]);
 
-  const loadContacts = async () => {
+  const loadContacts = async (appliedFilters?: ParticipantsFilters) => {
     try {
-      // Pour l'instant, on charge tous les utilisateurs comme contacts potentiels
-      const response = await usersService.getAllUsers();
-      // S'assurer que response.data est un tableau
-      const contactsData = Array.isArray(response.data) ? response.data : [];
-      setContacts(contactsData);
+      // Utiliser les filtres passés en paramètre ou les filtres de l'état
+      const currentFilters = appliedFilters || filters;
+      
+      // Récupérer les participants de la conversation globale "any" qui contient tous les utilisateurs
+      const contactsData = await conversationsService.getParticipants('any', currentFilters);
+      setContacts(Array.isArray(contactsData) ? contactsData : []);
     } catch (error) {
       console.error('Erreur lors du chargement des contacts:', error);
       toast.error('Erreur lors du chargement des contacts');
@@ -81,6 +86,17 @@ export default function ContactsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOnlineFilterChange = async (checked: boolean) => {
+    setOnlineOnly(checked);
+    const newFilters = { ...filters, onlineOnly: checked };
+    setFilters(newFilters);
+    
+    // Recharger les contacts avec le nouveau filtre
+    setLoading(true);
+    await loadContacts(newFilters);
+    setLoading(false);
   };
 
   const searchUsers = async (query: string) => {
@@ -162,9 +178,22 @@ export default function ContactsPage() {
               </div>
               
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  {displayedUsers.length} contact{displayedUsers.length !== 1 ? 's' : ''} trouvé{displayedUsers.length !== 1 ? 's' : ''}
-                </p>
+                <div className="flex items-center space-x-4">
+                  <p className="text-sm text-gray-600">
+                    {displayedUsers.length} contact{displayedUsers.length !== 1 ? 's' : ''} trouvé{displayedUsers.length !== 1 ? 's' : ''}
+                  </p>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="online-filter" 
+                      checked={onlineOnly}
+                      onCheckedChange={handleOnlineFilterChange}
+                    />
+                    <Label htmlFor="online-filter" className="text-sm text-gray-600">
+                      En ligne seulement
+                    </Label>
+                  </div>
+                </div>
                 
                 <Button 
                   onClick={() => router.push('/search')}

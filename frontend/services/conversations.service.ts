@@ -10,6 +10,16 @@ import type {
   SendMessageRequest 
 } from '../types';
 
+/**
+ * Options de filtrage pour les participants
+ */
+export interface ParticipantsFilters {
+  onlineOnly?: boolean;
+  role?: string;
+  search?: string;
+  limit?: number;
+}
+
 export class ConversationsService {
   // Cache simple pour les conversations
   private conversationsCache: { data: Conversation[], timestamp: number } | null = null;
@@ -280,9 +290,30 @@ export class ConversationsService {
   /**
    * Obtenir les participants d'une conversation
    */
-  async getParticipants(conversationId: string): Promise<User[]> {
-    const response = await apiService.get<User[]>(`/conversations/${conversationId}/participants`);
-    return response.data;
+  async getParticipants(conversationId: string, filters?: ParticipantsFilters): Promise<User[]> {
+    const params: Record<string, string> = {};
+    
+    if (filters?.onlineOnly) {
+      params.onlineOnly = 'true';
+    }
+    
+    if (filters?.role) {
+      params.role = filters.role;
+    }
+    
+    if (filters?.search) {
+      params.search = filters.search;
+    }
+    
+    if (filters?.limit) {
+      params.limit = filters.limit.toString();
+    }
+
+    const response = await apiService.get<{ success: boolean; data: User[] }>(
+      `/conversations/${conversationId}/participants`,
+      params
+    );
+    return response.data.data || [];
   }
 
   /**
@@ -291,6 +322,14 @@ export class ConversationsService {
   async updateConversation(id: string, data: Partial<Conversation>): Promise<Conversation> {
     const response = await apiService.patch<Conversation>(`/conversations/${id}`, data);
     return response.data;
+  }
+
+  /**
+   * Créer un lien d'invitation pour une conversation
+   */
+  async createInviteLink(conversationId: string): Promise<string> {
+    const response = await apiService.post<{ success: boolean; data: { link: string } }>(`/conversations/${conversationId}/invite-link`);
+    return response.data.data.link;
   }
 
   /**
