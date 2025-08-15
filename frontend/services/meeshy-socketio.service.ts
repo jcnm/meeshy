@@ -20,6 +20,42 @@ import type {
   SocketIOResponse
 } from '@/types';
 
+// Constantes d'événements Socket.IO (temporaire pour éviter les erreurs d'import)
+const SERVER_EVENTS = {
+  MESSAGE_NEW: 'message:new',
+  MESSAGE_EDITED: 'message:edited', 
+  MESSAGE_DELETED: 'message:deleted',
+  MESSAGE_TRANSLATION: 'message:translation',
+  MESSAGE_TRANSLATED: 'message_translated',
+  TYPING_START: 'typing:start',
+  TYPING_STOP: 'typing:stop',
+  USER_STATUS: 'user:status',
+  CONVERSATION_JOINED: 'conversation:joined',
+  CONVERSATION_LEFT: 'conversation:left',
+  AUTHENTICATED: 'authenticated',
+  MESSAGE_SENT: 'message_sent',
+  ERROR: 'error',
+  TRANSLATION_RECEIVED: 'translation_received',
+  TRANSLATION_ERROR: 'translation_error',
+  NOTIFICATION: 'notification',
+  SYSTEM_MESSAGE: 'system_message',
+  CONVERSATION_STATS: 'conversation:stats',
+  CONVERSATION_ONLINE_STATS: 'conversation:online_stats'
+} as const;
+
+const CLIENT_EVENTS = {
+  MESSAGE_SEND: 'message:send',
+  MESSAGE_EDIT: 'message:edit',
+  MESSAGE_DELETE: 'message:delete',
+  CONVERSATION_JOIN: 'conversation:join',
+  CONVERSATION_LEAVE: 'conversation:leave',
+  TYPING_START: 'typing:start',
+  TYPING_STOP: 'typing:stop',
+  USER_STATUS: 'user:status',
+  AUTHENTICATE: 'authenticate',
+  REQUEST_TRANSLATION: 'request_translation'
+} as const;
+
 class MeeshySocketIOService {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
   private isConnected = false;
@@ -40,6 +76,8 @@ class MeeshySocketIOService {
   private translationListeners: Set<(data: TranslationEvent) => void> = new Set();
   private typingListeners: Set<(event: TypingEvent) => void> = new Set();
   private statusListeners: Set<(event: UserStatusEvent) => void> = new Set();
+  private conversationStatsListeners: Set<(data: { conversationId: string; stats: any }) => void> = new Set();
+  private onlineStatsListeners: Set<(data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void> = new Set();
 
   constructor() {
     // La connexion sera initialisée quand l'utilisateur sera défini
@@ -168,7 +206,7 @@ class MeeshySocketIOService {
     });
 
     // Événements de messages
-    this.socket.on('message:new', (socketMessage) => {
+    this.socket.on(SERVER_EVENTS.MESSAGE_NEW, (socketMessage) => {
       console.log('📨 MeeshySocketIOService: Nouveau message reçu', {
         messageId: socketMessage.id,
         conversationId: socketMessage.conversationId
@@ -177,9 +215,21 @@ class MeeshySocketIOService {
       // Convertir en format Message standard
       const message: Message = this.convertSocketMessageToMessage(socketMessage);
       this.messageListeners.forEach(listener => listener(message));
+
+      // Remonter les stats si incluses dans les métadonnées du message
+      try {
+        const meta = (socketMessage as any)?.meta;
+        const conversationStats = meta?.conversationStats;
+        if (conversationStats) {
+          this.conversationStatsListeners.forEach(listener => listener({
+            conversationId: socketMessage.conversationId,
+            stats: conversationStats
+          }));
+        }
+      } catch {}
     });
 
-    this.socket.on('message:edited', (socketMessage) => {
+    this.socket.on(SERVER_EVENTS.MESSAGE_EDITED, (socketMessage) => {
       console.log('✏️ MeeshySocketIOService: Message modifié', {
         messageId: socketMessage.id
       });
@@ -188,7 +238,7 @@ class MeeshySocketIOService {
       this.editListeners.forEach(listener => listener(message));
     });
 
-    this.socket.on('message:deleted', (data) => {
+    this.socket.on(SERVER_EVENTS.MESSAGE_DELETED, (data) => {
       console.log('🗑️ MeeshySocketIOService: Message supprimé', {
         messageId: data.messageId
       });
@@ -196,7 +246,7 @@ class MeeshySocketIOService {
       this.deleteListeners.forEach(listener => listener(data.messageId));
     });
 
-    this.socket.on('message:translation', (data) => {
+    this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data) => {
       console.log('🌐 MeeshySocketIOService: Traduction reçue', {
         messageId: data.messageId,
         translationsCount: data.translations.length
@@ -205,8 +255,16 @@ class MeeshySocketIOService {
       this.translationListeners.forEach(listener => listener(data));
     });
 
+    // Événements de statistiques de conversation
+    this.socket.on(SERVER_EVENTS.CONVERSATION_STATS as any, (data: any) => {
+      this.conversationStatsListeners.forEach(listener => listener(data));
+    });
+    this.socket.on(SERVER_EVENTS.CONVERSATION_ONLINE_STATS as any, (data: any) => {
+      this.onlineStatsListeners.forEach(listener => listener(data));
+    });
+
     // Événements de frappe - gestion intelligente avec état
-    this.socket.on('typing:start', (event) => {
+    this.socket.on(SERVER_EVENTS.TYPING_START, (event) => {
       console.log('⌨️ MeeshySocketIOService: Frappe commencée', { userId: event.userId, conversationId: event.conversationId });
       
       // Ajouter l'utilisateur à la liste des tapeurs pour cette conversation
@@ -231,18 +289,18 @@ class MeeshySocketIOService {
       this.typingListeners.forEach(listener => listener({ ...event, isTyping: true } as any));
     });
 
-    this.socket.on('typing:stop', (event) => {
+    this.socket.on(SERVER_EVENTS.TYPING_STOP, (event) => {
       console.log('⌨️ MeeshySocketIOService: Frappe arrêtée', { userId: event.userId, conversationId: event.conversationId });
       this.handleTypingStop(event);
     });
 
     // Événements de statut utilisateur
-    this.socket.on('user:status', (event) => {
+    this.socket.on(SERVER_EVENTS.USER_STATUS, (event) => {
       this.statusListeners.forEach(listener => listener(event));
     });
 
     // Événements d'erreur
-    this.socket.on('error', (error) => {
+    this.socket.on(SERVER_EVENTS.ERROR, (error) => {
       console.error('❌ MeeshySocketIOService: Erreur serveur', error);
       toast.error(error.message || 'Erreur serveur');
     });
@@ -356,16 +414,34 @@ class MeeshySocketIOService {
     const token = localStorage.getItem('auth_token');
     if (!token) {
       console.warn('🔒 MeeshySocketIOService: Token non disponible, connexion différée');
-      // Attendre un peu et réessayer
-      setTimeout(() => {
-        if (this.currentUser) {
+      // Attendre un peu et réessayer plusieurs fois
+      let attempts = 0;
+      const maxAttempts = 10;
+      const retryInterval = setInterval(() => {
+        attempts++;
+        const retryToken = localStorage.getItem('auth_token');
+        if (retryToken && this.currentUser) {
+          console.log('✅ MeeshySocketIOService: Token trouvé, initialisation connexion...');
+          clearInterval(retryInterval);
           this.initializeConnection();
+        } else if (attempts >= maxAttempts) {
+          console.error('❌ MeeshySocketIOService: Token toujours non disponible après', maxAttempts, 'tentatives');
+          clearInterval(retryInterval);
         }
       }, 1000);
       return;
     }
 
-    if (!this.socket || !this.isConnected) {
+    // Si déjà connecté, juste s'assurer que l'authentification est à jour
+    if (this.socket && this.isConnected) {
+      console.log('🔐 MeeshySocketIOService: Mise à jour de l\'authentification...');
+      this.socket.emit('authenticate', { 
+        sessionToken: token,
+        userId: user.id,
+        language: user.systemLanguage 
+      });
+    } else {
+      // Initialiser la connexion
       this.initializeConnection();
     }
   }
@@ -380,7 +456,7 @@ class MeeshySocketIOService {
     }
 
     console.log('🚪 MeeshySocketIOService: Rejoindre conversation', { conversationId });
-    this.socket.emit('conversation:join', { conversationId });
+    this.socket.emit(CLIENT_EVENTS.CONVERSATION_JOIN, { conversationId });
   }
 
   /**
@@ -393,13 +469,13 @@ class MeeshySocketIOService {
     }
 
     console.log('🚪 MeeshySocketIOService: Quitter conversation', { conversationId });
-    this.socket.emit('conversation:leave', { conversationId });
+    this.socket.emit(CLIENT_EVENTS.CONVERSATION_LEAVE, { conversationId });
   }
 
   /**
    * Envoie un message
    */
-  public async sendMessage(conversationId: string, content: string): Promise<boolean> {
+  public async sendMessage(conversationId: string, content: string, originalLanguage?: string): Promise<boolean> {
     return new Promise((resolve) => {
       if (!this.socket) {
         console.error('❌ MeeshySocketIOService: Socket non connecté');
@@ -409,10 +485,17 @@ class MeeshySocketIOService {
 
       console.log('📤 MeeshySocketIOService: Envoi message', {
         conversationId,
-        contentLength: content.length
+        contentLength: content.length,
+        originalLanguage
       });
 
-      this.socket.emit('message:send', { conversationId, content }, (response) => {
+      const messageData = { 
+        conversationId, 
+        content,
+        ...(originalLanguage && { originalLanguage })
+      };
+
+      this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response) => {
         if (response?.success) {
           console.log('✅ MeeshySocketIOService: Message envoyé avec succès', response);
           resolve(true);
@@ -438,7 +521,7 @@ class MeeshySocketIOService {
 
       console.log('✏️ MeeshySocketIOService: Modification message', { messageId });
 
-      this.socket.emit('message:edit', { messageId, content }, (response) => {
+      this.socket.emit(CLIENT_EVENTS.MESSAGE_EDIT, { messageId, content }, (response) => {
         if (response?.success) {
           console.log('✅ MeeshySocketIOService: Message modifié avec succès');
           resolve(true);
@@ -464,7 +547,7 @@ class MeeshySocketIOService {
 
       console.log('🗑️ MeeshySocketIOService: Suppression message', { messageId });
 
-      this.socket.emit('message:delete', { messageId }, (response) => {
+      this.socket.emit(CLIENT_EVENTS.MESSAGE_DELETE, { messageId }, (response) => {
         if (response?.success) {
           console.log('✅ MeeshySocketIOService: Message supprimé avec succès');
           resolve(true);
@@ -482,7 +565,7 @@ class MeeshySocketIOService {
    */
   public startTyping(conversationId: string): void {
     if (!this.socket) return;
-    this.socket.emit('typing:start', { conversationId });
+    this.socket.emit(CLIENT_EVENTS.TYPING_START, { conversationId });
   }
 
   /**
@@ -490,20 +573,32 @@ class MeeshySocketIOService {
    */
   public stopTyping(conversationId: string): void {
     if (!this.socket) return;
-    this.socket.emit('typing:stop', { conversationId });
+    this.socket.emit(CLIENT_EVENTS.TYPING_STOP, { conversationId });
   }
 
   /**
-   * Force la reconnexion
+   * Force une reconnexion (méthode publique)
    */
   public reconnect(): void {
-    console.log('🔄 MeeshySocketIOService: Reconnexion forcée');
-    this.socket?.disconnect();
+    console.log('🔄 MeeshySocketIOService: Reconnexion forcée...');
+    
+    // Nettoyer la connexion actuelle
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+    
+    this.isConnected = false;
+    this.isConnecting = false;
     this.reconnectAttempts = 0;
-    this.initializeConnection();
-  }
-
-  /**
+    
+    // Réinitialiser la connexion si on a un utilisateur
+    if (this.currentUser) {
+      this.initializeConnection();
+    } else {
+      console.warn('🔒 MeeshySocketIOService: Aucun utilisateur configuré pour la reconnexion');
+    }
+  }  /**
    * Gestionnaires d'événements
    */
   public onNewMessage(listener: (message: Message) => void): () => void {
@@ -544,6 +639,16 @@ class MeeshySocketIOService {
   public onUserStatus(listener: (event: UserStatusEvent) => void): () => void {
     this.statusListeners.add(listener);
     return () => this.statusListeners.delete(listener);
+  }
+
+  public onConversationStats(listener: (data: { conversationId: string; stats: any }) => void): () => void {
+    this.conversationStatsListeners.add(listener);
+    return () => this.conversationStatsListeners.delete(listener);
+  }
+
+  public onConversationOnlineStats(listener: (data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void): () => void {
+    this.onlineStatsListeners.add(listener);
+    return () => this.onlineStatsListeners.delete(listener);
   }
 
   /**

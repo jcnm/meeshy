@@ -10,6 +10,7 @@ import { buildApiUrl } from '@/lib/runtime-urls';
 export interface ForceTranslationRequest {
   messageId: string;
   targetLanguage: string;
+  sourceLanguage?: string; // Langue source du message original
   model?: 'basic' | 'medium' | 'premium';
 }
 
@@ -31,7 +32,6 @@ export interface MessageTranslationStatus {
 }
 
 // === CONFIGURATION ===
-const API_BASE_URL = buildApiUrl('');
 const TIMEOUT = 30000; // 30 secondes
 
 // === SERVICE DE TRADUCTION DE MESSAGES ===
@@ -41,20 +41,35 @@ class MessageTranslationService {
    */
   async requestTranslation(request: ForceTranslationRequest): Promise<ForceTranslationResponse> {
     try {
-      const response = await axios.post(`${API_BASE_URL}/messages/${request.messageId}/translate`, {
-        targetLanguage: request.targetLanguage,
-        model: request.model || 'basic'
-      }, {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('Token d\'authentification manquant');
+      }
+
+      // Utiliser l'API /translate avec message_id pour traduire un message existant
+      const requestBody: any = {
+        message_id: request.messageId,
+        target_language: request.targetLanguage,
+        model_type: request.model || 'basic'
+      };
+
+      // Ajouter la langue source si fournie
+      if (request.sourceLanguage) {
+        requestBody.source_language = request.sourceLanguage;
+      }
+
+      const response = await axios.post(buildApiUrl('/translate'), requestBody, {
         timeout: TIMEOUT,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 
       return {
         messageId: request.messageId,
         targetLanguage: request.targetLanguage,
-        status: response.data.status || 'pending',
+        status: response.data.success ? 'completed' : 'failed',
         translationId: response.data.translationId,
         estimatedTime: response.data.estimatedTime
       };
@@ -69,7 +84,7 @@ class MessageTranslationService {
    */
   async getTranslationStatus(messageId: string, targetLanguage: string): Promise<MessageTranslationStatus> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/messages/${messageId}/translate/${targetLanguage}/status`, {
+      const response = await axios.get(`${buildApiUrl('/messages')}/${messageId}/translate/${targetLanguage}/status`, {
         timeout: 10000
       });
 
@@ -97,7 +112,7 @@ class MessageTranslationService {
    */
   async cancelTranslation(messageId: string, targetLanguage: string): Promise<boolean> {
     try {
-      await axios.delete(`${API_BASE_URL}/messages/${messageId}/translate/${targetLanguage}`, {
+      await axios.delete(`${buildApiUrl('/messages')}/${messageId}/translate/${targetLanguage}`, {
         timeout: 10000
       });
       return true;
@@ -112,7 +127,7 @@ class MessageTranslationService {
    */
   async getMessageTranslations(messageId: string): Promise<MessageTranslationStatus[]> {
     try {
-      const response = await axios.get(`${API_BASE_URL}/messages/${messageId}/translations`, {
+      const response = await axios.get(`${buildApiUrl('/messages')}/${messageId}/translations`, {
         timeout: 10000
       });
 

@@ -206,17 +206,17 @@ export class PermissionsService {
     const restrictions: string[] = [];
 
     // Analyse des permissions
-    if (user.permissions.canAccessAdmin) permissions.push('Accès administration');
-    if (user.permissions.canManageUsers) permissions.push('Gestion utilisateurs');
-    if (user.permissions.canManageGroups) permissions.push('Gestion groupes');
-    if (user.permissions.canModerateContent) permissions.push('Modération contenu');
-    if (user.permissions.canViewAnalytics) permissions.push('Accès analyses');
-    if (user.permissions.canViewAuditLogs) permissions.push('Logs d\'audit');
+    if (user.permissions?.canAccessAdmin) permissions.push('Accès administration');
+    if (user.permissions?.canManageUsers) permissions.push('Gestion utilisateurs');
+    if (user.permissions?.canManageGroups) permissions.push('Gestion groupes');
+    if (user.permissions?.canModerateContent) permissions.push('Modération contenu');
+    if (user.permissions?.canViewAnalytics) permissions.push('Accès analyses');
+    if (user.permissions?.canViewAuditLogs) permissions.push('Logs d\'audit');
 
     // Restrictions
-    if (!user.permissions.canManageUsers) restrictions.push('Gestion utilisateurs interdite');
-    if (!user.permissions.canAccessAdmin) restrictions.push('Administration interdite');
-    if (!user.permissions.canViewAnalytics) restrictions.push('Analyses interdites');
+    if (!user.permissions?.canManageUsers) restrictions.push('Gestion utilisateurs interdite');
+    if (!user.permissions?.canAccessAdmin) restrictions.push('Administration interdite');
+    if (!user.permissions?.canViewAnalytics) restrictions.push('Analyses interdites');
 
     return {
       role: this.getRoleDisplayName(user.role),
