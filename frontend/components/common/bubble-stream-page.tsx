@@ -208,7 +208,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
           displayName = `Utilisateur ${userId.slice(-6)}`;
         }
         
-        console.log('✍️ Utilisateur en train de taper:', { userId, displayName, connectedUser: !!connectedUser });
+        // Utilisateur en train de taper
         
         return [...prev, { id: userId, displayName }];
       } else {
@@ -219,14 +219,12 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   }, [user.id, activeUsers]); // Ajouter activeUsers aux dépendances
 
   const handleUserStatus = useCallback((userId: string, username: string, isOnline: boolean) => {
-    console.log('👤 Statut utilisateur changé:', { userId, username, isOnline });
+    // Statut utilisateur changé
     // TODO: Mettre à jour la liste des utilisateurs actifs
   }, []);
 
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
-    console.log('🌐 Traductions reçues pour message:', messageId, translations);
-    
-    console.log('🔄 Traductions reçues:', translations);
+    // Traductions reçues pour message
     
     // Mettre à jour le message avec les nouvelles traductions
     updateMessageTranslations(messageId, translations);
@@ -245,24 +243,18 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     if (relevantTranslation) {
       const langInfo = getLanguageInfo(relevantTranslation.targetLanguage);
       
-      console.log('✅ Toast pour traduction pertinente:', {
-        langue: langInfo?.name,
-        userLanguages,
-        translationLanguage: relevantTranslation.targetLanguage
-      });
+      // Toast pour traduction pertinente
       
       // Incrémenter les statistiques de traduction
       incrementTranslationCount(relevantTranslation.targetLanguage);
       
-      toast.success(`🌐 Message traduit en ${langInfo?.name || 'votre langue'}`, {
-        duration: TOAST_SHORT_DURATION
-      });
+      // Toast de traduction réduit pour éviter le spam
     }
   }, [updateMessageTranslations, user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]);
 
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
   const handleNewMessage = useCallback((message: Message) => {
-    console.log('📩 Message reçu via WebSocket:', { id: message.id, content: message.content, senderId: message.senderId });
+    // Message reçu via WebSocket
     
     // Utiliser addMessage de useMessageLoader pour gérer l'ajout du message
     addMessage(message);
@@ -274,7 +266,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       });
     } else {
       // Pour nos propres messages, juste un toast discret de confirmation
-      console.log('✅ Mon message publié avec succès');
+      // Mon message publié avec succès
     }
     
     // Auto-scroll vers le nouveau message

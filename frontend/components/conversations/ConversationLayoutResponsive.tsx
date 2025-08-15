@@ -185,12 +185,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       displayName = `Utilisateur ${userId.slice(-6)}`;
     }
     
-    console.log('✍️ [Conversation] Utilisateur en train de taper:', { 
-      userId, 
-      displayName, 
-      participantFound: !!participant,
-      conversationId: selectedConversation?.id 
-    });
+    // Log réduit pour éviter le spam
     
     // Mettre à jour l'état local de frappe (3s timeout géré ci-dessous)
     setTypingUsers(prev => {
@@ -249,11 +244,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const handleNewMessage = useCallback((message: Message) => {
     // Vérifier que le message appartient à la conversation active
     if (selectedConversation?.id && message.conversationId !== selectedConversation.id) {
-      console.log('📬 Message ignoré - appartient à une autre conversation');
       return;
     }
-
-    console.log('📬 Nouveau message reçu pour la conversation active:', message.id);
 
     // Ajouter le message en temps réel à la liste affichée
     addMessage(message);
@@ -277,19 +269,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           }
         }
       } catch (error) {
-        console.log('Erreur lors du scroll automatique:', error);
+        // Erreur silencieuse pour le scroll automatique
       }
     }, 50);
   }, [selectedConversation?.id, addMessage, setConversationsIfChanged]);
 
   const handleTranslation = useCallback((messageId: string, translations: TranslationData[]) => {
-    console.log('🌐 [Conversation] Traductions reçues pour message:', messageId, translations);
     // Appliquer les traductions au message concerné via le loader commun
     updateMessageTranslations(messageId, translations);
   }, [updateMessageTranslations]);
 
   const handleMessageSent = useCallback((content: string, language: string) => {
-    console.log('✅ Message envoyé avec succès:', { content: content.substring(0, 50) + '...', language });
     // Scroller vers le bas après l'envoi
     setTimeout(scrollToBottom, 200);
   }, []);
@@ -416,7 +406,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       
       // Si c'est notre propre message, forcer le scroll immédiatement
       if (lastMessage && lastMessage.senderId === user?.id) {
-        console.log('🔽 Scroll forcé vers le bas (message envoyé)');
+        // Scroll automatique vers le bas
         scrollToBottom(true);
       } else {
         // Scroll normal pour les autres messages
@@ -437,7 +427,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     if (!message) return;
 
     try {
-      console.log(`🔄 Traduction avec modèle sélectionné: ${selectedTranslationModel}`);
+      // Traduction avec modèle sélectionné
 
       // Afficher un indicateur de traduction en cours
       toast.loading('Traduction en cours...', { id: `translate-${messageId}` });
@@ -454,7 +444,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
       // Si forceRetranslate est true, afficher un message spécifique
       if (forceRetranslate) {
-        console.log('🔄 Forcer la retraduction du message');
+        // Forcer la retraduction du message
         toast.loading('Retraduction forcée en cours...', { id: `retranslate-${messageId}` });
       }
 
@@ -491,7 +481,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
 
 
-      console.log(`✅ Message traduit avec ${selectedTranslationModel}: ${translationResult.translatedText}`);
+              // Message traduit avec succès
       toast.success(`Message traduit avec ${selectedTranslationModel}`, { id: `translate-${messageId}` });
 
     } catch (error) {
@@ -502,7 +492,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   };
 
   const handleEdit = async (messageId: string, newContent: string) => {
-    console.log('Edit message:', messageId, 'New content:', newContent);
+    // Édition de message
     toast.info('Édition de message bientôt disponible');
   };
 
@@ -600,12 +590,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     const token = localStorage.getItem('auth_token');
     if (user && token) {
       // Debug: vérifier que l'utilisateur est bien configuré
-      console.log('🔐 ConversationLayoutResponsive: Utilisateur authentifié', {
-        userId: user.id,
-        username: user.username,
-        hasToken: !!token,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
-      });
+      // Utilisateur authentifié
     }
   }, [user, router]);
 
@@ -613,7 +598,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const handleSelectConversation = (conversation: Conversation) => {
     // Si c'est la même conversation, ne rien faire
     if (selectedConversation?.id === conversation.id) {
-      console.log('📬 Conversation déjà sélectionnée');
       return;
     }
 
@@ -652,8 +636,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     const messageContent = newMessage.trim();
     setNewMessage(''); // Vider immédiatement pour éviter les doubles envois
 
-    console.log('📤 Envoi du message:', messageContent);
-    console.log('🔤 Langue sélectionnée par l\'utilisateur:', selectedLanguage);
+    // Envoi du message
 
     // Utiliser le hook réutilisable pour envoyer le message
     // La gestion d'erreurs, les toasts, et la restauration du message sont gérés par le hook
@@ -683,7 +666,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
       setConversationParticipants(allThreadMembers);
       
-      console.log(`📊 Participants chargés: ${allThreadMembers.length} total`);
+      // Participants chargés
     } catch (error) {
       console.error('Erreur lors du chargement des participants:', error);
       setConversationParticipants([]);
@@ -699,16 +682,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
     const isDifferentConversation = messages[0]?.conversationId && messages[0]?.conversationId !== selectedConversation.id;
     if (isDifferentConversation) {
-      console.log('🧹 Nettoyage des messages de l\'ancienne conversation');
+      // Nettoyage des messages de l'ancienne conversation
       clearMessages();
     }
 
     const hasNoMessages = messages.length === 0;
     if (hasNoMessages || isDifferentConversation) {
-      console.log('📬 Chargement des messages pour la conversation:', selectedConversation.id);
+      // Chargement des messages pour la conversation
       loadMessages(selectedConversation.id, true);
     } else {
-      console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
+      // Messages déjà chargés pour cette conversation, pas de rechargement
     }
   }, [selectedConversation?.id, loadMessages, clearMessages, messages.length]);
 
@@ -1058,7 +1041,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       conversationId={selectedConversation.id}
                       conversationType={selectedConversation.type}
                       onLinkCreated={(link) => {
-                        console.log('Lien créé:', link);
+                        // Lien créé
                       }}
                     />
 
@@ -1080,7 +1063,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         loadConversationParticipants(selectedConversation.id);
                       }}
                       onLinkCreated={(link) => {
-                        console.log('Lien créé depuis popover:', link);
+                        // Lien créé depuis popover
                       }}
                     />
 
@@ -1126,21 +1109,15 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                             usedLanguages={usedLanguages}
                             onForceTranslation={async (messageId: string, targetLanguage: string) => {
                               try {
-                                console.log('🔄 Forcer la traduction dans conversation:', { messageId, targetLanguage });
+                                // Forcer la traduction dans conversation
                                 
                                 // Récupérer la langue source du message
                                 const message = messages.find(m => m.id === messageId);
                                 const sourceLanguage = message?.originalLanguage || 'fr';
                                 
-                                console.log('🔤 Détails de la traduction forcée:', {
-                                  messageId,
-                                  targetLanguage,
-                                  sourceLanguage,
-                                  messageFound: !!message,
-                                  messageContent: message?.content?.substring(0, 50) + '...'
-                                });
+                                // Détails de la traduction forcée
                                 
-                                console.log('🔤 Langue source détectée pour la traduction forcée:', sourceLanguage);
+                                // Langue source détectée
 
                                 const result = await messageTranslationService.requestTranslation({
                                   messageId,
@@ -1148,7 +1125,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                   sourceLanguage,
                                   model: 'basic'
                                 });
-                                console.log('✅ Traduction forcée demandée:', result);
+                                // Traduction forcée demandée
                                 toast.success(`Traduction en cours...`);
                               } catch (error) {
                                 console.error('❌ Erreur traduction forcée:', error);
@@ -1248,7 +1225,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         isOpen={isCreateLinkModalOpen}
         onClose={() => setIsCreateLinkModalOpen(false)}
         onLinkCreated={() => {
-          console.log('Lien créé');
+          // Lien créé
           loadData();
         }}
       />
@@ -1258,7 +1235,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         onClose={() => setIsCreateConversationModalOpen(false)}
         currentUser={user}
         onConversationCreated={(conversationId, conversationData) => {
-          console.log('Conversation créée:', conversationId, conversationData);
+          // Conversation créée
           
           // Fermer le modal immédiatement
           setIsCreateConversationModalOpen(false);
@@ -1268,7 +1245,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           
           // Si on a les données de la conversation, l'ajouter immédiatement
           if (conversationData) {
-            console.log('Ajout immédiat de la nouvelle conversation:', conversationData);
+            // Ajout immédiat de la nouvelle conversation
             
             // Ajouter la nouvelle conversation à la liste locale immédiatement
             setConversations(prev => {
@@ -1289,7 +1266,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           } else {
             // Fallback : charger la nouvelle conversation depuis le serveur
             conversationsService.getConversation(conversationId).then((newConversation) => {
-              console.log('Nouvelle conversation récupérée (fallback):', newConversation);
+              // Nouvelle conversation récupérée (fallback)
               
               // Ajouter la nouvelle conversation à la liste locale
               setConversations(prev => {
