@@ -82,7 +82,7 @@ CACHE_MAX_ENTRIES=10000
 
 ### **Configuration Machine Learning :**
 ```bash
-BASIC_MODEL=nllb-200-distilled-600M
+BASIC_MODEL=t5-small
 MEDIUM_MODEL=nllb-200-distilled-600M
 PREMIUM_MODEL=nllb-200-distilled-1.3B
 DEVICE=cpu
@@ -149,7 +149,10 @@ FORCE_MODEL_REDOWNLOAD=false
 
 3. **Mettre à jour les modèles :**
    ```bash
-   BASIC_MODEL=nllb-200-distilled-600M
+   BASIC_MODEL=T5_SMALL
+   MEDIUM_MODEL=NLLB_200_DIS
+   PREMIUM_MODEL=NLLB_200_DIS_13B4. **Mettre à jour les performances :**
+   
    ML_BATCH_SIZE=32
    MAX_TEXT_LENGTH=5000
    ```
