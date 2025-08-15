@@ -17,6 +17,7 @@ import type {
   TranslationEvent
 } from '../../shared/types/socketio-events';
 import { CLIENT_EVENTS, SERVER_EVENTS } from '../../shared/types/socketio-events';
+import { conversationStatsService } from '../services/ConversationStatsService';
 
 export interface SocketUser {
   id: string;
@@ -66,7 +67,7 @@ export class MeeshySocketIOManager {
       }
     });
     
-    console.log('🚀 MeeshySocketIOManager initialisé');
+    console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé');
   }
 
   async initialize(): Promise<void> {
@@ -74,15 +75,20 @@ export class MeeshySocketIOManager {
       // Initialiser le service de traduction
       await this.translationService.initialize();
       
+      // Écouter les événements de traduction prêtes
+      this.translationService.on('translationReady', this._handleTranslationReady.bind(this));
+      
       // Configurer les événements Socket.IO
       this._setupSocketEvents();
+      // Démarrer le ticker périodique des stats en ligne
+      this._ensureOnlineStatsTicker();
       
       // Note: Les événements de traduction sont gérés via le singleton ZMQ
       
-      console.log('✅ MeeshySocketIOManager initialisé avec succès');
+      console.log('[GATEWAY] ✅ MeeshySocketIOManager initialisé avec succès');
       
     } catch (error) {
-      console.error('❌ Erreur initialisation MeeshySocketIOManager:', error);
+      console.error('[GATEWAY] ❌ Erreur initialisation MeeshySocketIOManager:', error);
       throw error;
     }
   }
@@ -101,20 +107,53 @@ export class MeeshySocketIOManager {
         await this._handleAuthentication(socket, data);
       });
       
-      // Réception d'un nouveau message
+      // Réception d'un nouveau message (avec ACK)
       socket.on(CLIENT_EVENTS.MESSAGE_SEND, async (data: {
         conversationId: string;
         content: string;
         originalLanguage?: string;
         messageType?: string;
         replyToId?: string;
-      }) => {
-        await this._handleNewMessage(socket, data);
+      }, callback?: (response: { success: boolean; data?: { messageId: string }; error?: string }) => void) => {
+        try {
+          const result = await this._handleNewMessage(socket, data);
+          if (callback && result?.messageId) {
+            callback({ success: true, data: { messageId: result.messageId } });
+          }
+        } catch (e) {
+          if (callback) {
+            callback({ success: false, error: 'Failed to send message' });
+          }
+        }
       });
       
       // Demande de traduction spécifique
       socket.on(CLIENT_EVENTS.REQUEST_TRANSLATION, async (data: { messageId: string; targetLanguage: string }) => {
         await this._handleTranslationRequest(socket, data);
+      });
+
+      // Gestion des rooms conversation: join
+      socket.on(CLIENT_EVENTS.CONVERSATION_JOIN, (data: { conversationId: string }) => {
+        const room = `conversation_${data.conversationId}`;
+        socket.join(room);
+        const userId = this.socketToUser.get(socket.id);
+        if (userId) {
+          socket.emit(SERVER_EVENTS.CONVERSATION_JOINED, { conversationId: data.conversationId, userId });
+          // Pré-charger/rafraîchir les stats pour cette conversation et les envoyer au socket qui rejoint
+          this._sendConversationStatsToSocket(socket, data.conversationId).catch(() => {});
+        }
+        console.log(`👥 Socket ${socket.id} rejoint ${room}`);
+      });
+
+      // Gestion des rooms conversation: leave
+      socket.on(CLIENT_EVENTS.CONVERSATION_LEAVE, (data: { conversationId: string }) => {
+        const room = `conversation_${data.conversationId}`;
+        socket.leave(room);
+        const userId = this.socketToUser.get(socket.id);
+        if (userId) {
+          socket.emit(SERVER_EVENTS.CONVERSATION_LEFT, { conversationId: data.conversationId, userId });
+        }
+        console.log(`👥 Socket ${socket.id} quitte ${room}`);
       });
       
       // Déconnexion
@@ -198,6 +237,12 @@ export class MeeshySocketIOManager {
       // Rejoindre les conversations de l'utilisateur
       await this._joinUserConversations(socket, user.id, false);
 
+      // Rejoindre la room globale si elle existe (conversation 'any')
+      try {
+        socket.join(`conversation_any`);
+        console.log(`👥 Utilisateur ${user.id} rejoint conversation globale 'any'`);
+      } catch {}
+
       console.log(`✅ Utilisateur authentifié automatiquement: ${user.id}`);
 
     } catch (error) {
@@ -280,6 +325,12 @@ export class MeeshySocketIOManager {
         
         // Rejoindre les conversations de l'utilisateur
         await this._joinUserConversations(socket, user.id, user.isAnonymous);
+
+        // Rejoindre la room globale 'any'
+        try {
+          socket.join(`conversation_any`);
+          console.log(`👥 Utilisateur ${user.id} rejoint conversation globale 'any'`);
+        } catch {}
         
         socket.emit(SERVER_EVENTS.AUTHENTICATED, { success: true, user: { id: user.id, language: user.language } });
         console.log(`✅ Utilisateur authentifié: ${user.id} (${user.isAnonymous ? 'anonyme' : 'connecté'})`);
@@ -330,21 +381,23 @@ export class MeeshySocketIOManager {
     originalLanguage?: string;
     messageType?: string;
     replyToId?: string;
-  }) {
+  }): Promise<{ messageId: string }> {
     try {
       const userId = this.socketToUser.get(socket.id);
       if (!userId) {
         socket.emit('error', { message: 'User not authenticated' });
-        return;
+        throw new Error('User not authenticated');
       }
       
       console.log(`📝 Nouveau message de ${userId} dans ${data.conversationId}: ${data.content.substring(0, 50)}...`);
       
       // Préparer les données du message
+      const connectedUser = this.connectedUsers.get(userId);
       const messageData: MessageData = {
         conversationId: data.conversationId,
         content: data.content,
-        originalLanguage: data.originalLanguage || 'fr',
+        // Utiliser ordre de priorité: payload -> langue socket utilisateur -> 'fr'
+        originalLanguage: data.originalLanguage || connectedUser?.language || 'fr',
         messageType: data.messageType || 'text',
         replyToId: data.replyToId
       };
@@ -361,36 +414,93 @@ export class MeeshySocketIOManager {
       const result = await this.translationService.handleNewMessage(messageData);
       this.stats.messages_processed++;
       
-      // 2. NOTIFIER LE CLIENT QUE LE MESSAGE EST SAUVEGARDÉ
+      // 2. (Optionnel) Notifier l'état de sauvegarde — laissé pour compat rétro
       socket.emit(SERVER_EVENTS.MESSAGE_SENT, {
         messageId: result.messageId,
         status: result.status,
         timestamp: new Date().toISOString()
       });
       
-      // 3. DIFFUSER LE MESSAGE AUX AUTRES PARTICIPANTS
+      // 3. RÉCUPÉRER LE MESSAGE SAUVEGARDÉ ET LE DIFFUSER À TOUS (Y COMPRIS L'AUTEUR)
+      const saved = await this.prisma.message.findUnique({
+        where: { id: result.messageId },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatar: true,
+              role: true
+            }
+          }
+        }
+      });
+
+      // 3.b Calculer/mettre à jour les statistiques de conversation (cache 1h) et les inclure en meta
+      const updatedStats = await conversationStatsService.updateOnNewMessage(
+        this.prisma,
+        data.conversationId,
+        (saved?.originalLanguage || messageData.originalLanguage || 'fr'),
+        () => this.getConnectedUsers()
+      );
+
       const messagePayload = {
-        id: result.messageId,
+        id: saved?.id || result.messageId,
         conversationId: data.conversationId,
-        senderId: messageData.senderId,
-        anonymousSenderId: messageData.anonymousSenderId,
-        content: data.content,
-        originalLanguage: data.originalLanguage || 'fr',
-        messageType: data.messageType || 'text',
-        createdAt: new Date().toISOString()
-      };
+        senderId: saved?.senderId || messageData.senderId,
+        content: saved?.content || data.content,
+        originalLanguage: saved?.originalLanguage || messageData.originalLanguage || 'fr',
+        messageType: saved?.messageType || data.messageType || 'text',
+        isEdited: Boolean(saved?.isEdited),
+        isDeleted: Boolean(saved?.isDeleted),
+        createdAt: saved?.createdAt || new Date(),
+        updatedAt: saved?.updatedAt || new Date(),
+        sender: saved?.sender
+          ? {
+              id: saved.sender.id,
+              username: saved.sender.username,
+              displayName: (saved.sender as any).displayName || saved.sender.username,
+              avatar: (saved.sender as any).avatar,
+              role: (saved.sender as any).role,
+              // champs additionnels non critiques
+              firstName: '',
+              lastName: '',
+              email: '',
+              isOnline: false,
+              lastSeen: new Date(),
+              lastActiveAt: new Date(),
+              systemLanguage: 'fr',
+              regionalLanguage: 'fr',
+              autoTranslateEnabled: true,
+              translateToSystemLanguage: true,
+              translateToRegionalLanguage: false,
+              useCustomDestination: false,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            }
+          : undefined,
+        meta: {
+          conversationStats: updatedStats
+        }
+      } as any;
+
+      this.io.to(`conversation_${data.conversationId}`).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
+      // S'assurer que l'auteur reçoit aussi (au cas où il ne serait pas dans la room encore)
+      socket.emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
       
-      socket.to(`conversation_${data.conversationId}`).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
-      
-      console.log(`✅ Message ${result.messageId} sauvegardé et diffusé`);
+      console.log(`✅ Message ${result.messageId} sauvegardé et diffusé à la conversation ${data.conversationId}`);
       
       // 4. LES TRADUCTIONS SERONT TRAITÉES EN ASYNCHRONE PAR LE TRANSLATION SERVICE
       // ET LES RÉSULTATS SERONT ENVOYÉS VIA LES ÉVÉNEMENTS 'translationReady'
       
+      return { messageId: result.messageId };
     } catch (error) {
       console.error(`❌ Erreur traitement message: ${error}`);
       this.stats.errors++;
       socket.emit(SERVER_EVENTS.ERROR, { message: 'Failed to send message' });
+      throw error;
     }
   }
 
@@ -435,20 +545,38 @@ export class MeeshySocketIOManager {
     }
   }
 
-  private _handleTranslationReady(data: { taskId: string; result: any; targetLanguage: string }) {
+  private async _handleTranslationReady(data: { taskId: string; result: any; targetLanguage: string }) {
     try {
       const { result, targetLanguage } = data;
       
-      console.log(`📤 Envoi traduction aux clients: ${result.messageId} -> ${targetLanguage}`);
+      console.log(`📤 [SocketIOManager] Envoi traduction aux clients: ${result.messageId} -> ${targetLanguage}`);
+      console.log(`🔍 [SocketIOManager] Données de traduction:`, {
+        messageId: result.messageId,
+        translatedText: result.translatedText?.substring(0, 50) + '...',
+        targetLanguage,
+        confidenceScore: result.confidenceScore
+      });
       
       // Récupérer les utilisateurs qui ont besoin de cette traduction
       const targetUsers = this._findUsersForLanguage(targetLanguage);
+      let conversationIdForBroadcast: string | null = null;
+      
+      // Récupérer la conversation du message pour broadcast de room
+      // (pour garantir réception côté front même si la langue ne matche pas strictement)
+      // Cette info est aussi utile pour clients multi-langues
+      try {
+        const msg = await this.prisma.message.findUnique({
+          where: { id: result.messageId },
+          select: { conversationId: true }
+        });
+        conversationIdForBroadcast = msg?.conversationId || null;
+      } catch {}
       
       // Envoyer la traduction aux utilisateurs concernés
       for (const user of targetUsers) {
         const userSocket = this.io.sockets.sockets.get(user.socketId);
         if (userSocket) {
-          userSocket.emit(SERVER_EVENTS.MESSAGE_TRANSLATED, {
+          userSocket.emit('message:translation', {
             messageId: result.messageId,
             translations: [{
               messageId: result.messageId,
@@ -464,6 +592,23 @@ export class MeeshySocketIOManager {
           
           this.stats.translations_sent++;
         }
+      }
+      
+      // Diffuser également dans la room de conversation (fallback efficace)
+      if (conversationIdForBroadcast) {
+        this.io.to(`conversation_${conversationIdForBroadcast}`).emit('message:translation', {
+          messageId: result.messageId,
+          translations: [{
+            messageId: result.messageId,
+            sourceLanguage: 'auto',
+            targetLanguage: targetLanguage,
+            translatedContent: result.translatedText,
+            translationModel: 'basic',
+            cacheKey: `${result.messageId}-${targetLanguage}`,
+            cached: false,
+            confidenceScore: result.confidenceScore
+          }]
+        });
       }
       
       console.log(`✅ Traduction ${result.messageId} -> ${targetLanguage} envoyée à ${targetUsers.length} utilisateurs`);
@@ -521,6 +666,41 @@ export class MeeshySocketIOManager {
         conversationId: data.conversationId
       });
     }
+  }
+
+  // Envoi périodique des stats d'utilisateurs en ligne pour chaque conversation active
+  private onlineStatsInterval: NodeJS.Timeout | null = null;
+
+  private _ensureOnlineStatsTicker(): void {
+    if (this.onlineStatsInterval) return;
+    this.onlineStatsInterval = setInterval(async () => {
+      try {
+        const conversationIds = conversationStatsService.getActiveConversationIds();
+        for (const conversationId of conversationIds) {
+          const stats = await conversationStatsService.getOrCompute(
+            this.prisma,
+            conversationId,
+            () => this.getConnectedUsers()
+          );
+          // n'envoyer que la partie utilisateurs en ligne à fréquence fixe
+          this.io.to(`conversation_${conversationId}`).emit(SERVER_EVENTS.CONVERSATION_ONLINE_STATS, {
+            conversationId,
+            onlineUsers: stats.onlineUsers,
+            updatedAt: stats.updatedAt
+          } as any);
+        }
+      } catch {}
+    }, 10000); // toutes les 10s par défaut
+  }
+
+  private async _sendConversationStatsToSocket(socket: any, conversationId: string): Promise<void> {
+    this._ensureOnlineStatsTicker();
+    const stats = await conversationStatsService.getOrCompute(
+      this.prisma,
+      conversationId,
+      () => this.getConnectedUsers()
+    );
+    socket.emit(SERVER_EVENTS.CONVERSATION_STATS, { conversationId, stats } as any);
   }
 
   // Méthodes publiques pour les statistiques et la gestion
@@ -598,7 +778,7 @@ export class MeeshySocketIOManager {
     try {
       await this.translationService.close();
       this.io.close();
-      console.log('✅ MeeshySocketIOManager fermé');
+      console.log('[GATEWAY] ✅ MeeshySocketIOManager fermé');
     } catch (error) {
       console.error(`❌ Erreur fermeture MeeshySocketIOManager: ${error}`);
     }
