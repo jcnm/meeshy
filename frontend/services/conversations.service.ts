@@ -328,7 +328,11 @@ export class ConversationsService {
    * Créer un lien d'invitation pour une conversation
    */
   async createInviteLink(conversationId: string): Promise<string> {
-    const response = await apiService.post<{ success: boolean; data: { link: string } }>(`/conversations/${conversationId}/invite-link`);
+    // Utiliser le nouvel endpoint new-link
+    const response = await apiService.post<{ success: boolean; data: { link: string } }>(
+      `/conversations/${conversationId}/new-link`,
+      {}
+    );
     return response.data.data.link;
   }
 

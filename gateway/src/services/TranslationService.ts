@@ -590,31 +590,28 @@ export class TranslationService extends EventEmitter {
     try {
       const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
       
-      // First, try to delete any existing record with the same cacheKey to avoid conflicts
-      try {
-        await this.prisma.messageTranslation.deleteMany({
-          where: { cacheKey: cacheKey }
-        });
-      } catch (error) {
-        // Ignore errors if no record exists
-      }
-      
-      // Now create the new record
-      await this.prisma.messageTranslation.create({
-        data: {
+      // Upsert pour éviter les conflits de concurrence sur la contrainte unique (cacheKey)
+      await this.prisma.messageTranslation.upsert({
+        where: { cacheKey },
+        update: {
+          translatedContent: result.translatedText,
+          confidenceScore: result.confidenceScore,
+          sourceLanguage: result.sourceLanguage,
+          targetLanguage: result.targetLanguage,
+          translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
+        },
+        create: {
           messageId: result.messageId,
           sourceLanguage: result.sourceLanguage,
           targetLanguage: result.targetLanguage,
           translatedContent: result.translatedText,
           confidenceScore: result.confidenceScore,
           cacheKey: cacheKey,
-          // Stocker les informations techniques dans le champ translationModel
-          // Format: "modelType|workerId|poolType|translationTime|queueTime|memoryUsage|cpuUsage"
           translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
         }
       });
       
-      console.log(`💾 [TranslationService] Traduction sauvegardée avec métadonnées: ${cacheKey}`);
+      console.log(`💾 [TranslationService] Traduction sauvegardée (upsert) avec métadonnées: ${cacheKey}`);
       console.log(`🔧 [TranslationService] Informations techniques stockées: ${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`);
       
     } catch (error) {

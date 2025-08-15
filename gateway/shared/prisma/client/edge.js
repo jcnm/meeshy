@@ -392,7 +392,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/prisma/client",
+      "value": "/Users/smpceo/Downloads/Meeshy/meeshy/shared/prisma/client",
       "fromEnvVar": null
     },
     "config": {
@@ -426,12 +426,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/schema.prisma",
+    "sourceFilePath": "/Users/smpceo/Downloads/Meeshy/meeshy/shared/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "schemaEnvPath": "../../.env"
   },
   "relativePath": "../..",
   "clientVersion": "6.13.0",
@@ -440,6 +440,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

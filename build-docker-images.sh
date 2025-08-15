@@ -64,7 +64,8 @@ build_images() {
     
     # Construction de l'image shared (dépendance commune)
     log "Génération du client Prisma pour shared..."
-    cd shared && pnpm install && pnpm run generate && ../distribute.sh && cd ..
+    cd shared && pnpm install && pnpm run generate && ./scripts/distribute.sh && cd ..
+
     cd translator
     # Construction des images principales
     log "Construction de l'image Translator..."
@@ -105,7 +106,8 @@ build_images() {
         -f translator/Dockerfile \
         -t meeshy-translator:latest \
         .
-    
+
+    cd ../gateway
     log "Construction de l'image Gateway..."
     docker build \
         --build-arg DATABASE_URL="${DATABASE_URL}" \
@@ -137,6 +139,7 @@ build_images() {
         -t meeshy-gateway:latest \
         .
     
+    cd ../frontend
     log "Construction de l'image Frontend..."
     docker build \
         --build-arg NODE_ENV="production" \

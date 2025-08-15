@@ -40,14 +40,23 @@ export function useMessageLoader({
   const loadMessages = useCallback(async (targetConversationId: string, isNewConversation = false) => {
     if (!currentUser) return;
     
-    // Vérifier si les messages sont déjà chargés pour cette conversation
-    if (conversationId === targetConversationId && messages.length > 0) {
+    // Si c'est une nouvelle conversation ou si on force le chargement, on continue
+    // Sinon, vérifier si les messages sont déjà chargés pour cette conversation
+    if (!isNewConversation && conversationId === targetConversationId && messages.length > 0) {
       console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
       return;
     }
 
     try {
       setIsLoadingMessages(true);
+      console.log(`📬 Chargement des messages pour la conversation: ${targetConversationId} (isNew: ${isNewConversation})`);
+
+      // Si on change de conversation, vider d'abord les messages existants
+      if (conversationId !== targetConversationId && messages.length > 0) {
+        console.log('🧹 Nettoyage des messages avant chargement de la nouvelle conversation');
+        setMessages([]);
+        setTranslatedMessages([]);
+      }
       console.log(`📬 Chargement des messages pour la conversation ${targetConversationId}`);
 
       const token = localStorage.getItem('auth_token');

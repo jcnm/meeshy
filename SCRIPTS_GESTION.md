@@ -6,7 +6,7 @@ Ce dossier contient des scripts améliorés pour gérer les processus Meeshy de 
 
 ### 🚀 Démarrage des Services
 
-#### `./start-all.sh`
+#### `./start-all.sh` 
 Lance tous les services Meeshy (Translator + Gateway + Frontend)
 - **Ports utilisés** : 8000 (Translator), 3000 (Gateway), 3100 (Frontend)
 - **Arrêt** : `Ctrl+C` pour arrêter tous les services proprement

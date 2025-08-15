@@ -26,6 +26,7 @@ import type {
 import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
+import { linksRoutes } from './routes/links';
 
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
@@ -444,7 +445,8 @@ class MeeshyServer {
     
     // Register conversation routes without prefix
     await this.server.register(conversationRoutes);
-    
+    // Register links management routes
+    await this.server.register(linksRoutes);
 
     
     // Register user routes

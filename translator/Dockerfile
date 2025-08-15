@@ -1,6 +1,17 @@
 # Translator Dockerfile - Meeshy FastAPI Service (Optimized)
 FROM python:3.12-slim
 
+# === MAINTAINER INFORMATION ===
+LABEL maintainer="Meeshy Development Team <dev@meeshy.com>" \
+      description="Meeshy Frontend - Next.js Application with SSR/SSG support" \
+      version="1.0.0" \
+      org.opencontainers.image.source="https://github.com/jcnm/meeshy/frontend" \
+      org.opencontainers.image.documentation="https://docs.meeshy.com/frontend" \
+      org.opencontainers.image.vendor="Meeshy" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.title="Meeshy Translator" \
+      org.opencontainers.image.description="Next.js frontend application for Meeshy platform"
+
 # Configuration des arguments de build
 ARG DEBIAN_FRONTEND=noninteractive
 ARG NODE_VERSION=22

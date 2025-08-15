@@ -173,7 +173,7 @@ export const API_ENDPOINTS = {
     CREATE: '/conversations',
     JOIN: '/conversations/join',
     LINK: '/conversations/link',
-    CREATE_LINK: '/conversations/create-link',
+    CREATE_LINK: '/links',
     MESSAGES: '/conversations/:id/messages',
     GET_GROUP_CONVERSATIONS: (groupId: string) => `/conversations/group/${groupId}`
   },

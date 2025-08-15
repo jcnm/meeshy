@@ -40,4 +40,14 @@ export async function groupRoutes(fastify: FastifyInstance) {
   fastify.delete('/groups/:id', async (request, reply) => {
     reply.send({ message: 'Delete group - to be implemented' });
   });
+
+  // Conversations d'un groupe
+  fastify.get('/groups/:id/conversations', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      // Schéma actuel: il n'y a pas de relation Group -> Conversation. On renvoie une liste vide pour compatibilité frontend.
+      reply.send([]);
+    } catch (error) {
+      reply.status(500).send([]);
+    }
+  });
 }

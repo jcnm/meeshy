@@ -81,6 +81,27 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     throw new Error('ConversationLayoutResponsive: user should not be null when wrapped by ConversationLayoutWrapper');
   }
 
+  // Fonction utilitaire pour éviter les doublons et filtrer les conversations invalides
+  const sanitizeConversations = useCallback((conversations: Conversation[]): Conversation[] => {
+    // Filtrer les conversations invalides et supprimer les doublons
+    const validConversations = conversations.filter(conv => conv && conv.id);
+    const uniqueConversations = validConversations.reduce((acc: Conversation[], current: Conversation) => {
+      const existingIndex = acc.findIndex(conv => conv.id === current.id);
+      if (existingIndex === -1) {
+        acc.push(current);
+      } else {
+        // Garder la version la plus récente (basée sur updatedAt)
+        if (!acc[existingIndex].updatedAt || 
+            (current.updatedAt && new Date(current.updatedAt) > new Date(acc[existingIndex].updatedAt))) {
+          acc[existingIndex] = current;
+        }
+      }
+      return acc;
+    }, []);
+    
+    return uniqueConversations;
+  }, []);
+
   // États principaux
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -453,7 +474,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         conversationsWithAny = [anyConversation, ...conversationsData];
       }
 
-      setConversations(conversationsWithAny);
+      setConversations(sanitizeConversations(conversationsWithAny));
 
       // Sélectionner une conversation seulement si spécifiée dans l'URL
       const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
@@ -621,6 +642,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       
       if (shouldLoadMessages) {
         console.log('📬 Chargement des messages pour la nouvelle conversation:', selectedConversation.id);
+        
+        // Vider d'abord les messages existants si c'est une conversation différente
+        if (messages.length > 0 && messages[0]?.conversationId !== selectedConversation.id) {
+          console.log('🧹 Nettoyage des messages de l\'ancienne conversation');
+          clearMessages();
+        }
+        
         loadMessages(selectedConversation.id, true);
       } else {
         console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
@@ -741,9 +769,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                               </h3>
                             </div>
                             <div className="space-y-2">
-                              {publicConversations.map((conversation) => (
+                              {publicConversations
+                                .filter(conversation => conversation && conversation.id) // Filtrer les conversations invalides
+                                .map((conversation) => (
                                 <div
-                                  key={conversation.id}
+                                  key={`public-${conversation.id}`}
                                   onClick={() => handleSelectConversation(conversation)}
                                   className={cn(
                                     "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
@@ -807,9 +837,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                               </h3>
                             </div>
                             <div className="space-y-2">
-                              {privateConversations.map((conversation) => (
+                              {privateConversations
+                                .filter(conversation => conversation && conversation.id) // Filtrer les conversations invalides
+                                .map((conversation) => (
                                 <div
-                                  key={conversation.id}
+                                  key={`private-${conversation.id}`}
                                   onClick={() => handleSelectConversation(conversation)}
                                   className={cn(
                                     "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
@@ -942,7 +974,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     {/* Bouton pour créer un lien */}
                     <CreateLinkButton
                       conversationId={selectedConversation.id}
-                      isGroup={selectedConversation.isGroup || false}
                       conversationType={selectedConversation.type}
                       onLinkCreated={(link) => {
                         console.log('Lien créé:', link);
@@ -995,7 +1026,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {translatedMessages.map((message) => {
+                      {translatedMessages
+                        .filter(message => message && message.id) // Filtrer les messages invalides
+                        .map((message) => {
                         // Langues utilisées (similaire à bubble-stream-page)
                         const usedLanguages: string[] = [
                           user.regionalLanguage,
@@ -1004,7 +1037,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         
                         return (
                           <BubbleMessage
-                            key={message.id}
+                            key={`message-${message.id}`}
                             message={message as any}
                             currentUser={user}
                             userLanguage={user.systemLanguage}
@@ -1134,32 +1167,60 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         isOpen={isCreateConversationModalOpen}
         onClose={() => setIsCreateConversationModalOpen(false)}
         currentUser={user}
-        onConversationCreated={(conversationId) => {
-          console.log('Conversation créée:', conversationId);
+        onConversationCreated={(conversationId, conversationData) => {
+          console.log('Conversation créée:', conversationId, conversationData);
           
-          // Charger la nouvelle conversation depuis le serveur
-          conversationsService.getConversation(conversationId).then((newConversation) => {
-            // Ajouter la nouvelle conversation à la liste locale
+          // Fermer le modal immédiatement
+          setIsCreateConversationModalOpen(false);
+          
+          // Vider les messages de l'ancienne conversation immédiatement
+          clearMessages();
+          
+          // Si on a les données de la conversation, l'ajouter immédiatement
+          if (conversationData) {
+            console.log('Ajout immédiat de la nouvelle conversation:', conversationData);
+            
+            // Ajouter la nouvelle conversation à la liste locale immédiatement
             setConversations(prev => {
-              // Vérifier si la conversation n'est pas déjà présente
-              if (prev.some(c => c.id === newConversation.id)) {
-                return prev;
-              }
-              
-              // Ajouter la nouvelle conversation en haut de la liste
-              return [newConversation, ...prev];
+              const updatedList = [conversationData, ...prev];
+              return sanitizeConversations(updatedList);
             });
             
             // Sélectionner automatiquement la nouvelle conversation
-            setSelectedConversation(newConversation);
+            setSelectedConversation(conversationData);
             
             // Rediriger vers la nouvelle conversation
-            router.push(`/conversations?id=${newConversation.id}`);
-          }).catch((error) => {
-            console.error('Erreur lors du chargement de la nouvelle conversation:', error);
-            // En cas d'erreur, recharger toutes les conversations
-            loadData();
-          });
+            router.push(`/conversations?id=${conversationData.id}`);
+            
+            // Affichage mobile : masquer la liste des conversations
+            if (isMobile) {
+              setShowConversationList(false);
+            }
+          } else {
+            // Fallback : charger la nouvelle conversation depuis le serveur
+            conversationsService.getConversation(conversationId).then((newConversation) => {
+              console.log('Nouvelle conversation récupérée (fallback):', newConversation);
+              
+              // Ajouter la nouvelle conversation à la liste locale
+              setConversations(prev => {
+                const updatedList = [newConversation, ...prev];
+                return sanitizeConversations(updatedList);
+              });
+              
+              setSelectedConversation(newConversation);
+              router.push(`/conversations?id=${newConversation.id}`);
+              
+              if (isMobile) {
+                setShowConversationList(false);
+              }
+            }).catch((error) => {
+              console.error('Erreur lors du chargement de la nouvelle conversation:', error);
+              toast.error('Erreur lors du chargement de la conversation. Rechargement...');
+              setTimeout(() => {
+                loadData();
+              }, 1000);
+            });
+          }
         }}
       />
 

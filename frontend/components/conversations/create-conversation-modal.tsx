@@ -23,7 +23,7 @@ interface CreateConversationModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: User;
-  onConversationCreated: (conversationId: string) => void;
+  onConversationCreated: (conversationId: string, conversationData?: any) => void;
 }
 
 export function CreateConversationModal({
@@ -126,7 +126,9 @@ export function CreateConversationModal({
         const responseData = await response.json();
         const conversation = responseData.data;
         toast.success('Conversation créée avec succès');
-        onConversationCreated(conversation.id);
+        
+        // Passer les données de la conversation créée pour un ajout immédiat
+        onConversationCreated(conversation.id, conversation);
         handleClose();
       } else {
         const error = await response.json();

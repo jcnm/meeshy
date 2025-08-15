@@ -1,23 +1,8 @@
 import { FastifyInstance, FastifyRequest } from 'fastify';
-import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService } from '../services/TranslationService';
 import { conversationStatsService } from '../services/ConversationStatsService';
-import { ZMQSingleton } from '../services/zmq-singleton';
 
-const prisma = new PrismaClient();
-let zmqClient: any = null;
-let translationService: TranslationService | null = null;
-
-async function initializeServices() {
-  if (!zmqClient) {
-    zmqClient = await ZMQSingleton.getInstance();
-  }
-  if (!translationService) {
-    translationService = new TranslationService(prisma);
-    await translationService.initialize();
-  }
-  return { zmqClient, translationService };
-}
+// Prisma et TranslationService sont décorés et fournis par le serveur principal
 
 
 
@@ -58,9 +43,14 @@ interface MessagesQuery {
   before?: string; // messageId pour pagination
 }
 
+interface SearchQuery {
+  q?: string;
+}
+
 export async function conversationRoutes(fastify: FastifyInstance) {
-  // Initialiser les services
-  const { translationService } = await initializeServices();
+  // Récupérer prisma et le service de traduction décorés par le serveur
+  const prisma = fastify.prisma;
+  const translationService: TranslationService = (fastify as any).translationService;
   
   // Route pour obtenir toutes les conversations de l'utilisateur
   fastify.get('/conversations', {
@@ -632,48 +622,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
-      // Traduire le message via le service Translator (qui gère les langues des participants)
+      // Déclencher les traductions via le TranslationService (gère les langues des participants)
       try {
-        // Récupérer les IDs des participants
-        let participantIds: string[] = [];
-        
-        if (id === 'any') {
-          // Pour la conversation globale, récupérer tous les utilisateurs actifs
-          const activeUsers = await prisma.user.findMany({
-            where: { isActive: true },
-            select: { id: true }
-          });
-          participantIds = activeUsers.map(u => u.id);
-        } else {
-          const participants = await prisma.conversationMember.findMany({
-            where: {
-              conversationId: id,
-              isActive: true
-            },
-            select: { userId: true }
-          });
-          participantIds = participants.map(p => p.userId);
-        }
-
-        // Envoyer la demande de traduction au service Translator via ZMQ
-        // Le Translator récupérera lui-même les langues des participants et traduira en conséquence
-        const translationRequest = {
-          messageId: message.id,
-          text: message.content,
-          sourceLanguage: originalLanguage,
-          targetLanguage: originalLanguage, // Langue source (le Translator déterminera les cibles)
-          modelType: getPredictedModelType(message.content.length),
-          // Données supplémentaires pour le Translator
-          conversationId: id, // Le Translator utilisera ceci pour récupérer les participants
-          participantIds: participantIds, // Information optionnelle pour optimisation
-          requestType: 'conversation_translation'
-        };
-
-        await zmqClient.translateText(translationRequest);
-
-        console.log(`Translations requested for message ${message.id} in conversation ${id}`);
+        await translationService.handleNewMessage({
+          id: message.id,
+          conversationId: id,
+          senderId: userId,
+          content: message.content,
+          originalLanguage,
+          messageType,
+          replyToId
+        } as any);
+        console.log(`Translations queued via TranslationService for message ${message.id} in conversation ${id}`);
       } catch (error) {
-        console.error('[GATEWAY] Error requesting translations:', error);
+        console.error('[GATEWAY] Error queuing translations via TranslationService:', error);
         // Ne pas faire échouer l'envoi du message si la traduction échoue
       }
 
@@ -701,6 +663,115 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  // Marquer une conversation comme lue (tous les messages non lus)
+  fastify.post<{ Params: ConversationParams }>('/conversations/:id/read', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const userId = (request as any).user.userId || (request as any).user.id;
+
+      // Accès à la conversation
+      let canAccess = false;
+      if (id === 'any') {
+        canAccess = true;
+      } else {
+        const membership = await prisma.conversationMember.findFirst({
+          where: { conversationId: id, userId, isActive: true }
+        });
+        canAccess = !!membership;
+      }
+      if (!canAccess) {
+        return reply.status(403).send({ success: false, error: 'Accès non autorisé à cette conversation' });
+      }
+
+      // Récupérer les messages non lus
+      const unreadMessages = await prisma.message.findMany({
+        where: {
+          conversationId: id,
+          isDeleted: false,
+          readStatus: { none: { userId } }
+        },
+        select: { id: true }
+      });
+
+      if (unreadMessages.length > 0) {
+        await prisma.messageReadStatus.createMany({
+          data: unreadMessages.map(m => ({ messageId: m.id, userId }))
+        });
+      }
+
+      reply.send({ success: true, data: { markedCount: unreadMessages.length } });
+    } catch (error) {
+      console.error('[GATEWAY] Error marking conversation as read:', error);
+      reply.status(500).send({ success: false, error: 'Erreur lors du marquage comme lu' });
+    }
+  });
+
+  // Recherche de conversations accessibles par l'utilisateur courant
+  fastify.get<{ Querystring: SearchQuery }>('/conversations/search', {
+    preValidation: [fastify.authenticate]
+  }, async (request, reply) => {
+    try {
+      const { q } = request.query;
+      const userId = (request as any).user.userId || (request as any).user.id;
+
+      if (!q || q.trim().length === 0) {
+        return reply.send({ success: true, data: [] });
+      }
+
+      const conversations = await prisma.conversation.findMany({
+        where: {
+          isActive: true,
+          members: { some: { userId, isActive: true } },
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            {
+              members: {
+                some: {
+                  user: {
+                    OR: [
+                      { firstName: { contains: q, mode: 'insensitive' } },
+                      { lastName: { contains: q, mode: 'insensitive' } },
+                      { username: { contains: q, mode: 'insensitive' } },
+                      { displayName: { contains: q, mode: 'insensitive' } }
+                    ],
+                    isActive: true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true,
+                  isOnline: true,
+                  lastSeen: true
+                }
+              }
+            }
+          },
+          messages: { orderBy: { createdAt: 'desc' }, take: 1 }
+        },
+        orderBy: { lastMessageAt: 'desc' }
+      });
+
+      reply.send({ success: true, data: conversations });
+    } catch (error) {
+      console.error('[GATEWAY] Error searching conversations:', error);
+      reply.status(500).send({ success: false, error: 'Erreur lors de la recherche de conversations' });
+    }
+  });
+
+  // NOTE: route déplacée vers groups.ts → GET /groups/:id/conversations
 
   // Route pour modifier un message (permis depuis la gateway)
   fastify.put<{
@@ -853,6 +924,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  // NOTE: ancienne route /conversations/create-link supprimée (remplacée par /links)
 
   // Route pour mettre à jour une conversation
   fastify.put<{ 
@@ -1406,10 +1479,10 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Route pour créer un lien d'invitation
+  // Route pour créer un nouveau lien pour une conversation existante
   fastify.post<{
     Params: { id: string };
-  }>('/conversations/:id/invite-link', {
+  }>('/conversations/:id/new-link', {
     preValidation: [fastify.authenticate]
   }, async (request, reply) => {
     try {
@@ -1432,26 +1505,32 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Générer un lien d'invitation unique
-      const inviteCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3100'}/join/${inviteCode}`;
+      // Générer un code unique et stocker le lien dans la base
+      const linkId = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
 
-      // Stocker le lien d'invitation (optionnel)
-      // Pour l'instant, on retourne juste le lien généré
+      await prisma.conversationShareLink.create({
+        data: {
+          linkId,
+          conversationId: id,
+          createdBy: currentUserId
+        }
+      });
 
+      // Retour compatible avec le frontend de service conversations (string du lien complet)
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3100'}/join/${linkId}`;
       reply.send({
         success: true,
         data: {
           link: inviteLink,
-          code: inviteCode
+          code: linkId
         }
       });
 
     } catch (error) {
-      console.error('[GATEWAY] Error creating invite link:', error);
+      console.error('[GATEWAY] Error creating new conversation link:', error);
       reply.status(500).send({
         success: false,
-        error: 'Erreur lors de la création du lien d\'invitation'
+        error: 'Erreur lors de la création du lien'
       });
     }
   });

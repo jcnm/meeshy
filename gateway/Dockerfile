@@ -3,12 +3,13 @@ FROM node:22-alpine
 
 # === MAINTAINER INFORMATION ===
 LABEL maintainer="Meeshy Development Team <dev@meeshy.com>" \
-      description="Meeshy Gateway - Fastify API Service with WebSocket, gRPC and ZMQ support" \
-      version="1.0.0" \
       org.opencontainers.image.source="https://github.com/jcnm/meeshy/gateway" \
       org.opencontainers.image.documentation="https://docs.meeshy.com/gateway" \
       org.opencontainers.image.vendor="Meeshy" \
-      org.opencontainers.image.licenses="MIT"
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.title="Meeshy Gateway" \
+      org.opencontainers.image.description="Fastify application for Meeshy platform"
+
 
 # === BUILD ARGUMENTS ===
 ARG NODE_ENV=production
