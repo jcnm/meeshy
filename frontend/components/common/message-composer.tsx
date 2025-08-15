@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageSelector } from '@/components/translation';
 import { MAX_MESSAGE_LENGTH } from '@/lib/constants/languages';
+import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 
 interface MessageComposerProps {
   value: string;
@@ -18,6 +19,7 @@ interface MessageComposerProps {
   placeholder?: string;
   onKeyPress?: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
   className?: string;
+  choices?: LanguageChoice[]; // Choix de langues disponibles pour l'utilisateur
 }
 
 export interface MessageComposerRef {
@@ -39,7 +41,8 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   isComposingEnabled = true,
   placeholder = "Partagez quelque chose avec le monde...",
   onKeyPress,
-  className = ""
+  className = "",
+  choices
 }, ref) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -80,6 +83,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
           onValueChange={onLanguageChange}
           placeholder="Langue d'écriture"
           className="border-gray-200 hover:border-blue-300"
+          choices={choices}
         />
         
         {/* Localisation */}

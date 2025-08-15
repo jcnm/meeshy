@@ -21,7 +21,8 @@ import {
   Languages,
   MapPin, 
   TrendingUp, 
-  ChevronUp
+  ChevronUp,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -79,20 +80,27 @@ import {
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { TrendingSection } from '@/components/common/trending-section';
 import { LoadingState } from '@/components/common/LoadingStates';
+import { ZIndexDebugPanel } from '@/components/debug/z-index-debug';
+import { ZIndexTestComponent } from '@/components/debug/z-index-test';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
+import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import type { User, Message, BubbleTranslation } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
+import { useMessageLoader } from '@/hooks/use-message-loader';
 
 export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Hook pour fixer les z-index des composants Radix UI
+  useFixRadixZIndex();
 
   // Hook pour la gestion des traductions
   const {
@@ -104,14 +112,28 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     getRequiredTranslations
   } = useMessageTranslations({ currentUser: user });
 
+  // Hook pour le chargement des messages
+  const {
+    messages,
+    translatedMessages,
+    isLoadingMessages,
+    loadMessages,
+    clearMessages,
+    addMessage,
+    updateMessageTranslations
+  } = useMessageLoader({
+    currentUser: user,
+    conversationId: 'any'
+  });
+
   // États de base
-  const [messages, setMessages] = useState<BubbleStreamMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState<string>('fr');
   const [userLanguage, setUserLanguage] = useState<string>(resolveUserLanguage(user));
   const [selectedInputLanguage, setSelectedInputLanguage] = useState<string>(user.systemLanguage || 'fr');
-  const [languageStats, setLanguageStats] = useState<LanguageStats[]>([]);
+  const [messageLanguageStats, setMessageLanguageStats] = useState<LanguageStats[]>([]);
+  const [activeLanguageStats, setActiveLanguageStats] = useState<LanguageStats[]>([]);
   const [isComposingEnabled, setIsComposingEnabled] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState<string>('');
@@ -129,8 +151,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   // Obtenir les choix de langues pour l'utilisateur via la fonction centralisée
   const languageChoices = getUserLanguageChoices(user);
 
-  // État pour les utilisateurs en train de taper
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  // État pour les utilisateurs en train de taper avec leurs noms
+  const [typingUsers, setTypingUsers] = useState<{id: string, displayName: string}[]>([]);
 
   // Fonctions de gestion des événements utilisateur
   const handleUserTyping = useCallback((userId: string, username: string, isTyping: boolean) => {
@@ -139,10 +161,17 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     setTypingUsers(prev => {
       if (isTyping) {
         // Ajouter l'utilisateur s'il n'est pas déjà dans la liste
-        return prev.includes(username) ? prev : [...prev, username];
+        if (prev.some(u => u.id === userId)) return prev;
+        
+        // Utiliser le username s'il est fourni, sinon utiliser l'ID avec un formatage plus convivial
+        const displayName = username && username !== userId 
+          ? username 
+          : `Utilisateur ${userId.slice(-6)}`; // Prendre les 6 derniers caractères de l'ID
+        
+        return [...prev, { id: userId, displayName }];
       } else {
         // Retirer l'utilisateur de la liste
-        return prev.filter(name => name !== username);
+        return prev.filter(u => u.id !== userId);
       }
     });
   }, [user.id]);
@@ -155,118 +184,41 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
     console.log('🌐 Traductions reçues pour message:', messageId, translations);
     
-    // Vérifier si des traductions existent déjà pour éviter les doublons
-    let hasNewTranslation = false;
+    // Mettre à jour le message avec les nouvelles traductions
+    updateMessageTranslations(messageId, translations);
     
-    // Mettre à jour le message avec les traductions reçues
-    setMessages(prev => prev.map(msg => {
-      if (msg.id === messageId) {
-        // Convertir les traductions reçues au format BubbleTranslation
-        const newTranslations: BubbleTranslation[] = translations.map(t => ({
-          language: t.language || t.targetLanguage,
-          content: t.content || t.translatedContent,
-          status: 'completed' as const,
-          timestamp: new Date(),
-          confidence: t.confidence || 0.9
-        }));
+    // Vérifier si on a des nouvelles traductions pour cet utilisateur
+    const userLanguages = [
+      user.systemLanguage,
+      user.regionalLanguage,
+      user.customDestinationLanguage
+    ].filter(Boolean); // Enlever les valeurs undefined/null
 
-        // Fusionner avec les traductions existantes pour éviter les doublons
-        const existingTranslations = msg.translations || [];
-        const mergedTranslations: BubbleTranslation[] = [...existingTranslations];
-
-        newTranslations.forEach(newTrans => {
-          const existingIndex = mergedTranslations.findIndex(
-            existing => existing.language === newTrans.language
-          );
-          
-          if (existingIndex >= 0) {
-            // Mettre à jour la traduction existante
-            mergedTranslations[existingIndex] = newTrans;
-          } else {
-            // Ajouter nouvelle traduction
-            mergedTranslations.push(newTrans);
-            hasNewTranslation = true;
-          }
-        });
-
-        // Mettre à jour le contenu du message si nous avons une traduction pour la langue système
-        let updatedContent = msg.content;
-        const systemLanguageTranslation = mergedTranslations.find(t => 
-          t.language === user.systemLanguage && t.status === 'completed'
-        );
-        
-        // Si le message n'est pas dans la langue système de l'utilisateur, utiliser la traduction
-        if (msg.originalLanguage !== user.systemLanguage && systemLanguageTranslation) {
-          updatedContent = systemLanguageTranslation.content;
-        }
-
-        return {
-          ...msg,
-          content: updatedContent,
-          translations: mergedTranslations
-        };
-      }
-      return msg;
-    }));
+    const relevantTranslation = translations.find(t => 
+      userLanguages.includes(t.language || t.targetLanguage)
+    );
     
-    // Toast UNIQUEMENT pour les nouvelles traductions dans les langues de l'utilisateur
-    if (hasNewTranslation) {
-      const userLanguages = [
-        user.systemLanguage,
-        user.regionalLanguage,
-        user.customDestinationLanguage
-      ].filter(Boolean); // Enlever les valeurs undefined/null
-
-      const relevantTranslation = translations.find(t => 
-        userLanguages.includes(t.language || t.targetLanguage)
-      );
+    if (relevantTranslation) {
+      const langInfo = getLanguageInfo(relevantTranslation.language || relevantTranslation.targetLanguage);
       
-      if (relevantTranslation) {
-        const langInfo = getLanguageInfo(relevantTranslation.language || relevantTranslation.targetLanguage);
-        
-        console.log('✅ Toast pour traduction pertinente:', {
-          langue: langInfo?.name,
-          userLanguages,
-          translationLanguage: relevantTranslation.language || relevantTranslation.targetLanguage
-        });
-        
-        toast.success(`🌐 Message traduit en ${langInfo?.name || 'votre langue'}`, {
-          duration: TOAST_SHORT_DURATION
-        });
-      }
+      console.log('✅ Toast pour traduction pertinente:', {
+        langue: langInfo?.name,
+        userLanguages,
+        translationLanguage: relevantTranslation.language || relevantTranslation.targetLanguage
+      });
+      
+      toast.success(`🌐 Message traduit en ${langInfo?.name || 'votre langue'}`, {
+        duration: TOAST_SHORT_DURATION
+      });
     }
-  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]);
+  }, [updateMessageTranslations, user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]);
 
   // Handler pour les nouveaux messages reçus via WebSocket avec traductions optimisées
   const handleNewMessage = useCallback((message: Message) => {
     console.log('📩 Message reçu via WebSocket:', { id: message.id, content: message.content, senderId: message.senderId });
     
-    setMessages(prev => {
-      // Éviter les doublons - vérifier par ID ET par contenu/senderId pour plus de sécurité
-      const isDuplicate = prev.some(existingMsg => 
-        existingMsg.id === message.id || 
-        (existingMsg.senderId === message.senderId && 
-         existingMsg.content === message.content && 
-         Math.abs(new Date(existingMsg.createdAt).getTime() - new Date(message.createdAt).getTime()) < 5000)
-      );
-      
-      if (isDuplicate) {
-        console.log('🚫 Message dupliqué détecté, ignoré:', message.id);
-        return prev;
-      }
-
-      // Utiliser le hook pour traiter le message avec traductions
-      const bubbleMessage = processMessageWithTranslations(message);
-
-      console.log('✅ Nouveau message ajouté au stream:', {
-        id: bubbleMessage.id,
-        isTranslated: bubbleMessage.isTranslated,
-        translationsCount: bubbleMessage.translations.length
-      });
-      
-      // ⬆️ Les nouveaux messages sont placés EN HAUT de la liste (ordre chronologique inverse)
-      return [bubbleMessage, ...prev];
-    });
+    // Utiliser addMessage de useMessageLoader pour gérer l'ajout du message
+    addMessage(message);
     
     // Notification UNIQUEMENT pour les nouveaux messages d'autres utilisateurs
     if (message.senderId !== user.id) {
@@ -285,13 +237,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         behavior: 'smooth'
       });
     }, 100);
-    
-    console.log('📩 Traitement nouveau message terminé:', {
-      from: message.sender?.username,
-      content: message.content.substring(0, 50) + '...',
-      isOwnMessage: message.senderId === user.id,
-    });
-  }, [user.id, processMessageWithTranslations]);
+  }, [addMessage, user.id]);
 
   // Hooks
   const { 
@@ -308,6 +254,103 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     onUserTyping: handleUserTyping,
     onUserStatus: handleUserStatus,
     onTranslation: handleTranslation,
+    onConversationStats: (data) => {
+      if (!data || data.conversationId !== 'any') return;
+      const stats: any = data.stats || {};
+      if (stats.messagesPerLanguage) {
+        const mapped = Object.entries(stats.messagesPerLanguage).map(([code, count]) => ({
+          language: code as string,
+          flag: getLanguageFlag(code as string),
+          count: count as number,
+          color: undefined as any
+        })).filter((s: any) => s.count > 0);
+        setMessageLanguageStats(mapped as any);
+      }
+      if (stats.participantsPerLanguage) {
+        const mapped = Object.entries(stats.participantsPerLanguage).map(([code, count]) => ({
+          language: code as string,
+          flag: getLanguageFlag(code as string),
+          count: count as number,
+          color: undefined as any
+        })).filter((s: any) => s.count > 0);
+        setActiveLanguageStats(mapped as any);
+      }
+      if (typeof stats.participantCount === 'number') {
+        // Optional: could be displayed somewhere in UI later
+        // setParticipantsCount(stats.participantCount);
+      }
+      if (Array.isArray(stats.onlineUsers)) {
+        setActiveUsers(stats.onlineUsers.map((u: any) => ({
+          id: u.id,
+          username: u.username,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          email: '',
+          avatar: '',
+          role: 'USER' as const,
+          permissions: {
+            canAccessAdmin: false,
+            canManageUsers: false,
+            canManageGroups: false,
+            canManageConversations: false,
+            canViewAnalytics: false,
+            canModerateContent: false,
+            canViewAuditLogs: false,
+            canManageNotifications: false,
+            canManageTranslations: false,
+          },
+          systemLanguage: 'fr',
+          regionalLanguage: 'fr',
+          autoTranslateEnabled: true,
+          translateToSystemLanguage: true,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isOnline: true,
+          isActive: true,
+          lastSeen: new Date(),
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+          updatedAt: new Date()
+        })));
+      }
+    },
+    onConversationOnlineStats: (data) => {
+      if (!data || data.conversationId !== 'any') return;
+      if (Array.isArray(data.onlineUsers)) {
+        setActiveUsers(data.onlineUsers.map((u: any) => ({
+          id: u.id,
+          username: u.username,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          email: '',
+          avatar: '',
+          role: 'USER' as const,
+          permissions: {
+            canAccessAdmin: false,
+            canManageUsers: false,
+            canManageGroups: false,
+            canManageConversations: false,
+            canViewAnalytics: false,
+            canModerateContent: false,
+            canViewAuditLogs: false,
+            canManageNotifications: false,
+            canManageTranslations: false,
+          },
+          systemLanguage: 'fr',
+          regionalLanguage: 'fr',
+          autoTranslateEnabled: true,
+          translateToSystemLanguage: true,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isOnline: true,
+          isActive: true,
+          lastSeen: new Date(),
+          createdAt: new Date(),
+          lastActiveAt: new Date(),
+          updatedAt: new Date()
+        })));
+      }
+    },
   });
 
   const { notifications, markAsRead } = useNotifications();
@@ -415,30 +458,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, languageChoices, selectedInputLanguage]);
 
-  // Mise à jour des statistiques de langues
-  useEffect(() => {
-    const updateLanguageStats = () => {
-      const stats = SUPPORTED_LANGUAGES.map(lang => {
-        const count = messages.filter(msg => 
-          msg.originalLanguage === lang.code
-        ).length;
-        
-        return {
-          language: lang.code,
-          flag: lang.flag,
-          count: Math.max(1, count + Math.floor(Math.random() * 50)), // Simulation
-          color: lang.color
-        };
-      }).filter(stat => stat.count > 0);
-
-      setLanguageStats(stats);
-    };
-
-    updateLanguageStats();
-    const interval = setInterval(updateLanguageStats, 30000); // Mise à jour toutes les 30s
-
-    return () => clearInterval(interval);
-  }, [messages]);
+  // Suppression de la simulation des statistiques de langues (désormais alimentées en temps réel)
 
   // Pas d'initialisation de messages démo - les messages seront chargés depuis le serveur
   useEffect(() => {
@@ -468,262 +488,50 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
       '#communication', '#technology', '#ai', '#international', '#diversity'
     ]);
     
-    // Pas de simulation de messages - utilisateurs actifs seulement
-    setActiveUsers([
-      { 
-        id: '1', 
-        username: 'alice_fr', 
-        firstName: 'Alice', 
-        lastName: 'Martin', 
-        email: 'alice@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'fr',
-        regionalLanguage: 'fr',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        isActive: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date(),
-        updatedAt: new Date()
-      },
-      { 
-        id: '2', 
-        username: 'bob_en', 
-        firstName: 'Bob', 
-        lastName: 'Smith', 
-        email: 'bob@example.com',
-        avatar: '',
-        role: 'USER' as const,
-        permissions: {
-          canAccessAdmin: false,
-          canManageUsers: false,
-          canManageGroups: false,
-          canManageConversations: false,
-          canViewAnalytics: false,
-          canModerateContent: false,
-          canViewAuditLogs: false,
-          canManageNotifications: false,
-          canManageTranslations: false,
-        },
-        systemLanguage: 'en',
-        regionalLanguage: 'en',
-        autoTranslateEnabled: true,
-        translateToSystemLanguage: true,
-        translateToRegionalLanguage: false,
-        useCustomDestination: false,
-        isOnline: true,
-        isActive: true,
-        lastSeen: new Date(),
-        createdAt: new Date(),
-        lastActiveAt: new Date(),
-        updatedAt: new Date()
-      }
-    ]);
+    // Pas de simulation d'utilisateurs actifs: alimentés par WebSocket
   }, []);
 
-  // Fonction pour charger les messages existants depuis le serveur avec traductions optimisées
-  const loadExistingMessages = useCallback(async () => {
-    try {
-      console.log('📥 Chargement des messages existants avec traductions optimisées...');
-      const token = localStorage.getItem('auth_token');
-      
-      if (!token) {
-        console.log('⚠️ Pas de token d\'authentification disponible');
-        setHasLoadedMessages(true); // Considérer comme chargé même sans token
-        return;
-      }
-      
-      const response = await fetch(buildApiUrl(`/conversations/any/messages`), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const responseData = await response.json();
-        console.log('🔍 Debug: Structure complète de responseData:', responseData);
-        
-        // Gérer différents formats de réponse
-        let existingMessages = [];
-        if (responseData.data?.messages) {
-          existingMessages = responseData.data.messages;
-        } else if (responseData.messages) {
-          existingMessages = responseData.messages;
-        } else if (Array.isArray(responseData.data)) {
-          existingMessages = responseData.data;
-        } else if (Array.isArray(responseData)) {
-          existingMessages = responseData;
-        }
-        
-        console.log('✅ Messages existants chargés:', existingMessages.length);
-        
-        // Log détaillé des traductions dans les messages bruts
-        if (existingMessages.length > 0) {
-          console.log('🔍 Debug: Premier message brut avec traductions:');
-          console.log('📦 Message brut:', existingMessages[0]);
-          console.log('🌐 Traductions brutes:', existingMessages[0]?.translations);
-          console.log('🔢 Nombre de traductions:', existingMessages[0]?.translations?.length || 0);
-          
-          // Analyser toutes les traductions disponibles
-          const allTranslations = existingMessages.reduce((acc: any[], msg: any) => {
-            if (msg.translations && Array.isArray(msg.translations)) {
-              acc.push(...msg.translations);
-            }
-            return acc;
-          }, []);
-          
-          console.log('📊 Analyse traductions brutes:', {
-            totalMessages: existingMessages.length,
-            totalTranslations: allTranslations.length,
-            languesDisponibles: [...new Set(allTranslations.map((t: any) => t.targetLanguage))],
-            exempleTraduction: allTranslations[0]
-          });
-        }
-        
-        // Vérifier que existingMessages est bien un tableau
-        if (!Array.isArray(existingMessages)) {
-          console.error('❌ existingMessages n\'est pas un tableau:', typeof existingMessages, existingMessages);
-          toast.error('Format de données invalide');
-          setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
-          return;
-        }
-        
-        // Utiliser le hook pour traiter les messages avec traductions
-        const bubbleMessages: BubbleStreamMessage[] = existingMessages
-          .map((msg: any, index: number) => {
-            // Log détaillé pour chaque message traité
-            const processed = processMessageWithTranslations(msg);
-            
-            if (index < 3) { // Log seulement les 3 premiers pour éviter le spam
-              console.log(`🔍 Message ${index + 1} traité:`, {
-                id: processed.id,
-                originalLanguage: processed.originalLanguage,
-                isTranslated: processed.isTranslated,
-                translatedFrom: processed.translatedFrom,
-                translationsCount: processed.translations.length,
-                content: processed.content.substring(0, 50) + '...',
-                translationLanguages: processed.translations.map(t => t.language)
-              });
-            }
-            
-            return processed;
-          })
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        
-        setMessages(bubbleMessages);
-        
-        // Compter les traductions disponibles et les traductions manquantes
-        const totalTranslations = bubbleMessages.reduce((sum, msg) => sum + msg.translations.length, 0);
-        const translatedMessages = bubbleMessages.filter(msg => msg.isTranslated).length;
-        
-        // Identifier les messages nécessitant des traductions
-        const messagesNeedingTranslation = bubbleMessages.filter(msg => {
-          const required = getRequiredTranslations(msg);
-          return required.length > 0;
-        });
-        
-        // Analyse détaillée des langues
-        const languageAnalysis = bubbleMessages.reduce((acc, msg) => {
-          // Langue originale
-          acc.originalLanguages[msg.originalLanguage] = (acc.originalLanguages[msg.originalLanguage] || 0) + 1;
-          
-          // Langues traduites
-          msg.translations.forEach(t => {
-            acc.translatedLanguages[t.language] = (acc.translatedLanguages[t.language] || 0) + 1;
-          });
-          
-          return acc;
-        }, { originalLanguages: {} as Record<string, number>, translatedLanguages: {} as Record<string, number> });
-        
-        console.log(`📊 Statistiques traductions détaillées:`, {
-          totalMessages: bubbleMessages.length,
-          totalTranslations,
-          translatedMessages,
-          messagesNeedingTranslation: messagesNeedingTranslation.length,
-          languageAnalysis,
-          userPreferredLanguage: resolveUserLanguage(user),
-          userLanguagePreferences: getUserLanguages(user)
-        });
-        
-        toast.success(`📨 ${existingMessages.length} messages chargés (${totalTranslations} traductions, ${messagesNeedingTranslation.length} nécessitent traduction)`);
-        
-        // Marquer les messages comme chargés
-        setHasLoadedMessages(true);
-        
-        // TODO: Déclencher la traduction automatique des messages manquants si activée
-        if (user.autoTranslateEnabled && messagesNeedingTranslation.length > 0) {
-          console.log(`🔄 ${messagesNeedingTranslation.length} messages à traduire automatiquement`);
-          // Ici on pourrait déclencher les traductions en arrière-plan
-        }
-        
-      } else {
-        console.log('⚠️ Impossible de charger les messages existants. Status:', response.status);
-        try {
-          const errorData = await response.text();
-          console.log('🔍 Debug: Réponse d\'erreur:', errorData);
-        } catch (e) {
-          console.log('🔍 Debug: Impossible de lire la réponse d\'erreur');
-        }
-        toast.error('Erreur lors du chargement des messages');
-        setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
-      }
-    } catch (error) {
-      console.error('❌ Erreur lors du chargement des messages:', error);
-      toast.error('Erreur de connexion lors du chargement des messages');
-      setHasLoadedMessages(true); // Marquer comme chargé même en cas d'erreur
-    }
-  }, [processMessageWithTranslations, getRequiredTranslations, user.autoTranslateEnabled]);
+  // Charger les messages existants dès que possible, sans attendre la connexion WebSocket
+  useEffect(() => {
+    console.log('🚀 Chargement initial des messages depuis la base de données...');
+    // Charger immédiatement les messages existants via HTTP API
+    loadMessages('any', true);
+    setHasLoadedMessages(true);
+  }, [loadMessages]);
 
-  // Charger les messages existants dès la connexion avec debug amélioré
+  // Separately handle WebSocket connection for real-time updates
   useEffect(() => {
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
+      console.log('🌐 Connexion WebSocket établie - Messages en temps réel activés');
       
-      // Délai pour laisser le temps à la connexion de se stabiliser
-      const loadTimeout = setTimeout(() => {
-        console.log('🚀 Déclenchement chargement messages existants...');
-        loadExistingMessages();
-      }, 1000);
-      
-      return () => clearTimeout(loadTimeout);
+      if (!hasShownConnectionToast) {
+        toast.success('🎉 Connexion établie ! Messages en temps réel activés');
+        setHasShownConnectionToast(true);
+      }
     } else {
-      console.log('⏳ En attente de connexion pour charger les messages...');
+      console.log('⏳ WebSocket en attente de connexion...');
     }
-  }, [connectionStatus.isConnected, loadExistingMessages]);
+  }, [connectionStatus.isConnected, hasShownConnectionToast]);
 
   // Gérer l'état d'initialisation global
   useEffect(() => {
-    if (hasEstablishedConnection && hasLoadedMessages) {
+    if (hasLoadedMessages && !isLoadingMessages) {
       setIsInitializing(false);
-      console.log('✅ Initialisation terminée : connexion établie et messages chargés');
+      console.log('✅ Initialisation terminée : messages chargés');
     }
-  }, [hasEstablishedConnection, hasLoadedMessages]);
+  }, [hasLoadedMessages, isLoadingMessages]);
 
   // Afficher l'écran de chargement pendant l'initialisation
   if (isInitializing) {
     return (
       <LoadingState 
         message={
-          !hasEstablishedConnection 
-            ? "Connexion au serveur en cours..." 
-            : "Chargement des messages..."
+          !hasLoadedMessages 
+            ? "Chargement des messages..." 
+            : !hasEstablishedConnection
+            ? "Connexion au serveur en cours..."
+            : "Initialisation..."
         }
         fullScreen={true}
       />
@@ -772,9 +580,8 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         
         console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
         
-        // Pour l'instant, nous envoyons juste le contenu
-        // TODO: Modifier useSocketIOMessaging pour accepter les métadonnées de langue
-        const sendResult = await sendMessageToService(messageContent);
+        // Envoyer le message avec la langue source sélectionnée
+        const sendResult = await sendMessageToService(messageContent, selectedInputLanguage);
         
         if (sendResult) {
           console.log('✅ Message envoyé via WebSocket avec succès');
@@ -868,24 +675,6 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGOUT), {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
-        });
-      }
-    } catch (error) {
-      console.error('Erreur déconnexion:', error);
-    } finally {
-      localStorage.removeItem('auth_token');
-      router.push('/');
-      toast.success('Déconnexion réussie');
-    }
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -896,7 +685,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
   const remainingChars = MAX_MESSAGE_LENGTH - newMessage.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <>
       <style jsx global>{`
         /* Cache toutes les barres de défilement */
         .scrollbar-hidden {
@@ -916,158 +705,25 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
           display: none;
         }
       `}</style>
-      {/* Header simplifié - Style Dashboard */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo et titre */}
-            <div className="flex items-center space-x-4">
-              <div 
-                className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => router.push('/')}
-              >
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Meeshy</h1>
-              </div>
-              <div className="hidden lg:block">
-                <span className="text-gray-400 mx-2">/</span>
-                <span className="text-lg font-medium text-gray-700">{/* Stream Global */}</span>
-              </div>
-            </div>
-
-            {/* Barre de recherche centrée - Responsive */}
-            <div className="flex-1 max-w-sm sm:max-w-md lg:max-w-lg mx-4 sm:mx-8">
-              <form onSubmit={handleSearch} className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Rechercher..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-full text-sm"
-                />
-              </form>
-            </div>
-
-            {/* Menu utilisateur - Responsive */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Notifications */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="relative"
-                onClick={() => toast.info('Notifications disponibles prochainement')}
-              >
-                <Bell className="h-5 w-5" />
-                {notifications.length > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500">
-                    {notifications.length}
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Menu utilisateur */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2 sm:space-x-3 hover:bg-gray-100">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.firstName} />
-                      <AvatarFallback>
-                        {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="hidden sm:block text-left">
-                      <p className="text-sm font-medium text-gray-900">
-                        {user.firstName} {user.lastName}
-                      </p>
-                      <p className="text-xs text-gray-500">@{user.username}</p>
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                  </Button>
-                </DropdownMenuTrigger>
-                
-                <DropdownMenuContent align="end" className="w-56 z-50">
-                  <DropdownMenuItem onClick={() => router.push('/dashboard')}>
-                    <Home className="mr-2 h-4 w-4" />
-                    <span>Tableau de bord</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => router.push('/conversations')}>
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    <span>Conversations</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => router.push('/groups')}>
-                    <Users className="mr-2 h-4 w-4" />
-                    <span>Groupes</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => router.push('/contacts')}>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    <span>Contacts</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => router.push('/links')}>
-                    <LinkIcon className="mr-2 h-4 w-4" />
-                    <span>Liens</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => router.push('/models')}>
-                    <Brain className="mr-2 h-4 w-4" />
-                    <span>Modèles</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem onClick={() => router.push('/profile')}>
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    <span>Profil</span>
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem onClick={() => router.push('/settings')}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Paramètres</span>
-                  </DropdownMenuItem>
-                  
-                  {user.permissions?.canAccessAdmin && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => router.push('/admin')}>
-                        <Shield className="mr-2 h-4 w-4" />
-                        <span>Administration</span>
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Déconnexion</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Layout principal */}
-      <div className="pt-16 min-h-screen relative">
+      <div className="min-h-screen relative">
         {/* Feed principal - Container avec gestion propre du scroll */}
-        <div className="w-full xl:pr-80 relative">
-          {/* Indicateur dynamique - Frappe prioritaire sur connexion */}
-          <div className="fixed top-16 left-0 right-0 xl:right-80 z-40 px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none">
+        <div className="w-full xl:pr-80 relative">{/* Indicateur dynamique - Frappe prioritaire sur connexion */}
+          <div className="fixed top-16 left-0 right-0 xl:right-80 z-[45] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator">
             <div className="pointer-events-auto">
               {/* Priorité à l'indicateur de frappe quand actif */}
               {typingUsers.length > 0 && connectionStatus.isConnected ? (
-                <TypingIndicator 
-                  chatId="any" 
-                  currentUserId={user.id}
-                  className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all"
-                />
+                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full text-sm backdrop-blur-sm bg-blue-100/90 text-blue-800 border border-blue-200/80 transition-all">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>
+                    {typingUsers.length === 1 
+                      ? `${typingUsers[0].displayName} est en train d'écrire...`
+                      : typingUsers.length === 2
+                      ? `${typingUsers[0].displayName} et ${typingUsers[1].displayName} sont en train d'écrire...`
+                      : `${typingUsers[0].displayName} et ${typingUsers.length - 1} autres sont en train d'écrire...`
+                    }
+                  </span>
+                </div>
               ) : (
                 /* Indicateur de connexion par défaut */
                 <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-full text-sm backdrop-blur-sm transition-all ${
@@ -1149,7 +805,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 className="space-y-5 px-4 py-6"
                 style={{ background: 'transparent' }}
               >
-                {messages.length === 0 ? (
+                {(translatedMessages.length === 0 && messages.length === 0) ? (
                   <div className="text-center py-12">
                     <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -1163,29 +819,34 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
                     </p>
                   </div>
                 ) : (
-                  messages.map((message) => (
-                                          <BubbleMessage
-                        key={message.id}
-                        message={message}
-                        currentUser={user}
-                        userLanguage={userLanguage}
-                        usedLanguages={usedLanguages}
-                        onForceTranslation={async (messageId: string, targetLanguage: string) => {
-                          try {
-                            console.log('🔄 Forcer la traduction:', { messageId, targetLanguage });
-                            const result = await messageTranslationService.requestTranslation({
-                              messageId,
-                              targetLanguage,
-                              model: 'basic'
-                            });
-                            console.log('✅ Traduction forcée demandée:', result);
-                            toast.success(`Traduction en ${getLanguageName(targetLanguage)} demandée`);
-                          } catch (error) {
-                            console.error('❌ Erreur traduction forcée:', error);
-                            toast.error('Erreur lors de la demande de traduction');
-                          }
-                        }}
-                      />
+                  // Utiliser les messages traduits si disponibles, sinon les messages bruts
+                  // Inverser l'ordre pour que les plus récents apparaissent en haut (comportement stream)
+                  (translatedMessages.length > 0 ? translatedMessages : messages)
+                    .slice()
+                    .reverse()
+                    .map((message) => (
+                    <BubbleMessage
+                      key={message.id}
+                      message={message as any}
+                      currentUser={user}
+                      userLanguage={userLanguage}
+                      usedLanguages={usedLanguages}
+                      onForceTranslation={async (messageId: string, targetLanguage: string) => {
+                        try {
+                          console.log('🔄 Forcer la traduction:', { messageId, targetLanguage });
+                          const result = await messageTranslationService.requestTranslation({
+                            messageId,
+                            targetLanguage,
+                            model: 'basic'
+                          });
+                          console.log('✅ Traduction forcée demandée:', result);
+                          toast.success(`✅ Traduction en ${getLanguageName(targetLanguage)} envoyée au service`);
+                        } catch (error) {
+                          console.error('❌ Erreur traduction forcée:', error);
+                          toast.error('Erreur lors de la demande de traduction');
+                        }
+                      }}
+                    />
                   ))
                 )}
 
@@ -1281,14 +942,14 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
         </div>
 
         {/* Sidebar droite - Desktop uniquement - FIXE avec scroll indépendant */}
-        <div className="hidden xl:block w-80 fixed right-0 top-16 bottom-0 bg-white/60 backdrop-blur-lg border-l border-blue-200/30 z-40">
+        <div className="hidden xl:block w-80 fixed right-0 top-20 bottom-0 bg-white/60 backdrop-blur-lg border-l border-blue-200/30 z-40">
           <div 
             className="h-full overflow-y-auto p-6 scroll-hidden"
           >
             
             {/* Header avec langues globales */}
             <SidebarLanguageHeader 
-              languageStats={languageStats} 
+              languageStats={messageLanguageStats} 
               userLanguage={userLanguage}
             />
 
@@ -1298,19 +959,10 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
               icon={<Languages className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
-              <LanguageIndicators languageStats={languageStats} />
+              <LanguageIndicators languageStats={activeLanguageStats} />
             </FoldableSection>
 
-            {/* Section Tendances - Foldable */}
-            <FoldableSection
-              title="Tendances"
-              icon={<TrendingUp className="h-4 w-4 mr-2" />}
-              defaultExpanded={true}
-            >
-              <TrendingSection hashtags={trendingHashtags} />
-            </FoldableSection>
-
-            {/* Section Utilisateurs Actifs - Foldable */}
+            {/* Section Utilisateurs Actifs - Foldable - Remontée en 2e position */}
             <FoldableSection
               title={`Utilisateurs Actifs (${activeUsers.length})`}
               icon={<Users className="h-4 w-4 mr-2" />}
@@ -1372,9 +1024,30 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
                 )}
               </div>
             </FoldableSection>
+
+            {/* Section Tendances - Foldable - Déplacée en dernière position, dépliée et grisée */}
+            <div className="opacity-60 saturate-50 bg-gray-50/50 rounded-lg p-2">
+              <FoldableSection
+                title="Tendances"
+                icon={<TrendingUp className="h-4 w-4 mr-2 text-gray-400" />}
+                defaultExpanded={false}
+              >
+                <div className="opacity-70">
+                  <TrendingSection hashtags={trendingHashtags} />
+                </div>
+              </FoldableSection>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Debug Panel - Visible uniquement en développement */}
+      {process.env.NODE_ENV === 'development' && (
+        <>
+          <ZIndexDebugPanel />
+          <ZIndexTestComponent />
+        </>
+      )}
+    </>
   );
 }

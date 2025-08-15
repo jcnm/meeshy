@@ -14,12 +14,15 @@ import {
   CheckCircle2,
   Loader2,
   Globe,
-  ArrowUp
+  ArrowUp,
+  Search,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,15 +76,35 @@ export function BubbleMessage({
   usedLanguages = [],
   onForceTranslation
 }: BubbleMessageProps) {
+  // Debug: Afficher la structure du message reçu
+  console.log('🔍 BubbleMessage reçu:', {
+    id: message.id,
+    content: message.content,
+    originalContent: message.originalContent,
+    sender: message.sender?.username,
+    hasTranslations: !!message.translations,
+    translationsCount: message.translations?.length || 0
+  });
+
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
+  const [translationFilter, setTranslationFilter] = useState('');
   const contentRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
+  const filterInputRef = useRef<HTMLInputElement>(null);
 
   const getLanguageInfo = (langCode: string) => {
-    return SUPPORTED_LANGUAGES.find(lang => lang.code === langCode) || SUPPORTED_LANGUAGES[0];
+    const found = SUPPORTED_LANGUAGES.find(lang => lang.code === langCode);
+    if (found) return found;
+    
+    // Si la langue n'est pas trouvée, retourner un objet par défaut avec le code original
+    return {
+      code: langCode,
+      name: langCode.toUpperCase(),
+      flag: '🌐'
+    };
   };
 
   // Auto-transition vers la langue système dès qu'elle est disponible
@@ -116,9 +139,9 @@ export function BubbleMessage({
   }, [isTranslationPopoverOpen]);
 
   const getCurrentContent = () => {
-    // Si on affiche la langue originale, retourner TOUJOURS le contenu original de l'auteur
+    // Si on affiche la langue originale, retourner le contenu original
     if (currentDisplayLanguage === message.originalLanguage) {
-      return message.originalContent;
+      return message.originalContent || message.content;
     }
     
     // Chercher la traduction pour la langue d'affichage actuelle
@@ -126,7 +149,7 @@ export function BubbleMessage({
       t.language === currentDisplayLanguage && t.status === 'completed'
     );
     
-    return translation?.content || message.originalContent;
+    return translation?.content || message.originalContent || message.content;
   };
 
   const formatTimeAgo = (timestamp: string | Date) => {
@@ -143,6 +166,7 @@ export function BubbleMessage({
   const handleLanguageSwitch = (langCode: string) => {
     setCurrentDisplayLanguage(langCode);
     setIsTranslationPopoverOpen(false);
+    setTranslationFilter(''); // Réinitialiser le filtre lors du changement de langue
   };
 
   // Obtenir les langues manquantes (supportées mais pas traduites)
@@ -157,11 +181,12 @@ export function BubbleMessage({
 
   const handleForceTranslation = async (targetLanguage: string) => {
     setIsTranslationPopoverOpen(false);
+    setTranslationFilter(''); // Réinitialiser le filtre
     
     if (onForceTranslation) {
       try {
         await onForceTranslation(message.id, targetLanguage);
-        toast.success(`Traduction en cours vers ${getLanguageInfo(targetLanguage).name}`);
+        // Le toast de succès est géré dans bubble-stream-page.tsx, pas ici
       } catch (error) {
         console.error('❌ Erreur lors de la traduction forcée:', error);
         toast.error('Erreur lors de la demande de traduction');
@@ -188,6 +213,7 @@ export function BubbleMessage({
     }
 
     setIsTranslationPopoverOpen(false);
+    setTranslationFilter(''); // Réinitialiser le filtre
     
     if (onForceTranslation) {
       try {
@@ -230,6 +256,40 @@ export function BubbleMessage({
   // Améliorer la visibilité de l'icône globe avec un badge
   const translationCount = availableVersions.length - 1; // Exclure l'original
 
+  // Filtrer les versions disponibles selon le filtre de recherche
+  const filteredVersions = availableVersions.filter(version => {
+    if (!translationFilter.trim()) return true;
+    
+    const langInfo = getLanguageInfo(version.language);
+    const searchTerm = translationFilter.toLowerCase();
+    
+    return (
+      langInfo.name.toLowerCase().includes(searchTerm) ||
+      langInfo.code.toLowerCase().includes(searchTerm) ||
+      version.content.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  // Filtrer les langues manquantes selon le filtre de recherche
+  const filteredMissingLanguages = getMissingLanguages().filter(lang => {
+    if (!translationFilter.trim()) return true;
+    
+    const searchTerm = translationFilter.toLowerCase();
+    return (
+      lang.name.toLowerCase().includes(searchTerm) ||
+      lang.code.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  // Focus sur le champ de filtre quand le popover s'ouvre
+  useEffect(() => {
+    if (isTranslationPopoverOpen && filterInputRef.current) {
+      setTimeout(() => {
+        filterInputRef.current?.focus();
+      }, 100);
+    }
+  }, [isTranslationPopoverOpen]);
+
   return (
     <TooltipProvider>
       <Card 
@@ -241,7 +301,10 @@ export function BubbleMessage({
         onMouseLeave={() => {
           setIsHovered(false);
           // Fermer le popover quand on quitte la zone du message
-          setTimeout(() => setIsTranslationPopoverOpen(false), 300);
+          setTimeout(() => {
+            setIsTranslationPopoverOpen(false);
+            setTranslationFilter(''); // Réinitialiser le filtre
+          }, 300);
         }}
       >
         <CardContent className="p-4">
@@ -386,18 +449,43 @@ export function BubbleMessage({
                   onInteractOutside={(e) => {
                     console.log('🌐 Click outside popover');
                     setIsTranslationPopoverOpen(false);
+                    setTranslationFilter(''); // Réinitialiser le filtre
                   }}
                 >
                   <div className="p-3 bg-transparent relative">
+                    {/* Champ de filtre discret */}
+                    {(availableVersions.length > 1 || getMissingLanguages().length > 0) && (
+                      <div className="mb-3">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                          <Input
+                            ref={filterInputRef}
+                            placeholder="Filtrer les langues..."
+                            value={translationFilter}
+                            onChange={(e) => setTranslationFilter(e.target.value)}
+                            className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 border-gray-200/60 focus:bg-white focus:border-blue-300 transition-all"
+                          />
+                          {translationFilter && (
+                            <button
+                              onClick={() => setTranslationFilter('')}
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin">
-                      {availableVersions.length > 0 ? (
-                        availableVersions.map((version) => {
+                      {filteredVersions.length > 0 ? (
+                        filteredVersions.map((version) => {
                           const langInfo = getLanguageInfo(version.language);
                           const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
                           
                           return (
                             <button
-                              key={version.language}
+                              key={`${message.id}-${version.language}-${version.timestamp?.getTime() || Date.now()}`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 console.log('🌐 Switch vers langue:', version.language);
@@ -433,15 +521,15 @@ export function BubbleMessage({
                                     {getNextTier('basic') && (
                                       <Tooltip>
                                         <TooltipTrigger asChild>
-                                          <button
+                                          <div
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               handleUpgradeTier(version.language, 'basic');
                                             }}
-                                            className="p-1 rounded hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors"
+                                            className="p-1 rounded hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors cursor-pointer"
                                           >
                                             <ArrowUp className="h-3 w-3" />
-                                          </button>
+                                          </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
                                           Améliorer la qualité de traduction
@@ -476,13 +564,15 @@ export function BubbleMessage({
                       ) : (
                         <div className="text-center p-4 text-gray-400">
                           <Languages className="h-6 w-6 mx-auto mb-2 opacity-60" />
-                          <p className="text-xs">Aucune traduction disponible</p>
+                          <p className="text-xs">
+                            {translationFilter ? 'Aucune traduction trouvée' : 'Aucune traduction disponible'}
+                          </p>
                         </div>
                       )}
                     </div>
 
                     {/* Séparateur et section pour les nouvelles traductions */}
-                    {getMissingLanguages().length > 0 && (
+                    {filteredMissingLanguages.length > 0 && (
                       <>
                         <div className="flex items-center my-3">
                           <div className="flex-1 h-px bg-gray-200/60"></div>
@@ -495,7 +585,7 @@ export function BubbleMessage({
                         </div>
 
                         <div className="space-y-1 max-h-32 overflow-y-auto">
-                          {getMissingLanguages().map((lang) => (
+                          {filteredMissingLanguages.map((lang) => (
                             <button
                               key={lang.code}
                               onClick={(e) => {
