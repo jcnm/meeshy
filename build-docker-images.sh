@@ -114,15 +114,25 @@ build_images() {
         --build-arg JWT_EXPIRES_IN="${JWT_EXPIRES_IN:-24h}" \
         --build-arg FASTIFY_PORT="${GATEWAY_PORT:-3000}" \
         --build-arg FASTIFY_HOST="${FASTIFY_HOST:-0.0.0.0}" \
+        --build-arg GATEWAY_PORT="${GATEWAY_PORT:-3000}" \
         --build-arg LOG_LEVEL="${LOG_LEVEL:-info}" \
+        --build-arg DEBUG="${DEBUG:-false}" \
         --build-arg WS_MAX_CONNECTIONS="${WS_MAX_CONNECTIONS:-100000}" \
         --build-arg WS_PING_INTERVAL="${WS_PING_INTERVAL:-30000}" \
         --build-arg RATE_LIMIT_MAX="${RATE_LIMIT_MAX:-1000}" \
         --build-arg RATE_LIMIT_WINDOW="${RATE_LIMIT_WINDOW:-60000}" \
         --build-arg CORS_ORIGINS="${CORS_ORIGINS}" \
+        --build-arg ALLOWED_ORIGINS="${ALLOWED_ORIGINS}" \
+        --build-arg FRONTEND_URL="${FRONTEND_URL:-http://localhost:3100}" \
+        --build-arg BCRYPT_ROUNDS="${BCRYPT_ROUNDS:-12}" \
         --build-arg GRPC_TRANSLATION_HOST="translator" \
         --build-arg GRPC_TRANSLATION_PORT="50051" \
         --build-arg TRANSLATOR_GRPC_URL="translator:50051" \
+        --build-arg ZMQ_TRANSLATOR_HOST="translator" \
+        --build-arg ZMQ_TRANSLATOR_PUSH_PORT="${ZMQ_TRANSLATOR_PUSH_PORT:-5555}" \
+        --build-arg ZMQ_TRANSLATOR_SUB_PORT="${ZMQ_TRANSLATOR_SUB_PORT:-5558}" \
+        --build-arg ZMQ_TRANSLATOR_PORT="${ZMQ_TRANSLATOR_PORT:-5555}" \
+        --build-arg ZMQ_TIMEOUT="${ZMQ_TIMEOUT:-30000}" \
         -f gateway/Dockerfile \
         -t meeshy-gateway:latest \
         .
