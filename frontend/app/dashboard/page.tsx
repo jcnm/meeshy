@@ -23,60 +23,58 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreateLinkModal } from '@/components/conversations/create-link-modal';
 import { useState, useEffect } from 'react';
 import type { User, Conversation } from '@/types';
+import { useUser } from '@/context/AppContext';
+import { dashboardService, type DashboardData } from '@/services/dashboard.service';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user } = useUser();
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  
-  // Données simulées pour le dashboard
-  const dashboardData = {
-    user: null as User | null, // Sera récupéré du contexte d'auth
-    stats: {
-      totalConversations: 5,
-      totalGroups: 3,
-      totalMessages: 127,
-      activeConversations: 2,
-      translationsToday: 45,
-      onlineUsers: 8,
-      lastUpdated: new Date(),
-    },
-    recentConversations: [] as Conversation[],
-    recentGroups: [] as Array<{ 
-      id: string; 
-      name: string; 
-      memberCount: number;
-      isPrivate?: boolean;
-      members: Array<unknown>;
-      description?: string;
-    }>,
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+
+  const loadDashboardData = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await dashboardService.getDashboardData();
+      if (response.data) {
+        setDashboardData(response.data);
+      } else {
+        throw new Error('Erreur lors du chargement des données');
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement du dashboard:', err);
+      setError(err instanceof Error ? err : new Error('Erreur inconnue'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const refresh = () => {
-    setIsLoading(true);
-    // Simuler un rechargement
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    loadDashboardData();
   };
 
   useEffect(() => {
-    // Simuler le chargement initial
-    setTimeout(() => {
+    if (user) {
+      loadDashboardData();
+    } else {
       setIsLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [user]);
 
-  // Extraction des données du cache
-  const user = dashboardData?.user;
+  // Extraction des données du dashboard
   const stats = dashboardData?.stats || {
     totalConversations: 0,
     totalGroups: 0,
     totalMessages: 0,
     activeConversations: 0,
     translationsToday: 0,
-    onlineUsers: 0,
+    totalLinks: 0,
     lastUpdated: new Date(),
   };
   const recentConversations = dashboardData?.recentConversations || [];
@@ -147,7 +145,7 @@ export default function DashboardPage() {
       </div>
 
         {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-medium">Conversations</CardTitle>
@@ -222,6 +220,21 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="bg-gradient-to-r from-pink-500 to-pink-600 text-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-medium">Liens</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold">{stats.totalLinks}</p>
+                  <p className="text-pink-100 text-sm">Créés</p>
+                </div>
+                <Link2 className="h-8 w-8 text-pink-200" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Contenu principal en grille */}
@@ -253,7 +266,7 @@ export default function DashboardPage() {
                   >
                     <Avatar className="h-10 w-10">
                       <AvatarFallback>
-                        {conversation.type === 'GROUP' ? 
+                        {conversation.type === 'group' ? 
                           <Users className="h-5 w-5" /> : 
                           <UserIcon className="h-5 w-5" />
                         }
@@ -265,9 +278,6 @@ export default function DashboardPage() {
                           {conversation.name}
                         </p>
                         <div className="flex items-center space-x-2">
-                          {conversation.isActive && (
-                            <div className="h-2 w-2 bg-green-400 rounded-full"></div>
-                          )}
                           <p className="text-xs text-gray-500">
                             {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', { 
                               hour: '2-digit', 
@@ -436,6 +446,8 @@ export default function DashboardPage() {
           onLinkCreated={() => {
             setIsCreateLinkModalOpen(false);
             toast.success('Lien de conversation créé avec succès !');
+            // Recharger les données du dashboard pour mettre à jour le compteur de liens
+            loadDashboardData();
           }}
         />
     </DashboardLayout>

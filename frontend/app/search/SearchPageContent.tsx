@@ -59,10 +59,13 @@ export function SearchPageContent() {
     try {
       const saved = localStorage.getItem('meeshy_recent_searches');
       if (saved) {
-        setRecentSearches(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        // S'assurer que c'est un tableau
+        setRecentSearches(Array.isArray(parsed) ? parsed : []);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des recherches récentes:', error);
+      setRecentSearches([]); // Initialiser avec un tableau vide en cas d'erreur
     }
   };
 
@@ -72,7 +75,9 @@ export function SearchPageContent() {
     
     try {
       setRecentSearches(prev => {
-        const updated = [searchQuery, ...prev.filter(s => s !== searchQuery)].slice(0, 10);
+        // S'assurer que prev est un tableau
+        const prevArray = Array.isArray(prev) ? prev : [];
+        const updated = [searchQuery, ...prevArray.filter(s => s !== searchQuery)].slice(0, 10);
         localStorage.setItem('meeshy_recent_searches', JSON.stringify(updated));
         return updated;
       });

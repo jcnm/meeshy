@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, LogIn, Eye, EyeOff } from 'lucide-react';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { useUser } from '@/context/AppContext';
 
 export default function QuickLoginPage() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ export default function QuickLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { setUser } = useUser();
 
   // Utilisateurs de test prédéfinis (correspondant aux seeds)
   const testUsers = [
@@ -57,7 +59,13 @@ export default function QuickLoginPage() {
       console.log('Résultat de la connexion:', result);
 
       if (response.ok && result.user && result.access_token) {
+        // Sauvegarder le token et l'utilisateur
         localStorage.setItem('auth_token', result.access_token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        
+        // Mettre à jour le contexte immédiatement
+        setUser(result.user);
+        
         toast.success(`Connexion réussie ! Bienvenue ${result.user.firstName}`);
         router.push('/dashboard');
       } else {
@@ -90,7 +98,13 @@ export default function QuickLoginPage() {
       const result = await response.json();
 
       if (response.ok && result.user && result.access_token) {
+        // Sauvegarder le token et l'utilisateur
         localStorage.setItem('auth_token', result.access_token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        
+        // Mettre à jour le contexte immédiatement
+        setUser(result.user);
+        
         toast.success(`Connecté en tant que ${result.user.firstName} !`);
         router.push('/dashboard');
       } else {

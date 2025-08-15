@@ -126,6 +126,26 @@
   .scrollbar-hidden::-webkit-scrollbar {
     display: none; /* Chrome/Safari/Webkit */
   }
+
+  /* Styles spécifiques pour Safari et le scroll smooth */
+  .safari-scroll-smooth {
+    -webkit-overflow-scrolling: touch; /* Enables momentum scrolling on iOS Safari */
+    scroll-behavior: smooth; /* Standard smooth scrolling */
+  }
+
+  /* Amélioration du comportement de scroll pour les conteneurs de messages */
+  .messages-container {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    will-change: scroll-position; /* Optimise les performances de scroll */
+  }
+
+  /* Force hardware acceleration for better performance */
+  .scroll-optimized {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform, scroll-position;
+  }
 }
 
 /* Styles pour les bulles de message */
@@ -157,15 +177,63 @@
   .translating {
     animation: pulse-translation 1.5s ease-in-out infinite;
   }
-  /* Pour s'assurer que le popover soit au-dessus de tout */
-[data-radix-popper-content-wrapper] {
-  z-index: 9999 !important;
-}
 
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
+  /* Hiérarchie Z-INDEX unifiée pour Meeshy */
+  /* Base layers: 0-9 */
+  /* UI Components: 10-39 */
+  /* Navigation: 40-49 */
+  /* Overlays: 50-59 */
+  /* Popover/Dropdowns: 60-79 */
+  /* Modals: 80-99 */
+  /* Toasts/Notifications: 100+ */
+
+  /* Navigation et Header */
+  .z-navigation {
+    z-index: 50 !important;
+  }
+
+  /* Forces z-index pour tous les composants Radix UI */
+  [data-radix-popper-content-wrapper] {
+    z-index: 70 !important;
+  }
+
+  /* Contenus de Popover spécifiques - PRIORITÉ MAXIMALE POUR TRADUCTIONS */
+  [data-radix-popover-content] {
+    z-index: 70 !important;
+  }
+
+  /* Popover de traductions spécifiquement - Encore plus haut */
+  .bubble-message [data-radix-popover-content],
+  .translation-popover {
+    z-index: 75 !important;
+    position: fixed !important;
+  }
+
+  /* DropdownMenu */
+  [data-radix-dropdown-menu-content] {
+    z-index: 65 !important;
+  }
+
+  /* Tooltip */
+  [data-radix-tooltip-content] {
+    z-index: 60 !important;
+  }
+
+  /* Overlays mobiles */
+  .mobile-overlay {
+    z-index: 55 !important;
+  }
+
+  /* Indicateurs en temps réel */
+  .realtime-indicator {
+    z-index: 45 !important;
+  }
+
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
 }
