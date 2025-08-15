@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { 
   MessageCircle,
   Star,
@@ -66,7 +66,7 @@ const SUPPORTED_LANGUAGES = [
   { code: 'ar', name: 'العربية', flag: '🇸🇦', translateText: 'ترجمة هذه الرسالة إلى العربية' },
 ];
 
-export function BubbleMessage({ 
+function BubbleMessageInner({ 
   message, 
   currentUser, 
   userLanguage, 
@@ -74,14 +74,17 @@ export function BubbleMessage({
   onForceTranslation
 }: BubbleMessageProps) {
   // Debug: Afficher la structure du message reçu
-  console.log('🔍 BubbleMessage reçu:', {
-    id: message.id,
-    content: message.content,
-    originalContent: message.originalContent,
-    sender: message.sender?.username,
-    hasTranslations: !!message.translations,
-    translationsCount: message.translations?.length || 0
-  });
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.log('🔍 BubbleMessage reçu:', {
+      id: message.id,
+      content: message.content,
+      originalContent: message.originalContent,
+      sender: message.sender?.username,
+      hasTranslations: !!message.translations,
+      translationsCount: message.translations?.length || 0
+    });
+  }
 
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
   const [isHovered, setIsHovered] = useState(false);
@@ -369,7 +372,7 @@ export function BubbleMessage({
           <div className="mb-3">
             <AnimatePresence mode="wait">
               <motion.div
-                key={`${currentDisplayLanguage}-${getCurrentContent()}`}
+                key={`${message.id}-${currentDisplayLanguage}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -698,3 +701,5 @@ export function BubbleMessage({
     </TooltipProvider>
   );
 }
+
+export const BubbleMessage = memo(BubbleMessageInner);
