@@ -172,12 +172,20 @@ class MeeshySocketIOService {
       
       // Envoyer le token d'authentification après la connexion
       const token = localStorage.getItem('auth_token');
+      const anonymousSessionToken = localStorage.getItem('anonymous_session_token');
+      
       if (token && this.currentUser) {
-        console.log('🔐 MeeshySocketIOService: Envoi du token d\'authentification');
+        console.log('🔐 MeeshySocketIOService: Envoi du token d\'authentification JWT');
         this.socket?.emit('authenticate', { 
           sessionToken: token,
           userId: this.currentUser.id,
           language: this.currentUser.systemLanguage 
+        });
+      } else if (anonymousSessionToken) {
+        console.log('🔐 MeeshySocketIOService: Envoi du sessionToken anonyme');
+        this.socket?.emit('authenticate', { 
+          sessionToken: anonymousSessionToken,
+          language: 'fr' // Langue par défaut pour les participants anonymes
         });
       }
       

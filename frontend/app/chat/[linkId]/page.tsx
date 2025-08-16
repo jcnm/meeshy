@@ -28,7 +28,7 @@ import {
   Copy,
   ExternalLink
 } from 'lucide-react';
-import { BubbleStreamPage } from '@/components/common/bubble-stream-page';
+import { AnonymousChat } from '@/components/chat/anonymous-chat';
 import { RegisterForm } from '@/components/auth/register-form';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
@@ -210,42 +210,7 @@ export default function AnonymousChatPage() {
     );
   }
 
-  // Créer un objet User "simulé" pour BubbleStreamPage
-  const anonymousUser = {
-    id: chatData.participant.id,
-    username: chatData.participant.nickname,
-    firstName: chatData.participant.firstName,
-    lastName: chatData.participant.lastName,
-    displayName: `${chatData.participant.firstName} ${chatData.participant.lastName}`,
-    email: '',
-    phoneNumber: '',
-    role: 'USER' as const,
-    permissions: {
-      canAccessAdmin: false,
-      canManageUsers: false,
-      canManageGroups: false,
-      canManageConversations: false,
-      canViewAnalytics: false,
-      canModerateContent: false,
-      canViewAuditLogs: false,
-      canManageNotifications: false,
-      canManageTranslations: false,
-    },
-    systemLanguage: chatData.participant.language,
-    regionalLanguage: chatData.participant.language,
-    customDestinationLanguage: undefined,
-    autoTranslateEnabled: true,
-    translateToSystemLanguage: true,
-    translateToRegionalLanguage: false,
-    useCustomDestination: false,
-    isOnline: true,
-    avatar: undefined,
-    lastSeen: new Date(),
-    createdAt: new Date(),
-    lastActiveAt: new Date(),
-    isActive: true,
-    updatedAt: new Date()
-  };
+
 
   return (
     <div className="min-h-screen relative">
@@ -320,9 +285,13 @@ export default function AnonymousChatPage() {
         </div>
       </header>
 
-      {/* Contenu principal avec BubbleStreamPage */}
-      <div className="pt-16">
-        <BubbleStreamPage user={anonymousUser} />
+      {/* Contenu principal avec AnonymousChat */}
+      <div className="pt-16 h-screen">
+        <AnonymousChat 
+          linkId={linkId}
+          participant={chatData.participant}
+          conversation={chatData.conversation}
+        />
       </div>
 
       {/* Modale de création de compte */}

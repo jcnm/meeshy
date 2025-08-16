@@ -67,7 +67,7 @@ export function ConversationDetailsSidebar({
 
   // Vérifier si l'utilisateur actuel est admin/créateur
   const currentUserParticipant = conversation.participants?.find(p => p.userId === currentUser.id);
-  const isAdmin = currentUserParticipant?.role === 'ADMIN';
+  const isAdmin = currentUserParticipant?.role === 'ADMIN' || currentUserParticipant?.role === 'CREATOR' || currentUser.role === 'ADMIN' || currentUser.role === 'BIGBOSS';
 
   // Calculer les statistiques de langues des messages et participants (comme dans BubbleStreamPage)
   useEffect(() => {

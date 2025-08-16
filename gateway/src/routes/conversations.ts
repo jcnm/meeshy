@@ -1,6 +1,22 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { TranslationService } from '../services/TranslationService';
 import { conversationStatsService } from '../services/ConversationStatsService';
+import { z } from 'zod';
+
+// Fonction utilitaire pour générer le linkId avec le format link_<conversationShareLink.Id>_yymmddhhm
+function generateLinkId(): string {
+  const now = new Date();
+  const year = now.getFullYear().toString().slice(-2);
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  const day = now.getDate().toString().padStart(2, '0');
+  const hour = now.getHours().toString().padStart(2, '0');
+  const minute = now.getMinutes().toString().padStart(2, '0');
+  
+  const timestamp = `${year}${month}${day}${hour}${minute}`;
+  const randomSuffix = Math.random().toString(36).slice(2, 10);
+  
+  return `link_${timestamp}_${randomSuffix}`;
+}
 
 // Prisma et TranslationService sont décorés et fournis par le serveur principal
 
@@ -1482,11 +1498,29 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   // Route pour créer un nouveau lien pour une conversation existante
   fastify.post<{
     Params: { id: string };
+    Body: {
+      name?: string;
+      description?: string;
+      maxUses?: number;
+      maxConcurrentUsers?: number;
+      maxUniqueSessions?: number;
+      expiresAt?: string;
+      allowAnonymousMessages?: boolean;
+      allowAnonymousFiles?: boolean;
+      allowAnonymousImages?: boolean;
+      allowViewHistory?: boolean;
+      requireNickname?: boolean;
+      requireEmail?: boolean;
+      allowedCountries?: string[];
+      allowedLanguages?: string[];
+      allowedIpRanges?: string[];
+    };
   }>('/conversations/:id/new-link', {
     preValidation: [fastify.authenticate]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
+      const body = request.body || {};
       const currentUserId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier que l'utilisateur a accès à cette conversation
@@ -1505,14 +1539,38 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Générer un code unique et stocker le lien dans la base
-      const linkId = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
+      // Vérifier que l'utilisateur est admin/modo de la conversation
+      if (membership.role !== 'ADMIN' && membership.role !== 'CREATOR' && membership.role !== 'MODERATOR') {
+        return reply.status(403).send({
+          success: false,
+          error: 'Seuls les administrateurs et modérateurs peuvent créer des liens'
+        });
+      }
 
-      await prisma.conversationShareLink.create({
+      // Générer un linkId avec le format link_<timestamp>_<random>
+      const linkId = generateLinkId();
+
+      // Créer le lien avec toutes les options configurables
+      const shareLink = await prisma.conversationShareLink.create({
         data: {
           linkId,
           conversationId: id,
-          createdBy: currentUserId
+          createdBy: currentUserId,
+          name: body.name,
+          description: body.description,
+          maxUses: body.maxUses ?? undefined,
+          maxConcurrentUsers: body.maxConcurrentUsers ?? undefined,
+          maxUniqueSessions: body.maxUniqueSessions ?? undefined,
+          expiresAt: body.expiresAt ? new Date(body.expiresAt) : undefined,
+          allowAnonymousMessages: body.allowAnonymousMessages ?? true,
+          allowAnonymousFiles: body.allowAnonymousFiles ?? false,
+          allowAnonymousImages: body.allowAnonymousImages ?? true,
+          allowViewHistory: body.allowViewHistory ?? true,
+          requireNickname: body.requireNickname ?? true,
+          requireEmail: body.requireEmail ?? false,
+          allowedCountries: body.allowedCountries ?? [],
+          allowedLanguages: body.allowedLanguages ?? [],
+          allowedIpRanges: body.allowedIpRanges ?? []
         }
       });
 
@@ -1522,7 +1580,21 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         success: true,
         data: {
           link: inviteLink,
-          code: linkId
+          code: linkId,
+          shareLink: {
+            id: shareLink.id,
+            linkId: shareLink.linkId,
+            name: shareLink.name,
+            description: shareLink.description,
+            maxUses: shareLink.maxUses,
+            expiresAt: shareLink.expiresAt,
+            allowAnonymousMessages: shareLink.allowAnonymousMessages,
+            allowAnonymousFiles: shareLink.allowAnonymousFiles,
+            allowAnonymousImages: shareLink.allowAnonymousImages,
+            allowViewHistory: shareLink.allowViewHistory,
+            requireNickname: shareLink.requireNickname,
+            requireEmail: shareLink.requireEmail
+          }
         }
       });
 

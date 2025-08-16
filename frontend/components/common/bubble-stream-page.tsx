@@ -96,7 +96,7 @@ import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
 
-export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
+export function BubbleStreamPage({ user, conversationId = 'any' }: BubbleStreamPageProps) {
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -126,7 +126,7 @@ export function BubbleStreamPage({ user }: BubbleStreamPageProps) {
     updateMessageTranslations
   } = useConversationMessages({
     currentUser: user,
-    conversationId: 'any'
+    conversationId: conversationId
   });
 
   // États de base

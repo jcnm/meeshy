@@ -531,14 +531,23 @@ export default function JoinConversationPage() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email (optionnel)</Label>
+                        <Label htmlFor="email">
+                          Email {conversationLink.requireEmail && <span className="text-red-500">*</span>}
+                          {!conversationLink.requireEmail && <span className="text-gray-500">(optionnel)</span>}
+                        </Label>
                         <Input
                           id="email"
                           type="email"
                           value={anonymousForm.email}
                           onChange={(e) => updateAnonymousForm('email', e.target.value)}
                           placeholder="john.doe@example.com"
+                          required={conversationLink.requireEmail}
                         />
+                        {conversationLink.requireEmail && (
+                          <p className="text-xs text-red-500">
+                            L'email est obligatoire pour rejoindre cette conversation
+                          </p>
+                        )}
                       </div>
                       
                       <div className="space-y-2">
@@ -566,7 +575,12 @@ export default function JoinConversationPage() {
                       <div className="flex space-x-3 pt-4">
                         <Button 
                           onClick={joinAnonymously}
-                          disabled={isJoining || !anonymousForm.firstName.trim() || !anonymousForm.lastName.trim()}
+                          disabled={
+                            isJoining || 
+                            !anonymousForm.firstName.trim() || 
+                            !anonymousForm.lastName.trim() ||
+                            (conversationLink.requireEmail && !anonymousForm.email.trim())
+                          }
                           size="lg"
                           className="flex-1"
                         >

@@ -15,6 +15,7 @@ export interface BubbleStreamMessage extends Message {
 
 export interface BubbleStreamPageProps {
   user: User;
+  conversationId?: string; // Optionnel, par défaut 'any' pour la conversation globale
 }
 
 /**

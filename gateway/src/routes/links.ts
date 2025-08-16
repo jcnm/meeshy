@@ -64,10 +64,10 @@ export async function linksRoutes(fastify: FastifyInstance) {
           return reply.status(403).send({ success: false, message: 'Seuls les administrateurs et modérateurs peuvent créer des liens' });
         }
       } else {
-        // Créer la conversation de type shared
+        // Créer la conversation de type public
         const conversation = await fastify.prisma.conversation.create({
           data: {
-            type: 'shared',
+            type: 'public',
             title: body.name || 'Conversation partagée',
             description: body.description,
             members: { create: [{ userId, role: 'admin' }] }
@@ -76,8 +76,23 @@ export async function linksRoutes(fastify: FastifyInstance) {
         conversationId = conversation.id;
       }
 
-      // Générer un token unique
-      const linkId = `link_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+      // Générer un linkId avec le format link_<yymmddhhm>_<random>
+      // Fonction utilitaire pour générer le linkId avec le format link_<conversationShareLink.Id>_yymmddhhm
+      function generateLinkId(): string {
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2);
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const hour = now.getHours().toString().padStart(2, '0');
+        const minute = now.getMinutes().toString().padStart(2, '0');
+        
+        const timestamp = `${year}${month}${day}${hour}${minute}`;
+        const randomSuffix = Math.random().toString(36).slice(2, 10);
+        
+        return `link_${timestamp}_${randomSuffix}`;
+      }
+
+      const linkId = generateLinkId();
 
       await fastify.prisma.conversationShareLink.create({
         data: {

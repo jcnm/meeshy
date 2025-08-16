@@ -157,10 +157,18 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         }
       }
 
-      // 4. Générer le nickname si non fourni
+      // 4. Vérifier si l'email est requis
+      if (shareLink.requireEmail && (!body.email || body.email.trim() === '')) {
+        return reply.status(400).send({
+          success: false,
+          message: 'L\'email est obligatoire pour rejoindre cette conversation'
+        });
+      }
+
+      // 5. Générer le nickname si non fourni
       const nickname = body.nickname || generateNickname(body.firstName, body.lastName);
 
-      // 5. Vérifier que le nickname n'est pas déjà pris dans cette conversation
+      // 6. Vérifier que le nickname n'est pas déjà pris dans cette conversation
       const existingParticipant = await fastify.prisma.anonymousParticipant.findFirst({
         where: {
           conversationId: shareLink.conversationId,
