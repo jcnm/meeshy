@@ -6890,6 +6890,8 @@ export namespace Prisma {
     currentUses: number | null
     maxConcurrentUsers: number | null
     currentConcurrentUsers: number | null
+    maxUniqueSessions: number | null
+    currentUniqueSessions: number | null
   }
 
   export type ConversationShareLinkSumAggregateOutputType = {
@@ -6897,6 +6899,8 @@ export namespace Prisma {
     currentUses: number | null
     maxConcurrentUsers: number | null
     currentConcurrentUsers: number | null
+    maxUniqueSessions: number | null
+    currentUniqueSessions: number | null
   }
 
   export type ConversationShareLinkMinAggregateOutputType = {
@@ -6910,6 +6914,8 @@ export namespace Prisma {
     currentUses: number | null
     maxConcurrentUsers: number | null
     currentConcurrentUsers: number | null
+    maxUniqueSessions: number | null
+    currentUniqueSessions: number | null
     expiresAt: Date | null
     isActive: boolean | null
     allowAnonymousMessages: boolean | null
@@ -6933,6 +6939,8 @@ export namespace Prisma {
     currentUses: number | null
     maxConcurrentUsers: number | null
     currentConcurrentUsers: number | null
+    maxUniqueSessions: number | null
+    currentUniqueSessions: number | null
     expiresAt: Date | null
     isActive: boolean | null
     allowAnonymousMessages: boolean | null
@@ -6956,6 +6964,8 @@ export namespace Prisma {
     currentUses: number
     maxConcurrentUsers: number
     currentConcurrentUsers: number
+    maxUniqueSessions: number
+    currentUniqueSessions: number
     expiresAt: number
     isActive: number
     allowAnonymousMessages: number
@@ -6964,6 +6974,9 @@ export namespace Prisma {
     allowViewHistory: number
     requireNickname: number
     requireEmail: number
+    allowedCountries: number
+    allowedLanguages: number
+    allowedIpRanges: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6975,6 +6988,8 @@ export namespace Prisma {
     currentUses?: true
     maxConcurrentUsers?: true
     currentConcurrentUsers?: true
+    maxUniqueSessions?: true
+    currentUniqueSessions?: true
   }
 
   export type ConversationShareLinkSumAggregateInputType = {
@@ -6982,6 +6997,8 @@ export namespace Prisma {
     currentUses?: true
     maxConcurrentUsers?: true
     currentConcurrentUsers?: true
+    maxUniqueSessions?: true
+    currentUniqueSessions?: true
   }
 
   export type ConversationShareLinkMinAggregateInputType = {
@@ -6995,6 +7012,8 @@ export namespace Prisma {
     currentUses?: true
     maxConcurrentUsers?: true
     currentConcurrentUsers?: true
+    maxUniqueSessions?: true
+    currentUniqueSessions?: true
     expiresAt?: true
     isActive?: true
     allowAnonymousMessages?: true
@@ -7018,6 +7037,8 @@ export namespace Prisma {
     currentUses?: true
     maxConcurrentUsers?: true
     currentConcurrentUsers?: true
+    maxUniqueSessions?: true
+    currentUniqueSessions?: true
     expiresAt?: true
     isActive?: true
     allowAnonymousMessages?: true
@@ -7041,6 +7062,8 @@ export namespace Prisma {
     currentUses?: true
     maxConcurrentUsers?: true
     currentConcurrentUsers?: true
+    maxUniqueSessions?: true
+    currentUniqueSessions?: true
     expiresAt?: true
     isActive?: true
     allowAnonymousMessages?: true
@@ -7049,6 +7072,9 @@ export namespace Prisma {
     allowViewHistory?: true
     requireNickname?: true
     requireEmail?: true
+    allowedCountries?: true
+    allowedLanguages?: true
+    allowedIpRanges?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -7151,6 +7177,8 @@ export namespace Prisma {
     currentUses: number
     maxConcurrentUsers: number | null
     currentConcurrentUsers: number
+    maxUniqueSessions: number | null
+    currentUniqueSessions: number
     expiresAt: Date | null
     isActive: boolean
     allowAnonymousMessages: boolean
@@ -7159,6 +7187,9 @@ export namespace Prisma {
     allowViewHistory: boolean
     requireNickname: boolean
     requireEmail: boolean
+    allowedCountries: string[]
+    allowedLanguages: string[]
+    allowedIpRanges: string[]
     createdAt: Date
     updatedAt: Date
     _count: ConversationShareLinkCountAggregateOutputType | null
@@ -7193,6 +7224,8 @@ export namespace Prisma {
     currentUses?: boolean
     maxConcurrentUsers?: boolean
     currentConcurrentUsers?: boolean
+    maxUniqueSessions?: boolean
+    currentUniqueSessions?: boolean
     expiresAt?: boolean
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -7201,6 +7234,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: boolean
+    allowedLanguages?: boolean
+    allowedIpRanges?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     anonymousParticipants?: boolean | ConversationShareLink$anonymousParticipantsArgs<ExtArgs>
@@ -7220,6 +7256,8 @@ export namespace Prisma {
     currentUses?: boolean
     maxConcurrentUsers?: boolean
     currentConcurrentUsers?: boolean
+    maxUniqueSessions?: boolean
+    currentUniqueSessions?: boolean
     expiresAt?: boolean
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -7228,6 +7266,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: boolean
+    allowedLanguages?: boolean
+    allowedIpRanges?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -7245,6 +7286,8 @@ export namespace Prisma {
     currentUses?: boolean
     maxConcurrentUsers?: boolean
     currentConcurrentUsers?: boolean
+    maxUniqueSessions?: boolean
+    currentUniqueSessions?: boolean
     expiresAt?: boolean
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -7253,6 +7296,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: boolean
+    allowedLanguages?: boolean
+    allowedIpRanges?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -7270,6 +7316,8 @@ export namespace Prisma {
     currentUses?: boolean
     maxConcurrentUsers?: boolean
     currentConcurrentUsers?: boolean
+    maxUniqueSessions?: boolean
+    currentUniqueSessions?: boolean
     expiresAt?: boolean
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -7278,11 +7326,14 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: boolean
+    allowedLanguages?: boolean
+    allowedIpRanges?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ConversationShareLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "conversationId" | "createdBy" | "name" | "description" | "maxUses" | "currentUses" | "maxConcurrentUsers" | "currentConcurrentUsers" | "expiresAt" | "isActive" | "allowAnonymousMessages" | "allowAnonymousFiles" | "allowAnonymousImages" | "allowViewHistory" | "requireNickname" | "requireEmail" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationShareLink"]>
+  export type ConversationShareLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "linkId" | "conversationId" | "createdBy" | "name" | "description" | "maxUses" | "currentUses" | "maxConcurrentUsers" | "currentConcurrentUsers" | "maxUniqueSessions" | "currentUniqueSessions" | "expiresAt" | "isActive" | "allowAnonymousMessages" | "allowAnonymousFiles" | "allowAnonymousImages" | "allowViewHistory" | "requireNickname" | "requireEmail" | "allowedCountries" | "allowedLanguages" | "allowedIpRanges" | "createdAt" | "updatedAt", ExtArgs["result"]["conversationShareLink"]>
   export type ConversationShareLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     anonymousParticipants?: boolean | ConversationShareLink$anonymousParticipantsArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
@@ -7316,6 +7367,8 @@ export namespace Prisma {
       currentUses: number
       maxConcurrentUsers: number | null
       currentConcurrentUsers: number
+      maxUniqueSessions: number | null
+      currentUniqueSessions: number
       expiresAt: Date | null
       isActive: boolean
       allowAnonymousMessages: boolean
@@ -7324,6 +7377,9 @@ export namespace Prisma {
       allowViewHistory: boolean
       requireNickname: boolean
       requireEmail: boolean
+      allowedCountries: string[]
+      allowedLanguages: string[]
+      allowedIpRanges: string[]
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["conversationShareLink"]>
@@ -7762,6 +7818,8 @@ export namespace Prisma {
     readonly currentUses: FieldRef<"ConversationShareLink", 'Int'>
     readonly maxConcurrentUsers: FieldRef<"ConversationShareLink", 'Int'>
     readonly currentConcurrentUsers: FieldRef<"ConversationShareLink", 'Int'>
+    readonly maxUniqueSessions: FieldRef<"ConversationShareLink", 'Int'>
+    readonly currentUniqueSessions: FieldRef<"ConversationShareLink", 'Int'>
     readonly expiresAt: FieldRef<"ConversationShareLink", 'DateTime'>
     readonly isActive: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly allowAnonymousMessages: FieldRef<"ConversationShareLink", 'Boolean'>
@@ -7770,6 +7828,9 @@ export namespace Prisma {
     readonly allowViewHistory: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly requireNickname: FieldRef<"ConversationShareLink", 'Boolean'>
     readonly requireEmail: FieldRef<"ConversationShareLink", 'Boolean'>
+    readonly allowedCountries: FieldRef<"ConversationShareLink", 'String[]'>
+    readonly allowedLanguages: FieldRef<"ConversationShareLink", 'String[]'>
+    readonly allowedIpRanges: FieldRef<"ConversationShareLink", 'String[]'>
     readonly createdAt: FieldRef<"ConversationShareLink", 'DateTime'>
     readonly updatedAt: FieldRef<"ConversationShareLink", 'DateTime'>
   }
@@ -8224,10 +8285,15 @@ export namespace Prisma {
     id: string | null
     conversationId: string | null
     shareLinkId: string | null
+    firstName: string | null
+    lastName: string | null
     nickname: string | null
     email: string | null
     sessionToken: string | null
     ipAddress: string | null
+    country: string | null
+    language: string | null
+    deviceFingerprint: string | null
     isActive: boolean | null
     isOnline: boolean | null
     lastActiveAt: Date | null
@@ -8243,10 +8309,15 @@ export namespace Prisma {
     id: string | null
     conversationId: string | null
     shareLinkId: string | null
+    firstName: string | null
+    lastName: string | null
     nickname: string | null
     email: string | null
     sessionToken: string | null
     ipAddress: string | null
+    country: string | null
+    language: string | null
+    deviceFingerprint: string | null
     isActive: boolean | null
     isOnline: boolean | null
     lastActiveAt: Date | null
@@ -8262,10 +8333,15 @@ export namespace Prisma {
     id: number
     conversationId: number
     shareLinkId: number
+    firstName: number
+    lastName: number
     nickname: number
     email: number
     sessionToken: number
     ipAddress: number
+    country: number
+    language: number
+    deviceFingerprint: number
     isActive: number
     isOnline: number
     lastActiveAt: number
@@ -8283,10 +8359,15 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     shareLinkId?: true
+    firstName?: true
+    lastName?: true
     nickname?: true
     email?: true
     sessionToken?: true
     ipAddress?: true
+    country?: true
+    language?: true
+    deviceFingerprint?: true
     isActive?: true
     isOnline?: true
     lastActiveAt?: true
@@ -8302,10 +8383,15 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     shareLinkId?: true
+    firstName?: true
+    lastName?: true
     nickname?: true
     email?: true
     sessionToken?: true
     ipAddress?: true
+    country?: true
+    language?: true
+    deviceFingerprint?: true
     isActive?: true
     isOnline?: true
     lastActiveAt?: true
@@ -8321,10 +8407,15 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     shareLinkId?: true
+    firstName?: true
+    lastName?: true
     nickname?: true
     email?: true
     sessionToken?: true
     ipAddress?: true
+    country?: true
+    language?: true
+    deviceFingerprint?: true
     isActive?: true
     isOnline?: true
     lastActiveAt?: true
@@ -8413,10 +8504,15 @@ export namespace Prisma {
     id: string
     conversationId: string
     shareLinkId: string
+    firstName: string
+    lastName: string
     nickname: string
     email: string | null
     sessionToken: string
     ipAddress: string | null
+    country: string | null
+    language: string
+    deviceFingerprint: string | null
     isActive: boolean
     isOnline: boolean
     lastActiveAt: Date
@@ -8449,10 +8545,15 @@ export namespace Prisma {
     id?: boolean
     conversationId?: boolean
     shareLinkId?: boolean
+    firstName?: boolean
+    lastName?: boolean
     nickname?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
+    country?: boolean
+    language?: boolean
+    deviceFingerprint?: boolean
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: boolean
@@ -8472,10 +8573,15 @@ export namespace Prisma {
     id?: boolean
     conversationId?: boolean
     shareLinkId?: boolean
+    firstName?: boolean
+    lastName?: boolean
     nickname?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
+    country?: boolean
+    language?: boolean
+    deviceFingerprint?: boolean
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: boolean
@@ -8493,10 +8599,15 @@ export namespace Prisma {
     id?: boolean
     conversationId?: boolean
     shareLinkId?: boolean
+    firstName?: boolean
+    lastName?: boolean
     nickname?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
+    country?: boolean
+    language?: boolean
+    deviceFingerprint?: boolean
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: boolean
@@ -8514,10 +8625,15 @@ export namespace Prisma {
     id?: boolean
     conversationId?: boolean
     shareLinkId?: boolean
+    firstName?: boolean
+    lastName?: boolean
     nickname?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
+    country?: boolean
+    language?: boolean
+    deviceFingerprint?: boolean
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: boolean
@@ -8529,7 +8645,7 @@ export namespace Prisma {
     leftAt?: boolean
   }
 
-  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "nickname" | "email" | "sessionToken" | "ipAddress" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
+  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "firstName" | "lastName" | "nickname" | "email" | "sessionToken" | "ipAddress" | "country" | "language" | "deviceFingerprint" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
   export type AnonymousParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
@@ -8556,10 +8672,15 @@ export namespace Prisma {
       id: string
       conversationId: string
       shareLinkId: string
+      firstName: string
+      lastName: string
       nickname: string
       email: string | null
       sessionToken: string
       ipAddress: string | null
+      country: string | null
+      language: string
+      deviceFingerprint: string | null
       isActive: boolean
       isOnline: boolean
       lastActiveAt: Date
@@ -8998,10 +9119,15 @@ export namespace Prisma {
     readonly id: FieldRef<"AnonymousParticipant", 'String'>
     readonly conversationId: FieldRef<"AnonymousParticipant", 'String'>
     readonly shareLinkId: FieldRef<"AnonymousParticipant", 'String'>
+    readonly firstName: FieldRef<"AnonymousParticipant", 'String'>
+    readonly lastName: FieldRef<"AnonymousParticipant", 'String'>
     readonly nickname: FieldRef<"AnonymousParticipant", 'String'>
     readonly email: FieldRef<"AnonymousParticipant", 'String'>
     readonly sessionToken: FieldRef<"AnonymousParticipant", 'String'>
     readonly ipAddress: FieldRef<"AnonymousParticipant", 'String'>
+    readonly country: FieldRef<"AnonymousParticipant", 'String'>
+    readonly language: FieldRef<"AnonymousParticipant", 'String'>
+    readonly deviceFingerprint: FieldRef<"AnonymousParticipant", 'String'>
     readonly isActive: FieldRef<"AnonymousParticipant", 'Boolean'>
     readonly isOnline: FieldRef<"AnonymousParticipant", 'Boolean'>
     readonly lastActiveAt: FieldRef<"AnonymousParticipant", 'DateTime'>
@@ -22202,6 +22328,8 @@ export namespace Prisma {
     currentUses: 'currentUses',
     maxConcurrentUsers: 'maxConcurrentUsers',
     currentConcurrentUsers: 'currentConcurrentUsers',
+    maxUniqueSessions: 'maxUniqueSessions',
+    currentUniqueSessions: 'currentUniqueSessions',
     expiresAt: 'expiresAt',
     isActive: 'isActive',
     allowAnonymousMessages: 'allowAnonymousMessages',
@@ -22210,6 +22338,9 @@ export namespace Prisma {
     allowViewHistory: 'allowViewHistory',
     requireNickname: 'requireNickname',
     requireEmail: 'requireEmail',
+    allowedCountries: 'allowedCountries',
+    allowedLanguages: 'allowedLanguages',
+    allowedIpRanges: 'allowedIpRanges',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -22221,10 +22352,15 @@ export namespace Prisma {
     id: 'id',
     conversationId: 'conversationId',
     shareLinkId: 'shareLinkId',
+    firstName: 'firstName',
+    lastName: 'lastName',
     nickname: 'nickname',
     email: 'email',
     sessionToken: 'sessionToken',
     ipAddress: 'ipAddress',
+    country: 'country',
+    language: 'language',
+    deviceFingerprint: 'deviceFingerprint',
     isActive: 'isActive',
     isOnline: 'isOnline',
     lastActiveAt: 'lastActiveAt',
@@ -22917,6 +23053,8 @@ export namespace Prisma {
     currentUses?: IntFilter<"ConversationShareLink"> | number
     maxConcurrentUsers?: IntNullableFilter<"ConversationShareLink"> | number | null
     currentConcurrentUsers?: IntFilter<"ConversationShareLink"> | number
+    maxUniqueSessions?: IntNullableFilter<"ConversationShareLink"> | number | null
+    currentUniqueSessions?: IntFilter<"ConversationShareLink"> | number
     expiresAt?: DateTimeNullableFilter<"ConversationShareLink"> | Date | string | null
     isActive?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousMessages?: BoolFilter<"ConversationShareLink"> | boolean
@@ -22925,6 +23063,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    allowedCountries?: StringNullableListFilter<"ConversationShareLink">
+    allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
+    allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     anonymousParticipants?: AnonymousParticipantListRelationFilter
@@ -22943,6 +23084,8 @@ export namespace Prisma {
     currentUses?: SortOrder
     maxConcurrentUsers?: SortOrderInput | SortOrder
     currentConcurrentUsers?: SortOrder
+    maxUniqueSessions?: SortOrderInput | SortOrder
+    currentUniqueSessions?: SortOrder
     expiresAt?: SortOrderInput | SortOrder
     isActive?: SortOrder
     allowAnonymousMessages?: SortOrder
@@ -22951,6 +23094,9 @@ export namespace Prisma {
     allowViewHistory?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    allowedCountries?: SortOrder
+    allowedLanguages?: SortOrder
+    allowedIpRanges?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     anonymousParticipants?: AnonymousParticipantOrderByRelationAggregateInput
@@ -22972,6 +23118,8 @@ export namespace Prisma {
     currentUses?: IntFilter<"ConversationShareLink"> | number
     maxConcurrentUsers?: IntNullableFilter<"ConversationShareLink"> | number | null
     currentConcurrentUsers?: IntFilter<"ConversationShareLink"> | number
+    maxUniqueSessions?: IntNullableFilter<"ConversationShareLink"> | number | null
+    currentUniqueSessions?: IntFilter<"ConversationShareLink"> | number
     expiresAt?: DateTimeNullableFilter<"ConversationShareLink"> | Date | string | null
     isActive?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousMessages?: BoolFilter<"ConversationShareLink"> | boolean
@@ -22980,6 +23128,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    allowedCountries?: StringNullableListFilter<"ConversationShareLink">
+    allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
+    allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     anonymousParticipants?: AnonymousParticipantListRelationFilter
@@ -22998,6 +23149,8 @@ export namespace Prisma {
     currentUses?: SortOrder
     maxConcurrentUsers?: SortOrderInput | SortOrder
     currentConcurrentUsers?: SortOrder
+    maxUniqueSessions?: SortOrderInput | SortOrder
+    currentUniqueSessions?: SortOrder
     expiresAt?: SortOrderInput | SortOrder
     isActive?: SortOrder
     allowAnonymousMessages?: SortOrder
@@ -23006,6 +23159,9 @@ export namespace Prisma {
     allowViewHistory?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    allowedCountries?: SortOrder
+    allowedLanguages?: SortOrder
+    allowedIpRanges?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ConversationShareLinkCountOrderByAggregateInput
@@ -23029,6 +23185,8 @@ export namespace Prisma {
     currentUses?: IntWithAggregatesFilter<"ConversationShareLink"> | number
     maxConcurrentUsers?: IntNullableWithAggregatesFilter<"ConversationShareLink"> | number | null
     currentConcurrentUsers?: IntWithAggregatesFilter<"ConversationShareLink"> | number
+    maxUniqueSessions?: IntNullableWithAggregatesFilter<"ConversationShareLink"> | number | null
+    currentUniqueSessions?: IntWithAggregatesFilter<"ConversationShareLink"> | number
     expiresAt?: DateTimeNullableWithAggregatesFilter<"ConversationShareLink"> | Date | string | null
     isActive?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     allowAnonymousMessages?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
@@ -23037,6 +23195,9 @@ export namespace Prisma {
     allowViewHistory?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolWithAggregatesFilter<"ConversationShareLink"> | boolean
+    allowedCountries?: StringNullableListFilter<"ConversationShareLink">
+    allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
+    allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
     createdAt?: DateTimeWithAggregatesFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ConversationShareLink"> | Date | string
   }
@@ -23048,10 +23209,15 @@ export namespace Prisma {
     id?: StringFilter<"AnonymousParticipant"> | string
     conversationId?: StringFilter<"AnonymousParticipant"> | string
     shareLinkId?: StringFilter<"AnonymousParticipant"> | string
+    firstName?: StringFilter<"AnonymousParticipant"> | string
+    lastName?: StringFilter<"AnonymousParticipant"> | string
     nickname?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    country?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    language?: StringFilter<"AnonymousParticipant"> | string
+    deviceFingerprint?: StringNullableFilter<"AnonymousParticipant"> | string | null
     isActive?: BoolFilter<"AnonymousParticipant"> | boolean
     isOnline?: BoolFilter<"AnonymousParticipant"> | boolean
     lastActiveAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
@@ -23070,10 +23236,15 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     shareLinkId?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
     nickname?: SortOrder
     email?: SortOrderInput | SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
+    language?: SortOrder
+    deviceFingerprint?: SortOrderInput | SortOrder
     isActive?: SortOrder
     isOnline?: SortOrder
     lastActiveAt?: SortOrder
@@ -23097,9 +23268,14 @@ export namespace Prisma {
     NOT?: AnonymousParticipantWhereInput | AnonymousParticipantWhereInput[]
     conversationId?: StringFilter<"AnonymousParticipant"> | string
     shareLinkId?: StringFilter<"AnonymousParticipant"> | string
+    firstName?: StringFilter<"AnonymousParticipant"> | string
+    lastName?: StringFilter<"AnonymousParticipant"> | string
     nickname?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    country?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    language?: StringFilter<"AnonymousParticipant"> | string
+    deviceFingerprint?: StringNullableFilter<"AnonymousParticipant"> | string | null
     isActive?: BoolFilter<"AnonymousParticipant"> | boolean
     isOnline?: BoolFilter<"AnonymousParticipant"> | boolean
     lastActiveAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
@@ -23118,10 +23294,15 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     shareLinkId?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
     nickname?: SortOrder
     email?: SortOrderInput | SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrderInput | SortOrder
+    country?: SortOrderInput | SortOrder
+    language?: SortOrder
+    deviceFingerprint?: SortOrderInput | SortOrder
     isActive?: SortOrder
     isOnline?: SortOrder
     lastActiveAt?: SortOrder
@@ -23143,10 +23324,15 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     conversationId?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     shareLinkId?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
+    firstName?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
+    lastName?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     nickname?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     email?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
     sessionToken?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
+    country?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
+    language?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
+    deviceFingerprint?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
     isActive?: BoolWithAggregatesFilter<"AnonymousParticipant"> | boolean
     isOnline?: BoolWithAggregatesFilter<"AnonymousParticipant"> | boolean
     lastActiveAt?: DateTimeWithAggregatesFilter<"AnonymousParticipant"> | Date | string
@@ -24542,6 +24728,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -24550,6 +24738,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
     anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
@@ -24568,6 +24759,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -24576,6 +24769,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
     anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput
@@ -24590,6 +24786,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -24598,6 +24796,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
@@ -24616,6 +24817,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -24624,6 +24827,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput
@@ -24640,6 +24846,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -24648,6 +24856,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -24661,6 +24872,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -24669,6 +24882,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24684,6 +24900,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -24692,16 +24910,24 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AnonymousParticipantCreateInput = {
     id?: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -24720,10 +24946,15 @@ export namespace Prisma {
     id?: string
     conversationId: string
     shareLinkId: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -24738,10 +24969,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24760,10 +24996,15 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     shareLinkId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24780,10 +25021,15 @@ export namespace Prisma {
     id?: string
     conversationId: string
     shareLinkId: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -24797,10 +25043,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24816,10 +25067,15 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     shareLinkId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26242,6 +26498,14 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type ConversationShareLinkCountOrderByAggregateInput = {
     id?: SortOrder
     linkId?: SortOrder
@@ -26253,6 +26517,8 @@ export namespace Prisma {
     currentUses?: SortOrder
     maxConcurrentUsers?: SortOrder
     currentConcurrentUsers?: SortOrder
+    maxUniqueSessions?: SortOrder
+    currentUniqueSessions?: SortOrder
     expiresAt?: SortOrder
     isActive?: SortOrder
     allowAnonymousMessages?: SortOrder
@@ -26261,6 +26527,9 @@ export namespace Prisma {
     allowViewHistory?: SortOrder
     requireNickname?: SortOrder
     requireEmail?: SortOrder
+    allowedCountries?: SortOrder
+    allowedLanguages?: SortOrder
+    allowedIpRanges?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -26270,6 +26539,8 @@ export namespace Prisma {
     currentUses?: SortOrder
     maxConcurrentUsers?: SortOrder
     currentConcurrentUsers?: SortOrder
+    maxUniqueSessions?: SortOrder
+    currentUniqueSessions?: SortOrder
   }
 
   export type ConversationShareLinkMaxOrderByAggregateInput = {
@@ -26283,6 +26554,8 @@ export namespace Prisma {
     currentUses?: SortOrder
     maxConcurrentUsers?: SortOrder
     currentConcurrentUsers?: SortOrder
+    maxUniqueSessions?: SortOrder
+    currentUniqueSessions?: SortOrder
     expiresAt?: SortOrder
     isActive?: SortOrder
     allowAnonymousMessages?: SortOrder
@@ -26306,6 +26579,8 @@ export namespace Prisma {
     currentUses?: SortOrder
     maxConcurrentUsers?: SortOrder
     currentConcurrentUsers?: SortOrder
+    maxUniqueSessions?: SortOrder
+    currentUniqueSessions?: SortOrder
     expiresAt?: SortOrder
     isActive?: SortOrder
     allowAnonymousMessages?: SortOrder
@@ -26323,6 +26598,8 @@ export namespace Prisma {
     currentUses?: SortOrder
     maxConcurrentUsers?: SortOrder
     currentConcurrentUsers?: SortOrder
+    maxUniqueSessions?: SortOrder
+    currentUniqueSessions?: SortOrder
   }
 
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -26371,10 +26648,15 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     shareLinkId?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
     nickname?: SortOrder
     email?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
+    country?: SortOrder
+    language?: SortOrder
+    deviceFingerprint?: SortOrder
     isActive?: SortOrder
     isOnline?: SortOrder
     lastActiveAt?: SortOrder
@@ -26390,10 +26672,15 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     shareLinkId?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
     nickname?: SortOrder
     email?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
+    country?: SortOrder
+    language?: SortOrder
+    deviceFingerprint?: SortOrder
     isActive?: SortOrder
     isOnline?: SortOrder
     lastActiveAt?: SortOrder
@@ -26409,10 +26696,15 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     shareLinkId?: SortOrder
+    firstName?: SortOrder
+    lastName?: SortOrder
     nickname?: SortOrder
     email?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
+    country?: SortOrder
+    language?: SortOrder
+    deviceFingerprint?: SortOrder
     isActive?: SortOrder
     isOnline?: SortOrder
     lastActiveAt?: SortOrder
@@ -27908,6 +28200,18 @@ export namespace Prisma {
     update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMembersInput, ConversationUpdateWithoutMembersInput>, ConversationUncheckedUpdateWithoutMembersInput>
   }
 
+  export type ConversationShareLinkCreateallowedCountriesInput = {
+    set: string[]
+  }
+
+  export type ConversationShareLinkCreateallowedLanguagesInput = {
+    set: string[]
+  }
+
+  export type ConversationShareLinkCreateallowedIpRangesInput = {
+    set: string[]
+  }
+
   export type AnonymousParticipantCreateNestedManyWithoutShareLinkInput = {
     create?: XOR<AnonymousParticipantCreateWithoutShareLinkInput, AnonymousParticipantUncheckedCreateWithoutShareLinkInput> | AnonymousParticipantCreateWithoutShareLinkInput[] | AnonymousParticipantUncheckedCreateWithoutShareLinkInput[]
     connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutShareLinkInput | AnonymousParticipantCreateOrConnectWithoutShareLinkInput[]
@@ -27948,6 +28252,21 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type ConversationShareLinkUpdateallowedCountriesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type ConversationShareLinkUpdateallowedLanguagesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type ConversationShareLinkUpdateallowedIpRangesInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type AnonymousParticipantUpdateManyWithoutShareLinkNestedInput = {
@@ -28990,6 +29309,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -28998,6 +29319,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
     anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
@@ -29014,6 +29338,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -29022,6 +29348,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
     anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput
@@ -29519,6 +29848,8 @@ export namespace Prisma {
     currentUses?: IntFilter<"ConversationShareLink"> | number
     maxConcurrentUsers?: IntNullableFilter<"ConversationShareLink"> | number | null
     currentConcurrentUsers?: IntFilter<"ConversationShareLink"> | number
+    maxUniqueSessions?: IntNullableFilter<"ConversationShareLink"> | number | null
+    currentUniqueSessions?: IntFilter<"ConversationShareLink"> | number
     expiresAt?: DateTimeNullableFilter<"ConversationShareLink"> | Date | string | null
     isActive?: BoolFilter<"ConversationShareLink"> | boolean
     allowAnonymousMessages?: BoolFilter<"ConversationShareLink"> | boolean
@@ -29527,6 +29858,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFilter<"ConversationShareLink"> | boolean
     requireNickname?: BoolFilter<"ConversationShareLink"> | boolean
     requireEmail?: BoolFilter<"ConversationShareLink"> | boolean
+    allowedCountries?: StringNullableListFilter<"ConversationShareLink">
+    allowedLanguages?: StringNullableListFilter<"ConversationShareLink">
+    allowedIpRanges?: StringNullableListFilter<"ConversationShareLink">
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
   }
@@ -29816,10 +30150,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantCreateWithoutConversationInput = {
     id?: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -29836,10 +30175,15 @@ export namespace Prisma {
   export type AnonymousParticipantUncheckedCreateWithoutConversationInput = {
     id?: string
     shareLinkId: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -29945,6 +30289,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -29953,6 +30299,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
     anonymousParticipants?: AnonymousParticipantCreateNestedManyWithoutShareLinkInput
@@ -29969,6 +30318,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -29977,6 +30328,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
     anonymousParticipants?: AnonymousParticipantUncheckedCreateNestedManyWithoutShareLinkInput
@@ -30122,10 +30476,15 @@ export namespace Prisma {
     id?: StringFilter<"AnonymousParticipant"> | string
     conversationId?: StringFilter<"AnonymousParticipant"> | string
     shareLinkId?: StringFilter<"AnonymousParticipant"> | string
+    firstName?: StringFilter<"AnonymousParticipant"> | string
+    lastName?: StringFilter<"AnonymousParticipant"> | string
     nickname?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    country?: StringNullableFilter<"AnonymousParticipant"> | string | null
+    language?: StringFilter<"AnonymousParticipant"> | string
+    deviceFingerprint?: StringNullableFilter<"AnonymousParticipant"> | string | null
     isActive?: BoolFilter<"AnonymousParticipant"> | boolean
     isOnline?: BoolFilter<"AnonymousParticipant"> | boolean
     lastActiveAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
@@ -30534,10 +30893,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantCreateWithoutShareLinkInput = {
     id?: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -30554,10 +30918,15 @@ export namespace Prisma {
   export type AnonymousParticipantUncheckedCreateWithoutShareLinkInput = {
     id?: string
     conversationId: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -30881,6 +31250,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -30889,6 +31260,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedShareLinksInput
@@ -30906,6 +31280,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -30914,6 +31290,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31036,6 +31415,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -31044,6 +31425,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedShareLinksNestedInput
@@ -31061,6 +31445,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -31069,6 +31455,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31287,10 +31676,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantCreateWithoutSentMessagesInput = {
     id?: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -31308,10 +31702,15 @@ export namespace Prisma {
     id?: string
     conversationId: string
     shareLinkId: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -31585,10 +31984,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantUpdateWithoutSentMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31606,10 +32010,15 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
     shareLinkId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34424,6 +34833,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -34432,6 +34843,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34652,6 +35066,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -34660,6 +35076,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
@@ -34676,6 +35095,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -34684,6 +35105,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput
@@ -34699,6 +35123,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -34707,6 +35133,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35008,10 +35437,15 @@ export namespace Prisma {
   export type AnonymousParticipantCreateManyConversationInput = {
     id?: string
     shareLinkId: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -35060,6 +35494,8 @@ export namespace Prisma {
     currentUses?: number
     maxConcurrentUsers?: number | null
     currentConcurrentUsers?: number
+    maxUniqueSessions?: number | null
+    currentUniqueSessions?: number
     expiresAt?: Date | string | null
     isActive?: boolean
     allowAnonymousMessages?: boolean
@@ -35068,6 +35504,9 @@ export namespace Prisma {
     allowViewHistory?: boolean
     requireNickname?: boolean
     requireEmail?: boolean
+    allowedCountries?: ConversationShareLinkCreateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkCreateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkCreateallowedIpRangesInput | string[]
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -35098,10 +35537,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantUpdateWithoutConversationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35118,10 +35562,15 @@ export namespace Prisma {
   export type AnonymousParticipantUncheckedUpdateWithoutConversationInput = {
     id?: StringFieldUpdateOperationsInput | string
     shareLinkId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35137,10 +35586,15 @@ export namespace Prisma {
   export type AnonymousParticipantUncheckedUpdateManyWithoutConversationInput = {
     id?: StringFieldUpdateOperationsInput | string
     shareLinkId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35242,6 +35696,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -35250,6 +35706,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     anonymousParticipants?: AnonymousParticipantUpdateManyWithoutShareLinkNestedInput
@@ -35266,6 +35725,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -35274,6 +35735,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     anonymousParticipants?: AnonymousParticipantUncheckedUpdateManyWithoutShareLinkNestedInput
@@ -35289,6 +35753,8 @@ export namespace Prisma {
     currentUses?: IntFieldUpdateOperationsInput | number
     maxConcurrentUsers?: NullableIntFieldUpdateOperationsInput | number | null
     currentConcurrentUsers?: IntFieldUpdateOperationsInput | number
+    maxUniqueSessions?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUniqueSessions?: IntFieldUpdateOperationsInput | number
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     allowAnonymousMessages?: BoolFieldUpdateOperationsInput | boolean
@@ -35297,6 +35763,9 @@ export namespace Prisma {
     allowViewHistory?: BoolFieldUpdateOperationsInput | boolean
     requireNickname?: BoolFieldUpdateOperationsInput | boolean
     requireEmail?: BoolFieldUpdateOperationsInput | boolean
+    allowedCountries?: ConversationShareLinkUpdateallowedCountriesInput | string[]
+    allowedLanguages?: ConversationShareLinkUpdateallowedLanguagesInput | string[]
+    allowedIpRanges?: ConversationShareLinkUpdateallowedIpRangesInput | string[]
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35382,10 +35851,15 @@ export namespace Prisma {
   export type AnonymousParticipantCreateManyShareLinkInput = {
     id?: string
     conversationId: string
+    firstName: string
+    lastName: string
     nickname: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
     isActive?: boolean
     isOnline?: boolean
     lastActiveAt?: Date | string
@@ -35399,10 +35873,15 @@ export namespace Prisma {
 
   export type AnonymousParticipantUpdateWithoutShareLinkInput = {
     id?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35419,10 +35898,15 @@ export namespace Prisma {
   export type AnonymousParticipantUncheckedUpdateWithoutShareLinkInput = {
     id?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35438,10 +35922,15 @@ export namespace Prisma {
   export type AnonymousParticipantUncheckedUpdateManyWithoutShareLinkInput = {
     id?: StringFieldUpdateOperationsInput | string
     conversationId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
     nickname?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     isOnline?: BoolFieldUpdateOperationsInput | boolean
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string

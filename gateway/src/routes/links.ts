@@ -8,16 +8,37 @@ const createLinkSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   maxUses: z.number().int().positive().optional(),
-  expiresAt: z.string().datetime().optional()
+  maxConcurrentUsers: z.number().int().positive().optional(),
+  maxUniqueSessions: z.number().int().positive().optional(),
+  expiresAt: z.string().datetime().optional(),
+  allowAnonymousMessages: z.boolean().optional(),
+  allowAnonymousFiles: z.boolean().optional(),
+  allowAnonymousImages: z.boolean().optional(),
+  allowViewHistory: z.boolean().optional(),
+  requireNickname: z.boolean().optional(),
+  requireEmail: z.boolean().optional(),
+  allowedCountries: z.array(z.string()).optional(),
+  allowedLanguages: z.array(z.string()).optional(),
+  allowedIpRanges: z.array(z.string()).optional()
 });
 
 const updateLinkSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
   maxUses: z.number().int().positive().nullable().optional(),
+  maxConcurrentUsers: z.number().int().positive().nullable().optional(),
+  maxUniqueSessions: z.number().int().positive().nullable().optional(),
   expiresAt: z.string().datetime().nullable().optional(),
-  isActive: z.boolean().optional()
-  // Note: restrictions (IP, pays, langue) non supportées par le schéma actuel
+  isActive: z.boolean().optional(),
+  allowAnonymousMessages: z.boolean().optional(),
+  allowAnonymousFiles: z.boolean().optional(),
+  allowAnonymousImages: z.boolean().optional(),
+  allowViewHistory: z.boolean().optional(),
+  requireNickname: z.boolean().optional(),
+  requireEmail: z.boolean().optional(),
+  allowedCountries: z.array(z.string()).optional(),
+  allowedLanguages: z.array(z.string()).optional(),
+  allowedIpRanges: z.array(z.string()).optional()
 });
 
 export async function linksRoutes(fastify: FastifyInstance) {
@@ -66,7 +87,18 @@ export async function linksRoutes(fastify: FastifyInstance) {
           name: body.name,
           description: body.description,
           maxUses: body.maxUses ?? undefined,
-          expiresAt: body.expiresAt ? new Date(body.expiresAt) : undefined
+          maxConcurrentUsers: body.maxConcurrentUsers ?? undefined,
+          maxUniqueSessions: body.maxUniqueSessions ?? undefined,
+          expiresAt: body.expiresAt ? new Date(body.expiresAt) : undefined,
+          allowAnonymousMessages: body.allowAnonymousMessages ?? true,
+          allowAnonymousFiles: body.allowAnonymousFiles ?? false,
+          allowAnonymousImages: body.allowAnonymousImages ?? true,
+          allowViewHistory: body.allowViewHistory ?? true,
+          requireNickname: body.requireNickname ?? true,
+          requireEmail: body.requireEmail ?? false,
+          allowedCountries: body.allowedCountries ?? [],
+          allowedLanguages: body.allowedLanguages ?? [],
+          allowedIpRanges: body.allowedIpRanges ?? []
         }
       });
 
@@ -166,8 +198,19 @@ export async function linksRoutes(fastify: FastifyInstance) {
       if (body.name !== undefined) updateData.name = body.name;
       if (body.description !== undefined) updateData.description = body.description;
       if (body.maxUses !== undefined) updateData.maxUses = body.maxUses === null ? null : body.maxUses;
+      if (body.maxConcurrentUsers !== undefined) updateData.maxConcurrentUsers = body.maxConcurrentUsers === null ? null : body.maxConcurrentUsers;
+      if (body.maxUniqueSessions !== undefined) updateData.maxUniqueSessions = body.maxUniqueSessions === null ? null : body.maxUniqueSessions;
       if (body.expiresAt !== undefined) updateData.expiresAt = body.expiresAt ? new Date(body.expiresAt) : null;
       if (body.isActive !== undefined) updateData.isActive = body.isActive;
+      if (body.allowAnonymousMessages !== undefined) updateData.allowAnonymousMessages = body.allowAnonymousMessages;
+      if (body.allowAnonymousFiles !== undefined) updateData.allowAnonymousFiles = body.allowAnonymousFiles;
+      if (body.allowAnonymousImages !== undefined) updateData.allowAnonymousImages = body.allowAnonymousImages;
+      if (body.allowViewHistory !== undefined) updateData.allowViewHistory = body.allowViewHistory;
+      if (body.requireNickname !== undefined) updateData.requireNickname = body.requireNickname;
+      if (body.requireEmail !== undefined) updateData.requireEmail = body.requireEmail;
+      if (body.allowedCountries !== undefined) updateData.allowedCountries = body.allowedCountries;
+      if (body.allowedLanguages !== undefined) updateData.allowedLanguages = body.allowedLanguages;
+      if (body.allowedIpRanges !== undefined) updateData.allowedIpRanges = body.allowedIpRanges;
 
       const updated = await fastify.prisma.conversationShareLink.update({ where: { linkId }, data: updateData });
       return reply.send({ success: true, data: updated });
