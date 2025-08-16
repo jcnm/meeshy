@@ -10,6 +10,7 @@ export { useTranslation } from './use-translation';
 export { useMessageTranslations } from './use-message-translations';
 export { useTranslationCache } from './use-translation-cache';
 export { useMessageLoader } from './use-message-loader';
+export { useConversationMessages } from './use-conversation-messages';
 
 // Interface utilisateur et notifications
 export { useNotifications } from './use-notifications';

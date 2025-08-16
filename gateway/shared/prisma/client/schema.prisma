@@ -44,8 +44,6 @@ model User {
   createdShareLinks       ConversationShareLink[]  @relation("ShareLinkCreator")
   receivedFriendRequests  FriendRequest[]          @relation("FriendRequestReceiver")
   sentFriendRequests      FriendRequest[]          @relation("FriendRequestSender")
-  groupMemberships        GroupMember[]
-  createdGroups           Group[]                  @relation("GroupCreator")
   messageReadStatus       MessageReadStatus[]
   sentMessages            Message[]                @relation("MessageSender")
   notifications           Notification[]
@@ -54,16 +52,14 @@ model User {
   stats                   UserStats?
   adminCommunities        Community[]              @relation("CommunityAdmins")
   moderatorCommunities    Community[]              @relation("CommunityModerators")
-  adminGroups             Group[]                  @relation("GroupAdmins")
-  moderatorGroups         Group[]                  @relation("GroupModerators")
 
   @@map("users")
 }
 
-/// Conversation entre utilisateurs (direct, group, public, global, shared)
+/// Conversation entre utilisateurs (direct, group, public, global)
 model Conversation {
   id            String   @id @default(cuid())
-  /// direct, group, public, global, shared
+  /// direct, group, public, global
   type          String
   title         String?
   description   String?
@@ -247,7 +243,7 @@ model FriendRequest {
   @@map("friend_requests")
 }
 
-/// Indicateur de frappe en cours
+/// Indicateur de frappe en cours pour des tests... A supprimer après les tests
 model TypingIndicator {
   id             String   @id @default(cuid())
   conversationId String
@@ -284,44 +280,8 @@ model Notification {
   @@map("notifications")
 }
 
-/// Communauté d'utilisateurs
+/// Communauté (représente une communauté de conversation)
 model Community {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  image       String?
-  isPublic    Boolean  @default(false)
-  maxMembers  Int?
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  createdBy     User              @relation("CommunityCreator", fields: [createdById], references: [id])
-  members       CommunityMember[]
-  conversations Conversation[]
-  admins        User[]            @relation("CommunityAdmins")
-  moderators    User[]            @relation("CommunityModerators")
-
-  @@map("communities")
-}
-
-/// Appartenance à une communauté
-model CommunityMember {
-  id          String   @id @default(cuid())
-  communityId String
-  userId      String
-  role        String   @default("member")
-  joinedAt    DateTime @default(now())
-
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-
-  @@unique([communityId, userId])
-  @@map("community_members")
-}
-
-/// Groupe (legacy - remplacé par conversations)
-model Group {
   id          String   @id @default(cuid())
   name        String
   description String?
@@ -331,26 +291,27 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members    GroupMember[]
-  creator    User          @relation("GroupCreator", fields: [createdBy], references: [id])
-  admins     User[]        @relation("GroupAdmins")
-  moderators User[]        @relation("GroupModerators")
+  members      CommunityMember[]
+  creator      User              @relation("CommunityCreator", fields: [createdBy], references: [id])
+  admins       User[]            @relation("CommunityAdmins")
+  moderators   User[]            @relation("CommunityModerators")
+  Conversation Conversation[]
 
-  @@map("groups")
+  @@map("communities")
 }
 
-/// Appartenance aux groupes (legacy)
-model GroupMember {
-  id       String   @id @default(cuid())
-  groupId  String
-  userId   String
-  joinedAt DateTime @default(now())
+/// Appartenance aux communautés (legacy)
+model CommunityMember {
+  id          String   @id @default(cuid())
+  communityId String
+  userId      String
+  joinedAt    DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
 
-  @@unique([groupId, userId])
-  @@map("group_members")
+  @@unique([communityId, userId])
+  @@map("community_members")
 }
 
 /// Statistiques d'utilisation d'un utilisateur
@@ -363,7 +324,7 @@ model UserStats {
   imageMessagesSent        Int      @default(0)
   filesShared              Int      @default(0)
   conversationsJoined      Int      @default(0)
-  groupsCreated            Int      @default(0)
+  communitiesCreated       Int      @default(0)
   friendsAdded             Int      @default(0)
   friendRequestsSent       Int      @default(0)
   translationsUsed         Int      @default(0)

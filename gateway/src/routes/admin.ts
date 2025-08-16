@@ -8,7 +8,7 @@ type UserRole = 'BIGBOSS' | 'ADMIN' | 'MODO' | 'AUDIT' | 'ANALYST' | 'USER';
 interface UserPermissions {
   canAccessAdmin: boolean;
   canManageUsers: boolean;
-  canManageGroups: boolean;
+  canManageCommunities: boolean;
   canManageConversations: boolean;
   canViewAnalytics: boolean;
   canModerateContent: boolean;
@@ -41,7 +41,7 @@ class PermissionsService {
     BIGBOSS: {
       canAccessAdmin: true,
       canManageUsers: true,
-      canManageGroups: true,
+      canManageCommunities: true,
       canManageConversations: true,
       canViewAnalytics: true,
       canModerateContent: true,
@@ -52,7 +52,7 @@ class PermissionsService {
     ADMIN: {
       canAccessAdmin: true,
       canManageUsers: true,
-      canManageGroups: true,
+      canManageCommunities: true,
       canManageConversations: true,
       canViewAnalytics: true,
       canModerateContent: true,
@@ -63,7 +63,7 @@ class PermissionsService {
     MODO: {
       canAccessAdmin: true,
       canManageUsers: false,
-      canManageGroups: true,
+      canManageCommunities: true,
       canManageConversations: true,
       canViewAnalytics: false,
       canModerateContent: true,
@@ -74,7 +74,7 @@ class PermissionsService {
     AUDIT: {
       canAccessAdmin: true,
       canManageUsers: false,
-      canManageGroups: false,
+      canManageCommunities: false,
       canManageConversations: false,
       canViewAnalytics: true,
       canModerateContent: false,
@@ -85,7 +85,7 @@ class PermissionsService {
     ANALYST: {
       canAccessAdmin: false,
       canManageUsers: false,
-      canManageGroups: false,
+      canManageCommunities: false,
       canManageConversations: false,
       canViewAnalytics: true,
       canModerateContent: false,
@@ -96,7 +96,7 @@ class PermissionsService {
     USER: {
       canAccessAdmin: false,
       canManageUsers: false,
-      canManageGroups: false,
+      canManageCommunities: false,
       canManageConversations: false,
       canViewAnalytics: false,
       canModerateContent: false,
@@ -154,14 +154,14 @@ export async function adminRoutes(fastify: FastifyInstance) {
         totalUsers,
         activeUsers,
         totalConversations,
-        totalGroups,
+        totalCommunities,
         totalMessages,
         adminUsers
       ] = await Promise.all([
         fastify.prisma.user.count(),
         fastify.prisma.user.count({ where: { isActive: true } }),
         fastify.prisma.conversation.count(),
-        fastify.prisma.group.count(),
+        fastify.prisma.community.count(),
         fastify.prisma.message.count({ where: { isDeleted: false } }),
         fastify.prisma.user.count({
           where: {
@@ -197,7 +197,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
             activeUsers,
             inactiveUsers: totalUsers - activeUsers,
             totalConversations,
-            totalGroups,
+            totalCommunities,
             totalMessages,
             adminUsers
           },
@@ -283,7 +283,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
               select: {
                 sentMessages: true,
                 conversations: true,
-                groupMemberships: true
+                communityMemberships: true
               }
             }
           },
@@ -340,8 +340,8 @@ export async function adminRoutes(fastify: FastifyInstance) {
             select: {
               sentMessages: true,
               conversations: true,
-              groupMemberships: true,
-              createdGroups: true,
+              communityMemberships: true,
+              createdCommunities: true,
               notifications: true
             }
           }

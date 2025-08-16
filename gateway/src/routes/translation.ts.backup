@@ -102,13 +102,23 @@ export async function translationRoutes(fastify: FastifyInstance) {
           id: existingMessage.id,
           content: existingMessage.content?.substring(0, 50) + '...',
           originalLanguage: existingMessage.originalLanguage,
-          conversationId: existingMessage.conversationId
+          conversationId: existingMessage.conversationId,
+          contentLength: existingMessage.content?.length || 0
         } : 'NULL');
         
         if (!existingMessage) {
+          console.error(`❌ [GATEWAY] Message ${validatedData.message_id} non trouvé en base de données`);
           return reply.status(404).send({
             success: false,
             error: 'Message not found'
+          });
+        }
+        
+        if (!existingMessage.content) {
+          console.error(`❌ [GATEWAY] Message ${validatedData.message_id} trouvé mais contenu vide`);
+          return reply.status(400).send({
+            success: false,
+            error: 'Message content is empty'
           });
         }
         
@@ -127,6 +137,13 @@ export async function translationRoutes(fastify: FastifyInstance) {
         // Utiliser le texte du message existant si pas fourni
         const messageText = validatedData.text || existingMessage.content;
         const messageSourceLanguage = validatedData.source_language || existingMessage.originalLanguage;
+        
+        console.log(`📝 [GATEWAY] Données du message récupéré:`, {
+          messageText: messageText?.substring(0, 50) + '...',
+          messageSourceLanguage,
+          messageId: existingMessage.id,
+          conversationId: existingMessage.conversationId
+        });
         
         // Déterminer le type de modèle pour le texte récupéré
         const finalModelType = validatedData.model_type === 'basic'

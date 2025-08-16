@@ -95,20 +95,18 @@ function BubbleMessageInner({
   const messageRef = useRef<HTMLDivElement>(null);
   const filterInputRef = useRef<HTMLInputElement>(null);
 
-  const getLanguageInfo = (langCode: string | undefined | null) => {
-    // Gérer les cas où langCode est undefined, null ou vide
-    if (!langCode || typeof langCode !== 'string') {
-      return {
-        code: 'unknown',
-        name: 'Langue inconnue',
-        flag: '🌐'
-      };
+  const getLanguageInfo = (langCode: string) => {
+    // Validation stricte - les langues sont obligatoires dans Meeshy
+    if (!langCode) {
+      console.error('🚨 ERREUR CRITIQUE: Code de langue vide détecté!', { langCode, message });
+      throw new Error(`Code de langue vide détecté pour le message ${message.id}`);
     }
     
     const found = SUPPORTED_LANGUAGES.find(lang => lang.code === langCode);
     if (found) return found;
     
-    // Si la langue n'est pas trouvée, retourner un objet par défaut avec le code original
+    // Si la langue n'est pas trouvée, c'est un problème mais pas critique
+    console.warn('⚠️ Langue non supportée détectée:', langCode, 'pour le message:', message.id);
     return {
       code: langCode,
       name: langCode.toUpperCase(),
@@ -251,10 +249,12 @@ function BubbleMessageInner({
       confidence: 1,
       timestamp: new Date(message.createdAt)
     },
-    ...message.translations.filter(t => t.status === 'completed').map(t => ({
-      ...t,
-      isOriginal: false
-    }))
+    ...message.translations
+      .filter(t => t.status === 'completed' && t.language) // Filtrer les traductions valides
+      .map(t => ({
+        ...t,
+        isOriginal: false
+      }))
   ];
 
   const isTranslated = currentDisplayLanguage !== message.originalLanguage;

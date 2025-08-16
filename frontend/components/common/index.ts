@@ -4,6 +4,7 @@ export { LoadingSpinner, LoadingState, LoadingSkeleton, LoadingCard } from './Lo
 export { UserSelector } from './user-selector';
 export { BubbleStreamPage } from './bubble-stream-page';
 export { BubbleMessage } from './bubble-message';
+export { MessagesDisplay } from './messages-display';
 
 // Re-export des composants UI shadcn/ui pour centraliser les imports
 export { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

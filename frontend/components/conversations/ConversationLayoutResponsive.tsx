@@ -45,6 +45,8 @@ import { ConversationParticipantsPopover } from '@/components/conversations/conv
 import { CreateLinkButton } from '@/components/conversations/create-link-button';
 import { getUserLanguageChoices } from '@/utils/user-language-preferences';
 import { useMessageLoader } from '@/hooks/use-message-loader';
+import { useConversationMessages } from '@/hooks/use-conversation-messages';
+import { MessagesDisplay } from '@/components/common/messages-display';
 
 
 // Alias pour la compatibilité avec le code existant
@@ -136,7 +138,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     });
   }, []);
 
-  // Hook pour le chargement des messages
+  // Hook pour le chargement des messages avec le nouveau hook factorized
   const {
     messages,
     translatedMessages,
@@ -145,7 +147,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     clearMessages,
     addMessage,
     updateMessageTranslations
-  } = useMessageLoader({
+  } = useConversationMessages({
     currentUser: user!, // user est garanti d'exister après les checks
     conversationId: selectedConversation?.id
   });
@@ -704,29 +706,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversation?.id, loadConversationParticipants]);
 
-  // Adapter local: convertit TranslatedMessage -> forme attendue par BubbleMessage
-  type BubbleMessageShape = Message & {
-    location?: string;
-    originalLanguage: string;
-    translations: BubbleTranslation[];
-    originalContent: string;
-  };
-
-  const toBubbleMessage = useCallback((msg: TranslatedMessage): BubbleMessageShape => {
-    const translations: BubbleTranslation[] = (msg.translations || []).map((t) => ({
-      language: t.targetLanguage,
-      content: t.translatedContent,
-      status: 'completed',
-      timestamp: new Date(),
-      confidence: (t as any).confidenceScore ?? 0.9,
-    }));
-    return {
-      ...msg,
-      originalContent: msg.content,
-      translations,
-    };
-  }, []);
-
   return (
     <DashboardLayout title="Conversations">
 
@@ -1082,63 +1061,23 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                 {/* Messages scrollables */}
                 <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm messages-container scroll-optimized scrollbar-thin">
-                  {isLoadingMessages ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                        <p className="text-muted-foreground">Chargement des messages...</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {translatedMessages
-                        .filter(message => message && message.id) // Filtrer les messages invalides
-                        .map((message) => {
-                        // Langues utilisées (similaire à bubble-stream-page)
-                        const usedLanguages: string[] = [
-                          user.regionalLanguage,
-                          user.customDestinationLanguage
-                        ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage);
-                        
-                        return (
-                          <BubbleMessage
-                            key={`message-${message.id}`}
-                            message={toBubbleMessage(message)}
-                            currentUser={user}
-                            userLanguage={user.systemLanguage}
-                            usedLanguages={usedLanguages}
-                            onForceTranslation={async (messageId: string, targetLanguage: string) => {
-                              try {
-                                // Forcer la traduction dans conversation
-                                
-                                // Récupérer la langue source du message
-                                const message = messages.find(m => m.id === messageId);
-                                const sourceLanguage = message?.originalLanguage || 'fr';
-                                
-                                // Détails de la traduction forcée
-                                
-                                // Langue source détectée
-
-                                const result = await messageTranslationService.requestTranslation({
-                                  messageId,
-                                  targetLanguage,
-                                  sourceLanguage,
-                                  model: 'basic'
-                                });
-                                // Traduction forcée demandée
-                                toast.success(`Traduction en cours...`);
-                              } catch (error) {
-                                console.error('❌ Erreur traduction forcée:', error);
-                                toast.error('Erreur lors de la demande de traduction');
-                              }
-                            }}
-                          />
-                        );
-                      })}
-                      {/* Élément invisible pour le scroll automatique */}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  )}
+                  <MessagesDisplay
+                    messages={messages}
+                    translatedMessages={translatedMessages}
+                    isLoadingMessages={isLoadingMessages}
+                    currentUser={user}
+                    userLanguage={user.systemLanguage}
+                    usedLanguages={[
+                      user.regionalLanguage,
+                      user.customDestinationLanguage
+                    ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage)}
+                    emptyStateMessage="Aucun message dans cette conversation"
+                    emptyStateDescription="Commencez la conversation en envoyant un message !"
+                    reverseOrder={false}
+                    className="space-y-4"
+                  />
+                  {/* Élément invisible pour le scroll automatique */}
+                  <div ref={messagesEndRef} />
                 </div>
 
                 {/* Zone de saisie fixe en bas */}

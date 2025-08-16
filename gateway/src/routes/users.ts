@@ -39,9 +39,9 @@ export async function userRoutes(fastify: FastifyInstance) {
         activeConversations,
         recentConversations,
         
-        // Groupes où l'utilisateur est membre actif  
-        totalGroups,
-        recentGroups,
+        // Communautés où l'utilisateur est membre actif  
+        totalCommunities,
+        recentCommunities,
         
         // Messages envoyés par l'utilisateur
         totalMessages,
@@ -124,15 +124,15 @@ export async function userRoutes(fastify: FastifyInstance) {
           take: 5
         }),
         
-        // Total groupes
-        fastify.prisma.groupMember.count({
+        // Total communautés
+        fastify.prisma.communityMember.count({
           where: {
             userId
           }
         }),
         
-        // Groupes récents
-        fastify.prisma.group.findMany({
+        // Communautés récentes
+        fastify.prisma.community.findMany({
           where: {
             members: {
               some: {
@@ -203,7 +203,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       // Transformer les données pour le frontend
       const stats = {
         totalConversations,
-        totalGroups,
+        totalCommunities,
         totalMessages: messagesThisWeek, // Messages cette semaine
         activeConversations,
         translationsToday,
@@ -225,14 +225,14 @@ export async function userRoutes(fastify: FastifyInstance) {
         members: conv.members.map(member => member.user)
       }));
 
-      // Transformer les groupes récents
-      const transformedGroups = recentGroups.map(group => ({
-        id: group.id,
-        name: group.name,
-        description: group.description,
-        isPrivate: group.isPrivate,
-        members: group.members.map(member => member.user),
-        memberCount: group.members.length
+      // Transformer les communautés récentes
+      const transformedCommunities = recentCommunities.map(community => ({
+        id: community.id,
+        name: community.name,
+        description: community.description,
+        isPrivate: community.isPrivate,
+        members: community.members.map(member => member.user),
+        memberCount: community.members.length
       }));
 
       return reply.send({
@@ -240,7 +240,7 @@ export async function userRoutes(fastify: FastifyInstance) {
         data: {
           stats,
           recentConversations: transformedConversations,
-          recentGroups: transformedGroups
+          recentCommunities: transformedCommunities
         }
       });
 

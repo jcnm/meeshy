@@ -292,26 +292,6 @@ exports.Prisma.NotificationScalarFieldEnum = {
 
 exports.Prisma.CommunityScalarFieldEnum = {
   id: 'id',
-  title: 'title',
-  description: 'description',
-  image: 'image',
-  isPublic: 'isPublic',
-  maxMembers: 'maxMembers',
-  createdById: 'createdById',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.CommunityMemberScalarFieldEnum = {
-  id: 'id',
-  communityId: 'communityId',
-  userId: 'userId',
-  role: 'role',
-  joinedAt: 'joinedAt'
-};
-
-exports.Prisma.GroupScalarFieldEnum = {
-  id: 'id',
   name: 'name',
   description: 'description',
   avatar: 'avatar',
@@ -321,9 +301,9 @@ exports.Prisma.GroupScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.GroupMemberScalarFieldEnum = {
+exports.Prisma.CommunityMemberScalarFieldEnum = {
   id: 'id',
-  groupId: 'groupId',
+  communityId: 'communityId',
   userId: 'userId',
   joinedAt: 'joinedAt'
 };
@@ -337,7 +317,7 @@ exports.Prisma.UserStatsScalarFieldEnum = {
   imageMessagesSent: 'imageMessagesSent',
   filesShared: 'filesShared',
   conversationsJoined: 'conversationsJoined',
-  groupsCreated: 'groupsCreated',
+  communitiesCreated: 'communitiesCreated',
   friendsAdded: 'friendsAdded',
   friendRequestsSent: 'friendRequestsSent',
   translationsUsed: 'translationsUsed',
@@ -403,8 +383,6 @@ exports.Prisma.ModelName = {
   Notification: 'Notification',
   Community: 'Community',
   CommunityMember: 'CommunityMember',
-  Group: 'Group',
-  GroupMember: 'GroupMember',
   UserStats: 'UserStats',
   UserPreference: 'UserPreference',
   ConversationPreference: 'ConversationPreference'

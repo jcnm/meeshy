@@ -38,20 +38,14 @@ export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
 /**
  * Obtient les informations d'une langue par son code
  */
-export function getLanguageInfo(code: string | undefined | null): SupportedLanguage | undefined {
-  if (!code || typeof code !== 'string') {
-    return undefined;
-  }
+export function getLanguageInfo(code: string): SupportedLanguage | undefined {
   return SUPPORTED_LANGUAGES.find(lang => lang.code === code);
 }
 
 /**
  * Obtient le nom d'une langue par son code
  */
-export function getLanguageName(code: string | undefined | null): string {
-  if (!code || typeof code !== 'string') {
-    return 'Langue inconnue';
-  }
+export function getLanguageName(code: string): string {
   const lang = getLanguageInfo(code);
   return lang?.name || code;
 }
@@ -59,10 +53,7 @@ export function getLanguageName(code: string | undefined | null): string {
 /**
  * Obtient le drapeau d'une langue par son code
  */
-export function getLanguageFlag(code: string | undefined | null): string {
-  if (!code || typeof code !== 'string') {
-    return '🌐';
-  }
+export function getLanguageFlag(code: string): string {
   const lang = getLanguageInfo(code);
   return lang?.flag || '🌐';
 }
@@ -70,10 +61,7 @@ export function getLanguageFlag(code: string | undefined | null): string {
 /**
  * Obtient la couleur d'une langue par son code
  */
-export function getLanguageColor(code: string | undefined | null): string {
-  if (!code || typeof code !== 'string') {
-    return 'bg-gray-500';
-  }
+export function getLanguageColor(code: string): string {
   const lang = getLanguageInfo(code);
   return lang?.color || 'bg-gray-500';
 }

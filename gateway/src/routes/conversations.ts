@@ -771,7 +771,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // NOTE: route déplacée vers groups.ts → GET /groups/:id/conversations
+  // NOTE: route déplacée vers communities.ts → GET /communities/:id/conversations
 
   // Route pour modifier un message (permis depuis la gateway)
   fastify.put<{
