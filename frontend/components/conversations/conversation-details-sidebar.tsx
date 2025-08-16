@@ -19,13 +19,15 @@ import {
   Edit,
   Save,
   Languages,
-  Users
+  Users,
+  Link2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Conversation, User, Message } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
 import { toast } from 'sonner';
+import { ConversationLinksSection } from './conversation-links-section';
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {
@@ -332,6 +334,20 @@ export function ConversationDetailsSidebar({
                 )}
               </div>
             </FoldableSection>
+
+            {/* Section Liens de partage - Visible uniquement pour les admins */}
+            {isAdmin && (
+              <FoldableSection
+                title="Liens de partage"
+                icon={<Link2 className="h-4 w-4 mr-2" />}
+                defaultExpanded={false}
+              >
+                <ConversationLinksSection 
+                  conversationId={conversation.id}
+                  isAdmin={isAdmin}
+                />
+              </FoldableSection>
+            )}
           </div>
         </ScrollArea>
       </div>
