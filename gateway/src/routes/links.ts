@@ -176,67 +176,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Récupérer les liens d'une conversation spécifique (pour les admins)
-  fastify.get('/links/conversation/:conversationId', { onRequest: [fastify.authenticate] }, async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const { conversationId } = request.params as { conversationId: string };
-      const { userId } = request.user as any;
 
-      // Vérifier que l'utilisateur est admin de la conversation
-      const membership = await fastify.prisma.conversationMember.findFirst({
-        where: {
-          conversationId,
-          userId,
-          role: 'admin',
-          isActive: true
-        }
-      });
-
-      if (!membership) {
-        return reply.status(403).send({ 
-          success: false, 
-          message: 'Accès non autorisé - droits administrateur requis' 
-        });
-      }
-
-      const links = await fastify.prisma.conversationShareLink.findMany({
-        where: { conversationId },
-        include: {
-          creator: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              displayName: true,
-              avatar: true
-            }
-          },
-          conversation: {
-            select: {
-              id: true,
-              title: true,
-              type: true
-            }
-          },
-          _count: {
-            select: {
-              anonymousParticipants: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-
-      return reply.send({ success: true, data: links });
-    } catch (error) {
-      logError(fastify.log, 'Get conversation links error:', error);
-      return reply.status(500).send({ 
-        success: false, 
-        message: 'Erreur lors de la récupération des liens de la conversation' 
-      });
-    }
-  });
 
   // Mettre à jour un lien (propriétés supportées)
   fastify.patch('/links/:linkId', { onRequest: [fastify.authenticate] }, async (request: FastifyRequest, reply: FastifyReply) => {

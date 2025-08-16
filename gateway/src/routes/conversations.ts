@@ -1,4 +1,4 @@
-import { FastifyInstance, FastifyRequest } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { TranslationService } from '../services/TranslationService';
 import { conversationStatsService } from '../services/ConversationStatsService';
 
@@ -1647,6 +1647,68 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la mise à jour de la conversation'
+      });
+    }
+  });
+
+  // Récupérer les liens de partage d'une conversation (pour les admins)
+  fastify.get('/conversations/:conversationId/links', { onRequest: [fastify.authenticate] }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { conversationId } = request.params as { conversationId: string };
+      const userId = (request as any).user.userId || (request as any).user.id;
+
+      // Vérifier que l'utilisateur est admin de la conversation
+      const membership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId,
+          userId,
+          role: 'admin',
+          isActive: true
+        }
+      });
+
+      if (!membership) {
+        return reply.status(403).send({ 
+          success: false, 
+          error: 'Accès non autorisé - droits administrateur requis' 
+        });
+      }
+
+      const links = await prisma.conversationShareLink.findMany({
+        where: { conversationId },
+        include: {
+          creator: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true
+            }
+          },
+          conversation: {
+            select: {
+              id: true,
+              title: true,
+              type: true
+            }
+          },
+          _count: {
+            select: {
+              anonymousParticipants: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return reply.send({ success: true, data: links });
+    } catch (error) {
+      console.error('[GATEWAY] Error fetching conversation links:', error);
+      return reply.status(500).send({ 
+        success: false, 
+        error: 'Erreur lors de la récupération des liens de la conversation' 
       });
     }
   });
