@@ -14,6 +14,18 @@ import type { MessageTranslationCache, SocketIOUser, TranslationData, UserPermis
 // Ré-export des types essentiels
 export type { TranslationData, MessageTranslationCache, SocketIOUser };
 
+// ===== ENUM DES RÔLES UNIFORMES =====
+export enum UserRoleEnum {
+  BIGBOSS = 'BIGBOSS',
+  ADMIN = 'ADMIN',
+  CREATOR = 'CREATOR',
+  MODERATOR = 'MODERATOR',
+  AUDIT = 'AUDIT',
+  ANALYST = 'ANALYST',
+  USER = 'USER',
+  MEMBER = 'MEMBER'
+}
+
 // ===== TYPES SPÉCIFIQUES À LA TRADUCTION =====
 export interface TranslationRequest {
   messageId: string;
@@ -90,6 +102,13 @@ export interface Message {
   createdAt: Date;
   updatedAt: Date;
   sender?: SocketIOUser;
+  anonymousSender?: {
+    id: string;
+    nickname: string;
+    firstName: string;
+    lastName: string;
+    language: string;
+  };
 }
 
 export interface MessageWithTranslations extends Message {
@@ -136,20 +155,22 @@ export interface Notification {
   expiresAt?: Date;
 }
 
-export type UserRole = 'BIGBOSS' | 'ADMIN' | 'MODO' | 'AUDIT' | 'ANALYST' | 'USER';
+export type UserRole = UserRoleEnum;
 
 // Utilitaires pour les rôles et permissions
-export const ROLE_HIERARCHY: Record<UserRole, number> = {
-  BIGBOSS: 6,
-  ADMIN: 5,
-  MODO: 4,
-  AUDIT: 3,
-  ANALYST: 2,
-  USER: 1,
+export const ROLE_HIERARCHY: Record<UserRoleEnum, number> = {
+  [UserRoleEnum.BIGBOSS]: 7,
+  [UserRoleEnum.CREATOR]: 6,
+  [UserRoleEnum.ADMIN]: 5,
+  [UserRoleEnum.MODERATOR]: 4,
+  [UserRoleEnum.AUDIT]: 3,
+  [UserRoleEnum.ANALYST]: 2,
+  [UserRoleEnum.USER]: 1,
+  [UserRoleEnum.MEMBER]: 1,
 };
 
-export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
-  BIGBOSS: {
+export const DEFAULT_PERMISSIONS: Record<UserRoleEnum, UserPermissions> = {
+  [UserRoleEnum.BIGBOSS]: {
     canAccessAdmin: true,
     canManageUsers: true,
     canManageGroups: true,
@@ -160,7 +181,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageNotifications: true,
     canManageTranslations: true,
   },
-  ADMIN: {
+  [UserRoleEnum.ADMIN]: {
     canAccessAdmin: true,
     canManageUsers: true,
     canManageGroups: true,
@@ -171,7 +192,18 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageNotifications: true,
     canManageTranslations: false,
   },
-  MODO: {
+  [UserRoleEnum.CREATOR]: {
+    canAccessAdmin: true,
+    canManageUsers: true,
+    canManageGroups: true,
+    canManageConversations: true,
+    canViewAnalytics: true,
+    canModerateContent: true,
+    canViewAuditLogs: true,
+    canManageNotifications: true,
+    canManageTranslations: false,
+  },
+  [UserRoleEnum.MODERATOR]: {
     canAccessAdmin: true,
     canManageUsers: false,
     canManageGroups: true,
@@ -182,7 +214,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageNotifications: false,
     canManageTranslations: false,
   },
-  AUDIT: {
+  [UserRoleEnum.AUDIT]: {
     canAccessAdmin: true,
     canManageUsers: false,
     canManageGroups: false,
@@ -193,7 +225,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageNotifications: false,
     canManageTranslations: false,
   },
-  ANALYST: {
+  [UserRoleEnum.ANALYST]: {
     canAccessAdmin: false,
     canManageUsers: false,
     canManageGroups: false,
@@ -204,7 +236,18 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     canManageNotifications: false,
     canManageTranslations: false,
   },
-  USER: {
+  [UserRoleEnum.USER]: {
+    canAccessAdmin: false,
+    canManageUsers: false,
+    canManageGroups: false,
+    canManageConversations: false,
+    canViewAnalytics: false,
+    canModerateContent: false,
+    canViewAuditLogs: false,
+    canManageNotifications: false,
+    canManageTranslations: false,
+  },
+  [UserRoleEnum.MEMBER]: {
     canAccessAdmin: false,
     canManageUsers: false,
     canManageGroups: false,
@@ -223,7 +266,7 @@ export interface ThreadMember {
   conversationId: string;
   userId: string;
   joinedAt: Date;
-  role: 'ADMIN' | 'MEMBER';
+  role: UserRoleEnum;
   user: SocketIOUser;
 }
 
@@ -254,7 +297,7 @@ export interface GroupMember {
   groupId: string;
   userId: string;
   joinedAt: Date;
-  role: 'ADMIN' | 'MEMBER';
+  role: UserRoleEnum;
   user: SocketIOUser;
 }
 
@@ -283,11 +326,27 @@ export interface ConversationLink {
   id: string;
   conversationId: string;
   linkId: string;
-  expiresAt?: Date;
+  name?: string;
+  description?: string;
   maxUses?: number;
   currentUses: number;
+  maxConcurrentUsers?: number;
+  currentConcurrentUsers: number;
+  maxUniqueSessions?: number;
+  currentUniqueSessions: number;
+  expiresAt?: Date;
   isActive: boolean;
+  allowAnonymousMessages: boolean;
+  allowAnonymousFiles: boolean;
+  allowAnonymousImages: boolean;
+  allowViewHistory: boolean;
+  requireNickname: boolean;
+  requireEmail: boolean;
+  allowedCountries: string[];
+  allowedLanguages: string[];
+  allowedIpRanges: string[];
   createdAt: Date;
+  updatedAt: Date;
   conversation: Conversation;
 }
 

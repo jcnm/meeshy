@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, LogIn, Eye, EyeOff } from 'lucide-react';
-import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useUser } from '@/context/AppContext';
+import { useAuth } from '@/hooks/use-auth';
+import { authService, TestUser } from '@/services/auth.service';
 
 export default function QuickLoginPage() {
   const [formData, setFormData] = useState({
@@ -17,19 +17,25 @@ export default function QuickLoginPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [testAccounts, setTestAccounts] = useState<TestUser[]>([]);
   const router = useRouter();
-  const { setUser } = useUser();
+  const { login } = useAuth();
 
-  // Utilisateurs de test prédéfinis (correspondant aux seeds)
-  const testUsers = [
-    { username: 'alice_fr', name: 'Alice Dubois (Admin - Français)', email: 'alice@meeshy.com' },
-    { username: 'bob_en', name: 'Bob Johnson (Anglais)', email: 'bob@meeshy.com' },
-    { username: 'carlos_es', name: 'Carlos García (Espagnol)', email: 'carlos@meeshy.com' },
-    { username: 'dieter_de', name: 'Dieter Schmidt (Allemand)', email: 'dieter@meeshy.com' },
-    { username: 'li_zh', name: 'Li Wei (Chinois)', email: 'li@meeshy.com' },
-    { username: 'yuki_ja', name: 'Yuki Tanaka (Japonais)', email: 'yuki@meeshy.com' },
-    { username: 'maria_pt', name: 'Maria Silva (Portugais)', email: 'maria@meeshy.com' }
-  ];
+  // Charger les comptes de test au montage du composant
+  useEffect(() => {
+    const loadTestAccounts = async () => {
+      try {
+        const response = await authService.getTestUsers();
+        if (response.success && response.data?.users) {
+          setTestAccounts(response.data.users);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des comptes de test:', error);
+      }
+    };
+
+    loadTestAccounts();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,38 +47,30 @@ export default function QuickLoginPage() {
 
     setIsLoading(true);
     try {
-      console.log('Tentative de connexion:', { username: formData.username });
+      console.log('[LOGIN_PAGE] Tentative de connexion:', { username: formData.username });
       
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username.trim(),
-          password: formData.password.trim(),
-        }),
-      });
+      const response = await authService.login(formData.username.trim(), formData.password.trim());
+      console.log('[LOGIN_PAGE] Réponse authService:', response);
 
-      console.log('Statut de la réponse:', response.status);
-      const result = await response.json();
-      console.log('Résultat de la connexion:', result);
-
-      if (response.ok && result.user && result.access_token) {
-        // Sauvegarder le token et l'utilisateur
-        localStorage.setItem('auth_token', result.access_token);
-        localStorage.setItem('user', JSON.stringify(result.user));
+      if (response.success && response.data?.user && response.data?.token) {
+        console.log('[LOGIN_PAGE] Connexion réussie, mise à jour des états');
         
-        // Mettre à jour le contexte immédiatement
-        setUser(result.user);
+        // Utiliser le hook useAuth pour la connexion
+        login(response.data.user, response.data.token);
         
-        toast.success(`Connexion réussie ! Bienvenue ${result.user.firstName}`);
-        router.push('/dashboard');
+        toast.success(`Connexion réussie ! Bienvenue ${response.data.user.firstName}`);
+        
+        // Redirection vers le dashboard
+        setTimeout(() => {
+          console.log('[LOGIN_PAGE] Redirection vers /dashboard');
+          router.push('/dashboard');
+        }, 100);
       } else {
-        toast.error(result.message || 'Erreur de connexion');
+        console.error('[LOGIN_PAGE] Échec de connexion:', response.error);
+        toast.error(response.error || 'Erreur de connexion');
       }
     } catch (error) {
-      console.error('Erreur de connexion:', error);
+      console.error('[LOGIN_PAGE] Erreur de connexion:', error);
       toast.error('Erreur de connexion au serveur');
     } finally {
       setIsLoading(false);
@@ -80,38 +78,33 @@ export default function QuickLoginPage() {
   };
 
   const quickLogin = async (username: string) => {
+    console.log('[LOGIN_PAGE] Connexion rapide pour:', username);
     setFormData({ username, password: 'password123' });
     setIsLoading(true);
     
     try {
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          password: 'password123',
-        }),
-      });
+      const response = await authService.login(username, 'password123');
+      console.log('[LOGIN_PAGE] Réponse connexion rapide:', response);
 
-      const result = await response.json();
-
-      if (response.ok && result.user && result.access_token) {
-        // Sauvegarder le token et l'utilisateur
-        localStorage.setItem('auth_token', result.access_token);
-        localStorage.setItem('user', JSON.stringify(result.user));
+      if (response.success && response.data?.user && response.data?.token) {
+        console.log('[LOGIN_PAGE] Connexion rapide réussie, mise à jour des états');
         
-        // Mettre à jour le contexte immédiatement
-        setUser(result.user);
+        // Utiliser le hook useAuth pour la connexion
+        login(response.data.user, response.data.token);
         
-        toast.success(`Connecté en tant que ${result.user.firstName} !`);
-        router.push('/dashboard');
+        toast.success(`Connecté en tant que ${response.data.user.firstName} !`);
+        
+        // Redirection vers le dashboard
+        setTimeout(() => {
+          console.log('[LOGIN_PAGE] Redirection vers /dashboard (connexion rapide)');
+          router.push('/dashboard');
+        }, 100);
       } else {
-        toast.error(result.message || 'Erreur de connexion');
+        console.error('[LOGIN_PAGE] Échec connexion rapide:', response.error);
+        toast.error(response.error || 'Erreur de connexion');
       }
     } catch (error) {
-      console.error('Erreur login rapide:', error);
+      console.error('[LOGIN_PAGE] Erreur login rapide:', error);
       toast.error('Erreur de connexion');
     } finally {
       setIsLoading(false);
@@ -218,7 +211,7 @@ export default function QuickLoginPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-2">
-              {testUsers.map((user) => (
+              {testAccounts.map((user) => (
                 <Button
                   key={user.username}
                   variant="outline"
@@ -227,9 +220,10 @@ export default function QuickLoginPage() {
                   className="justify-start h-auto p-3"
                 >
                   <div className="text-left w-full">
-                    <p className="font-medium">{user.name}</p>
+                    <p className="font-medium">{user.firstName} {user.lastName} ({user.role})</p>
                     <p className="text-sm text-gray-500">Email: {user.email}</p>
                     <p className="text-xs text-blue-600">Username: {user.username}</p>
+                    <p className="text-xs text-green-600">Langue: {user.systemLanguage}</p>
                   </div>
                 </Button>
               ))}
@@ -244,8 +238,9 @@ export default function QuickLoginPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xs text-gray-600 space-y-1">
-              <p><strong>Backend URL:</strong> {buildApiUrl('')}</p>
-              <p><strong>Login endpoint:</strong> {buildApiUrl(API_ENDPOINTS.AUTH.LOGIN)}</p>
+              <p><strong>Backend URL:</strong> {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}</p>
+              <p><strong>Login endpoint:</strong> /auth/login</p>
+              <p><strong>Comptes chargés:</strong> {testAccounts.length}</p>
             </div>
           </CardContent>
         </Card>

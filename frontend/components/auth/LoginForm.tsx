@@ -50,9 +50,10 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard' }: LoginFormPro
 
       const data = await response.json();
       
-      // Stocker le token et l'utilisateur
-      localStorage.setItem('token', data.access_token);
+      // Utiliser la fonction login centralisée
       setUser(data.user);
+      localStorage.setItem('auth_token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
       toast.success('Connexion réussie !');
       

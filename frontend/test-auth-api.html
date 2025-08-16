@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Authentification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .token-display { word-break: break-all; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test API Authentification Meeshy</h1>
+        
+        <div class="section info">
+            <h3>Configuration</h3>
+            <p><strong>API URL:</strong> <span id="apiUrl">Chargement...</span></p>
+            <p><strong>Token actuel:</strong> <span id="currentToken" class="token-display">Aucun</span></p>
+        </div>
+
+        <div class="section">
+            <h3>Test de connexion</h3>
+            <button onclick="testLogin()">Tester la connexion (alice_fr)</button>
+            <button onclick="testLoginBob()">Tester la connexion (bob_en)</button>
+            <button onclick="clearAuth()">Nettoyer l'authentification</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>Test de vérification</h3>
+            <button onclick="testAuthMe()">Tester /auth/me</button>
+            <button onclick="testAuthMeWithToken()">Tester /auth/me avec token localStorage</button>
+            <div id="authResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>État localStorage</h3>
+            <button onclick="showLocalStorage()">Afficher localStorage</button>
+            <div id="localStorageResult"></div>
+        </div>
+
+        <div class="section">
+            <h3>Logs</h3>
+            <button onclick="clearLogs()">Effacer les logs</button>
+            <div id="logs" style="max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; font-family: monospace; font-size: 12px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        function showResult(elementId, content, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<pre class="${isSuccess ? 'success' : 'error'}">${content}</pre>`;
+        }
+
+        function updateDisplay() {
+            const token = localStorage.getItem('auth_token');
+            document.getElementById('currentToken').textContent = token ? `${token.substring(0, 20)}...` : 'Aucun';
+            document.getElementById('apiUrl').textContent = API_BASE;
+        }
+
+        async function testLogin(username = 'alice_fr') {
+            log(`Tentative de connexion pour ${username}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: 'password123'
+                    })
+                });
+
+                const data = await response.json();
+                log(`Réponse login: ${response.status} ${response.statusText}`);
+                
+                if (response.ok && data.success) {
+                    localStorage.setItem('auth_token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    log(`Connexion réussie pour ${data.data.user.username}`);
+                    showResult('loginResult', JSON.stringify(data, null, 2), true);
+                } else {
+                    log(`Échec de connexion: ${data.error || 'Erreur inconnue'}`);
+                    showResult('loginResult', JSON.stringify(data, null, 2), false);
+                }
+            } catch (error) {
+                log(`Erreur réseau: ${error.message}`);
+                showResult('loginResult', `Erreur: ${error.message}`, false);
+            }
+            
+            updateDisplay();
+        }
+
+        function testLoginBob() {
+            testLogin('bob_en');
+        }
+
+        async function testAuthMe() {
+            log('Test de /auth/me sans token');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`);
+                const data = await response.json();
+                
+                log(`Réponse /auth/me: ${response.status} ${response.statusText}`);
+                showResult('authResult', JSON.stringify(data, null, 2), response.ok);
+            } catch (error) {
+                log(`Erreur /auth/me: ${error.message}`);
+                showResult('authResult', `Erreur: ${error.message}`, false);
+            }
+        }
+
+        async function testAuthMeWithToken() {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                log('Aucun token trouvé dans localStorage');
+                showResult('authResult', 'Aucun token trouvé dans localStorage', false);
+                return;
+            }
+
+            log('Test de /auth/me avec token');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                log(`Réponse /auth/me avec token: ${response.status} ${response.statusText}`);
+                showResult('authResult', JSON.stringify(data, null, 2), response.ok);
+            } catch (error) {
+                log(`Erreur /auth/me avec token: ${error.message}`);
+                showResult('authResult', `Erreur: ${error.message}`, false);
+            }
+        }
+
+        function showLocalStorage() {
+            const authToken = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('user');
+            const authUser = localStorage.getItem('auth_user');
+            
+            const data = {
+                auth_token: authToken ? `${authToken.substring(0, 20)}...` : null,
+                user: user ? JSON.parse(user) : null,
+                auth_user: authUser ? JSON.parse(authUser) : null
+            };
+            
+            log('Contenu localStorage affiché');
+            showResult('localStorageResult', JSON.stringify(data, null, 2), true);
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('auth_user');
+            localStorage.removeItem('token');
+            log('Authentification nettoyée');
+            updateDisplay();
+        }
+
+        // Initialisation
+        updateDisplay();
+        log('Page de test chargée');
+    </script>
+</body>
+</html>

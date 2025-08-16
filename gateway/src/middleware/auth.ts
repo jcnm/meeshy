@@ -27,21 +27,42 @@ export interface AuthenticatedRequest extends FastifyRequest {
  */
 export async function authenticate(request: FastifyRequest, reply: FastifyReply) {
   try {
-    // Vérifier le token JWT avec Fastify JWT
+    const authHeader = request.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new Error('No authorization header');
+    }
+    
+    const token = authHeader.substring(7); // Remove 'Bearer '
+    
+    // En mode développement, utiliser le service d'authentification avec les comptes de test
+    if (process.env.NODE_ENV === 'development') {
+      const { AuthService } = await import('../services/auth.service');
+      const decoded = AuthService.verifyToken(token);
+      
+      if (decoded) {
+        const user = AuthService.getUserById(decoded.userId);
+        if (user) {
+          (request as any).user = {
+            userId: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+          };
+          return;
+        }
+      }
+    }
+
+    // En production, utiliser le JWT standard
     await request.jwtVerify();
     
     // Le payload JWT est maintenant disponible dans request.user
     const { userId, email, username } = request.user as AuthenticatedUser;
-    
     if (!userId) {
       throw new Error('Invalid token payload: missing userId');
     }
-    
-    // Ajouter la propriété 'id' pour la compatibilité
     (request.user as any).id = userId;
-    
-    // Optionnel: vérifier que l'utilisateur existe toujours en base
-    // (pour l'instant on fait confiance au token)
     
   } catch (error) {
     console.error('[GATEWAY] Authentication failed:', error);

@@ -21,10 +21,12 @@ import {
 } from 'lucide-react';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { useUser } from '@/context/AppContext';
+import { getUserInitials } from '@/utils/user';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isAuthChecking } = useUser();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalConversations: 0,
@@ -34,46 +36,21 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
-          router.push('/login');
-          return;
-        }
-
-        const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!response.ok) {
-          localStorage.removeItem('auth_token');
-          router.push('/login');
-          return;
-        }
-
-        const userData = await response.json();
-        setUser(userData);
-
-        // Mock stats - À remplacer par de vraies données
-        setStats({
-          totalConversations: 12,
-          totalGroups: 5,
-          totalMessages: 234,
-          translationsUsed: 45,
-        });
-
-      } catch (error) {
-        console.error('Erreur lors du chargement du profil:', error);
-        toast.error('Erreur lors du chargement du profil');
-        router.push('/login');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [router]);
+    // Charger les stats une fois que l'utilisateur est disponible
+    if (user && !isAuthChecking) {
+      // Mock stats - À remplacer par de vraies données
+      setStats({
+        totalConversations: 12,
+        totalGroups: 5,
+        totalMessages: 234,
+        translationsUsed: 45,
+      });
+      setIsLoading(false);
+    } else if (!isAuthChecking && !user) {
+      // Rediriger si pas d'utilisateur après vérification
+      router.push('/');
+    }
+  }, [user, isAuthChecking, router]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -112,7 +89,24 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user || !user.firstName || !user.lastName || !user.username) {
+  if (isAuthChecking) {
+    return (
+      <DashboardLayout title="Profil">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-48 bg-gray-200 rounded-lg mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user) {
     return null;
   }
 
@@ -126,17 +120,17 @@ export default function ProfilePage() {
               <Avatar className="h-24 w-24">
                 <AvatarImage src={user.avatar} alt={user.firstName} />
                 <AvatarFallback className="text-2xl">
-                  {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                  {getUserInitials(user)}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900">
-                      {user.firstName} {user.lastName}
-                    </h1>
-                    <p className="text-lg text-gray-600">@{user.username}</p>
+                                    <h1 className="text-3xl font-bold text-gray-900">
+                  {user.firstName || user.displayName || user.username} {user.lastName || ''}
+                </h1>
+                <p className="text-lg text-gray-600">@{user.username || 'utilisateur'}</p>
                     {user.displayName && (
                       <p className="text-gray-500 mt-1">{user.displayName}</p>
                     )}

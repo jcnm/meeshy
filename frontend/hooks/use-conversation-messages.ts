@@ -15,6 +15,8 @@ import type { BubbleStreamMessage } from '@/types/bubble-stream';
 interface UseConversationMessagesProps {
   currentUser: User;
   conversationId?: string;
+  isAnonymousMode?: boolean;
+  linkId?: string;
 }
 
 interface UseConversationMessagesReturn {
@@ -34,7 +36,9 @@ interface UseConversationMessagesReturn {
  */
 export function useConversationMessages({ 
   currentUser, 
-  conversationId 
+  conversationId,
+  isAnonymousMode = false,
+  linkId
 }: UseConversationMessagesProps): UseConversationMessagesReturn {
   const [messages, setMessages] = useState<MessageWithTranslations[]>([]);
   const [translatedMessages, setTranslatedMessages] = useState<BubbleStreamMessage[]>([]);
@@ -50,7 +54,7 @@ export function useConversationMessages({
 
   // Fonction pour charger les messages depuis l'API
   const loadMessages = useCallback(async (targetConversationId: string, isNewConversation = false) => {
-    if (!currentUser) return;
+    if (!currentUser?.id) return;
     
     // Optimisation: éviter les rechargements inutiles
     if (!isNewConversation && conversationId === targetConversationId && messages.length > 0) {
@@ -69,20 +73,41 @@ export function useConversationMessages({
         setTranslatedMessages([]);
       }
 
-      const token = localStorage.getItem('auth_token');
+      let response;
       
-      if (!token) {
-        console.log('⚠️ Pas de token d\'authentification disponible');
-        setIsLoadingMessages(false);
-        return;
-      }
-      
-      const response = await fetch(buildApiUrl(`/conversations/${targetConversationId}/messages`), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      if (isAnonymousMode && linkId) {
+        // Mode anonyme : utiliser les routes des liens partagés
+        const sessionToken = localStorage.getItem('anonymous_session_token');
+        
+        if (!sessionToken) {
+          console.log('⚠️ Pas de session anonyme disponible');
+          setIsLoadingMessages(false);
+          return;
         }
-      });
+        
+        response = await fetch(buildApiUrl(`/links/${linkId}/messages`), {
+          headers: {
+            'X-Session-Token': sessionToken,
+            'Content-Type': 'application/json'
+          }
+        });
+      } else {
+        // Mode normal : utiliser les routes des conversations
+        const token = localStorage.getItem('auth_token');
+        
+        if (!token) {
+          console.log('⚠️ Pas de token d\'authentification disponible');
+          setIsLoadingMessages(false);
+          return;
+        }
+        
+        response = await fetch(buildApiUrl(`/conversations/${targetConversationId}/messages`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
       
       if (response.ok) {
         const responseData = await response.json();
@@ -218,7 +243,7 @@ export function useConversationMessages({
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [currentUser, processMessageWithTranslations, getRequiredTranslations, resolveUserPreferredLanguage, getUserLanguagePreferences, conversationId, messages.length]);
+  }, [currentUser?.id, processMessageWithTranslations, getRequiredTranslations, resolveUserPreferredLanguage, getUserLanguagePreferences, conversationId]);
 
   // Fonction pour vider les messages
   const clearMessages = useCallback(() => {
@@ -393,7 +418,7 @@ export function useConversationMessages({
     if (conversationId) {
       await loadMessages(conversationId, true);
     }
-  }, [conversationId, loadMessages]);
+  }, [conversationId]);
 
   return {
     messages,

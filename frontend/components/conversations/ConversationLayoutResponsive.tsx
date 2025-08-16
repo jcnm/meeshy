@@ -40,6 +40,7 @@ import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection 
 import { cleanTranslationOutput } from '@/utils/translation-cleaner';
 import { socketIOUserToUser, createDefaultUser } from '@/utils/user-adapter';
 import type { BubbleTranslation } from '@/shared/types';
+import { UserRoleEnum } from '@/shared/types';
 import { ConversationParticipants } from '@/components/conversations/conversation-participants';
 import { ConversationParticipantsPopover } from '@/components/conversations/conversation-participants-popover';
 import { CreateLinkButton } from '@/components/conversations/create-link-button';
@@ -70,11 +71,23 @@ interface ConversationLayoutResponsiveProps {
 export function ConversationLayoutResponsive({ selectedConversationId }: ConversationLayoutResponsiveProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useUser(); // user est garanti d'exister grâce au wrapper
+  const { user, isAuthChecking } = useUser(); // user est garanti d'exister grâce au wrapper
 
-  // Assertion de sécurité : user est garanti non-null par le wrapper
+  // Si on est en train de vérifier l'authentification, afficher un loader
+  if (isAuthChecking) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Vérification de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si pas d'utilisateur après vérification, ne rien afficher
   if (!user) {
-    throw new Error('ConversationLayoutResponsive: user should not be null when wrapped by ConversationLayoutWrapper');
+    return null;
   }
 
   // Fonction utilitaire pour éviter les doublons et filtrer les conversations invalides
@@ -547,8 +560,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         
         if (conversation) {
           setSelectedConversation(conversation);
-          // NOTE: La gestion WebSocket sera faite dans un useEffect séparé
-          // Le chargement des messages sera géré par l'effet useEffect
         } else {
           // ID non trouvé, désélectionner
           setSelectedConversation(null);
@@ -557,9 +568,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         // Aucun ID dans l'URL, s'assurer qu'aucune conversation n'est sélectionnée
         setSelectedConversation(null);
       }
-
-      // Mettre fin au loading principal immédiatement après les conversations
-      setIsLoading(false);
 
       // Mettre fin au loading principal immédiatement après les conversations
       setIsLoading(false);
@@ -581,20 +589,39 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setConversations([]);
       setIsLoading(false);
     }
-  }, [user, searchParams, selectedConversationId, router]);
+  }, [user?.id, router, sanitizeConversations, setConversationsIfChanged, searchParams, selectedConversationId]);
 
+  // Effet pour charger les données initiales et gérer les changements d'URL
   useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Redirection automatique (optionnelle)
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (user && token) {
-      // Debug: vérifier que l'utilisateur est bien configuré
-      // Utilisateur authentifié
+    if (user) {
+      loadData();
     }
-  }, [user, router]);
+  }, [user, loadData]);
+
+  // Effet séparé pour gérer les changements de paramètres d'URL
+  useEffect(() => {
+    if (user && conversations.length > 0) {
+      const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
+      if (conversationIdFromUrl) {
+        let conversation = conversations.find(c => c.id === conversationIdFromUrl);
+        
+        if (conversation && conversation.id !== selectedConversation?.id) {
+          setSelectedConversation(conversation);
+        } else if (!conversation) {
+          setSelectedConversation(null);
+        }
+      } else {
+        setSelectedConversation(null);
+      }
+    }
+  }, [searchParams, selectedConversationId, conversations, user?.id, selectedConversation?.id]);
+
+  // Debug: vérifier l'état de l'utilisateur (optionnel)
+  useEffect(() => {
+    if (user) {
+      console.log('🔍 ConversationLayoutResponsive: Utilisateur chargé:', user.username);
+    }
+  }, [user?.id]);
 
   // Sélectionner une conversation
   const handleSelectConversation = (conversation: Conversation) => {
@@ -662,7 +689,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         conversationId: conversationId,
         userId: user.id,
         joinedAt: new Date(), // On n'a pas cette info pour l'instant
-        role: 'MEMBER' as const, // On n'a pas cette info pour l'instant
+        role: UserRoleEnum.MEMBER, // On n'a pas cette info pour l'instant
         user: user
       }));
 
@@ -695,7 +722,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     } else {
       // Messages déjà chargés pour cette conversation, pas de rechargement
     }
-  }, [selectedConversation?.id, loadMessages, clearMessages, messages.length]);
+  }, [selectedConversation?.id, loadMessages, clearMessages]); // Supprimé messages.length qui change constamment
 
   // Effet 2: chargement des participants uniquement quand l'ID de conversation change
   useEffect(() => {

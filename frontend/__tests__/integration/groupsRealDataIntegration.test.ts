@@ -6,6 +6,7 @@
 import { groupsService } from '@/services/groupsService';
 import { apiService } from '@/services/apiService';
 import { Group, GroupMember, User } from '@/types';
+import { UserRoleEnum } from '../../../shared/types';
 
 // Mock de l'apiService
 jest.mock('@/services/apiService');
@@ -20,7 +21,7 @@ describe('Groups API Integration - Real Data Flow', () => {
     phoneNumber: '+33123456789',
     firstName: 'John',
     lastName: 'Doe',
-    role: 'USER' as const,
+    role: UserRoleEnum.USER,
     permissions: {
       canAccessAdmin: false,
       canManageUsers: false,
@@ -47,7 +48,7 @@ describe('Groups API Integration - Real Data Flow', () => {
     id: 'member-456',
     userId: 'user-123',
     groupId: 'group-789',
-    role: 'ADMIN',
+    role: UserRoleEnum.ADMIN,
     joinedAt: new Date('2024-01-01T10:00:00Z'),
     user: mockUser
   };
@@ -87,7 +88,7 @@ describe('Groups API Integration - Real Data Flow', () => {
       expect(result.data.name).toBe('Équipe Développement Frontend');
       expect(result.data.members).toHaveLength(1);
       expect(result.data.members[0].user.username).toBe('john.doe');
-      expect(result.data.members[0].role).toBe('ADMIN');
+      expect(result.data.members[0].role).toBe(UserRoleEnum.ADMIN);
       expect(result.status).toBe(200);
     });
 
@@ -155,8 +156,8 @@ describe('Groups API Integration - Real Data Flow', () => {
       expect(result.data.conversations).toHaveLength(1);
       
       // Vérifier les rôles
-      const adminMembers = result.data.members.filter(m => m.role === 'ADMIN');
-      const regularMembers = result.data.members.filter(m => m.role === 'MEMBER');
+      const adminMembers = result.data.members.filter(m => m.role === UserRoleEnum.ADMIN);
+      const regularMembers = result.data.members.filter(m => m.role === UserRoleEnum.MEMBER);
       expect(adminMembers).toHaveLength(1);
       expect(regularMembers).toHaveLength(2);
 
@@ -186,7 +187,7 @@ describe('Groups API Integration - Real Data Flow', () => {
           id: 'member-creator',
           userId: 'user-123',
           groupId: 'group-new-123',
-          role: 'ADMIN',
+          role: UserRoleEnum.ADMIN,
           joinedAt: new Date('2024-01-15T15:00:00Z'),
           user: mockUser
         }],
@@ -206,7 +207,7 @@ describe('Groups API Integration - Real Data Flow', () => {
       expect(result.data.name).toBe('Nouveau Projet Mobile');
       expect(result.data.isPrivate).toBe(true);
       expect(result.data.members).toHaveLength(1);
-      expect(result.data.members[0].role).toBe('ADMIN');
+      expect(result.data.members[0].role).toBe(UserRoleEnum.ADMIN);
       expect(result.status).toBe(201);
     });
   });
@@ -215,14 +216,14 @@ describe('Groups API Integration - Real Data Flow', () => {
     it('should invite member and update group state', async () => {
       const inviteData = {
         userId: 'user-new-456',
-        role: 'MEMBER' as const
+        role: UserRoleEnum.MEMBER
       };
 
       const newMember: GroupMember = {
         id: 'member-new-789',
         userId: 'user-new-456',
         groupId: 'group-789',
-        role: 'MEMBER',
+        role: UserRoleEnum.MEMBER,
         joinedAt: new Date('2024-01-15T16:00:00Z'),
         user: {
           id: 'user-new-456',
@@ -231,7 +232,7 @@ describe('Groups API Integration - Real Data Flow', () => {
           phoneNumber: '+33987654321',
           firstName: 'Alice',
           lastName: 'Martin',
-          role: 'USER' as const,
+          role: UserRoleEnum.USER,
           permissions: {
             canAccessAdmin: false,
             canManageUsers: false,

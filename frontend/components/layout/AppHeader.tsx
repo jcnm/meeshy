@@ -24,6 +24,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { useUser } from '@/context/AppContext';
+import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import type { User } from '@/types';
 
@@ -41,7 +42,8 @@ export function AppHeader({
   className = ''
 }: AppHeaderProps) {
   const router = useRouter();
-  const { user, logout, isAuthChecking } = useUser();
+  const { user, isAuthChecking } = useUser();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();

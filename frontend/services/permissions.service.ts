@@ -1,4 +1,5 @@
 import { UserRole, UserPermissions, User, DEFAULT_PERMISSIONS, ROLE_HIERARCHY } from '@/types';
+import { UserRoleEnum } from '@/shared/types';
 import { getDefaultPermissions } from '@/utils/user-adapter';
 
 /**
@@ -88,10 +89,12 @@ export class PermissionsService {
     const roleNames: Record<UserRole, string> = {
       BIGBOSS: 'Super Administrateur',
       ADMIN: 'Administrateur',
-      MODO: 'Modérateur',
+      CREATOR: 'Créateur',
+      MODERATOR: 'Modérateur',
       AUDIT: 'Auditeur',
       ANALYST: 'Analyste',
       USER: 'Utilisateur',
+      MEMBER: 'Membre',
     };
 
     return roleNames[role as UserRole] || role;
@@ -104,10 +107,12 @@ export class PermissionsService {
     const roleColors: Record<UserRole, string> = {
       BIGBOSS: 'bg-purple-600 text-white',
       ADMIN: 'bg-red-600 text-white',
-      MODO: 'bg-orange-600 text-white',
+      CREATOR: 'bg-indigo-600 text-white',
+      MODERATOR: 'bg-orange-600 text-white',
       AUDIT: 'bg-blue-600 text-white',
       ANALYST: 'bg-green-600 text-white',
       USER: 'bg-gray-600 text-white',
+      MEMBER: 'bg-gray-500 text-white',
     };
 
     return roleColors[role];
@@ -120,10 +125,12 @@ export class PermissionsService {
     const roleIcons: Record<UserRole, string> = {
       BIGBOSS: '👑',
       ADMIN: '⚡',
-      MODO: '🛡️',
+      CREATOR: '🎨',
+      MODERATOR: '🛡️',
       AUDIT: '📊',
       ANALYST: '📈',
       USER: '👤',
+      MEMBER: '👥',
     };
 
     return roleIcons[role];
@@ -152,10 +159,12 @@ export class PermissionsService {
     const descriptions: Record<UserRole, string> = {
       BIGBOSS: 'Accès complet à toutes les fonctionnalités, y compris la gestion des traductions et configuration système.',
       ADMIN: 'Gestion des utilisateurs, groupes, conversations et accès aux analyses. Peut modérer le contenu.',
-      MODO: 'Modération du contenu, gestion des groupes et conversations. Accès limité à l\'administration.',
+      CREATOR: 'Créateur de contenus et communautés avec permissions étendues de gestion.',
+      MODERATOR: 'Modération du contenu, gestion des groupes et conversations. Accès limité à l\'administration.',
       AUDIT: 'Accès en lecture aux logs d\'audit et analyses. Peut surveiller l\'activité système.',
       ANALYST: 'Accès aux analyses et statistiques pour le reporting et l\'optimisation.',
       USER: 'Utilisateur standard avec accès aux fonctionnalités de messagerie et traduction.',
+      MEMBER: 'Membre standard d\'une communauté ou conversation.',
     };
 
     return descriptions[role];
@@ -176,11 +185,11 @@ export class PermissionsService {
       
       case 'delete_conversation':
         return this.hasPermission(user, 'canManageConversations') || 
-               this.hasRoleOrHigher(user, 'MODO');
+               this.hasRoleOrHigher(user, UserRoleEnum.MODERATOR);
       
       case 'ban_user':
         return this.hasPermission(user, 'canModerateContent') && 
-               this.hasRoleOrHigher(user, 'MODO');
+               this.hasRoleOrHigher(user, UserRoleEnum.MODERATOR);
       
       case 'view_analytics':
         return this.hasPermission(user, 'canViewAnalytics');

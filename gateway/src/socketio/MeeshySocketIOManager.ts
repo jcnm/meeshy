@@ -16,7 +16,7 @@ import type {
   TypingEvent,
   TranslationEvent
 } from '../../shared/types/socketio-events';
-import { CLIENT_EVENTS, SERVER_EVENTS } from '../../shared/types/socketio-events';
+import { CLIENT_EVENTS, SERVER_EVENTS } from '@shared/types/socketio-events';
 import { conversationStatsService } from '../services/ConversationStatsService';
 
 export interface SocketUser {

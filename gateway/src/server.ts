@@ -19,11 +19,12 @@ import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
 import { TranslationService } from './services/TranslationService';
+import { PrismaAuthService } from './services/prisma-auth.service';
+import { createAuthMiddleware } from './middleware/auth-prisma';
 import type { 
   ServerToClientEvents, 
   ClientToServerEvents 
 } from '../shared/types/socketio-events';
-import { authenticate } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import { linksRoutes } from './routes/links';
@@ -212,6 +213,7 @@ class MeeshyServer {
   private server: FastifyInstance;
   private prisma: PrismaClient;
   private translationService: TranslationService;
+  private authService: PrismaAuthService;
   private socketIOHandler: MeeshySocketIOHandler;
 
   constructor() {
@@ -223,6 +225,9 @@ class MeeshyServer {
     this.prisma = new PrismaClient({
       log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error']
     });
+    
+    // Initialiser le service d'authentification
+    this.authService = new PrismaAuthService(this.prisma, config.jwtSecret);
     
     // Initialiser le service de traduction
     this.translationService = new TranslationService(this.prisma);
@@ -321,18 +326,7 @@ class MeeshyServer {
   }
 
   private createAuthMiddleware() {
-    return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-      if (config.isDev) {
-        logger.debug('Authentication middleware (development mode)');
-      }
-      
-      try {
-        await authenticate(request, reply);
-      } catch (error) {
-        logger.error('Authentication failed:', error);
-        throw new AuthenticationError('Authentication failed');
-      }
-    };
+    return createAuthMiddleware(this.authService);
   }
 
   // --------------------------------------------------------------------------

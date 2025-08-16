@@ -10,6 +10,12 @@ Meeshy est une application de messagerie moderne conçue pour gérer 100 000 mes
 
 ## 🎯 Fonctionnalités
 
+### 🔐 Authentification Robuste
+- **Gestion centralisée** de l'état d'authentification
+- **Sessions anonymes** pour conversations partagées
+- **Protection des routes** automatique et configurable
+- **Nettoyage sécurisé** des données d'authentification
+
 ### 💬 Messagerie Temps Réel
 - **WebSocket haute performance** avec Fastify
 - **Gestion de 100k connexions simultanées**

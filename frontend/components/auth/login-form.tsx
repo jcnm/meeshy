@@ -29,6 +29,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
     setIsLoading(true);
     try {
+      console.log('[LOGIN_FORM] Tentative de connexion pour:', formData.username);
+      
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
         headers: {
@@ -41,16 +43,38 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       });
 
       const result = await response.json();
+      console.log('[LOGIN_FORM] Réponse API:', result);
 
-      if (response.ok && result.user && result.access_token) {
-        toast.success('Connexion réussie !');
-        onSuccess(result.user, result.access_token);
+      // Gérer les différents formats de réponse
+      let userData, token;
+      
+      if (result.success && result.data?.user && result.data?.token) {
+        // Format standardisé: { success: true, data: { user: {...}, token: "..." } }
+        userData = result.data.user;
+        token = result.data.token;
+      } else if (result.user && result.access_token) {
+        // Format alternatif: { user: {...}, access_token: "..." }
+        userData = result.user;
+        token = result.access_token;
+      } else if (result.user && result.token) {
+        // Format alternatif: { user: {...}, token: "..." }
+        userData = result.user;
+        token = result.token;
       } else {
-        toast.error(result.message || 'Erreur de connexion');
+        console.error('[LOGIN_FORM] Format de réponse inattendu:', result);
+        throw new Error('Format de réponse invalide');
+      }
+
+      if (userData && token) {
+        console.log('[LOGIN_FORM] Connexion réussie pour:', userData.username);
+        toast.success('Connexion réussie !');
+        onSuccess(userData, token);
+      } else {
+        throw new Error('Données utilisateur ou token manquantes');
       }
     } catch (error) {
-      console.error('Erreur login:', error);
-      toast.error('Erreur de connexion');
+      console.error('[LOGIN_FORM] Erreur login:', error);
+      toast.error(error instanceof Error ? error.message : 'Erreur de connexion');
     } finally {
       setIsLoading(false);
     }

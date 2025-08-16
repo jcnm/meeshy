@@ -22,6 +22,9 @@ if [ ! -f "package.json" ] || [ ! -f "schema.prisma" ]; then
     exit 1
 fi
 
+rm -rf "./node_modules"
+rm -rf "./prisma/client"
+rm -rf "./dist"
 # Fonction pour créer le répertoire libs et copier les fichiers
 distribute_to_service() {
     local service_name=$1
@@ -44,6 +47,7 @@ distribute_to_service() {
             # Pour TypeScript (Gateway, Frontend)
             echo "  📝 Distribution shared vers $service_name/shared"
             rm -rf "$service_dir/shared/*" 2>/dev/null || true
+            
             mkdir -p "$service_dir/shared/"
             cp -pir ./* "$service_dir/shared/" 2>/dev/null || true
 

@@ -31,6 +31,7 @@ import {
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useUser } from '@/context/AppContext';
+import { useAuth } from '@/hooks/use-auth';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -44,7 +45,8 @@ export function DashboardLayout({
   hideSearch = false
 }: DashboardLayoutProps) {
   const router = useRouter();
-  const { user, logout, isAuthChecking } = useUser();
+  const { user, isAuthChecking } = useUser();
+  const { logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Gérer l'état de chargement basé sur l'utilisateur du hook
@@ -54,7 +56,7 @@ export function DashboardLayout({
     if (!isAuthChecking && !user) {
       router.push('/');
     }
-  }, [user, isAuthChecking, router]);
+  }, [user?.id, isAuthChecking, router]);
 
   const handleLogout = async () => {
     try {

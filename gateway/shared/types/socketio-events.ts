@@ -138,6 +138,8 @@ export interface SocketIOUser {
   deactivatedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  isAnonymous?: boolean; // Indique si c'est un utilisateur anonyme
+  nickname?: string; // Nickname pour les utilisateurs anonymes
 }
 
 export interface SocketIOResponse<T = unknown> {

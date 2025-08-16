@@ -93,7 +93,7 @@ export class AnonymousChatService {
 
     try {
       const response = await fetch(
-        buildApiUrl(`/chat/${this.linkId}/messages?limit=${limit}&offset=${offset}`),
+        buildApiUrl(`/links/${this.linkId}/messages?limit=${limit}&offset=${offset}`),
         {
           method: 'GET',
           headers: {
@@ -128,7 +128,7 @@ export class AnonymousChatService {
     }
 
     try {
-      const response = await fetch(buildApiUrl(`/chat/${this.linkId}/messages`), {
+      const response = await fetch(buildApiUrl(`/links/${this.linkId}/messages`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

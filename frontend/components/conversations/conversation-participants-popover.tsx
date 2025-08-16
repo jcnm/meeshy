@@ -22,6 +22,7 @@ import {
 import { ThreadMember } from '@/types';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
+import { UserRoleEnum } from '@/shared/types';
 
 interface ConversationParticipantsPopoverProps {
   conversationId: string;
@@ -50,7 +51,7 @@ export function ConversationParticipantsPopover({
 
   // Vérifier si l'utilisateur actuel est admin
   const currentUserParticipant = participants.find(p => p.userId === currentUser.id);
-  const isAdmin = currentUserParticipant?.role === 'ADMIN';
+  const isAdmin = currentUserParticipant?.role === UserRoleEnum.ADMIN;
 
   // Filtrer les participants selon la recherche
   const filteredParticipants = participants.filter(participant => {
@@ -207,7 +208,7 @@ export function ConversationParticipantsPopover({
                             <span className="text-sm font-medium truncate">
                               {getDisplayName(user)}{isCurrentUser && ' (Vous)'}
                             </span>
-                            {participant.role === 'ADMIN' && <Crown className="h-3 w-3 text-yellow-500" />}
+                            {participant.role === UserRoleEnum.ADMIN && <Crown className="h-3 w-3 text-yellow-500" />}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>
@@ -263,7 +264,7 @@ export function ConversationParticipantsPopover({
                             <span className="text-sm font-medium truncate">
                               {getDisplayName(user)}{isCurrentUser && ' (Vous)'}
                             </span>
-                            {participant.role === 'ADMIN' && <Crown className="h-3 w-3 text-yellow-500" />}
+                            {participant.role === UserRoleEnum.ADMIN && <Crown className="h-3 w-3 text-yellow-500" />}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>

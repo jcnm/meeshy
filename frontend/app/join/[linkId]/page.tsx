@@ -33,6 +33,7 @@ import { User, ConversationLink, AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/hooks/use-auth';
 
 // Langues supportées pour les participants anonymes
 const ANONYMOUS_LANGUAGES = [
@@ -59,8 +60,8 @@ export default function JoinConversationPage() {
   const params = useParams();
   const router = useRouter();
   const linkId = params?.linkId as string;
+  const { user: currentUser, login, joinAnonymously } = useAuth();
   
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [conversationLink, setConversationLink] = useState<ConversationLink | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
@@ -78,21 +79,6 @@ export default function JoinConversationPage() {
   useEffect(() => {
     const initializePage = async () => {
       try {
-        // Vérifier l'authentification
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          const authResponse = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.ME), {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          
-          if (authResponse.ok) {
-            const userData = await authResponse.json();
-            setCurrentUser(userData);
-          } else {
-            localStorage.removeItem('auth_token');
-          }
-        }
-
         // Charger les informations du lien via l'API anonyme
         const linkResponse = await fetch(`${buildApiUrl('/anonymous/link')}/${linkId}`);
         
@@ -121,8 +107,7 @@ export default function JoinConversationPage() {
   }, [linkId]);
 
   const handleAuthSuccess = (user: User, token: string) => {
-    localStorage.setItem('auth_token', token);
-    setCurrentUser(user);
+    login(user, token);
     setAuthMode('welcome');
   };
 
@@ -151,7 +136,7 @@ export default function JoinConversationPage() {
   };
 
   // Fonction pour rejoindre de manière anonyme
-  const joinAnonymously = async () => {
+  const handleJoinAnonymously = async () => {
     if (!anonymousForm.firstName.trim() || !anonymousForm.lastName.trim()) {
       toast.error('Le prénom et le nom sont requis');
       return;
@@ -177,9 +162,8 @@ export default function JoinConversationPage() {
       const result = await response.json();
       
       if (response.ok && result.success) {
-        // Stocker le session token
-        localStorage.setItem('anonymous_session_token', result.data.sessionToken);
-        localStorage.setItem('anonymous_participant', JSON.stringify(result.data.participant));
+        // Utiliser le hook d'authentification pour gérer la session anonyme
+        joinAnonymously(result.data.participant, result.data.sessionToken);
         
         toast.success(`Bienvenue ${result.data.participant.nickname} !`);
         
@@ -214,6 +198,10 @@ export default function JoinConversationPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          linkId: linkId
+        })
       });
 
       if (response.ok) {
@@ -574,7 +562,7 @@ export default function JoinConversationPage() {
                       
                       <div className="flex space-x-3 pt-4">
                         <Button 
-                          onClick={joinAnonymously}
+                          onClick={handleJoinAnonymously}
                           disabled={
                             isJoining || 
                             !anonymousForm.firstName.trim() || 

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Users, Settings, UserPlus } from 'lucide-react';
 import { Group } from '@/types';
+import { UserRoleEnum } from '@/shared/types';
 import { useUser } from '@/context/AppContext';
 import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
 import { groupsService } from '@/services/groups.service';
@@ -84,7 +85,7 @@ export default function GroupPage() {
   }
 
   const currentMember = group.members.find(m => m.userId === user?.id);
-  const isAdmin = currentMember?.role === 'ADMIN';
+  const isAdmin = currentMember?.role === UserRoleEnum.ADMIN;
 
   return (
     <ResponsiveLayout>
@@ -150,8 +151,8 @@ export default function GroupPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={member.role === 'ADMIN' ? 'default' : 'secondary'}>
-                      {member.role === 'ADMIN' ? 'Admin' : 'Membre'}
+                    <Badge variant={member.role === UserRoleEnum.ADMIN ? 'default' : 'secondary'}>
+                      {member.role === UserRoleEnum.ADMIN ? 'Admin' : 'Membre'}
                     </Badge>
                     <div className={`h-2 w-2 rounded-full ${member.user.isOnline ? 'bg-green-500' : 'bg-gray-300'}`} />
                   </div>

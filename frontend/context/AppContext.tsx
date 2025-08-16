@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback, ReactNode } from 'react';
 import { buildApiUrl } from '@/lib/runtime-urls';
 import { User, Conversation, Group, Notification } from '@/types';
 
@@ -148,57 +148,49 @@ interface AppProviderProps {
 export function AppProvider({ children }: AppProviderProps) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
-  // Charger les données initiales depuis localStorage ou API
+  // Charger les données initiales depuis localStorage seulement
   useEffect(() => {
     const initializeUser = async () => {
       dispatch({ type: 'SET_AUTH_CHECKING', payload: true });
       
+      // Charger les données utilisateur depuis localStorage seulement
+      // La vérification d'authentification est gérée par le hook useAuth
       const savedUser = localStorage.getItem('user');
       const token = localStorage.getItem('auth_token');
 
-      // Si on a un token, on doit toujours vérifier sa validité côté serveur
-      if (token) {
-        try {
-          const response = await fetch(buildApiUrl('/auth/me'), {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
+      console.log('[APP_CONTEXT] Initialisation - Token:', !!token, 'User:', !!savedUser);
 
-          if (response.ok) {
-            const userData = await response.json();
-            dispatch({ type: 'SET_USER', payload: userData });
-            // Mettre à jour localStorage avec les données fraîches
-            localStorage.setItem('user', JSON.stringify(userData));
-          } else {
-            // Token invalide, nettoyer toutes les données d'authentification
-            console.log('[AUTH] Token invalide, nettoyage des données');
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            dispatch({ type: 'SET_USER', payload: null });
-          }
+      if (token && savedUser) {
+        try {
+          // Parser les données utilisateur depuis localStorage
+          const userData = JSON.parse(savedUser);
+          console.log('[APP_CONTEXT] Utilisateur chargé depuis localStorage:', userData.username);
+          dispatch({ type: 'SET_USER', payload: userData });
         } catch (error) {
-          console.error('Erreur lors de la vérification du token:', error);
-          // En cas d'erreur réseau, nettoyer aussi les données
+          console.error('[APP_CONTEXT] Erreur parsing utilisateur localStorage:', error);
+          // Données corrompues, nettoyer
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user');
           localStorage.removeItem('token');
           dispatch({ type: 'SET_USER', payload: null });
-        } finally {
-          dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
         }
-      } else if (savedUser) {
-        // Si on a un utilisateur sauvegardé mais pas de token, c'est incohérent
-        // On nettoie les données
-        console.log('[AUTH] Utilisateur sauvegardé sans token, nettoyage');
+      } else if (savedUser && !token) {
+        // Incohérence, nettoyer
+        console.log('[APP_CONTEXT] Incohérence détectée: user sans token');
         localStorage.removeItem('user');
         dispatch({ type: 'SET_USER', payload: null });
-        dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
+      } else if (!savedUser && token) {
+        // Incohérence, nettoyer
+        console.log('[APP_CONTEXT] Incohérence détectée: token sans user');
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('token');
+        dispatch({ type: 'SET_USER', payload: null });
       } else {
-        // Aucun token ni utilisateur sauvegardé
-        dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
+        console.log('[APP_CONTEXT] Aucune donnée d\'authentification trouvée');
+        dispatch({ type: 'SET_USER', payload: null });
       }
+      
+      dispatch({ type: 'SET_AUTH_CHECKING', payload: false });
     };
 
     initializeUser();
@@ -252,26 +244,24 @@ export function useAppContext() {
 export function useUser() {
   const { state, dispatch } = useAppContext();
   
-  const setUser = (user: User | null) => {
+  const setUser = useCallback((user: User | null) => {
     dispatch({ type: 'SET_USER', payload: user });
-  };
+  }, [dispatch]);
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+  const logout = useCallback(() => {
+    // Nettoyer les données d'authentification
     localStorage.removeItem('auth_token');
-    localStorage.removeItem('token'); // Nettoyer aussi l'ancien token
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     
-    // Redirection universelle vers la page d'accueil
-    if (typeof window !== 'undefined') {
-      window.location.href = '/';
-    }
-  };
+    // Réinitialiser l'état utilisateur
+    dispatch({ type: 'SET_USER', payload: null });
+  }, [dispatch]);
 
   return { 
     user: state.user, 
     setUser, 
-    logout, 
+    logout,
     isAuthChecking: state.isAuthChecking 
   };
 }

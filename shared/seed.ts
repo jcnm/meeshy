@@ -4,6 +4,7 @@
  */
 
 import { PrismaClient } from './prisma/client';
+import { UserRoleEnum } from './types';
 
 const prisma = new PrismaClient();
 
@@ -301,7 +302,7 @@ async function main() {
       data: {
         conversationId: anyConversation.id,
         userId: user.id,
-        role: user.role === 'ADMIN' ? 'ADMIN' : 'MEMBER',
+        role: user.role === UserRoleEnum.ADMIN ? UserRoleEnum.ADMIN : UserRoleEnum.MEMBER,
         joinedAt: new Date()
       }
     });

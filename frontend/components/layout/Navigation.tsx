@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/context/AppContext';
+import { useAuth } from '@/hooks/use-auth';
 import { Z_CLASSES } from '@/lib/z-index';
 import { 
   Avatar, 
@@ -55,7 +57,8 @@ export function Navigation({ className }: NavigationProps) {
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useUser();
+  const { user } = useUser();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -238,3 +241,5 @@ export function Navigation({ className }: NavigationProps) {
     </>
   );
 }
+
+export default Navigation;

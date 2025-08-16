@@ -39,75 +39,67 @@ import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 
 export default function LandingPage() {
-  const { user, isAuthChecking, setUser } = useUser();
+  const { user, isAuthChecking } = useUser();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
 
-  // Nettoyer les données d'authentification invalides au chargement
-  useEffect(() => {
-    const cleanupInvalidAuth = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        try {
-          const response = await fetch(buildApiUrl('/auth/me'), {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          
-          if (!response.ok) {
-            // Token invalide, nettoyer les données
-            console.log('[LANDING] Token invalide détecté, nettoyage');
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('Erreur vérification token:', error);
-          // En cas d'erreur, nettoyer aussi
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          setUser(null);
-        }
-      }
-    };
-
-    cleanupInvalidAuth();
-  }, [setUser]);
+  // Suppression de la logique de vérification d'authentification redondante
+  // Cette logique est maintenant gérée par le hook useAuth
 
   const handleAuthSuccess = (user: User, token: string) => {
-    // Sauvegarder le token et l'utilisateur
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    // Mettre à jour le contexte immédiatement
-    setUser(user);
+    // Cette fonction est maintenant gérée par le hook useAuth
+    console.log('[LANDING] handleAuthSuccess appelé mais la logique est gérée par useAuth');
   };
 
   const quickLogin = async (email: string) => {
     try {
+      console.log('[LANDING] Tentative de connexion rapide pour:', email);
+      
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username:email,
+          username: email,
           email,
           password: 'password123',
         }),
       });
 
       const result = await response.json();
+      console.log('[LANDING] Réponse connexion rapide:', result);
 
-      if (response.ok && result.user && result.access_token) {
-        toast.success(`Connecté en tant que ${result.user.firstName} !`);
-        handleAuthSuccess(result.user, result.access_token);
+      // Gérer les différents formats de réponse
+      let userData, token;
+      
+      if (result.success && result.data?.user && result.data?.token) {
+        // Format standardisé: { success: true, data: { user: {...}, token: "..." } }
+        userData = result.data.user;
+        token = result.data.token;
+      } else if (result.user && result.access_token) {
+        // Format alternatif: { user: {...}, access_token: "..." }
+        userData = result.user;
+        token = result.access_token;
+      } else if (result.user && result.token) {
+        // Format alternatif: { user: {...}, token: "..." }
+        userData = result.user;
+        token = result.token;
       } else {
+        console.error('[LANDING] Format de réponse inattendu:', result);
         toast.error(result.message || 'Erreur de connexion');
+        return;
+      }
+
+      if (userData && token) {
+        console.log('[LANDING] Connexion rapide réussie pour:', userData.username);
+        toast.success(`Connecté en tant que ${userData.firstName} !`);
+        handleAuthSuccess(userData, token);
+      } else {
+        toast.error('Données utilisateur ou token manquantes');
       }
     } catch (error) {
-      console.error('Erreur login rapide:', error);
+      console.error('[LANDING] Erreur login rapide:', error);
       toast.error('Erreur de connexion');
     }
   };

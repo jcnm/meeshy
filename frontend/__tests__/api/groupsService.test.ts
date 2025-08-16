@@ -1,6 +1,7 @@
 import { groupsService } from '@/services/groupsService';
 import { apiService } from '@/services/apiService';
 import { mockGroups, mockGroupMembers, mockUsers } from '@/services/mockApiService';
+import { UserRoleEnum } from '../../../shared/types';
 
 // Mock du service API
 jest.mock('@/services/apiService');
@@ -228,12 +229,12 @@ describe('GroupsService', () => {
     it('should update a member role', async () => {
       const groupId = 'group-1';
       const memberId = 'member-1';
-      const newRole = 'ADMIN';
+      const newRole = UserRoleEnum.ADMIN;
 
       const mockResponse = {
         data: {
           ...mockGroupMembers[1],
-          role: 'ADMIN',
+          role: UserRoleEnum.ADMIN,
         },
         status: 200,
       };
@@ -246,7 +247,7 @@ describe('GroupsService', () => {
         `/groups/${groupId}/members/${memberId}`,
         { role: newRole }
       );
-      expect(result.data.role).toBe('ADMIN');
+      expect(result.data.role).toBe(UserRoleEnum.ADMIN);
     });
   });
 

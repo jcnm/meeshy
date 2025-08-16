@@ -1,5 +1,6 @@
 import { apiService } from './api.service';
 import { socketIOUserToUser } from '@/utils/user-adapter';
+import { UserRoleEnum } from '@/shared/types';
 import type { 
   Conversation, 
   Message, 
@@ -27,6 +28,31 @@ export class ConversationsService {
   
   // Gestion des requêtes en cours pour éviter les race conditions
   private pendingRequests: Map<string, AbortController> = new Map();
+
+  /**
+   * Convertir un rôle string en UserRoleEnum
+   */
+  private stringToUserRole(role: string): UserRoleEnum {
+    switch (role.toUpperCase()) {
+      case 'ADMIN':
+        return UserRoleEnum.ADMIN;
+      case 'MODERATOR':
+        return UserRoleEnum.MODERATOR;
+      case 'BIGBOSS':
+        return UserRoleEnum.BIGBOSS;
+      case 'CREATOR':
+        return UserRoleEnum.CREATOR;
+      case 'AUDIT':
+        return UserRoleEnum.AUDIT;
+      case 'ANALYST':
+        return UserRoleEnum.ANALYST;
+      case 'USER':
+        return UserRoleEnum.USER;
+      case 'MEMBER':
+      default:
+        return UserRoleEnum.MEMBER;
+    }
+  }
 
   /**
    * Vérifie si le cache des conversations est valide
@@ -131,7 +157,7 @@ export class ConversationsService {
           conversationId: String(participant.conversationId),
           userId: String(participant.userId),
           joinedAt: new Date(String(participant.joinedAt)),
-          role: (participant.role as 'ADMIN' | 'MEMBER') || 'MEMBER',
+          role: this.stringToUserRole(String(participant.role || 'MEMBER')),
           user: socketIOUserToUser(user as any)
         };
       }) : [],

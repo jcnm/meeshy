@@ -43,10 +43,10 @@ export function ProtectedRoute({
     }
 
     if (!requireAuth && user && token) {
-      router.push('/dashboard');
+      router.push('/conversations');
       return;
     }
-  }, [user, isAuthChecking, timeoutReached, router, redirectTo, requireAuth]);
+  }, [user?.id, isAuthChecking, timeoutReached, router, redirectTo, requireAuth]);
 
   // Afficher un état de chargement pendant la vérification d'authentification
   if (isAuthChecking && !timeoutReached) {

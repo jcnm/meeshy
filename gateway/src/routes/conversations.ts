@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { TranslationService } from '../services/TranslationService';
 import { conversationStatsService } from '../services/ConversationStatsService';
 import { z } from 'zod';
+import { UserRoleEnum } from '@shared/types';
 
 // Fonction utilitaire pour générer le linkId avec le format link_<conversationShareLink.Id>_yymmddhhm
 function generateLinkId(): string {
@@ -1539,13 +1540,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Vérifier que l'utilisateur est admin/modo de la conversation
-      if (membership.role !== 'ADMIN' && membership.role !== 'CREATOR' && membership.role !== 'MODERATOR') {
-        return reply.status(403).send({
-          success: false,
-          error: 'Seuls les administrateurs et modérateurs peuvent créer des liens'
-        });
-      }
+                      // Vérifier que l'utilisateur est admin/modo de la conversation
+                if (membership.role !== UserRoleEnum.ADMIN && membership.role !== UserRoleEnum.CREATOR && membership.role !== UserRoleEnum.MODERATOR) {
+                  return reply.status(403).send({
+                    success: false,
+                    error: 'Seuls les administrateurs et modérateurs peuvent créer des liens'
+                  });
+                }
 
       // Générer un linkId avec le format link_<timestamp>_<random>
       const linkId = generateLinkId();

@@ -17,7 +17,7 @@ import {
   Clock,
   Server
 } from 'lucide-react';
-import { User } from '@/types';
+import { User, UserRoleEnum } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { toast } from 'sonner';
 
@@ -94,7 +94,7 @@ const AdminDashboard: React.FC = () => {
             role: userData.role,
             capabilities: {
               role: userData.role,
-              level: userData.role === 'ADMIN' ? 5 : 3,
+              level: userData.role === UserRoleEnum.ADMIN ? 5 : 3,
               permissions: userData.permissions?.canAccessAdmin ? [
                 'Gestion utilisateurs',
                 'Modération contenu',
@@ -103,7 +103,7 @@ const AdminDashboard: React.FC = () => {
               ] : [],
               restrictions: []
             },
-            assignableRoles: ['USER', 'MODERATOR']
+            assignableRoles: [UserRoleEnum.USER, UserRoleEnum.MODERATOR]
           },
           timestamp: new Date().toISOString()
         });

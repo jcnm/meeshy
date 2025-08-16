@@ -31,6 +31,7 @@ import {
 import { User, Group, GroupMember, Conversation } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { UserRoleEnum } from '@/shared/types';
 
 interface GroupsLayoutProps {
   currentUser: User;
@@ -456,10 +457,10 @@ export function GroupsLayout({ currentUser, initialGroupId }: GroupsLayoutProps)
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {member.role === 'ADMIN' && (
+                    {member.role === UserRoleEnum.ADMIN && (
                       <Crown className="w-4 h-4 text-yellow-500" />
                     )}
-                    <Badge variant={member.role === 'ADMIN' ? 'default' : 'secondary'}>
+                    <Badge variant={member.role === UserRoleEnum.ADMIN ? 'default' : 'secondary'}>
                       {member.role}
                     </Badge>
                   </div>

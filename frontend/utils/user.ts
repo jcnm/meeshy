@@ -20,7 +20,11 @@ export function getUserDisplayName(user: User): string {
 /**
  * Retourne les initiales d'un utilisateur pour les avatars
  */
-export function getUserInitials(user: User): string {
+export function getUserInitials(user: User | null | undefined): string {
+  if (!user) {
+    return '??';
+  }
+  
   if (user.firstName && user.lastName) {
     return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
   }
@@ -34,13 +38,21 @@ export function getUserInitials(user: User): string {
     return user.displayName.substring(0, 2).toUpperCase();
   }
   
-  return user.username.substring(0, 2).toUpperCase();
+  if (user.username) {
+    return user.username.substring(0, 2).toUpperCase();
+  }
+  
+  return '??';
 }
 
 /**
  * Retourne le prénom ou displayName en fallback
  */
-export function getUserFirstName(user: User): string {
+export function getUserFirstName(user: User | null | undefined): string {
+  if (!user) {
+    return 'Utilisateur';
+  }
+  
   if (user.firstName) {
     return user.firstName;
   }
@@ -49,7 +61,11 @@ export function getUserFirstName(user: User): string {
     return user.displayName.split(' ')[0];
   }
   
-  return user.username;
+  if (user.username) {
+    return user.username;
+  }
+  
+  return 'Utilisateur';
 }
 
 /**

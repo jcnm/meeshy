@@ -137,20 +137,13 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
         username: currentUser.username 
       });
       
-      // Attendre un peu puis vérifier la connexion
-      setTimeout(() => {
-        const status = meeshySocketIOService.getConnectionStatus();
-        console.log('🔌 useSocketIOMessaging: Statut de connexion après configuration', status);
-        
-        if (!status.isConnected) {
-          console.warn('⚠️ useSocketIOMessaging: Service non connecté après configuration, tentative de reconnexion...');
-          meeshySocketIOService.reconnect();
-        }
-      }, 2000);
+      // Vérifier la connexion une seule fois, sans reconnexion automatique
+      const status = meeshySocketIOService.getConnectionStatus();
+      console.log('🔌 useSocketIOMessaging: Statut de connexion après configuration', status);
     } else {
       console.warn('⚠️ useSocketIOMessaging: Aucun utilisateur fourni');
     }
-  }, [currentUser]);
+  }, [currentUser?.id]); // Utiliser seulement l'ID pour éviter les re-rendus
 
   // Rejoindre/quitter la conversation
   useEffect(() => {
@@ -160,7 +153,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     }
     
     // Rejoindre uniquement si un utilisateur courant est fourni (évite les doubles joins via sous-composants)
-    if (conversationId && currentUser) {
+    if (conversationId && currentUser?.id) {
       console.log('🚪 useSocketIOMessaging: Rejoindre conversation', { conversationId });
       meeshySocketIOService.joinConversation(conversationId);
 
@@ -169,7 +162,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
         meeshySocketIOService.leaveConversation(conversationId);
       };
     }
-  }, [conversationId, currentUser]);
+  }, [conversationId, currentUser?.id]); // Utiliser seulement l'ID pour éviter les re-rendus
 
   // Setup des listeners
   useEffect(() => {
@@ -297,7 +290,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       clearInterval(bootstrapInterval);
       clearInterval(bootstrapStopper);
     };
-  }, [conversationId]); // Suppression des callbacks des dépendances pour éviter les cycles
+  }, [conversationId, currentUser?.id]); // Dépendances minimales pour éviter les re-rendus
 
   // Actions
   const sendMessage = useCallback(async (content: string, originalLanguage?: string): Promise<boolean> => {

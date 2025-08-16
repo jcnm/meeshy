@@ -1,9 +1,10 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
+import { UserRoleEnum } from '@shared/types';
 
 // Types pour les rôles et permissions
-type UserRole = 'BIGBOSS' | 'ADMIN' | 'MODO' | 'AUDIT' | 'ANALYST' | 'USER';
+type UserRole = UserRoleEnum;
 
 interface UserPermissions {
   canAccessAdmin: boolean;
@@ -19,7 +20,7 @@ interface UserPermissions {
 
 // Schémas de validation
 const updateUserRoleSchema = z.object({
-  role: z.enum(['BIGBOSS', 'ADMIN', 'MODO', 'AUDIT', 'ANALYST', 'USER'])
+  role: z.nativeEnum(UserRoleEnum)
 });
 
 const updateUserStatusSchema = z.object({
@@ -29,16 +30,18 @@ const updateUserStatusSchema = z.object({
 // Service de permissions
 class PermissionsService {
   private readonly ROLE_HIERARCHY: Record<UserRole, number> = {
-    BIGBOSS: 6,
-    ADMIN: 5,
-    MODO: 4,
-    AUDIT: 3,
-    ANALYST: 2,
-    USER: 1,
+  [UserRoleEnum.BIGBOSS]: 7,
+  [UserRoleEnum.CREATOR]: 6,
+  [UserRoleEnum.ADMIN]: 5,
+  [UserRoleEnum.MODERATOR]: 4,
+  [UserRoleEnum.AUDIT]: 3,
+  [UserRoleEnum.ANALYST]: 2,
+  [UserRoleEnum.USER]: 1,
+  [UserRoleEnum.MEMBER]: 1,
   };
 
   private readonly DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
-    BIGBOSS: {
+    [UserRoleEnum.BIGBOSS]: {
       canAccessAdmin: true,
       canManageUsers: true,
       canManageCommunities: true,
@@ -49,7 +52,7 @@ class PermissionsService {
       canManageNotifications: true,
       canManageTranslations: true,
     },
-    ADMIN: {
+    [UserRoleEnum.CREATOR]: {
       canAccessAdmin: true,
       canManageUsers: true,
       canManageCommunities: true,
@@ -60,7 +63,18 @@ class PermissionsService {
       canManageNotifications: true,
       canManageTranslations: false,
     },
-    MODO: {
+    [UserRoleEnum.ADMIN]: {
+      canAccessAdmin: true,
+      canManageUsers: true,
+      canManageCommunities: true,
+      canManageConversations: true,
+      canViewAnalytics: true,
+      canModerateContent: true,
+      canViewAuditLogs: false,
+      canManageNotifications: true,
+      canManageTranslations: false,
+    },
+    [UserRoleEnum.MODERATOR]: {
       canAccessAdmin: true,
       canManageUsers: false,
       canManageCommunities: true,
@@ -71,7 +85,7 @@ class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false,
     },
-    AUDIT: {
+    [UserRoleEnum.AUDIT]: {
       canAccessAdmin: true,
       canManageUsers: false,
       canManageCommunities: false,
@@ -82,7 +96,7 @@ class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false,
     },
-    ANALYST: {
+    [UserRoleEnum.ANALYST]: {
       canAccessAdmin: false,
       canManageUsers: false,
       canManageCommunities: false,
@@ -93,7 +107,18 @@ class PermissionsService {
       canManageNotifications: false,
       canManageTranslations: false,
     },
-    USER: {
+    [UserRoleEnum.USER]: {
+      canAccessAdmin: false,
+      canManageUsers: false,
+      canManageCommunities: false,
+      canManageConversations: false,
+      canViewAnalytics: false,
+      canModerateContent: false,
+      canViewAuditLogs: false,
+      canManageNotifications: false,
+      canManageTranslations: false,
+    },
+    [UserRoleEnum.MEMBER]: {
       canAccessAdmin: false,
       canManageUsers: false,
       canManageCommunities: false,

@@ -115,7 +115,7 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
     if (message.sender?.avatar) {
       return message.sender.avatar;
     }
-    return null;
+    return undefined;
   };
 
   // Obtenir les initiales pour l'avatar

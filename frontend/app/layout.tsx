@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/common";
 import { FontInitializer } from "@/components/common/font-initializer";
 import { ClientOnly } from "@/components/common/client-only";
 import { getAllFontVariables } from "@/lib/fonts";
+import { AuthProvider } from "@/components/auth/auth-provider";
 // import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
 
 export const metadata: Metadata = {
@@ -25,12 +26,14 @@ export default function RootLayout({
         className={`${getAllFontVariables()} antialiased font-nunito`}
       >
         <AppProvider>
-          <ErrorBoundary>
-            <ClientOnly>
-              <FontInitializer />
-            </ClientOnly>
-            {children}
-          </ErrorBoundary>
+          <AuthProvider>
+            <ErrorBoundary>
+              <ClientOnly>
+                <FontInitializer />
+              </ClientOnly>
+              {children}
+            </ErrorBoundary>
+          </AuthProvider>
         </AppProvider>
         <Toaster 
           position="top-right"

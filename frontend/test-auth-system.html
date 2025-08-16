@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Système d'Authentification Meeshy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status.warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button.danger { background-color: #dc3545; }
+        button.danger:hover { background-color: #c82333; }
+        button.success { background-color: #28a745; }
+        button.success:hover { background-color: #218838; }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .test-section {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Système d'Authentification Meeshy</h1>
+    
+    <div class="container">
+        <h2>État Actuel</h2>
+        <div id="currentStatus" class="status info">
+            Chargement de l'état d'authentification...
+        </div>
+        
+        <div id="authInfo" style="display: none;">
+            <h3>Informations d'Authentification</h3>
+            <div id="authDetails"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Tests d'Authentification</h2>
+        
+        <div class="test-section">
+            <h3>🔍 Vérification de l'État</h3>
+            <button onclick="checkAuthStatus()">Vérifier l'état d'authentification</button>
+            <button onclick="checkLocalStorage()">Vérifier localStorage</button>
+            <div id="statusLog" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧹 Nettoyage</h3>
+            <button onclick="clearAuthData()" class="danger">Nettoyer données d'auth</button>
+            <button onclick="clearAnonymousData()" class="danger">Nettoyer session anonyme</button>
+            <button onclick="clearAllData()" class="danger">Nettoyer tout</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Test des Routes</h3>
+            <button onclick="testPublicRoute()">Tester route publique (/)</button>
+            <button onclick="testJoinRoute()">Tester route join (/join/test)</button>
+            <button onclick="testProtectedRoute()">Tester route protégée (/dashboard)</button>
+            <button onclick="testSharedRoute()">Tester route partagée (/chat/test)</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Simulation</h3>
+            <button onclick="simulateAuthToken()" class="success">Simuler token d'auth</button>
+            <button onclick="simulateAnonymousToken()" class="success">Simuler session anonyme</button>
+            <button onclick="simulateInvalidToken()" class="warning">Simuler token invalide</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Logs</h2>
+        <div id="mainLog" class="log"></div>
+        <button onclick="clearLogs()">Effacer les logs</button>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:3001'; // Ajuster selon votre configuration
+        
+        // Logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            
+            const mainLog = document.getElementById('mainLog');
+            mainLog.innerHTML += logEntry + '\n';
+            mainLog.scrollTop = mainLog.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('mainLog').innerHTML = '';
+            document.getElementById('statusLog').innerHTML = '';
+        }
+
+        // Vérification de l'état d'authentification
+        async function checkAuthStatus() {
+            log('🔍 Vérification de l\'état d\'authentification...');
+            
+            const token = localStorage.getItem('auth_token');
+            const anonymousToken = localStorage.getItem('anonymous_session_token');
+            const user = localStorage.getItem('user');
+            const participant = localStorage.getItem('anonymous_participant');
+            
+            let status = '';
+            
+            if (token) {
+                status += '✅ Token d\'authentification présent\n';
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const userData = await response.json();
+                        status += `✅ Token valide - Utilisateur: ${userData.firstName || userData.username}\n`;
+                    } else {
+                        status += '❌ Token invalide\n';
+                    }
+                } catch (error) {
+                    status += `❌ Erreur vérification token: ${error.message}\n`;
+                }
+            } else {
+                status += '❌ Aucun token d\'authentification\n';
+            }
+            
+            if (anonymousToken) {
+                status += '✅ Token de session anonyme présent\n';
+                try {
+                    const response = await fetch(`${API_BASE_URL}/anonymous/refresh`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ sessionToken: anonymousToken })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            status += `✅ Session anonyme valide - Participant: ${result.data.participant.nickname}\n`;
+                        } else {
+                            status += '❌ Session anonyme invalide\n';
+                        }
+                    } else {
+                        status += '❌ Session anonyme invalide\n';
+                    }
+                } catch (error) {
+                    status += `❌ Erreur vérification session: ${error.message}\n`;
+                }
+            } else {
+                status += '❌ Aucune session anonyme\n';
+            }
+            
+            if (user) {
+                status += '✅ Données utilisateur en localStorage\n';
+            }
+            
+            if (participant) {
+                status += '✅ Données participant anonyme en localStorage\n';
+            }
+            
+            document.getElementById('statusLog').innerHTML = status.replace(/\n/g, '<br>');
+            log('Vérification terminée');
+        }
+
+        function checkLocalStorage() {
+            log('🔍 Vérification du localStorage...');
+            
+            const items = {
+                'auth_token': localStorage.getItem('auth_token'),
+                'user': localStorage.getItem('user'),
+                'anonymous_session_token': localStorage.getItem('anonymous_session_token'),
+                'anonymous_participant': localStorage.getItem('anonymous_participant'),
+                'token': localStorage.getItem('token') // Ancien token
+            };
+            
+            let status = 'Contenu du localStorage:\n';
+            for (const [key, value] of Object.entries(items)) {
+                if (value) {
+                    status += `✅ ${key}: ${value.substring(0, 50)}...\n`;
+                } else {
+                    status += `❌ ${key}: absent\n`;
+                }
+            }
+            
+            document.getElementById('statusLog').innerHTML = status.replace(/\n/g, '<br>');
+            log('Vérification localStorage terminée');
+        }
+
+        // Nettoyage
+        function clearAuthData() {
+            log('🧹 Nettoyage des données d\'authentification...');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            log('✅ Données d\'authentification nettoyées');
+            updateStatus();
+        }
+
+        function clearAnonymousData() {
+            log('🧹 Nettoyage des données de session anonyme...');
+            localStorage.removeItem('anonymous_session_token');
+            localStorage.removeItem('anonymous_participant');
+            log('✅ Données de session anonyme nettoyées');
+            updateStatus();
+        }
+
+        function clearAllData() {
+            log('🧹 Nettoyage de toutes les données...');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            localStorage.removeItem('anonymous_session_token');
+            localStorage.removeItem('anonymous_participant');
+            log('✅ Toutes les données nettoyées');
+            updateStatus();
+        }
+
+        // Tests de routes
+        function testPublicRoute() {
+            log('🔗 Test route publique (/)');
+            window.open('/', '_blank');
+        }
+
+        function testJoinRoute() {
+            log('🔗 Test route join (/join/test)');
+            window.open('/join/test', '_blank');
+        }
+
+        function testProtectedRoute() {
+            log('🔗 Test route protégée (/dashboard)');
+            window.open('/dashboard', '_blank');
+        }
+
+        function testSharedRoute() {
+            log('🔗 Test route partagée (/chat/test)');
+            window.open('/chat/test', '_blank');
+        }
+
+        // Simulation
+        function simulateAuthToken() {
+            log('🎭 Simulation d\'un token d\'authentification valide...');
+            const mockUser = {
+                id: 'test-user-123',
+                username: 'testuser',
+                firstName: 'Test',
+                lastName: 'User',
+                email: 'test@example.com',
+                systemLanguage: 'fr'
+            };
+            
+            localStorage.setItem('auth_token', 'mock-auth-token-123');
+            localStorage.setItem('user', JSON.stringify(mockUser));
+            
+            log('✅ Token d\'authentification simulé');
+            updateStatus();
+        }
+
+        function simulateAnonymousToken() {
+            log('🎭 Simulation d\'une session anonyme...');
+            const mockParticipant = {
+                id: 'anon-123',
+                nickname: 'invite_test',
+                firstName: 'Invité',
+                lastName: 'Test',
+                language: 'fr'
+            };
+            
+            localStorage.setItem('anonymous_session_token', 'mock-anon-token-123');
+            localStorage.setItem('anonymous_participant', JSON.stringify(mockParticipant));
+            
+            log('✅ Session anonyme simulée');
+            updateStatus();
+        }
+
+        function simulateInvalidToken() {
+            log('🎭 Simulation d\'un token invalide...');
+            localStorage.setItem('auth_token', 'invalid-token');
+            localStorage.setItem('user', JSON.stringify({ username: 'invalid' }));
+            
+            log('✅ Token invalide simulé');
+            updateStatus();
+        }
+
+        // Mise à jour de l'affichage
+        function updateStatus() {
+            const token = localStorage.getItem('auth_token');
+            const anonymousToken = localStorage.getItem('anonymous_session_token');
+            const user = localStorage.getItem('user');
+            const participant = localStorage.getItem('anonymous_participant');
+            
+            const statusDiv = document.getElementById('currentStatus');
+            const authInfoDiv = document.getElementById('authInfo');
+            const authDetailsDiv = document.getElementById('authDetails');
+            
+            if (token || anonymousToken) {
+                let status = '';
+                let details = '';
+                
+                if (token && user) {
+                    try {
+                        const userData = JSON.parse(user);
+                        status = `✅ Authentifié: ${userData.firstName || userData.username}`;
+                        details = `
+                            <p><strong>Type:</strong> Compte permanent</p>
+                            <p><strong>Utilisateur:</strong> ${userData.firstName} ${userData.lastName}</p>
+                            <p><strong>Email:</strong> ${userData.email}</p>
+                            <p><strong>Langue:</strong> ${userData.systemLanguage}</p>
+                        `;
+                    } catch (e) {
+                        status = '❌ Données utilisateur corrompues';
+                    }
+                } else if (anonymousToken && participant) {
+                    try {
+                        const participantData = JSON.parse(participant);
+                        status = `🔵 Session anonyme: ${participantData.nickname}`;
+                        details = `
+                            <p><strong>Type:</strong> Session anonyme</p>
+                            <p><strong>Participant:</strong> ${participantData.firstName} ${participantData.lastName}</p>
+                            <p><strong>Nickname:</strong> ${participantData.nickname}</p>
+                            <p><strong>Langue:</strong> ${participantData.language}</p>
+                        `;
+                    } catch (e) {
+                        status = '❌ Données participant corrompues';
+                    }
+                } else {
+                    status = '⚠️ État d\'authentification incohérent';
+                }
+                
+                statusDiv.textContent = status;
+                statusDiv.className = 'status success';
+                authInfoDiv.style.display = 'block';
+                authDetailsDiv.innerHTML = details;
+            } else {
+                statusDiv.textContent = '❌ Non authentifié';
+                statusDiv.className = 'status error';
+                authInfoDiv.style.display = 'none';
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Test du système d\'authentification Meeshy initialisé');
+            updateStatus();
+            
+            // Vérification automatique toutes les 5 secondes
+            setInterval(updateStatus, 5000);
+        });
+    </script>
+</body>
+</html>

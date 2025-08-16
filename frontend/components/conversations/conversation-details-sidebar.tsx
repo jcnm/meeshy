@@ -28,6 +28,7 @@ import { conversationsService } from '@/services/conversations.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
 import { toast } from 'sonner';
 import { ConversationLinksSection } from './conversation-links-section';
+import { UserRoleEnum } from '@/shared/types';
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {
@@ -66,8 +67,8 @@ export function ConversationDetailsSidebar({
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
   // Vérifier si l'utilisateur actuel est admin/créateur
-  const currentUserParticipant = conversation.participants?.find(p => p.userId === currentUser.id);
-  const isAdmin = currentUserParticipant?.role === 'ADMIN' || currentUserParticipant?.role === 'CREATOR' || currentUser.role === 'ADMIN' || currentUser.role === 'BIGBOSS';
+  const isAdmin = currentUser.role === UserRoleEnum.ADMIN || 
+                  currentUser.role === UserRoleEnum.BIGBOSS;
 
   // Calculer les statistiques de langues des messages et participants (comme dans BubbleStreamPage)
   useEffect(() => {

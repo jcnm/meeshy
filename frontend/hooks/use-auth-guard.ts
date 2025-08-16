@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { buildApiUrl } from '@/lib/runtime-urls';
-import { toast } from 'sonner';
+import { useAuth } from './use-auth';
 
 interface UseAuthGuardOptions {
   redirectTo?: string;
@@ -19,99 +18,33 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
   } = options;
 
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, isChecking, user } = useAuth();
+  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        
-        if (!token) {
-          if (requireAuth) {
-            console.log('[AUTH_GUARD] Pas de token, redirection vers', redirectTo);
-            router.push(redirectTo);
-            onAuthFailure?.();
-          }
-          setIsAuthenticated(false);
-          return;
-        }
-
-        const response = await fetch(buildApiUrl('/auth/me'), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-          setIsAuthenticated(true);
-          onAuthSuccess?.();
-        } else {
-          // Token invalide, nettoyer les données
-          console.log('[AUTH_GUARD] Token invalide, nettoyage');
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          
-          if (requireAuth) {
-            toast.error('Session expirée, veuillez vous reconnecter');
-            router.push(redirectTo);
-            onAuthFailure?.();
-          }
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error('[AUTH_GUARD] Erreur vérification auth:', error);
-        
-        // En cas d'erreur réseau, nettoyer aussi
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        
-        if (requireAuth) {
-          toast.error('Erreur de connexion');
-          router.push(redirectTo);
-          onAuthFailure?.();
-        }
-        setIsAuthenticated(false);
-      } finally {
-        setIsChecking(false);
-      }
-    };
-
-    checkAuth();
-  }, [router, redirectTo, requireAuth, onAuthSuccess, onAuthFailure]);
-
-  return {
-    isChecking,
-    isAuthenticated,
-    checkAuth: () => {
-      setIsChecking(true);
-      // Re-déclencher la vérification
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        setIsAuthenticated(false);
-        setIsChecking(false);
-        return;
+    // Attendre que la vérification d'authentification soit terminée
+    if (!isChecking && !hasChecked) {
+      console.log('[AUTH_GUARD] Vérification terminée:', { isAuthenticated, requireAuth });
+      
+      if (requireAuth && !isAuthenticated) {
+        console.log('[AUTH_GUARD] Redirection vers', redirectTo);
+        router.push(redirectTo);
+        onAuthFailure?.();
+      } else if (requireAuth && isAuthenticated) {
+        console.log('[AUTH_GUARD] Utilisateur authentifié:', user?.username);
+        onAuthSuccess?.();
       }
       
-      fetch(buildApiUrl('/auth/me'), {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(response => {
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          setIsAuthenticated(false);
-        }
-      }).catch(() => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setIsAuthenticated(false);
-      }).finally(() => {
-        setIsChecking(false);
-      });
+      setHasChecked(true);
+    }
+  }, [isAuthenticated, isChecking, requireAuth, redirectTo, router, onAuthSuccess, onAuthFailure, hasChecked, user]);
+
+  return {
+    isChecking: isChecking || !hasChecked,
+    isAuthenticated,
+    checkAuth: () => {
+      // La vérification est gérée par useAuth
+      setHasChecked(false);
     }
   };
 }
