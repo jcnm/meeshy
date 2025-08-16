@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { copyToClipboard } from '@/lib/clipboard';
 import { toast } from 'sonner';
 import { Link2, Copy, Calendar, Clock, Shield, Globe, Users, MessageSquare, Settings, Eye, FileText, Image } from 'lucide-react';
 
@@ -129,8 +130,12 @@ export function CreateLinkModal({
         setGeneratedLink(linkUrl);
         
         // Copier automatiquement dans le presse-papiers
-        await navigator.clipboard.writeText(linkUrl);
-        toast.success('Lien généré et copié dans le presse-papiers !');
+        const copyResult = await copyToClipboard(linkUrl);
+        if (copyResult.success) {
+          toast.success('Lien généré et copié dans le presse-papiers !');
+        } else {
+          toast.success('Lien généré avec succès !');
+        }
         
         onLinkCreated();
       } else {
@@ -147,8 +152,12 @@ export function CreateLinkModal({
 
   const copyLink = async () => {
     if (generatedLink) {
-      await navigator.clipboard.writeText(generatedLink);
-      toast.success('Lien copié dans le presse-papiers');
+      const copyResult = await copyToClipboard(generatedLink, 'input[readonly]');
+      if (copyResult.success) {
+        toast.success('Lien copié dans le presse-papiers');
+      } else {
+        toast.info(copyResult.message);
+      }
     }
   };
 
