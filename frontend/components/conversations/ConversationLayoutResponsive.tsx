@@ -128,6 +128,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
   const [isDetailsSidebarOpen, setIsDetailsSidebarOpen] = useState(false);
 
+  // Flag pour éviter de recharger les conversations juste après en avoir créé une
+  const [justCreatedConversation, setJustCreatedConversation] = useState<string | null>(null);
+
   // États de traduction
   const [selectedTranslationModel, setSelectedTranslationModel] = useState<string>('api-service');
   // États typing (centralisés)
@@ -594,9 +597,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // Effet pour charger les données initiales et gérer les changements d'URL
   useEffect(() => {
     if (user) {
+      // Ne pas recharger les conversations si on vient juste d'en créer une
+      const conversationIdFromUrl = searchParams.get('id');
+      if (justCreatedConversation && conversationIdFromUrl === justCreatedConversation) {
+        console.log('[CONVERSATION] Éviter le rechargement après création de conversation:', justCreatedConversation);
+        // Réinitialiser le flag après un délai pour permettre les futurs rechargements
+        setTimeout(() => setJustCreatedConversation(null), 2000);
+        return;
+      }
+      
       loadData();
     }
-  }, [user, loadData]);
+  }, [user, loadData, searchParams, justCreatedConversation]);
 
   // Effet séparé pour gérer les changements de paramètres d'URL
   useEffect(() => {
@@ -1202,6 +1214,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         currentUser={user}
         onConversationCreated={(conversationId, conversationData) => {
           // Conversation créée
+          
+          // Marquer qu'on vient de créer cette conversation pour éviter le rechargement
+          setJustCreatedConversation(conversationId);
           
           // Fermer le modal immédiatement
           setIsCreateConversationModalOpen(false);

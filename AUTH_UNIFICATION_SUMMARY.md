@@ -138,3 +138,5 @@ Les logs sont maintenant unifiés avec des préfixes clairs :
 - ✅ **Code plus maintenable**
 - ✅ **Débogage facilité**
 - ✅ **Pas de conflits entre hooks**
+
+

@@ -34,22 +34,40 @@ import { RegisterForm } from '@/components/auth/register-form';
 import { JoinConversationForm } from '@/components/auth/join-conversation-form';
 import { BubbleStreamPage } from '@/components/common';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Header } from '@/components/layout/Header';
 import { useUser } from '@/context/AppContext';
+import { useAuth } from '@/hooks/use-auth';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
+import { isCurrentUserAnonymous } from '@/utils/auth';
 
 export default function LandingPage() {
   const { user, isAuthChecking } = useUser();
+  const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
 
   // Suppression de la logique de vérification d'authentification redondante
   // Cette logique est maintenant gérée par le hook useAuth
 
-  const handleAuthSuccess = (user: User, token: string) => {
-    // Cette fonction est maintenant gérée par le hook useAuth
-    console.log('[LANDING] handleAuthSuccess appelé mais la logique est gérée par useAuth');
-  };
+  // État pour gérer l'affichage du lien de conversation anonyme
+  const [anonymousChatLink, setAnonymousChatLink] = useState<string | null>(null);
+
+  // Vérifier si l'utilisateur anonyme a une conversation en cours
+  useEffect(() => {
+    const isAnonymous = isCurrentUserAnonymous();
+    if (user && isAnonymous) {
+      // C'est une session anonyme
+      const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+      const storedShareLinkId = localStorage.getItem('anonymous_current_share_link');
+      
+      if (storedShareLinkId) {
+        setAnonymousChatLink(`/chat/${storedShareLinkId}`);
+      }
+    } else {
+      setAnonymousChatLink(null);
+    }
+  }, [user]);
 
   const quickLogin = async (email: string) => {
     try {
@@ -94,7 +112,7 @@ export default function LandingPage() {
       if (userData && token) {
         console.log('[LANDING] Connexion rapide réussie pour:', userData.username);
         toast.success(`Connecté en tant que ${userData.firstName} !`);
-        handleAuthSuccess(userData, token);
+        login(userData, token);
       } else {
         toast.error('Données utilisateur ou token manquantes');
       }
@@ -112,7 +130,9 @@ export default function LandingPage() {
     );
   }
 
-  if (user) {
+  // Si l'utilisateur est authentifié ET n'est pas anonyme, afficher le dashboard
+  const isAnonymous = isCurrentUserAnonymous();
+  if (user && !isAnonymous) {
     return (
       <DashboardLayout title="Accueil">
         <BubbleStreamPage user={user} />
@@ -120,58 +140,17 @@ export default function LandingPage() {
     );
   }
 
+  // Pour les utilisateurs anonymes et non connectés, afficher la landing page
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">Meeshy</span>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            
-            <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2">
-                  <LogIn className="h-4 w-4" />
-                  <span>Se connecter</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Se connecter</DialogTitle>
-                  <DialogDescription>
-                    Connectez-vous à votre compte Meeshy
-                  </DialogDescription>
-                </DialogHeader>
-                <LoginForm onSuccess={handleAuthSuccess} />
-              </DialogContent>
-            </Dialog>
-            
-            <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center space-x-2">
-                  <UserPlus className="h-4 w-4" />
-                  <span>S'inscrire</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Créer un compte</DialogTitle>
-                  <DialogDescription>
-                    Rejoignez Meeshy et communiquez sans barrières
-                  </DialogDescription>
-                </DialogHeader>
-                <RegisterForm onSuccess={handleAuthSuccess} />
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-      </header>
+      <Header 
+        mode="landing"
+        authMode={authMode}
+        onAuthModeChange={setAuthMode}
+        anonymousChatLink={anonymousChatLink}
+      />
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 lg:py-24">
@@ -192,8 +171,9 @@ export default function LandingPage() {
             Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA, 
             directement dans votre navigateur. Aucune donnée ne quitte votre appareil.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            
             <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
               <DialogTrigger asChild>
                 <Button size="lg" className="flex items-center space-x-2">
@@ -209,7 +189,7 @@ export default function LandingPage() {
                     Rejoignez Meeshy et communiquez sans barrières
                   </DialogDescription>
                 </DialogHeader>
-                <RegisterForm onSuccess={handleAuthSuccess} />
+                <RegisterForm />
               </DialogContent>
             </Dialog>
             
@@ -217,19 +197,50 @@ export default function LandingPage() {
               <DialogTrigger asChild>
                 <Button size="lg" variant="outline" className="flex items-center space-x-2">
                   <Link2 className="h-5 w-5" />
-                  <span>Rejoindre une conversation</span>
+                  <span>{anonymousChatLink ? 'Reprendre ou rejoindre une conversation' : 'Rejoindre une conversation'}</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Rejoindre une conversation</DialogTitle>
+                  <DialogTitle>{anonymousChatLink ? 'Reprendre ou rejoindre une conversation' : 'Rejoindre une conversation'}</DialogTitle>
                   <DialogDescription>
-                    Entrez le lien de conversation que vous avez reçu
+                    {anonymousChatLink 
+                      ? 'Vous avez une conversation en cours. Vous pouvez la reprendre ou rejoindre une nouvelle conversation.'
+                      : 'Entrez le lien de conversation que vous avez reçu'
+                    }
                   </DialogDescription>
                 </DialogHeader>
-                <JoinConversationForm onSuccess={(linkId: string) => {
-                  router.push(`/join/${linkId}`);
-                }} />
+                
+                {/* Si l'utilisateur a une conversation en cours, afficher le bouton de reprise */}
+                {anonymousChatLink && (
+                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 className="font-medium text-green-800 mb-2">Conversation en cours</h4>
+                    <p className="text-sm text-green-700 mb-3">Vous avez une conversation active que vous pouvez reprendre.</p>
+                    <Button 
+                      onClick={() => {
+                        setAuthMode('welcome');
+                        router.push(anonymousChatLink);
+                      }}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Reprendre la conversation en cours
+                    </Button>
+                  </div>
+                )}
+                
+                {/* Formulaire pour rejoindre une nouvelle conversation */}
+                <div>
+                  {anonymousChatLink && (
+                    <div className="mb-3">
+                      <h4 className="font-medium text-gray-800">Ou rejoindre une nouvelle conversation</h4>
+                      <p className="text-sm text-gray-600">Entrez un nouveau lien de conversation ci-dessous :</p>
+                    </div>
+                  )}
+                  <JoinConversationForm onSuccess={(linkId: string) => {
+                    router.push(`/join/${linkId}?anonymous=true`);
+                  }} />
+                </div>
               </DialogContent>
             </Dialog>
           </div>
@@ -367,7 +378,7 @@ export default function LandingPage() {
                   Rejoignez Meeshy et communiquez sans barrières
                 </DialogDescription>
               </DialogHeader>
-              <RegisterForm onSuccess={handleAuthSuccess} />
+              <RegisterForm />
             </DialogContent>
           </Dialog>
         </div>

@@ -82,7 +82,7 @@ class AuthService {
         // Stocker le token et les informations utilisateur
         if (typeof window !== 'undefined') {
           localStorage.setItem('auth_token', data.data.token);
-          localStorage.setItem('auth_user', JSON.stringify(data.data.user));
+          localStorage.setItem('user', JSON.stringify(data.data.user));
         }
       }
 
@@ -117,7 +117,7 @@ class AuthService {
       // Nettoyer le localStorage
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+        localStorage.removeItem('user');
       }
     }
   }
@@ -148,7 +148,7 @@ class AuthService {
       if (data.success && data.data?.user) {
         // Mettre à jour les informations utilisateur en cache
         if (typeof window !== 'undefined') {
-          localStorage.setItem('auth_user', JSON.stringify(data.data.user));
+          localStorage.setItem('user', JSON.stringify(data.data.user));
         }
       }
 
@@ -239,7 +239,7 @@ class AuthService {
    */
   getStoredUser(): TestUser | null {
     if (typeof window !== 'undefined') {
-      const userStr = localStorage.getItem('auth_user');
+      const userStr = localStorage.getItem('user');
       if (userStr) {
         try {
           return JSON.parse(userStr);

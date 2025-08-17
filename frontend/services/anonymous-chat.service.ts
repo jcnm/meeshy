@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 export interface AnonymousParticipant {
   id: string;
-  nickname: string;
+  username: string;
   firstName: string;
   lastName: string;
   language: string;

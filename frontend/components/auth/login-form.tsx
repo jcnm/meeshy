@@ -5,14 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/use-auth';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 interface LoginFormProps {
-  onSuccess: (user: User, token: string) => void;
+  onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -68,7 +70,14 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       if (userData && token) {
         console.log('[LOGIN_FORM] Connexion réussie pour:', userData.username);
         toast.success('Connexion réussie !');
-        onSuccess(userData, token);
+        
+        // Use useAuth hook for authentication
+        login(userData, token);
+        
+        // Call optional success callback if provided
+        if (onSuccess) {
+          onSuccess(userData, token);
+        }
       } else {
         throw new Error('Données utilisateur ou token manquantes');
       }

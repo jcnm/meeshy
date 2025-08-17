@@ -56,7 +56,7 @@ Authorization: Bearer jwt_token_here
       "updatedAt": "2024-01-01T00:00:00Z"
     },
     "link": {
-      "id": "link_456",
+      "id": "mshy_456",
       "linkId": "abc123",
       "name": "Lien de partage",
       "description": "Description du lien",

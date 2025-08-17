@@ -138,8 +138,8 @@ export function ConversationDetailsSidebar({
     if (otherParticipant && otherParticipant.user) {
       return `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`;
     }
-    
-    return 'Conversation';
+
+    return conv.name || 'Conversation';
   };
 
   // Fonctions pour la gestion des conversations

@@ -353,13 +353,90 @@ export class ConversationsService {
   /**
    * Créer un lien d'invitation pour une conversation
    */
-  async createInviteLink(conversationId: string): Promise<string> {
-    // Utiliser le nouvel endpoint new-link
-    const response = await apiService.post<{ success: boolean; data: { link: string } }>(
-      `/conversations/${conversationId}/new-link`,
-      {}
-    );
-    return response.data.data.link;
+  async createInviteLink(conversationId: string, linkData?: {
+    name?: string;
+    description?: string;
+    maxUses?: number;
+    expiresAt?: string;
+    allowAnonymousMessages?: boolean;
+    allowAnonymousFiles?: boolean;
+    allowAnonymousImages?: boolean;
+    allowViewHistory?: boolean;
+    requireNickname?: boolean;
+    requireEmail?: boolean;
+  }): Promise<string> {
+    try {
+      // Utiliser l'endpoint existant /conversations/:id/new-link
+      const response = await apiService.post<{ 
+        success: boolean; 
+        data: { link: string; code: string; shareLink: any } 
+      }>(`/conversations/${conversationId}/new-link`, {
+        name: linkData?.name || 'Lien d\'invitation',
+        description: linkData?.description || 'Rejoignez cette conversation',
+        maxUses: linkData?.maxUses,
+        expiresAt: linkData?.expiresAt,
+        allowAnonymousMessages: linkData?.allowAnonymousMessages ?? true,
+        allowAnonymousFiles: linkData?.allowAnonymousFiles ?? false,
+        allowAnonymousImages: linkData?.allowAnonymousImages ?? true,
+        allowViewHistory: linkData?.allowViewHistory ?? true,
+        requireNickname: linkData?.requireNickname ?? true,
+        requireEmail: linkData?.requireEmail ?? false
+      });
+      
+      return response.data.data.link;
+    } catch (error: any) {
+      // Gérer les erreurs spécifiques
+      if (error.status === 403) {
+        if (error.message?.includes('Accès non autorisé')) {
+          throw new Error('Vous n\'êtes pas membre de cette conversation. Seuls les membres peuvent créer des liens de partage.');
+        } else if (error.message?.includes('Seuls les administrateurs')) {
+          throw new Error('Seuls les administrateurs et modérateurs peuvent créer des liens de partage pour cette conversation.');
+        } else {
+          throw new Error('Vous n\'avez pas les permissions nécessaires pour créer un lien de partage.');
+        }
+      } else if (error.status === 404) {
+        throw new Error('Conversation non trouvée.');
+      } else {
+        throw new Error('Erreur lors de la création du lien de partage. Veuillez réessayer.');
+      }
+    }
+  }
+
+  /**
+   * Créer une nouvelle conversation avec un lien d'invitation
+   */
+  async createConversationWithLink(linkData: {
+    name?: string;
+    description?: string;
+    maxUses?: number;
+    expiresAt?: string;
+    allowAnonymousMessages?: boolean;
+    allowAnonymousFiles?: boolean;
+    allowAnonymousImages?: boolean;
+    allowViewHistory?: boolean;
+    requireNickname?: boolean;
+    requireEmail?: boolean;
+  } = {}): Promise<string> {
+    // Créer une nouvelle conversation sans conversationId (le backend créera automatiquement la conversation)
+    const response = await apiService.post<{ 
+      success: boolean; 
+      data: { linkId: string; conversationId: string; shareLink: any } 
+    }>('/links', {
+      // Pas de conversationId - le backend créera une nouvelle conversation
+      name: linkData.name || 'Nouvelle conversation',
+      description: linkData.description || 'Rejoignez cette conversation',
+      maxUses: linkData.maxUses,
+      expiresAt: linkData.expiresAt,
+      allowAnonymousMessages: linkData.allowAnonymousMessages ?? true,
+      allowAnonymousFiles: linkData.allowAnonymousFiles ?? false,
+      allowAnonymousImages: linkData.allowAnonymousImages ?? true,
+      allowViewHistory: linkData.allowViewHistory ?? true,
+      requireNickname: linkData.requireNickname ?? true,
+      requireEmail: linkData.requireEmail ?? false
+    });
+    
+    // Retourner le lien complet
+    return `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100'}/join/${response.data.data.linkId}`;
   }
 
   /**

@@ -85,6 +85,9 @@ export function useConversationMessages({
           return;
         }
         
+        // Utiliser le linkId complet (l'endpoint gère maintenant les deux formats)
+        console.log('🔗 Utilisation du linkId complet:', linkId, 'pour l\'URL');
+        
         response = await fetch(buildApiUrl(`/links/${linkId}/messages`), {
           headers: {
             'X-Session-Token': sessionToken,

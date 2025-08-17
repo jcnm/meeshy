@@ -126,7 +126,15 @@ export function CreateLinkModal({
 
       if (response.ok) {
         const data = await response.json();
-        const linkUrl = `${window.location.origin}/join/${data.link.token}`;
+        console.log('[CREATE_LINK] Réponse API:', data);
+        
+        // Le backend renvoie { success: true, data: { linkId: "...", conversationId: "...", shareLink: {...} } }
+        const linkToken = data.data?.linkId || data.linkId; // Support des deux formats
+        if (!linkToken) {
+          throw new Error('Token de lien manquant dans la réponse');
+        }
+        
+        const linkUrl = `${window.location.origin}/join/${linkToken}`;
         setGeneratedLink(linkUrl);
         
         // Copier automatiquement dans le presse-papiers
@@ -140,11 +148,12 @@ export function CreateLinkModal({
         onLinkCreated();
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Erreur lors de la génération du lien');
+        console.error('[CREATE_LINK] Erreur API:', error);
+        toast.error(error.message || `Erreur lors de la génération du lien (${response.status})`);
       }
     } catch (error) {
-      console.error('Erreur génération lien:', error);
-      toast.error('Erreur lors de la génération du lien');
+      console.error('[CREATE_LINK] Erreur génération lien:', error);
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la génération du lien');
     } finally {
       setIsCreating(false);
     }

@@ -104,10 +104,11 @@ export interface Message {
   sender?: SocketIOUser;
   anonymousSender?: {
     id: string;
-    nickname: string;
+    username: string; // Renommé depuis nickname pour l'uniformité
     firstName: string;
     lastName: string;
     language: string;
+    isMeeshyer: boolean; // false pour les anonymes
   };
 }
 

@@ -8287,7 +8287,7 @@ export namespace Prisma {
     shareLinkId: string | null
     firstName: string | null
     lastName: string | null
-    nickname: string | null
+    username: string | null
     email: string | null
     sessionToken: string | null
     ipAddress: string | null
@@ -8311,7 +8311,7 @@ export namespace Prisma {
     shareLinkId: string | null
     firstName: string | null
     lastName: string | null
-    nickname: string | null
+    username: string | null
     email: string | null
     sessionToken: string | null
     ipAddress: string | null
@@ -8335,7 +8335,7 @@ export namespace Prisma {
     shareLinkId: number
     firstName: number
     lastName: number
-    nickname: number
+    username: number
     email: number
     sessionToken: number
     ipAddress: number
@@ -8361,7 +8361,7 @@ export namespace Prisma {
     shareLinkId?: true
     firstName?: true
     lastName?: true
-    nickname?: true
+    username?: true
     email?: true
     sessionToken?: true
     ipAddress?: true
@@ -8385,7 +8385,7 @@ export namespace Prisma {
     shareLinkId?: true
     firstName?: true
     lastName?: true
-    nickname?: true
+    username?: true
     email?: true
     sessionToken?: true
     ipAddress?: true
@@ -8409,7 +8409,7 @@ export namespace Prisma {
     shareLinkId?: true
     firstName?: true
     lastName?: true
-    nickname?: true
+    username?: true
     email?: true
     sessionToken?: true
     ipAddress?: true
@@ -8506,7 +8506,7 @@ export namespace Prisma {
     shareLinkId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email: string | null
     sessionToken: string
     ipAddress: string | null
@@ -8547,7 +8547,7 @@ export namespace Prisma {
     shareLinkId?: boolean
     firstName?: boolean
     lastName?: boolean
-    nickname?: boolean
+    username?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
@@ -8575,7 +8575,7 @@ export namespace Prisma {
     shareLinkId?: boolean
     firstName?: boolean
     lastName?: boolean
-    nickname?: boolean
+    username?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
@@ -8601,7 +8601,7 @@ export namespace Prisma {
     shareLinkId?: boolean
     firstName?: boolean
     lastName?: boolean
-    nickname?: boolean
+    username?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
@@ -8627,7 +8627,7 @@ export namespace Prisma {
     shareLinkId?: boolean
     firstName?: boolean
     lastName?: boolean
-    nickname?: boolean
+    username?: boolean
     email?: boolean
     sessionToken?: boolean
     ipAddress?: boolean
@@ -8645,7 +8645,7 @@ export namespace Prisma {
     leftAt?: boolean
   }
 
-  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "firstName" | "lastName" | "nickname" | "email" | "sessionToken" | "ipAddress" | "country" | "language" | "deviceFingerprint" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
+  export type AnonymousParticipantOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "shareLinkId" | "firstName" | "lastName" | "username" | "email" | "sessionToken" | "ipAddress" | "country" | "language" | "deviceFingerprint" | "isActive" | "isOnline" | "lastActiveAt" | "canSendMessages" | "canSendFiles" | "canSendImages" | "joinedAt" | "lastSeenAt" | "leftAt", ExtArgs["result"]["anonymousParticipant"]>
   export type AnonymousParticipantInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
@@ -8674,7 +8674,7 @@ export namespace Prisma {
       shareLinkId: string
       firstName: string
       lastName: string
-      nickname: string
+      username: string
       email: string | null
       sessionToken: string
       ipAddress: string | null
@@ -9121,7 +9121,7 @@ export namespace Prisma {
     readonly shareLinkId: FieldRef<"AnonymousParticipant", 'String'>
     readonly firstName: FieldRef<"AnonymousParticipant", 'String'>
     readonly lastName: FieldRef<"AnonymousParticipant", 'String'>
-    readonly nickname: FieldRef<"AnonymousParticipant", 'String'>
+    readonly username: FieldRef<"AnonymousParticipant", 'String'>
     readonly email: FieldRef<"AnonymousParticipant", 'String'>
     readonly sessionToken: FieldRef<"AnonymousParticipant", 'String'>
     readonly ipAddress: FieldRef<"AnonymousParticipant", 'String'>
@@ -22354,7 +22354,7 @@ export namespace Prisma {
     shareLinkId: 'shareLinkId',
     firstName: 'firstName',
     lastName: 'lastName',
-    nickname: 'nickname',
+    username: 'username',
     email: 'email',
     sessionToken: 'sessionToken',
     ipAddress: 'ipAddress',
@@ -23211,7 +23211,7 @@ export namespace Prisma {
     shareLinkId?: StringFilter<"AnonymousParticipant"> | string
     firstName?: StringFilter<"AnonymousParticipant"> | string
     lastName?: StringFilter<"AnonymousParticipant"> | string
-    nickname?: StringFilter<"AnonymousParticipant"> | string
+    username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
@@ -23238,7 +23238,7 @@ export namespace Prisma {
     shareLinkId?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
-    nickname?: SortOrder
+    username?: SortOrder
     email?: SortOrderInput | SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrderInput | SortOrder
@@ -23270,7 +23270,7 @@ export namespace Prisma {
     shareLinkId?: StringFilter<"AnonymousParticipant"> | string
     firstName?: StringFilter<"AnonymousParticipant"> | string
     lastName?: StringFilter<"AnonymousParticipant"> | string
-    nickname?: StringFilter<"AnonymousParticipant"> | string
+    username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
     country?: StringNullableFilter<"AnonymousParticipant"> | string | null
@@ -23296,7 +23296,7 @@ export namespace Prisma {
     shareLinkId?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
-    nickname?: SortOrder
+    username?: SortOrder
     email?: SortOrderInput | SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrderInput | SortOrder
@@ -23326,7 +23326,7 @@ export namespace Prisma {
     shareLinkId?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     firstName?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     lastName?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
-    nickname?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
+    username?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     email?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
     sessionToken?: StringWithAggregatesFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableWithAggregatesFilter<"AnonymousParticipant"> | string | null
@@ -24921,7 +24921,7 @@ export namespace Prisma {
     id?: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -24948,7 +24948,7 @@ export namespace Prisma {
     shareLinkId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -24971,7 +24971,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24998,7 +24998,7 @@ export namespace Prisma {
     shareLinkId?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25023,7 +25023,7 @@ export namespace Prisma {
     shareLinkId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -25045,7 +25045,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25069,7 +25069,7 @@ export namespace Prisma {
     shareLinkId?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26650,7 +26650,7 @@ export namespace Prisma {
     shareLinkId?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
-    nickname?: SortOrder
+    username?: SortOrder
     email?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
@@ -26674,7 +26674,7 @@ export namespace Prisma {
     shareLinkId?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
-    nickname?: SortOrder
+    username?: SortOrder
     email?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
@@ -26698,7 +26698,7 @@ export namespace Prisma {
     shareLinkId?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
-    nickname?: SortOrder
+    username?: SortOrder
     email?: SortOrder
     sessionToken?: SortOrder
     ipAddress?: SortOrder
@@ -30152,7 +30152,7 @@ export namespace Prisma {
     id?: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -30177,7 +30177,7 @@ export namespace Prisma {
     shareLinkId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -30478,7 +30478,7 @@ export namespace Prisma {
     shareLinkId?: StringFilter<"AnonymousParticipant"> | string
     firstName?: StringFilter<"AnonymousParticipant"> | string
     lastName?: StringFilter<"AnonymousParticipant"> | string
-    nickname?: StringFilter<"AnonymousParticipant"> | string
+    username?: StringFilter<"AnonymousParticipant"> | string
     email?: StringNullableFilter<"AnonymousParticipant"> | string | null
     sessionToken?: StringFilter<"AnonymousParticipant"> | string
     ipAddress?: StringNullableFilter<"AnonymousParticipant"> | string | null
@@ -30895,7 +30895,7 @@ export namespace Prisma {
     id?: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -30920,7 +30920,7 @@ export namespace Prisma {
     conversationId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -31678,7 +31678,7 @@ export namespace Prisma {
     id?: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -31704,7 +31704,7 @@ export namespace Prisma {
     shareLinkId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -31986,7 +31986,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32012,7 +32012,7 @@ export namespace Prisma {
     shareLinkId?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35439,7 +35439,7 @@ export namespace Prisma {
     shareLinkId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -35539,7 +35539,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35564,7 +35564,7 @@ export namespace Prisma {
     shareLinkId?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35588,7 +35588,7 @@ export namespace Prisma {
     shareLinkId?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35853,7 +35853,7 @@ export namespace Prisma {
     conversationId: string
     firstName: string
     lastName: string
-    nickname: string
+    username: string
     email?: string | null
     sessionToken: string
     ipAddress?: string | null
@@ -35875,7 +35875,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35900,7 +35900,7 @@ export namespace Prisma {
     conversationId?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35924,7 +35924,7 @@ export namespace Prisma {
     conversationId?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
-    nickname?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     sessionToken?: StringFieldUpdateOperationsInput | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null

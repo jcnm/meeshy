@@ -29,7 +29,6 @@ import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import { linksRoutes } from './routes/links';
 import { anonymousRoutes } from './routes/anonymous';
-import { chatAnonymousRoutes } from './routes/chat-anonymous';
 import { communityRoutes } from './routes/communities';
 import { adminRoutes } from './routes/admin';
 import { userRoutes } from './routes/users';
@@ -447,9 +446,6 @@ class MeeshyServer {
     
     // Register anonymous participation routes
     await this.server.register(anonymousRoutes);
-    
-    // Register anonymous chat routes
-    await this.server.register(chatAnonymousRoutes);
     
     // Register community routes
     await this.server.register(communityRoutes);

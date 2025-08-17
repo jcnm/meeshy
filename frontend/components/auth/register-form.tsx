@@ -6,14 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/use-auth';
 import { User, SUPPORTED_LANGUAGES } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 
 interface RegisterFormProps {
-  onSuccess: (user: User, token: string) => void;
+  onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior
 }
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -50,7 +52,14 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       if (response.ok && result.success && result.data?.user && result.data?.token) {
         toast.success(`Bienvenue ${formData.firstName} !`);
-        onSuccess(result.data.user, result.data.token);
+        
+        // Use useAuth hook for authentication
+        login(result.data.user, result.data.token);
+        
+        // Call optional success callback if provided
+        if (onSuccess) {
+          onSuccess(result.data.user, result.data.token);
+        }
       } else {
         toast.error(result.message || 'Erreur lors de la création du compte');
       }

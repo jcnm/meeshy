@@ -100,9 +100,14 @@ export function ConversationLinksSection({ conversationId, isAdmin }: Conversati
 
       if (response.ok) {
         const result = await response.json();
-        setLinks(result.data || []);
+        if (result.success) {
+          setLinks(result.data || []);
+        } else {
+          console.error('Erreur lors du chargement des liens:', result.error);
+        }
       } else {
-        console.error('Erreur lors du chargement des liens');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Erreur lors du chargement des liens:', response.status, errorData.error || 'Erreur inconnue');
       }
     } catch (error) {
       console.error('Erreur lors du chargement des liens:', error);

@@ -103,14 +103,7 @@ export function AuthenticatedLayout({
                 </CardDescription>
               </CardHeader>
               <div className="p-6 pt-0">
-                <LoginForm 
-                  onSuccess={(user, token) => {
-                    // L'AppContext gérera automatiquement la mise à jour
-                    localStorage.setItem('auth_token', token);
-                    localStorage.setItem('user', JSON.stringify(user));
-                    window.location.reload(); // Recharger pour déclencher le contexte
-                  }}
-                />
+                <LoginForm />
               </div>
             </Card>
           </div>

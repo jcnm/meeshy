@@ -34,6 +34,7 @@ import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
+import { LinkConversationService } from '@/services/link-conversation.service';
 
 // Langues supportées pour les participants anonymes
 const ANONYMOUS_LANGUAGES = [
@@ -51,7 +52,7 @@ const ANONYMOUS_LANGUAGES = [
 interface AnonymousFormData {
   firstName: string;
   lastName: string;
-  nickname: string;
+  username: string; // Renommé depuis nickname
   email: string;
   language: string;
 }
@@ -60,7 +61,7 @@ export default function JoinConversationPage() {
   const params = useParams();
   const router = useRouter();
   const linkId = params?.linkId as string;
-  const { user: currentUser, login, joinAnonymously, isChecking } = useAuth();
+  const { user: currentUser, login, joinAnonymously, isChecking, isAnonymous, token } = useAuth();
   
   const [conversationLink, setConversationLink] = useState<ConversationLink | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +72,7 @@ export default function JoinConversationPage() {
   const [anonymousForm, setAnonymousForm] = useState<AnonymousFormData>({
     firstName: '',
     lastName: '',
-    nickname: '',
+    username: '', // Renommé depuis nickname
     email: '',
     language: 'fr'
   });
@@ -112,13 +113,25 @@ export default function JoinConversationPage() {
     }
   }, [linkId]);
 
-  const handleAuthSuccess = (user: User, token: string) => {
-    login(user, token);
+  // Vérifier si on doit ouvrir automatiquement le formulaire anonyme
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const autoAnonymous = urlParams.get('anonymous');
+      
+      if (autoAnonymous === 'true' && !currentUser) {
+        setShowAnonymousForm(true);
+      }
+    }
+  }, [currentUser]);
+
+  // Wrapper function for auth success that handles dialog state management
+  const onAuthSuccess = (user: User, token: string) => {
     setAuthMode('welcome');
   };
 
-  // Fonction pour générer automatiquement le nickname
-  const generateNickname = (firstName: string, lastName: string) => {
+  // Fonction pour générer automatiquement le username
+  const generateUsername = (firstName: string, lastName: string) => {
     const cleanFirstName = firstName.toLowerCase().replace(/[^a-z]/g, '');
     const lastNameInitials = lastName.toLowerCase().replace(/[^a-z]/g, '').slice(0, 2);
     const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -130,10 +143,10 @@ export default function JoinConversationPage() {
     setAnonymousForm(prev => {
       const newForm = { ...prev, [field]: value };
       
-      // Auto-générer le nickname quand le prénom ou nom change
+      // Auto-générer le username quand le prénom ou nom change
       if (field === 'firstName' || field === 'lastName') {
-        if (newForm.firstName && newForm.lastName && !prev.nickname) {
-          newForm.nickname = generateNickname(newForm.firstName, newForm.lastName);
+        if (newForm.firstName && newForm.lastName && !prev.username) {
+          newForm.username = generateUsername(newForm.firstName, newForm.lastName);
         }
       }
       
@@ -158,7 +171,7 @@ export default function JoinConversationPage() {
         body: JSON.stringify({
           firstName: anonymousForm.firstName.trim(),
           lastName: anonymousForm.lastName.trim(),
-          nickname: anonymousForm.nickname.trim() || generateNickname(anonymousForm.firstName, anonymousForm.lastName),
+          username: anonymousForm.username.trim() || generateUsername(anonymousForm.firstName, anonymousForm.lastName), // Envoyer comme username au backend
           email: anonymousForm.email.trim() || undefined,
           language: anonymousForm.language,
           deviceFingerprint: navigator.userAgent // Empreinte basique
@@ -169,19 +182,23 @@ export default function JoinConversationPage() {
       
       if (response.ok && result.success) {
         // Utiliser le hook d'authentification pour gérer la session anonyme
-        joinAnonymously(result.data.participant, result.data.sessionToken);
+        joinAnonymously(result.data.participant, result.data.sessionToken, result.data.id);
         
-        toast.success(`Bienvenue ${result.data.participant.nickname} !`);
+        // Stocker le linkId original pour permettre la redirection depuis la page d'accueil
+        localStorage.setItem('anonymous_current_link_id', linkId);
         
-        // Rediriger vers la page de chat anonyme
-        router.push(`/chat/${linkId}`);
+        toast.success(`Bienvenue ${result.data.participant.username} !`); // Utiliser username du participant
+        
+        // Rediriger vers la page de chat anonyme avec le conversationShareLinkId
+        // Utiliser window.location.href pour forcer la redirection immédiate
+        window.location.href = `/chat/${result.data.id}`;
       } else {
         toast.error(result.message || 'Erreur lors de la connexion anonyme');
         
-        // Si le nickname est déjà pris, proposer le nickname suggéré
+        // Si le username est déjà pris, proposer le username suggéré
         if (response.status === 409 && result.suggestedNickname) {
-          setAnonymousForm(prev => ({ ...prev, nickname: result.suggestedNickname }));
-          toast.info(`Nickname suggéré: ${result.suggestedNickname}`);
+          setAnonymousForm(prev => ({ ...prev, username: result.suggestedNickname })); // Mettre à jour username
+          toast.info(`Username suggéré: ${result.suggestedNickname}`);
         }
       }
     } catch (error) {
@@ -196,23 +213,67 @@ export default function JoinConversationPage() {
     if (!currentUser || !conversationLink || linkError) return;
 
     setIsJoining(true);
+    
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${buildApiUrl('/conversation/join')}/${linkId}`, {
+      // Préparer les headers d'authentification selon le type d'utilisateur
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (isAnonymous) {
+        // Utilisateur anonyme - utiliser x-session-token
+        const sessionToken = localStorage.getItem('anonymous_session_token');
+        if (sessionToken) {
+          headers['x-session-token'] = sessionToken;
+        }
+      } else {
+        // Utilisateur authentifié - utiliser Authorization Bearer
+        const authToken = localStorage.getItem('auth_token');
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+      }
+      
+      // D'abord, obtenir le conversationShareLinkId via l'endpoint public
+      const linkInfo = await LinkConversationService.getLinkInfo(linkId);
+      const conversationShareLinkId = linkInfo.data.id;
+      
+      // Vérifier le type d'utilisateur avec l'endpoint /links/:conversationShareLinkId
+      const chatResponse = await fetch(`${buildApiUrl('/links')}/${conversationShareLinkId}`, {
+        method: 'GET',
+        headers
+      });
+
+      if (chatResponse.ok) {
+        const chatResult = await chatResponse.json();
+        
+        if (chatResult.success && chatResult.data.userType === 'member') {
+          // Utilisateur membre authentifié - rediriger directement vers la conversation
+          toast.success('Redirection vers votre conversation');
+          router.push(chatResult.data.redirectTo);
+          return;
+        } else if (chatResult.success && chatResult.data.userType === 'authenticated_non_member') {
+          // Utilisateur authentifié mais pas membre - continuer vers l'endpoint de jointure
+          console.log('Utilisateur authentifié mais pas membre, peut rejoindre');
+        }
+      }
+
+      // Si ce n'est pas un membre, essayer de joindre via l'endpoint de jointure
+      const response = await fetch(`${buildApiUrl('/conversations/join')}/${conversationShareLinkId}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          userId: currentUser.id,
-          linkId: linkId
-        })
+          // Retirer le Content-Type puisqu'il n'y a pas de body
+          ...(isAnonymous ? { 'x-session-token': localStorage.getItem('anonymous_session_token') || '' } : {}),
+          ...((!isAnonymous && localStorage.getItem('auth_token')) ? { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } : {})
+        }
+        // Pas de body nécessaire, l'authentification se fait via le token/sessionToken
       });
 
       if (response.ok) {
+        const result = await response.json();
         toast.success('Vous avez rejoint la conversation !');
-        router.push(`/chat/${conversationLink.conversationId}`);
+        // Rediriger vers la page de conversation normale
+        router.push(`/conversations/${result.data.conversationId}`);
       } else {
         const error = await response.json();
         toast.error(error.message || 'Erreur lors de la jointure');
@@ -308,7 +369,7 @@ export default function JoinConversationPage() {
                       Connectez-vous pour rejoindre la conversation
                     </DialogDescription>
                   </DialogHeader>
-                  <LoginForm onSuccess={handleAuthSuccess} />
+                  <LoginForm onSuccess={onAuthSuccess} />
                 </DialogContent>
               </Dialog>
               
@@ -326,7 +387,7 @@ export default function JoinConversationPage() {
                       Créez votre compte pour rejoindre la conversation
                     </DialogDescription>
                   </DialogHeader>
-                  <RegisterForm onSuccess={handleAuthSuccess} />
+                  <RegisterForm onSuccess={onAuthSuccess} />
                 </DialogContent>
               </Dialog>
             </div>
@@ -397,7 +458,7 @@ export default function JoinConversationPage() {
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <div>
                       <p className="font-medium text-green-900">
-                        Connecté en tant que {currentUser.firstName || currentUser.displayName || currentUser.username} {currentUser.lastName || ''}
+                        Connecté en tant que {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username || 'Utilisateur'}
                       </p>
                       <p className="text-sm text-green-700">
                         @{currentUser.username || currentUser.displayName || 'utilisateur'}
@@ -459,7 +520,7 @@ export default function JoinConversationPage() {
                                 Connectez-vous pour rejoindre la conversation
                               </DialogDescription>
                             </DialogHeader>
-                            <LoginForm onSuccess={handleAuthSuccess} />
+                            <LoginForm onSuccess={onAuthSuccess} />
                           </DialogContent>
                         </Dialog>
                         
@@ -477,7 +538,7 @@ export default function JoinConversationPage() {
                                 Créez votre compte pour rejoindre la conversation
                               </DialogDescription>
                             </DialogHeader>
-                            <RegisterForm onSuccess={handleAuthSuccess} />
+                            <RegisterForm onSuccess={onAuthSuccess} />
                           </DialogContent>
                         </Dialog>
                       </div>
@@ -514,11 +575,11 @@ export default function JoinConversationPage() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="nickname">Nom d&apos;utilisateur</Label>
+                        <Label htmlFor="username">Nom d&apos;utilisateur</Label>
                         <Input
-                          id="nickname"
-                          value={anonymousForm.nickname}
-                          onChange={(e) => updateAnonymousForm('nickname', e.target.value)}
+                          id="username"
+                          value={anonymousForm.username}
+                          onChange={(e) => updateAnonymousForm('username', e.target.value)}
                           placeholder="Généré automatiquement"
                         />
                         <p className="text-xs text-gray-500">

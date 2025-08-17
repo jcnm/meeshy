@@ -10,13 +10,61 @@ export interface AuthState {
 }
 
 /**
+ * Vérifie si un utilisateur est anonyme
+ */
+export function isUserAnonymous(user: User | null): boolean {
+  if (!user) return false;
+  
+  // Vérifier les propriétés spécifiques aux utilisateurs anonymes
+  const hasAnonymousProperties = user.hasOwnProperty('sessionToken') || 
+                                user.hasOwnProperty('shareLinkId') ||
+                                user.hasOwnProperty('isAnonymous');
+  
+  // Vérifier si c'est un utilisateur anonyme via le localStorage
+  const anonymousToken = localStorage.getItem('anonymous_session_token');
+  const hasAnonymousToken = !!anonymousToken;
+  
+  // Vérifier si l'utilisateur a un ID qui commence par des patterns anonymes
+  const hasAnonymousId = !!(user.id && (
+    user.id.startsWith('anon_') || 
+    user.id.includes('anonymous') ||
+    user.id.length > 20 // Les IDs anonymes sont généralement plus longs
+  ));
+  
+  return hasAnonymousProperties || hasAnonymousToken || hasAnonymousId;
+}
+
+/**
+ * Vérifie si l'utilisateur actuel est anonyme
+ */
+export function isCurrentUserAnonymous(): boolean {
+  const user = localStorage.getItem('user');
+  const anonymousToken = localStorage.getItem('anonymous_session_token');
+  
+  if (anonymousToken) return true;
+  
+  if (user) {
+    try {
+      const userData = JSON.parse(user);
+      return isUserAnonymous(userData);
+    } catch {
+      return false;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Vérifie si l'utilisateur est authentifié avec un token valide
  */
 export async function checkAuthStatus(): Promise<AuthState> {
   const token = localStorage.getItem('auth_token');
   const anonymousToken = localStorage.getItem('anonymous_session_token');
+  const anonymousParticipant = localStorage.getItem('anonymous_participant');
   
   console.log('[AUTH_UTILS] Vérification auth - Token normal:', !!token, 'Token anonyme:', !!anonymousToken);
+  console.log('[AUTH_UTILS] Participant anonyme stocké:', anonymousParticipant);
   
   // Si on a un token d'authentification normale
   if (token) {
@@ -76,6 +124,8 @@ export async function checkAuthStatus(): Promise<AuthState> {
       };
     } catch (error) {
       console.error('[AUTH_UTILS] Erreur vérification auth:', error);
+      
+      // En cas d'erreur, nettoyer toutes les données d'authentification
       clearAuthData();
       return {
         isAuthenticated: false,
@@ -180,7 +230,7 @@ export function canAccessProtectedRoute(authState: AuthState): boolean {
  */
 export function canAccessSharedConversation(authState: AuthState): boolean {
   // Pour les conversations partagées, on accepte les utilisateurs authentifiés ET les sessions anonymes
-  return authState.isAuthenticated && !authState.isChecking;
+  return (authState.isAuthenticated || authState.isAnonymous) && !authState.isChecking;
 }
 
 /**

@@ -168,7 +168,8 @@ export function AppProvider({ children }: AppProviderProps) {
           dispatch({ type: 'SET_USER', payload: userData });
         } catch (error) {
           console.error('[APP_CONTEXT] Erreur parsing utilisateur localStorage:', error);
-          // Données corrompues, nettoyer
+          // Données corrompues, nettoyer tout
+          console.log('[APP_CONTEXT] Nettoyage des données corrompues');
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user');
           localStorage.removeItem('token');
@@ -176,12 +177,12 @@ export function AppProvider({ children }: AppProviderProps) {
         }
       } else if (savedUser && !token) {
         // Incohérence, nettoyer
-        console.log('[APP_CONTEXT] Incohérence détectée: user sans token');
+        console.log('[APP_CONTEXT] Incohérence détectée: user sans token, nettoyage');
         localStorage.removeItem('user');
         dispatch({ type: 'SET_USER', payload: null });
       } else if (!savedUser && token) {
         // Incohérence, nettoyer
-        console.log('[APP_CONTEXT] Incohérence détectée: token sans user');
+        console.log('[APP_CONTEXT] Incohérence détectée: token sans user, nettoyage');
         localStorage.removeItem('auth_token');
         localStorage.removeItem('token');
         dispatch({ type: 'SET_USER', payload: null });
@@ -249,10 +250,17 @@ export function useUser() {
   }, [dispatch]);
 
   const logout = useCallback(() => {
-    // Nettoyer les données d'authentification
+    console.log('[APP_CONTEXT] Déconnexion utilisateur');
+    
+    // Nettoyer toutes les données d'authentification possibles
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    
+    // Nettoyer aussi les données de session anonyme
+    localStorage.removeItem('anonymous_session_token');
+    localStorage.removeItem('anonymous_participant');
+    localStorage.removeItem('anonymous_current_share_link');
     
     // Réinitialiser l'état utilisateur
     dispatch({ type: 'SET_USER', payload: null });

@@ -14,17 +14,12 @@ export interface AnonymousMessage {
   createdAt: string;
   sender?: {
     id: string;
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-    displayName?: string;
-    avatar?: string;
-  };
-  anonymousSender?: {
-    id: string;
-    nickname: string;
+    username: string;
     firstName: string;
     lastName: string;
+    displayName?: string;
+    avatar?: string;
+    isMeeshyer: boolean; // true pour membres authentifiés, false pour anonymes
   };
   translations?: Array<{
     id: string;
@@ -98,7 +93,7 @@ export function useAnonymousMessages(linkId: string) {
         content: content.trim(),
         originalLanguage,
         createdAt: new Date().toISOString(),
-        anonymousSender: result.message.anonymousSender
+        sender: result.message.sender
       };
       
       setMessages(prev => [...prev, newMessage]);

@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
+import { useAuth } from '@/hooks/use-auth';
 import { LoadingState } from '@/components/common';
 
 interface ProtectedRouteProps {
@@ -17,6 +18,7 @@ export function ProtectedRoute({
   requireAuth = true 
 }: ProtectedRouteProps) {
   const { user, isAuthChecking } = useUser();
+  const { forceLogout } = useAuth();
   const router = useRouter();
   const [timeoutReached, setTimeoutReached] = useState(false);
 
@@ -42,11 +44,19 @@ export function ProtectedRoute({
       return;
     }
 
+    // Si nous avons un token mais pas d'utilisateur après vérification, nettoyer les données
+    if (requireAuth && !user && token && !isAuthChecking) {
+      console.log('[PROTECTED_ROUTE] Token présent mais utilisateur absent, nettoyage des données');
+      forceLogout?.();
+      router.push(redirectTo);
+      return;
+    }
+
     if (!requireAuth && user && token) {
       router.push('/conversations');
       return;
     }
-  }, [user?.id, isAuthChecking, timeoutReached, router, redirectTo, requireAuth]);
+  }, [user?.id, isAuthChecking, timeoutReached, router, redirectTo, requireAuth, forceLogout]);
 
   // Afficher un état de chargement pendant la vérification d'authentification
   if (isAuthChecking && !timeoutReached) {

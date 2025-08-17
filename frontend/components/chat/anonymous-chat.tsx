@@ -17,7 +17,7 @@ interface AnonymousChatProps {
   linkId: string;
   participant: {
     id: string;
-    nickname: string;
+    username: string;
     firstName: string;
     lastName: string;
     language: string;
@@ -102,10 +102,7 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
       return message.sender.displayName || 
              `${message.sender.firstName || ''} ${message.sender.lastName || ''}`.trim() ||
              message.sender.username ||
-             'Utilisateur';
-    }
-    if (message.anonymousSender) {
-      return `${message.anonymousSender.firstName} ${message.anonymousSender.lastName}`;
+             (message.sender.isMeeshyer ? 'Utilisateur' : 'Anonyme');
     }
     return 'Anonyme';
   };
@@ -124,9 +121,6 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
       const firstName = message.sender.firstName || '';
       const lastName = message.sender.lastName || '';
       return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    }
-    if (message.anonymousSender) {
-      return `${message.anonymousSender.firstName.charAt(0)}${message.anonymousSender.lastName.charAt(0)}`.toUpperCase();
     }
     return '?';
   };
@@ -165,7 +159,7 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
           {conversation.title || 'Conversation'}
         </h2>
         <p className="text-sm text-gray-500">
-          Connecté en tant que {participant.firstName} {participant.lastName} (@{participant.nickname})
+          Connecté en tant que {participant.firstName} {participant.lastName} (@{participant.username})
         </p>
       </div>
 

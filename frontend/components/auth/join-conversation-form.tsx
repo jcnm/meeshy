@@ -26,16 +26,21 @@ export function JoinConversationForm({ onSuccess }: JoinConversationFormProps) {
     setIsLoading(true);
     try {
       // Extraire l'ID du lien s'il s'agit d'une URL complète
-      const extractedLinkId = linkId.includes('/') 
+      let extractedLinkId = linkId.includes('/') 
         ? linkId.split('/').pop() || linkId
         : linkId.trim();
 
-      // Vérifier si le lien existe
-      const response = await fetch(buildApiUrl(`conversation/link/${extractedLinkId}`));
+      // Ajouter le préfixe "mshy_" si nécessaire
+      if (!extractedLinkId.startsWith('mshy_')) {
+        extractedLinkId = `mshy_${extractedLinkId}`;
+      }
+
+      // Vérifier si le lien existe en utilisant l'endpoint public
+      const response = await fetch(buildApiUrl(`/anonymous/link/${extractedLinkId}`));
       
       if (response.ok) {
         const result = await response.json();
-        if (result && result.id) {
+        if (result.success && result.data) {
           toast.success('Lien valide ! Redirection...');
           onSuccess(extractedLinkId);
         } else {

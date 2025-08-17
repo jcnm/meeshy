@@ -8,6 +8,7 @@
 import { io, Socket } from 'socket.io-client';
 import { getWebSocketUrl } from '@/lib/runtime-urls';
 import { toast } from 'sonner';
+import { logger } from '@/utils/logger';
 import type { 
   Message, 
   User,
@@ -89,19 +90,19 @@ class MeeshySocketIOService {
   private initializeConnection(): void {
     // Vérifier si le code s'exécute côté client
     if (typeof window === 'undefined') {
-      console.warn('🔒 MeeshySocketIOService: Exécution côté serveur, connexion ignorée');
+      logger.socketio.warn('MeeshySocketIOService: Exécution côté serveur, connexion ignorée');
       return;
     }
 
     // Empêcher les connexions multiples
     if (this.isConnecting || (this.socket && this.isConnected)) {
-      console.log('🔒 MeeshySocketIOService: Connexion déjà en cours ou établie, ignorée');
+      logger.socketio.debug('MeeshySocketIOService: Connexion déjà en cours ou établie, ignorée');
       return;
     }
 
     // Vérifier que l'utilisateur est configuré avant de se connecter
     if (!this.currentUser) {
-      console.warn('🔒 MeeshySocketIOService: Aucun utilisateur configuré, connexion différée');
+      logger.socketio.warn('MeeshySocketIOService: Aucun utilisateur configuré, connexion différée');
       this.isConnecting = false;
       return;
     }
@@ -109,11 +110,10 @@ class MeeshySocketIOService {
     this.isConnecting = true;
 
     const token = localStorage.getItem('auth_token');
-    console.log('🔍 MeeshySocketIOService: Vérification du token', {
+    logger.socketio.debug('MeeshySocketIOService: Vérification du token', {
       hasToken: !!token,
       tokenLength: token?.length,
-      tokenPreview: token ? token.substring(0, 30) + '...' : 'none',
-      localStorageKeys: Object.keys(localStorage).filter(key => key.includes('auth') || key.includes('token'))
+      tokenPreview: token ? token.substring(0, 30) + '...' : 'none'
     });
     
     if (!token) {
@@ -215,7 +215,7 @@ class MeeshySocketIOService {
 
     // Événements de messages
     this.socket.on(SERVER_EVENTS.MESSAGE_NEW, (socketMessage) => {
-      console.log('📨 MeeshySocketIOService: Nouveau message reçu', {
+      logger.socketio.debug('MeeshySocketIOService: Nouveau message reçu', {
         messageId: socketMessage.id,
         conversationId: socketMessage.conversationId
       });
@@ -238,7 +238,7 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_EDITED, (socketMessage) => {
-      console.log('✏️ MeeshySocketIOService: Message modifié', {
+      logger.socketio.debug('MeeshySocketIOService: Message modifié', {
         messageId: socketMessage.id
       });
 
@@ -247,7 +247,7 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_DELETED, (data) => {
-      console.log('🗑️ MeeshySocketIOService: Message supprimé', {
+      logger.socketio.debug('MeeshySocketIOService: Message supprimé', {
         messageId: data.messageId
       });
 
@@ -255,7 +255,7 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data) => {
-      console.log('🌐 MeeshySocketIOService: Traduction reçue', {
+      logger.socketio.debug('MeeshySocketIOService: Traduction reçue', {
         messageId: data.messageId,
         translationsCount: data.translations.length
       });
@@ -418,8 +418,11 @@ class MeeshySocketIOService {
       username: user.username
     });
 
-    // Vérifier que le token est disponible
-    const token = localStorage.getItem('auth_token');
+    // Vérifier que le token est disponible (auth_token ou anonymous_session_token)
+    const authToken = localStorage.getItem('auth_token');
+    const anonymousToken = localStorage.getItem('anonymous_session_token');
+    const token = authToken || anonymousToken;
+    
     if (!token) {
       console.warn('🔒 MeeshySocketIOService: Token non disponible, connexion différée');
       // Attendre un peu et réessayer plusieurs fois
@@ -427,7 +430,10 @@ class MeeshySocketIOService {
       const maxAttempts = 10;
       const retryInterval = setInterval(() => {
         attempts++;
-        const retryToken = localStorage.getItem('auth_token');
+        const retryAuthToken = localStorage.getItem('auth_token');
+        const retryAnonymousToken = localStorage.getItem('anonymous_session_token');
+        const retryToken = retryAuthToken || retryAnonymousToken;
+        
         if (retryToken && this.currentUser) {
           console.log('✅ MeeshySocketIOService: Token trouvé, initialisation connexion...');
           clearInterval(retryInterval);

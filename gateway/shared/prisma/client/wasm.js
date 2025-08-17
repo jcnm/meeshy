@@ -213,7 +213,7 @@ exports.Prisma.AnonymousParticipantScalarFieldEnum = {
   shareLinkId: 'shareLinkId',
   firstName: 'firstName',
   lastName: 'lastName',
-  nickname: 'nickname',
+  username: 'username',
   email: 'email',
   sessionToken: 'sessionToken',
   ipAddress: 'ipAddress',

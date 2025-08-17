@@ -150,7 +150,7 @@ model AnonymousParticipant {
   shareLinkId       String
   firstName         String
   lastName          String
-  nickname          String
+  username          String
   email             String?
   sessionToken      String    @unique
   ipAddress         String?

@@ -165,12 +165,10 @@
         function showLocalStorage() {
             const authToken = localStorage.getItem('auth_token');
             const user = localStorage.getItem('user');
-            const authUser = localStorage.getItem('auth_user');
             
             const data = {
                 auth_token: authToken ? `${authToken.substring(0, 20)}...` : null,
-                user: user ? JSON.parse(user) : null,
-                auth_user: authUser ? JSON.parse(authUser) : null
+                user: user ? JSON.parse(user) : null
             };
             
             log('Contenu localStorage affiché');
@@ -180,7 +178,6 @@
         function clearAuth() {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user');
-            localStorage.removeItem('auth_user');
             localStorage.removeItem('token');
             log('Authentification nettoyée');
             updateDisplay();

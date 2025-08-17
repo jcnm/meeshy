@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { MessageSquare, LogIn, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { authService, TestUser } from '@/services/auth.service';
 
-export default function QuickLoginPage() {
+function QuickLoginPageContent() {
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -19,9 +19,23 @@ export default function QuickLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [testAccounts, setTestAccounts] = useState<TestUser[]>([]);
   const router = useRouter();
-  const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const { login, isAuthenticated, isChecking } = useAuth();
 
-  // Charger les comptes de test au montage du composant
+  // Récupérer l'URL de retour depuis les paramètres de recherche
+  const returnUrl = searchParams.get('returnUrl');
+
+  // Rediriger automatiquement si l'utilisateur est déjà connecté
+  useEffect(() => {
+    if (!isChecking && isAuthenticated) {
+      console.log('[LOGIN_PAGE] Utilisateur déjà connecté, redirection vers:', returnUrl || '/dashboard');
+      const redirectUrl = returnUrl || '/dashboard';
+      // Utiliser replace pour éviter l'ajout à l'historique
+      router.replace(redirectUrl);
+    }
+  }, [isAuthenticated, isChecking, returnUrl]); // Removed router from dependencies to prevent loops
+
+  // Afficher un loading pendant la vérification d'authentification
   useEffect(() => {
     const loadTestAccounts = async () => {
       try {
@@ -60,10 +74,11 @@ export default function QuickLoginPage() {
         
         toast.success(`Connexion réussie ! Bienvenue ${response.data.user.firstName}`);
         
-        // Redirection vers le dashboard
+        // Redirection vers l'URL de retour ou le dashboard
         setTimeout(() => {
-          console.log('[LOGIN_PAGE] Redirection vers /dashboard');
-          router.push('/dashboard');
+          const redirectUrl = returnUrl || '/dashboard';
+          console.log('[LOGIN_PAGE] Redirection vers:', redirectUrl);
+          router.replace(redirectUrl);
         }, 100);
       } else {
         console.error('[LOGIN_PAGE] Échec de connexion:', response.error);
@@ -94,10 +109,11 @@ export default function QuickLoginPage() {
         
         toast.success(`Connecté en tant que ${response.data.user.firstName} !`);
         
-        // Redirection vers le dashboard
+        // Redirection vers l'URL de retour ou le dashboard
         setTimeout(() => {
-          console.log('[LOGIN_PAGE] Redirection vers /dashboard (connexion rapide)');
-          router.push('/dashboard');
+          const redirectUrl = returnUrl || '/dashboard';
+          console.log('[LOGIN_PAGE] Redirection vers:', redirectUrl, '(connexion rapide)');
+          router.push(redirectUrl);
         }, 100);
       } else {
         console.error('[LOGIN_PAGE] Échec connexion rapide:', response.error);
@@ -110,6 +126,50 @@ export default function QuickLoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Afficher un état de chargement pendant la vérification d'authentification
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">Meeshy</h1>
+            <p className="text-gray-600 mt-2">Vérification de l'authentification...</p>
+            <div className="flex justify-center mt-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Si l'utilisateur est déjà connecté et que la redirection est en cours, afficher un loading
+  if (!isChecking && isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">Meeshy</h1>
+            <p className="text-gray-600 mt-2">Redirection en cours...</p>
+            <div className="flex justify-center mt-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -246,5 +306,30 @@ export default function QuickLoginPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function QuickLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <MessageSquare className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900">Meeshy</h1>
+            <p className="text-gray-600 mt-2">Chargement...</p>
+            <div className="flex justify-center mt-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <QuickLoginPageContent />
+    </Suspense>
   );
 }

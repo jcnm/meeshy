@@ -79,65 +79,101 @@ export function useAuth() {
 
   // Vérifier l'accès aux routes protégées
   useEffect(() => {
-    if (!authState.isChecking && !isAuthChecking) {
-      // Routes publiques (pas de vérification nécessaire)
-      const publicRoutes = ['/', '/login', '/register'];
-      const isPublicRoute = publicRoutes.includes(pathname);
-      
-      // Routes de jointure (accessibles sans authentification)
-      const isJoinRoute = pathname.startsWith('/join/');
-      
-      // Routes de chat partagé (nécessitent une session active)
-      const isSharedChatRoute = pathname.startsWith('/chat/');
-      
-      if (isPublicRoute) {
-        // Route publique, pas de vérification
-        // Mais si l'utilisateur est authentifié sur /login, le laisser gérer sa propre redirection
-        if (pathname === '/login' && authState.isAuthenticated) {
-          console.log('[USE_AUTH] Utilisateur authentifié sur /login, laisser la page gérer la redirection');
-          return;
-        }
+    // Ne pas faire de vérifications si l'authentification est en cours
+    if (authState.isChecking || isAuthChecking) {
+      console.log('[USE_AUTH] Vérification en cours, pas de redirection');
+      return;
+    }
+
+    console.log('[USE_AUTH] Vérification route:', pathname, 'Auth state:', {
+      isAuthenticated: authState.isAuthenticated,
+      hasUser: !!authState.user,
+      isChecking: authState.isChecking
+    });
+
+    // Routes publiques (pas de vérification nécessaire)
+    const publicRoutes = ['/', '/login', '/register'];
+    const isPublicRoute = publicRoutes.includes(pathname);
+    
+    // Routes de jointure (accessibles sans authentification)
+    const isJoinRoute = pathname.startsWith('/join/');
+    
+    // Routes de chat partagé (nécessitent une session active)
+    const isSharedChatRoute = pathname.startsWith('/chat/');
+    
+    if (isPublicRoute) {
+      // Route publique, pas de vérification
+      console.log('[USE_AUTH] Route publique, pas de redirection automatique');
+      return;
+    }
+    
+    if (isJoinRoute) {
+      // Route de jointure, accessible à tous
+      return;
+    }
+    
+    if (isSharedChatRoute) {
+      // Route de chat partagé, nécessite une session active
+      // Vérifier si l'utilisateur vient juste de se connecter en anonyme
+      const justJoined = localStorage.getItem('anonymous_just_joined');
+      if (justJoined) {
+        console.log('[USE_AUTH] Utilisateur vient de se connecter en anonyme, pas de redirection');
         return;
       }
       
-      if (isJoinRoute) {
-        // Route de jointure, accessible à tous
-        return;
-      }
-      
-      if (isSharedChatRoute) {
-        // Route de chat partagé, nécessite une session active
-        if (!canAccessSharedConversation(authState)) {
-          // Extraire le linkId de l'URL pour rediriger vers la page de jointure
-          const linkId = pathname.split('/')[2];
-          if (linkId) {
-            router.push(`/join/${linkId}`);
-          } else {
-            redirectToHome();
-          }
-          return;
+      if (!canAccessSharedConversation(authState)) {
+        // Pour les routes de chat partagé, nous devons utiliser le linkId original stocké
+        // car le conversationShareLinkId dans l'URL n'est pas utilisable pour /join/
+        const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+        
+        if (storedLinkId) {
+          console.log('[USE_AUTH] Redirection vers join avec linkId original:', storedLinkId);
+          router.push(`/join/${storedLinkId}`);
+        } else {
+          console.log('[USE_AUTH] Pas de linkId original stocké, redirection vers home');
+          redirectToHome();
         }
-      }
-      
-      // Routes protégées (nécessitent une authentification complète)
-      if (!canAccessProtectedRoute(authState)) {
-        // Sauvegarder l'URL actuelle pour redirection après connexion
-        const returnUrl = pathname !== '/' ? pathname : undefined;
-        const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login';
-        console.log('[USE_AUTH] Redirection vers login car non authentifié');
-        router.push(loginUrl);
         return;
       }
     }
-  }, [authState, pathname, router, isAuthChecking]);
+    
+    // Routes protégées (nécessitent une authentification complète)
+    if (!canAccessProtectedRoute(authState)) {
+      // Nettoyer les données d'authentification invalides avant la redirection
+      if (authState.token && !authState.isAuthenticated) {
+        console.log('[USE_AUTH] Nettoyage des données d\'authentification invalides');
+        clearAllAuthData();
+        // Mettre à jour l'état pour refléter le nettoyage
+        setAuthState({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+          isChecking: false,
+          isAnonymous: false
+        });
+        setUserRef.current(null);
+      }
+      
+      // Sauvegarder l'URL actuelle pour redirection après connexion
+      const returnUrl = pathname !== '/' ? pathname : undefined;
+      const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login';
+      console.log('[USE_AUTH] Redirection vers login car non authentifié. Auth state:', authState);
+      router.push(loginUrl);
+      return;
+    }
+    
+    console.log('[USE_AUTH] Route autorisée:', pathname);
+  }, [authState.isAuthenticated, authState.isChecking, pathname, isAuthChecking]); // Simplified dependencies
 
   // Se connecter
   const login = useCallback((user: User, token: string) => {
     console.log('[USE_AUTH] Connexion utilisateur:', user.username);
     
+    // Stocker immédiatement dans localStorage
     localStorage.setItem('auth_token', token);
     localStorage.setItem('user', JSON.stringify(user));
     
+    // Mettre à jour l'état immédiatement de manière synchrone
     const newAuthState = {
       isAuthenticated: true,
       user,
@@ -146,9 +182,12 @@ export function useAuth() {
       isAnonymous: false
     };
     
+    // Force immediate state update
     setAuthState(newAuthState);
     setUserRef.current(user);
-  }, []); // Use ref instead of dependency
+    
+    console.log('[USE_AUTH] État mis à jour immédiatement:', newAuthState);
+  }, []);
 
   // Se déconnecter
   const logout = useCallback(() => {
@@ -169,9 +208,20 @@ export function useAuth() {
   }, [router]); // Only router dependency
 
   // Rejoindre une conversation anonymement
-  const joinAnonymously = useCallback((participant: any, sessionToken: string) => {
+  const joinAnonymously = useCallback((participant: any, sessionToken: string, conversationShareLinkId?: string) => {
     localStorage.setItem('anonymous_session_token', sessionToken);
     localStorage.setItem('anonymous_participant', JSON.stringify(participant));
+    
+    // Stocker conversationShareLinkId si fourni (correspond au champ 'id' de la réponse)
+    if (conversationShareLinkId) {
+      localStorage.setItem('anonymous_current_share_link', conversationShareLinkId);
+    }
+    
+    // Marquer une connexion anonyme récente pour éviter les redirections intempestives
+    localStorage.setItem('anonymous_just_joined', 'true');
+    setTimeout(() => {
+      localStorage.removeItem('anonymous_just_joined');
+    }, 2000);
     
     const newAuthState = {
       isAuthenticated: true,
@@ -189,6 +239,7 @@ export function useAuth() {
   const leaveAnonymousSession = useCallback(() => {
     localStorage.removeItem('anonymous_session_token');
     localStorage.removeItem('anonymous_participant');
+    localStorage.removeItem('anonymous_current_share_link');
     
     const newAuthState = {
       isAuthenticated: false,
@@ -207,6 +258,21 @@ export function useAuth() {
     return await checkAuth();
   }, [checkAuth]);
 
+  // Forcer le nettoyage des données d'authentification invalides
+  const forceLogout = useCallback(() => {
+    console.log('[USE_AUTH] Nettoyage forcé des données d\'authentification');
+    clearAllAuthData();
+    const newAuthState = {
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      isChecking: false,
+      isAnonymous: false
+    };
+    setAuthState(newAuthState);
+    setUserRef.current(null);
+  }, []);
+
   return {
     // État
     isAuthenticated: authState.isAuthenticated,
@@ -221,6 +287,7 @@ export function useAuth() {
     joinAnonymously,
     leaveAnonymousSession,
     refreshAuth,
-    checkAuth
+    checkAuth,
+    forceLogout
   };
 }

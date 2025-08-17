@@ -23,7 +23,8 @@ import {
   MapPin, 
   TrendingUp, 
   ChevronUp,
-  Loader2
+  Loader2,
+  Share
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -96,7 +97,7 @@ import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
 
-export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode = false, linkId }: BubbleStreamPageProps) {
+export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -143,29 +144,43 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState<string>('');
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
-  const [activeUsers, setActiveUsers] = useState<User[]>([]);
+  const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
 
   // Fonction pour charger les utilisateurs en ligne
   const loadActiveUsers = useCallback(async () => {
     try {
-      const onlineUsers = await conversationsService.getParticipants('any', { onlineOnly: true });
+      // Pour les sessions anonymes, ne pas charger les participants via l'API
+      // car les participants sont déjà inclus dans les données de la conversation partagée
+      if (isAnonymousMode) {
+        console.log('[BubbleStreamPage] Session anonyme - pas de chargement des participants via API');
+        return;
+      }
+      
+      const onlineUsers = await conversationsService.getParticipants(conversationId, { onlineOnly: true });
       setActiveUsers(onlineUsers);
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs actifs:', error);
       // En cas d'erreur, on garde les données WebSocket si disponibles
     }
-  }, []);
+  }, [conversationId, isAnonymousMode]);
 
   // Fonction pour charger tous les participants (pour les statistiques)
   const loadAllParticipants = useCallback(async () => {
     try {
-      const allParticipants = await conversationsService.getParticipants('any');
+      // Pour les sessions anonymes, ne pas charger les participants via l'API
+      // car les participants sont déjà inclus dans les données de la conversation partagée
+      if (isAnonymousMode) {
+        console.log('[BubbleStreamPage] Session anonyme - pas de chargement des participants via API');
+        return [];
+      }
+      
+      const allParticipants = await conversationsService.getParticipants(conversationId);
       return allParticipants;
     } catch (error) {
       console.error('Erreur lors du chargement des participants:', error);
       return [];
     }
-  }, []);
+  }, [conversationId, isAnonymousMode]);
 
   // États de chargement
   const [isInitializing, setIsInitializing] = useState(true);
@@ -291,14 +306,14 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
     reconnect,
     getDiagnostics
   } = useSocketIOMessaging({
-    conversationId: 'any', // Conversation globale pour le stream
+    conversationId: conversationId, // Utiliser le conversationId passé en props
     currentUser: user,
     onNewMessage: handleNewMessage,
     onUserTyping: handleUserTyping,
     onUserStatus: handleUserStatus,
     onTranslation: handleTranslation,
     onConversationStats: (data) => {
-      if (!data || data.conversationId !== 'any') return;
+      if (!data || data.conversationId !== conversationId) return;
       const stats: any = data.stats || {};
       if (stats.messagesPerLanguage) {
         const mapped = Object.entries(stats.messagesPerLanguage).map(([code, count]) => ({
@@ -358,7 +373,7 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
       }
     },
     onConversationOnlineStats: (data) => {
-      if (!data || data.conversationId !== 'any') return;
+      if (!data || data.conversationId !== conversationId) return;
       if (Array.isArray(data.onlineUsers)) {
         setActiveUsers(data.onlineUsers.map((u: any) => ({
           id: u.id,
@@ -538,7 +553,7 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
   useEffect(() => {
     console.log('🚀 Chargement initial des messages depuis la base de données...');
     // Charger immédiatement les messages existants via HTTP API
-    loadMessages('any', true);
+    loadMessages(conversationId, true);
     setHasLoadedMessages(true);
   }, [loadMessages]);
 

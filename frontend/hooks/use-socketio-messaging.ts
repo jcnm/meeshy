@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { meeshySocketIOService } from '@/services/meeshy-socketio.service';
+import { logger } from '@/utils/logger';
 import type { Message, User } from '@/types';
 
 interface TypingEvent {
@@ -116,7 +117,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       return;
     }
     
-    console.log('🔧 useSocketIOMessaging: Configuration utilisateur...', {
+    logger.messaging.debug('useSocketIOMessaging: Configuration utilisateur...', {
       hasUser: !!currentUser,
       userId: currentUser?.id,
       username: currentUser?.username
@@ -125,23 +126,23 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     if (currentUser) {
       // Vérifier d'abord que le token est présent
       const token = localStorage.getItem('auth_token');
-      console.log('🔍 useSocketIOMessaging: Vérification token avant configuration', {
+      logger.messaging.debug('useSocketIOMessaging: Vérification token avant configuration', {
         hasToken: !!token,
         tokenLength: token?.length,
         tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
       });
       
       meeshySocketIOService.setCurrentUser(currentUser);
-      console.log('🔧 useSocketIOMessaging: Utilisateur configuré', { 
+      logger.messaging.debug('useSocketIOMessaging: Utilisateur configuré', { 
         userId: currentUser.id, 
         username: currentUser.username 
       });
       
       // Vérifier la connexion une seule fois, sans reconnexion automatique
       const status = meeshySocketIOService.getConnectionStatus();
-      console.log('🔌 useSocketIOMessaging: Statut de connexion après configuration', status);
+      logger.messaging.debug('useSocketIOMessaging: Statut de connexion après configuration', status);
     } else {
-      console.warn('⚠️ useSocketIOMessaging: Aucun utilisateur fourni');
+      logger.messaging.warn('useSocketIOMessaging: Aucun utilisateur fourni');
     }
   }, [currentUser?.id]); // Utiliser seulement l'ID pour éviter les re-rendus
 
@@ -154,11 +155,11 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     
     // Rejoindre uniquement si un utilisateur courant est fourni (évite les doubles joins via sous-composants)
     if (conversationId && currentUser?.id) {
-      console.log('🚪 useSocketIOMessaging: Rejoindre conversation', { conversationId });
+      logger.messaging.debug('useSocketIOMessaging: Rejoindre conversation', { conversationId });
       meeshySocketIOService.joinConversation(conversationId);
 
       return () => {
-        console.log('🚪 useSocketIOMessaging: Quitter conversation', { conversationId });
+        logger.messaging.debug('useSocketIOMessaging: Quitter conversation', { conversationId });
         meeshySocketIOService.leaveConversation(conversationId);
       };
     }
@@ -171,7 +172,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       return;
     }
     
-    console.log('🎧 useSocketIOMessaging: Installation des listeners');
+    logger.messaging.debug('useSocketIOMessaging: Installation des listeners');
     
     const shouldListenMessage = events?.message ?? true;
     const shouldListenEdit = events?.edit ?? true;
@@ -183,38 +184,35 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     const shouldListenOnlineStats = events?.onlineStats ?? true;
 
     const unsubscribeMessage = shouldListenMessage ? meeshySocketIOService.onNewMessage((message) => {
-      console.log('📨 useSocketIOMessaging: Nouveau message reçu', { 
-        messageId: message.id, 
-        conversationId: message.conversationId,
-        isTargetConversation: !conversationId || message.conversationId === conversationId
-      });
+      // Log seulement en mode debug et seulement pour la conversation actuelle
+      if (conversationId && message.conversationId === conversationId) {
+        logger.messaging.debug('useSocketIOMessaging: Nouveau message reçu', { 
+          messageId: message.id, 
+          conversationId: message.conversationId
+        });
+      }
       
       // Filtrer par conversation si spécifiée
       if (!conversationId || message.conversationId === conversationId) {
         callbacksRef.current.onNewMessage?.(message);
-      } else {
-        console.log('⚠️ useSocketIOMessaging: Message ignoré (conversation différente)', {
-          messageConversationId: message.conversationId,
-          currentConversationId: conversationId
-        });
       }
     }) : () => {};
 
     const unsubscribeEdit = shouldListenEdit ? meeshySocketIOService.onMessageEdited((message) => {
-      console.log('✏️ useSocketIOMessaging: Message modifié', { messageId: message.id });
+      logger.messaging.debug('useSocketIOMessaging: Message modifié', { messageId: message.id });
       if (!conversationId || message.conversationId === conversationId) {
         callbacksRef.current.onMessageEdited?.(message);
       }
     }) : () => {};
 
     const unsubscribeDelete = shouldListenDelete ? meeshySocketIOService.onMessageDeleted((messageId) => {
-      console.log('🗑️ useSocketIOMessaging: Message supprimé', { messageId });
+      logger.messaging.debug('useSocketIOMessaging: Message supprimé', { messageId });
       callbacksRef.current.onMessageDeleted?.(messageId);
     }) : () => {};
 
     // Listener pour les traductions
     const unsubscribeTranslation = shouldListenTranslation ? meeshySocketIOService.onTranslation((data) => {
-      console.log('🌐 useSocketIOMessaging: Traductions reçues', { 
+      logger.messaging.debug('useSocketIOMessaging: Traductions reçues', { 
         messageId: data.messageId, 
         translationsCount: data.translations.length 
       });
@@ -231,12 +229,12 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     // Listeners pour les événements de frappe - avec distinction start/stop
     const unsubscribeTyping = shouldListenTyping ? meeshySocketIOService.onTyping((event: TypingEvent) => {
       if (!event || typeof event !== 'object') {
-        console.warn('⚠️ useSocketIOMessaging: Événement de frappe invalide', event);
+        logger.messaging.warn('useSocketIOMessaging: Événement de frappe invalide', event);
         return;
       }
       
       if (!event.conversationId) {
-        console.warn('⚠️ useSocketIOMessaging: Événement de frappe sans conversationId', event);
+        logger.messaging.warn('useSocketIOMessaging: Événement de frappe sans conversationId', event);
         return;
       }
       
@@ -244,7 +242,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       if (!conversationId || event.conversationId === conversationId) {
         // L'événement contient maintenant le flag isTyping du service
         const isTyping = event.isTyping ?? true; // Par défaut true pour rétrocompatibilité
-        console.log('⌨️ useSocketIOMessaging: Événement frappe', { 
+        logger.messaging.debug('useSocketIOMessaging: Événement frappe', { 
           userId: event.userId, 
           username: event.username, 
           isTyping 
@@ -278,7 +276,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     }, 1000);
 
     return () => {
-      console.log('🎧 useSocketIOMessaging: Nettoyage des listeners');
+      logger.messaging.debug('useSocketIOMessaging: Nettoyage des listeners');
       unsubscribeMessage();
       unsubscribeEdit();
       unsubscribeDelete();
@@ -295,11 +293,11 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
   // Actions
   const sendMessage = useCallback(async (content: string, originalLanguage?: string): Promise<boolean> => {
     if (!conversationId) {
-      console.error('❌ useSocketIOMessaging: Impossible d\'envoyer - aucune conversation active');
+      logger.messaging.error('useSocketIOMessaging: Impossible d\'envoyer - aucune conversation active');
       return false;
     }
 
-    console.log('📤 useSocketIOMessaging: Envoi message', { 
+    logger.messaging.debug('useSocketIOMessaging: Envoi message', { 
       conversationId, 
       contentLength: content.length,
       originalLanguage,
@@ -310,7 +308,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
   }, [conversationId]);
 
   const editMessage = useCallback(async (messageId: string, newContent: string): Promise<boolean> => {
-    console.log('✏️ useSocketIOMessaging: Modification message', { 
+    logger.messaging.debug('useSocketIOMessaging: Modification message', { 
       messageId, 
       newContent: newContent.substring(0, 50) + '...' 
     });
@@ -318,38 +316,38 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
   }, []);
 
   const deleteMessage = useCallback(async (messageId: string): Promise<boolean> => {
-    console.log('🗑️ useSocketIOMessaging: Suppression message', { messageId });
+    logger.messaging.debug('useSocketIOMessaging: Suppression message', { messageId });
     return await meeshySocketIOService.deleteMessage(messageId);
   }, []);
 
   // Navigation
   const joinConversation = useCallback((conversationId: string) => {
-    console.log('🚪 useSocketIOMessaging: Rejoindre conversation (manuel)', { conversationId });
+    logger.messaging.debug('useSocketIOMessaging: Rejoindre conversation (manuel)', { conversationId });
     meeshySocketIOService.joinConversation(conversationId);
   }, []);
 
   const leaveConversation = useCallback((conversationId: string) => {
-    console.log('🚪 useSocketIOMessaging: Quitter conversation (manuel)', { conversationId });
+    logger.messaging.debug('useSocketIOMessaging: Quitter conversation (manuel)', { conversationId });
     meeshySocketIOService.leaveConversation(conversationId);
   }, []);
 
   // Frappe
   const startTyping = useCallback(() => {
     if (conversationId) {
-      console.log('⌨️ useSocketIOMessaging: Début frappe', { conversationId });
+      logger.messaging.debug('useSocketIOMessaging: Début frappe', { conversationId });
       meeshySocketIOService.startTyping(conversationId);
     }
   }, [conversationId]);
 
   const stopTyping = useCallback(() => {
     if (conversationId) {
-      console.log('⌨️ useSocketIOMessaging: Arrêt frappe', { conversationId });
+      logger.messaging.debug('useSocketIOMessaging: Arrêt frappe', { conversationId });
       meeshySocketIOService.stopTyping(conversationId);
     }
   }, [conversationId]);
 
   const reconnect = useCallback(() => {
-    console.log('🔄 useSocketIOMessaging: Reconnexion forcée');
+    logger.messaging.info('useSocketIOMessaging: Reconnexion forcée');
     meeshySocketIOService.reconnect();
   }, []);
 

@@ -15,12 +15,10 @@ export default function AuthStatusPage() {
     // Récupérer les données localStorage
     const token = localStorage.getItem('auth_token');
     const userData = localStorage.getItem('user');
-    const authUser = localStorage.getItem('auth_user');
     
     setLocalStorageData({
       auth_token: token ? `${token.substring(0, 20)}...` : null,
-      user: userData ? JSON.parse(userData) : null,
-      auth_user: authUser ? JSON.parse(authUser) : null
+      user: userData ? JSON.parse(userData) : null
     });
   }, []);
 
@@ -104,12 +102,7 @@ export default function AuthStatusPage() {
               </pre>
             </div>
             
-            <div className="p-4 bg-gray-50 rounded">
-              <h3 className="font-semibold">auth_user:</h3>
-              <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-32">
-                {localStorageData.auth_user ? JSON.stringify(localStorageData.auth_user, null, 2) : 'Absent'}
-              </pre>
-            </div>
+
           </div>
 
           {/* Actions de débogage */}

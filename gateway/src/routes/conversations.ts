@@ -4,8 +4,10 @@ import { conversationStatsService } from '../services/ConversationStatsService';
 import { z } from 'zod';
 import { UserRoleEnum } from '@shared/types';
 
-// Fonction utilitaire pour générer le linkId avec le format link_<conversationShareLink.Id>_yymmddhhm
-function generateLinkId(): string {
+// Fonction utilitaire pour générer le linkId avec le format demandé
+// Étape 1: génère yymmddhhm_<random>
+// Étape 2: sera mis à jour avec mshy_<conversationShareLink.Id>.yymmddhhm_<random> après création
+function generateInitialLinkId(): string {
   const now = new Date();
   const year = now.getFullYear().toString().slice(-2);
   const month = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -16,7 +18,11 @@ function generateLinkId(): string {
   const timestamp = `${year}${month}${day}${hour}${minute}`;
   const randomSuffix = Math.random().toString(36).slice(2, 10);
   
-  return `link_${timestamp}_${randomSuffix}`;
+  return `${timestamp}_${randomSuffix}`;
+}
+
+function generateFinalLinkId(conversationShareLinkId: string, initialId: string): string {
+  return `mshy_${conversationShareLinkId}.${initialId}`;
 }
 
 // Prisma et TranslationService sont décorés et fournis par le serveur principal
@@ -1540,21 +1546,22 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-                      // Vérifier que l'utilisateur est admin/modo de la conversation
-                if (membership.role !== UserRoleEnum.ADMIN && membership.role !== UserRoleEnum.CREATOR && membership.role !== UserRoleEnum.MODERATOR) {
-                  return reply.status(403).send({
-                    success: false,
-                    error: 'Seuls les administrateurs et modérateurs peuvent créer des liens'
-                  });
-                }
+                      // Vérifier que l'utilisateur est membre de la conversation
+                      // Permettre à tous les membres de créer des liens pour les conversations partagées
+                      if (membership.role !== UserRoleEnum.ADMIN && membership.role !== UserRoleEnum.CREATOR && membership.role !== UserRoleEnum.MODERATOR && membership.role !== UserRoleEnum.MEMBER) {
+                        return reply.status(403).send({
+                          success: false,
+                          error: 'Vous devez être membre de cette conversation pour créer des liens'
+                        });
+                      }
 
-      // Générer un linkId avec le format link_<timestamp>_<random>
-      const linkId = generateLinkId();
+      // Générer le linkId initial
+      const initialLinkId = generateInitialLinkId();
 
       // Créer le lien avec toutes les options configurables
       const shareLink = await prisma.conversationShareLink.create({
         data: {
-          linkId,
+          linkId: initialLinkId, // Temporaire
           conversationId: id,
           createdBy: currentUserId,
           name: body.name,
@@ -1575,16 +1582,23 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
+      // Mettre à jour avec le linkId final
+      const finalLinkId = generateFinalLinkId(shareLink.id, initialLinkId);
+      await prisma.conversationShareLink.update({
+        where: { id: shareLink.id },
+        data: { linkId: finalLinkId }
+      });
+
       // Retour compatible avec le frontend de service conversations (string du lien complet)
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3100'}/join/${linkId}`;
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3100'}/join/${finalLinkId}`;
       reply.send({
         success: true,
         data: {
           link: inviteLink,
-          code: linkId,
+          code: finalLinkId,
           shareLink: {
             id: shareLink.id,
-            linkId: shareLink.linkId,
+            linkId: finalLinkId,
             name: shareLink.name,
             description: shareLink.description,
             maxUses: shareLink.maxUses,
@@ -1730,12 +1744,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const { conversationId } = request.params as { conversationId: string };
       const userId = (request as any).user.userId || (request as any).user.id;
 
-      // Vérifier que l'utilisateur est admin de la conversation
+      // Vérifier que l'utilisateur est admin ou modérateur de la conversation
       const membership = await prisma.conversationMember.findFirst({
         where: {
           conversationId,
           userId,
-          role: 'admin',
+          role: { in: ['admin', 'moderator'] },
           isActive: true
         }
       });
@@ -1743,7 +1757,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       if (!membership) {
         return reply.status(403).send({ 
           success: false, 
-          error: 'Accès non autorisé - droits administrateur requis' 
+          error: 'Accès non autorisé - droits administrateur ou modérateur requis' 
         });
       }
 
@@ -1782,6 +1796,99 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ 
         success: false, 
         error: 'Erreur lors de la récupération des liens de la conversation' 
+      });
+    }
+  });
+
+  // Route pour rejoindre une conversation via un lien partagé (utilisateurs authentifiés)
+  fastify.post('/conversations/join/:linkId', {
+    preValidation: [fastify.authenticate]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { linkId } = request.params as { linkId: string };
+      const userToken = (request as any).user;
+
+      if (!userToken) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Authentification requise'
+        });
+      }
+
+      // Vérifier que le lien existe et est valide
+      const shareLink = await prisma.conversationShareLink.findUnique({
+        where: { linkId },
+        include: {
+          conversation: true
+        }
+      });
+
+      if (!shareLink) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Lien de conversation introuvable'
+        });
+      }
+
+      if (!shareLink.isActive) {
+        return reply.status(410).send({
+          success: false,
+          error: 'Ce lien n\'est plus actif'
+        });
+      }
+
+      if (shareLink.expiresAt && shareLink.expiresAt < new Date()) {
+        return reply.status(410).send({
+          success: false,
+          error: 'Ce lien a expiré'
+        });
+      }
+
+      // Vérifier si l'utilisateur est déjà membre de la conversation
+      const existingMember = await prisma.conversationMember.findUnique({
+        where: {
+          conversationId_userId: {
+            conversationId: shareLink.conversationId,
+            userId: userToken.userId || userToken.id
+          }
+        }
+      });
+
+      if (existingMember) {
+        return reply.send({
+          success: true,
+          message: 'Vous êtes déjà membre de cette conversation',
+          data: { conversationId: shareLink.conversationId }
+        });
+      }
+
+      // Ajouter l'utilisateur à la conversation
+      await prisma.conversationMember.create({
+        data: {
+          conversationId: shareLink.conversationId,
+          userId: userToken.userId || userToken.id,
+          role: UserRoleEnum.MEMBER,
+          joinedAt: new Date()
+        }
+      });
+
+      // Incrémenter le compteur d'utilisation du lien
+      await prisma.conversationShareLink.update({
+        where: { id: shareLink.id },
+        data: { currentUses: { increment: 1 } }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Vous avez rejoint la conversation avec succès',
+        data: { conversationId: shareLink.conversationId }
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error joining conversation via link:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la jointure de la conversation'
       });
     }
   });

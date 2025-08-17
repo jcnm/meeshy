@@ -7,7 +7,7 @@ import { logError } from '../utils/logger';
 const joinAnonymousSchema = z.object({
   firstName: z.string().min(1, 'Le prénom est requis').max(50),
   lastName: z.string().min(1, 'Le nom est requis').max(50),
-  nickname: z.string().optional(),
+  username: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
   language: z.string().default('fr'),
   deviceFingerprint: z.string().optional()
@@ -25,7 +25,7 @@ function generateSessionToken(deviceFingerprint?: string): string {
   return `anon_${timestamp}_${randomPart}_${devicePart}`;
 }
 
-// Helper pour générer un nickname automatique
+// Helper pour générer un username automatique
 function generateNickname(firstName: string, lastName: string): string {
   const cleanFirstName = firstName.toLowerCase().replace(/[^a-z]/g, '');
   const lastNameInitials = lastName.toLowerCase().replace(/[^a-z]/g, '').slice(0, 2);
@@ -165,14 +165,30 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // 5. Générer le nickname si non fourni
-      const nickname = body.nickname || generateNickname(body.firstName, body.lastName);
+      // 5. Générer le username si non fourni
+      const username = body.username || generateNickname(body.firstName, body.lastName);
 
-      // 6. Vérifier que le nickname n'est pas déjà pris dans cette conversation
+      // 6. Vérifier que le username n'est pas déjà pris par un utilisateur enregistré
+      const existingUser = await fastify.prisma.user.findFirst({
+        where: {
+          username: username,
+          isActive: true
+        }
+      });
+
+      if (existingUser) {
+        return reply.status(409).send({
+          success: false,
+          message: 'Ce nom d\'utilisateur est déjà utilisé par un membre du site',
+          suggestedNickname: generateNickname(body.firstName, body.lastName)
+        });
+      }
+
+      // 7. Vérifier que le username n'est pas déjà pris dans cette conversation
       const existingParticipant = await fastify.prisma.anonymousParticipant.findFirst({
         where: {
           conversationId: shareLink.conversationId,
-          nickname: nickname,
+          username: username,
           isActive: true
         }
       });
@@ -180,22 +196,22 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
       if (existingParticipant) {
         return reply.status(409).send({
           success: false,
-          message: 'Ce nickname est déjà utilisé dans cette conversation',
+          message: 'Ce nom d\'utilisateur est déjà utilisé dans cette conversation',
           suggestedNickname: generateNickname(body.firstName, body.lastName)
         });
       }
 
-      // 6. Générer le sessionToken unique
+      // 8. Générer le sessionToken unique
       const sessionToken = generateSessionToken(body.deviceFingerprint);
 
-      // 7. Créer le participant anonyme
+      // 9. Créer le participant anonyme
       const anonymousParticipant = await fastify.prisma.anonymousParticipant.create({
         data: {
           conversationId: shareLink.conversationId,
           shareLinkId: shareLink.id,
           firstName: body.firstName,
           lastName: body.lastName,
-          nickname: nickname,
+          username: username,
           email: body.email || null,
           sessionToken: sessionToken,
           ipAddress: clientIP,
@@ -208,7 +224,7 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         }
       });
 
-      // 8. Mettre à jour les compteurs du lien
+      // 10. Mettre à jour les compteurs du lien
       await fastify.prisma.conversationShareLink.update({
         where: { id: shareLink.id },
         data: {
@@ -218,7 +234,7 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         }
       });
 
-      console.log(`✅ Participant anonyme créé: ${anonymousParticipant.nickname} (${anonymousParticipant.id})`);
+      console.log(`✅ Participant anonyme créé: ${anonymousParticipant.username} (${anonymousParticipant.id})`);
 
       return reply.status(201).send({
         success: true,
@@ -226,10 +242,11 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
           sessionToken: sessionToken,
           participant: {
             id: anonymousParticipant.id,
-            nickname: anonymousParticipant.nickname,
+            username: anonymousParticipant.username, // nickname → username pour l'uniformité
             firstName: anonymousParticipant.firstName,
             lastName: anonymousParticipant.lastName,
             language: anonymousParticipant.language,
+            isMeeshyer: false, // Utilisateur anonyme
             canSendMessages: anonymousParticipant.canSendMessages,
             canSendFiles: anonymousParticipant.canSendFiles,
             canSendImages: anonymousParticipant.canSendImages
@@ -240,7 +257,8 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
             type: shareLink.conversation.type,
             allowViewHistory: shareLink.allowViewHistory
           },
-          linkId: shareLink.linkId
+          linkId: shareLink.linkId,
+          id: shareLink.id // ID pour l'accès authentifié aux endpoints /links
         }
       });
 
@@ -318,10 +336,11 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         data: {
           participant: {
             id: participant.id,
-            nickname: participant.nickname,
+            username: participant.username, // nickname → username pour l'uniformité
             firstName: participant.firstName,
             lastName: participant.lastName,
             language: participant.language,
+            isMeeshyer: false, // Utilisateur anonyme
             canSendMessages: participant.canSendMessages,
             canSendFiles: participant.canSendFiles,
             canSendImages: participant.canSendImages
@@ -402,34 +421,69 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
   });
 
   // Route pour vérifier les informations d'un lien (avant de rejoindre)
-  fastify.get('/anonymous/link/:linkId', async (request: FastifyRequest, reply: FastifyReply) => {
+  // Accepte soit un linkId (format mshy_...) soit un conversationShareLinkId (ID de base de données)
+  fastify.get('/anonymous/link/:identifier', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { linkId } = request.params as { linkId: string };
+      const { identifier } = request.params as { identifier: string };
 
-      const shareLink = await fastify.prisma.conversationShareLink.findUnique({
-        where: { linkId },
-        include: {
-          conversation: {
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              type: true,
-              createdAt: true
-            }
-          },
-          creator: {
-            select: {
-              id: true,
-              username: true,
-              firstName: true,
-              lastName: true,
-              displayName: true,
-              avatar: true
+      // Détecter si c'est un linkId (commence par "mshy_") ou un conversationShareLinkId (ID de base de données)
+      const isLinkId = identifier.startsWith('mshy_');
+      
+      let shareLink;
+      
+      if (isLinkId) {
+        // Rechercher par linkId
+        shareLink = await fastify.prisma.conversationShareLink.findUnique({
+          where: { linkId: identifier },
+          include: {
+            conversation: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                type: true,
+                createdAt: true
+              }
+            },
+            creator: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                displayName: true,
+                avatar: true
+              }
             }
           }
-        }
-      });
+        });
+      } else {
+        // Rechercher par conversationShareLinkId (ID de base de données)
+        shareLink = await fastify.prisma.conversationShareLink.findUnique({
+          where: { id: identifier },
+          include: {
+            conversation: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                type: true,
+                createdAt: true
+              }
+            },
+            creator: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                displayName: true,
+                avatar: true
+              }
+            }
+          }
+        });
+      }
 
       if (!shareLink) {
         return reply.status(404).send({
@@ -463,6 +517,7 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
       return reply.send({
         success: true,
         data: {
+          id: shareLink.id, // ID de la conversationShareLink pour les appels ultérieurs
           linkId: shareLink.linkId,
           name: shareLink.name,
           description: shareLink.description,

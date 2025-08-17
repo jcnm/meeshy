@@ -174,80 +174,127 @@ export class MeeshySocketIOManager {
 
   private async _handleTokenAuthentication(socket: any): Promise<void> {
     try {
-      // Essayer de récupérer le token depuis différentes sources
-      let token = socket.auth?.token;
+      // Récupérer les tokens depuis différentes sources (comme le middleware hybride)
+      const authToken = socket.handshake?.headers?.authorization?.replace('Bearer ', '');
+      const sessionToken = socket.handshake?.headers?.['x-session-token'] as string;
       
-      // Si pas dans auth, essayer dans les headers
-      if (!token && socket.handshake?.headers?.authorization) {
-        const authHeader = socket.handshake.headers.authorization;
-        if (authHeader.startsWith('Bearer ')) {
-          token = authHeader.substring(7);
-        }
-      }
-      
-      console.log(`🔍 Authentification pour socket ${socket.id}:`, {
-        hasAuth: !!socket.auth,
-        authKeys: socket.auth ? Object.keys(socket.auth) : [],
-        tokenExists: !!token,
-        tokenLength: token?.length,
-        tokenPreview: token ? token.substring(0, 30) + '...' : 'none',
-        hasAuthHeader: !!socket.handshake?.headers?.authorization,
-        authHeaderPreview: socket.handshake?.headers?.authorization ? socket.handshake.headers.authorization.substring(0, 30) + '...' : 'none'
-      });
-      
-      if (!token) {
-        console.log(`⚠️ Aucun token fourni pour socket ${socket.id}`);
-        return;
-      }
-
-      // Vérifier et décoder le token JWT
-      const jwtSecret = process.env.JWT_SECRET || 'default-secret';
-      const decoded = jwt.verify(token, jwtSecret) as any;
-      
-      console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId}`);
-
-      // Récupérer l'utilisateur depuis la base de données
-      const dbUser = await this.prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: { 
-          id: true, 
-          username: true,
-          systemLanguage: true 
-        }
+      console.log(`🔍 Authentification hybride pour socket ${socket.id}:`, {
+        hasAuthToken: !!authToken,
+        hasSessionToken: !!sessionToken,
+        authTokenLength: authToken?.length,
+        sessionTokenLength: sessionToken?.length,
+        authTokenPreview: authToken ? authToken.substring(0, 30) + '...' : 'none',
+        sessionTokenPreview: sessionToken ? sessionToken.substring(0, 30) + '...' : 'none'
       });
 
-      if (!dbUser) {
-        console.log(`❌ Utilisateur ${decoded.userId} non trouvé en base`);
-        socket.emit(SERVER_EVENTS.ERROR, { message: 'User not found' });
-        return;
+      // Tentative d'authentification avec Bearer token (utilisateur authentifié)
+      if (authToken) {
+        try {
+          const jwtSecret = process.env.JWT_SECRET || 'default-secret';
+          const decoded = jwt.verify(authToken, jwtSecret) as any;
+          
+          console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId}`);
+
+          // Récupérer l'utilisateur depuis la base de données
+          const dbUser = await this.prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { 
+              id: true, 
+              username: true,
+              systemLanguage: true,
+              isActive: true
+            }
+          });
+
+          if (dbUser && dbUser.isActive) {
+            // Créer l'utilisateur Socket.IO
+            const user: SocketUser = {
+              id: dbUser.id,
+              socketId: socket.id,
+              isAnonymous: false,
+              language: dbUser.systemLanguage
+            };
+
+            // Enregistrer l'utilisateur
+            this.connectedUsers.set(user.id, user);
+            this.socketToUser.set(socket.id, user.id);
+
+            // Rejoindre les conversations de l'utilisateur
+            await this._joinUserConversations(socket, user.id, false);
+
+            // Rejoindre la room globale si elle existe (conversation 'any')
+            try {
+              socket.join(`conversation_any`);
+              console.log(`👥 Utilisateur authentifié ${user.id} rejoint conversation globale 'any'`);
+            } catch {}
+
+            console.log(`✅ Utilisateur authentifié automatiquement: ${user.id}`);
+            return; // Authentification réussie
+          } else {
+            console.log(`❌ Utilisateur ${decoded.userId} non trouvé ou inactif`);
+          }
+        } catch (jwtError) {
+          console.log(`⚠️ Token JWT invalide, tentative avec session token`);
+        }
       }
 
-      // Créer l'utilisateur Socket.IO
-      const user: SocketUser = {
-        id: dbUser.id,
-        socketId: socket.id,
-        isAnonymous: false,
-        language: dbUser.systemLanguage
-      };
+      // Tentative d'authentification avec session token (participant anonyme)
+      if (sessionToken) {
+        const participant = await this.prisma.anonymousParticipant.findUnique({
+          where: { sessionToken },
+          include: {
+            shareLink: {
+              select: { 
+                id: true,
+                linkId: true,
+                isActive: true,
+                expiresAt: true
+              }
+            }
+          }
+        });
 
-      // Enregistrer l'utilisateur
-      this.connectedUsers.set(user.id, user);
-      this.socketToUser.set(socket.id, user.id);
+        if (participant && participant.isActive && participant.shareLink.isActive) {
+          // Vérifier l'expiration du lien
+          if (!participant.shareLink.expiresAt || participant.shareLink.expiresAt > new Date()) {
+            // Créer l'utilisateur Socket.IO anonyme
+            const user: SocketUser = {
+              id: participant.id,
+              socketId: socket.id,
+              isAnonymous: true,
+              language: participant.language
+            };
 
-      // Rejoindre les conversations de l'utilisateur
-      await this._joinUserConversations(socket, user.id, false);
+            // Enregistrer l'utilisateur anonyme
+            this.connectedUsers.set(user.id, user);
+            this.socketToUser.set(socket.id, user.id);
 
-      // Rejoindre la room globale si elle existe (conversation 'any')
-      try {
-        socket.join(`conversation_any`);
-        console.log(`👥 Utilisateur ${user.id} rejoint conversation globale 'any'`);
-      } catch {}
+            // Rejoindre la conversation spécifique du lien de partage
+            try {
+              const conversationRoom = `conversation_${participant.shareLink.id}`;
+              socket.join(conversationRoom);
+              console.log(`👥 Participant anonyme ${user.id} rejoint conversation ${conversationRoom}`);
+            } catch {}
 
-      console.log(`✅ Utilisateur authentifié automatiquement: ${user.id}`);
+            console.log(`✅ Participant anonyme authentifié automatiquement: ${user.id}`);
+            return; // Authentification anonyme réussie
+          } else {
+            console.log(`❌ Lien de partage expiré pour participant ${participant.id}`);
+          }
+        } else {
+          console.log(`❌ Participant anonyme non trouvé ou inactif pour session token`);
+        }
+      }
+
+      // Aucune authentification valide trouvée
+      console.log(`⚠️ Aucune authentification valide pour socket ${socket.id}`);
+      socket.emit(SERVER_EVENTS.ERROR, { 
+        message: 'Authentification requise. Veuillez fournir un Bearer token ou un x-session-token valide.' 
+      });
 
     } catch (error) {
-      console.error(`❌ Erreur authentification token:`, error);
-      socket.emit(SERVER_EVENTS.ERROR, { message: 'Invalid token' });
+      console.error(`❌ Erreur authentification hybride:`, error);
+      socket.emit(SERVER_EVENTS.ERROR, { message: 'Erreur d\'authentification' });
     }
   }
 
@@ -256,7 +303,7 @@ export class MeeshySocketIOManager {
       let user: SocketUser | null = null;
       
       if (data.sessionToken) {
-        // Vérifier si c'est un token JWT pour un utilisateur authentifié
+        // Tentative d'authentification avec Bearer token (utilisateur authentifié)
         try {
           const jwtSecret = process.env.JWT_SECRET || 'default-secret';
           const decoded = jwt.verify(data.sessionToken, jwtSecret) as any;
@@ -269,19 +316,21 @@ export class MeeshySocketIOManager {
             select: { 
               id: true, 
               username: true,
-              systemLanguage: true 
+              systemLanguage: true,
+              isActive: true
             }
           });
 
-          if (dbUser) {
+          if (dbUser && dbUser.isActive) {
             user = {
               id: dbUser.id,
               socketId: socket.id,
               isAnonymous: false,
               language: data.language || dbUser.systemLanguage
             };
+            console.log(`✅ Utilisateur authentifié: ${user.id}`);
           } else {
-            console.log(`❌ Utilisateur ${decoded.userId} non trouvé en base`);
+            console.log(`❌ Utilisateur ${decoded.userId} non trouvé ou inactif`);
           }
         } catch (jwtError) {
           console.log(`⚠️ Token JWT invalide, tentative comme sessionToken anonyme`);
@@ -289,16 +338,33 @@ export class MeeshySocketIOManager {
           // Si ce n'est pas un JWT valide, essayer comme sessionToken anonyme
           const anonymousUser = await this.prisma.anonymousParticipant.findUnique({
             where: { sessionToken: data.sessionToken },
-            select: { id: true }
+            include: {
+              shareLink: {
+                select: { 
+                  id: true,
+                  linkId: true,
+                  isActive: true,
+                  expiresAt: true
+                }
+              }
+            }
           });
           
-          if (anonymousUser) {
-            user = {
-              id: anonymousUser.id,
-              socketId: socket.id,
-              isAnonymous: true,
-              language: data.language || 'fr'
-            };
+          if (anonymousUser && anonymousUser.isActive && anonymousUser.shareLink.isActive) {
+            // Vérifier l'expiration du lien
+            if (!anonymousUser.shareLink.expiresAt || anonymousUser.shareLink.expiresAt > new Date()) {
+              user = {
+                id: anonymousUser.id,
+                socketId: socket.id,
+                isAnonymous: true,
+                language: data.language || anonymousUser.language || 'fr'
+              };
+              console.log(`✅ Participant anonyme authentifié: ${user.id}`);
+            } else {
+              console.log(`❌ Lien de partage expiré pour participant ${anonymousUser.id}`);
+            }
+          } else {
+            console.log(`❌ Participant anonyme non trouvé ou inactif`);
           }
         }
       } else if (data.userId) {

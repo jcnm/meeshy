@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth Meeshy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #005a87;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Authentication Meeshy</h1>
+        
+        <div class="section">
+            <h3>📊 État actuel du localStorage</h3>
+            <button class="button" onclick="checkLocalStorage()">🔄 Vérifier localStorage</button>
+            <button class="button" onclick="clearAllAuth()">🗑️ Nettoyer Auth</button>
+            <div id="localStorage-status"></div>
+        </div>
+
+        <div class="section">
+            <h3>🌐 Test API d'authentification</h3>
+            <button class="button" onclick="testAuthAPI()">🔐 Tester /auth/me</button>
+            <div id="api-status"></div>
+        </div>
+
+        <div class="section">
+            <h3>👤 Test des comptes utilisateur</h3>
+            <button class="button" onclick="quickLogin('john@test.com')">👨 John Doe</button>
+            <button class="button" onclick="quickLogin('alice@test.com')">👩 Alice Martin</button>
+            <button class="button" onclick="quickLogin('bob@test.com')">👨‍💼 Bob Wilson</button>
+            <div id="login-status"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔄 Navigation</h3>
+            <button class="button" onclick="goToHome()">🏠 Aller à l'accueil</button>
+            <button class="button" onclick="reloadPage()">🔄 Recharger la page</button>
+        </div>
+
+        <div class="section">
+            <h3>📝 Logs temps réel</h3>
+            <button class="button" onclick="clearLogs()">🗑️ Effacer logs</button>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <script>
+        let logContainer = document.getElementById('logs');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = '';
+        }
+
+        function checkLocalStorage() {
+            log('🔍 Vérification du localStorage...', 'info');
+            
+            const authData = {
+                auth_token: localStorage.getItem('auth_token'),
+                user: localStorage.getItem('user'),
+                token: localStorage.getItem('token'),
+                anonymous_session_token: localStorage.getItem('anonymous_session_token'),
+                anonymous_participant: localStorage.getItem('anonymous_participant'),
+                anonymous_current_link_id: localStorage.getItem('anonymous_current_link_id'),
+                anonymous_current_share_link: localStorage.getItem('anonymous_current_share_link')
+            };
+
+            let statusHtml = '<h4>📦 Données localStorage:</h4>';
+            
+            for (const [key, value] of Object.entries(authData)) {
+                if (value) {
+                    statusHtml += `<div class="status success"><strong>${key}:</strong> ${key.includes('user') ? 'Utilisateur trouvé' : 'Présent'}</div>`;
+                    if (key === 'user') {
+                        try {
+                            const userData = JSON.parse(value);
+                            statusHtml += `<pre>${JSON.stringify(userData, null, 2)}</pre>`;
+                        } catch (e) {
+                            statusHtml += `<div class="status error">❌ Erreur parsing user: ${e.message}</div>`;
+                        }
+                    }
+                } else {
+                    statusHtml += `<div class="status warning"><strong>${key}:</strong> Non trouvé</div>`;
+                }
+            }
+
+            document.getElementById('localStorage-status').innerHTML = statusHtml;
+            log('✅ Vérification localStorage terminée', 'success');
+        }
+
+        function clearAllAuth() {
+            const keys = ['auth_token', 'user', 'token', 'anonymous_session_token', 'anonymous_participant', 'anonymous_current_link_id', 'anonymous_current_share_link'];
+            
+            keys.forEach(key => localStorage.removeItem(key));
+            
+            log('🗑️ Toutes les données d\'authentification ont été supprimées', 'success');
+            checkLocalStorage();
+        }
+
+        async function testAuthAPI() {
+            log('🔐 Test de l\'API d\'authentification...', 'info');
+            
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                log('❌ Aucun token trouvé dans localStorage', 'error');
+                document.getElementById('api-status').innerHTML = '<div class="status error">❌ Aucun token d\'authentification trouvé</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                let statusHtml = `<h4>📡 Réponse API /auth/me (${response.status}):</h4>`;
+                
+                if (response.ok) {
+                    statusHtml += `<div class="status success">✅ Authentification valide</div>`;
+                    statusHtml += `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    log('✅ API d\'authentification: Succès', 'success');
+                } else {
+                    statusHtml += `<div class="status error">❌ Échec de l'authentification</div>`;
+                    statusHtml += `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    log(`❌ API d\'authentification: Échec (${response.status})`, 'error');
+                }
+
+                document.getElementById('api-status').innerHTML = statusHtml;
+            } catch (error) {
+                const errorMsg = `❌ Erreur réseau: ${error.message}`;
+                document.getElementById('api-status').innerHTML = `<div class="status error">${errorMsg}</div>`;
+                log(errorMsg, 'error');
+            }
+        }
+
+        async function quickLogin(email) {
+            log(`👤 Tentative de connexion: ${email}`, 'info');
+            
+            try {
+                const response = await fetch('http://localhost:3000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: email,
+                        email: email,
+                        password: 'password123',
+                    }),
+                });
+
+                const result = await response.json();
+                
+                let statusHtml = `<h4>🔐 Connexion ${email} (${response.status}):</h4>`;
+                
+                if (response.ok && result.success) {
+                    const { user, token } = result.data;
+                    
+                    // Stocker dans localStorage
+                    localStorage.setItem('auth_token', token);
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    statusHtml += `<div class="status success">✅ Connexion réussie pour ${user.firstName} ${user.lastName}</div>`;
+                    statusHtml += `<pre>Utilisateur: ${JSON.stringify(user, null, 2)}</pre>`;
+                    log(`✅ Connexion réussie: ${user.firstName} ${user.lastName}`, 'success');
+                    
+                    // Vérifier immédiatement le localStorage
+                    setTimeout(checkLocalStorage, 100);
+                } else {
+                    statusHtml += `<div class="status error">❌ Échec de la connexion</div>`;
+                    statusHtml += `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+                    log(`❌ Échec de connexion pour ${email}`, 'error');
+                }
+
+                document.getElementById('login-status').innerHTML = statusHtml;
+            } catch (error) {
+                const errorMsg = `❌ Erreur réseau: ${error.message}`;
+                document.getElementById('login-status').innerHTML = `<div class="status error">${errorMsg}</div>`;
+                log(errorMsg, 'error');
+            }
+        }
+
+        function goToHome() {
+            log('🏠 Redirection vers l\'accueil...', 'info');
+            window.location.href = 'http://localhost:3100/';
+        }
+
+        function reloadPage() {
+            log('🔄 Rechargement de la page...', 'info');
+            window.location.reload();
+        }
+
+        // Vérifier automatiquement au chargement
+        window.addEventListener('load', () => {
+            log('🚀 Page de débogage chargée', 'info');
+            checkLocalStorage();
+        });
+    </script>
+</body>
+</html>
