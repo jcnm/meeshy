@@ -61,7 +61,7 @@ export default function JoinConversationPage() {
   const params = useParams();
   const router = useRouter();
   const linkId = params?.linkId as string;
-  const { user: currentUser, login, joinAnonymously, isChecking, isAnonymous, token } = useAuth();
+  const { user: currentUser, login, joinAnonymously, isChecking, isAnonymous, token, logout, leaveAnonymousSession } = useAuth();
   
   const [conversationLink, setConversationLink] = useState<ConversationLink | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -210,76 +210,90 @@ export default function JoinConversationPage() {
   };
 
   const joinConversation = async () => {
-    if (!currentUser || !conversationLink || linkError) return;
-
     setIsJoining(true);
     
     try {
-      // Préparer les headers d'authentification selon le type d'utilisateur
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
+      const conversationShareLinkId = params.linkId as string;
       
-      if (isAnonymous) {
-        // Utilisateur anonyme - utiliser x-session-token
-        const sessionToken = localStorage.getItem('anonymous_session_token');
-        if (sessionToken) {
-          headers['x-session-token'] = sessionToken;
-        }
-      } else {
-        // Utilisateur authentifié - utiliser Authorization Bearer
-        const authToken = localStorage.getItem('auth_token');
-        if (authToken) {
-          headers['Authorization'] = `Bearer ${authToken}`;
-        }
-      }
+      // Déterminer le type d'authentification
+      const authToken = localStorage.getItem('auth_token');
+      const sessionToken = localStorage.getItem('anonymous_session_token');
       
-      // D'abord, obtenir le conversationShareLinkId via l'endpoint public
-      const linkInfo = await LinkConversationService.getLinkInfo(linkId);
-      const conversationShareLinkId = linkInfo.data.id;
-      
-      // Vérifier le type d'utilisateur avec l'endpoint /links/:conversationShareLinkId
-      const chatResponse = await fetch(`${buildApiUrl('/links')}/${conversationShareLinkId}`, {
-        method: 'GET',
-        headers
+      console.log('[JOIN_CONVERSATION] Debug auth:', {
+        conversationShareLinkId,
+        hasAuthToken: !!authToken,
+        hasSessionToken: !!sessionToken,
+        isAnonymous
       });
 
-      if (chatResponse.ok) {
-        const chatResult = await chatResponse.json();
+      // Préparer les headers selon le type d'authentification
+      const headers: Record<string, string> = {};
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      if (sessionToken) {
+        headers['x-session-token'] = sessionToken;
+      }
+
+      // Si l'utilisateur a un session token (participant anonyme), rediriger directement
+      if (isAnonymous && sessionToken) {
+        console.log('[JOIN_CONVERSATION] Utilisateur anonyme avec session token, redirection directe');
+        router.push(`/chat/${conversationShareLinkId}`);
+        return;
+      }
+
+      // Si l'utilisateur a un access token, vérifier s'il est déjà membre
+      if (authToken) {
+        console.log('[JOIN_CONVERSATION] Utilisateur avec access token, vérification membre');
         
-        if (chatResult.success && chatResult.data.userType === 'member') {
-          // Utilisateur membre authentifié - rediriger directement vers la conversation
-          toast.success('Redirection vers votre conversation');
-          router.push(chatResult.data.redirectTo);
-          return;
-        } else if (chatResult.success && chatResult.data.userType === 'authenticated_non_member') {
-          // Utilisateur authentifié mais pas membre - continuer vers l'endpoint de jointure
-          console.log('Utilisateur authentifié mais pas membre, peut rejoindre');
-        }
-      }
+        // Vérifier le type d'utilisateur avec l'endpoint /links/:conversationShareLinkId
+        const chatResponse = await fetch(`${buildApiUrl('/links')}/${conversationShareLinkId}`, {
+          method: 'GET',
+          headers
+        });
 
-      // Si ce n'est pas un membre, essayer de joindre via l'endpoint de jointure
-      const response = await fetch(`${buildApiUrl('/conversations/join')}/${conversationShareLinkId}`, {
-        method: 'POST',
-        headers: {
-          // Retirer le Content-Type puisqu'il n'y a pas de body
-          ...(isAnonymous ? { 'x-session-token': localStorage.getItem('anonymous_session_token') || '' } : {}),
-          ...((!isAnonymous && localStorage.getItem('auth_token')) ? { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` } : {})
+        if (chatResponse.ok) {
+          const chatResult = await chatResponse.json();
+          
+          if (chatResult.success && chatResult.data.userType === 'member') {
+            // Utilisateur membre authentifié - rediriger directement vers la conversation
+            console.log('[JOIN_CONVERSATION] Utilisateur membre, redirection vers conversation');
+            toast.success('Redirection vers votre conversation');
+            router.push(chatResult.data.redirectTo);
+            return;
+          } else if (chatResult.success && chatResult.data.userType === 'authenticated_non_member') {
+            // Utilisateur authentifié mais pas membre - continuer vers l'endpoint de jointure
+            console.log('[JOIN_CONVERSATION] Utilisateur authentifié mais pas membre, peut rejoindre');
+          }
+        } else {
+          console.error('[JOIN_CONVERSATION] Erreur GET /links:', chatResponse.status);
+          const errorData = await chatResponse.json();
+          console.error('[JOIN_CONVERSATION] Erreur détails:', errorData);
         }
-        // Pas de body nécessaire, l'authentification se fait via le token/sessionToken
-      });
 
-      if (response.ok) {
-        const result = await response.json();
-        toast.success('Vous avez rejoint la conversation !');
-        // Rediriger vers la page de conversation normale
-        router.push(`/conversations/${result.data.conversationId}`);
-      } else {
-        const error = await response.json();
-        toast.error(error.message || 'Erreur lors de la jointure');
+        // Si ce n'est pas un membre, essayer de joindre via l'endpoint de jointure
+        console.log('[JOIN_CONVERSATION] Tentative de jointure via POST /conversations/join');
+        const response = await fetch(`${buildApiUrl('/conversations/join')}/${conversationShareLinkId}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('[JOIN_CONVERSATION] Jointure réussie:', result);
+          toast.success('Vous avez rejoint la conversation !');
+          // Rediriger vers la page de conversation
+          router.push(`/conversations/${result.data.conversationId}`);
+        } else {
+          const error = await response.json();
+          console.error('[JOIN_CONVERSATION] Erreur POST /conversations/join:', response.status, error);
+          toast.error(error.message || 'Erreur lors de la jointure');
+        }
       }
     } catch (error) {
-      console.error('Erreur jointure:', error);
+      console.error('[JOIN_CONVERSATION] Erreur jointure:', error);
       toast.error('Erreur de connexion');
     } finally {
       setIsJoining(false);
@@ -392,6 +406,29 @@ export default function JoinConversationPage() {
               </Dialog>
             </div>
           )}
+          
+          {currentUser && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">
+                {isAnonymous ? 'Session anonyme' : 'Connecté'}: {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
+              </span>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  if (isAnonymous) {
+                    leaveAnonymousSession();
+                  } else {
+                    logout();
+                  }
+                  toast.info('Session fermée');
+                }}
+              >
+                <UserMinus className="h-4 w-4 mr-2" />
+                {isAnonymous ? 'Quitter la session' : 'Se déconnecter'}
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -458,7 +495,7 @@ export default function JoinConversationPage() {
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <div>
                       <p className="font-medium text-green-900">
-                        Connecté en tant que {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username || 'Utilisateur'}
+                        Connecté en tant que {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
                       </p>
                       <p className="text-sm text-green-700">
                         @{currentUser.username || currentUser.displayName || 'utilisateur'}
