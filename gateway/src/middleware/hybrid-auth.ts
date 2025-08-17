@@ -49,6 +49,14 @@ export function createHybridAuthMiddleware(prisma: any, options: { requireAuth?:
       const authToken = request.headers.authorization?.replace('Bearer ', '');
       const sessionToken = request.headers['x-session-token'] as string;
       
+      console.log('[HYBRID-AUTH] Debug authentification:', {
+        hasAuthToken: !!authToken,
+        hasSessionToken: !!sessionToken,
+        sessionToken: sessionToken ? `${sessionToken.substring(0, 10)}...` : 'none',
+        headers: Object.keys(request.headers),
+        allHeaders: request.headers
+      });
+      
       const hybridRequest = request as HybridAuthRequest;
       hybridRequest.isAuthenticated = false;
       hybridRequest.isAnonymous = false;
@@ -100,6 +108,8 @@ export function createHybridAuthMiddleware(prisma: any, options: { requireAuth?:
 
       // Tentative d'authentification avec session token
       if (sessionToken) {
+        console.log('[HYBRID-AUTH] Tentative d\'authentification avec sessionToken:', sessionToken.substring(0, 10) + '...');
+        
         const participant = await prisma.anonymousParticipant.findUnique({
           where: { sessionToken },
           include: {
@@ -112,6 +122,14 @@ export function createHybridAuthMiddleware(prisma: any, options: { requireAuth?:
               }
             }
           }
+        });
+
+        console.log('[HYBRID-AUTH] Participant trouvé:', {
+          found: !!participant,
+          isActive: participant?.isActive,
+          shareLinkActive: participant?.shareLink?.isActive,
+          shareLinkId: participant?.shareLinkId,
+          participantId: participant?.id
         });
 
         if (participant && participant.isActive && participant.shareLink.isActive) {
@@ -132,8 +150,13 @@ export function createHybridAuthMiddleware(prisma: any, options: { requireAuth?:
               shareLinkId: participant.shareLinkId
             };
             hybridRequest.isAnonymous = true;
+            console.log('[HYBRID-AUTH] Authentification anonyme réussie pour:', participant.username);
             return; // Authentification anonyme réussie
+          } else {
+            console.log('[HYBRID-AUTH] Lien expiré');
           }
+        } else {
+          console.log('[HYBRID-AUTH] Participant invalide ou lien inactif');
         }
       }
 
