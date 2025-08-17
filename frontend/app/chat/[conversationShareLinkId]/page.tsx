@@ -7,6 +7,8 @@ import { BubbleStreamPage } from '@/components/common/bubble-stream-page';
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/layout/Header';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { RegisterForm } from '@/components/auth/register-form';
 
 interface ConversationData {
   conversation: {
@@ -62,8 +64,22 @@ export default function ChatPage() {
   const [conversationData, setConversationData] = useState<ConversationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [authMode, setAuthMode] = useState<'welcome' | 'login' | 'register' | 'join'>('welcome');
 
   const conversationShareLinkId = params.conversationShareLinkId as string;
+
+  // Fonctions pour gérer les actions d'authentification
+  const handleAuthModeChange = (mode: 'welcome' | 'login' | 'register' | 'join') => {
+    if (mode === 'login') {
+      // Rediriger vers la page de connexion
+      router.push('/login');
+    } else if (mode === 'register') {
+      // Afficher la modal d'inscription
+      setAuthMode('register');
+    } else {
+      setAuthMode('welcome');
+    }
+  };
 
   useEffect(() => {
     async function loadConversationData() {
@@ -234,6 +250,8 @@ export default function ChatPage() {
           displayName: conversationData.currentUser.firstName + ' ' + conversationData.currentUser.lastName,
           isAnonymous: isAnonymous
         } : null}
+        authMode={authMode}
+        onAuthModeChange={handleAuthModeChange}
         onLogout={() => {
           // Logique de déconnexion pour les utilisateurs authentifiés
           localStorage.removeItem('auth_token');
@@ -312,6 +330,24 @@ export default function ChatPage() {
           ] : undefined}
         />
       </div>
+
+      {/* Modal d'inscription */}
+      <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Créer un compte</DialogTitle>
+            <DialogDescription>
+              Rejoignez Meeshy et communiquez sans barrières
+            </DialogDescription>
+          </DialogHeader>
+          <RegisterForm onSuccess={() => {
+            // Fermer la modale après inscription réussie
+            setAuthMode('welcome');
+            // Recharger la page pour mettre à jour l'état d'authentification
+            window.location.reload();
+          }} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
