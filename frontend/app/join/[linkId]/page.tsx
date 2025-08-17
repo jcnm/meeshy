@@ -60,7 +60,7 @@ export default function JoinConversationPage() {
   const params = useParams();
   const router = useRouter();
   const linkId = params?.linkId as string;
-  const { user: currentUser, login, joinAnonymously } = useAuth();
+  const { user: currentUser, login, joinAnonymously, isChecking } = useAuth();
   
   const [conversationLink, setConversationLink] = useState<ConversationLink | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +75,12 @@ export default function JoinConversationPage() {
     email: '',
     language: 'fr'
   });
+
+  // Debug: Log currentUser pour voir ce qu'on a
+  useEffect(() => {
+    console.log('[JOIN_PAGE] currentUser:', currentUser);
+    console.log('[JOIN_PAGE] isChecking:', isChecking);
+  }, [currentUser, isChecking]);
 
   useEffect(() => {
     const initializePage = async () => {
@@ -219,7 +225,7 @@ export default function JoinConversationPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isChecking) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
@@ -393,7 +399,9 @@ export default function JoinConversationPage() {
                       <p className="font-medium text-green-900">
                         Connecté en tant que {currentUser.firstName || currentUser.displayName || currentUser.username} {currentUser.lastName || ''}
                       </p>
-                      <p className="text-sm text-green-700">@{currentUser.username}</p>
+                      <p className="text-sm text-green-700">
+                        @{currentUser.username || currentUser.displayName || 'utilisateur'}
+                      </p>
                     </div>
                   </div>
                   

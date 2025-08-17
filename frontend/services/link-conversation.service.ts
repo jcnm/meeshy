@@ -117,7 +117,19 @@ export class LinkConversationService {
   ): Promise<LinkConversationData> {
     const { limit = 50, offset = 0, sessionToken, authToken } = options;
     
-    const endpoint = API_ENDPOINTS.CONVERSATION.GET_LINK_CONVERSATION(linkId);
+    // Choisir l'endpoint approprié selon le type d'authentification
+    let endpoint: string;
+    if (sessionToken) {
+      // Pour les utilisateurs anonymes, utiliser l'endpoint anonymous
+      endpoint = `/anonymous/chat/${linkId}`;
+    } else if (authToken) {
+      // Pour les utilisateurs authentifiés, utiliser l'endpoint conversation
+      endpoint = `/conversation/link/${linkId}`;
+    } else {
+      // Si aucune authentification, utiliser l'endpoint public pour récupérer les infos de base
+      endpoint = `/anonymous/link/${linkId}`;
+    }
+    
     const url = new URL(buildApiUrl(endpoint));
     
     // Ajouter les paramètres de requête
