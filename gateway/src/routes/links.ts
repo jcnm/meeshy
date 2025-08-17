@@ -458,6 +458,21 @@ export async function linksRoutes(fastify: FastifyInstance) {
       let userType: 'anonymous' | 'member' | 'guest' | 'authenticated_non_member' = 'guest';
       let currentUser: any = null;
 
+      console.log('[LINKS_GET] Debug authentification:', {
+        isAuthenticated: hybridRequest.isAuthenticated,
+        hasUser: !!hybridRequest.user,
+        isAnonymous: hybridRequest.isAnonymous,
+        hasAnonymousParticipant: !!hybridRequest.anonymousParticipant,
+        user: hybridRequest.user ? {
+          id: hybridRequest.user.id,
+          username: hybridRequest.user.username
+        } : null,
+        anonymousParticipant: hybridRequest.anonymousParticipant ? {
+          id: hybridRequest.anonymousParticipant.id,
+          username: hybridRequest.anonymousParticipant.username
+        } : null
+      });
+
       if (hybridRequest.isAuthenticated && hybridRequest.user) {
         const isMember = shareLink.conversation.members.some(
           member => member.userId === hybridRequest.user.id && member.isActive
@@ -477,6 +492,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
             canSendImages: true
           }
         };
+        console.log('[LINKS_GET] Utilisateur authentifié défini:', currentUser);
       } else if (hybridRequest.isAnonymous && hybridRequest.anonymousParticipant) {
         userType = 'anonymous';
         const participant = hybridRequest.anonymousParticipant;
@@ -494,6 +510,9 @@ export async function linksRoutes(fastify: FastifyInstance) {
             canSendImages: participant.canSendImages
           }
         };
+        console.log('[LINKS_GET] Participant anonyme défini:', currentUser);
+      } else {
+        console.log('[LINKS_GET] Aucune authentification détectée, currentUser reste null');
       }
 
       // Calculer les statistiques

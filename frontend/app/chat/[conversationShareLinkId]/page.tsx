@@ -129,6 +129,13 @@ export default function ChatPage() {
         }
         
         const data = await LinkConversationService.getConversationData(conversationShareLinkId, options);
+        console.log('[CHAT_PAGE] Données reçues:', {
+          hasData: !!data,
+          hasCurrentUser: !!data?.currentUser,
+          currentUser: data?.currentUser,
+          userType: data?.userType,
+          conversationId: data?.conversation?.id
+        });
         setConversationData(data);
       } catch (err) {
         console.error('Erreur lors du chargement:', err);
@@ -193,7 +200,7 @@ export default function ChatPage() {
     );
   }
 
-  // Vérifier que currentUser existe
+  // Vérifier que currentUser existe seulement après le chargement
   if (!conversationData.currentUser) {
     return (
       <AccessDenied
