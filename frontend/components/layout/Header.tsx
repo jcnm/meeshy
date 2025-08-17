@@ -201,7 +201,10 @@ export function Header({
                       Connectez-vous à votre compte Meeshy
                     </DialogDescription>
                   </DialogHeader>
-                  <LoginForm />
+                  <LoginForm onSuccess={() => {
+                    // Fermer la modale après connexion réussie
+                    onAuthModeChange?.('welcome');
+                  }} />
                 </DialogContent>
               </Dialog>
               
@@ -219,7 +222,10 @@ export function Header({
                       Rejoignez Meeshy et communiquez sans barrières
                     </DialogDescription>
                   </DialogHeader>
-                  <RegisterForm />
+                  <RegisterForm onSuccess={() => {
+                    // Fermer la modale après inscription réussie
+                    onAuthModeChange?.('welcome');
+                  }} />
                 </DialogContent>
               </Dialog>
             </>
