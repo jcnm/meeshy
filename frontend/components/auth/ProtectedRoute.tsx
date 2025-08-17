@@ -1,13 +1,13 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { useAuth } from '@/hooks/use-auth';
-import { LoadingState } from '@/components/common';
+import { LoadingState } from '@/components/ui/loading-state';
 
 interface ProtectedRouteProps {
-  children: ReactNode;
+  children: React.ReactNode;
   redirectTo?: string;
   requireAuth?: boolean;
 }
@@ -67,12 +67,14 @@ export function ProtectedRoute({
   // ET qu'il n'y a pas de token (sinon l'utilisateur devrait être chargé depuis l'API)
   const token = localStorage.getItem('auth_token');
   if (requireAuth && !user && !token) {
-    return <LoadingState message="Vérification de l'authentification..." fullScreen />;
+    return <LoadingState message="Redirection vers la page de connexion..." fullScreen />;
   }
 
-  if (!requireAuth && user) {
+  // Si l'authentification n'est pas requise et que l'utilisateur est connecté, afficher un loading
+  if (!requireAuth && user && token) {
     return <LoadingState message="Redirection..." fullScreen />;
   }
 
+  // Afficher le contenu protégé
   return <>{children}</>;
 }

@@ -28,6 +28,7 @@ export function useAuth() {
   const { setUser, isAuthChecking } = useUser();
   const hasInitialized = useRef(false);
   const setUserRef = useRef(setUser);
+  const redirectInProgress = useRef(false);
 
   // Keep setUser ref updated
   useEffect(() => {
@@ -65,20 +66,24 @@ export function useAuth() {
       setUserRef.current(null);
       return errorState;
     }
-  }, []); // Empty dependency array
+  }, []);
 
-  // Initialiser l'authentification au chargement
+  // Initialiser l'authentification au chargement (une seule fois)
   useEffect(() => {
-    // Prevent multiple initializations
     if (hasInitialized.current) {
       return;
     }
     hasInitialized.current = true;
     checkAuth();
-  }, []); // Empty dependency array to run only once
+  }, []);
 
-  // Vérifier l'accès aux routes protégées
+  // Gestion des redirections unifiée et simplifiée
   useEffect(() => {
+    // Éviter les redirections multiples
+    if (redirectInProgress.current) {
+      return;
+    }
+
     // Ne pas faire de vérifications si l'authentification est en cours
     if (authState.isChecking || isAuthChecking) {
       console.log('[USE_AUTH] Vérification en cours, pas de redirection');
@@ -123,14 +128,15 @@ export function useAuth() {
       
       if (!canAccessSharedConversation(authState)) {
         // Pour les routes de chat partagé, nous devons utiliser le linkId original stocké
-        // car le conversationShareLinkId dans l'URL n'est pas utilisable pour /join/
         const storedLinkId = localStorage.getItem('anonymous_current_link_id');
         
         if (storedLinkId) {
           console.log('[USE_AUTH] Redirection vers join avec linkId original:', storedLinkId);
+          redirectInProgress.current = true;
           router.push(`/join/${storedLinkId}`);
         } else {
           console.log('[USE_AUTH] Pas de linkId original stocké, redirection vers home');
+          redirectInProgress.current = true;
           redirectToHome();
         }
         return;
@@ -154,16 +160,23 @@ export function useAuth() {
         setUserRef.current(null);
       }
       
+      // Éviter la redirection si on est déjà sur /login
+      if (pathname === '/login') {
+        console.log('[USE_AUTH] Déjà sur /login, pas de redirection');
+        return;
+      }
+      
       // Sauvegarder l'URL actuelle pour redirection après connexion
       const returnUrl = pathname !== '/' ? pathname : undefined;
       const loginUrl = returnUrl ? `/login?returnUrl=${encodeURIComponent(returnUrl)}` : '/login';
       console.log('[USE_AUTH] Redirection vers login car non authentifié. Auth state:', authState);
+      redirectInProgress.current = true;
       router.push(loginUrl);
       return;
     }
     
     console.log('[USE_AUTH] Route autorisée:', pathname);
-  }, [authState.isAuthenticated, authState.isChecking, pathname, isAuthChecking]); // Simplified dependencies
+  }, [authState.isAuthenticated, authState.isChecking, pathname, isAuthChecking]);
 
   // Se connecter
   const login = useCallback((user: User, token: string) => {
@@ -205,7 +218,7 @@ export function useAuth() {
     setAuthState(newAuthState);
     setUserRef.current(null);
     router.push('/');
-  }, [router]); // Only router dependency
+  }, [router]);
 
   // Rejoindre une conversation anonymement
   const joinAnonymously = useCallback((participant: any, sessionToken: string, conversationShareLinkId?: string) => {
@@ -233,7 +246,7 @@ export function useAuth() {
     
     setAuthState(newAuthState);
     setUserRef.current(participant);
-  }, []); // Use ref instead of dependency
+  }, []);
 
   // Quitter une session anonyme
   const leaveAnonymousSession = useCallback(() => {
@@ -251,7 +264,7 @@ export function useAuth() {
     
     setAuthState(newAuthState);
     setUserRef.current(null);
-  }, []); // Use ref instead of dependency
+  }, []);
 
   // Rafraîchir l'état d'authentification
   const refreshAuth = useCallback(async () => {

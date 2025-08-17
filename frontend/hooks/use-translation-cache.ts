@@ -47,12 +47,12 @@ export const useTranslationCache = () => {
 
   const updateStats = useCallback(() => {
     setStats({
-      totalEntries: state.translationCache.size,
-      totalSize: JSON.stringify(Object.fromEntries(state.translationCache)).length,
+      totalEntries: Object.keys(state.translationCache).length,
+      totalSize: JSON.stringify(state.translationCache).length,
       hitCount: stats.hitCount,
       missCount: stats.missCount
     });
-  }, [state.translationCache]);
+  }, [state.translationCache, stats.hitCount, stats.missCount]);
 
   useEffect(() => {
     updateStats();
@@ -61,9 +61,9 @@ export const useTranslationCache = () => {
   const getEntriesByLanguage = useCallback((): CacheEntry[] => {
     // Convertir le cache du contexte en format CacheEntry
     const entries: CacheEntry[] = [];
-    state.translationCache.forEach((value, key) => {
+    Object.entries(state.translationCache).forEach(([key, value]) => {
       entries.push({
-        value,
+        value: typeof value === 'string' ? value : JSON.stringify(value),
         sourceLanguage: 'unknown', // Information non disponible dans le cache simple
         targetLanguage: 'unknown',
         lastAccessed: Date.now(),
@@ -84,7 +84,7 @@ export const useTranslationCache = () => {
     const cacheData = {
       stats,
       timestamp: new Date().toISOString(),
-      entries: Object.fromEntries(state.translationCache),
+      entries: state.translationCache,
       note: 'Cache exporté depuis le contexte global'
     };
     return JSON.stringify(cacheData, null, 2);

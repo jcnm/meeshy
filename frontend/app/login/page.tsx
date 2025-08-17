@@ -28,14 +28,14 @@ function QuickLoginPageContent() {
   // Rediriger automatiquement si l'utilisateur est déjà connecté
   useEffect(() => {
     if (!isChecking && isAuthenticated) {
-      console.log('[LOGIN_PAGE] Utilisateur déjà connecté, redirection vers:', returnUrl || '/dashboard');
-      const redirectUrl = returnUrl || '/dashboard';
+      console.log('[LOGIN_PAGE] Utilisateur déjà connecté, redirection vers:', returnUrl || '/');
+      const redirectUrl = returnUrl || '/';
       // Utiliser replace pour éviter l'ajout à l'historique
       router.replace(redirectUrl);
     }
-  }, [isAuthenticated, isChecking, returnUrl]); // Removed router from dependencies to prevent loops
+  }, [isAuthenticated, isChecking, returnUrl, router]);
 
-  // Afficher un loading pendant la vérification d'authentification
+  // Charger les comptes de test
   useEffect(() => {
     const loadTestAccounts = async () => {
       try {
@@ -74,9 +74,9 @@ function QuickLoginPageContent() {
         
         toast.success(`Connexion réussie ! Bienvenue ${response.data.user.firstName}`);
         
-        // Redirection vers l'URL de retour ou le dashboard
+        // Redirection vers l'URL de retour ou la page d'accueil
         setTimeout(() => {
-          const redirectUrl = returnUrl || '/dashboard';
+          const redirectUrl = returnUrl || '/';
           console.log('[LOGIN_PAGE] Redirection vers:', redirectUrl);
           router.replace(redirectUrl);
         }, 100);
@@ -109,11 +109,11 @@ function QuickLoginPageContent() {
         
         toast.success(`Connecté en tant que ${response.data.user.firstName} !`);
         
-        // Redirection vers l'URL de retour ou le dashboard
+        // Redirection vers l'URL de retour ou la page d'accueil
         setTimeout(() => {
-          const redirectUrl = returnUrl || '/dashboard';
+          const redirectUrl = returnUrl || '/';
           console.log('[LOGIN_PAGE] Redirection vers:', redirectUrl, '(connexion rapide)');
-          router.push(redirectUrl);
+          router.replace(redirectUrl);
         }, 100);
       } else {
         console.error('[LOGIN_PAGE] Échec connexion rapide:', response.error);
@@ -184,8 +184,6 @@ function QuickLoginPageContent() {
           <h1 className="text-3xl font-bold text-gray-900">Meeshy</h1>
           <p className="text-gray-600 mt-2">Connectez-vous à votre compte</p>
         </div>
-
-
 
         {/* Formulaire de connexion */}
         <Card>

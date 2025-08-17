@@ -47,9 +47,6 @@ export default function LandingPage() {
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
 
-  // Suppression de la logique de vérification d'authentification redondante
-  // Cette logique est maintenant gérée par le hook useAuth
-
   // État pour gérer l'affichage du lien de conversation anonyme
   const [anonymousChatLink, setAnonymousChatLink] = useState<string | null>(null);
 
@@ -113,6 +110,7 @@ export default function LandingPage() {
         console.log('[LANDING] Connexion rapide réussie pour:', userData.username);
         toast.success(`Connecté en tant que ${userData.firstName} !`);
         login(userData, token);
+        // Pas de redirection ici - la page se mettra à jour automatiquement
       } else {
         toast.error('Données utilisateur ou token manquantes');
       }
