@@ -81,39 +81,51 @@ export async function linksRoutes(fastify: FastifyInstance) {
     return `mshy_${conversationShareLinkId}.${initialId}`;
   }
 
-  // 1. Créer un lien - Seuls les membres connectés par accessToken peuvent créer des liens
-  // L'utilisateur doit être au moins modérateur pour créer un lien de conversation
+  // 1. Créer un lien - Les utilisateurs authentifiés peuvent créer des liens pour leurs conversations
   fastify.post('/links', { 
-    onRequest: [authenticatedOnly, requireModeration] 
+    onRequest: [authenticatedOnly] 
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const body = createLinkSchema.parse(request.body);
       const { userId } = (request as any).user;
+      const userRole = (request as any).user.role;
+
+      console.log('[CREATE_LINK] Tentative création lien:', {
+        userId,
+        userRole,
+        body: {
+          conversationId: body.conversationId,
+          name: body.name,
+          hasDescription: !!body.description
+        }
+      });
 
       let conversationId = body.conversationId;
 
       if (conversationId) {
-        // Vérifier que l'utilisateur est admin/modo de la conversation
+        // Vérifier que l'utilisateur est membre de la conversation
         const member = await fastify.prisma.conversationMember.findFirst({
           where: { conversationId, userId, isActive: true }
         });
 
         if (!member) {
+          console.log('[CREATE_LINK] Utilisateur non membre de la conversation:', { userId, conversationId });
           return reply.status(403).send({ 
             success: false, 
             message: "Vous n'êtes pas membre de cette conversation" 
           });
         }
 
-        // Permettre à tous les membres de créer des liens pour les conversations partagées
-        if (member.role !== UserRoleEnum.ADMIN && member.role !== UserRoleEnum.MODERATOR && member.role !== UserRoleEnum.CREATOR && member.role !== UserRoleEnum.MEMBER) {
-          return reply.status(403).send({ 
-            success: false, 
-            message: 'Vous devez être membre de cette conversation pour créer des liens' 
-          });
-        }
+        // Permettre à tous les membres de créer des liens pour leurs conversations
+        console.log('[CREATE_LINK] Utilisateur autorisé à créer un lien:', { 
+          userId, 
+          conversationId, 
+          memberRole: member.role 
+        });
       } else {
         // Créer une nouvelle conversation de type public
+        console.log('[CREATE_LINK] Création nouvelle conversation pour utilisateur:', { userId, userRole });
+        
         const conversation = await fastify.prisma.conversation.create({
           data: {
             type: 'public',
@@ -128,6 +140,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
           }
         });
         conversationId = conversation.id;
+        
+        console.log('[CREATE_LINK] Nouvelle conversation créée:', { 
+          conversationId, 
+          title: conversation.title,
+          creatorRole: UserRoleEnum.CREATOR 
+        });
       }
 
       // Générer le linkId initial
