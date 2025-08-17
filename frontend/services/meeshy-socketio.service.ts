@@ -159,8 +159,18 @@ class MeeshySocketIOService {
     });
 
     try {
+      // Essayer avec auth au lieu de extraHeaders pour Socket.IO v4+
+      const authData: any = {};
+      if (authToken) {
+        authData.authToken = authToken;
+      }
+      if (sessionToken) {
+        authData.sessionToken = sessionToken;
+      }
+
       this.socket = io(serverUrl, {
-        extraHeaders,
+        auth: authData,
+        extraHeaders, // Garder aussi extraHeaders comme fallback
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,

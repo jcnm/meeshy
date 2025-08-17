@@ -174,9 +174,21 @@ export class MeeshySocketIOManager {
 
   private async _handleTokenAuthentication(socket: any): Promise<void> {
     try {
+      // Debug complet de socket.handshake
+      console.log(`🔍 DEBUG socket.handshake pour ${socket.id}:`, {
+        hasHandshake: !!socket.handshake,
+        headers: socket.handshake?.headers,
+        allHeaders: Object.keys(socket.handshake?.headers || {}),
+        auth: socket.handshake?.auth,
+        query: socket.handshake?.query,
+        address: socket.handshake?.address
+      });
+
       // Récupérer les tokens depuis différentes sources (comme le middleware hybride)
-      const authToken = socket.handshake?.headers?.authorization?.replace('Bearer ', '');
-      const sessionToken = socket.handshake?.headers?.['x-session-token'] as string;
+      const authToken = socket.handshake?.headers?.authorization?.replace('Bearer ', '') || 
+                       socket.handshake?.auth?.authToken;
+      const sessionToken = socket.handshake?.headers?.['x-session-token'] as string || 
+                          socket.handshake?.auth?.sessionToken;
       
       console.log(`🔍 Authentification hybride pour socket ${socket.id}:`, {
         hasAuthToken: !!authToken,
