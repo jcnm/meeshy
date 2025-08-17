@@ -532,6 +532,10 @@ export async function linksRoutes(fastify: FastifyInstance) {
             isActive: shareLink.isActive
           },
           userType,
+          // Ajouter redirectTo pour les utilisateurs membres
+          ...(userType === 'member' && {
+            redirectTo: `/chat/${shareLink.id}`
+          }),
           messages: formattedMessages.reverse(),
           stats,
           members: shareLink.conversation.members.map(member => ({
