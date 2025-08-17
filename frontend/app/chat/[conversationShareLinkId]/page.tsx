@@ -9,6 +9,7 @@ import { Header } from '@/components/layout/Header';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterForm } from '@/components/auth/register-form';
+import { LoginForm } from '@/components/auth/login-form';
 
 interface ConversationData {
   conversation: {
@@ -71,8 +72,8 @@ export default function ChatPage() {
   // Fonctions pour gérer les actions d'authentification
   const handleAuthModeChange = (mode: 'welcome' | 'login' | 'register' | 'join') => {
     if (mode === 'login') {
-      // Rediriger vers la page de connexion
-      router.push('/login');
+      // Afficher la modal de connexion
+      setAuthMode('login');
     } else if (mode === 'register') {
       // Afficher la modal d'inscription
       setAuthMode('register');
@@ -342,6 +343,24 @@ export default function ChatPage() {
           </DialogHeader>
           <RegisterForm onSuccess={() => {
             // Fermer la modale après inscription réussie
+            setAuthMode('welcome');
+            // Recharger la page pour mettre à jour l'état d'authentification
+            window.location.reload();
+          }} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de connexion */}
+      <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Se connecter</DialogTitle>
+            <DialogDescription>
+              Connectez-vous à votre compte Meeshy
+            </DialogDescription>
+          </DialogHeader>
+          <LoginForm onSuccess={() => {
+            // Fermer la modale après connexion réussie
             setAuthMode('welcome');
             // Recharger la page pour mettre à jour l'état d'authentification
             window.location.reload();
