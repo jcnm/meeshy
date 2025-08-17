@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RegisterForm } from '@/components/auth/register-form';
 import { LoginForm } from '@/components/auth/login-form';
+import { AccessDenied } from '@/components/ui/access-denied';
 
 interface ConversationData {
   conversation: {
@@ -152,22 +153,33 @@ export default function ChatPage() {
   }
 
   if (error) {
+    // Déterminer le type d'erreur pour choisir la variante appropriée
+    let variant: 'forbidden' | 'unauthorized' | 'not-found' | 'error' = 'error';
+    let title = "Erreur";
+    let description = error;
+
+    if (error.includes('403') || error.includes('Forbidden') || error.includes('Accès non autorisé')) {
+      variant = 'forbidden';
+      title = "Accès interdit";
+      description = "Vous n'avez pas les permissions nécessaires pour accéder à cette conversation.";
+    } else if (error.includes('401') || error.includes('Unauthorized')) {
+      variant = 'unauthorized';
+      title = "Authentification requise";
+      description = "Vous devez être connecté pour accéder à cette conversation.";
+    } else if (error.includes('404') || error.includes('Not Found') || error.includes('introuvable')) {
+      variant = 'not-found';
+      title = "Conversation introuvable";
+      description = "Cette conversation n'existe pas ou le lien est invalide.";
+    }
+
     return (
-      <div className="min-h-screen bg-gradient-to-b from-red-50 to-pink-100 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-red-600 mb-2">Erreur</h1>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              Réessayer
-            </button>
-          </div>
-        </div>
-      </div>
+      <AccessDenied
+        variant={variant}
+        title={title}
+        description={description}
+        showBackButton={true}
+        showHomeButton={true}
+      />
     );
   }
 
@@ -184,21 +196,13 @@ export default function ChatPage() {
   // Vérifier que currentUser existe
   if (!conversationData.currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-red-50 to-pink-100 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-red-600 mb-2">Erreur d'authentification</h1>
-            <p className="text-gray-600 mb-4">Impossible de récupérer les informations de l'utilisateur. Veuillez vous reconnecter.</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
-              Réessayer
-            </button>
-          </div>
-        </div>
-      </div>
+      <AccessDenied
+        variant="unauthorized"
+        title="Erreur d'authentification"
+        description="Impossible de récupérer les informations de l'utilisateur. Veuillez vous reconnecter."
+        showBackButton={true}
+        showHomeButton={true}
+      />
     );
   }
 
