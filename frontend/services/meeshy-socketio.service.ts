@@ -448,12 +448,9 @@ class MeeshySocketIOService {
 
     // Si déjà connecté, juste s'assurer que l'authentification est à jour
     if (this.socket && this.isConnected) {
-      console.log('🔐 MeeshySocketIOService: Mise à jour de l\'authentification...');
-      this.socket.emit('authenticate', { 
-        sessionToken: token,
-        userId: user.id,
-        language: user.systemLanguage 
-      });
+      console.log('🔐 MeeshySocketIOService: Authentification déjà gérée via headers');
+      // L'authentification est maintenant gérée automatiquement via les headers
+      // Pas besoin d'envoyer d'événement 'authenticate'
     } else {
       // Initialiser la connexion
       this.initializeConnection();
@@ -497,6 +494,26 @@ class MeeshySocketIOService {
         return;
       }
 
+      if (!this.isConnected) {
+        console.error('❌ MeeshySocketIOService: Socket connecté mais pas prêt');
+        resolve(false);
+        return;
+      }
+
+      // Vérifier l'état d'authentification
+      const authToken = localStorage.getItem('auth_token');
+      const sessionToken = localStorage.getItem('anonymous_session_token');
+      
+      console.log('🔍 MeeshySocketIOService: État avant envoi message', {
+        socketId: this.socket.id,
+        isConnected: this.isConnected,
+        hasAuthToken: !!authToken,
+        hasSessionToken: !!sessionToken,
+        conversationId,
+        contentLength: content.length,
+        currentUser: this.currentUser?.id
+      });
+
       console.log('📤 MeeshySocketIOService: Envoi message', {
         conversationId,
         contentLength: content.length,
@@ -510,11 +527,22 @@ class MeeshySocketIOService {
       };
 
       this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response) => {
+        console.log('📨 MeeshySocketIOService: Réponse envoi message', {
+          response,
+          hasResponse: !!response,
+          responseType: typeof response,
+          responseKeys: response ? Object.keys(response) : []
+        });
+        
         if (response?.success) {
           console.log('✅ MeeshySocketIOService: Message envoyé avec succès', response);
           resolve(true);
         } else {
-          console.error('❌ MeeshySocketIOService: Erreur envoi message', response);
+          console.error('❌ MeeshySocketIOService: Erreur envoi message', {
+            response,
+            error: response?.error,
+            hasError: !!response?.error
+          });
           toast.error(response?.error || 'Erreur lors de l\'envoi du message');
           resolve(false);
         }
