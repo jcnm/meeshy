@@ -66,9 +66,12 @@ export function ConversationDetailsSidebar({
   const [activeLanguageStats, setActiveLanguageStats] = useState<LanguageStats[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
-  // Vérifier si l'utilisateur actuel est admin/créateur
+  // Vérifier si l'utilisateur actuel est admin/modérateur de la conversation
+  const userMembership = conversation.participants?.find(p => p.userId === currentUser.id);
   const isAdmin = currentUser.role === UserRoleEnum.ADMIN || 
-                  currentUser.role === UserRoleEnum.BIGBOSS;
+                  currentUser.role === UserRoleEnum.BIGBOSS ||
+                  userMembership?.role === UserRoleEnum.ADMIN ||
+                  userMembership?.role === UserRoleEnum.MODERATOR;
 
   // Calculer les statistiques de langues des messages et participants (comme dans BubbleStreamPage)
   useEffect(() => {
@@ -192,6 +195,7 @@ export function ConversationDetailsSidebar({
           </Button>
         </div>
 
+        {/* Contenu scrollable */}
         <ScrollArea className="flex-1">
           <div className="p-4 space-y-6">
             {/* Info principale */}
@@ -336,19 +340,16 @@ export function ConversationDetailsSidebar({
               </div>
             </FoldableSection>
 
-            {/* Section Liens de partage - Visible uniquement pour les admins */}
-            {isAdmin && (
-              <FoldableSection
-                title="Liens de partage"
-                icon={<Link2 className="h-4 w-4 mr-2" />}
-                defaultExpanded={false}
-              >
-                <ConversationLinksSection 
-                  conversationId={conversation.id}
-                  isAdmin={isAdmin}
-                />
-              </FoldableSection>
-            )}
+            {/* Section Liens de partage */}
+            <FoldableSection
+              title="Liens de partage"
+              icon={<Link2 className="h-4 w-4 mr-2" />}
+              defaultExpanded={false}
+            >
+              <ConversationLinksSection 
+                conversationId={conversation.id}
+              />
+            </FoldableSection>
           </div>
         </ScrollArea>
       </div>

@@ -455,7 +455,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
       }));
 
       // Déterminer le type d'utilisateur et les données de l'utilisateur actuel
-      let userType: 'anonymous' | 'member' | 'guest' | 'authenticated_non_member' = 'guest';
+      let userType: 'anonymous' | 'member';
       let currentUser: any = null;
 
       console.log('[LINKS_GET] Debug authentification:', {

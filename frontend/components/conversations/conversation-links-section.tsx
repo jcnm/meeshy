@@ -73,24 +73,25 @@ interface ShareLink {
 
 interface ConversationLinksSectionProps {
   conversationId: string;
-  isAdmin: boolean;
 }
 
-export function ConversationLinksSection({ conversationId, isAdmin }: ConversationLinksSectionProps) {
+export function ConversationLinksSection({ conversationId }: ConversationLinksSectionProps) {
   const [links, setLinks] = useState<ShareLink[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) {
-      loadLinks();
-    }
-  }, [conversationId, isAdmin]);
+    loadLinks();
+  }, [conversationId]);
 
   const loadLinks = async () => {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
-      if (!token) return;
+      if (!token) {
+        console.log('[ConversationLinksSection] Aucun token d\'authentification trouvé, impossible de charger les liens');
+        setLinks([]);
+        return;
+      }
 
       const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.GET_CONVERSATION_LINKS(conversationId)), {
         headers: {
@@ -104,13 +105,22 @@ export function ConversationLinksSection({ conversationId, isAdmin }: Conversati
           setLinks(result.data || []);
         } else {
           console.error('Erreur lors du chargement des liens:', result.error);
+          setLinks([]);
         }
+      } else if (response.status === 401) {
+        console.log('[ConversationLinksSection] Token d\'authentification invalide, impossible de charger les liens');
+        setLinks([]);
+      } else if (response.status === 404) {
+        console.log('[ConversationLinksSection] Aucun lien trouvé pour cette conversation');
+        setLinks([]);
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('Erreur lors du chargement des liens:', response.status, errorData.error || 'Erreur inconnue');
+        setLinks([]);
       }
     } catch (error) {
       console.error('Erreur lors du chargement des liens:', error);
+      setLinks([]);
     } finally {
       setIsLoading(false);
     }
@@ -302,10 +312,6 @@ export function ConversationLinksSection({ conversationId, isAdmin }: Conversati
       </CardContent>
     </Card>
   );
-
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <div className="space-y-4">
