@@ -109,15 +109,22 @@ class MeeshySocketIOService {
 
     this.isConnecting = true;
 
-    const token = localStorage.getItem('auth_token');
-    logger.socketio.debug('MeeshySocketIOService: Vérification du token', {
-      hasToken: !!token,
-      tokenLength: token?.length,
-      tokenPreview: token ? token.substring(0, 30) + '...' : 'none'
+    // Récupérer les tokens d'authentification
+    const authToken = localStorage.getItem('auth_token');
+    const sessionToken = localStorage.getItem('anonymous_session_token');
+    
+    logger.socketio.debug('MeeshySocketIOService: Vérification des tokens', {
+      hasAuthToken: !!authToken,
+      hasSessionToken: !!sessionToken,
+      authTokenLength: authToken?.length,
+      sessionTokenLength: sessionToken?.length,
+      authTokenPreview: authToken ? authToken.substring(0, 30) + '...' : 'none',
+      sessionTokenPreview: sessionToken ? sessionToken.substring(0, 30) + '...' : 'none'
     });
     
-    if (!token) {
-      console.warn('🔒 MeeshySocketIOService: Aucun token JWT trouvé');
+    // Vérifier qu'on a au moins un token
+    if (!authToken && !sessionToken) {
+      console.warn('🔒 MeeshySocketIOService: Aucun token d\'authentification trouvé');
       this.isConnecting = false;
       return;
     }
@@ -126,18 +133,26 @@ class MeeshySocketIOService {
     
     console.log('🔌 MeeshySocketIOService: Initialisation connexion Socket.IO...', {
       serverUrl,
-      hasToken: !!token,
-      tokenPreview: token.substring(0, 20) + '...'
+      hasAuthToken: !!authToken,
+      hasSessionToken: !!sessionToken,
+      authTokenPreview: authToken ? authToken.substring(0, 20) + '...' : 'none',
+      sessionTokenPreview: sessionToken ? sessionToken.substring(0, 20) + '...' : 'none'
     });
 
     try {
+      // Préparer les headers d'authentification hybride
+      const extraHeaders: Record<string, string> = {};
+      
+      if (authToken) {
+        extraHeaders['Authorization'] = `Bearer ${authToken}`;
+      }
+      
+      if (sessionToken) {
+        extraHeaders['x-session-token'] = sessionToken;
+      }
+
       this.socket = io(serverUrl, {
-        auth: {
-          token
-        },
-        extraHeaders: {
-          'Authorization': `Bearer ${token}`
-        },
+        extraHeaders,
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
@@ -170,24 +185,9 @@ class MeeshySocketIOService {
         transport: this.socket?.io.engine?.transport.name
       });
       
-      // Envoyer le token d'authentification après la connexion
-      const token = localStorage.getItem('auth_token');
-      const anonymousSessionToken = localStorage.getItem('anonymous_session_token');
-      
-      if (token && this.currentUser) {
-        console.log('🔐 MeeshySocketIOService: Envoi du token d\'authentification JWT');
-        this.socket?.emit('authenticate', { 
-          sessionToken: token,
-          userId: this.currentUser.id,
-          language: this.currentUser.systemLanguage 
-        });
-      } else if (anonymousSessionToken) {
-        console.log('🔐 MeeshySocketIOService: Envoi du sessionToken anonyme');
-        this.socket?.emit('authenticate', { 
-          sessionToken: anonymousSessionToken,
-          language: 'fr' // Langue par défaut pour les participants anonymes
-        });
-      }
+      // L'authentification est maintenant gérée automatiquement via les headers
+      // Pas besoin d'envoyer d'événement 'authenticate'
+      console.log('🔐 MeeshySocketIOService: Authentification gérée automatiquement via headers');
       
       // Toast de connexion uniquement, pas pour chaque message
       toast.success('Connexion établie', { duration: 2000 });
