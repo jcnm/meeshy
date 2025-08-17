@@ -131,26 +131,34 @@ class MeeshySocketIOService {
 
     const serverUrl = getWebSocketUrl();
     
+    // Préparer les headers d'authentification hybride
+    const extraHeaders: Record<string, string> = {};
+    
+    if (authToken) {
+      extraHeaders['Authorization'] = `Bearer ${authToken}`;
+    }
+    
+    if (sessionToken) {
+      extraHeaders['x-session-token'] = sessionToken;
+    }
+    
     console.log('🔌 MeeshySocketIOService: Initialisation connexion Socket.IO...', {
       serverUrl,
       hasAuthToken: !!authToken,
       hasSessionToken: !!sessionToken,
       authTokenPreview: authToken ? authToken.substring(0, 20) + '...' : 'none',
-      sessionTokenPreview: sessionToken ? sessionToken.substring(0, 20) + '...' : 'none'
+      sessionTokenPreview: sessionToken ? sessionToken.substring(0, 20) + '...' : 'none',
+      extraHeaders
+    });
+
+    console.log('🔐 MeeshySocketIOService: Headers d\'authentification préparés', {
+      extraHeaders,
+      headerKeys: Object.keys(extraHeaders),
+      hasAuthHeader: !!extraHeaders['Authorization'],
+      hasSessionHeader: !!extraHeaders['x-session-token']
     });
 
     try {
-      // Préparer les headers d'authentification hybride
-      const extraHeaders: Record<string, string> = {};
-      
-      if (authToken) {
-        extraHeaders['Authorization'] = `Bearer ${authToken}`;
-      }
-      
-      if (sessionToken) {
-        extraHeaders['x-session-token'] = sessionToken;
-      }
-
       this.socket = io(serverUrl, {
         extraHeaders,
         transports: ['websocket', 'polling'],
@@ -309,7 +317,30 @@ class MeeshySocketIOService {
 
     // Événements d'erreur
     this.socket.on(SERVER_EVENTS.ERROR, (error) => {
-      console.error('❌ MeeshySocketIOService: Erreur serveur', error);
+      console.error('❌ MeeshySocketIOService: Erreur serveur', {
+        error,
+        errorType: typeof error,
+        errorKeys: error ? Object.keys(error) : [],
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        socketId: this.socket?.id,
+        isConnected: this.isConnected,
+        currentUser: this.currentUser?.id
+      });
+      
+      // Vérifier l'état d'authentification au moment de l'erreur
+      const authToken = localStorage.getItem('auth_token');
+      const sessionToken = localStorage.getItem('anonymous_session_token');
+      
+      console.log('🔍 MeeshySocketIOService: État d\'authentification lors de l\'erreur', {
+        hasAuthToken: !!authToken,
+        hasSessionToken: !!sessionToken,
+        authTokenLength: authToken?.length,
+        sessionTokenLength: sessionToken?.length,
+        authTokenPreview: authToken ? authToken.substring(0, 30) + '...' : 'none',
+        sessionTokenPreview: sessionToken ? sessionToken.substring(0, 30) + '...' : 'none'
+      });
+      
       toast.error(error.message || 'Erreur serveur');
     });
   }
