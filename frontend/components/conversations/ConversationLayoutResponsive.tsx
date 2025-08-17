@@ -692,22 +692,79 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // Fonction pour charger les participants d'une conversation
   const loadConversationParticipants = useCallback(async (conversationId: string) => {
     try {
-      // Charger tous les participants
-      const allParticipants = await conversationsService.getParticipants(conversationId);
-
-      // Transformer tous les participants en ThreadMember
-      const allThreadMembers: ThreadMember[] = allParticipants.map((user) => ({
-        id: `participant-${conversationId}-${user.id}`,
+      console.log('[CONVERSATION_LAYOUT] Chargement des participants pour:', conversationId);
+      
+      // Charger tous les participants (authentifiés et anonymes)
+      const allParticipantsData = await conversationsService.getAllParticipants(conversationId);
+      
+      // Transformer les participants authentifiés en ThreadMember
+      const authenticatedThreadMembers: ThreadMember[] = allParticipantsData.authenticatedParticipants.map((user) => ({
+        id: user.id,
         conversationId: conversationId,
         userId: user.id,
-        joinedAt: new Date(), // On n'a pas cette info pour l'instant
-        role: UserRoleEnum.MEMBER, // On n'a pas cette info pour l'instant
-        user: user
+        user: user,
+        role: (user.role as UserRoleEnum) || UserRoleEnum.MEMBER,
+        joinedAt: new Date(),
+        isActive: true,
+        isAnonymous: false
       }));
 
-      setConversationParticipants(allThreadMembers);
+      // Transformer les participants anonymes en ThreadMember
+      const anonymousThreadMembers: ThreadMember[] = allParticipantsData.anonymousParticipants.map((participant) => ({
+        id: participant.id,
+        conversationId: conversationId,
+        userId: participant.id,
+        user: {
+          id: participant.id,
+          username: participant.username,
+          firstName: participant.firstName,
+          lastName: participant.lastName,
+          displayName: participant.username, // Utiliser username comme displayName pour les anonymes
+          email: '',
+          phoneNumber: '',
+          role: 'MEMBER',
+          permissions: {
+            canAccessAdmin: false,
+            canManageUsers: false,
+            canManageGroups: false,
+            canManageConversations: false,
+            canViewAnalytics: false,
+            canModerateContent: false,
+            canViewAuditLogs: false,
+            canManageNotifications: false,
+            canManageTranslations: false,
+          },
+          systemLanguage: participant.language || 'fr',
+          regionalLanguage: participant.language || 'fr',
+          autoTranslateEnabled: true,
+          translateToSystemLanguage: true,
+          translateToRegionalLanguage: false,
+          useCustomDestination: false,
+          isOnline: participant.isOnline,
+          lastSeen: new Date(participant.joinedAt),
+          lastActiveAt: new Date(participant.joinedAt),
+          isActive: true,
+          createdAt: new Date(participant.joinedAt),
+          updatedAt: new Date(participant.joinedAt),
+          isAnonymous: true,
+          isMeeshyer: false
+        },
+        role: UserRoleEnum.MEMBER,
+        joinedAt: new Date(participant.joinedAt),
+        isActive: true,
+        isAnonymous: true
+      }));
+
+      // Combiner tous les participants
+      const allThreadMembers = [...authenticatedThreadMembers, ...anonymousThreadMembers];
       
-      // Participants chargés
+      console.log('[CONVERSATION_LAYOUT] Participants chargés:', {
+        authenticated: authenticatedThreadMembers.length,
+        anonymous: anonymousThreadMembers.length,
+        total: allThreadMembers.length
+      });
+
+      setConversationParticipants(allThreadMembers);
     } catch (error) {
       console.error('Erreur lors du chargement des participants:', error);
       setConversationParticipants([]);

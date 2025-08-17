@@ -343,6 +343,65 @@ export class ConversationsService {
   }
 
   /**
+   * Obtenir tous les participants d'une conversation (authentifiés et anonymes)
+   * Cette méthode utilise l'endpoint /links/:conversationId pour récupérer les participants anonymes
+   */
+  async getAllParticipants(conversationId: string): Promise<{
+    authenticatedParticipants: User[];
+    anonymousParticipants: Array<{
+      id: string;
+      username: string;
+      firstName: string;
+      lastName: string;
+      language: string;
+      isOnline: boolean;
+      joinedAt: string;
+      canSendMessages: boolean;
+      canSendFiles: boolean;
+      canSendImages: boolean;
+    }>;
+  }> {
+    try {
+      // Récupérer les participants authentifiés
+      const authenticatedParticipants = await this.getParticipants(conversationId);
+      
+      // Récupérer les participants anonymes via l'endpoint /links/:conversationId
+      const linkResponse = await apiService.get<{
+        success: boolean;
+        data: {
+          anonymousParticipants: Array<{
+            id: string;
+            username: string;
+            firstName: string;
+            lastName: string;
+            language: string;
+            isOnline: boolean;
+            joinedAt: string;
+            canSendMessages: boolean;
+            canSendFiles: boolean;
+            canSendImages: boolean;
+          }>;
+        };
+      }>(`/links/${conversationId}`);
+      
+      const anonymousParticipants = linkResponse.data.data?.anonymousParticipants || [];
+      
+      return {
+        authenticatedParticipants,
+        anonymousParticipants
+      };
+    } catch (error) {
+      console.error('Erreur lors de la récupération de tous les participants:', error);
+      // En cas d'erreur, retourner au moins les participants authentifiés
+      const authenticatedParticipants = await this.getParticipants(conversationId);
+      return {
+        authenticatedParticipants,
+        anonymousParticipants: []
+      };
+    }
+  }
+
+  /**
    * Mettre à jour les paramètres d'une conversation
    */
   async updateConversation(id: string, data: Partial<Conversation>): Promise<Conversation> {
