@@ -130,7 +130,30 @@ export default function LandingPage() {
 
   // Si l'utilisateur est authentifié ET n'est pas anonyme, afficher le dashboard
   const isAnonymous = isCurrentUserAnonymous();
-  if (user && !isAnonymous) {
+  const hasAuthToken = !!localStorage.getItem('auth_token');
+  
+  console.log('[LANDING] État utilisateur:', {
+    hasUser: !!user,
+    isAnonymous,
+    hasAuthToken,
+    userId: user?.id,
+    username: user?.username
+  });
+  
+  // Si l'utilisateur a un token d'authentification ET un utilisateur, afficher BubbleStreamPage
+  if (user && hasAuthToken) {
+    console.log('[LANDING] Utilisateur authentifié détecté, affichage BubbleStreamPage');
+    
+    // Nettoyer les données anonymes si elles existent (l'utilisateur est authentifié)
+    if (isAnonymous) {
+      console.log('[LANDING] Nettoyage des données anonymes pour utilisateur authentifié');
+      localStorage.removeItem('anonymous_session_token');
+      localStorage.removeItem('anonymous_participant');
+      localStorage.removeItem('anonymous_current_share_link');
+      localStorage.removeItem('anonymous_current_link_id');
+      localStorage.removeItem('anonymous_just_joined');
+    }
+    
     return (
       <DashboardLayout title="Accueil">
         <BubbleStreamPage user={user} />
