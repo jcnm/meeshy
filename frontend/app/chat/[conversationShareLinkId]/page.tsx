@@ -91,6 +91,9 @@ export default function ChatPage() {
         return;
       }
 
+      console.log('[CHAT_PAGE] Tentative de chargement avec identifiant:', conversationShareLinkId);
+      console.log('[CHAT_PAGE] Type d\'identifiant:', conversationShareLinkId.startsWith('mshy_') ? 'linkId' : 'conversationShareLinkId');
+
       try {
         setLoading(true);
         setError(null);

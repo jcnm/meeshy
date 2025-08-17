@@ -198,12 +198,28 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         displayName = userInfo.username;
       }
     } else if (username && username !== userId) {
+      // Si le username fourni est différent de l'userId, l'utiliser
       displayName = username;
     } else {
-      displayName = `Utilisateur ${userId.slice(-6)}`;
+      // Fallback : essayer de récupérer le nom depuis le localStorage pour les participants anonymes
+      try {
+        const anonymousParticipant = localStorage.getItem('anonymous_participant');
+        if (anonymousParticipant) {
+          const participantData = JSON.parse(anonymousParticipant);
+          if (participantData.id === userId) {
+            displayName = participantData.username || participantData.firstName || `Utilisateur ${userId.slice(-6)}`;
+          } else {
+            displayName = `Utilisateur ${userId.slice(-6)}`;
+          }
+        } else {
+          displayName = `Utilisateur ${userId.slice(-6)}`;
+        }
+      } catch (error) {
+        displayName = `Utilisateur ${userId.slice(-6)}`;
+      }
     }
     
-    // Log réduit pour éviter le spam
+    console.log('[TYPING] Utilisateur en train de taper:', { userId, username, displayName, isTyping });
     
     // Mettre à jour l'état local de frappe (3s timeout géré ci-dessous)
     setTypingUsers(prev => {
