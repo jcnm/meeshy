@@ -513,6 +513,8 @@ export async function linksRoutes(fastify: FastifyInstance) {
         console.log('[LINKS_GET] Participant anonyme défini:', currentUser);
       } else {
         console.log('[LINKS_GET] Aucune authentification détectée, currentUser reste null');
+        // Pour les utilisateurs non authentifiés, on peut quand même retourner les informations de base
+        // mais sans currentUser
       }
 
       // Calculer les statistiques

@@ -134,7 +134,8 @@ export default function ChatPage() {
           hasCurrentUser: !!data?.currentUser,
           currentUser: data?.currentUser,
           userType: data?.userType,
-          conversationId: data?.conversation?.id
+          conversationId: data?.conversation?.id,
+          fullData: data // Log complet pour debug
         });
         setConversationData(data);
       } catch (err) {
