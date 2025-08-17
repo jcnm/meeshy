@@ -200,6 +200,25 @@ export default function ChatPage() {
     );
   }
 
+  // Vérifier que les propriétés essentielles existent
+  if (!conversationData.conversation || !conversationData.link) {
+    console.error('[CHAT_PAGE] Données de conversation incomplètes:', {
+      hasConversation: !!conversationData.conversation,
+      hasLink: !!conversationData.link,
+      conversationData: conversationData
+    });
+    
+    return (
+      <AccessDenied
+        variant="error"
+        title="Données incomplètes"
+        description="Les données de la conversation sont incomplètes. Veuillez réessayer."
+        showBackButton={true}
+        showHomeButton={true}
+      />
+    );
+  }
+
   // Vérifier que currentUser existe seulement après le chargement
   if (!conversationData.currentUser) {
     console.log('[CHAT_PAGE] currentUser est null, création d\'un utilisateur par défaut');

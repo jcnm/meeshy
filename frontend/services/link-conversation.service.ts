@@ -123,29 +123,20 @@ export class LinkConversationService {
     // Détecter si c'est un linkId (commence par "mshy_") ou un conversationShareLinkId
     const isLinkId = identifier.startsWith('mshy_');
     
+    // Toujours utiliser l'endpoint /links/:identifier qui retourne les données complètes
+    // même pour les utilisateurs non authentifiés
+    endpoint = `/links/${identifier}`;
+    url = new URL(buildApiUrl(endpoint));
+    
     if (sessionToken) {
       console.log('[LinkConversationService] Authentification avec sessionToken:', sessionToken);
-      // Session anonyme - utiliser l'endpoint sécurisé avec sessionToken
-      endpoint = `/links/${identifier}`;
-      url = new URL(buildApiUrl(endpoint));
       headers['X-Session-Token'] = sessionToken;
     } else if (authToken) {
       console.log('[LinkConversationService] Authentification avec token:', authToken);
-      // Utilisateur authentifié - utiliser l'endpoint sécurisé
-      endpoint = `/links/${identifier}`;
-      url = new URL(buildApiUrl(endpoint));
       headers['Authorization'] = `Bearer ${authToken}`;
     } else {
-      console.log('[LinkConversationService] Aucune authentification, utilisation de l\'endpoint public');
-      // Aucune authentification - utiliser l'endpoint public pour les informations de base
-      if (isLinkId) {
-        endpoint = `/anonymous/link/${identifier}`;
-      } else {
-        // Si c'est un conversationShareLinkId, on doit d'abord récupérer le linkId correspondant
-        endpoint = `/anonymous/link/${identifier}`;
-      }
-      
-      url = new URL(buildApiUrl(endpoint));
+      console.log('[LinkConversationService] Aucune authentification, utilisation de l\'endpoint /links/:identifier');
+      // Pas d'en-têtes d'authentification - l'endpoint gérera les utilisateurs non authentifiés
     }
     
     console.log('[LinkConversationService] Utilisation de l\'endpoint:', endpoint);
