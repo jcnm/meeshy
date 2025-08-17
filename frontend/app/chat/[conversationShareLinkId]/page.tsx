@@ -93,6 +93,12 @@ export default function ChatPage() {
 
       console.log('[CHAT_PAGE] Tentative de chargement avec identifiant:', conversationShareLinkId);
       console.log('[CHAT_PAGE] Type d\'identifiant:', conversationShareLinkId.startsWith('mshy_') ? 'linkId' : 'conversationShareLinkId');
+      console.log('[CHAT_PAGE] Longueur de l\'identifiant:', conversationShareLinkId.length);
+      console.log('[CHAT_PAGE] Format de l\'identifiant:', {
+        startsWithMshy: conversationShareLinkId.startsWith('mshy_'),
+        containsHyphens: conversationShareLinkId.includes('-'),
+        isAlphanumeric: /^[a-zA-Z0-9_-]+$/.test(conversationShareLinkId)
+      });
 
       try {
         setLoading(true);
@@ -143,6 +149,49 @@ export default function ChatPage() {
         setConversationData(data);
       } catch (err) {
         console.error('Erreur lors du chargement:', err);
+        
+        // Si l'erreur est "Lien de partage non trouvé", essayer avec un format différent
+        if (err instanceof Error && err.message.includes('Lien de partage non trouvé')) {
+          console.log('[CHAT_PAGE] Tentative de fallback avec format différent...');
+          
+          try {
+            // Préparer les options d'authentification pour le fallback
+            const fallbackOptions: any = {};
+            
+            if (isAnonymous && token) {
+              fallbackOptions.sessionToken = token;
+            } else if (user && typeof user === 'object' && user.id) {
+              const authToken = localStorage.getItem('auth_token');
+              if (authToken) {
+                fallbackOptions.authToken = authToken;
+              }
+            }
+            
+            // Si l'identifiant ne commence pas par 'mshy_', essayer d'ajouter le préfixe
+            let fallbackIdentifier = conversationShareLinkId;
+            if (!conversationShareLinkId.startsWith('mshy_')) {
+              fallbackIdentifier = `mshy_${conversationShareLinkId}`;
+              console.log('[CHAT_PAGE] Essai avec préfixe mshy_:', fallbackIdentifier);
+            } else {
+              // Si l'identifiant commence par 'mshy_', essayer sans le préfixe
+              fallbackIdentifier = conversationShareLinkId.replace('mshy_', '');
+              console.log('[CHAT_PAGE] Essai sans préfixe mshy_:', fallbackIdentifier);
+            }
+            
+            const fallbackData = await LinkConversationService.getConversationData(fallbackIdentifier, fallbackOptions);
+            console.log('[CHAT_PAGE] Données reçues avec fallback:', {
+              hasData: !!fallbackData,
+              hasCurrentUser: !!fallbackData?.currentUser,
+              userType: fallbackData?.userType,
+              conversationId: fallbackData?.conversation?.id
+            });
+            setConversationData(fallbackData);
+            return; // Succès avec fallback
+          } catch (fallbackErr) {
+            console.error('Erreur lors du fallback:', fallbackErr);
+          }
+        }
+        
         setError(err instanceof Error ? err.message : 'Erreur inconnue');
       } finally {
         setLoading(false);
