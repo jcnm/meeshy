@@ -183,6 +183,10 @@ RUN rm -rf /app/translator/{__pycache__,*.pyc,*.pyo,*.pyd,.pytest_cache,.coverag
 # Installer tsx et tsconfig-paths globalement dans l'image finale
 RUN npm install -g tsx tsconfig-paths
 
+# Installer les dépendances Python du translator
+COPY translator/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
 # Variables d'environnement par défaut
 ENV NODE_ENV=production
 ENV PYTHONUNBUFFERED=1
