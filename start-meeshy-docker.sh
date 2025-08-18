@@ -102,7 +102,7 @@ DOCKER_CMD="$DOCKER_CMD -e START_REDIS=$START_REDIS"
 DOCKER_CMD="$DOCKER_CMD --env-file $ENV_FILE"
 
 # Ajouter l'image
-DOCKER_CMD="$DOCKER_CMD meeshy-unique:latest"
+DOCKER_CMD="$DOCKER_CMD meeshy:latest"
 
 echo -e "${GREEN}🚀 Démarrage de Meeshy...${NC}"
 echo "Commande: $DOCKER_CMD"

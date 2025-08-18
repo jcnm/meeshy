@@ -180,8 +180,8 @@ RUN rm -rf /app/translator/{__pycache__,*.pyc,*.pyo,*.pyd,.pytest_cache,.coverag
     find /app -name ".DS_Store" -delete && \
     find /app -name "Thumbs.db" -delete
 
-# Installer tsx globalement dans l'image finale
-RUN npm install -g tsx
+# Installer tsx et tsconfig-paths globalement dans l'image finale
+RUN npm install -g tsx tsconfig-paths
 
 # Variables d'environnement par défaut
 ENV NODE_ENV=production
