@@ -15,6 +15,7 @@ NC='\033[0m' # No Color
 # Configuration Docker Hub
 DOCKER_HUB_NAMESPACE="isopen"
 VERSION="latest"
+USE_EXISTING_IMAGES=true  # Utiliser les images existantes au lieu de les reconstruire
 
 # Fonction d'affichage
 log() {
@@ -57,8 +58,40 @@ check_prerequisites() {
     warn "Assurez-vous d'être connecté à Docker Hub avec 'docker login' avant de continuer"
 }
 
+# Vérification des images existantes
+check_existing_images() {
+    log "Vérification des images existantes..."
+    
+    local missing_images=()
+    
+    if ! docker images | grep -q "meeshy-translator.*latest"; then
+        missing_images+=("meeshy-translator:latest")
+    fi
+    
+    if ! docker images | grep -q "meeshy-gateway.*latest"; then
+        missing_images+=("meeshy-gateway:latest")
+    fi
+    
+    if ! docker images | grep -q "meeshy-frontend.*latest"; then
+        missing_images+=("meeshy-frontend:latest")
+    fi
+    
+    if [ ${#missing_images[@]} -gt 0 ]; then
+        error "Images manquantes: ${missing_images[*]}"
+        warn "Reconstruction des images manquantes..."
+        USE_EXISTING_IMAGES=false
+    else
+        log "Toutes les images existent ✓"
+    fi
+}
+
 # Construction des images en utilisant le script existant
 build_images() {
+    if [ "$USE_EXISTING_IMAGES" = true ]; then
+        log "Utilisation des images existantes..."
+        return 0
+    fi
+    
     log "Construction des images Docker en utilisant le script existant..."
     
     # Exécuter le script de construction existant
@@ -147,6 +180,7 @@ main() {
     echo ""
     
     check_prerequisites
+    check_existing_images
     build_images
     tag_images
     show_images
