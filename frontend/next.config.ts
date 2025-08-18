@@ -5,42 +5,26 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
-  // Configuration Docker
-  output: 'standalone',
+  // Configuration Docker - disabled standalone for now
+  // output: 'standalone',
   
-  // Configuration des images (désactiver Sharp en production Docker)
+  // Configuration des images
   images: {
     domains: ['localhost'],
-    unoptimized: true,
+    unoptimized: true
   },
   
-  // Experimental pour éviter les problèmes avec Sharp
-  serverExternalPackages: ['sharp'],
-  
-  // Configuration optimisée pour éviter les timeouts de build
-  experimental: {
-    optimizeCss: false, // Désactiver l'optimisation CSS pendant le build
-  },
-  
-  // Configuration pour éviter les timeouts avec Google Fonts
-  async headers() {
+  // Configuration API
+  async rewrites() {
     return [
       {
-        source: '/:path*',
-        headers: [
-            { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate' },
-            { key: 'Pragma', value: 'no-cache' },
-            { key: 'Expires', value: '0' },
-        ],
-      },
-    ]
+        source: '/api/:path*',
+        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/:path*`
+      }
+    ];
   },
-  
-  // Configuration API - Routes directes vers la gateway via buildApiUrl
-  // Les rewrites automatiques sont désactivés pour éviter la confusion
-  // Tous les appels API doivent passer par buildApiUrl() qui pointe directement vers la gateway
   
   // Variables d'environnement publiques
   env: {

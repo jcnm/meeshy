@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum } from '../../shared/types';
 import { 
   createHybridAuthMiddleware, 
   createAuthenticatedOnlyMiddleware, 
@@ -477,7 +477,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
         const isMember = shareLink.conversation.members.some(
           member => member.userId === hybridRequest.user.id && member.isActive
         );
-        userType = isMember ? 'member' : 'authenticated_non_member';
+        userType = isMember ? 'member' : 'anonymous';
         currentUser = {
           id: hybridRequest.user.id,
           username: hybridRequest.user.username,

@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaAuthService, LoginCredentials, RegisterData } from '../services/prisma-auth.service';
-import { SocketIOUser } from '@shared/types';
+import { SocketIOUser } from '../../shared/types';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Créer une instance du service d'authentification Prisma

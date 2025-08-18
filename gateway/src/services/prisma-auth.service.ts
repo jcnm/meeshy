@@ -1,7 +1,7 @@
 import { PrismaClient } from '../../shared/prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { SocketIOUser, UserRoleEnum } from '@shared/types';
+import { SocketIOUser, UserRoleEnum } from '../../shared/types';
 
 export interface LoginCredentials {
   username: string;

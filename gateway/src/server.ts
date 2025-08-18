@@ -21,10 +21,6 @@ import winston from 'winston';
 import { TranslationService } from './services/TranslationService';
 import { PrismaAuthService } from './services/prisma-auth.service';
 import { createAuthMiddleware } from './middleware/auth-prisma';
-import type { 
-  ServerToClientEvents, 
-  ClientToServerEvents 
-} from '../shared/types/socketio-events';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import { linksRoutes } from './routes/links';

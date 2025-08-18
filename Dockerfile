@@ -6,9 +6,6 @@ FROM python:3.12-slim AS base
 
 # Définir les arguments de build pour optimiser le cache
 ARG NODE_VERSION=22
-ARG PNPM_VERSION=8.15.0
-
-# Configuration des arguments de build
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PNPM_VERSION=latest
 
@@ -52,9 +49,9 @@ COPY shared/schema.prisma ./
 RUN npm install -g pnpm && \
     pnpm install --frozen-lockfile
 
-# Générer le client Prisma (cache séparé)
+# Générer le client Prisma avec le schéma SQLite (cache séparé)
 ENV PRISMA_CLIENT_OUTPUT_DIRECTORY=/app/shared/node_modules/.prisma/client
-RUN pnpm run generate
+RUN cp schema.sqlite.prisma schema.prisma && pnpm run generate
 
 # ===== STAGE 3: TRANSLATOR BUILDER =====
 FROM base AS translator-builder

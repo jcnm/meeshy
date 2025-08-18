@@ -16,10 +16,11 @@ if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
 # Variables d'environnement par défaut pour le test
-os.environ.setdefault('DATABASE_URL', 'sqlite:///test.db')
+os.environ.setdefault('DATABASE_URL', 'file:/app/data/meeshy.db')
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379')
 os.environ.setdefault('HTTP_PORT', '8000')
 os.environ.setdefault('ZMQ_PORT', '5555')
+os.environ.setdefault('PRISMA_CLIENT_OUTPUT_DIRECTORY', '/app/shared/node_modules/.prisma/client')
 
 # Maintenant exécuter main.py directement
 if __name__ == "__main__":

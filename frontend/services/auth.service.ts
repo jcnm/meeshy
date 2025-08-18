@@ -1,5 +1,5 @@
 import { SocketIOUser } from '@/types';
-import { UserRoleEnum } from '../../shared/types';
+import { UserRoleEnum } from '../shared/types';
 
 // Interface pour les utilisateurs de test
 export interface TestUser {

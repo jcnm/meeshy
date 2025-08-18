@@ -21,9 +21,9 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "backend"]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }

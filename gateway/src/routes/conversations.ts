@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { TranslationService } from '../services/TranslationService';
 import { conversationStatsService } from '../services/ConversationStatsService';
 import { z } from 'zod';
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum } from '../../shared/types';
 
 // Fonction utilitaire pour générer le linkId avec le format demandé
 // Étape 1: génère yymmddhhm_<random>

@@ -1,7 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
-import { UpdateUserRequest } from '../../shared/types';
 
 // Schéma de validation pour la mise à jour utilisateur
 const updateUserSchema = z.object({

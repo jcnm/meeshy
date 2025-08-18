@@ -70,6 +70,7 @@ services:
         - AUTO_CLEANUP_CORRUPTED_MODELS=${AUTO_CLEANUP_CORRUPTED_MODELS:-true}
         - FORCE_MODEL_REDOWNLOAD=${FORCE_MODEL_REDOWNLOAD:-false}
         - TRANSLATION_CACHE_TTL=${TRANSLATION_CACHE_TTL:-3600}
+    image: isopen/meeshy-translator
     container_name: translator
     restart: unless-stopped
     # Resource limits for ML workloads
@@ -88,9 +89,10 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-meeshy}:${POSTGRES_PASSWORD:-MeeshyP@ssword}@postgres:5432/${POSTGRES_DB:-meeshy}
       REDIS_URL: redis://redis:6379
-      GRPC_PORT: 50051
-      HTTP_PORT: 8000
-      ZMQ_PORT: 5555
+      TRANSLATOR_GRPC_PORT: 50051
+      TRANSLATOR_HTTP_PORT: 8000
+      TRANSLATOR_ZMQ_PULL_PORT: 5555
+      TRANSLATOR_ZMQ_PUB_PORT: 5557
       ML_BATCH_SIZE: 16
       SUPPORTED_LANGUAGES: "fr,en,es,de,pt,zh,ja,ar"
       DEFAULT_LANGUAGE: "fr"
@@ -150,9 +152,10 @@ services:
         - TRANSLATOR_GRPC_URL=translator:50051
         # ZMQ Configuration
         - ZMQ_TRANSLATOR_HOST=translator
-        - ZMQ_TRANSLATOR_PUB_PORT=${ZMQ_TRANSLATOR_PUB_PORT:-5557}
-        - ZMQ_TRANSLATOR_SUB_PORT=${ZMQ_TRANSLATOR_SUB_PORT:-5555}
+        - ZMQ_TRANSLATOR_SUB_PORT=${ZMQ_TRANSLATOR_SUB_PORT:-5557}
+        - ZMQ_TRANSLATOR_PUSH_PORT=${ZMQ_TRANSLATOR_PUSH_PORT:-5555}
         - ZMQ_TIMEOUT=${ZMQ_TIMEOUT:-30000}
+    image: isopen/meeshy-gateway
     container_name: gateway
     restart: unless-stopped
     environment:
@@ -161,8 +164,8 @@ services:
       TRANSLATOR_GRPC_URL: translator:50051
       # ZMQ Configuration
       ZMQ_TRANSLATOR_HOST: translator
-      ZMQ_TRANSLATOR_PUB_PORT: ${ZMQ_TRANSLATOR_PUB_PORT:-5557}
-      ZMQ_TRANSLATOR_SUB_PORT: ${ZMQ_TRANSLATOR_SUB_PORT:-5555}
+      ZMQ_TRANSLATOR_SUB_PORT: ${ZMQ_TRANSLATOR_SUB_PORT:-5557}
+      ZMQ_TRANSLATOR_PUSH_PORT: ${ZMQ_TRANSLATOR_PUSH_PORT:-5555}
       ZMQ_TIMEOUT: ${ZMQ_TIMEOUT:-3000}
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
@@ -204,6 +207,7 @@ services:
         - NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
         - NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
         - DATABASE_URL=postgresql://${POSTGRES_USER:-meeshy}:${POSTGRES_PASSWORD:-MeeshyP@ssword}@postgres:5432/${POSTGRES_DB:-meeshy}
+    image: isopen/meeshy-frontend
     container_name: frontend
     restart: unless-stopped
     environment:

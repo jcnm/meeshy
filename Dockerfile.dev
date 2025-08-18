@@ -1,0 +1,106 @@
+# ===== DOCKERFILE DE DÉVELOPPEMENT =====
+# Optimisé pour le hot reload et le développement
+
+FROM python:3.12-slim
+
+# Arguments de build
+ARG NODE_VERSION=22
+ARG PNPM_VERSION=8.15.0
+
+# Variables d'environnement de base
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    NODE_ENV=development
+
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    supervisor \
+    nginx \
+    postgresql-client \
+    redis-tools \
+    tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installer Node.js et pnpm
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pnpm@${PNPM_VERSION} tsx tsconfig-paths nodemon
+
+# Créer l'utilisateur meeshy
+RUN groupadd -r meeshy && useradd -r -g meeshy -m -s /bin/bash meeshy
+
+# Créer la structure des répertoires
+WORKDIR /app
+RUN mkdir -p /app/{frontend,gateway,translator,shared,scripts,logs,data,cache,models} \
+    && chown -R meeshy:meeshy /app
+
+# Copier les scripts de démarrage
+COPY scripts/ /app/scripts/
+COPY docker/ /app/docker/
+RUN chmod +x /app/scripts/*.sh
+
+# Installer les dépendances Python globales
+RUN pip install --upgrade pip --no-cache-dir \
+    && pip install --no-cache-dir \
+        prisma \
+        fastapi \
+        uvicorn \
+        python-multipart \
+        python-jose[cryptography] \
+        passlib[bcrypt] \
+        python-dotenv \
+        redis \
+        psycopg2-binary \
+        sqlalchemy \
+        alembic \
+        pydantic \
+        pydantic-settings \
+        httpx \
+        websockets \
+        pyzmq \
+        torch \
+        transformers \
+        sentencepiece \
+        protobuf \
+        grpcio \
+        grpcio-tools \
+        psutil
+
+# Installer les dépendances Node.js globales
+RUN npm install -g \
+    @prisma/client \
+    prisma \
+    typescript \
+    ts-node \
+    nodemon
+
+# Copier les fichiers de configuration (seulement ceux qui existent)
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY next.config.ts ./
+COPY postcss.config.mjs ./
+COPY components.json ./
+
+# Installer les dépendances partagées (si package.json existe)
+RUN if [ -f package.json ]; then npm install; fi
+
+# Copier le schéma Prisma et générer le client
+COPY shared/schema.prisma ./shared/
+COPY shared/schema.sqlite.prisma ./shared/
+RUN cd shared && \
+    cp schema.sqlite.prisma schema.prisma && \
+    PRISMA_CLIENT_OUTPUT_DIRECTORY=/app/shared/node_modules/.prisma/client npx prisma generate
+
+# Configuration des permissions
+RUN chown -R meeshy:meeshy /app
+
+# Point d'entrée
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Commande par défaut (sera surchargée par docker-compose)
+CMD ["/app/scripts/start-dev.sh"]

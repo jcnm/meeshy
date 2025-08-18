@@ -4,7 +4,7 @@
   "description": "Fastify Gateway service for Meeshy real-time messaging",
   "main": "dist/src/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r shared/prisma dist/shared/",
     "prebuild": "pnpm run generate:prisma && npm run generate:seeds && mv ./shared/dev.db ./dev.db 2>/dev/null || true",
     "start": "node -r dotenv/config dist/src/server.js",
     "dev": "tsx watch -r dotenv/config src/server.ts dotenv_config_path=.env",
@@ -47,12 +47,15 @@
     "@types/node": "^20.11.30",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
+    "glob": "^11.0.3",
     "grpc-tools": "^1.12.4",
     "jest": "^30.0.5",
     "prisma": "^6.14.0",
     "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.7.1",
     "typescript": "^5.4.3"
   }

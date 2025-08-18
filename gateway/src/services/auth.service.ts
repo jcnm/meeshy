@@ -1,4 +1,4 @@
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum } from '../../shared/types';
 
 // Interface pour les utilisateurs de test
 export interface TestUser {
@@ -159,7 +159,7 @@ export class AuthService {
    * Récupère les permissions d'un utilisateur
    */
   static getUserPermissions(user: TestUser) {
-    const { DEFAULT_PERMISSIONS } = require('@shared/types');
+    const { DEFAULT_PERMISSIONS } = require('../../shared/types');
     return DEFAULT_PERMISSIONS[user.role] || DEFAULT_PERMISSIONS[UserRoleEnum.USER];
   }
 
@@ -175,7 +175,7 @@ export class AuthService {
    * Vérifie si un utilisateur a un rôle spécifique ou supérieur
    */
   static hasRole(user: TestUser, requiredRole: UserRoleEnum): boolean {
-    const { ROLE_HIERARCHY } = require('@shared/types');
+    const { ROLE_HIERARCHY } = require('../../shared/types');
     const userLevel = ROLE_HIERARCHY[user.role] || 0;
     const requiredLevel = ROLE_HIERARCHY[requiredRole] || 0;
     return userLevel >= requiredLevel;

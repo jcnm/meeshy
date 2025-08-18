@@ -112,8 +112,9 @@ COPY --chown=gateway:nodejs shared/ ./shared/
 COPY --chown=gateway:nodejs tsconfig.json ./
 
 # Build de l'application avec nettoyage
-RUN npx prisma generate --schema=./shared/schema.prisma \
-    && npx tsc \
+RUN mkdir -p ./shared/prisma \
+    && PRISMA_CLIENT_OUTPUT_DIRECTORY=./shared/prisma npx prisma generate --schema=./shared/schema.prisma \
+    && pnpm run build \
     && rm -rf src/ tsconfig.json \
     && pnpm install --prod --ignore-scripts \
     && pnpm store prune \
