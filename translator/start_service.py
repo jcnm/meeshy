@@ -18,6 +18,6 @@ if str(src_dir) not in sys.path:
 # Changer vers le répertoire src
 os.chdir(str(src_dir))
 
-# Maintenant exécuter main.py dans le bon contexte
+# Maintenant exécuter main.py directement
 if __name__ == "__main__":
-    exec(open("main.py").read())
+    import main
