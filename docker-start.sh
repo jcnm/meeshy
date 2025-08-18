@@ -145,4 +145,12 @@ if [ "$START_REDIS" = "true" ]; then
 fi
 
 # Garder le conteneur en vie et surveiller les processus
-wait $SUPERVISOR_PID
+echo -e "${GREEN}🔄 Surveillance des services...${NC}"
+while true; do
+    sleep 10
+    # Vérifier que Supervisor est toujours en cours d'exécution
+    if ! kill -0 $SUPERVISOR_PID 2>/dev/null; then
+        echo -e "${RED}❌ Supervisor s'est arrêté${NC}"
+        exit 1
+    fi
+done
