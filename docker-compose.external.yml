@@ -39,6 +39,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 22
+        PNPM_VERSION: 8.15.0
     container_name: meeshy-app
     ports:
       - "3100:3100"  # Frontend
