@@ -1,6 +1,6 @@
 {
   "name": "meeshy-translator",
-  "version": "1.0.0",
+  "version": "0.4.7-alpha",
   "description": "FastAPI Translation service for Meeshy multi-language messaging",
   "scripts": {
     "dev": "python main.py",

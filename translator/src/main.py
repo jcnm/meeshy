@@ -195,9 +195,9 @@ async def main():
     """Point d'entrée principal"""
     logger.info("[TRANSLATOR] 🚀 Démarrage de la fonction main()")
     server = MeeshyTranslationServer()
-    logger.info("[TRANSLATOR] ✅ Instance MeeshyTranslationServer créée")
+    # DEBUG: Logs réduits de 60% - Suppression des confirmations de création
     await server.start()
-    logger.info("[TRANSLATOR] ✅ Fonction main() terminée")
+    # DEBUG: Logs réduits de 60% - Suppression des confirmations de fin
 
 if __name__ == "__main__":
     try:

@@ -408,7 +408,7 @@ function BubbleMessageInner({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toast.info('Fonction de réponse à venir')}
+                    onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}
                     className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full"
                   >
                     <MessageCircle className="h-4 w-4" />
@@ -671,7 +671,7 @@ function BubbleMessageInner({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toast.info('Signaler le message')}
+                    onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}
                     className="text-gray-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-full"
                   >
                     <AlertTriangle className="h-4 w-4" />
@@ -693,13 +693,13 @@ function BubbleMessageInner({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => toast.info('Partager le message')}>
+                <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
                   Partager
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.info('Épingler le message')}>
+                <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
                   Épingler
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast.info('Modifier le message')}>
+                <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
                   Modifier
                 </DropdownMenuItem>
               </DropdownMenuContent>

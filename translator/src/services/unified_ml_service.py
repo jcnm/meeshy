@@ -221,7 +221,7 @@ class UnifiedMLTranslationService:
         
         # Vérifier si le modèle existe en local
         model_path = str(local_path) if local_path.exists() else model_name
-        logger.info(f"📥 Chargement {model_type}: {model_path}")
+        # DEBUG: Logs réduits de 60% - Suppression des détails de chargement
         
         # OPTIMISATION DOCKER: Charger dans un thread avec timeout et gestion mémoire
         def load_model():
@@ -286,9 +286,7 @@ class UnifiedMLTranslationService:
         if model and tokenizer:
             self.tokenizers[model_type] = tokenizer
             self.models[model_type] = model
-            logger.info(f"✅ Modèle {model_type} chargé: {model_path}")
-            if local_path.exists():
-                logger.info(f"📁 Utilisé modèle local: {local_path}")
+                    # DEBUG: Logs réduits de 60% - Suppression des confirmations de chargement
         else:
             raise Exception(f"Échec chargement {model_type}")
     

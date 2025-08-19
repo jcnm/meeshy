@@ -514,8 +514,7 @@ class ZMQTranslationServer:
     async def _publish_translation_result(self, task_id: str, result: dict, target_language: str):
         """Publie un résultat de traduction via PUB vers la gateway avec informations techniques complètes"""
         try:
-            # LOG DÉTAILLÉ DES OBJETS AVANT ENVOI
-                    # DEBUG: Logs réduits de 60% - Suppression des vérifications détaillées
+            # DEBUG: Logs réduits de 60% - Suppression des vérifications détaillées
             
             # Récupérer les informations techniques du système
             import socket
@@ -574,28 +573,16 @@ class ZMQTranslationServer:
                 }
             }
             
-            logger.info(f"📤 [TRANSLATOR] Préparation envoi résultat enrichi vers gateway:")
-            logger.info(f"   📋 taskId: {task_id}")
-            logger.info(f"   📋 target: {target_language}")
-            logger.info(f"   📋 message size: {len(json.dumps(message))} chars")
-            logger.info(f"   📋 modèle: {enriched_result['translatorModel']}")
-            logger.info(f"   📋 worker: {enriched_result['workerId']}")
-            logger.info(f"   📋 temps traduction: {enriched_result['translationTime']:.3f}s")
-            logger.info(f"   📋 temps queue: {enriched_result['queueTime']:.3f}s")
-            logger.info(f"   📋 mémoire: {enriched_result['memoryUsage']:.1f}MB")
-            logger.info(f"   📋 CPU: {enriched_result['cpuUsage']:.1f}%")
+            # DEBUG: Logs réduits de 60% - Suppression des détails techniques
             
             # Utiliser le socket PUB configuré pour envoyer à la gateway
             if self.pub_socket:
-                logger.info("🔍 [TRANSLATOR] ENVOI VIA PUB SOCKET:")
-                logger.info(f"   📋 Socket state avant envoi: {self.pub_socket}")
+                # DEBUG: Logs réduits de 60% - Suppression des vérifications d'envoi
                 
                 await self.pub_socket.send(json.dumps(message).encode('utf-8'))
                 
-                logger.info("🔍 [TRANSLATOR] VÉRIFICATION APRÈS ENVOI:")
-                logger.info(f"   📋 Socket state après envoi: {self.pub_socket}")
-                logger.info(f"   📋 Envoi réussi pour taskId: {task_id}")
-                logger.info(f"📤 [TRANSLATOR] Résultat enrichi envoyé vers gateway: {task_id} -> {target_language}")
+                # DEBUG: Logs réduits de 60% - Suppression des vérifications post-envoi
+                logger.info(f"📤 [TRANSLATOR] Résultat envoyé: {task_id} -> {target_language}")
             else:
                 logger.error("❌ Socket PUB non initialisé")
             
