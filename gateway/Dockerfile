@@ -114,7 +114,7 @@ COPY --chown=gateway:nodejs tsconfig.json ./
 # Build de l'application avec nettoyage
 RUN mkdir -p ./shared/prisma \
     && PRISMA_CLIENT_OUTPUT_DIRECTORY=./shared/prisma npx prisma generate --schema=./shared/schema.prisma \
-    && pnpm run build \
+    && DATABASE_URL=${DATABASE_URL:-"postgresql://dummy:dummy@localhost:5432/dummy"} pnpm run build \
     && rm -rf src/ tsconfig.json \
     && pnpm install --prod --ignore-scripts \
     && pnpm store prune \

@@ -1,6 +1,6 @@
 {
   "name": "meeshy",
-  "version": "0.4.9-alpha",
+  "version": "0.5.0-alpha",
   "private": true,
   "workspaces": [
     "shared",
