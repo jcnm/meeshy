@@ -497,17 +497,11 @@ class UnifiedMLTranslationService:
                     logger.error(f"Erreur pipeline {model_name}: {e}")
                     return f"[ML-Pipeline-Error] {text}"
             
-            # OPTIMISATION: Traduction avec timeout pour éviter les blocages
+            # Traduction garantie sans timeout - le message sera traduit tôt ou tard
             try:
                 loop = asyncio.get_event_loop()
-                translated = await asyncio.wait_for(
-                    loop.run_in_executor(self.executor, translate),
-                    timeout=60  # 1 minute timeout pour la traduction
-                )
+                translated = await loop.run_in_executor(self.executor, translate)
                 return translated
-            except asyncio.TimeoutError:
-                logger.error(f"❌ Timeout lors de la traduction avec {model_type}")
-                return f"[ML-Timeout] {text}"
             except Exception as e:
                 logger.error(f"❌ Erreur lors de la traduction asynchrone: {e}")
                 return f"[ML-Async-Error] {text}"

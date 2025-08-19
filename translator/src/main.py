@@ -24,6 +24,7 @@ sys.path.insert(0, str(src_path))
 from config.settings import Settings
 from services.zmq_server import ZMQTranslationServer
 from services.unified_ml_service import get_unified_ml_service
+from services.quantized_ml_service import QuantizedMLService
 from api.translation_api import TranslationAPI
 
 # Configuration du logging
@@ -51,11 +52,14 @@ class MeeshyTranslationServer:
     async def initialize(self) -> bool:
         """Initialise le serveur de traduction avec architecture unifiée"""
         try:
-            logger.info("[TRANSLATOR] 🚀 Initialisation du serveur de traduction avec ML unifié...")
+            logger.info("[TRANSLATOR] 🚀 Initialisation du serveur de traduction avec ML quantifié...")
             
-            # 1. Initialiser le service ML unifié (Singleton)
-            max_workers = int(os.getenv('TRANSLATION_WORKERS', '10'))
-            self.translation_service = get_unified_ml_service(max_workers=max_workers)
+            # 1. Initialiser le service ML quantifié (optimisé)
+            max_workers = int(os.getenv('TRANSLATION_WORKERS', '50'))  # Augmenté de 10 à 50 pour 100 msg/sec
+            quantization_level = os.getenv('QUANTIZATION_LEVEL', 'float32')  # float32 par défaut pour stabilité
+            
+            # Utiliser le service quantifié avec TOUS les modèles (basic, medium, premium)
+            self.translation_service = QuantizedMLService("all", quantization_level, max_workers=max_workers)
             
             # Charger les modèles ML au démarrage
             logger.info("[TRANSLATOR] 📚 Chargement des modèles ML...")
@@ -63,37 +67,40 @@ class MeeshyTranslationServer:
             if not ml_initialized:
                 logger.warning("[TRANSLATOR] ⚠️ Modèles ML non disponibles, fonctionnement en mode fallback")
             else:
-                logger.info("[TRANSLATOR] ✅ Service ML unifié initialisé avec succès")
+                logger.info(f"[TRANSLATOR] ✅ Service ML quantifié ({quantization_level}) initialisé avec succès")
             
             # 2. Initialiser le serveur ZMQ avec le service ML unifié
             zmq_push_port = int(os.getenv('TRANSLATOR_ZMQ_PULL_PORT', '5555'))
             zmq_pub_port = int(os.getenv('TRANSLATOR_ZMQ_PUB_PORT', '5558'))
             
-            # Optimisation des workers pour éviter les redémarrages
-            normal_workers = min(2, max_workers // 2)  # Max 2 workers normaux
-            any_workers = min(1, max_workers // 4)     # Max 1 worker any
+            # Configuration optimisée des workers pour haute performance (100 msg/sec)
+            normal_workers = max(20, max_workers // 2)  # Minimum 20 workers normaux (au lieu de 4)
+            any_workers = max(10, max_workers // 4)     # Minimum 10 workers any (au lieu de 2)
             
             self.zmq_server = ZMQTranslationServer(
                 gateway_push_port=zmq_push_port,  # Port où Translator PULL bind (Gateway PUSH connect ici)
                 gateway_sub_port=zmq_pub_port,    # Port où Translator PUB bind (Gateway SUB connect ici)
                 normal_workers=normal_workers,
                 any_workers=any_workers,
-                translation_service=self.translation_service  # Service ML unifié
+                translation_service=self.translation_service 
             )
+            
+            logger.info(f"[TRANSLATOR] 🔧 Configuration workers haute performance: normal={normal_workers}, any={any_workers}, total={normal_workers + any_workers}")
+            logger.info(f"[TRANSLATOR] 🚀 Capacité estimée: ~{normal_workers + any_workers} traductions simultanées")
             # Initialiser le serveur ZMQ
             await self.zmq_server.initialize()
-            logger.info("[TRANSLATOR] ✅ Serveur ZMQ configuré avec service ML unifié")
+            logger.info("[TRANSLATOR] ✅ Serveur ZMQ configuré avec service ML quantifié")
             
             # 3. Initialiser l'API FastAPI avec le service ML unifié
             self.translation_api = TranslationAPI(
                 translation_service=self.translation_service,  # Service ML unifié
                 zmq_server=self.zmq_server
             )
-            logger.info("[TRANSLATOR] ✅ API FastAPI configurée avec service ML unifié")
+            logger.info("[TRANSLATOR] ✅ API FastAPI configurée avec service ML quantifié")
             
             self.is_initialized = True
             logger.info("[TRANSLATOR] ✅ Architecture unifiée initialisée avec succès")
-            logger.info("[TRANSLATOR] 🎯 Tous les canaux (ZMQ, REST) utilisent le même service ML")
+            logger.info(f"[TRANSLATOR] 🎯 Tous les canaux (ZMQ, REST) utilisent le service ML quantifié ({quantization_level})")
             
             return True
             

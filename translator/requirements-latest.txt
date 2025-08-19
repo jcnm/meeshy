@@ -1,0 +1,49 @@
+# Requirements avec les dernières versions (pour comparaison)
+# Vérifiées le 19 Août 2025
+
+# Core ML dependencies - Dernières versions
+torch==2.8.0
+transformers==4.55.2
+accelerate==0.30.0
+optimum==1.20.0
+
+# Optimisations spécifiques
+torch-quantization==0.1.0
+onnx==1.16.0
+onnxruntime==1.18.0
+
+# Accélération CPU
+intel-extension-for-pytorch==2.2.0
+openblas==0.3.26
+
+# Cache et performance
+redis==5.0.1
+aioredis==2.0.1
+
+# Monitoring et métriques
+psutil==5.9.8
+prometheus-client==0.20.0
+
+# Web framework - Dernière version
+fastapi==0.116.1
+uvicorn[standard]==0.32.0
+
+# Communication
+pyzmq==25.1.2
+grpcio==1.64.0
+grpcio-tools==1.64.0
+
+# Database
+prisma==0.13.0
+sqlalchemy==2.0.35
+
+# Utils
+python-dotenv==1.0.1
+pydantic==2.10.0
+python-multipart==0.0.9
+
+# Development
+pytest==8.2.0
+pytest-asyncio==0.24.0
+black==24.10.0
+flake8==7.1.0

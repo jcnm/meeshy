@@ -1,0 +1,87 @@
+# Translator Dockerfile Optimisé - Meeshy FastAPI Service (Quantification + Performance)
+FROM python:3.12-slim
+
+# Métadonnées
+LABEL maintainer="Meeshy Team <dev@meeshy.com>"
+LABEL version="0.4.7-alpha-optimized"
+LABEL description="Service de traduction ML optimisé avec quantification"
+
+# Variables d'environnement
+ARG NODE_VERSION=20
+ARG PNPM_VERSION=8.15.0
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV OMP_NUM_THREADS=4
+ENV MKL_NUM_THREADS=4
+ENV NUMEXPR_NUM_THREADS=4
+
+# OPTIMISATION: Installation en une seule layer avec cleanup et optimisations ML
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        wget \
+        unzip \
+        gnupg \
+        tini \
+        curl \
+        git \
+        # OPTIMISATION ML: Dépendances système pour PyTorch optimisé
+        libopenblas-dev \
+        liblapack-dev \
+        gfortran \
+        pkg-config \
+        # OPTIMISATION: Accélération CPU
+        libmkl-dev \
+        libmkl-intel-thread \
+        libmkl-core \
+        # OPTIMISATION: Monitoring
+        procps \
+    && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g pnpm@${PNPM_VERSION} prisma \
+    && groupadd -g 1001 translator \
+    && useradd -u 1001 -g translator -m translator \
+    && mkdir -p /app/{logs,cache,models,shared} \
+    && chown -R translator:translator /app \
+    # OPTIMISATION: Nettoyage pour réduire la taille de l'image
+    && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl git \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && npm cache clean --force
+
+# Définir le répertoire de travail
+WORKDIR /app
+
+# Copier les fichiers de dépendances
+COPY --chown=translator:translator requirements-optimized.txt requirements.txt
+COPY --chown=translator:translator package.json .
+
+# OPTIMISATION: Installation des dépendances Python optimisées
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir \
+        torch==2.0.1+cpu -f https://download.pytorch.org/whl/torch_stable.html \
+        intel-extension-for-pytorch==2.0.0 \
+    && pip cache purge
+
+# OPTIMISATION: Pré-téléchargement des modèles ML optimisés
+RUN echo "🤖 Pré-téléchargement des modèles ML optimisés..." \
+    && python3 -c "import os; from transformers import AutoTokenizer, AutoModelForSeq2SeqLM; import torch; print('📥 Téléchargement t5-small optimisé...'); tokenizer = AutoTokenizer.from_pretrained('t5-small', cache_dir='/app/models'); model = AutoModelForSeq2SeqLM.from_pretrained('t5-small', cache_dir='/app/models', torch_dtype=torch.float16, low_cpu_mem_usage=True); print('✅ t5-small optimisé téléchargé avec succès'); print('📥 Téléchargement nllb-200-distilled-600M optimisé...'); tokenizer_nllb = AutoTokenizer.from_pretrained('nllb-200-distilled-600M', cache_dir='/app/models'); model_nllb = AutoModelForSeq2SeqLM.from_pretrained('nllb-200-distilled-600M', cache_dir='/app/models', torch_dtype=torch.float16, low_cpu_mem_usage=True); print('✅ nllb-200-distilled-600M optimisé téléchargé avec succès'); del tokenizer, model, tokenizer_nllb, model_nllb; torch.cuda.empty_cache() if torch.cuda.is_available() else None" || echo "⚠️ Pré-téléchargement des modèles optimisés échoué (normal au build)"
+
+# Copier le code source
+COPY --chown=translator:translator src/ ./src/
+COPY --chown=translator:translator prisma/ ./prisma/
+
+# Générer le client Prisma
+RUN cd /app && npx prisma generate
+
+# Changer vers l'utilisateur translator
+USER translator
+
+# Exposer les ports
+EXPOSE 8000 5555 5558 50051
+
+# Point d'entrée avec Tini
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Commande de démarrage optimisée
+CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

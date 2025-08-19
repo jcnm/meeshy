@@ -1,0 +1,555 @@
+RAPPORT DE TRADUCTIONS DÉTAILLÉ
+==================================================
+Date: 2025-08-19 21:08:24
+Durée de test: 3s
+TPS cible: 3
+
+
+BASIC - FLOAT32
+----------------------------------------
+TPS réel: 1.18
+Temps moyen: 0.548s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour monde, c'est un message test
+  Temps:    1.463s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute au-dessus du chien paresseux
+  Temps:    0.541s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec exactitude
+  Temps:    0.467s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue à notre service de traduction
+  Temps:    0.347s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment êtes-vous aujourd'hui?
+  Temps:    0.308s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle transforme le monde
+  Temps:    0.314s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    0.726s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    0.354s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui?
+  Temps:    0.409s
+
+
+BASIC - FLOAT16
+----------------------------------------
+TPS réel: 1.30
+Temps moyen: 0.473s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour monde, c'est un message test
+  Temps:    0.658s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute au-dessus du chien paresseux
+  Temps:    0.562s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec exactitude
+  Temps:    0.962s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue à notre service de traduction
+  Temps:    0.411s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment êtes-vous aujourd'hui?
+  Temps:    0.345s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle transforme le monde
+  Temps:    0.337s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    0.426s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    0.250s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui?
+  Temps:    0.302s
+
+
+BASIC - INT8
+----------------------------------------
+TPS réel: 1.58
+Temps moyen: 0.335s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour monde, c'est un message test
+  Temps:    0.504s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute au-dessus du chien paresseux
+  Temps:    0.433s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec exactitude
+  Temps:    0.400s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue à notre service de traduction
+  Temps:    0.294s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment êtes-vous aujourd'hui?
+  Temps:    0.292s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle transforme le monde
+  Temps:    0.284s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    0.298s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    0.224s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui?
+  Temps:    0.290s
+
+
+MEDIUM - FLOAT32
+----------------------------------------
+TPS réel: 0.62
+Temps moyen: 1.321s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour le monde, c'est un message de test
+  Temps:    4.453s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute sur le chien paresseux
+  Temps:    1.134s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec précision
+  Temps:    1.428s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue dans notre service de traduction.
+  Temps:    0.807s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment allez-vous aujourd'hui ?
+  Temps:    0.840s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle transforme le monde.
+  Temps:    0.950s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    0.916s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    0.716s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui ?
+  Temps:    0.647s
+
+
+MEDIUM - FLOAT16
+----------------------------------------
+TPS réel: 0.85
+Temps moyen: 0.885s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour le monde, c'est un message de test
+  Temps:    1.038s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute sur le chien paresseux
+  Temps:    1.034s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec précision
+  Temps:    1.397s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue dans notre service de traduction.
+  Temps:    0.714s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment allez-vous aujourd'hui ?
+  Temps:    0.813s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle transforme le monde.
+  Temps:    0.831s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    0.847s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    0.666s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui ?
+  Temps:    0.622s
+
+
+MEDIUM - INT8
+----------------------------------------
+TPS réel: 0.65
+Temps moyen: 1.242s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour le monde, c'est un message de test
+  Temps:    3.707s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute sur le chien paresseux
+  Temps:    1.256s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec précision
+  Temps:    1.536s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue dans notre service de traduction.
+  Temps:    0.729s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment allez-vous aujourd'hui ?
+  Temps:    0.834s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle transforme le monde.
+  Temps:    0.846s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    0.902s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    0.719s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui ?
+  Temps:    0.652s
+
+
+PREMIUM - FLOAT32
+----------------------------------------
+TPS réel: 0.15
+Temps moyen: 6.303s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour, c'est un message de test
+  Temps:    38.639s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute sur le chien paresseux
+  Temps:    3.205s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec précision
+  Temps:    3.481s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue dans notre service de traduction
+  Temps:    1.809s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment allez-vous aujourd'hui ?
+  Temps:    1.946s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle est en train de transformer le monde.
+  Temps:    2.652s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    2.035s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    1.552s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui ?
+  Temps:    1.408s
+
+
+PREMIUM - FLOAT16
+----------------------------------------
+TPS réel: 0.26
+Temps moyen: 3.500s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour, c'est un message de test
+  Temps:    17.951s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute sur le chien paresseux
+  Temps:    2.165s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec précision
+  Temps:    2.415s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue dans notre service de traduction
+  Temps:    1.387s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment allez-vous aujourd'hui ?
+  Temps:    1.512s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle est en train de transformer le monde.
+  Temps:    1.867s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    1.578s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    1.433s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui ?
+  Temps:    1.194s
+
+
+PREMIUM - INT8
+----------------------------------------
+TPS réel: 0.13
+Temps moyen: 7.370s
+Succès: 100.0%
+
+Traduction #1
+  Direction: en → fr
+  Original: Hello world, this is a test message
+  Traduit:  Bonjour, c'est un message de test
+  Temps:    50.001s
+
+Traduction #2
+  Direction: en → fr
+  Original: The quick brown fox jumps over the lazy dog
+  Traduit:  Le renard brun rapide saute sur le chien paresseux
+  Temps:    2.890s
+
+Traduction #3
+  Direction: en → fr
+  Original: Machine learning models can translate text accurately
+  Traduit:  Les modèles d'apprentissage automatique peuvent traduire le texte avec précision
+  Temps:    2.985s
+
+Traduction #4
+  Direction: en → fr
+  Original: Welcome to our translation service
+  Traduit:  Bienvenue dans notre service de traduction
+  Temps:    1.519s
+
+Traduction #5
+  Direction: en → fr
+  Original: Good morning, how are you today?
+  Traduit:  Bonjour, comment allez-vous aujourd'hui ?
+  Temps:    1.740s
+
+Traduction #6
+  Direction: en → fr
+  Original: Artificial intelligence is transforming the world
+  Traduit:  L'intelligence artificielle est en train de transformer le monde.
+  Temps:    2.368s
+
+Traduction #7
+  Direction: en → fr
+  Original: Bonjour le monde, ceci est un message de test
+  Traduit:  Bonjour le monde, ceci est un message de test
+  Temps:    1.975s
+
+Traduction #8
+  Direction: en → fr
+  Original: La traduction automatique est très utile
+  Traduit:  La traduction automatique est très utile
+  Temps:    1.506s
+
+Traduction #9
+  Direction: en → fr
+  Original: Comment allez-vous aujourd'hui?
+  Traduit:  Comment allez-vous aujourd'hui ?
+  Temps:    1.350s
+

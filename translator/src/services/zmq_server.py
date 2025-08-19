@@ -40,14 +40,15 @@ class TranslationTask:
             self.created_at = time.time()
 
 class TranslationPoolManager:
-    """Gestionnaire des pools FIFO de traduction"""
+    """Gestionnaire des pools FIFO de traduction avec gestion dynamique des workers"""
     
     def __init__(self, 
                  normal_pool_size: int = 10000,
                  any_pool_size: int = 10000,
-                 normal_workers: int = 3,
-                 any_workers: int = 2,
-                 translation_service=None):
+                 normal_workers: int = 20,  # Augmenté pour haute performance
+                 any_workers: int = 10,     # Augmenté pour haute performance
+                 translation_service=None,
+                 enable_dynamic_scaling: bool = True):
         
         # Pools FIFO séparées
         self.normal_pool = asyncio.Queue(maxsize=normal_pool_size)
@@ -56,15 +57,22 @@ class TranslationPoolManager:
         # Configuration des workers
         self.normal_workers = normal_workers
         self.any_workers = any_workers
+        self.max_normal_workers = normal_workers * 2  # Limite max pour scaling
+        self.max_any_workers = any_workers * 2        # Limite max pour scaling
+        
+        # Gestion dynamique
+        self.enable_dynamic_scaling = enable_dynamic_scaling
+        self.scaling_check_interval = 30  # Vérifier toutes les 30 secondes
+        self.last_scaling_check = time.time()
         
         # Thread pools pour les traductions
-        self.normal_worker_pool = ThreadPoolExecutor(max_workers=normal_workers)
-        self.any_worker_pool = ThreadPoolExecutor(max_workers=any_workers)
+        self.normal_worker_pool = ThreadPoolExecutor(max_workers=self.max_normal_workers)
+        self.any_worker_pool = ThreadPoolExecutor(max_workers=self.max_any_workers)
         
         # Service de traduction partagé
         self.translation_service = translation_service
         
-        # Statistiques
+        # Statistiques avancées
         self.stats = {
             'normal_pool_size': 0,
             'any_pool_size': 0,
@@ -73,14 +81,21 @@ class TranslationPoolManager:
             'tasks_processed': 0,
             'tasks_failed': 0,
             'translations_completed': 0,
-            'pool_full_rejections': 0
+            'pool_full_rejections': 0,
+            'avg_processing_time': 0.0,
+            'queue_growth_rate': 0.0,
+            'worker_utilization': 0.0,
+            'dynamic_scaling_events': 0
         }
         
         # Workers actifs
         self.normal_workers_running = False
         self.any_workers_running = False
+        self.normal_worker_tasks = []
+        self.any_worker_tasks = []
         
-        logger.info(f"[TRANSLATOR] TranslationPoolManager initialisé: normal_pool({normal_pool_size}), any_pool({any_pool_size}), normal_workers({normal_workers}), any_workers({any_workers})")
+        logger.info(f"[TRANSLATOR] TranslationPoolManager haute performance initialisé: normal_pool({normal_pool_size}), any_pool({any_pool_size}), normal_workers({normal_workers}), any_workers({any_workers})")
+        logger.info(f"[TRANSLATOR] Gestion dynamique des workers: {'activée' if enable_dynamic_scaling else 'désactivée'}")
     
     async def enqueue_task(self, task: TranslationTask) -> bool:
         """Enfile une tâche dans la pool appropriée"""
@@ -113,24 +128,25 @@ class TranslationPoolManager:
             return False
     
     async def start_workers(self):
-        """Démarre tous les workers"""
+        """Démarre tous les workers avec gestion dynamique"""
         self.normal_workers_running = True
         self.any_workers_running = True
         
         # Démarrer les workers pour la pool normale
-        normal_worker_tasks = [
+        self.normal_worker_tasks = [
             asyncio.create_task(self._normal_worker_loop(f"normal_worker_{i}"))
             for i in range(self.normal_workers)
         ]
         
         # Démarrer les workers pour la pool "any"
-        any_worker_tasks = [
+        self.any_worker_tasks = [
             asyncio.create_task(self._any_worker_loop(f"any_worker_{i}"))
             for i in range(self.any_workers)
         ]
         
-        logger.info(f"[TRANSLATOR] Workers démarrés: {self.normal_workers} normal, {self.any_workers} any")
-        return normal_worker_tasks + any_worker_tasks
+        logger.info(f"[TRANSLATOR] Workers haute performance démarrés: {self.normal_workers} normal, {self.any_workers} any")
+        logger.info(f"[TRANSLATOR] Capacité totale: {self.normal_workers + self.any_workers} traductions simultanées")
+        return self.normal_worker_tasks + self.any_worker_tasks
     
     async def stop_workers(self):
         """Arrête tous les workers"""
@@ -138,12 +154,86 @@ class TranslationPoolManager:
         self.any_workers_running = False
         logger.info("Arrêt des workers demandé")
     
+    async def _dynamic_scaling_check(self):
+        """Vérifie et ajuste dynamiquement le nombre de workers"""
+        if not self.enable_dynamic_scaling:
+            return
+            
+        current_time = time.time()
+        if current_time - self.last_scaling_check < self.scaling_check_interval:
+            return
+            
+        self.last_scaling_check = current_time
+        
+        # Calculer les métriques
+        normal_queue_size = self.normal_pool.qsize()
+        any_queue_size = self.any_pool.qsize()
+        normal_utilization = self.stats['normal_workers_active'] / self.normal_workers if self.normal_workers > 0 else 0
+        any_utilization = self.stats['any_workers_active'] / self.any_workers if self.any_workers > 0 else 0
+        
+        # Ajuster les workers normaux
+        if normal_queue_size > 100 and normal_utilization > 0.8 and self.normal_workers < self.max_normal_workers:
+            new_normal_workers = min(self.normal_workers + 5, self.max_normal_workers)
+            if new_normal_workers > self.normal_workers:
+                await self._scale_normal_workers(new_normal_workers)
+                logger.info(f"[TRANSLATOR] 🔧 Scaling UP normal workers: {self.normal_workers} → {new_normal_workers}")
+        
+        elif normal_queue_size < 10 and normal_utilization < 0.3 and self.normal_workers > 20:
+            new_normal_workers = max(self.normal_workers - 2, 20)
+            if new_normal_workers < self.normal_workers:
+                await self._scale_normal_workers(new_normal_workers)
+                logger.info(f"[TRANSLATOR] 🔧 Scaling DOWN normal workers: {self.normal_workers} → {new_normal_workers}")
+        
+        # Ajuster les workers "any"
+        if any_queue_size > 50 and any_utilization > 0.8 and self.any_workers < self.max_any_workers:
+            new_any_workers = min(self.any_workers + 3, self.max_any_workers)
+            if new_any_workers > self.any_workers:
+                await self._scale_any_workers(new_any_workers)
+                logger.info(f"[TRANSLATOR] 🔧 Scaling UP any workers: {self.any_workers} → {new_any_workers}")
+        
+        elif any_queue_size < 5 and any_utilization < 0.3 and self.any_workers > 10:
+            new_any_workers = max(self.any_workers - 1, 10)
+            if new_any_workers < self.any_workers:
+                await self._scale_any_workers(new_any_workers)
+                logger.info(f"[TRANSLATOR] 🔧 Scaling DOWN any workers: {self.any_workers} → {new_any_workers}")
+    
+    async def _scale_normal_workers(self, new_count: int):
+        """Ajuste le nombre de workers normaux"""
+        if new_count > self.normal_workers:
+            # Ajouter des workers
+            for i in range(self.normal_workers, new_count):
+                task = asyncio.create_task(self._normal_worker_loop(f"normal_worker_{i}"))
+                self.normal_worker_tasks.append(task)
+        else:
+            # Réduire les workers (ils s'arrêteront naturellement)
+            pass
+        
+        self.normal_workers = new_count
+        self.stats['dynamic_scaling_events'] += 1
+    
+    async def _scale_any_workers(self, new_count: int):
+        """Ajuste le nombre de workers any"""
+        if new_count > self.any_workers:
+            # Ajouter des workers
+            for i in range(self.any_workers, new_count):
+                task = asyncio.create_task(self._any_worker_loop(f"any_worker_{i}"))
+                self.any_worker_tasks.append(task)
+        else:
+            # Réduire les workers (ils s'arrêteront naturellement)
+            pass
+        
+        self.any_workers = new_count
+        self.stats['dynamic_scaling_events'] += 1
+    
     async def _normal_worker_loop(self, worker_name: str):
-        """Boucle de travail pour les workers de la pool normale"""
+        """Boucle de travail pour les workers de la pool normale avec scaling dynamique"""
         logger.info(f"Worker {worker_name} démarré")
         
         while self.normal_workers_running:
             try:
+                # Vérifier le scaling dynamique
+                await self._dynamic_scaling_check()
+                
                 # Attendre une tâche avec timeout
                 try:
                     task = await asyncio.wait_for(self.normal_pool.get(), timeout=1.0)
@@ -153,10 +243,18 @@ class TranslationPoolManager:
                 self.stats['normal_workers_active'] += 1
                 self.stats['normal_pool_size'] = self.normal_pool.qsize()
                 
-                logger.info(f"Worker {worker_name} traite la tâche {task.task_id} ({len(task.target_languages)} langues)")
+                logger.debug(f"Worker {worker_name} traite la tâche {task.task_id} ({len(task.target_languages)} langues)")
                 
                 # Traiter la tâche
+                start_time = time.time()
                 await self._process_translation_task(task, worker_name)
+                processing_time = time.time() - start_time
+                
+                # Mettre à jour les stats de performance
+                self.stats['avg_processing_time'] = (
+                    (self.stats['avg_processing_time'] * (self.stats['tasks_processed']) + processing_time) 
+                    / (self.stats['tasks_processed'] + 1)
+                )
                 
                 self.stats['normal_workers_active'] -= 1
                 self.stats['tasks_processed'] += 1
@@ -164,15 +262,20 @@ class TranslationPoolManager:
             except Exception as e:
                 logger.error(f"Erreur dans le worker {worker_name}: {e}")
                 self.stats['tasks_failed'] += 1
+                if self.stats['normal_workers_active'] > 0:
+                    self.stats['normal_workers_active'] -= 1
         
         logger.info(f"Worker {worker_name} arrêté")
     
     async def _any_worker_loop(self, worker_name: str):
-        """Boucle de travail pour les workers de la pool 'any'"""
+        """Boucle de travail pour les workers de la pool 'any' avec scaling dynamique"""
         logger.info(f"Worker {worker_name} démarré")
         
         while self.any_workers_running:
             try:
+                # Vérifier le scaling dynamique
+                await self._dynamic_scaling_check()
+                
                 # Attendre une tâche avec timeout
                 try:
                     task = await asyncio.wait_for(self.any_pool.get(), timeout=1.0)
@@ -182,10 +285,18 @@ class TranslationPoolManager:
                 self.stats['any_workers_active'] += 1
                 self.stats['any_pool_size'] = self.any_pool.qsize()
                 
-                logger.info(f"Worker {worker_name} traite la tâche {task.task_id} ({len(task.target_languages)} langues)")
+                logger.debug(f"Worker {worker_name} traite la tâche {task.task_id} ({len(task.target_languages)} langues)")
                 
                 # Traiter la tâche
+                start_time = time.time()
                 await self._process_translation_task(task, worker_name)
+                processing_time = time.time() - start_time
+                
+                # Mettre à jour les stats de performance
+                self.stats['avg_processing_time'] = (
+                    (self.stats['avg_processing_time'] * (self.stats['tasks_processed']) + processing_time) 
+                    / (self.stats['tasks_processed'] + 1)
+                )
                 
                 self.stats['any_workers_active'] -= 1
                 self.stats['tasks_processed'] += 1
@@ -193,6 +304,8 @@ class TranslationPoolManager:
             except Exception as e:
                 logger.error(f"Erreur dans le worker {worker_name}: {e}")
                 self.stats['tasks_failed'] += 1
+                if self.stats['any_workers_active'] > 0:
+                    self.stats['any_workers_active'] -= 1
         
         logger.info(f"Worker {worker_name} arrêté")
     
