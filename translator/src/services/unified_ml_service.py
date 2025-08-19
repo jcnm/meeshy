@@ -210,7 +210,7 @@ class UnifiedMLTranslationService:
                 return False
     
     async def _load_model(self, model_type: str):
-        """Charge un modèle spécifique depuis local ou HuggingFace"""
+        """Charge un modèle spécifique depuis local ou HuggingFace avec optimisations Docker"""
         if model_type in self.models:
             return  # Déjà chargé
         
@@ -223,25 +223,45 @@ class UnifiedMLTranslationService:
         model_path = str(local_path) if local_path.exists() else model_name
         logger.info(f"📥 Chargement {model_type}: {model_path}")
         
-        # Charger dans un thread pour éviter de bloquer
+        # OPTIMISATION DOCKER: Charger dans un thread avec timeout et gestion mémoire
         def load_model():
             try:
-                # Tokenizer
+                import gc
+                import torch
+                
+                # Nettoyer la mémoire avant chargement
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                
+                # OPTIMISATION: Charger avec des paramètres optimisés pour Docker
                 tokenizer = AutoTokenizer.from_pretrained(
                     model_path, 
                     cache_dir=str(self.models_path),
-                    local_files_only=local_path.exists()
+                    local_files_only=local_path.exists(),
+                    use_fast=True,  # Tokenizer rapide
+                    model_max_length=512  # Limiter la taille
                 )
                 
-                # Modèle
+                # OPTIMISATION: Charger le modèle avec des paramètres optimisés
                 model = AutoModelForSeq2SeqLM.from_pretrained(
                     model_path,
                     cache_dir=str(self.models_path), 
-                    local_files_only=local_path.exists()
+                    local_files_only=local_path.exists(),
+                    torch_dtype=torch.float32,  # Utiliser float32 pour économiser la mémoire
+                    low_cpu_mem_usage=True,  # Optimisation mémoire
+                    device_map="auto" if device == "cuda" else None
                 )
                 
-                # CORRECTION: Pas de pipeline partagé pour éviter "Already borrowed"
-                # On crée les pipelines à la demande dans _ml_translate
+                # OPTIMISATION: Déplacer vers CPU si nécessaire
+                if device == "cpu":
+                    model = model.to("cpu")
+                    model.eval()  # Mode évaluation
+                
+                # Nettoyer la mémoire après chargement
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
                 
                 return tokenizer, model
                 
@@ -249,9 +269,19 @@ class UnifiedMLTranslationService:
                 logger.error(f"❌ Erreur chargement {model_type}: {e}")
                 return None, None
         
-        # Charger de manière asynchrone
-        loop = asyncio.get_event_loop()
-        tokenizer, model = await loop.run_in_executor(self.executor, load_model)
+        # OPTIMISATION: Charger avec timeout pour éviter les blocages
+        try:
+            loop = asyncio.get_event_loop()
+            tokenizer, model = await asyncio.wait_for(
+                loop.run_in_executor(self.executor, load_model),
+                timeout=300  # 5 minutes timeout
+            )
+        except asyncio.TimeoutError:
+            logger.error(f"❌ Timeout lors du chargement du modèle {model_type}")
+            return
+        except Exception as e:
+            logger.error(f"❌ Erreur lors du chargement asynchrone {model_type}: {e}")
+            return
         
         if model and tokenizer:
             self.tokenizers[model_type] = tokenizer
@@ -332,18 +362,25 @@ class UnifiedMLTranslationService:
             return fallback_result
     
     async def _ml_translate(self, text: str, source_lang: str, target_lang: str, model_type: str) -> str:
-        """Traduction avec le vrai modèle ML - tokenizers thread-local pour éviter 'Already borrowed'"""
+        """Traduction avec le vrai modèle ML - optimisé pour Docker avec gestion d'erreurs robuste"""
         try:
             if model_type not in self.models:
                 raise Exception(f"Modèle {model_type} non chargé")
             
             model_name = self.model_configs[model_type]['model_name']
             
-            # Traduction dans un thread - NOUVEAU: tokenizer thread-local
+            # OPTIMISATION DOCKER: Traduction avec timeout et gestion mémoire
             def translate():
                 try:
+                    import gc
+                    import torch
                     from transformers import pipeline, AutoTokenizer
                     import threading
+                    
+                    # Nettoyer la mémoire avant traduction
+                    gc.collect()
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
                     
                     # SOLUTION: Créer un tokenizer unique pour ce thread
                     thread_id = threading.current_thread().ident
@@ -353,14 +390,16 @@ class UnifiedMLTranslationService:
                     shared_model = self.models[model_type]
                     model_path = self.model_configs[model_type]['local_path']
                     
-                    # Créer un tokenizer frais pour ce thread spécifique
+                    # OPTIMISATION: Créer un tokenizer frais avec paramètres optimisés
                     thread_tokenizer = AutoTokenizer.from_pretrained(
                         str(model_path),
                         cache_dir=str(self.models_path),
-                        local_files_only=True  # Utiliser le modèle local
+                        local_files_only=True,  # Utiliser le modèle local
+                        use_fast=True,  # Tokenizer rapide
+                        model_max_length=512  # Limiter la taille
                     )
                     
-                    # Différencier T5 et NLLB avec pipelines appropriés
+                    # OPTIMISATION: Différencier T5 et NLLB avec pipelines appropriés
                     if "t5" in model_name.lower():
                         # T5: utiliser text2text-generation avec tokenizer thread-local
                         temp_pipeline = pipeline(
@@ -368,7 +407,8 @@ class UnifiedMLTranslationService:
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=128
+                            max_length=128,
+                            torch_dtype=torch.float32  # Économiser la mémoire
                         )
                         
                         # T5: format avec noms complets de langues
@@ -378,14 +418,16 @@ class UnifiedMLTranslationService:
                         
                         logger.debug(f"T5 instruction: {instruction}")
                         
+                        # OPTIMISATION: Traduction avec paramètres optimisés
                         result = temp_pipeline(
                             instruction,
                             max_new_tokens=64,
-                            num_beams=4,
+                            num_beams=2,  # Réduire pour économiser la mémoire
                             do_sample=False,
                             early_stopping=True,
                             repetition_penalty=1.1,
-                            length_penalty=1.0
+                            length_penalty=1.0,
+                            pad_token_id=thread_tokenizer.eos_token_id
                         )
                         
                         # T5 retourne generated_text
@@ -418,18 +460,22 @@ class UnifiedMLTranslationService:
                             model=shared_model,
                             tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
                             device=0 if self.device == 'cuda' and torch.cuda.is_available() else -1,
-                            max_length=128
+                            max_length=128,
+                            torch_dtype=torch.float32  # Économiser la mémoire
                         )
                         
                         # NLLB: codes de langue spéciaux
                         nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
                         nllb_target = self.lang_codes.get(target_lang, 'fra_Latn')
                         
+                        # OPTIMISATION: Traduction avec paramètres optimisés
                         result = temp_pipeline(
                             text, 
                             src_lang=nllb_source, 
                             tgt_lang=nllb_target, 
-                            max_length=128
+                            max_length=128,
+                            num_beams=2,  # Réduire pour économiser la mémoire
+                            early_stopping=True
                         )
                         
                         # NLLB retourne translation_text
@@ -438,9 +484,14 @@ class UnifiedMLTranslationService:
                         else:
                             translated = f"[NLLB-No-Result] {text}"
                     
-                    # Nettoyer tokenizer et pipeline temporaires
+                    # OPTIMISATION: Nettoyer tokenizer et pipeline temporaires
                     del thread_tokenizer
                     del temp_pipeline
+                    
+                    # Nettoyer la mémoire après traduction
+                    gc.collect()
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
                     
                     return translated
                     
@@ -448,20 +499,24 @@ class UnifiedMLTranslationService:
                     logger.error(f"Erreur pipeline {model_name}: {e}")
                     return f"[ML-Pipeline-Error] {text}"
             
-            # Exécuter de manière asynchrone
-            loop = asyncio.get_event_loop()
-            translated = await loop.run_in_executor(self.executor, translate)
-            
-            # Vérification que la traduction n'est pas None
-            if translated is None:
-                logger.error(f"❌ Traduction ML a retourné None pour {model_type}")
-                return f"[ML-None-Result] {text}"
-            
-            return translated
-            
+            # OPTIMISATION: Traduction avec timeout pour éviter les blocages
+            try:
+                loop = asyncio.get_event_loop()
+                translated = await asyncio.wait_for(
+                    loop.run_in_executor(self.executor, translate),
+                    timeout=60  # 1 minute timeout pour la traduction
+                )
+                return translated
+            except asyncio.TimeoutError:
+                logger.error(f"❌ Timeout lors de la traduction avec {model_type}")
+                return f"[ML-Timeout] {text}"
+            except Exception as e:
+                logger.error(f"❌ Erreur lors de la traduction asynchrone: {e}")
+                return f"[ML-Async-Error] {text}"
+                
         except Exception as e:
-            logger.error(f"❌ Erreur modèle ML {model_type}: {e}")
-            return f"[ML-Error] {text}"
+            logger.error(f"❌ Erreur générale _ml_translate: {e}")
+            return f"[ML-General-Error] {text}"
     
     def _detect_language(self, text: str) -> str:
         """Détection de langue simple"""

@@ -69,7 +69,7 @@ ENV PYTHONPATH=/app \
     MODEL_CACHE_DIR=/app/models \
     TORCH_HOME=/app/models \
     HF_HOME=/app/models \
-    TRANSFORMERS_CACHE=/app/models
+    MODEL_CACHE_DIR=/app/models
 
 # Installer les dépendances Python avec timeout étendu pour PyTorch
 COPY translator/requirements.txt ./

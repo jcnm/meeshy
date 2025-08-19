@@ -56,7 +56,15 @@ export interface TranslationErrorEvent {
   metadata?: any;  // Métadonnées techniques
 }
 
-export type TranslationEvent = TranslationCompletedEvent | TranslationErrorEvent;
+export interface PongEvent {
+  type: 'pong';
+  timestamp: number;
+  translator_status: string;
+  translator_port_pub?: number;
+  translator_port_pull?: number;
+}
+
+export type TranslationEvent = TranslationCompletedEvent | TranslationErrorEvent | PongEvent;
 
 export interface ZMQClientStats {
   requests_sent: number;
@@ -178,10 +186,12 @@ export class ZMQTranslationClient extends EventEmitter {
           
           // LOG DÉTAILLÉ DES OBJETS PÉRIODIQUEMENT
           logger.info('🔍 [GATEWAY] VÉRIFICATION OBJETS ZMQ DANS BOUCLE ÉCOUTE:');
-          logger.info(`   📋 this.subSocket: ${this.subSocket}`);
+          logger.info(`   📋 this.subSocket: ${this.subSocket} (port ${this.subPort})`);
+          logger.info(`   📋 this.pushSocket: ${this.pushSocket} (port ${this.pushPort})`);
           logger.info(`   📋 this.subSocket type: ${typeof this.subSocket}`);
           logger.info(`   📋 this.running: ${this.running}`);
           logger.info(`   📋 Socket SUB fermé?: ${this.subSocket?.closed || 'N/A'}`);
+          logger.info(`   📋 Socket PUSH fermé?: ${this.pushSocket?.closed || 'N/A'}`);
           logger.info(`   📋 this.context: ${this.context}`);
         }
         heartbeatCount++;
@@ -287,6 +297,13 @@ export class ZMQTranslationClient extends EventEmitter {
         // Nettoyer la requête en cours si elle existe
         this.pendingRequests.delete(completedEvent.taskId);
         
+      } else if (event.type === 'pong') {
+        // Gestion des réponses ping/pong
+        logger.info(`🏓 [GATEWAY] Pong reçu du Translator: ${JSON.stringify(event)}`);
+        if (event.translator_status === 'alive') {
+          logger.info(`🏓 [GATEWAY] Translator en ligne - Ports: PUB=${event.translator_port_pub}, PULL=${event.translator_port_pull}`);
+        }
+        
       } else if (event.type === 'translation_error') {
         const errorEvent = event as TranslationErrorEvent;
         this.stats.errors_received++;
@@ -339,9 +356,9 @@ export class ZMQTranslationClient extends EventEmitter {
       logger.info('🔍 [GATEWAY] Test de connectivité avec ping...');
       const pingMessage = { type: 'ping', timestamp: Date.now() };
       await this.pushSocket.send(JSON.stringify(pingMessage));
-      logger.info('✅ [GATEWAY] Ping envoyé avec succès');
+      logger.info(`✅ [GATEWAY] Ping envoyé avec succès via port ${this.pushPort}`);
     } catch (error) {
-      logger.error(`❌ [GATEWAY] Erreur lors du ping: ${error}`);
+      logger.error(`❌ [GATEWAY] Erreur lors du ping via port ${this.pushPort}: ${error}`);
     }
 
     try {
@@ -450,7 +467,8 @@ export class ZMQTranslationClient extends EventEmitter {
       };
       
       await this.pushSocket.send(JSON.stringify(pingMessage));
-      return true;
+      logger.info(`🏓 [GATEWAY] Health check ping envoyé via port ${this.pushPort}`);
+      return true
       
     } catch (error) {
       logger.error(`❌ Health check échoué: ${error}`);
@@ -516,7 +534,7 @@ export class ZMQTranslationClient extends EventEmitter {
     try {
       const pingMessage = { type: 'ping', timestamp: Date.now() };
       await this.pushSocket.send(JSON.stringify(pingMessage));
-      logger.info('🧪 [ZMQ-Client] Ping envoyé pour test');
+      logger.info(`🧪 [ZMQ-Client] Ping envoyé pour test via port ${this.pushPort}`);
       
       // Attendre un peu pour voir si on reçoit quelque chose
       setTimeout(() => {

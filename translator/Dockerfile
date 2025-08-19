@@ -1,16 +1,16 @@
-# Translator Dockerfile - Meeshy FastAPI Service (Optimized)
+# Translator Dockerfile - Meeshy FastAPI Service (Optimized for ML)
 FROM python:3.12-slim
 
 # === MAINTAINER INFORMATION ===
 LABEL maintainer="Meeshy Development Team <dev@meeshy.com>" \
-      description="Meeshy Frontend - Next.js Application with SSR/SSG support" \
+      description="Meeshy Translator - FastAPI Service with ML Models" \
       version="1.0.0" \
-      org.opencontainers.image.source="https://github.com/jcnm/meeshy/frontend" \
-      org.opencontainers.image.documentation="https://docs.meeshy.com/frontend" \
+      org.opencontainers.image.source="https://github.com/jcnm/meeshy/translator" \
+      org.opencontainers.image.documentation="https://docs.meeshy.com/translator" \
       org.opencontainers.image.vendor="Meeshy" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.title="Meeshy Translator" \
-      org.opencontainers.image.description="Next.js frontend application for Meeshy platform"
+      org.opencontainers.image.description="FastAPI translation service with ML models for Meeshy platform"
 
 # Configuration des arguments de build
 ARG DEBIAN_FRONTEND=noninteractive
@@ -29,7 +29,12 @@ ENV PYTHONPATH=/app \
     MODEL_CACHE_DIR=/app/models \
     TORCH_HOME=/app/models \
     HF_HOME=/app/models \
-    TRANSFORMERS_CACHE=/app/models
+    # OPTIMISATION ML: Variables d'environnement pour PyTorch
+    PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128 \
+    OMP_NUM_THREADS=4 \
+    MKL_NUM_THREADS=4 \
+    NUMEXPR_NUM_THREADS=4 \
+    TOKENIZERS_PARALLELISM=false
 
 # Variables d'environnement configurables via build args
 ARG GRPC_HOST=0.0.0.0
@@ -37,7 +42,7 @@ ARG GRPC_PORT=50051
 ARG HTTP_PORT=8000
 ARG FASTAPI_PORT=8000
 ARG ZMQ_PUSH_PORT=5555
-ARG ZMQ_SUB_PORT=5557
+ARG ZMQ_SUB_PORT=5558
 ARG LOG_LEVEL=info
 ARG DEBUG=false
 ARG SUPPORTED_LANGUAGES="fr,en,es,de,pt,zh,ja,ar"
@@ -47,12 +52,12 @@ ARG BASIC_MODEL=t5-small
 ARG MEDIUM_MODEL=nllb-200-distilled-600M
 ARG PREMIUM_MODEL=nllb-200-distilled-1.3B
 ARG DEVICE=cpu
-ARG ML_BATCH_SIZE=32
+ARG ML_BATCH_SIZE=4
 ARG GPU_MEMORY_FRACTION=0.8
-ARG TRANSLATION_TIMEOUT=30
-ARG CONCURRENT_TRANSLATIONS=10
-ARG WORKERS=4
-ARG TRANSLATION_WORKERS=10
+ARG TRANSLATION_TIMEOUT=60
+ARG CONCURRENT_TRANSLATIONS=5
+ARG WORKERS=2
+ARG TRANSLATION_WORKERS=4
 ARG PRISMA_POOL_SIZE=15
 ARG CACHE_MAX_ENTRIES=10000
 ARG AUTO_DETECT_LANGUAGE=true
@@ -61,8 +66,8 @@ ARG FORCE_MODEL_REDOWNLOAD=false
 ARG TRANSLATION_CACHE_TTL=3600
 ARG NORMAL_POOL_SIZE=10000
 ARG ANY_POOL_SIZE=10000
-ARG NORMAL_WORKERS=3
-ARG ANY_WORKERS=2
+ARG NORMAL_WORKERS=2
+ARG ANY_WORKERS=1
 
 # Configuration des variables d'environnement depuis les args
 ENV GRPC_HOST=${GRPC_HOST} \
@@ -97,7 +102,7 @@ ENV GRPC_HOST=${GRPC_HOST} \
     NORMAL_WORKERS=${NORMAL_WORKERS} \
     ANY_WORKERS=${ANY_WORKERS}
 
-# Installation en une seule layer avec cleanup
+# OPTIMISATION: Installation en une seule layer avec cleanup et optimisations ML
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         wget \
@@ -105,6 +110,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gnupg \
         tini \
         curl \
+        git \
+        # OPTIMISATION ML: Dépendances système pour PyTorch (sans libatlas-base-dev obsolète)
+        libopenblas-dev \
+        liblapack-dev \
+        gfortran \
+        pkg-config \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && npm install -g pnpm@${PNPM_VERSION} prisma \
@@ -112,7 +123,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd -u 1001 -g translator -m translator \
     && mkdir -p /app/{logs,cache,models,shared} \
     && chown -R translator:translator /app \
-    && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl \
+    # OPTIMISATION: Nettoyage pour réduire la taille de l'image
+    && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl git \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean \
     && npm cache clean --force
@@ -123,44 +135,32 @@ WORKDIR /app
 COPY --chown=translator:translator requirements.txt ./
 COPY --chown=translator:translator .env.docker ./.env
 
-# Installation des dépendances Python en une seule layer
+# OPTIMISATION: Installation des dépendances Python avec optimisations ML
 RUN pip install --upgrade pip --no-cache-dir \
     && pip install --no-cache-dir prisma python-dotenv \
+    # OPTIMISATION ML: Installation de PyTorch CPU optimisé
+    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
     && pip install --default-timeout=300 --no-cache-dir -r requirements.txt \
     && rm -rf ~/.cache/pip
 
 # Copie du code source et du schéma Prisma
-COPY --chown=translator:translator src/ ./src/
-COPY --chown=translator:translator shared/ ./shared/
-COPY --chown=translator:translator start_service.py ./
+COPY --chown=translator:translator . .
 
-# Génération du client Prisma (conditionnel)
-RUN if [ -f shared/prisma/schema.prisma ]; then \
-        echo "✅ Génération du client Prisma..." \
-        && cp shared/prisma/schema.prisma ./schema.prisma \
-        && prisma generate; \
-    else \
-        echo "⚠️  Schema Prisma non trouvé, génération ignorée"; \
-    fi
+# OPTIMISATION: Pré-téléchargement des modèles ML de base
+RUN echo "🤖 Pré-téléchargement des modèles ML de base..." \
+    && python3 -c "import os; from transformers import AutoTokenizer, AutoModelForSeq2SeqLM; import torch; print('📥 Téléchargement t5-small...'); tokenizer = AutoTokenizer.from_pretrained('t5-small', cache_dir='/app/models'); model = AutoModelForSeq2SeqLM.from_pretrained('t5-small', cache_dir='/app/models'); print('✅ t5-small téléchargé avec succès'); del tokenizer, model; torch.cuda.empty_cache() if torch.cuda.is_available() else None" || echo "⚠️ Pré-téléchargement des modèles échoué (normal au build)"
 
-# Génération du client Prisma (conditionnel)
-RUN if [ ! -d /app/models ]; then \
-        mkdir /app/models \
-        && chmod -R 755 /app/models; \
-    else \
-        echo "⚠️  /app/models existe déjà , l'image risque de grossir"; \
-        chmod -R 755 /app/models; \
-    fi \
-    && chown -R translator:translator /app 
-    
+# OPTIMISATION: Configuration des permissions et optimisation finale
+RUN chown -R translator:translator /app \
+    && chmod +x /app/docker-diagnostic.sh \
+    && python3 -m compileall /app/src \
+    && find /app -name '*.pyc' -delete
+
+# OPTIMISATION: Utilisateur non-root pour la sécurité
 USER translator
 
-EXPOSE ${HTTP_PORT} ${GRPC_PORT} ${ZMQ_PUSH_PORT} ${ZMQ_SUB_PORT}
-
+# OPTIMISATION: Point d'entrée avec gestion d'erreurs
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Health check optimisé
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python3 -c "import requests; requests.get(f'http://localhost:{os.getenv(\"HTTP_PORT\", \"8000\")}/health', timeout=5)" || exit 1
-
-CMD ["python3", "start_service.py"]
+# OPTIMISATION: Commande de démarrage avec gestion des signaux
+CMD ["python3", "-u", "src/main.py"]

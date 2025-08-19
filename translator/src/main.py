@@ -66,11 +66,18 @@ class MeeshyTranslationServer:
                 logger.info("[TRANSLATOR] ✅ Service ML unifié initialisé avec succès")
             
             # 2. Initialiser le serveur ZMQ avec le service ML unifié
+            zmq_push_port = int(os.getenv('TRANSLATOR_ZMQ_PULL_PORT', '5555'))
+            zmq_pub_port = int(os.getenv('TRANSLATOR_ZMQ_PUB_PORT', '5558'))
+            
+            # Optimisation des workers pour éviter les redémarrages
+            normal_workers = min(2, max_workers // 2)  # Max 2 workers normaux
+            any_workers = min(1, max_workers // 4)     # Max 1 worker any
+            
             self.zmq_server = ZMQTranslationServer(
-                gateway_push_port=5555,  # Port où Translator PULL bind (Gateway PUSH connect ici)
-                gateway_sub_port=5558,   # Port où Translator PUB bind (Gateway SUB connect ici)
-                normal_workers=max_workers // 2,
-                any_workers=max_workers // 4,
+                gateway_push_port=zmq_push_port,  # Port où Translator PULL bind (Gateway PUSH connect ici)
+                gateway_sub_port=zmq_pub_port,    # Port où Translator PUB bind (Gateway SUB connect ici)
+                normal_workers=normal_workers,
+                any_workers=any_workers,
                 translation_service=self.translation_service  # Service ML unifié
             )
             # Initialiser le serveur ZMQ
@@ -186,14 +193,21 @@ class MeeshyTranslationServer:
 
 async def main():
     """Point d'entrée principal"""
+    logger.info("[TRANSLATOR] 🚀 Démarrage de la fonction main()")
     server = MeeshyTranslationServer()
+    logger.info("[TRANSLATOR] ✅ Instance MeeshyTranslationServer créée")
     await server.start()
+    logger.info("[TRANSLATOR] ✅ Fonction main() terminée")
 
 if __name__ == "__main__":
     try:
+        logger.info("[TRANSLATOR] 🚀 Point d'entrée __main__ atteint")
         asyncio.run(main())
+        logger.info("[TRANSLATOR] ✅ asyncio.run(main()) terminé")
     except KeyboardInterrupt:
         logger.info("🛑 Arrêt du programme")
     except Exception as e:
         logger.error(f"❌ Erreur fatale: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)

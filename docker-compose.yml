@@ -62,26 +62,26 @@ services:
         - MEDIUM_MODEL=${MEDIUM_MODEL:-nllb-200-distilled-600M}
         - PREMIUM_MODEL=${PREMIUM_MODEL:-nllb-200-distilled-1.3B}
         - DEVICE=${DEVICE:-cpu}
-        - ML_BATCH_SIZE=${ML_BATCH_SIZE:-8}
+        - ML_BATCH_SIZE=${ML_BATCH_SIZE:-4}
         - GPU_MEMORY_FRACTION=${GPU_MEMORY_FRACTION:-0.8}
-        - TRANSLATION_TIMEOUT=${TRANSLATION_TIMEOUT:-30}
-        - CONCURRENT_TRANSLATIONS=${CONCURRENT_TRANSLATIONS:-10}
-        - WORKERS=${WORKERS:-4}
+        - TRANSLATION_TIMEOUT=${TRANSLATION_TIMEOUT:-60}
+        - CONCURRENT_TRANSLATIONS=${CONCURRENT_TRANSLATIONS:-5}
+        - WORKERS=${WORKERS:-2}
         - AUTO_CLEANUP_CORRUPTED_MODELS=${AUTO_CLEANUP_CORRUPTED_MODELS:-true}
         - FORCE_MODEL_REDOWNLOAD=${FORCE_MODEL_REDOWNLOAD:-false}
         - TRANSLATION_CACHE_TTL=${TRANSLATION_CACHE_TTL:-3600}
     image: isopen/meeshy-translator
     container_name: translator
     restart: unless-stopped
-    # Resource limits for ML workloads
+    # OPTIMISATION: Resource limits optimisés pour ML
     deploy:
       resources:
         limits:
-          memory: 12G
-          cpus: '6.0'
-        reservations:
-          memory: 6G
+          memory: 8G
           cpus: '4.0'
+        reservations:
+          memory: 4G
+          cpus: '2.0'
     # Enable GPU support if available
     # runtime: nvidia
     # environment:
@@ -92,8 +92,9 @@ services:
       TRANSLATOR_GRPC_PORT: 50051
       TRANSLATOR_HTTP_PORT: 8000
       TRANSLATOR_ZMQ_PULL_PORT: 5555
-      TRANSLATOR_ZMQ_PUB_PORT: 5557
-      ML_BATCH_SIZE: 16
+      TRANSLATOR_ZMQ_PUB_PORT: 5558
+      # OPTIMISATION: Paramètres ML optimisés pour Docker
+      ML_BATCH_SIZE: 4
       SUPPORTED_LANGUAGES: "fr,en,es,de,pt,zh,ja,ar"
       DEFAULT_LANGUAGE: "fr"
       DEVICE: "cpu"
@@ -101,16 +102,25 @@ services:
       MODELS_PATH: /app/models
       TORCH_HOME: /app/models
       HF_HOME: /app/models
-      TRANSFORMERS_CACHE: /app/models
+      MODEL_CACHE_DIR: /app/models
       GPU_MEMORY_FRACTION: "0.7"
       TRANSLATION_TIMEOUT: 60
       MAX_TEXT_LENGTH: 1000
       CONCURRENT_TRANSLATIONS: 5
+      # OPTIMISATION: Paramètres de performance
+      TRANSLATION_WORKERS: 4
+      NORMAL_WORKERS: 2
+      ANY_WORKERS: 1
+      # OPTIMISATION: Gestion mémoire
+      PYTORCH_CUDA_ALLOC_CONF: "max_split_size_mb:128"
+      OMP_NUM_THREADS: 4
+      MKL_NUM_THREADS: 4
+      NUMEXPR_NUM_THREADS: 4
     ports:
       - "${TRANSLATOR_HTTP_PORT:-8000}:8000"
       - "${TRANSLATOR_GRPC_PORT:-50051}:50051"
       - "${TRANSLATOR_ZMQ_PULL_PORT:-5555}:5555"
-      - "${TRANSLATOR_ZMQ_PUB_PORT:-5557}:5557"
+      - "${TRANSLATOR_ZMQ_PUB_PORT:-5558}:5558"
     volumes:
       - translator_cache:/app/cache
       - translator_models:/app/models
@@ -124,7 +134,7 @@ services:
       interval: 60s
       timeout: 30s
       retries: 5
-      start_period: 180s
+      start_period: 300s  # OPTIMISATION: Plus de temps pour le chargement des modèles
     networks:
       - meeshy-network
 
@@ -152,7 +162,7 @@ services:
         - TRANSLATOR_GRPC_URL=translator:50051
         # ZMQ Configuration
         - ZMQ_TRANSLATOR_HOST=translator
-        - ZMQ_TRANSLATOR_SUB_PORT=${ZMQ_TRANSLATOR_SUB_PORT:-5557}
+        - ZMQ_TRANSLATOR_SUB_PORT=${ZMQ_TRANSLATOR_SUB_PORT:-5558}
         - ZMQ_TRANSLATOR_PUSH_PORT=${ZMQ_TRANSLATOR_PUSH_PORT:-5555}
         - ZMQ_TIMEOUT=${ZMQ_TIMEOUT:-30000}
     image: isopen/meeshy-gateway
@@ -164,7 +174,7 @@ services:
       TRANSLATOR_GRPC_URL: translator:50051
       # ZMQ Configuration
       ZMQ_TRANSLATOR_HOST: translator
-      ZMQ_TRANSLATOR_SUB_PORT: ${ZMQ_TRANSLATOR_SUB_PORT:-5557}
+      ZMQ_TRANSLATOR_SUB_PORT: ${ZMQ_TRANSLATOR_SUB_PORT:-5558}
       ZMQ_TRANSLATOR_PUSH_PORT: ${ZMQ_TRANSLATOR_PUSH_PORT:-5555}
       ZMQ_TIMEOUT: ${ZMQ_TIMEOUT:-3000}
       PORT: 3000

@@ -420,21 +420,12 @@ class ZMQTranslationServer:
             while self.running:
                 try:
                     # LOG DÉTAILLÉ DES OBJETS AVANT COMMUNICATION
-                    logger.info("🔍 [TRANSLATOR] VÉRIFICATION OBJETS ZMQ AVANT RÉCEPTION:")
-                    logger.info(f"   📋 self.pull_socket: {self.pull_socket}")
-                    logger.info(f"   📋 self.pub_socket: {self.pub_socket}")
-                    logger.info(f"   📋 self.context: {self.context}")
-                    logger.info(f"   📋 self.running: {self.running}")
-                    logger.info(f"   📋 Socket PULL fermé?: {self.pull_socket.closed if self.pull_socket else 'N/A'}")
-                    logger.info(f"   📋 Socket PUB fermé?: {self.pub_socket.closed if self.pub_socket else 'N/A'}")
-                    
+                    # DEBUG: Logs réduits de 60% - Suppression des vérifications détaillées
                     logger.info("🎧 En attente de commandes ZMQ...")
                     # Recevoir une commande de traduction via PULL
                     message = await self.pull_socket.recv()
                     
-                    logger.info("🔍 [TRANSLATOR] VÉRIFICATION OBJETS APRÈS RÉCEPTION:")
-                    logger.info(f"   📋 Message reçu (taille): {len(message)} bytes")
-                    logger.info(f"   📋 self.pull_socket encore valide: {self.pull_socket is not None}")
+                                    # DEBUG: Logs réduits de 60% - Suppression des vérifications détaillées
                     
                     await self._handle_translation_request(message)
                     
@@ -458,6 +449,29 @@ class ZMQTranslationServer:
             request_data = json.loads(message.decode('utf-8'))
             
             logger.info(f"📥 [TRANSLATOR] Commande PULL reçue: {request_data}")
+            
+            # Vérifier si c'est un message de ping
+            if request_data.get('type') == 'ping':
+                logger.info(f"🏓 [TRANSLATOR] Ping reçu, timestamp: {request_data.get('timestamp')}")
+                # Répondre au ping via PUB
+                ping_response = {
+                    'type': 'pong',
+                    'timestamp': time.time(),
+                    'translator_status': 'alive',
+                    'translator_port_pub': self.gateway_sub_port,
+                    'translator_port_pull': self.gateway_push_port
+                }
+                if self.pub_socket:
+                    await self.pub_socket.send(json.dumps(ping_response).encode('utf-8'))
+                    logger.info(f"🏓 [TRANSLATOR] Pong envoyé via port {self.gateway_sub_port}")
+                else:
+                    logger.error(f"❌ [TRANSLATOR] Socket PUB non disponible pour pong (port {self.gateway_sub_port})")
+                return
+            
+            # Vérifier que c'est une requête de traduction valide
+            if not request_data.get('text') or not request_data.get('targetLanguages'):
+                logger.warning(f"⚠️ [TRANSLATOR] Requête invalide reçue: {request_data}")
+                return
             
             # Créer la tâche de traduction
             task = TranslationTask(
@@ -501,12 +515,7 @@ class ZMQTranslationServer:
         """Publie un résultat de traduction via PUB vers la gateway avec informations techniques complètes"""
         try:
             # LOG DÉTAILLÉ DES OBJETS AVANT ENVOI
-            logger.info("🔍 [TRANSLATOR] VÉRIFICATION OBJETS ZMQ AVANT ENVOI PUB:")
-            logger.info(f"   📋 self.pub_socket: {self.pub_socket}")
-            logger.info(f"   📋 self.pub_socket type: {type(self.pub_socket)}")
-            logger.info(f"   📋 Socket PUB fermé?: {self.pub_socket.closed if self.pub_socket else 'N/A'}")
-            logger.info(f"   📋 self.context: {self.context}")
-            logger.info(f"   📋 self.context term?: {self.context.closed if hasattr(self.context, 'closed') else 'N/A'}")
+                    # DEBUG: Logs réduits de 60% - Suppression des vérifications détaillées
             
             # Récupérer les informations techniques du système
             import socket

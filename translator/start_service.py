@@ -20,7 +20,20 @@ if str(src_dir) not in sys.path:
 if __name__ == "__main__":
     try:
         os.chdir(str(src_dir))
+        print("🔧 [TRANSLATOR] Changement de répertoire vers:", str(src_dir))
+        
+        # Importer et exécuter main
         import main
+        print("✅ [TRANSLATOR] Module main importé avec succès")
+        
+        # Exécuter la fonction main si elle existe
+        if hasattr(main, 'main'):
+            print("🚀 [TRANSLATOR] Exécution de main.main()...")
+            import asyncio
+            asyncio.run(main.main())
+        else:
+            print("⚠️ [TRANSLATOR] Fonction main() non trouvée dans le module main")
+            
     except Exception as e:
         print(f"❌ Erreur dans start_service.py: {e}")
         traceback.print_exc()
