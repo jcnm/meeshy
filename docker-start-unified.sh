@@ -146,9 +146,15 @@ if [ "$USE_EXTERNAL_DB" != "true" ]; then
     
     # Créer la base de données et l'utilisateur meeshy si nécessaire
     echo -e "${BLUE}🔧 Configuration de la base de données meeshy...${NC}"
+    
+    # Corriger les permissions PostgreSQL
+    chown -R postgres:postgres /app/data/postgres
+    chmod 700 /app/data/postgres
+    
     su - postgres -c "psql -c \"CREATE USER meeshy WITH PASSWORD 'MeeshyP@ssword' CREATEDB;\" 2>/dev/null || true"
     su - postgres -c "psql -c \"CREATE DATABASE meeshy OWNER meeshy;\" 2>/dev/null || true"
     su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE meeshy TO meeshy;\" 2>/dev/null || true"
+    
     echo -e "${GREEN}✅ Base de données meeshy configurée${NC}"
 fi
 
@@ -162,12 +168,38 @@ echo -e "${BLUE}🔧 Démarrage de Supervisor...${NC}"
 /usr/bin/supervisord -c $TEMP_SUPERVISOR_DIR/supervisord.conf &
 
 # Attendre que tous les services soient démarrés
-echo -e "${BLUE}⏳ Attente du démarrage de tous les services (180 secondes)...${NC}"
-sleep 180
+echo -e "${BLUE}⏳ Attente du démarrage de tous les services (30 secondes)...${NC}"
+sleep 30
 
 # Vérifier l'état des services
 echo -e "${BLUE}🔍 Vérification de l'état des services...${NC}"
 supervisorctl -c $TEMP_SUPERVISOR_DIR/supervisord.conf status
+
+# Exécuter les migrations Prisma après que PostgreSQL soit prêt
+if [ "$USE_EXTERNAL_DB" != "true" ]; then
+    echo -e "${BLUE}🔧 Exécution des migrations Prisma...${NC}"
+    sleep 3  # Attendre que PostgreSQL soit complètement prêt
+    
+    # Attendre que PostgreSQL soit accessible via Supervisor
+    until supervisorctl -c $TEMP_SUPERVISOR_DIR/supervisord.conf status postgres | grep -q "RUNNING"; do
+        echo -e "${YELLOW}⏳ Attente de PostgreSQL via Supervisor...${NC}"
+        sleep 5
+    done
+    
+    # Attendre que PostgreSQL soit accessible
+    until su - postgres -c "psql -c '\l'" >/dev/null 2>&1; do
+        echo -e "${YELLOW}⏳ Attente de PostgreSQL...${NC}"
+        sleep 5
+    done
+    su - postgres -c "psql -c '\l'"
+    # Attendre encore un peu pour s'assurer que PostgreSQL est stable
+    sleep 10
+    
+    cd /app/shared && npx prisma migrate deploy --schema=./schema.prisma
+    cd /app/gateway && npx prisma migrate deploy --schema=./shared/schema.prisma
+    
+    echo -e "${GREEN}✅ Migrations Prisma exécutées${NC}"
+fi
 
 # Attendre indéfiniment
 echo -e "${GREEN}✅ Tous les services sont démarrés${NC}"

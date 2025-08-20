@@ -250,7 +250,7 @@ class MeeshyServer {
         // Add your production domains here
         const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || 
                                process.env.ALLOWED_ORIGINS?.split(',') || 
-                               ['http://localhost:3100'];
+                               ['http://localhost:3100', 'http://localhost', 'http://localhost:80', 'http://127.0.0.1', 'http://127.0.0.1:80'];
         
         logger.info(`CORS check: origin="${origin}", allowed="${allowedOrigins.join(',')}"`);
         

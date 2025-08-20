@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.unified
-    image: isopen/meeshy-unified:0.5.0-alpha
+    image: meeshy-unified:test
     container_name: meeshy-unified
     restart: unless-stopped
     ports:
@@ -42,6 +42,8 @@ services:
       - ZMQ_TRANSLATOR_HOST=localhost
       - ZMQ_TRANSLATOR_PUSH_PORT=5555
       - ZMQ_TRANSLATOR_SUB_PORT=5558
+      - CORS_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80,http://localhost:3100
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80,http://localhost:3100
       
       # Configuration Frontend
       - PORT=3100
