@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  meeshy-unified-simple:
+    build:
+      context: .
+      dockerfile: Dockerfile.unified-simple
+    image: isopen/meeshy-unified-simple:0.5.0-alpha
+    container_name: meeshy-unified-simple
+    restart: unless-stopped
+    ports:
+      - "80:80"      # Frontend (Nginx)
+      - "3000:3000"  # Gateway API
+      - "8000:8000"  # Translator API
+    environment:
+      # Configuration des services
+      - NODE_ENV=production
+      - PYTHONUNBUFFERED=1
+      
+      # Base de données (interne par défaut)
+      - DATABASE_URL=postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy
+      - POSTGRES_DB=meeshy
+      - POSTGRES_USER=meeshy
+      - POSTGRES_PASSWORD=MeeshyP@ssword
+      
+      # Redis (interne par défaut)
+      - REDIS_URL=redis://localhost:6379
+      
+      # Services externes (désactivés par défaut)
+      - USE_EXTERNAL_DB=false
+      - USE_EXTERNAL_REDIS=false
+      
+      # Configuration Translator
+      - TRANSLATION_WORKERS=50
+      - QUANTIZATION_LEVEL=float16
+      - ENABLE_DYNAMIC_SCALING=true
+      
+      # Configuration Gateway
+      - GATEWAY_PORT=3000
+      - ZMQ_TRANSLATOR_HOST=localhost
+      - ZMQ_TRANSLATOR_PUSH_PORT=5555
+      - ZMQ_TRANSLATOR_SUB_PORT=5558
+      
+      # Configuration Frontend
+      - PORT=3100
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:3000
+    volumes:
+      - meeshy_data:/app/data
+      - meeshy_logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  meeshy_data:
+    driver: local
+  meeshy_logs:
+    driver: local

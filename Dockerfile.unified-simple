@@ -1,0 +1,60 @@
+# Meeshy Unified Container Simple - Utilise les images existantes
+FROM ubuntu:22.04
+
+# Variables d'environnement
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV NODE_ENV=production
+ENV MEESHY_VERSION=0.5.0-alpha
+
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    postgresql-client \
+    redis-tools \
+    supervisor \
+    nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création de la structure des répertoires
+RUN mkdir -p /opt/meeshy/{translator,gateway,frontend,shared,logs,data}
+RUN mkdir -p /var/log/supervisor
+RUN mkdir -p /etc/supervisor/conf.d
+
+# Création des utilisateurs
+RUN useradd -m -s /bin/bash meeshy && \
+    chown -R meeshy:meeshy /opt/meeshy
+
+# Configuration du répertoire de travail
+WORKDIR /opt/meeshy
+
+# Copier les configurations existantes
+COPY docker/supervisor/ /etc/supervisor/conf.d/
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# Copier les scripts de démarrage
+COPY docker-start-unified.sh /opt/meeshy/docker-start-unified.sh
+COPY scripts/ /opt/meeshy/scripts/
+RUN chmod +x /opt/meeshy/docker-start-unified.sh && \
+    chmod +x /opt/meeshy/scripts/*.sh
+
+# Configuration PostgreSQL
+RUN mkdir -p /var/lib/postgresql/data && \
+    chown -R postgres:postgres /var/lib/postgresql/data
+
+# Configuration Redis
+RUN mkdir -p /var/lib/redis && \
+    chown -R redis:redis /var/lib/redis
+
+# Exposer les ports
+EXPOSE 80 3000 8000 5432 6379
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
+
+# Commande de démarrage
+CMD ["/opt/meeshy/docker-start-unified.sh"]
