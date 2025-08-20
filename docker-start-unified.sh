@@ -151,11 +151,11 @@ if [ "$USE_EXTERNAL_DB" != "true" ]; then
     chown -R postgres:postgres /app/data/postgres
     chmod 700 /app/data/postgres
     
-    su - postgres -c "psql -c \"CREATE USER meeshy WITH PASSWORD 'MeeshyP@ssword' CREATEDB;\" 2>/dev/null || true"
-    su - postgres -c "psql -c \"CREATE DATABASE meeshy OWNER meeshy;\" 2>/dev/null || true"
-    su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE meeshy TO meeshy;\" 2>/dev/null || true"
+    su - postgres -c "psql -c \"CREATE USER ${POSTGRES_USER:-'meeshy'} WITH PASSWORD ${POSTGRES_PASSWORD:-'MeeshyP@ssword'} CREATEDB;\" 2>/dev/null || true"
+    su - postgres -c "psql -c \"CREATE DATABASE ${POSTGRES_DB:-'meeshy'} OWNER ${POSTGRES_USER:-'meeshy'};\" 2>/dev/null || true"
+    su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_DB:-'meeshy'} TO ${POSTGRES_USER:-'meeshy'};\" 2>/dev/null || true"
     
-    echo -e "${GREEN}✅ Base de données meeshy configurée${NC}"
+    echo -e "${GREEN}✅ Base de données ${POSTGRES_DB:-'meeshy'} configurée${NC}"
 fi
 
 if [ "$USE_EXTERNAL_REDIS" != "true" ]; then
@@ -181,7 +181,7 @@ if [ "$USE_EXTERNAL_DB" != "true" ]; then
     sleep 3  # Attendre que PostgreSQL soit complètement prêt
     
     # Attendre que PostgreSQL soit accessible via Supervisor
-    until supervisorctl -c $TEMP_SUPERVISOR_DIR/supervisord.conf status postgres | grep -q "RUNNING"; do
+    until supervisorctl -c $TEMP_SUPERVISOR_DIR/supervisord.conf status meeshy:postgres | grep -q "RUNNING"; do
         echo -e "${YELLOW}⏳ Attente de PostgreSQL via Supervisor...${NC}"
         sleep 5
     done

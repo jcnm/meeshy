@@ -1,6 +1,6 @@
 {
   "name": "meeshy-gateway",
-  "version": "1.0.0",
+  "version": "0.5.2-alpha",
   "description": "Fastify Gateway service for Meeshy real-time messaging",
   "main": "dist/src/server.js",
   "scripts": {

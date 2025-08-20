@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  meeshy-unified:
+  meeshy:
     build:
       context: .
       dockerfile: Dockerfile.unified
-    image: meeshy-unified:test
-    container_name: meeshy-unified
+    image: isopen/meeshy:0.5.2-alpha
+    container_name: meeshy
     restart: unless-stopped
     ports:
       - "80:80"      # Frontend (Nginx)
