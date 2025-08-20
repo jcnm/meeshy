@@ -143,7 +143,7 @@ show_help() {
 main() {
     case "${1:-help}" in
         current)
-            echo -e "${GREEN}Version actuelle: $(get_current_version)${NC}"
+            get_current_version
             ;;
         increment)
             local version_type=${2:-patch}
