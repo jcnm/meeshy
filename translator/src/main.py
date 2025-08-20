@@ -58,8 +58,8 @@ class MeeshyTranslationServer:
             max_workers = int(os.getenv('TRANSLATION_WORKERS', '50'))  # Augmenté de 10 à 50 pour 100 msg/sec
             quantization_level = os.getenv('QUANTIZATION_LEVEL', 'float16')  # float32 par défaut pour stabilité
             
-            # Utiliser le service quantifié avec TOUS les modèles (basic, medium, premium)
-            self.translation_service = QuantizedMLService("all", quantization_level, max_workers=max_workers)
+            # Utiliser le service quantifié avec le modèle basic seulement pour le démarrage rapide
+            self.translation_service = QuantizedMLService("basic", quantization_level, max_workers=max_workers)
             
             # Charger les modèles ML au démarrage
             logger.info("[TRANSLATOR] 📚 Chargement des modèles ML...")

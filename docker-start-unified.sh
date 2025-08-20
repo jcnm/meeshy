@@ -29,12 +29,25 @@ echo "  - Redis externe: $USE_EXTERNAL_REDIS"
 
 # Initialiser PostgreSQL si nécessaire
 if [ "$USE_EXTERNAL_DB" != "true" ]; then
-    echo -e "${BLUE}📊 Initialisation de PostgreSQL...${NC}"
+    echo -e "${BLUE}📊 Configuration de PostgreSQL...${NC}"
     
-    # Initialiser la base de données si elle n'existe pas
+    # Créer les répertoires de données si nécessaire
+    mkdir -p /app/data/postgres /app/data/redis
+    
+    # Initialiser PostgreSQL si la configuration n'existe pas
     if [ ! -f /app/data/postgres/postgresql.conf ]; then
-        echo -e "${YELLOW}📝 Création de la base de données PostgreSQL...${NC}"
-        su - postgres -c "initdb -D /app/data/postgres"
+        echo -e "${YELLOW}📝 Initialisation de PostgreSQL...${NC}"
+        
+        # Trouver le binaire initdb
+        INITDB_PATH=$(find /usr/lib/postgresql -name "initdb" 2>/dev/null | head -1)
+        if [ -z "$INITDB_PATH" ]; then
+            echo -e "${RED}❌ Impossible de trouver initdb${NC}"
+            exit 1
+        fi
+        
+        # Initialiser la base de données
+        chown -R postgres:postgres /app/data/postgres
+        su - postgres -c "$INITDB_PATH -D /app/data/postgres"
         
         # Configuration PostgreSQL
         echo "host all all 0.0.0.0/0 trust" >> /app/data/postgres/pg_hba.conf
@@ -44,9 +57,10 @@ if [ "$USE_EXTERNAL_DB" != "true" ]; then
         echo "max_connections = 100" >> /app/data/postgres/postgresql.conf
         echo "shared_buffers = 128MB" >> /app/data/postgres/postgresql.conf
         
-        echo -e "${GREEN}✅ Base de données PostgreSQL créée${NC}"
+        chown -R postgres:postgres /app/data/postgres
+        echo -e "${GREEN}✅ PostgreSQL initialisé${NC}"
     else
-        echo -e "${GREEN}✅ Base de données PostgreSQL existante détectée${NC}"
+        echo -e "${GREEN}✅ Configuration PostgreSQL existante détectée${NC}"
     fi
 else
     echo -e "${YELLOW}⚠️  Utilisation d'une base de données externe${NC}"
@@ -54,9 +68,10 @@ fi
 
 # Initialiser Redis si nécessaire
 if [ "$USE_EXTERNAL_REDIS" != "true" ]; then
-    echo -e "${BLUE}🔴 Initialisation de Redis...${NC}"
+    echo -e "${BLUE}➕ Initialisation de Redis...${NC}"
     mkdir -p /app/data/redis
     chown -R redis:redis /app/data/redis
+    chmod 755 /app/data/redis
     echo -e "${GREEN}✅ Redis configuré${NC}"
 else
     echo -e "${YELLOW}⚠️  Utilisation d'un Redis externe${NC}"
@@ -71,11 +86,36 @@ echo -e "${BLUE}🔧 Préparation de la configuration Supervisor...${NC}"
 TEMP_SUPERVISOR_DIR="/tmp/supervisor"
 mkdir -p $TEMP_SUPERVISOR_DIR
 
-# Copier la configuration principale
-cp /etc/supervisor/conf.d/supervisord.conf $TEMP_SUPERVISOR_DIR/
+# Créer une nouvelle configuration supervisord.conf
+cat > $TEMP_SUPERVISOR_DIR/supervisord.conf << 'EOF'
+[unix_http_server]
+file=/var/run/supervisor.sock
+chmod=0700
+
+[supervisord]
+logfile=/var/log/supervisor/supervisord.log
+pidfile=/var/run/supervisord.pid
+childlogdir=/var/log/supervisor
+nodaemon=true
+user=root
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisorctl]
+serverurl=unix:///var/run/supervisor.sock
+
+[include]
+files = /tmp/supervisor/*.conf
+
+[group:meeshy]
+
+programs=PROGRAMS_PLACEHOLDER
+priority=999
+EOF
 
 # Déterminer quels services démarrer
-PROGRAMS="translator,gateway,frontend,nginx"
+PROGRAMS="translator,gateway,frontend"
 
 if [ "$USE_EXTERNAL_DB" != "true" ]; then
     echo -e "${BLUE}📊 Ajout de PostgreSQL à la configuration...${NC}"
@@ -84,7 +124,7 @@ if [ "$USE_EXTERNAL_DB" != "true" ]; then
 fi
 
 if [ "$USE_EXTERNAL_REDIS" != "true" ]; then
-    echo -e "${BLUE}🔴 Ajout de Redis à la configuration...${NC}"
+    echo -e "${BLUE}➕ Ajout de Redis à la configuration...${NC}"
     cp /etc/supervisor/conf.d/redis.conf $TEMP_SUPERVISOR_DIR/
     PROGRAMS="redis,$PROGRAMS"
 fi
@@ -93,14 +133,23 @@ fi
 cp /etc/supervisor/conf.d/translator.conf $TEMP_SUPERVISOR_DIR/
 cp /etc/supervisor/conf.d/gateway.conf $TEMP_SUPERVISOR_DIR/
 cp /etc/supervisor/conf.d/frontend.conf $TEMP_SUPERVISOR_DIR/
+# Nginx sera démarré automatiquement par les dépendances
+cp /etc/supervisor/conf.d/nginx.conf $TEMP_SUPERVISOR_DIR/
 
 # Mettre à jour la liste des programmes dans le groupe
-sed -i "s/programs=.*/programs=$PROGRAMS/" $TEMP_SUPERVISOR_DIR/supervisord.conf
+sed -i "s/PROGRAMS_PLACEHOLDER/$PROGRAMS/" $TEMP_SUPERVISOR_DIR/supervisord.conf
 
 # Attendre que les services de base soient prêts
 if [ "$USE_EXTERNAL_DB" != "true" ]; then
     echo -e "${BLUE}⏳ Attente du démarrage de PostgreSQL...${NC}"
     sleep 5
+    
+    # Créer la base de données et l'utilisateur meeshy si nécessaire
+    echo -e "${BLUE}🔧 Configuration de la base de données meeshy...${NC}"
+    su - postgres -c "psql -c \"CREATE USER meeshy WITH PASSWORD 'MeeshyP@ssword' CREATEDB;\" 2>/dev/null || true"
+    su - postgres -c "psql -c \"CREATE DATABASE meeshy OWNER meeshy;\" 2>/dev/null || true"
+    su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE meeshy TO meeshy;\" 2>/dev/null || true"
+    echo -e "${GREEN}✅ Base de données meeshy configurée${NC}"
 fi
 
 if [ "$USE_EXTERNAL_REDIS" != "true" ]; then
@@ -113,8 +162,8 @@ echo -e "${BLUE}🔧 Démarrage de Supervisor...${NC}"
 /usr/bin/supervisord -c $TEMP_SUPERVISOR_DIR/supervisord.conf &
 
 # Attendre que tous les services soient démarrés
-echo -e "${BLUE}⏳ Attente du démarrage de tous les services...${NC}"
-sleep 10
+echo -e "${BLUE}⏳ Attente du démarrage de tous les services (180 secondes)...${NC}"
+sleep 180
 
 # Vérifier l'état des services
 echo -e "${BLUE}🔍 Vérification de l'état des services...${NC}"

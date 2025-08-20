@@ -32,6 +32,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && npm cache clean --force
 
+# Configuration PostgreSQL - préparer les répertoires
+RUN mkdir -p /var/lib/postgresql/data && \
+    chown postgres:postgres /var/lib/postgresql/data
+
 # Créer l'utilisateur meeshy
 RUN groupadd -g 1001 meeshy && \
     useradd -u 1001 -g meeshy -m -s /bin/bash meeshy
@@ -51,7 +55,7 @@ RUN npm install -g pnpm && \
 
 # Générer le client Prisma avec le schéma SQLite (cache séparé)
 ENV PRISMA_CLIENT_OUTPUT_DIRECTORY=/app/shared/node_modules/.prisma/client
-RUN cp schema.sqlite.prisma schema.prisma && pnpm run generate
+RUN pnpm run generate
 
 # ===== STAGE 3: TRANSLATOR BUILDER =====
 FROM base AS translator-builder
@@ -105,6 +109,7 @@ COPY --from=shared-builder /app/shared ./shared
 # Générer le client Prisma seulement (pas de compilation TypeScript)
 RUN npx prisma generate --schema=./shared/schema.prisma && \
     pnpm install --prod --ignore-scripts && \
+    pnpm add tsconfig-paths && \
     pnpm store prune && \
     rm -rf /tmp/.npm /tmp/.yarn ~/.cache
 
@@ -116,8 +121,8 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 COPY frontend/pnpm-lock.yaml ./
 COPY frontend/next.config.ts ./
-COPY frontend/tailwind.config.js ./
-# COPY frontend/postcss.config.js ./
+COPY frontend/tailwind.config.ts ./
+# COPY frontend/postcss.config.ts ./
 COPY frontend/tsconfig.json ./
 
 # Installer les dépendances

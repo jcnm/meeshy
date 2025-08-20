@@ -27,6 +27,9 @@ if __name__ == "__main__":
     try:
         os.chdir(str(src_dir))
         import main
+        # Exécuter la fonction main du module
+        import asyncio
+        asyncio.run(main.main())
     except Exception as e:
         print(f"❌ Erreur dans start_simple.py: {e}")
         import traceback
