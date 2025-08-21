@@ -11,7 +11,7 @@ Meeshy is a modern, high-performance messaging application designed to handle th
 ![Languages](https://img.shields.io/badge/Languages-8_supported-orange)
 ![License](https://img.shields.io/badge/License-MIT-brightgreen)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ed)
-![Version](https://img.shields.io/badge/Version-0.5.4--alpha-blue)
+![Version](https://img.shields.io/badge/Version-0.5.0--alpha-blue)
 
 ## ✨ Why Meeshy?
 
@@ -19,10 +19,10 @@ Breaking language barriers in real-time communication! Meeshy empowers global te
 
 **🌟 Key Highlights:**
 - **Zero Language Barriers**: Automatic translation to 8 major languages
-- **Enterprise Performance**: Handle 100k+ concurrent connections with optimized architecture
+- **High Performance**: Optimized Docker deployment with unified and microservices options
 - **Real-time Communication**: WebSocket-based messaging with instant translation
-- **Developer Friendly**: Full Docker setup, modern tech stack, automated CI/CD
-- **Open Source**: MIT licensed with active community
+- **Developer Friendly**: Full Docker setup, modern tech stack, automated testing
+- **Open Source**: MIT licensed with professional documentation and community setup
 
 ## 🎯 Core Features
 
@@ -35,7 +35,7 @@ Breaking language barriers in real-time communication! Meeshy empowers global te
 
 ### 💬 Real-Time Messaging
 - **High-performance WebSocket** with Socket.IO and Fastify
-- **100k+ simultaneous connections** support with optimized architecture
+- **Optimized connection handling** with efficient architecture
 - **Live typing indicators** and message status
 - **Group conversations** with role management
 - **Message persistence** with PostgreSQL
@@ -60,9 +60,9 @@ Breaking language barriers in real-time communication! Meeshy empowers global te
 - **Asynchronous processing** with worker pools
 - **Optimized database** with intelligent indexing and Prisma
 - **High-performance caching** with Redis
-- **Load balancing** ready architecture
-- **Docker deployment** with unified container option
+- **Docker deployment** with unified and microservices options
 - **Multi-platform builds** (linux/amd64, linux/arm64)
+- **Automated testing** and build pipeline
 
 ## 🏛️ System Architecture
 
@@ -205,11 +205,11 @@ cd meeshy
 | Arabic | `ar` | NLLB-200 | Good | Good |
 
 ### Performance Metrics
-- **Translation throughput**: 50+ concurrent translations
-- **Translation latency**: <100ms end-to-end
-- **Cache hit ratio**: >85% on translations
-- **Database queries**: <5ms average response time
-- **WebSocket connections**: 100k+ simultaneous
+- **Translation throughput**: Optimized for concurrent translations
+- **Translation latency**: <100ms end-to-end target
+- **Cache hit ratio**: Intelligent caching system
+- **Database queries**: Optimized with Prisma ORM
+- **WebSocket connections**: High-performance messaging
 - **Memory usage**: Optimized with quantized models
 
 ## 🛠️ Development
@@ -249,49 +249,140 @@ docker-compose -f docker-compose.unified.yml up -d  # Start unified
 
 ### Environment Variables
 
-#### Database & Cache
-```env
-DATABASE_URL=postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy
-POSTGRES_DB=meeshy
-POSTGRES_USER=meeshy
-POSTGRES_PASSWORD=MeeshyP@ssword
-REDIS_URL=redis://localhost:6379
+Meeshy uses comprehensive environment variable configuration for all services. Copy `env.example` to `.env` and configure your values.
+
+| Variable Name | Used By | Default Value | Description |
+|---------------|---------|---------------|-------------|
+| **NODE_ENV** | All Services | `development` | Node.js environment (`development`, `production`, `test`) |
+| **DEBUG** | All Services | `false` | Enable debug logging (`true`, `false`) |
+| **LOG_LEVEL** | All Services | `info` | Logging level (`debug`, `info`, `warn`, `error`) |
+| **DATABASE_URL** | Gateway, Translator | `postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy` | PostgreSQL connection string |
+| **POSTGRES_DB** | PostgreSQL | `meeshy` | Database name |
+| **POSTGRES_USER** | PostgreSQL | `meeshy` | Database user |
+| **POSTGRES_PASSWORD** | PostgreSQL | `MeeshyP@ssword` | Database password |
+| **POSTGRES_PORT** | PostgreSQL | `5432` | Database port |
+| **REDIS_URL** | Gateway, Translator | `redis://localhost:6379` | Redis connection string |
+| **REDIS_PORT** | Redis | `6379` | Redis port |
+| **TRANSLATION_CACHE_TTL** | Translator | `3600` | Translation cache TTL in seconds |
+| **CACHE_MAX_ENTRIES** | Translator | `10000` | Maximum cache entries |
+| **JWT_SECRET** | Gateway | `your-super-secret-jwt-key-change-in-production` | JWT signing secret (CHANGE IN PRODUCTION!) |
+| **JWT_EXPIRES_IN** | Gateway | `7d` | JWT token expiration |
+| **GATEWAY_PORT** | Gateway | `3000` | Gateway service port |
+| **PORT** | Gateway | `3000` | Service port (fallback) |
+| **TRANSLATOR_HTTP_PORT** | Translator | `8000` | Translator HTTP port |
+| **TRANSLATOR_GRPC_PORT** | Translator | `50051` | Translator gRPC port |
+| **FASTAPI_PORT** | Translator | `8000` | FastAPI port |
+| **GRPC_PORT** | Translator | `50051` | gRPC port |
+| **FRONTEND_PORT** | Frontend | `3100` | Frontend service port |
+| **ZMQ_PORT** | Gateway, Translator | `5555` | ZeroMQ base port |
+| **ZMQ_TRANSLATOR_HOST** | Gateway | `localhost` | Translator ZMQ host |
+| **ZMQ_TRANSLATOR_PUSH_PORT** | Gateway | `5555` | ZMQ push port |
+| **ZMQ_TRANSLATOR_SUB_PORT** | Gateway | `5558` | ZMQ subscribe port |
+| **ZMQ_TRANSLATOR_PULL_PORT** | Translator | `5555` | ZMQ pull port |
+| **ZMQ_TRANSLATOR_PUB_PORT** | Translator | `5558` | ZMQ publish port |
+| **ZMQ_TIMEOUT** | Gateway | `3000` | ZMQ timeout in milliseconds |
+| **SUPPORTED_LANGUAGES** | Translator | `fr,en,es,de,pt,zh,ja,ar` | Comma-separated supported languages |
+| **DEFAULT_LANGUAGE** | Translator | `fr` | Default language code |
+| **AUTO_DETECT_LANGUAGE** | Translator | `true` | Enable automatic language detection |
+| **TRANSLATION_TIMEOUT** | Translator | `30` | Translation timeout in seconds |
+| **MAX_TEXT_LENGTH** | Translator | `1000` | Maximum text length for translation |
+| **CONCURRENT_TRANSLATIONS** | Translator | `10` | Maximum concurrent translations |
+| **TRANSLATION_WORKERS** | Translator | `50` | Number of translation workers |
+| **BASIC_MODEL** | Translator | `t5-small` | Basic ML model name |
+| **MEDIUM_MODEL** | Translator | `nllb-200-distilled-600M` | Medium ML model name |
+| **PREMIUM_MODEL** | Translator | `nllb-200-distilled-1.3B` | Premium ML model name |
+| **DEVICE** | Translator | `cpu` | ML device (`cpu`, `cuda`, `mps`) |
+| **ML_BATCH_SIZE** | Translator | `4` | ML batch size |
+| **GPU_MEMORY_FRACTION** | Translator | `0.8` | GPU memory fraction (0.0-1.0) |
+| **QUANTIZATION_LEVEL** | Translator | `float16` | Model quantization (`float16`, `float32`) |
+| **MODELS_PATH** | Translator | `models` | Path to ML models |
+| **TORCH_HOME** | Translator | `models` | PyTorch home directory |
+| **HF_HOME** | Translator | `models` | HuggingFace home directory |
+| **MODEL_CACHE_DIR** | Translator | `models` | Model cache directory |
+| **AUTO_CLEANUP_CORRUPTED_MODELS** | Translator | `true` | Auto-cleanup corrupted models |
+| **FORCE_MODEL_REDOWNLOAD** | Translator | `false` | Force model re-download |
+| **WS_MAX_CONNECTIONS** | Gateway | `100000` | Maximum WebSocket connections |
+| **WS_PING_INTERVAL** | Gateway | `30000` | WebSocket ping interval (ms) |
+| **WS_PING_TIMEOUT** | Gateway | `5000` | WebSocket ping timeout (ms) |
+| **CORS_ORIGINS** | Gateway | `http://localhost:3100,http://localhost:3000` | CORS allowed origins |
+| **CORS_ORIGIN** | Gateway | `http://localhost:3100` | CORS origin |
+| **ALLOWED_ORIGINS** | Gateway | `http://localhost:3100,http://localhost:3000` | Allowed origins |
+| **RATE_LIMIT_MAX** | Gateway | `1000` | Rate limit maximum requests |
+| **RATE_LIMIT_WINDOW** | Gateway | `60000` | Rate limit window (ms) |
+| **NEXT_PUBLIC_API_URL** | Frontend | `http://localhost:3000` | Public API URL |
+| **NEXT_PUBLIC_WS_URL** | Frontend | `ws://localhost:3000` | Public WebSocket URL |
+| **NEXT_PUBLIC_BACKEND_URL** | Frontend | `http://localhost:3000` | Public backend URL |
+| **NEXT_PUBLIC_TRANSLATION_URL** | Frontend | `http://localhost:8000` | Public translation URL |
+| **NEXT_PUBLIC_FRONTEND_URL** | Frontend | `http://localhost:3100` | Public frontend URL |
+| **NEXT_TELEMETRY_DISABLED** | Frontend | `1` | Disable Next.js telemetry |
+| **NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION** | Frontend | `true` | Disable client-side translation |
+| **NEXT_PUBLIC_USE_API_TRANSLATION_ONLY** | Frontend | `true` | Use API translation only |
+| **NEXT_PUBLIC_DEBUG_LOGS** | Frontend | `false` | Enable debug logs |
+| **INTERNAL_BACKEND_URL** | Frontend | `http://gateway:3000` | Internal backend URL (SSR) |
+| **INTERNAL_WS_URL** | Frontend | `ws://gateway:3000` | Internal WebSocket URL (SSR) |
+| **DOCKER_BUILDKIT** | Docker | `1` | Enable Docker BuildKit |
+| **DOCKER_DEFAULT_PLATFORM** | Docker | `linux/amd64` | Docker default platform |
+| **PYTORCH_CUDA_ALLOC_CONF** | Translator | `max_split_size_mb:128` | PyTorch CUDA allocation config |
+| **OMP_NUM_THREADS** | Translator | `4` | OpenMP number of threads |
+| **MKL_NUM_THREADS** | Translator | `4` | MKL number of threads |
+| **NUMEXPR_NUM_THREADS** | Translator | `4` | NumExpr number of threads |
+| **PYTHONUNBUFFERED** | Translator | `1` | Unbuffered Python output |
+| **WORKERS** | Translator | `4` | Number of workers |
+| **NORMAL_WORKERS** | Translator | `2` | Number of normal workers |
+| **ANY_WORKERS** | Translator | `1` | Number of any workers |
+| **HEALTH_CHECK_INTERVAL** | All Services | `30` | Health check interval (seconds) |
+| **HEALTH_CHECK_TIMEOUT** | All Services | `5` | Health check timeout (seconds) |
+| **HEALTH_CHECK_RETRIES** | All Services | `3` | Health check retries |
+| **HELMET_ENABLED** | Gateway | `true` | Enable Helmet security headers |
+| **CONTENT_SECURITY_POLICY** | Gateway | `true` | Enable CSP headers |
+| **FASTIFY_RELOAD** | Gateway | `true` | Enable Fastify hot reload |
+| **NEXT_FAST_REFRESH** | Frontend | `true` | Enable Next.js fast refresh |
+| **PRISMA_POOL_SIZE** | Gateway, Translator | `10` | Prisma connection pool size |
+| **PRISMA_QUERY_ENGINE_LIBRARY** | Gateway, Translator | `` | Prisma query engine library |
+| **PRISMA_CLIENT_ENGINE_TYPE** | Gateway, Translator | `library` | Prisma client engine type |
+| **PRISMA_DISABLE_WARNINGS** | Gateway, Translator | `false` | Disable Prisma warnings |
+
+### Quick Configuration Examples
+
+#### Development
+```bash
+# Copy environment template
+cp env.example .env
+
+# Basic development setup
+NODE_ENV=development
+DEBUG=true
+LOG_LEVEL=debug
 ```
 
-#### Services
-```env
-TRANSLATOR_HTTP_PORT=8000
-TRANSLATOR_GRPC_PORT=50051
-GATEWAY_PORT=3000
-FRONTEND_PORT=3100
+#### Production
+```bash
+# Production configuration
+NODE_ENV=production
+DEBUG=false
+LOG_LEVEL=warn
+JWT_SECRET=your-super-secure-production-secret
 ```
 
-#### Translation & Performance
-```env
-SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
-DEFAULT_LANGUAGE=fr
-QUANTIZATION_LEVEL=float16
-TRANSLATION_WORKERS=50
-ML_BATCH_SIZE=4
-DEVICE=cpu
+#### Docker Compose
+```bash
+# Docker Compose with custom values
+DATABASE_URL=postgresql://meeshy:password@postgres:5432/meeshy
+REDIS_URL=redis://redis:6379
+JWT_SECRET=your-docker-secret
 ```
 
-#### Security & CORS
-```env
-JWT_SECRET=your-secret-key
-CORS_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1
-ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1
-```
+For complete configuration options, see `env.example` file.
 
 ## 📈 Performance & Monitoring
 
 ### Performance Targets
-- **Message throughput**: 100k messages/second
-- **Translation latency**: <100ms end-to-end
-- **Cache hit ratio**: >85% on translations
-- **Database queries**: <5ms average response time
-- **WebSocket connections**: 100k+ simultaneous
-- **Memory usage**: <8GB for full stack
+- **Message throughput**: Optimized for high performance
+- **Translation latency**: <100ms end-to-end target
+- **Cache hit ratio**: Intelligent caching system
+- **Database queries**: Optimized with Prisma ORM
+- **WebSocket connections**: High-performance messaging
+- **Memory usage**: Optimized for Docker containers
 
 ### Monitoring & Logging
 - **Structured logging** with Winston and Loguru
@@ -348,11 +439,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📋 Roadmap
 
-- [ ] **Video/Voice Chat** with real-time translation
+- [ ] **Performance Optimization** - Further Docker and ML optimizations
+- [ ] **Enhanced UI/UX** - Improved user interface and experience
 - [ ] **Mobile Apps** (React Native)
+- [ ] **Video/Voice Chat** with real-time translation
 - [ ] **AI Chat Assistants** with multilingual support
-- [ ] **Enterprise SSO** integration
-- [ ] **Advanced Analytics** dashboard
+- [ ] **Enterprise Features** - SSO integration and advanced security
 - [ ] **Plugin System** for custom integrations
 - [ ] **Kubernetes deployment** configurations
 - [ ] **Auto-scaling** based on load
@@ -377,7 +469,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 - **JWT** - Stateless authentication
 
 ### Database & Cache
-- **PostgreSQL 15** - Primary database
+- **PostgreSQL 17** - Primary database
 - **Prisma 6.13** - Modern type-safe ORM
 - **Redis 7** - High-performance cache and session store
 
