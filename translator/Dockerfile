@@ -116,12 +116,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         liblapack-dev \
         gfortran \
         pkg-config \
+        # OPTIMISATION: Outils PostgreSQL pour les migrations Prisma
+        postgresql-client \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && npm install -g pnpm@${PNPM_VERSION} prisma \
     && groupadd -g 1001 translator \
     && useradd -u 1001 -g translator -m translator \
-    && mkdir -p /app/{logs,cache,models,shared} \
+    && mkdir -p /app/{logs,cache,models,shared,generated} \
     && chown -R translator:translator /app \
     # OPTIMISATION: Nettoyage pour réduire la taille de l'image
     && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl git \
@@ -146,6 +148,17 @@ RUN pip install --upgrade pip --no-cache-dir \
 # Copie du code source et du schéma Prisma
 COPY --chown=translator:translator . .
 
+# Copie du dossier shared pour les migrations Prisma
+COPY --chown=translator:translator ../shared ./shared
+
+# OPTIMISATION: Génération du client Prisma pendant le build (après installation des dépendances)
+RUN echo "🔧 Génération du client Prisma..." \
+    && mkdir -p /app/generated \
+    && chown -R translator:translator /app/generated \
+    && npx prisma@5.17.0 generate --schema=./shared/prisma/schema.prisma \
+    && chown -R translator:translator /app/generated \
+    && echo "✅ Client Prisma généré avec succès"
+
 # OPTIMISATION: Pré-téléchargement des modèles ML de base
 RUN echo "🤖 Pré-téléchargement des modèles ML de base..." \
     && python3 -c "import os; from transformers import AutoTokenizer, AutoModelForSeq2SeqLM; import torch; print('📥 Téléchargement t5-small...'); tokenizer = AutoTokenizer.from_pretrained('t5-small', cache_dir='/app/models'); model = AutoModelForSeq2SeqLM.from_pretrained('t5-small', cache_dir='/app/models'); print('✅ t5-small téléchargé avec succès'); del tokenizer, model; torch.cuda.empty_cache() if torch.cuda.is_available() else None" || echo "⚠️ Pré-téléchargement des modèles échoué (normal au build)"
@@ -153,6 +166,7 @@ RUN echo "🤖 Pré-téléchargement des modèles ML de base..." \
 # OPTIMISATION: Configuration des permissions et optimisation finale
 RUN chown -R translator:translator /app \
     && chmod +x /app/docker-diagnostic.sh \
+    && chmod +x /app/docker-entrypoint.sh \
     && python3 -m compileall /app/src \
     && find /app -name '*.pyc' -delete
 
@@ -162,5 +176,5 @@ USER translator
 # OPTIMISATION: Point d'entrée avec gestion d'erreurs
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# OPTIMISATION: Commande de démarrage avec gestion des signaux
-CMD ["python3", "-u", "src/main.py"]
+# OPTIMISATION: Commande de démarrage avec migrations Prisma
+CMD ["/app/docker-entrypoint.sh"]

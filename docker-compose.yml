@@ -44,6 +44,7 @@ services:
 
   # ===== TRANSLATOR SERVICE (FastAPI + ML) =====
   translator:
+    image: isopen/meeshy-translator:latest
     build:
       context: translator
       dockerfile: Dockerfile
@@ -61,6 +62,7 @@ services:
         - BASIC_MODEL=${BASIC_MODEL:-t5-small}
         - MEDIUM_MODEL=${MEDIUM_MODEL:-nllb-200-distilled-600M}
         - PREMIUM_MODEL=${PREMIUM_MODEL:-nllb-200-distilled-1.3B}
+        - MODEL_TYPE=${MODEL_TYPE:-all}
         - DEVICE=${DEVICE:-cpu}
         - ML_BATCH_SIZE=${ML_BATCH_SIZE:-4}
         - GPU_MEMORY_FRACTION=${GPU_MEMORY_FRACTION:-0.8}
@@ -70,18 +72,17 @@ services:
         - AUTO_CLEANUP_CORRUPTED_MODELS=${AUTO_CLEANUP_CORRUPTED_MODELS:-true}
         - FORCE_MODEL_REDOWNLOAD=${FORCE_MODEL_REDOWNLOAD:-false}
         - TRANSLATION_CACHE_TTL=${TRANSLATION_CACHE_TTL:-3600}
-    image: isopen/meeshy-translator:0.5.4-alpha
     container_name: translator
     restart: unless-stopped
-    # OPTIMISATION: Resource limits optimisés pour ML
+    # OPTIMISATION: Resource limits optimisés pour tous les modèles ML
     deploy:
       resources:
         limits:
+          memory: 16G
+          cpus: '8.0'
+        reservations:
           memory: 8G
           cpus: '4.0'
-        reservations:
-          memory: 4G
-          cpus: '2.0'
     # Enable GPU support if available
     # runtime: nvidia
     # environment:
@@ -98,6 +99,7 @@ services:
       SUPPORTED_LANGUAGES: "fr,en,es,de,pt,zh,ja,ar"
       DEFAULT_LANGUAGE: "fr"
       DEVICE: "cpu"
+      MODEL_TYPE: "all"
       PYTHONUNBUFFERED: 1
       MODELS_PATH: /app/models
       TORCH_HOME: /app/models
@@ -107,10 +109,10 @@ services:
       TRANSLATION_TIMEOUT: 60
       MAX_TEXT_LENGTH: 1000
       CONCURRENT_TRANSLATIONS: 5
-      # OPTIMISATION: Paramètres de performance
-      TRANSLATION_WORKERS: 4
-      NORMAL_WORKERS: 2
-      ANY_WORKERS: 1
+      # OPTIMISATION: Paramètres de performance pour tous les modèles
+      TRANSLATION_WORKERS: 8
+      NORMAL_WORKERS: 4
+      ANY_WORKERS: 2
       # OPTIMISATION: Gestion mémoire
       PYTORCH_CUDA_ALLOC_CONF: "max_split_size_mb:128"
       OMP_NUM_THREADS: 4
@@ -134,12 +136,13 @@ services:
       interval: 60s
       timeout: 30s
       retries: 5
-      start_period: 300s  # OPTIMISATION: Plus de temps pour le chargement des modèles
+      start_period: 600s  # OPTIMISATION: Plus de temps pour les migrations Prisma et le chargement de tous les modèles
     networks:
       - meeshy-network
 
   # ===== GATEWAY SERVICE (Fastify + WebSocket) =====
   gateway:
+    image: isopen/meeshy-gateway:latest
     build:
       context: gateway
       dockerfile: Dockerfile
@@ -165,7 +168,6 @@ services:
         - ZMQ_TRANSLATOR_SUB_PORT=${ZMQ_TRANSLATOR_SUB_PORT:-5558}
         - ZMQ_TRANSLATOR_PUSH_PORT=${ZMQ_TRANSLATOR_PUSH_PORT:-5555}
         - ZMQ_TIMEOUT=${ZMQ_TIMEOUT:-30000}
-    image: isopen/meeshy-gateway:0.5.4-alpha
     container_name: gateway
     restart: unless-stopped
     environment:
@@ -184,6 +186,9 @@ services:
       ALLOWED_ORIGINS: http://localhost:3100
       WS_MAX_CONNECTIONS: 100000
       NODE_ENV: production
+      # Default user passwords
+      MEESHY_BIGBOSS_PASSWORD: ${MEESHY_BIGBOSS_PASSWORD:-bigboss123}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
     ports:
       - "${GATEWAY_PORT:-3000}:3000"
     depends_on:
@@ -204,6 +209,7 @@ services:
 
   # ===== FRONTEND SERVICE (Next.js) =====
   frontend:
+    image: isopen/meeshy-frontend:latest
     build:
       context: frontend
       dockerfile: Dockerfile
@@ -217,7 +223,6 @@ services:
         - NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
         - NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
         - DATABASE_URL=postgresql://${POSTGRES_USER:-meeshy}:${POSTGRES_PASSWORD:-MeeshyP@ssword}@postgres:5432/${POSTGRES_DB:-meeshy}
-    image: isopen/meeshy-frontend:0.5.4-alpha
     container_name: frontend
     restart: unless-stopped
     environment:

@@ -110,22 +110,22 @@ RUN pnpm install --no-frozen-lockfile --prod=false \
 COPY --chown=gateway:nodejs src/ ./src/
 COPY --chown=gateway:nodejs shared/ ./shared/
 COPY --chown=gateway:nodejs tsconfig.json ./
+COPY --chown=gateway:nodejs docker-entrypoint.sh ./
 
 # Build de l'application avec nettoyage
 RUN mkdir -p ./shared/prisma \
     && PRISMA_CLIENT_OUTPUT_DIRECTORY=./shared/prisma npx prisma generate --schema=./shared/schema.prisma \
-    && DATABASE_URL=${DATABASE_URL:-"postgresql://dummy:dummy@localhost:5432/dummy"} pnpm run build \
+    && DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy pnpm run build \
     && rm -rf src/ tsconfig.json \
     && pnpm install --prod --ignore-scripts \
     && pnpm store prune \
-    && rm -rf /tmp/.npm /tmp/.yarn ~/.cache
+    && rm -rf /tmp/.npm /tmp/.yarn ~/.cache \
+    && chmod +x /app/docker-entrypoint.sh
 
 # === FINAL CONFIGURATION ===
 # Configuration finale des permissions
 RUN chown -R gateway:nodejs /app \
     && chmod -R 755 /app/logs
-
-USER gateway
 
 EXPOSE ${FASTIFY_PORT}
 
@@ -136,4 +136,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:${FASTIFY_PORT}/health || exit 1
 
 # === STARTUP COMMAND ===
-CMD ["node", "dist/src/server.js"]
+CMD ["sh", "-c", "echo '[GATEWAY] 🚀 Démarrage du service Gateway...' && node dist/src/server.js"]

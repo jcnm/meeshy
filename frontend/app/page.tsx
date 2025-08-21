@@ -40,12 +40,15 @@ import { useAuth } from '@/hooks/use-auth';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { isCurrentUserAnonymous } from '@/utils/auth';
+import { useTranslations } from 'next-intl';
 
 export default function LandingPage() {
   const { user, isAuthChecking } = useUser();
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
+  const t = useTranslations('landing');
+  const tAuth = useTranslations('auth');
 
   // État pour gérer l'affichage du lien de conversation anonyme
   const [anonymousChatLink, setAnonymousChatLink] = useState<string | null>(null);
@@ -102,21 +105,21 @@ export default function LandingPage() {
         token = result.token;
       } else {
         console.error('[LANDING] Format de réponse inattendu:', result);
-        toast.error(result.message || 'Erreur de connexion');
+        toast.error(result.message || tAuth('errors.loginFailed'));
         return;
       }
 
       if (userData && token) {
         console.log('[LANDING] Connexion rapide réussie pour:', userData.username);
-        toast.success(`Connecté en tant que ${userData.firstName} !`);
+        toast.success(`${tAuth('success.welcome')} ${userData.firstName} !`);
         login(userData, token);
         // Pas de redirection ici - la page se mettra à jour automatiquement
       } else {
-        toast.error('Données utilisateur ou token manquantes');
+        toast.error(tAuth('errors.invalidCredentials'));
       }
     } catch (error) {
       console.error('[LANDING] Erreur login rapide:', error);
-      toast.error('Erreur de connexion');
+      toast.error(tAuth('errors.loginFailed'));
     }
   };
 
@@ -155,7 +158,7 @@ export default function LandingPage() {
     }
     
     return (
-      <DashboardLayout title="Accueil">
+      <DashboardLayout title={t('navigation.home')}>
         <BubbleStreamPage user={user} />
       </DashboardLayout>
     );
@@ -175,22 +178,23 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 lg:py-24">
-        <div className="text-center max-w-4xl mx-auto">
-          <Badge variant="secondary" className="mb-4">
-            <Sparkles className="h-3 w-3 mr-1" />
-            Traduction en temps réel
+        <div className="text-center max-w-5xl mx-auto">
+          {/* Badge principal */}
+          <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
+            <Sparkles className="h-4 w-4 mr-2" />
+            {t('hero.badge')}
           </Badge>
           
-          <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Communiquez sans{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-              barrières linguistiques
+          {/* Titre principal impactant */}
+          <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+            {t('hero.title')}{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
+              {t('hero.titleHighlight')}
             </span>
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA, 
-            directement dans votre navigateur. Aucune donnée ne quitte votre appareil.
+            {t('hero.subtitle')}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -199,15 +203,15 @@ export default function LandingPage() {
               <DialogTrigger asChild>
                 <Button size="lg" className="flex items-center space-x-2">
                   <UserPlus className="h-5 w-5" />
-                  <span>Commencer gratuitement</span>
+                  <span>{t('hero.startFree')}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Créer un compte</DialogTitle>
+                  <DialogTitle>{tAuth('register.title')}</DialogTitle>
                   <DialogDescription>
-                    Rejoignez Meeshy et communiquez sans barrières
+                    {tAuth('register.description')}
                   </DialogDescription>
                 </DialogHeader>
                 <RegisterForm />
@@ -218,16 +222,16 @@ export default function LandingPage() {
               <DialogTrigger asChild>
                 <Button size="lg" variant="outline" className="flex items-center space-x-2">
                   <Link2 className="h-5 w-5" />
-                  <span>{anonymousChatLink ? 'Reprendre ou rejoindre une conversation' : 'Rejoindre une conversation'}</span>
+                  <span>{anonymousChatLink ? t('hero.resumeOrJoin') : t('hero.joinConversation')}</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{anonymousChatLink ? 'Reprendre ou rejoindre une conversation' : 'Rejoindre une conversation'}</DialogTitle>
+                  <DialogTitle>{anonymousChatLink ? tAuth('joinConversation.resumeTitle') : tAuth('joinConversation.title')}</DialogTitle>
                   <DialogDescription>
                     {anonymousChatLink 
-                      ? 'Vous avez une conversation en cours. Vous pouvez la reprendre ou rejoindre une nouvelle conversation.'
-                      : 'Entrez le lien de conversation que vous avez reçu'
+                      ? tAuth('joinConversation.resumeDescription')
+                      : tAuth('joinConversation.description')
                     }
                   </DialogDescription>
                 </DialogHeader>
@@ -235,8 +239,8 @@ export default function LandingPage() {
                 {/* Si l'utilisateur a une conversation en cours, afficher le bouton de reprise */}
                 {anonymousChatLink && (
                   <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h4 className="font-medium text-green-800 mb-2">Conversation en cours</h4>
-                    <p className="text-sm text-green-700 mb-3">Vous avez une conversation active que vous pouvez reprendre.</p>
+                    <h4 className="font-medium text-green-800 mb-2">{tAuth('joinConversation.ongoingConversation')}</h4>
+                    <p className="text-sm text-green-700 mb-3">{tAuth('joinConversation.ongoingDescription')}</p>
                     <Button 
                       onClick={() => {
                         setAuthMode('welcome');
@@ -245,7 +249,7 @@ export default function LandingPage() {
                       className="w-full bg-green-600 hover:bg-green-700 text-white"
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
-                      Reprendre la conversation en cours
+                      {tAuth('joinConversation.resumeButton')}
                     </Button>
                   </div>
                 )}
@@ -254,8 +258,8 @@ export default function LandingPage() {
                 <div>
                   {anonymousChatLink && (
                     <div className="mb-3">
-                      <h4 className="font-medium text-gray-800">Ou rejoindre une nouvelle conversation</h4>
-                      <p className="text-sm text-gray-600">Entrez un nouveau lien de conversation ci-dessous :</p>
+                      <h4 className="font-medium text-gray-800">{tAuth('joinConversation.orJoinNew')}</h4>
+                      <p className="text-sm text-gray-600">{tAuth('joinConversation.newConversationDescription')}</p>
                     </div>
                   )}
                   <JoinConversationForm onSuccess={(linkId: string) => {
@@ -268,15 +272,49 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Mission Section */}
+      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 py-20 lg:py-32">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="mb-8">
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+                {t('mission.title')}
+              </h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto mb-8"></div>
+            </div>
+            
+            <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12 mb-8">
+              <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+                {t('mission.slogan')}
+              </h3>
+              <p className="text-xl lg:text-2xl text-gray-700 mb-8 leading-relaxed font-medium">
+                {t('mission.tagline')}
+              </p>
+              <p className="text-lg text-gray-600 leading-relaxed">
+                {t('mission.description')}
+              </p>
+            </div>
+            
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 lg:p-8 text-white">
+              <p className="text-lg lg:text-xl italic font-medium">
+                {t('mission.signature.line1')}
+                <br />
+                {t('mission.signature.line2')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="bg-white py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Pourquoi choisir Meeshy ?
+              {t('features.title')}
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Une messagerie moderne qui brise les barrières linguistiques
+              {t('features.subtitle')}
             </p>
           </div>
           
@@ -284,19 +322,19 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Globe className="h-12 w-12 text-blue-600 mb-4" />
-                <CardTitle>Traduction Universelle</CardTitle>
+                <CardTitle>{t('features.universalTranslation.title')}</CardTitle>
                 <CardDescription>
-                  Support de plus de 15 langues avec des modèles IA avancés (MT5 et NLLB)
+                  {t('features.universalTranslation.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
             
-              <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Languages className="h-12 w-12 text-violet-600 mb-4" />
-                <CardTitle>Détection Automatique</CardTitle>
+                <CardTitle>{t('features.autoDetection.title')}</CardTitle>
                 <CardDescription>
-                  Détecte automatiquement la langue des messages pour une traduction plus précise.
+                  {t('features.autoDetection.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -304,9 +342,9 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Shield className="h-12 w-12 text-green-600 mb-4" />
-                <CardTitle>100% Privé</CardTitle>
+                <CardTitle>{t('features.privacy.title')}</CardTitle>
                 <CardDescription>
-                  Traduction côté client uniquement. Vos données restent sur votre appareil.
+                  {t('features.privacy.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -314,9 +352,9 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Zap className="h-12 w-12 text-yellow-600 mb-4" />
-                <CardTitle>Temps Réel</CardTitle>
+                <CardTitle>{t('features.realtime.title')}</CardTitle>
                 <CardDescription>
-                  Messages traduits instantanément avec indicateurs de frappe et présence.
+                  {t('features.realtime.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -324,9 +362,9 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Users className="h-12 w-12 text-purple-600 mb-4" />
-                <CardTitle>Conversations de Groupe</CardTitle>
+                <CardTitle>{t('features.groupChats.title')}</CardTitle>
                 <CardDescription>
-                  Créez des groupes multilingues et gérez les permissions facilement.
+                  {t('features.groupChats.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -334,9 +372,9 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Languages className="h-12 w-12 text-indigo-600 mb-4" />
-                <CardTitle>Multi-Langues Personnalisées</CardTitle>
+                <CardTitle>{t('features.multiLanguage.title')}</CardTitle>
                 <CardDescription>
-                  Configurez vos langues système et régionale pour une expérience sur mesure.
+                  {t('features.multiLanguage.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -344,9 +382,9 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <MessageSquare className="h-12 w-12 text-red-600 mb-4" />
-                <CardTitle>Interface Moderne</CardTitle>
+                <CardTitle>{t('features.modernInterface.title')}</CardTitle>
                 <CardDescription>
-                  Design responsive et intuitive pour une expérience utilisateur optimale.
+                  {t('features.modernInterface.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -354,9 +392,9 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <Building2 className="h-12 w-12 text-orange-600 mb-4" />
-                <CardTitle>Collègues Internationaux</CardTitle>
+                <CardTitle>{t('features.internationalColleagues.title')}</CardTitle>
                 <CardDescription>
-                  Communiquez avec vos collègues étrangers sans vous soucier de la barrière linguistique.
+                  {t('features.internationalColleagues.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -364,9 +402,9 @@ export default function LandingPage() {
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <GraduationCap className="h-12 w-12 text-teal-600 mb-4" />
-                <CardTitle>Salles de Classe Multilingues</CardTitle>
+                <CardTitle>{t('features.multilingualClassrooms.title')}</CardTitle>
                 <CardDescription>
-                  Échangez avec vos camarades de classe dans leur langue maternelle, peu importe d'où ils viennent.
+                  {t('features.multilingualClassrooms.description')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -378,25 +416,25 @@ export default function LandingPage() {
       <section className="bg-gradient-to-r from-blue-600 to-indigo-600 py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-            Prêt à communiquer sans limites ?
+            {t('cta.title')}
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Rejoignez des milliers d'utilisateurs qui utilisent déjà Meeshy pour briser les barrières linguistiques.
+            {t('cta.subtitle')}
           </p>
           
           <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
             <DialogTrigger asChild>
               <Button size="lg" variant="secondary" className="flex items-center space-x-2">
                 <UserPlus className="h-5 w-5" />
-                <span>Créer mon compte</span>
+                <span>{t('cta.createAccount')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Créer un compte</DialogTitle>
+                <DialogTitle>{tAuth('register.title')}</DialogTitle>
                 <DialogDescription>
-                  Rejoignez Meeshy et communiquez sans barrières
+                  {tAuth('register.description')}
                 </DialogDescription>
               </DialogHeader>
               <RegisterForm />
@@ -415,7 +453,7 @@ export default function LandingPage() {
             <span className="text-lg font-bold">Meeshy</span>
           </div>
           <p className="text-gray-400">
-            © 2024 Meeshy. Communication sans barrières linguistiques.
+            {t('footer.copyright')}
           </p>
         </div>
       </footer>

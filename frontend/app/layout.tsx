@@ -3,6 +3,8 @@ import "./globals.css";
 import "../styles/bubble-stream.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppProvider } from "@/context/AppContext";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { TranslationProvider } from "@/components/common/translation-provider";
 import { ErrorBoundary } from "@/components/common";
 import { FontInitializer } from "@/components/common/font-initializer";
 import { ClientOnly } from "@/components/common/client-only";
@@ -25,16 +27,20 @@ export default function RootLayout({
       <body
         className={`${getAllFontVariables()} antialiased font-nunito`}
       >
-        <AppProvider>
-          <AuthProvider>
-            <ErrorBoundary>
-              <ClientOnly>
-                <FontInitializer />
-              </ClientOnly>
-              {children}
-            </ErrorBoundary>
-          </AuthProvider>
-        </AppProvider>
+        <LanguageProvider>
+          <TranslationProvider>
+            <AppProvider>
+              <AuthProvider>
+                <ErrorBoundary>
+                  <ClientOnly>
+                    <FontInitializer />
+                  </ClientOnly>
+                  {children}
+                </ErrorBoundary>
+              </AuthProvider>
+            </AppProvider>
+          </TranslationProvider>
+        </LanguageProvider>
         <Toaster 
           position="top-right"
           expand={true}

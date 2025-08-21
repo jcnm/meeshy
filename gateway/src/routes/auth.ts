@@ -281,4 +281,24 @@ export async function authRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+  // Route pour forcer l'initialisation (temporaire)
+  fastify.post('/force-init', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { InitService } = await import('../services/init.service');
+      const initService = new InitService((fastify as any).prisma);
+      await initService.initializeDatabase();
+      
+      return reply.send({
+        success: true,
+        message: 'Database initialized successfully'
+      });
+    } catch (error) {
+      console.error('[GATEWAY] Error during forced initialization:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to initialize database'
+      });
+    }
+  });
 }

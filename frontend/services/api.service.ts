@@ -36,7 +36,7 @@ class ApiService {
   constructor(config: Partial<ApiConfig> = {}) {
     this.config = {
       baseUrl: APP_CONFIG.getBackendUrl(),
-      timeout: 10000,
+      timeout: 5000, // Increased from 10s to 30s
       headers: {
         'Content-Type': 'application/json',
       },

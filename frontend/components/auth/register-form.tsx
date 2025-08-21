@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { User, SUPPORTED_LANGUAGES } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { useTranslations } from 'next-intl';
 
 interface RegisterFormProps {
   onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior
@@ -16,6 +17,7 @@ interface RegisterFormProps {
 
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const { login } = useAuth();
+  const t = useTranslations('register');
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -34,7 +36,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     if (!formData.username.trim() || !formData.password.trim() || 
         !formData.firstName.trim() || !formData.lastName.trim() || 
         !formData.email.trim()) {
-      toast.error('Veuillez remplir tous les champs obligatoires');
+      toast.error(t('fillRequiredFields'));
       return;
     }
 
@@ -51,7 +53,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       const result = await response.json();
 
       if (response.ok && result.success && result.data?.user && result.data?.token) {
-        toast.success(`Bienvenue ${formData.firstName} !`);
+        toast.success(`${t('success.welcome')} ${formData.firstName}!`);
         
         // Use useAuth hook for authentication
         login(result.data.user, result.data.token);
@@ -61,11 +63,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           onSuccess(result.data.user, result.data.token);
         }
       } else {
-        toast.error(result.message || 'Erreur lors de la création du compte');
+        toast.error(result.message || t('accountCreationError'));
       }
     } catch (error) {
       console.error('Erreur register:', error);
-      toast.error('Erreur de connexion');
+      toast.error(t('errors.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -75,11 +77,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">Prénom *</Label>
+          <Label htmlFor="firstName">{t('firstNameLabel')}</Label>
           <Input
             id="firstName"
             type="text"
-            placeholder="Votre prénom"
+            placeholder={t('firstNamePlaceholder')}
             value={formData.firstName}
             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
             disabled={isLoading}
@@ -87,11 +89,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="lastName">Nom *</Label>
+          <Label htmlFor="lastName">{t('lastNameLabel')}</Label>
           <Input
             id="lastName"
             type="text"
-            placeholder="Votre nom"
+            placeholder={t('lastNamePlaceholder')}
             value={formData.lastName}
             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             disabled={isLoading}
@@ -101,11 +103,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="username">Nom d&apos;utilisateur *</Label>
+        <Label htmlFor="username">{t('usernameLabel')}</Label>
         <Input
           id="username"
           type="text"
-          placeholder="Choisissez un nom d'utilisateur"
+          placeholder={t('usernamePlaceholder')}
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           disabled={isLoading}
@@ -114,11 +116,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email *</Label>
+        <Label htmlFor="email">{t('emailLabel')}</Label>
         <Input
           id="email"
           type="email"
-          placeholder="votre@email.com"
+          placeholder={t('emailPlaceholder')}
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           disabled={isLoading}
@@ -127,11 +129,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phoneNumber">Téléphone</Label>
+        <Label htmlFor="phoneNumber">{t('phoneLabel')}</Label>
         <Input
           id="phoneNumber"
           type="tel"
-          placeholder="+33123456789"
+          placeholder={t('phonePlaceholder')}
           value={formData.phoneNumber}
           onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
           disabled={isLoading}
@@ -139,11 +141,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Mot de passe *</Label>
+        <Label htmlFor="password">{t('passwordLabel')}</Label>
         <Input
           id="password"
           type="password"
-          placeholder="Choisissez un mot de passe"
+          placeholder={t('passwordPlaceholder')}
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           disabled={isLoading}
@@ -153,13 +155,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="systemLanguage">Langue système</Label>
+          <Label htmlFor="systemLanguage">{t('systemLanguageLabel')}</Label>
           <Select 
             value={formData.systemLanguage} 
             onValueChange={(value) => setFormData({ ...formData, systemLanguage: value })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Langue système" />
+              <SelectValue placeholder={t('systemLanguageLabel')} />
             </SelectTrigger>
             <SelectContent>
               {SUPPORTED_LANGUAGES.map((lang) => (
@@ -171,13 +173,13 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="regionalLanguage">Langue régionale</Label>
+          <Label htmlFor="regionalLanguage">{t('regionalLanguageLabel')}</Label>
           <Select 
             value={formData.regionalLanguage} 
             onValueChange={(value) => setFormData({ ...formData, regionalLanguage: value })}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Langue régionale" />
+              <SelectValue placeholder={t('regionalLanguageLabel')} />
             </SelectTrigger>
             <SelectContent>
               {SUPPORTED_LANGUAGES.map((lang) => (
@@ -195,7 +197,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         className="w-full" 
         disabled={isLoading}
       >
-        {isLoading ? 'Création...' : 'Créer mon compte'}
+        {isLoading ? t('creating') : t('registerButton')}
       </Button>
     </form>
   );

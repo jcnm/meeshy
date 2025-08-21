@@ -1,63 +1,65 @@
-# Meeshy Unified Container - Tous les services dans un seul container
-# Basé sur le Dockerfile principal existant avec optimisations
+# Meeshy Unified Container - Optimisé pour la vitesse de build
+# Tous les services dans un seul container avec cache optimal
 
-# ===== STAGE 1: BASE IMAGE =====
+# ===== STAGE 1: BASE IMAGE OPTIMISÉE =====
 FROM python:3.12-slim AS base
 
-# Définir les arguments de build pour optimiser le cache
+# Arguments de build
 ARG NODE_VERSION=22
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PNPM_VERSION=latest
 
-# Installation en une seule layer avec cleanup
+# Installation système en couches séparées pour meilleur cache
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        wget \
-        unzip \
-        gnupg \
-        tini \
         curl \
+        gnupg \
+        ca-certificates \
+    && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        nodejs \
+        build-essential \
         git \
         postgresql-client \
         postgresql \
         redis-server \
         supervisor \
         nginx \
+        tini \
         postgresql-contrib \
-    && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g pnpm@${PNPM_VERSION} prisma \
-    && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean \
+    && npm install -g pnpm@${PNPM_VERSION} prisma tsx tsconfig-paths \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
     && npm cache clean --force
 
 # Configuration PostgreSQL - préparer les répertoires
 RUN mkdir -p /var/lib/postgresql/data && \
     chown postgres:postgres /var/lib/postgresql/data
 
-# Créer l'utilisateur meeshy
+# Créer l'utilisateur meeshy (séparé pour cache)
 RUN groupadd -g 1001 meeshy && \
     useradd -u 1001 -g meeshy -m -s /bin/bash meeshy
 
-# ===== STAGE 2: SHARED DEPENDENCIES =====
+# ===== STAGE 2: SHARED DEPENDENCIES OPTIMISÉ =====
 FROM base AS shared-builder
 WORKDIR /app/shared
 
-# Copier les fichiers shared (optimisation du cache)
-COPY shared/package*.json ./
-COPY shared/pnpm-lock.yaml ./
-COPY shared/schema.prisma ./
+# Copier SEULEMENT les fichiers de dépendances d'abord
+COPY shared/package*.json shared/pnpm-lock.yaml ./
 
-# Installer pnpm et dépendances (cache séparé)
-RUN npm install -g pnpm && \
+# Installation avec cache mount
+RUN --mount=type=cache,target=/root/.pnpm \
     pnpm install --frozen-lockfile
 
-# Générer le client Prisma avec le schéma SQLite (cache séparé)
-ENV PRISMA_CLIENT_OUTPUT_DIRECTORY=/app/shared/node_modules/.prisma/client
-RUN pnpm run generate
+# Copier le schema APRÈS l'installation
+COPY shared/schema.prisma ./
+COPY shared/proto ./
+COPY shared/types ./
 
-# ===== STAGE 3: TRANSLATOR BUILDER =====
+# Génération Prisma (cache séparé)
+ENV PRISMA_CLIENT_OUTPUT_DIRECTORY=/app/shared/node_modules/.prisma/client
+RUN --mount=type=cache,target=/tmp/prisma-cache \
+    pnpm run generate
+
+# ===== STAGE 3: TRANSLATOR OPTIMISÉ =====
 FROM base AS translator-builder
 WORKDIR /app/translator
 
@@ -72,76 +74,94 @@ ENV PYTHONPATH=/app \
     MODEL_DIR=/app/models \
     MODEL_CACHE_DIR=/app/models \
     TORCH_HOME=/app/models \
-    HF_HOME=/app/models 
+    HF_HOME=/app/models
 
-# Installer les dépendances Python avec timeout étendu pour PyTorch
+# Installation Python avec cache mount et compilation parallèle
 COPY translator/requirements.txt ./
-RUN pip install --upgrade pip --no-cache-dir \
-    && pip install --default-timeout=300 --no-cache-dir -r requirements.txt \
-    && rm -rf ~/.cache/pip
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip --prefer-binary && \
+    pip install --default-timeout=600 --prefer-binary -r requirements.txt
 
-# Copier le code source
+# Copier le code source après les dépendances
 COPY translator/ ./
-COPY --from=shared-builder /app/shared ./shared
+#COPY --from=shared-builder /app/shared ./shared
 
-# Générer le client Prisma Python
+# Générer le client Prisma Python si nécessaire
 RUN if [ -f shared/prisma/schema.prisma ]; then \
         prisma generate --schema=shared/prisma/schema.prisma; \
+    elif [ -f shared/schema.prisma ]; then \
+        prisma generate --schema=shared/schema.prisma; \
     fi
 
-# ===== STAGE 4: GATEWAY BUILDER =====
+# ===== STAGE 4: GATEWAY OPTIMISÉ =====
 FROM base AS gateway-builder
 WORKDIR /app/gateway
 
-# Copier les fichiers de dépendances
-COPY gateway/package*.json ./
-COPY gateway/pnpm-lock.yaml ./
+# Copier les fichiers de dépendances uniquement
+COPY gateway/package*.json gateway/pnpm-lock.yaml ./
 COPY gateway/tsconfig.json ./
 
-# Installer les dépendances
-RUN npm install -g pnpm tsx && \
+# Installation avec cache mount
+RUN --mount=type=cache,target=/root/.pnpm \
     pnpm install --frozen-lockfile
 
-# Copier le code source
+# Copier le code source après les dépendances
 COPY gateway/ ./
 COPY --from=shared-builder /app/shared ./shared
 
-# Générer le client Prisma seulement (pas de compilation TypeScript)
-RUN npx prisma generate --schema=./shared/schema.prisma && \
-    pnpm install --prod --ignore-scripts && \
-    pnpm add tsconfig-paths && \
-    pnpm store prune && \
-    rm -rf /tmp/.npm /tmp/.yarn ~/.cache
+# Générer le client Prisma
+ENV PRISMA_CLIENT_OUTPUT_DIRECTORY=/app/shared/node_modules/.prisma/client
+RUN npx prisma generate --schema=./shared/schema.prisma
 
-# ===== STAGE 5: FRONTEND BUILDER =====
+# Installation production et nettoyage
+RUN --mount=type=cache,target=/root/.pnpm \
+    pnpm install --prod --ignore-scripts && \
+    pnpm store prune
+
+# ===== STAGE 5: FRONTEND OPTIMISÉ =====
 FROM base AS frontend-builder
 WORKDIR /app/frontend
 
-# Copier les fichiers de dépendances
-COPY frontend/package*.json ./
-COPY frontend/pnpm-lock.yaml ./
-COPY frontend/next.config.ts ./
-COPY frontend/tailwind.config.ts ./
-# COPY frontend/postcss.config.ts ./
-COPY frontend/tsconfig.json ./
+# Copier les fichiers de configuration et dépendances d'abord
+COPY frontend/package*.json frontend/pnpm-lock.yaml ./
+COPY frontend/next.config.ts frontend/tailwind.config.ts frontend/tsconfig.json ./
 
-# Installer les dépendances
-RUN npm install -g pnpm tsx && \
+# Installation avec cache mount
+RUN --mount=type=cache,target=/root/.pnpm \
     pnpm install --frozen-lockfile
 
-# Copier le code source
+# Copier le code source après les dépendances
 COPY frontend/ ./
 COPY --from=shared-builder /app/shared ./shared
 
-# Build de production pour Next.js
-RUN pnpm run build
+# Build avec cache Next.js
+RUN --mount=type=cache,target=/app/frontend/.next/cache \
+    pnpm run build
 
-# ===== STAGE 6: FINAL IMAGE =====
-FROM base AS final
+# ===== STAGE 6: FINAL IMAGE OPTIMISÉE =====
+FROM python:3.12-slim AS final
 WORKDIR /app
 
-# Créer la structure des répertoires
-RUN mkdir -p /app/translator && \
+# Installation minimale des outils système
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        supervisor \
+        nginx \
+        tini \
+        curl \
+        gnupg \
+        ca-certificates \
+        postgresql-client \
+        redis-tools \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get update && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g pnpm tsx tsconfig-paths \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* \
+    && npm cache clean --force
+
+# Créer utilisateur et structure des répertoires
+RUN groupadd -g 1001 meeshy && \
+    useradd -u 1001 -g meeshy -m -s /bin/bash meeshy && \
+    mkdir -p /app/translator && \
     mkdir -p /app/gateway && \
     mkdir -p /app/frontend && \
     mkdir -p /app/shared && \
@@ -152,53 +172,68 @@ RUN mkdir -p /app/translator && \
     mkdir -p /etc/supervisor/conf.d && \
     chown -R meeshy:meeshy /app
 
-# Copier les binaires et dépendances
+# Copier les artefacts des builds optimisés
+# Translator - code + dépendances Python
 COPY --from=translator-builder --chown=meeshy:meeshy /app/translator /app/translator
-COPY --from=gateway-builder --chown=meeshy:meeshy /app/gateway /app/gateway
-COPY --from=frontend-builder --chown=meeshy:meeshy /app/frontend /app/frontend
-COPY --from=shared-builder --chown=meeshy:meeshy /app/shared /app/shared
-
-# Copier les scripts de démarrage
-COPY docker-start-unified.sh /app/docker-start-unified.sh
-COPY scripts/ /app/scripts/
-RUN chmod +x /app/docker-start-unified.sh && \
-    chmod +x /app/scripts/*.sh
-
-# Configuration Supervisor pour gérer tous les services
-COPY docker/supervisor/ /etc/supervisor/conf.d/
-
-# Configuration Nginx
-COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-
-# Nettoyage des caches et fichiers inutiles
-RUN rm -rf /app/translator/{__pycache__,*.pyc,*.pyo,*.pyd,.pytest_cache,.coverage,htmlcov,.tox,.venv,venv} && \
-    rm -rf /app/gateway/{node_modules/.cache,dist,.nyc_output,coverage} && \
-    rm -rf /app/frontend/{.cache,node_modules/.cache,coverage} && \
-    rm -rf /app/shared/{node_modules/.cache,dist} && \
-    find /app -name "*.log" -delete && \
-    find /app -name "*.tmp" -delete && \
-    find /app -name ".DS_Store" -delete && \
-    find /app -name "Thumbs.db" -delete
-
-# Installer tsx et tsconfig-paths globalement dans l'image finale
-RUN npm install -g tsx tsconfig-paths
-
-# Copier les dépendances Python depuis le stage translator-builder
 COPY --from=translator-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 
+# Gateway - code + node_modules
+COPY --from=gateway-builder --chown=meeshy:meeshy /app/gateway/node_modules /app/gateway/node_modules
+COPY --from=gateway-builder --chown=meeshy:meeshy /app/gateway/src /app/gateway/src
+COPY --from=gateway-builder --chown=meeshy:meeshy /app/gateway/*.js /app/gateway/
+COPY --from=gateway-builder --chown=meeshy:meeshy /app/gateway/*.ts /app/gateway/
+COPY --from=gateway-builder --chown=meeshy:meeshy /app/gateway/*.json /app/gateway/
+COPY --from=gateway-builder --chown=meeshy:meeshy /app/gateway/shared /app/gateway/shared
+
+# Frontend - build + node_modules nécessaires
+COPY --from=frontend-builder --chown=meeshy:meeshy /app/frontend/.next /app/frontend/.next
+COPY --from=frontend-builder --chown=meeshy:meeshy /app/frontend/node_modules /app/frontend/node_modules
+COPY --from=frontend-builder --chown=meeshy:meeshy /app/frontend/public /app/frontend/public
+COPY --from=frontend-builder --chown=meeshy:meeshy /app/frontend/*.json /app/frontend/
+COPY --from=frontend-builder --chown=meeshy:meeshy /app/frontend/*.ts /app/frontend/
+COPY --from=frontend-builder --chown=meeshy:meeshy /app/frontend/shared /app/frontend/shared
+
+# Shared - artefacts générés
+COPY --from=shared-builder --chown=meeshy:meeshy /app/shared /app/shared
+
+# Copier les configurations statiques d'abord (cache optimisé)
+COPY docker/supervisor/ /etc/supervisor/conf.d/
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY scripts/ /app/scripts/
+
+# Rendre les scripts statiques exécutables
+RUN chmod +x /app/scripts/*.sh
+
+# Copier le script de démarrage en dernier (change souvent)
+COPY docker-start-unified.sh /app/docker-start-unified.sh
+
+# Rendre le script de démarrage exécutable
+RUN chmod +x /app/docker-start-unified.sh
+
+# Nettoyage final optimisé
+RUN find /app -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -name "*.pyc" -delete 2>/dev/null || true && \
+    find /app -name "*.pyo" -delete 2>/dev/null || true && \
+    find /app -name ".pytest_cache" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -name ".cache" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -name "*.log" -delete 2>/dev/null || true && \
+    find /app -name "*.tmp" -delete 2>/dev/null || true && \
+    find /app -name ".DS_Store" -delete 2>/dev/null || true
+
 # Variables d'environnement par défaut
-ENV NODE_ENV=production
-ENV PYTHONUNBUFFERED=1
-ENV PORT=3100
-ENV GATEWAY_PORT=3000
-ENV TRANSLATOR_PORT=8000
-ENV POSTGRES_PORT=5432
-ENV REDIS_PORT=6379
-ENV DATABASE_URL=postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy
-ENV REDIS_URL=redis://localhost:6379
-ENV USE_EXTERNAL_DB=false
-ENV USE_EXTERNAL_REDIS=false
+ENV NODE_ENV=production \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=3100 \
+    GATEWAY_PORT=3000 \
+    TRANSLATOR_PORT=8000 \
+    POSTGRES_PORT=5432 \
+    REDIS_PORT=6379 \
+    DATABASE_URL=postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy \
+    REDIS_URL=redis://localhost:6379 \
+    USE_EXTERNAL_DB=false \
+    USE_EXTERNAL_REDIS=false
 
 # Exposer les ports
 EXPOSE 80 3000 8000 5432 6379

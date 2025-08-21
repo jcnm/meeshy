@@ -30,7 +30,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
+import { LanguageSwitcher } from '@/components/common/language-switcher';
+import { useTranslations } from 'next-intl';
 
 interface HeaderProps {
   // Mode d'affichage
@@ -73,11 +74,12 @@ export function Header({
 }: HeaderProps) {
   const router = useRouter();
   const [showClearSessionDialog, setShowClearSessionDialog] = useState(false);
+  const t = useTranslations('header');
 
   const handleShare = () => {
     if (shareLink) {
       navigator.clipboard.writeText(shareLink);
-      toast.success('Lien de partage copié dans le presse-papiers');
+      toast.success(t('shareLinkCopied'));
     }
   };
 
@@ -107,6 +109,9 @@ export function Header({
         </div>
         
         <div className="flex items-center space-x-2">
+          
+          {/* Language Switcher */}
+          <LanguageSwitcher />
           
           {/* Mode chat - Boutons de partage et menu utilisateur */}
           {mode === 'chat' && (
@@ -157,14 +162,28 @@ export function Header({
                           className="text-red-600 focus:text-red-600"
                         >
                           <LogOut className="h-4 w-4 mr-2" />
-                          Effacer la session anonyme
+                          {t('clearSession')}
                         </DropdownMenuItem>
                       </>
                     ) : (
-                      <DropdownMenuItem onClick={onLogout}>
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Se déconnecter
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem onClick={() => router.push('/profile')}>
+                          <User className="h-4 w-4 mr-2" />
+                          Profil
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push('/settings')}>
+                          <AlertTriangle className="h-4 w-4 mr-2" />
+                          Paramètres
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={onLogout}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Déconnexion
+                        </DropdownMenuItem>
+                      </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -172,39 +191,24 @@ export function Header({
             </>
           )}
           
-          {/* Mode landing - Boutons d'authentification et lien anonyme */}
-          {mode === 'landing' && (
-            <>
-              {/* Lien vers la conversation anonyme en cours */}
-              {anonymousChatLink && (
-                <Button 
-                  onClick={() => router.push(anonymousChatLink)}
-                  variant="outline"
-                  className="flex items-center space-x-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Reprendre la discussion</span>
-                </Button>
-              )}
-              
+          {/* Mode landing - Boutons de connexion/inscription */}
+          {mode === 'landing' && !user && (
+            <div className="flex items-center space-x-2">
               <Dialog open={authMode === 'login'} onOpenChange={(open) => onAuthModeChange?.(open ? 'login' : 'welcome')}>
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <LogIn className="h-4 w-4" />
-                    <span>Se connecter</span>
+                    <span>Connexion</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Se connecter</DialogTitle>
+                    <DialogTitle>Connexion</DialogTitle>
                     <DialogDescription>
                       Connectez-vous à votre compte Meeshy
                     </DialogDescription>
                   </DialogHeader>
-                  <LoginForm onSuccess={() => {
-                    // Fermer la modale après connexion réussie
-                    onAuthModeChange?.('welcome');
-                  }} />
+                  <LoginForm />
                 </DialogContent>
               </Dialog>
               
@@ -212,7 +216,7 @@ export function Header({
                 <DialogTrigger asChild>
                   <Button className="flex items-center space-x-2">
                     <UserPlus className="h-4 w-4" />
-                    <span>S'inscrire</span>
+                    <span>Inscription</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -222,37 +226,24 @@ export function Header({
                       Rejoignez Meeshy et communiquez sans barrières
                     </DialogDescription>
                   </DialogHeader>
-                  <RegisterForm onSuccess={() => {
-                    // Fermer la modale après inscription réussie
-                    onAuthModeChange?.('welcome');
-                  }} />
+                  <RegisterForm />
                 </DialogContent>
               </Dialog>
-            </>
+            </div>
           )}
         </div>
       </div>
-      
-      {/* Dialog de confirmation pour l'effacement de session anonyme */}
+
+      {/* Dialog de confirmation pour effacer la session */}
       <Dialog open={showClearSessionDialog} onOpenChange={setShowClearSessionDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <span>Effacer la session anonyme</span>
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <span>{t('clearSessionConfirm')}</span>
             </DialogTitle>
-            <DialogDescription className="space-y-3">
-              <div>
-                Êtes-vous sûr de vouloir effacer votre session anonyme ?
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                <div className="text-sm text-orange-800 font-medium mb-2">⚠️ Attention :</div>
-                <ul className="text-sm text-orange-700 space-y-1">
-                  <li>• Les autres participants ne vous reconnaîtront plus</li>
-                  <li>• Votre pseudo sera perdu pour cette conversation</li>
-                  <li>• Vous devrez rejoindre à nouveau avec un nouveau pseudo</li>
-                </ul>
-              </div>
+            <DialogDescription>
+              {t('clearSessionDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end space-x-2">

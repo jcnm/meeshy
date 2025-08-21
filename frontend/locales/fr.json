@@ -1,0 +1,320 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "conversations": "Conversations",
+    "contacts": "Contacts",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "login": "Connexion",
+    "register": "Inscription"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Traduction en temps réel",
+      "title": "Communiquez sans",
+      "titleHighlight": "barrières linguistiques",
+      "subtitle": "Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA, directement dans votre navigateur. Aucune donnée ne quitte votre appareil.",
+      "startFree": "Commencer gratuitement",
+      "joinConversation": "Rejoindre une conversation",
+      "resumeOrJoin": "Reprendre ou rejoindre une conversation"
+    },
+    "mission": {
+      "title": "Notre Mission",
+      "slogan": "Rencontrez sans timidité ! 🌍✨",
+      "tagline": "Connectez le monde, une traduction à la fois",
+      "description": "Nous croyons que les barrières linguistiques ne devraient jamais faire obstacle aux connexions significatives. Notre plateforme permet aux personnes du monde entier de communiquer librement, en brisant les murs qui nous séparent et en construisant des ponts de compréhension.",
+      "signature": {
+        "line1": "❤️ Créé avec ❤️",
+        "line2": "par des développeurs qui croient que la communication ne devrait avoir aucune frontière."
+      }
+    },
+    "features": {
+      "title": "Pourquoi choisir Meeshy ?",
+      "subtitle": "Une messagerie moderne qui brise les barrières linguistiques",
+      "universalTranslation": {
+        "title": "Traduction Universelle",
+        "description": "Support de plus de 15 langues avec des modèles IA avancés (MT5 et NLLB)"
+      },
+      "autoDetection": {
+        "title": "Détection Automatique",
+        "description": "Détecte automatiquement la langue des messages pour une traduction plus précise."
+      },
+      "privacy": {
+        "title": "100% Privé",
+        "description": "Traduction côté client uniquement. Vos données restent sur votre appareil."
+      },
+      "realtime": {
+        "title": "Temps Réel",
+        "description": "Messages traduits instantanément avec indicateurs de frappe et présence."
+      },
+      "groupChats": {
+        "title": "Conversations de Groupe",
+        "description": "Créez des groupes multilingues et gérez les permissions facilement."
+      },
+      "multiLanguage": {
+        "title": "Multi-Langues Personnalisées",
+        "description": "Configurez vos langues système et régionale pour une expérience sur mesure."
+      },
+      "modernInterface": {
+        "title": "Interface Moderne",
+        "description": "Design responsive et intuitive pour une expérience utilisateur optimale."
+      },
+      "internationalColleagues": {
+        "title": "Collègues Internationaux",
+        "description": "Communiquez avec vos collègues étrangers sans vous soucier de la barrière linguistique."
+      },
+      "multilingualClassrooms": {
+        "title": "Salles de Classe Multilingues",
+        "description": "Échangez avec vos camarades de classe dans leur langue maternelle, peu importe d'où ils viennent."
+      }
+    },
+    "cta": {
+      "title": "Prêt à communiquer sans limites ?",
+      "subtitle": "Rejoignez des milliers d'utilisateurs qui utilisent déjà Meeshy pour briser les barrières linguistiques.",
+      "createAccount": "Créer mon compte"
+    },
+    "footer": {
+      "copyright": "© 2024 Meeshy. Communication sans barrières linguistiques."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "description": "Bon retour sur Meeshy",
+      "email": "Email",
+      "password": "Mot de passe",
+      "loginButton": "Se connecter",
+      "forgotPassword": "Mot de passe oublié ?",
+      "noAccount": "Vous n'avez pas de compte ?",
+      "registerLink": "Inscrivez-vous ici"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "description": "Rejoignez Meeshy et communiquez sans barrières",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "username": "Nom d'utilisateur",
+      "email": "Email",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "registerButton": "Créer un compte",
+      "hasAccount": "Vous avez déjà un compte ?",
+      "loginLink": "Connectez-vous ici"
+    },
+    "joinConversation": {
+      "title": "Rejoindre une conversation",
+      "description": "Entrez le lien de conversation que vous avez reçu",
+      "resumeTitle": "Reprendre ou rejoindre une conversation",
+      "resumeDescription": "Vous avez une conversation en cours. Vous pouvez la reprendre ou rejoindre une nouvelle conversation.",
+      "ongoingConversation": "Conversation en cours",
+      "ongoingDescription": "Vous avez une conversation active que vous pouvez reprendre.",
+      "resumeButton": "Reprendre la conversation en cours",
+      "orJoinNew": "Ou rejoindre une nouvelle conversation",
+      "newConversationDescription": "Entrez un nouveau lien de conversation ci-dessous :",
+      "linkPlaceholder": "Entrez le lien de conversation",
+      "joinButton": "Rejoindre la conversation"
+    }
+  },
+  "header": {
+    "shareLinkCopied": "Lien de partage copié dans le presse-papiers",
+    "clearSession": "Effacer la session",
+    "clearSessionConfirm": "Êtes-vous sûr de vouloir effacer votre session ? Cela vous déconnectera.",
+    "clearSessionDescription": "Cette action supprimera toutes vos données de session et vous déconnectera."
+  },
+  "language": {
+    "selectLanguage": "Sélectionner la langue",
+    "interfaceLanguage": "Langue de l'interface",
+    "systemLanguage": "Langue système",
+    "regionalLanguage": "Langue régionale",
+    "customLanguage": "Langue personnalisée",
+    "autoTranslate": "Traduction automatique",
+    "translateToSystem": "Traduire vers la langue système",
+    "translateToRegional": "Traduire vers la langue régionale",
+    "useCustomDestination": "Utiliser la destination personnalisée"
+  },
+  "errors": {
+    "loginFailed": "Échec de la connexion",
+    "registrationFailed": "Échec de l'inscription",
+    "invalidCredentials": "Identifiants invalides",
+    "networkError": "Erreur réseau",
+    "unknownError": "Une erreur inconnue s'est produite",
+    "validationError": "Erreur de validation"
+  },
+  "success": {
+    "loginSuccess": "Connexion réussie",
+    "registrationSuccess": "Compte créé avec succès",
+    "settingsSaved": "Paramètres enregistrés avec succès",
+    "profileUpdated": "Profil mis à jour avec succès",
+    "welcome": "Bienvenue"
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Connectez-vous à votre compte",
+    "formTitle": "Connexion",
+    "formDescription": "Entrez vos identifiants ou utilisez un compte de test",
+    "usernameLabel": "Nom d'utilisateur ou email",
+    "usernamePlaceholder": "alice_fr, bob_en, carlos_es...",
+    "usernameHelp": "Utilisez le username (ex: alice_fr) ou cliquez sur 'Connexion rapide' ci-dessous",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "password123",
+    "passwordHelp": "Mot de passe de test : password123",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "loginButton": "Se connecter",
+    "loggingIn": "Connexion...",
+    "quickLoginTitle": "Connexion rapide",
+    "quickLoginDescription": "Cliquez sur un utilisateur pour vous connecter automatiquement. Mot de passe pour tous : password123",
+    "debugInfo": "Info de debug",
+    "backendUrl": "Backend URL",
+    "loginEndpoint": "Login endpoint",
+    "accountsLoaded": "Comptes chargés",
+    "verifyingAuth": "Vérification de l'authentification...",
+    "redirecting": "Redirection en cours...",
+    "loading": "Chargement..."
+  },
+  "register": {
+    "title": "Créer un compte",
+    "description": "Rejoignez Meeshy et communiquez sans barrières",
+    "firstNameLabel": "Prénom *",
+    "firstNamePlaceholder": "Votre prénom",
+    "lastNameLabel": "Nom *",
+    "lastNamePlaceholder": "Votre nom",
+    "usernameLabel": "Nom d'utilisateur *",
+    "usernamePlaceholder": "Choisissez un nom d'utilisateur",
+    "emailLabel": "Email *",
+    "emailPlaceholder": "votre@email.com",
+    "phoneLabel": "Téléphone",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "Mot de passe *",
+    "passwordPlaceholder": "Choisissez un mot de passe",
+    "systemLanguageLabel": "Langue système",
+    "regionalLanguageLabel": "Langue régionale",
+    "registerButton": "Créer un compte",
+    "creating": "Création...",
+    "fillRequiredFields": "Veuillez remplir tous les champs obligatoires",
+    "accountCreationError": "Erreur lors de la création du compte"
+  },
+  "joinConversation": {
+    "title": "Rejoindre une conversation",
+    "description": "Entrez le lien de conversation que vous avez reçu",
+    "resumeTitle": "Reprendre ou rejoindre une conversation",
+    "resumeDescription": "Vous avez une conversation en cours. Vous pouvez la reprendre ou rejoindre une nouvelle conversation.",
+    "ongoingConversation": "Conversation en cours",
+    "ongoingDescription": "Vous avez une conversation active que vous pouvez reprendre.",
+    "resumeButton": "Reprendre la conversation en cours",
+    "orJoinNew": "Ou rejoindre une nouvelle conversation",
+    "newConversationDescription": "Entrez un nouveau lien de conversation ci-dessous :",
+    "linkLabel": "Lien de conversation",
+    "linkPlaceholder": "Collez le lien ici ou entrez l'ID",
+    "joinButton": "Rejoindre la conversation",
+    "verifying": "Vérification...",
+    "enterLink": "Veuillez entrer un lien de conversation",
+    "invalidLink": "Lien de conversation invalide",
+    "expiredLink": "Lien de conversation invalide ou expiré",
+    "verificationError": "Erreur de vérification du lien",
+    "validLink": "Lien valide ! Redirection..."
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bon retour",
+    "stats": {
+      "totalConversations": "Conversations totales",
+      "totalGroups": "Groupes totaux",
+      "totalMessages": "Messages totaux",
+      "activeConversations": "Conversations actives",
+      "translationsToday": "Traductions aujourd'hui",
+      "totalLinks": "Liens totaux"
+    },
+    "recentConversations": "Conversations récentes",
+    "recentGroups": "Groupes récents",
+    "createLink": "Créer un lien",
+    "refresh": "Actualiser",
+    "retry": "Réessayer",
+    "loadingError": "Erreur de chargement",
+    "noData": "Aucune donnée disponible"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "profileTitle": "Paramètres du profil",
+    "profileDescription": "Paramètres pour {username}",
+    "profilePhoto": "Photo de profil",
+    "profilePhotoDescription": "Personnalisez votre photo de profil visible par les autres utilisateurs",
+    "uploadImage": "Télécharger une image",
+    "takePhoto": "Prendre une photo",
+    "personalInfo": "Informations personnelles",
+    "personalInfoDescription": "Modifiez vos informations de profil",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "displayName": "Nom d'affichage",
+    "displayNamePlaceholder": "Comment vous voulez apparaître dans les conversations",
+    "email": "Email",
+    "emailPlaceholder": "votre.email@exemple.com",
+    "phoneNumber": "Numéro de téléphone",
+    "phoneNumberPlaceholder": "+33 1 23 45 67 89",
+    "username": "Nom d'utilisateur",
+    "usernameCannotChange": "Le nom d'utilisateur ne peut pas être modifié",
+    "cancel": "Annuler",
+    "save": "Sauvegarder",
+    "saving": "Sauvegarde...",
+    "profileUpdated": "Profil mis à jour avec succès",
+    "updateError": "Erreur lors de la mise à jour du profil",
+    "noUserConnected": "Aucun utilisateur connecté",
+    "tabs": {
+      "profile": "Profil",
+      "translation": "Traduction",
+      "theme": "Thème",
+      "fonts": "Polices",
+      "stats": "Statistiques"
+    },
+    "translation": {
+      "title": "Configuration des langues et traduction",
+      "description": "Définissez vos langues et paramètres de traduction"
+    }
+  },
+  "notFound": {
+    "title": "Page non trouvée",
+    "description": "Désolé, cette page n'existe pas encore.",
+    "suggestions": [
+      "Retourner au dashboard",
+      "Consulter vos conversations",
+      "Voir vos groupes"
+    ],
+    "backToDashboard": "Retour au dashboard",
+    "previousPage": "Page précédente"
+  },
+  "validation": {
+    "required": "Ce champ est requis",
+    "invalidEmail": "Adresse email invalide",
+    "invalidPhone": "Numéro de téléphone invalide",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
+  },
+  "testAccounts": {
+    "alice_fr": "Alice Martin (Français)",
+    "bob_en": "Bob Smith (Anglais)",
+    "carlos_es": "Carlos Rodriguez (Espagnol)",
+    "dieter_de": "Dieter Mueller (Allemand)",
+    "li_zh": "Li Wei (Chinois)",
+    "yuki_ja": "Yuki Tanaka (Japonais)",
+    "maria_pt": "Maria Silva (Portugais)"
+  }
+}

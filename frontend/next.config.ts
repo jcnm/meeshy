@@ -1,4 +1,9 @@
 import type { NextConfig } from "next";
+// Plugin next-intl désactivé pour éviter les redirections d'URL
+// L'internationalisation est gérée côté client via le LanguageContext
+// import createNextIntlPlugin from 'next-intl/plugin';
+
+// const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
   eslint: {

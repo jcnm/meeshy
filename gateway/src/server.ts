@@ -466,14 +466,26 @@ class MeeshyServer {
   private async initializeServices(): Promise<void> {
     logger.info('Initializing external services...');
     logger.info('Database URL:', JSON.stringify(config, null, 2));
+    
     // Test database connection
     try {
       // Test connection with a simple query instead
       await this.prisma.$queryRaw`SELECT 1`;
       logger.info(`✓ Database connected successfully`);
       
-      // Initialize global conversation and auto-add users
-      await InitService.initialize();
+      // Initialize database with default data
+      const initService = new InitService(this.prisma);
+      
+      // Check if initialization is needed
+      const shouldInit = await initService.shouldInitialize();
+      
+      if (shouldInit) {
+        logger.info('🔧 Database initialization required, starting...');
+        await initService.initializeDatabase();
+        logger.info('✅ Database initialization completed successfully');
+      } else {
+        logger.info('✅ Database already initialized, skipping initialization');
+      }
       
     } catch (error) {
       logger.error('✗ Database connection failed:', error);

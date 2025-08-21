@@ -27,35 +27,49 @@ echo -e "${BLUE}🔍 Configuration des services:${NC}"
 echo "  - Base de données externe: $USE_EXTERNAL_DB"
 echo "  - Redis externe: $USE_EXTERNAL_REDIS"
 
+# Variables d'environnement par défaut
+export POSTGRES_USER=${POSTGRES_USER:-"meeshy"}
+export POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-"MeeshyP@ssword"}
+export POSTGRES_DB=${POSTGRES_DB:-"meeshy"}
+export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}"
+
 # Initialiser PostgreSQL si nécessaire
 if [ "$USE_EXTERNAL_DB" != "true" ]; then
     echo -e "${BLUE}📊 Configuration de PostgreSQL...${NC}"
     
-    # Créer les répertoires de données si nécessaire
     mkdir -p /app/data/postgres /app/data/redis
     
-    # Initialiser PostgreSQL si la configuration n'existe pas
     if [ ! -f /app/data/postgres/postgresql.conf ]; then
         echo -e "${YELLOW}📝 Initialisation de PostgreSQL...${NC}"
         
-        # Trouver le binaire initdb
         INITDB_PATH=$(find /usr/lib/postgresql -name "initdb" 2>/dev/null | head -1)
         if [ -z "$INITDB_PATH" ]; then
             echo -e "${RED}❌ Impossible de trouver initdb${NC}"
             exit 1
         fi
         
-        # Initialiser la base de données
         chown -R postgres:postgres /app/data/postgres
         su - postgres -c "$INITDB_PATH -D /app/data/postgres"
         
-        # Configuration PostgreSQL
-        echo "host all all 0.0.0.0/0 trust" >> /app/data/postgres/pg_hba.conf
-        echo "host all all ::/0 trust" >> /app/data/postgres/pg_hba.conf
-        echo "listen_addresses = '0.0.0.0'" >> /app/data/postgres/postgresql.conf
-        echo "port = 5432" >> /app/data/postgres/postgresql.conf
-        echo "max_connections = 100" >> /app/data/postgres/postgresql.conf
-        echo "shared_buffers = 128MB" >> /app/data/postgres/postgresql.conf
+        # Configuration PostgreSQL améliorée
+        cat >> /app/data/postgres/pg_hba.conf << EOF
+# Ajout de règles d'authentification
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+host    all             all             0.0.0.0/0               md5
+local   all             postgres                                peer
+local   all             all                                     peer
+EOF
+        
+        cat >> /app/data/postgres/postgresql.conf << EOF
+listen_addresses = '*'
+port = 5432
+max_connections = 100
+shared_buffers = 128MB
+logging_collector = on
+log_directory = '/app/logs'
+log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+EOF
         
         chown -R postgres:postgres /app/data/postgres
         echo -e "${GREEN}✅ PostgreSQL initialisé${NC}"
@@ -77,16 +91,12 @@ else
     echo -e "${YELLOW}⚠️  Utilisation d'un Redis externe${NC}"
 fi
 
-# Vérifier les fichiers de configuration Supervisor
-echo -e "${BLUE}🔍 Vérification des fichiers de configuration Supervisor...${NC}"
-ls -la /etc/supervisor/conf.d/
-
-# Créer une configuration Supervisor adaptée
+# Configuration Supervisor
 echo -e "${BLUE}🔧 Préparation de la configuration Supervisor...${NC}"
 TEMP_SUPERVISOR_DIR="/tmp/supervisor"
 mkdir -p $TEMP_SUPERVISOR_DIR
 
-# Créer une nouvelle configuration supervisord.conf
+# Créer supervisord.conf
 cat > $TEMP_SUPERVISOR_DIR/supervisord.conf << 'EOF'
 [unix_http_server]
 file=/var/run/supervisor.sock
@@ -109,7 +119,6 @@ serverurl=unix:///var/run/supervisor.sock
 files = /tmp/supervisor/*.conf
 
 [group:meeshy]
-
 programs=PROGRAMS_PLACEHOLDER
 priority=999
 EOF
@@ -118,94 +127,119 @@ EOF
 PROGRAMS="translator,gateway,frontend"
 
 if [ "$USE_EXTERNAL_DB" != "true" ]; then
-    echo -e "${BLUE}📊 Ajout de PostgreSQL à la configuration...${NC}"
     cp /etc/supervisor/conf.d/postgres.conf $TEMP_SUPERVISOR_DIR/
     PROGRAMS="postgres,$PROGRAMS"
 fi
 
 if [ "$USE_EXTERNAL_REDIS" != "true" ]; then
-    echo -e "${BLUE}➕ Ajout de Redis à la configuration...${NC}"
     cp /etc/supervisor/conf.d/redis.conf $TEMP_SUPERVISOR_DIR/
     PROGRAMS="redis,$PROGRAMS"
 fi
 
-# Copier les autres configurations
 cp /etc/supervisor/conf.d/translator.conf $TEMP_SUPERVISOR_DIR/
 cp /etc/supervisor/conf.d/gateway.conf $TEMP_SUPERVISOR_DIR/
 cp /etc/supervisor/conf.d/frontend.conf $TEMP_SUPERVISOR_DIR/
-# Nginx sera démarré automatiquement par les dépendances
 cp /etc/supervisor/conf.d/nginx.conf $TEMP_SUPERVISOR_DIR/
 
-# Mettre à jour la liste des programmes dans le groupe
 sed -i "s/PROGRAMS_PLACEHOLDER/$PROGRAMS/" $TEMP_SUPERVISOR_DIR/supervisord.conf
 
-# Attendre que les services de base soient prêts
-if [ "$USE_EXTERNAL_DB" != "true" ]; then
-    echo -e "${BLUE}⏳ Attente du démarrage de PostgreSQL...${NC}"
-    sleep 5
+# Fonction pour attendre qu'un service soit prêt
+wait_for_service() {
+    local service_name=$1
+    local check_command=$2
+    local max_attempts=30
+    local attempt=1
     
-    # Créer la base de données et l'utilisateur meeshy si nécessaire
-    echo -e "${BLUE}🔧 Configuration de la base de données meeshy...${NC}"
+    echo -e "${BLUE}⏳ Attente du service $service_name...${NC}"
     
-    # Corriger les permissions PostgreSQL
-    chown -R postgres:postgres /app/data/postgres
-    chmod 700 /app/data/postgres
+    while [ $attempt -le $max_attempts ]; do
+        if eval "$check_command" >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ $service_name est prêt${NC}"
+            return 0
+        fi
+        
+        echo -e "${YELLOW}   Tentative $attempt/$max_attempts...${NC}"
+        sleep 5
+        attempt=$((attempt + 1))
+    done
     
-    su - postgres -c "psql -c \"CREATE USER ${POSTGRES_USER:-'meeshy'} WITH PASSWORD ${POSTGRES_PASSWORD:-'MeeshyP@ssword'} CREATEDB;\" 2>/dev/null || true"
-    su - postgres -c "psql -c \"CREATE DATABASE ${POSTGRES_DB:-'meeshy'} OWNER ${POSTGRES_USER:-'meeshy'};\" 2>/dev/null || true"
-    su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_DB:-'meeshy'} TO ${POSTGRES_USER:-'meeshy'};\" 2>/dev/null || true"
-    
-    echo -e "${GREEN}✅ Base de données ${POSTGRES_DB:-'meeshy'} configurée${NC}"
-fi
+    echo -e "${RED}❌ Timeout en attendant $service_name${NC}"
+    return 1
+}
 
-if [ "$USE_EXTERNAL_REDIS" != "true" ]; then
-    echo -e "${BLUE}⏳ Attente du démarrage de Redis...${NC}"
-    sleep 3
-fi
-
-# Démarrer Supervisor
+# Démarrer Supervisor en arrière-plan
 echo -e "${BLUE}🔧 Démarrage de Supervisor...${NC}"
 /usr/bin/supervisord -c $TEMP_SUPERVISOR_DIR/supervisord.conf &
+SUPERVISOR_PID=$!
 
-# Attendre que tous les services soient démarrés
-echo -e "${BLUE}⏳ Attente du démarrage de tous les services (30 secondes)...${NC}"
-sleep 30
+# Attendre que Supervisor soit démarré
+sleep 10
 
-# Vérifier l'état des services
-echo -e "${BLUE}🔍 Vérification de l'état des services...${NC}"
-supervisorctl -c $TEMP_SUPERVISOR_DIR/supervisord.conf status
-
-# Exécuter les migrations Prisma après que PostgreSQL soit prêt
+# Configuration de la base de données après démarrage
 if [ "$USE_EXTERNAL_DB" != "true" ]; then
+    # Attendre que PostgreSQL soit vraiment prêt
+    wait_for_service "PostgreSQL" "pg_isready -h localhost -p 5432"
+    
+    echo -e "${BLUE}🔧 Configuration de la base de données meeshy...${NC}"
+    
+    # Créer l'utilisateur et la base de données avec les bonnes méthodes
+    PGPASSWORD="" psql -h localhost -U postgres -c "CREATE USER \"$POSTGRES_USER\" WITH PASSWORD '$POSTGRES_PASSWORD' CREATEDB SUPERUSER;" 2>/dev/null || true
+    PGPASSWORD="" psql -h localhost -U postgres -c "CREATE DATABASE \"$POSTGRES_DB\" OWNER \"$POSTGRES_USER\";" 2>/dev/null || true
+    PGPASSWORD="" psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE \"$POSTGRES_DB\" TO \"$POSTGRES_USER\";" 2>/dev/null || true
+    
+    # Tester la connexion avec le nouvel utilisateur
+    echo -e "${BLUE}🔍 Test de connexion avec l'utilisateur $POSTGRES_USER...${NC}"
+    if PGPASSWORD="$POSTGRES_PASSWORD" psql -h localhost -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT version();" >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ Connexion réussie avec $POSTGRES_USER${NC}"
+    else
+        echo -e "${RED}❌ Échec de connexion avec $POSTGRES_USER${NC}"
+        exit 1
+    fi
+    
+    # Attendre que tous les services soient stables
+    sleep 15
+    
+    # Exécuter les migrations Prisma
     echo -e "${BLUE}🔧 Exécution des migrations Prisma...${NC}"
-    sleep 3  # Attendre que PostgreSQL soit complètement prêt
     
-    # Attendre que PostgreSQL soit accessible via Supervisor
-    until supervisorctl -c $TEMP_SUPERVISOR_DIR/supervisord.conf status meeshy:postgres | grep -q "RUNNING"; do
-        echo -e "${YELLOW}⏳ Attente de PostgreSQL via Supervisor...${NC}"
-        sleep 5
-    done
+    # Migration shared
+    if [ -d "/app/shared" ] && [ -f "/app/shared/schema.prisma" ]; then
+        echo -e "${BLUE}   Migration du schéma shared...${NC}"
+        cd /app/shared
+        if npx prisma migrate deploy --schema=./schema.prisma; then
+            echo -e "${GREEN}✅ Migration shared réussie${NC}"
+        else
+            echo -e "${RED}❌ Échec de la migration shared${NC}"
+        fi
+    fi
     
-    # Attendre que PostgreSQL soit accessible
-    until su - postgres -c "psql -c '\l'" >/dev/null 2>&1; do
-        echo -e "${YELLOW}⏳ Attente de PostgreSQL...${NC}"
-        sleep 5
-    done
-    su - postgres -c "psql -c '\l'"
-    # Attendre encore un peu pour s'assurer que PostgreSQL est stable
-    sleep 10
+    # Migration gateway
+    if [ -d "/app/gateway" ] && [ -f "/app/gateway/shared/schema.prisma" ]; then
+        echo -e "${BLUE}   Migration du schéma gateway...${NC}"
+        cd /app/gateway
+        if npx prisma migrate deploy --schema=./shared/schema.prisma; then
+            echo -e "${GREEN}✅ Migration gateway réussie${NC}"
+        else
+            echo -e "${RED}❌ Échec de la migration gateway${NC}"
+        fi
+    fi
     
-    cd /app/shared && npx prisma migrate deploy --schema=./schema.prisma
-    cd /app/gateway && npx prisma migrate deploy --schema=./shared/schema.prisma
-    
-    echo -e "${GREEN}✅ Migrations Prisma exécutées${NC}"
+    echo -e "${GREEN}✅ Migrations Prisma terminées${NC}"
 fi
 
-# Attendre indéfiniment
+# Attendre que Redis soit prêt si nécessaire
+if [ "$USE_EXTERNAL_REDIS" != "true" ]; then
+    wait_for_service "Redis" "redis-cli ping"
+fi
+
+# Vérifier l'état final des services
+echo -e "${BLUE}🔍 État final des services...${NC}"
+supervisorctl -c $TEMP_SUPERVISOR_DIR/supervisord.conf status
+
 echo -e "${GREEN}✅ Tous les services sont démarrés${NC}"
 echo -e "${CYAN}🌐 Frontend accessible sur: http://localhost${NC}"
 echo -e "${CYAN}🔌 Gateway API accessible sur: http://localhost/api${NC}"
 echo -e "${CYAN}🤖 Translator API accessible sur: http://localhost/translate${NC}"
 
-# Garder le container en vie
-wait
+# Attendre le processus Supervisor
+wait $SUPERVISOR_PID
