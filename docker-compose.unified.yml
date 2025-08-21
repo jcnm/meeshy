@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.unified
-    image: isopen/meeshy:0.5.2-alpha
+    image: isopen/meeshy:0.5.4-alpha
     container_name: meeshy
     restart: unless-stopped
     ports:

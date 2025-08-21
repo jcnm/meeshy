@@ -70,7 +70,7 @@ services:
         - AUTO_CLEANUP_CORRUPTED_MODELS=${AUTO_CLEANUP_CORRUPTED_MODELS:-true}
         - FORCE_MODEL_REDOWNLOAD=${FORCE_MODEL_REDOWNLOAD:-false}
         - TRANSLATION_CACHE_TTL=${TRANSLATION_CACHE_TTL:-3600}
-    image: isopen/meeshy-translator:0.5.2-alpha
+    image: isopen/meeshy-translator:0.5.4-alpha
     container_name: translator
     restart: unless-stopped
     # OPTIMISATION: Resource limits optimisés pour ML
@@ -165,7 +165,7 @@ services:
         - ZMQ_TRANSLATOR_SUB_PORT=${ZMQ_TRANSLATOR_SUB_PORT:-5558}
         - ZMQ_TRANSLATOR_PUSH_PORT=${ZMQ_TRANSLATOR_PUSH_PORT:-5555}
         - ZMQ_TIMEOUT=${ZMQ_TIMEOUT:-30000}
-    image: isopen/meeshy-gateway:0.5.2-alpha
+    image: isopen/meeshy-gateway:0.5.4-alpha
     container_name: gateway
     restart: unless-stopped
     environment:
@@ -217,7 +217,7 @@ services:
         - NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=true
         - NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
         - DATABASE_URL=postgresql://${POSTGRES_USER:-meeshy}:${POSTGRES_PASSWORD:-MeeshyP@ssword}@postgres:5432/${POSTGRES_DB:-meeshy}
-    image: isopen/meeshy-frontend:0.5.2-alpha
+    image: isopen/meeshy-frontend:0.5.4-alpha
     container_name: frontend
     restart: unless-stopped
     environment:

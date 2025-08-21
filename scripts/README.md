@@ -8,7 +8,6 @@ Ce répertoire contient tous les scripts automatisés pour le développement, le
 scripts/
 ├── README.md                           # Cette documentation
 ├── build-and-test-applications.sh      # Script principal d'orchestration
-├── cleanup-old-scripts.sh              # Nettoyage des scripts obsolètes
 ├── deployment/
 │   └── build-and-push-docker-images.sh # Build et publication Docker
 ├── tests/
@@ -25,7 +24,7 @@ scripts/
 ## 🚀 Scripts principaux
 
 ### `build-and-test-applications.sh`
-Script principal qui orchestre tout le pipeline de développement.
+Script principal qui orchestre tout le pipeline de développement avec gestion automatique des versions.
 
 **Usage :**
 ```bash
@@ -55,7 +54,7 @@ Script principal qui orchestre tout le pipeline de développement.
 4. **Build et publication** : Construction et publication des images Docker
 
 ### `utils/version-manager.sh`
-Gestionnaire automatique des versions.
+Gestionnaire automatique des versions avec mise à jour de tous les fichiers de configuration.
 
 **Usage :**
 ```bash
@@ -86,22 +85,37 @@ Gestionnaire automatique des versions.
 ## 🧪 Tests
 
 ### Tests unitaires (`tests/run-unit-tests.sh`)
-Exécute les tests unitaires pour tous les services :
-- **Frontend** : Tests Jest pour Next.js
-- **Gateway** : Tests Jest pour Fastify
-- **Translator** : Tests pytest pour FastAPI
-- **Shared** : Validation du schéma Prisma
+Exécute les tests unitaires pour tous les services avec gestion des dépendances :
+
+- **Frontend** : Tests Jest pour Next.js 15 + React 19
+- **Gateway** : Tests Jest pour Fastify 5.1 + WebSocket
+- **Translator** : Tests pytest pour FastAPI + PyTorch
+- **Shared** : Validation du schéma Prisma 6.13
+
+**Fonctionnalités :**
+- Installation automatique des dépendances
+- Gestion des environnements virtuels Python
+- Rapports de couverture de code
+- Logs détaillés dans `test-results/`
 
 ### Tests d'intégration (`tests/run-integration-tests.sh`)
-Exécute les tests d'intégration entre services :
-- **Gateway-Translator** : Communication gRPC et ZMQ
-- **Frontend-Gateway** : Authentification et WebSocket
+Exécute les tests d'intégration entre services avec orchestration Docker :
+
+- **Gateway-Translator** : Communication gRPC et ZeroMQ
+- **Frontend-Gateway** : Authentification JWT et WebSocket
 - **Complet** : Flux de traduction end-to-end
+
+**Fonctionnalités :**
+- Démarrage automatique des services Docker
+- Attente intelligente des services
+- Tests de connectivité et de communication
+- Nettoyage automatique des conteneurs
 
 ## 🐳 Build et déploiement
 
 ### Build Docker (`deployment/build-and-push-docker-images.sh`)
-Construit et publie toutes les images Docker :
+Construit et publie toutes les images Docker avec support multi-plateforme :
+
 - `isopen/meeshy-translator:VERSION`
 - `isopen/meeshy-gateway:VERSION`
 - `isopen/meeshy-frontend:VERSION`
@@ -111,6 +125,7 @@ Construit et publie toutes les images Docker :
 - Support multi-plateforme (linux/amd64, linux/arm64)
 - Utilisation de Docker Buildx
 - Publication automatique vers le registry
+- Gestion automatique des versions
 
 ## 🔧 Utilisation quotidienne
 
@@ -130,15 +145,18 @@ Construit et publie toutes les images Docker :
 ```bash
 # Pipeline complet avec incrémentation mineure
 ./scripts/build-and-test-applications.sh --auto-increment minor
+
+# Pipeline avec version spécifique
+./scripts/build-and-test-applications.sh --version 1.0.0-alpha
 ```
 
 ### Debug et maintenance
 ```bash
-# Nettoyer les anciens scripts
-./scripts/cleanup-old-scripts.sh
-
 # Vérifier la version actuelle
 ./scripts/utils/version-manager.sh current
+
+# Réinitialiser la version
+./scripts/utils/version-manager.sh update 0.5.1-alpha
 ```
 
 ## 📋 Configuration
@@ -147,6 +165,7 @@ Construit et publie toutes les images Docker :
 Les scripts utilisent les variables d'environnement suivantes :
 - `REGISTRY` : Registry Docker (défaut: `isopen`)
 - `PLATFORMS` : Plateformes de build (défaut: `linux/amd64,linux/arm64`)
+- `VERSION` : Version actuelle (gérée automatiquement)
 
 ### Fichiers de configuration
 - `.version` : Version actuelle du projet
@@ -182,6 +201,15 @@ cat test-results/*.log
 git diff
 ```
 
+**Problèmes de build :**
+```bash
+# Vérifier que buildx est disponible
+docker buildx version
+
+# Créer un nouveau builder si nécessaire
+docker buildx create --name meeshy-builder --use
+```
+
 ## 📈 Améliorations futures
 
 - [ ] Tests de performance automatisés
@@ -190,6 +218,8 @@ git diff
 - [ ] Déploiement automatique en staging/production
 - [ ] Monitoring et alertes
 - [ ] Documentation automatique des APIs
+- [ ] Tests de charge avec Artillery ou k6
+- [ ] Intégration continue avec validation des modèles ML
 
 ## 🤝 Contribution
 
@@ -199,3 +229,10 @@ Pour ajouter de nouveaux scripts :
 3. Mettre à jour cette documentation
 4. Tester le script
 5. Commiter et pousser les changements
+
+### Standards de qualité
+- Utiliser les couleurs pour les messages (RED, GREEN, YELLOW, BLUE, NC)
+- Gérer les erreurs avec `set -e`
+- Documenter les paramètres et options
+- Tester sur différents environnements
+- Suivre les conventions de nommage

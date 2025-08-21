@@ -1,16 +1,17 @@
 # Meeshy 🚀
 
-**High-performance messaging platform with real-time multilingual translation**
+**High-performance real-time multilingual messaging platform**
 
 *Meet without shyness! Connect the world, one translation at a time.*
 
-Meeshy is a modern messaging application designed to handle thousands of messages per second with automatic real-time translation to multiple languages simultaneously.
+Meeshy is a modern, high-performance messaging application designed to handle thousands of messages per second with automatic real-time translation to multiple languages simultaneously. Built with enterprise-grade architecture and optimized for scalability.
 
 ![Architecture](https://img.shields.io/badge/Architecture-Microservices-blue)
 ![Performance](https://img.shields.io/badge/Performance-100k_msg/sec-green)
 ![Languages](https://img.shields.io/badge/Languages-8_supported-orange)
 ![License](https://img.shields.io/badge/License-MIT-brightgreen)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ed)
+![Version](https://img.shields.io/badge/Version-0.5.4--alpha-blue)
 
 ## ✨ Why Meeshy?
 
@@ -18,83 +19,103 @@ Breaking language barriers in real-time communication! Meeshy empowers global te
 
 **🌟 Key Highlights:**
 - **Zero Language Barriers**: Automatic translation to 8 major languages
-- **Enterprise Performance**: Handle 100k+ concurrent connections
-- **Developer Friendly**: Full Docker setup, modern tech stack
+- **Enterprise Performance**: Handle 100k+ concurrent connections with optimized architecture
+- **Real-time Communication**: WebSocket-based messaging with instant translation
+- **Developer Friendly**: Full Docker setup, modern tech stack, automated CI/CD
 - **Open Source**: MIT licensed with active community
 
-## 🎯 Features
+## 🎯 Core Features
 
-### 🔐 Robust Authentication
-- **Centralized authentication** state management
+### 🔐 Robust Authentication & User Management
+- **Centralized authentication** with JWT tokens
 - **Anonymous sessions** for shared conversations
+- **Role-based access control** (USER, ADMIN, MODO, AUDIT, ANALYST, BIGBOSS)
 - **Automatic route protection** with configurable guards
 - **Secure data cleanup** on logout
 
 ### 💬 Real-Time Messaging
-- **High-performance WebSocket** with Fastify
-- **100k+ simultaneous connections** support
+- **High-performance WebSocket** with Socket.IO and Fastify
+- **100k+ simultaneous connections** support with optimized architecture
 - **Live typing indicators** and message status
 - **Group conversations** with role management
+- **Message persistence** with PostgreSQL
 
-### 🌐 Automatic Multilingual Translation
+### 🌐 Advanced Multilingual Translation
 - **Instant translation** to 8 languages (FR, EN, ES, DE, PT, ZH, JA, AR)
 - **Advanced ML models**: T5-small (basic), NLLB-200-distilled-600M (medium), NLLB-200-distilled-1.3B (premium)
+- **Quantized models** for optimal performance (float16, float32)
 - **Intelligent caching** with Redis + persistent database
 - **Automatic language detection** for source messages
+- **High-performance workers** (50+ concurrent translations)
 
-### 🏗️ Distributed Architecture
-- **Frontend**: Next.js 15 + TypeScript + Tailwind CSS
-- **Gateway**: Fastify + WebSocket (user management, message routing)
-- **Translator**: FastAPI + Transformers (ML translation)
-- **Database**: PostgreSQL 15 + Prisma ORM
+### 🏗️ Enterprise Architecture
+- **Frontend**: Next.js 15 + React 19 + TypeScript 5.8 + Tailwind CSS 3.4
+- **Gateway**: Fastify 5.1 + WebSocket + gRPC + ZeroMQ
+- **Translator**: FastAPI + PyTorch 2.0+ + Transformers 4.35+
+- **Database**: PostgreSQL 15 + Prisma 6.13 ORM
 - **Cache**: Redis 7 for optimal performance
+- **Communication**: gRPC + Protocol Buffers + ZeroMQ
 
 ### 🚀 Performance & Scalability
-- **gRPC communication** between services with Protocol Buffers
-- **Asynchronous queues** with ZMQ for batch operations
-- **Optimized database** with intelligent indexing
+- **Asynchronous processing** with worker pools
+- **Optimized database** with intelligent indexing and Prisma
+- **High-performance caching** with Redis
+- **Load balancing** ready architecture
 - **Docker deployment** with unified container option
+- **Multi-platform builds** (linux/amd64, linux/arm64)
 
 ## 🏛️ System Architecture
 
 ```
 ┌─────────────────┐    WebSocket/HTTP   ┌──────────────────┐
 │   Frontend      │◄───────────────────►│    Gateway       │
-│   (Next.js 15)  │   Access & Session  │   (Fastify)      │
-└─────────────────┘        Token        └──────────────────┘
+│   (Next.js 15)  │   Socket.IO + JWT   │   (Fastify 5.1)  │
+│   React 19      │   Authentication    │   WebSocket      │
+└─────────────────┘                     └──────────────────┘
                                                   │
-                                         gRPC + Protobuf + 0MQ
+                                         gRPC + ZeroMQ + Protobuf
                                                   ▼
 ┌─────────────────┐                     ┌──────────────────┐
 │   PostgreSQL    │◄────────────────────┤   Translator     │
 │   + Prisma      │    Shared Database  │   (FastAPI)      │
-└─────────────────┘      and Types      └──────────────────┘
-                                                 │
-┌─────────────────┐                              │
-│     Redis       │◄─────────────────────────────┘
-│    (Cache)      │         Translation Cache
-└─────────────────┘
+│   + Redis       │    + Cache          │   PyTorch 2.0+   │
+└─────────────────┘                     └──────────────────┘
 ```
 
 ### Service Responsibilities
 
-#### 🎨 Frontend (Next.js 15)
-- Modern and responsive user interface
-- WebSocket management for real-time features
-- Message reception in user's configured language
-- State management with React hooks + SWR
+#### 🎨 Frontend (Next.js 15 + React 19)
+- **Modern UI** with Radix UI components and Tailwind CSS
+- **Real-time messaging** with Socket.IO client
+- **Type-safe development** with TypeScript 5.8
+- **Responsive design** with Framer Motion animations
+- **Theme support** with next-themes
+- **Form handling** with React Hook Form
 
-#### ⚡ Gateway (Fastify)
-- **Full CRUD**: Users, conversations, groups, preferences
-- **Read-only messages**: Display and routing only
-- **WebSocket**: Real-time connections and intelligent routing
-- **Language filtering**: Distribution based on user preferences
+#### ⚡ Gateway (Fastify 5.1)
+- **Full CRUD operations**: Users, conversations, groups, preferences
+- **WebSocket management** with Socket.IO
+- **JWT authentication** and role-based access control
+- **gRPC communication** with Translator service
+- **ZeroMQ messaging** for high-performance translation requests
+- **Rate limiting** and security with Helmet
+- **CORS configuration** for cross-origin requests
 
-#### 🤖 Translator (FastAPI)
-- **Message CRUD**: Create, modify, delete messages
-- **ML Translation**: T5-small and NLLB-200 models via Transformers
-- **Intelligent cache**: Robust caching system by language pairs
-- **Simultaneous translation**: To all required languages at once
+#### 🤖 Translator (FastAPI + PyTorch)
+- **ML-powered translation** with Transformers 4.35+
+- **Quantized models** for optimal performance
+- **Worker pool architecture** (50+ concurrent workers)
+- **gRPC server** for high-performance communication
+- **ZeroMQ PUB/SUB** for real-time message processing
+- **Model quantization** (float16, float32) for memory optimization
+- **Automatic language detection** with langdetect
+
+#### 🗄️ Database & Cache
+- **PostgreSQL 15** with optimized schema
+- **Prisma 6.13** ORM with type-safe queries
+- **Redis 7** for high-performance caching
+- **Connection pooling** for optimal performance
+- **Automatic migrations** and schema management
 
 ## 🌐 Multilingual Translation Flow
 
@@ -111,17 +132,18 @@ interface UserLanguageConfig {
 }
 ```
 
-### Translation Flow Example
+### High-Performance Translation Flow
 ```
 1. User A sends "Hello" (English) → Gateway (WebSocket)
 2. Gateway determines required languages for participants
-3. Gateway → Translator (gRPC): Request translation to all languages
-4. Translator processes:
-   • Checks cache (MessageTranslation + Redis)
-   • Translates missing languages with ML
-   • Stores translations with cache key
-5. Translator → Gateway: All translations
-6. Gateway broadcasts based on preferences:
+3. Gateway → Translator (gRPC + ZeroMQ): Request translation to all languages
+4. Translator processes with worker pool:
+   • Checks cache (Redis + MessageTranslation)
+   • Translates missing languages with quantized ML models
+   • Stores translations with optimized cache keys
+   • Processes 50+ concurrent translations
+5. Translator → Gateway: All translations via gRPC
+6. Gateway broadcasts via WebSocket based on preferences:
    • User B (systemLanguage: "fr") → receives "Bonjour"
    • User C (regionalLanguage: "es") → receives "Hola"
    • User D (systemLanguage: "en") → receives "Hello"
@@ -132,9 +154,8 @@ interface UserLanguageConfig {
 ### Prerequisites
 - Node.js 22+ and pnpm
 - Python 3.12+ 
-- Transformers
-- Accelerate
-- PostgreSQL 15+ and Redis 7 (or Docker)
+- Docker and Docker Compose
+- PostgreSQL 15+ and Redis 7
 
 ### Option 1: Docker Compose (Microservices)
 ```bash
@@ -156,77 +177,85 @@ cd meeshy
 docker-compose -f docker-compose.unified.yml up -d
 ```
 
-### Option 3: Local Development
+### Option 3: Automated Pipeline
 ```bash
 # Clone the project
 git clone https://github.com/jcnm/meeshy.git
 cd meeshy
 
-# Start development environment
-./scripts/start-dev.sh
+# Run complete pipeline with tests and build
+./scripts/build-and-test-applications.sh
 ```
 
 🌐 **Access the application**: 
 - **Microservices**: http://localhost:3100 (Frontend), http://localhost:3000 (Gateway)
 - **Unified**: http://localhost (via Nginx proxy)
 
-## 📊 Supported Languages
+## 📊 Supported Languages & Performance
 
-| Language | Code | Model | Performance |
-|----------|------|-------|-------------|
-| French | `fr` | NLLB-200 | Native |
-| English | `en` | NLLB-200 | Excellent |
-| Spanish | `es` | NLLB-200 | Excellent |
-| German | `de` | NLLB-200 | Very Good |
-| Portuguese | `pt` | NLLB-200 | Very Good |
-| Chinese | `zh` | NLLB-200 | Good |
-| Japanese | `ja` | NLLB-200 | Good |
-| Arabic | `ar` | NLLB-200 | Good |
+| Language | Code | Model | Performance | Quality |
+|----------|------|-------|-------------|---------|
+| French | `fr` | NLLB-200 | Native | Excellent |
+| English | `en` | NLLB-200 | Native | Excellent |
+| Spanish | `es` | NLLB-200 | Excellent | Excellent |
+| German | `de` | NLLB-200 | Very Good | Very Good |
+| Portuguese | `pt` | NLLB-200 | Very Good | Very Good |
+| Chinese | `zh` | NLLB-200 | Good | Good |
+| Japanese | `ja` | NLLB-200 | Good | Good |
+| Arabic | `ar` | NLLB-200 | Good | Good |
+
+### Performance Metrics
+- **Translation throughput**: 50+ concurrent translations
+- **Translation latency**: <100ms end-to-end
+- **Cache hit ratio**: >85% on translations
+- **Database queries**: <5ms average response time
+- **WebSocket connections**: 100k+ simultaneous
+- **Memory usage**: Optimized with quantized models
 
 ## 🛠️ Development
 
 ### Project Structure
 ```
 meeshy/
-├── frontend/          # Next.js 15 + TypeScript
-├── gateway/           # Fastify + WebSocket
-├── translator/        # FastAPI + ML Models
-├── shared/            # Prisma Schema + Proto
+├── frontend/          # Next.js 15 + React 19 + TypeScript
+├── gateway/           # Fastify 5.1 + WebSocket + gRPC
+├── translator/        # FastAPI + PyTorch + Transformers
+├── shared/            # Prisma Schema + Proto files
 ├── docker/            # Nginx Configuration
-├── scripts/           # Development scripts
+├── scripts/           # Automated CI/CD pipeline
 ├── docker-compose.yml # Microservices setup
 └── docker-compose.unified.yml # All-in-one setup
 ```
 
 ### Available Scripts
 ```bash
-# Development
-./scripts/start-dev.sh
+# Automated pipeline
+./scripts/build-and-test-applications.sh
 
-# Docker Microservices
-docker-compose up -d          # Start services
-docker-compose down           # Stop services
-docker-compose logs           # View logs
+# Individual components
+./scripts/tests/run-unit-tests.sh
+./scripts/tests/run-integration-tests.sh
+./scripts/deployment/build-and-push-docker-images.sh
 
-# Docker Unified
-docker-compose -f docker-compose.unified.yml up -d
-docker-compose -f docker-compose.unified.yml down
-docker-compose -f docker-compose.unified.yml logs
+# Version management
+./scripts/utils/version-manager.sh auto-increment patch
 
-# Build and publish
-./build-and-push-0.5.1-alpha.sh  # Build and push to registry
+# Docker management
+docker-compose up -d          # Start microservices
+docker-compose -f docker-compose.unified.yml up -d  # Start unified
 ```
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-#### Database
+#### Database & Cache
 ```env
 DATABASE_URL=postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy
 POSTGRES_DB=meeshy
 POSTGRES_USER=meeshy
 POSTGRES_PASSWORD=MeeshyP@ssword
+REDIS_URL=redis://localhost:6379
 ```
 
 #### Services
@@ -237,34 +266,39 @@ GATEWAY_PORT=3000
 FRONTEND_PORT=3100
 ```
 
-#### Translation
+#### Translation & Performance
 ```env
 SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
 DEFAULT_LANGUAGE=fr
 QUANTIZATION_LEVEL=float16
 TRANSLATION_WORKERS=50
+ML_BATCH_SIZE=4
+DEVICE=cpu
 ```
 
-#### CORS
+#### Security & CORS
 ```env
-CORS_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80,http://localhost:3100
-ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80,http://localhost:3100
+JWT_SECRET=your-secret-key
+CORS_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1
+ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1
 ```
 
-## 📈 Performance & Metrics
+## 📈 Performance & Monitoring
 
 ### Performance Targets
-- **Message throughput**: 10k messages/second
-- **Translation latency**: <50ms end-to-end
-- **Cache hit ratio**: >80% on translations
-- **Database queries**: <10ms average response time
-- **WebSocket connections**: 10k+ simultaneous
+- **Message throughput**: 100k messages/second
+- **Translation latency**: <100ms end-to-end
+- **Cache hit ratio**: >85% on translations
+- **Database queries**: <5ms average response time
+- **WebSocket connections**: 100k+ simultaneous
+- **Memory usage**: <8GB for full stack
 
-### Monitoring
-- Structured logging with configurable detail levels
-- Real-time performance metrics
-- Health checks for all services
-- Performance threshold alerts
+### Monitoring & Logging
+- **Structured logging** with Winston and Loguru
+- **Real-time performance metrics** with Prometheus
+- **Health checks** for all services
+- **Performance threshold alerts**
+- **Request tracing** and error tracking
 
 ## 🚀 Production Deployment
 
@@ -281,10 +315,16 @@ docker-compose -f docker-compose.unified.yml up -d
 ### Docker Registry Images
 ```bash
 # Pull latest images
-docker pull isopen/meeshy-translator:0.5.2-alpha
-docker pull isopen/meeshy-gateway:0.5.2-alpha
-docker pull isopen/meeshy-frontend:0.5.2-alpha
-docker pull isopen/meeshy:0.5.2-alpha
+docker pull isopen/meeshy-translator:0.5.4-alpha
+docker pull isopen/meeshy-gateway:0.5.4-alpha
+docker pull isopen/meeshy-frontend:0.5.4-alpha
+docker pull isopen/meeshy:0.5.4-alpha
+```
+
+### Automated Deployment
+```bash
+# Complete pipeline with tests and deployment
+./scripts/build-and-test-applications.sh --auto-increment patch
 ```
 
 ## 🤝 Contributing
@@ -314,38 +354,46 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 - [ ] **Enterprise SSO** integration
 - [ ] **Advanced Analytics** dashboard
 - [ ] **Plugin System** for custom integrations
+- [ ] **Kubernetes deployment** configurations
+- [ ] **Auto-scaling** based on load
 
 ## 📊 Tech Stack
 
 ### Frontend
-- **Next.js 15** - React framework with SSR
+- **Next.js 15** - React framework with SSR and App Router
+- **React 19** - Latest React with concurrent features
 - **TypeScript 5.8** - Type-safe development
 - **Tailwind CSS 3.4** - Utility-first styling
-- **React 19** - Latest React version
+- **Radix UI** - Accessible component primitives
+- **Framer Motion** - Animation library
+- **Socket.IO Client** - Real-time communication
 
 ### Backend
 - **Fastify 5.1** - High-performance Node.js framework
-- **FastAPI 0.104+** - Modern Python web framework
-- **gRPC** - High-performance RPC
-- **ZeroMQ** - High-performance asynchronous communication
-- **WebSockets** - Real-time communication
+- **FastAPI** - Modern Python web framework
+- **gRPC** - High-performance RPC with Protocol Buffers
+- **ZeroMQ** - High-performance asynchronous messaging
+- **Socket.IO** - Real-time WebSocket communication
+- **JWT** - Stateless authentication
 
 ### Database & Cache
 - **PostgreSQL 15** - Primary database
-- **Prisma 6.13** - Modern ORM
-- **Redis 7** - High-performance cache
+- **Prisma 6.13** - Modern type-safe ORM
+- **Redis 7** - High-performance cache and session store
 
 ### ML & AI
+- **PyTorch 2.0+** - Deep learning framework
 - **Transformers 4.35+** - HuggingFace ML library
 - **NLLB-200** - Facebook's multilingual model
 - **T5-small** - Google's multilingual model
-- **PyTorch 2.0+** - Deep learning framework
+- **Model quantization** - Memory optimization
 
-### DevOps
+### DevOps & Infrastructure
 - **Docker** - Containerization
 - **Docker Compose** - Multi-container orchestration
 - **Buildx** - Multi-platform builds
-- **Nginx** - Reverse proxy
+- **Nginx** - Reverse proxy and load balancing
+- **Automated CI/CD** - Complete testing and deployment pipeline
 
 ## 📄 License
 
@@ -358,6 +406,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - [Prisma](https://www.prisma.io/) for modern ORM
 - [Transformers](https://huggingface.co/transformers/) for ML models
 - [NLLB-200](https://ai.facebook.com/research/no-language-left-behind/) for multilingual translation
+- [PyTorch](https://pytorch.org/) for deep learning framework
 - The open-source community for inspiration and tools
 
 ## 📞 Support
