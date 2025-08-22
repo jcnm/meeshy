@@ -94,9 +94,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                 }
               }
             },
-            // Conversation globale "any" accessible à tous les utilisateurs connectés
+            // Conversation globale "meeshy" accessible à tous les utilisateurs connectés
             {
-              id: 'any',
+              id: "meeshy",
               type: 'global'
             }
           ],
@@ -189,7 +189,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Vérifier les permissions d'accès
       let canAccess = false;
       
-      if (id === 'any') {
+      if (id === "meeshy") {
         // Conversation globale accessible à tous les utilisateurs connectés
         canAccess = true;
       } else {
@@ -353,7 +353,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Vérifier les permissions d'accès
       let canAccess = false;
       
-      if (id === 'any') {
+      if (id === "meeshy") {
         canAccess = true;
       } else {
         const membership = await prisma.conversationMember.findFirst({
@@ -568,7 +568,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Vérifier les permissions d'accès et d'écriture
       let canSend = false;
       
-      if (id === 'any') {
+      if (id === "meeshy") {
         canSend = true; // Tous les utilisateurs connectés peuvent écrire dans la conversation globale
       } else {
         const membership = await prisma.conversationMember.findFirst({
@@ -697,7 +697,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Accès à la conversation
       let canAccess = false;
-      if (id === 'any') {
+      if (id === "meeshy") {
         canAccess = true;
       } else {
         const membership = await prisma.conversationMember.findFirst({
@@ -972,7 +972,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
-      if (!membership && id !== 'any') {
+      if (!membership && id !== "meeshy") {
         return reply.status(403).send({
           success: false,
           error: 'Vous n\'êtes pas autorisé à modifier cette conversation'
@@ -980,7 +980,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Interdire la modification de la conversation globale
-      if (id === 'any') {
+      if (id === "meeshy") {
         return reply.status(403).send({
           success: false,
           error: 'La conversation globale ne peut pas être modifiée'
@@ -1032,7 +1032,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.id;
 
       // Interdire la suppression de la conversation globale
-      if (id === 'any') {
+      if (id === "meeshy") {
         return reply.status(403).send({
           success: false,
           error: 'La conversation globale ne peut pas être supprimée'
@@ -1121,7 +1121,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Vérifier que l'utilisateur est membre de la conversation
-      if (message.conversationId !== 'any' && message.conversation.members.length === 0) {
+      if (message.conversationId !== "meeshy" && message.conversation.members.length === 0) {
         return reply.status(403).send({
           success: false,
           error: 'Accès non autorisé à cette conversation'
@@ -1184,7 +1184,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier que l'utilisateur a accès à cette conversation
-      if (id !== 'any') {
+      if (id !== "meeshy") {
         const membership = await prisma.conversationMember.findFirst({
           where: {
             conversationId: id,

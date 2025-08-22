@@ -234,10 +234,10 @@ export class MeeshySocketIOManager {
             // Rejoindre les conversations de l'utilisateur
             await this._joinUserConversations(socket, user.id, false);
 
-            // Rejoindre la room globale si elle existe (conversation 'any')
+            // Rejoindre la room globale si elle existe (conversation "meeshy")
             try {
               socket.join(`conversation_any`);
-              console.log(`👥 Utilisateur authentifié ${user.id} rejoint conversation globale 'any'`);
+              console.log(`👥 Utilisateur authentifié ${user.id} rejoint conversation globale "meeshy"`);
             } catch {}
 
             console.log(`✅ Utilisateur authentifié automatiquement: ${user.id}`);
@@ -404,10 +404,10 @@ export class MeeshySocketIOManager {
         // Rejoindre les conversations de l'utilisateur
         await this._joinUserConversations(socket, user.id, user.isAnonymous);
 
-        // Rejoindre la room globale 'any'
+        // Rejoindre la room globale "meeshy"
         try {
           socket.join(`conversation_any`);
-          console.log(`👥 Utilisateur ${user.id} rejoint conversation globale 'any'`);
+          console.log(`👥 Utilisateur ${user.id} rejoint conversation globale "meeshy"`);
         } catch {}
         
         socket.emit(SERVER_EVENTS.AUTHENTICATED, { success: true, user: { id: user.id, language: user.language } });

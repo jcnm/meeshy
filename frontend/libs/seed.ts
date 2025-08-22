@@ -1,6 +1,6 @@
 /**
  * Script de seed simplifié pour Meeshy
- * Crée 7 utilisateurs multilingues et messages pour conversation 'any'
+ * Crée 7 utilisateurs multilingues et messages pour conversation "meeshy"
  */
 
 import { PrismaClient } from './prisma/client';
@@ -280,14 +280,14 @@ async function main() {
 
   // ================== CRÉER LA CONVERSATION 'ANY' (STREAM GLOBAL) ==================
   
-  console.log('💭 Création de la conversation "any"...');
+  console.log('💭 Création de la conversation "meeshy"...');
   
   // Créer la conversation globale "Meeshy" accessible à tous
   const anyConversation = await prisma.conversation.upsert({
-    where: { id: 'any' },
+    where: { id: "meeshy" },
     update: {},
     create: {
-      id: 'any',
+      id: "meeshy",
       type: 'GLOBAL',
       title: 'Meeshy',
       description: 'Conversation globale pour tous les utilisateurs de Meeshy'
@@ -295,7 +295,7 @@ async function main() {
   });
 
 
-  // Ajouter tous les utilisateurs à la conversation 'any'
+  // Ajouter tous les utilisateurs à la conversation "meeshy"
   for (const user of users) {
     await prisma.conversationMember.create({
       data: {
@@ -307,7 +307,7 @@ async function main() {
     });
   }
 
-  console.log('✅ Conversation "any" créée avec tous les utilisateurs');
+  console.log('✅ Conversation "meeshy" créée avec tous les utilisateurs');
 
   // ================== CRÉER 31 MESSAGES AVEC TRADUCTIONS ==================
   

@@ -15,7 +15,7 @@ export interface BubbleStreamMessage extends Message {
 
 export interface BubbleStreamPageProps {
   user: User;
-  conversationId?: string; // Optionnel, par défaut 'any' pour la conversation globale
+  conversationId?: string; // Optionnel, par défaut "meeshy" pour la conversation globale
   isAnonymousMode?: boolean; // Mode anonyme pour les liens partagés
   linkId?: string; // ID du lien partagé en mode anonyme
   initialParticipants?: User[]; // Participants initiaux pour les sessions anonymes

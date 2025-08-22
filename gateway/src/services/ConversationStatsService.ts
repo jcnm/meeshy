@@ -127,7 +127,7 @@ export class ConversationStatsService {
     // Participants and participants per language
     let participantCount = 0;
     const participantsPerLanguage: Record<string, number> = {};
-    if (conversationId === 'any') {
+    if (conversationId === "meeshy") {
       const users = await prisma.user.findMany({
         where: { isActive: true },
         select: { id: true, systemLanguage: true }
@@ -168,7 +168,7 @@ export class ConversationStatsService {
     if (connectedUserIds.length === 0) return [];
 
     let allowedIds: string[] = connectedUserIds;
-    if (conversationId !== 'any') {
+    if (conversationId !== "meeshy") {
       const members = await prisma.conversationMember.findMany({
         where: { conversationId, isActive: true, userId: { in: connectedUserIds } },
         select: { userId: true }

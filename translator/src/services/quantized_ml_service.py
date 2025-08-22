@@ -188,7 +188,7 @@ class QuantizedMLService:
             process = psutil.Process()
             self.stats['memory_usage_mb'] = process.memory_info().rss / 1024 / 1024
     
-    async def translate(self, text: str, source_lang: str, target_lang: str, model_type: str = None, source_channel: str = "quantized") -> Dict[str, Any]:
+    async def translate(self, text: str, source_language: str, target_language: str, model_type: str = None, source_channel: str = "quantized") -> Dict[str, Any]:
         """
         Traduit un texte (interface compatible avec UnifiedMLService)
         """
@@ -203,7 +203,7 @@ class QuantizedMLService:
                 raise Exception(f"Modèle {model_type} non chargé")
             
             # Effectuer la traduction
-            translated_text = await self._ml_translate(text, source_lang, target_lang, model_type)
+            translated_text = await self._ml_translate(text, source_language, target_language, model_type)
             
             processing_time = time.time() - start_time
             
@@ -217,7 +217,7 @@ class QuantizedMLService:
             # Retourner le résultat au format UnifiedMLService
             return {
                 'translated_text': translated_text,
-                'detected_language': source_lang,
+                'detected_language': source_language,
                 'confidence': 0.95,
                 'model_used': f"{model_type}_{self.quantization_level}",
                 'from_cache': False,
@@ -231,7 +231,7 @@ class QuantizedMLService:
             
             return {
                 'translated_text': f"[QUANTIZED-ERROR] {text}",
-                'detected_language': source_lang,
+                'detected_language': source_language,
                 'confidence': 0.0,
                 'model_used': f"{model_type}_{self.quantization_level}_error",
                 'from_cache': False,
@@ -240,7 +240,7 @@ class QuantizedMLService:
                 'error': str(e)
             }
     
-    async def _ml_translate(self, text: str, source_lang: str, target_lang: str, model_type: str) -> str:
+    async def _ml_translate(self, text: str, source_language: str, target_language: str, model_type: str) -> str:
         """Traduction avec le modèle quantifié (comme UnifiedMLService)"""
         def translate_sync():
             try:
@@ -282,8 +282,8 @@ class QuantizedMLService:
                         )
                     
                     # Format T5
-                    source_name = self.language_names.get(source_lang, source_lang.capitalize())
-                    target_name = self.language_names.get(target_lang, target_lang.capitalize())
+                    source_name = self.language_names.get(source_language, source_language.capitalize())
+                    target_name = self.language_names.get(target_language, target_language.capitalize())
                     instruction = f"translate {source_name} to {target_name}: {text}"
                     
                     result = pipe(instruction, max_new_tokens=64)
@@ -315,8 +315,8 @@ class QuantizedMLService:
                         )
                     
                     # Codes de langue NLLB
-                    nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
-                    nllb_target = self.lang_codes.get(target_lang, 'fra_Latn')
+                    nllb_source = self.lang_codes.get(source_language, 'eng_Latn')
+                    nllb_target = self.lang_codes.get(target_language, 'fra_Latn')
                     
                     result = pipe(text, src_lang=nllb_source, tgt_lang=nllb_target)
                     

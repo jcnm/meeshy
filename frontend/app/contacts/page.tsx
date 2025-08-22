@@ -76,7 +76,7 @@ export default function ContactsPage() {
       // Utiliser les filtres passés en paramètre ou les filtres de l'état
       const currentFilters = appliedFilters || filters;
       
-      // Récupérer les participants de la conversation globale "any" qui contient tous les utilisateurs
+      // Récupérer les participants de la conversation globale "meeshy" qui contient tous les utilisateurs
       const contactsData = await conversationsService.getParticipants('any', currentFilters);
       setContacts(Array.isArray(contactsData) ? contactsData : []);
     } catch (error) {

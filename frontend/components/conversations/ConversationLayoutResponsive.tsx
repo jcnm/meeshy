@@ -549,7 +549,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Démarrer le chargement des conversations immédiatement
       const conversationsData = await conversationsService.getConversations();
 
-      // Ajouter la conversation globale "any" si elle n'est pas déjà présente
+      // Ajouter la conversation globale "meeshy" si elle n'est pas déjà présente
       let conversationsWithAny = [...conversationsData];
       const hasAnyConversation = conversationsData.some(c => c.id === 'any');
       

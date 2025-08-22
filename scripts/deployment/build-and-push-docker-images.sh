@@ -19,6 +19,73 @@ VERSION_MANAGER="$SCRIPT_DIR/../utils/version-manager.sh"
 REGISTRY="isopen"
 PLATFORMS="linux/amd64,linux/arm64"
 
+# Variables par défaut
+SKIP_TRANSLATOR=false
+SKIP_GATEWAY=false
+SKIP_FRONTEND=false
+SKIP_UNIFIED=false
+BUILD_UNIFIED_ONLY=false
+
+# Fonction pour afficher l'aide
+show_help() {
+    echo -e "${BLUE}Build and Push Docker Images for Meeshy${NC}"
+    echo ""
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --skip-translator        Skip translator build"
+    echo "  --skip-gateway           Skip gateway build"
+    echo "  --skip-frontend          Skip frontend build"
+    echo "  --skip-unified           Skip unified image build"
+    echo "  --unified-only           Build only the unified image"
+    echo "  --help                   Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  $0                        # Build all images"
+    echo "  $0 --skip-frontend        # Skip frontend build"
+    echo "  $0 --unified-only         # Build only unified image"
+    echo "  $0 --skip-translator --skip-gateway --skip-frontend  # Unified only"
+    echo ""
+}
+
+# Parser les arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --skip-translator)
+            SKIP_TRANSLATOR=true
+            shift
+            ;;
+        --skip-gateway)
+            SKIP_GATEWAY=true
+            shift
+            ;;
+        --skip-frontend)
+            SKIP_FRONTEND=true
+            shift
+            ;;
+        --skip-unified)
+            SKIP_UNIFIED=true
+            shift
+            ;;
+        --unified-only)
+            BUILD_UNIFIED_ONLY=true
+            SKIP_TRANSLATOR=true
+            SKIP_GATEWAY=true
+            SKIP_FRONTEND=true
+            shift
+            ;;
+        --help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}❌ Option inconnue: $1${NC}"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
 # Obtenir la version actuelle
 if [ -f "$VERSION_MANAGER" ]; then
     VERSION=$(bash "$VERSION_MANAGER" current)
@@ -51,6 +118,7 @@ build_and_push() {
     local dockerfile=$2
     local context=$3
     local image_name="${REGISTRY}/meeshy-${service}:${VERSION}"
+     local image_name_latest="${REGISTRY}/meeshy-${service}:latest"
     
     echo -e "${BLUE}🔨 Construction de ${image_name}${NC}"
     echo -e "${YELLOW}   Dockerfile: ${dockerfile}${NC}"
@@ -59,11 +127,12 @@ build_and_push() {
     # Construire et publier avec buildx
     docker buildx build \
         --platform $PLATFORMS \
-        --file $dockerfile \
+        --file $dockerfile  --progress=plain  \
         --tag $image_name \
+        --tag $image_name_latest \
         --push \
         $context
-    
+
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ ${image_name} publié avec succès${NC}"
     else
@@ -77,7 +146,7 @@ build_and_push() {
 # Fonction pour construire et publier l'image unifiée
 build_and_push_unified() {
     local image_name="${REGISTRY}/meeshy:${VERSION}"
-    
+    local image_name_latest="${REGISTRY}/meeshy:latest"
     echo -e "${BLUE}🔨 Construction de ${image_name}${NC}"
     echo -e "${YELLOW}   Dockerfile: Dockerfile.unified${NC}"
     echo -e "${YELLOW}   Context: .${NC}"
@@ -87,6 +156,7 @@ build_and_push_unified() {
         --platform $PLATFORMS \
         --file Dockerfile.unified \
         --tag $image_name \
+        --tag $image_name_latest \
         --push \
         .
     
@@ -104,46 +174,84 @@ build_and_push_unified() {
 cd "$PROJECT_ROOT"
 
 # Construire et publier chaque service
-echo -e "${BLUE}📦 Construction des services individuels...${NC}"
+if [ "$BUILD_UNIFIED_ONLY" = true ]; then
+    echo -e "${BLUE}📦 Construction de l'image unifiée uniquement...${NC}"
+else
+    echo -e "${BLUE}📦 Construction des services individuels...${NC}"
+fi
 
 # 1. Translator
-if [ -f "translator/Dockerfile" ]; then
-    build_and_push "translator" "translator/Dockerfile" "translator"
+if [ "$SKIP_TRANSLATOR" = false ]; then
+    if [ -f "translator/Dockerfile" ]; then
+        build_and_push "translator" "translator/Dockerfile" "translator"
+    else
+        echo -e "${YELLOW}⚠️  Dockerfile translator non trouvé${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠️  Dockerfile translator non trouvé${NC}"
+    echo -e "${YELLOW}⏭️  Construction du translator ignorée (--skip-translator)${NC}"
 fi
 
 # 2. Gateway
-if [ -f "gateway/Dockerfile" ]; then
-    build_and_push "gateway" "gateway/Dockerfile" "gateway"
+if [ "$SKIP_GATEWAY" = false ]; then
+    if [ -f "gateway/Dockerfile" ]; then
+        build_and_push "gateway" "gateway/Dockerfile" "gateway"
+    else
+        echo -e "${YELLOW}⚠️  Dockerfile gateway non trouvé${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠️  Dockerfile gateway non trouvé${NC}"
+    echo -e "${YELLOW}⏭️  Construction du gateway ignorée (--skip-gateway)${NC}"
 fi
 
 # 3. Frontend
-if [ -f "frontend/Dockerfile" ]; then
-    build_and_push "frontend" "frontend/Dockerfile" "frontend"
+if [ "$SKIP_FRONTEND" = false ]; then
+    if [ -f "frontend/Dockerfile" ]; then
+        build_and_push "frontend" "frontend/Dockerfile" "frontend"
+    else
+        echo -e "${YELLOW}⚠️  Dockerfile frontend non trouvé${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠️  Dockerfile frontend non trouvé${NC}"
+    echo -e "${YELLOW}⏭️  Construction du frontend ignorée (--skip-frontend)${NC}"
 fi
 
 # 4. Image unifiée
-echo -e "${BLUE}📦 Construction de l'image unifiée...${NC}"
-if [ -f "Dockerfile.unified" ]; then
-    build_and_push_unified
+if [ "$SKIP_UNIFIED" = false ]; then
+    echo -e "${BLUE}📦 Construction de l'image unifiée...${NC}"
+    if [ -f "Dockerfile.unified" ]; then
+        build_and_push_unified
+    else
+        echo -e "${YELLOW}⚠️  Dockerfile.unified non trouvé${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠️  Dockerfile.unified non trouvé${NC}"
+    echo -e "${YELLOW}⏭️  Construction de l'image unifiée ignorée (--skip-unified)${NC}"
 fi
 
 # Afficher le résumé
-echo -e "${GREEN}🎉 Toutes les images ont été publiées avec succès !${NC}"
+echo -e "${GREEN}🎉 Build et publication terminés avec succès !${NC}"
 echo -e "${BLUE}================================================${NC}"
 echo -e "${GREEN}📋 Images publiées :${NC}"
-echo -e "  • ${REGISTRY}/meeshy-translator:${VERSION}"
-echo -e "  • ${REGISTRY}/meeshy-gateway:${VERSION}"
-echo -e "  • ${REGISTRY}/meeshy-frontend:${VERSION}"
-echo -e "  • ${REGISTRY}/meeshy:${VERSION}"
+
+if [ "$SKIP_TRANSLATOR" = false ]; then
+    echo -e "  • ${REGISTRY}/meeshy-translator:${VERSION}"
+fi
+
+if [ "$SKIP_GATEWAY" = false ]; then
+    echo -e "  • ${REGISTRY}/meeshy-gateway:${VERSION}"
+fi
+
+if [ "$SKIP_FRONTEND" = false ]; then
+    echo -e "  • ${REGISTRY}/meeshy-frontend:${VERSION}"
+fi
+
+if [ "$SKIP_UNIFIED" = false ]; then
+    echo -e "  • ${REGISTRY}/meeshy:${VERSION}"
+fi
+
 echo -e "${BLUE}================================================${NC}"
 echo -e "${YELLOW}🔍 Plateformes supportées : ${PLATFORMS}${NC}"
 echo -e "${YELLOW}📅 Version : ${VERSION}${NC}"
+
+if [ "$BUILD_UNIFIED_ONLY" = true ]; then
+    echo -e "${YELLOW}🎯 Mode : Image unifiée uniquement${NC}"
+fi
+
 echo -e "${GREEN}✅ Publication terminée !${NC}"

@@ -101,7 +101,7 @@ export class MeeshyWebSocketHandler {
       // Mettre à jour le statut en ligne
       await this.updateUserOnlineStatus(authenticatedConnection.userId, true);
 
-      // Rejoindre automatiquement la conversation globale "any"
+      // Rejoindre automatiquement la conversation globale "meeshy"
       await this.ensureGlobalConversationExists();
       await this.addUserToGlobalConversation(authenticatedConnection.userId);
       
@@ -705,7 +705,7 @@ export class MeeshyWebSocketHandler {
   }
 
   /**
-   * S'assurer que la conversation globale "any" existe
+   * S'assurer que la conversation globale "meeshy" existe
    */
   private async ensureGlobalConversationExists(): Promise<void> {
     try {
@@ -722,7 +722,7 @@ export class MeeshyWebSocketHandler {
             type: 'global'
           }
         });
-        logger.info('Global conversation "any" created');
+        logger.info('Global conversation "meeshy" created');
       }
     } catch (error) {
       logger.error('Error creating global conversation', error);
