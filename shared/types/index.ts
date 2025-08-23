@@ -227,7 +227,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRoleEnum, UserPermissions> = {
     canManageTranslations: false,
   },
   [UserRoleEnum.ANALYST]: {
-    canAccessAdmin: false,
+    canAccessAdmin: true,
     canManageUsers: false,
     canManageGroups: false,
     canManageConversations: false,
