@@ -16,6 +16,9 @@ import threading
 # Import des settings
 from config.settings import get_settings
 
+# Import des utilitaires de gestion des modèles
+from utils.model_utils import create_model_manager
+
 # Import des modèles ML optimisés
 try:
     import torch
@@ -41,6 +44,9 @@ class QuantizedMLService:
         self.model_type = model_type
         self.quantization_level = quantization_level
         self.max_workers = max_workers
+        
+        # Gestionnaire de modèles
+        self.model_manager = create_model_manager(self.settings.models_path)
         
         # Cache des configurations avec lazy loading
         self._model_configs = None
@@ -148,6 +154,11 @@ class QuantizedMLService:
         try:
             logger.info(f"🚀 Initialisation optimisée: {self.model_type} ({self.quantization_level})")
             
+            # Nettoyer les téléchargements incomplets
+            cleaned = self.model_manager.cleanup_incomplete_downloads()
+            if cleaned > 0:
+                logger.info(f"🧹 {cleaned} téléchargement(s) incomplet(s) nettoyé(s)")
+            
             if self.model_type == "all":
                 # Chargement concurrent de tous les modèles
                 await self._load_all_models_concurrently()
@@ -163,8 +174,11 @@ class QuantizedMLService:
             return False
     
     async def _load_all_models_concurrently(self):
-        """Charge tous les modèles de façon concurrente"""
+        """Charge tous les modèles de façon concurrente avec vérification préalable"""
         shared_models_info, _ = self._get_shared_models_analysis()
+        
+        # Vérifier et télécharger les modèles manquants
+        await self._ensure_models_available()
         
         # Créer les tâches de chargement
         load_tasks = []
@@ -199,9 +213,77 @@ class QuantizedMLService:
             
             logger.info(f"✅ Chargement concurrent terminé: {len(results) - len(failed_loads)}/{len(results)} succès")
     
+    async def _ensure_models_available(self):
+        """Vérifie et télécharge les modèles manquants"""
+        logger.info("🔍 Vérification de la disponibilité des modèles...")
+        
+        # Récupérer tous les modèles nécessaires
+        model_names = set()
+        for config in self.model_configs.values():
+            model_names.add(config['model_name'])
+        
+        # Vérifier le statut de chaque modèle
+        models_status = self.model_manager.get_models_status(list(model_names))
+        
+        # Identifier les modèles manquants
+        missing_models = []
+        for model_name, status in models_status.items():
+            if not status['local']:
+                missing_models.append(model_name)
+                logger.info(f"📥 Modèle manquant: {model_name} ({status.get('size_mb', 0):.1f} MB)")
+            else:
+                logger.info(f"✅ Modèle disponible: {model_name}")
+        
+        # Télécharger les modèles manquants
+        if missing_models:
+            logger.info(f"🚀 Téléchargement de {len(missing_models)} modèle(s) manquant(s)...")
+            
+            download_tasks = []
+            for model_name in missing_models:
+                task = asyncio.create_task(
+                    self._download_model_async(model_name)
+                )
+                download_tasks.append(task)
+            
+            # Attendre tous les téléchargements
+            if download_tasks:
+                results = await asyncio.gather(*download_tasks, return_exceptions=True)
+                
+                # Vérifier les résultats
+                failed_downloads = [r for r in results if isinstance(r, Exception)]
+                if failed_downloads:
+                    logger.error(f"❌ {len(failed_downloads)} téléchargement(s) échoué(s)")
+                    for error in failed_downloads:
+                        logger.error(f"   - {error}")
+                else:
+                    logger.info(f"✅ Tous les modèles téléchargés avec succès")
+        else:
+            logger.info("✅ Tous les modèles sont disponibles localement")
+    
+    async def _download_model_async(self, model_name: str):
+        """Télécharge un modèle de façon asynchrone"""
+        try:
+            loop = asyncio.get_event_loop()
+            success = await loop.run_in_executor(
+                self.executor,
+                self.model_manager.download_model_if_needed,
+                model_name,
+                False  # force_download
+            )
+            
+            if not success:
+                raise Exception(f"Échec du téléchargement de {model_name}")
+                
+        except Exception as e:
+            logger.error(f"❌ Erreur téléchargement {model_name}: {e}")
+            raise
+    
     async def _load_model_with_optimized_fallback(self):
-        """Fallback optimisé sans boucles multiples"""
+        """Fallback optimisé sans boucles multiples avec vérification préalable"""
         fallback_order = ['basic', 'medium', 'premium']
+        
+        # Vérifier et télécharger les modèles manquants
+        await self._ensure_models_available()
         
         # Calculer les modèles candidats en une seule passe
         try:
@@ -298,77 +380,26 @@ class QuantizedMLService:
             raise
     
     async def _load_model_and_tokenizer_optimized(self, model_name: str) -> Tuple:
-        """Chargement optimisé avec retry exponentiel"""
-        async def load_with_timeout(loader_func, timeout: int, description: str):
-            try:
-                loop = asyncio.get_event_loop()
-                return await asyncio.wait_for(
-                    loop.run_in_executor(self.executor, loader_func),
-                    timeout=timeout
-                )
-            except asyncio.TimeoutError:
-                raise Exception(f"Timeout {description} après {timeout}s")
-        
-        # Chargement concurrent tokenizer + modèle avec timeouts
-        tokenizer_task = load_with_timeout(
-            lambda: self._load_tokenizer_sync(model_name),
-            self.settings.tokenizer_load_timeout,
-            "tokenizer"
-        )
-        
-        model_task = load_with_timeout(
-            lambda: self._load_model_sync(model_name),
-            self.settings.model_load_timeout,
-            "modèle"
-        )
-        
-        # Chargement parallèle
-        tokenizer, model = await asyncio.gather(tokenizer_task, model_task)
-        return model, tokenizer
-    
-    def _load_tokenizer_sync(self, model_name: str):
-        """Chargement synchrone du tokenizer"""
-        return AutoTokenizer.from_pretrained(
-            model_name,
-            local_files_only=False,
-            trust_remote_code=True
-        )
-    
-    def _load_model_sync(self, model_name: str):
-        """Chargement synchrone du modèle avec quantification"""
-        # Détection automatique d'accelerate
+        """Chargement optimisé depuis le stockage local"""
         try:
-            import accelerate
-            use_device_map = True
-        except ImportError:
-            use_device_map = False
-        
-        # Configuration de base
-        base_config = {
-            'local_files_only': False,
-            'trust_remote_code': True,
-            'low_cpu_mem_usage': True
-        }
-        
-        if use_device_map:
-            base_config['device_map'] = "auto"
-        
-        # Quantification optimisée
-        if self.quantization_level == "float16":
-            base_config['torch_dtype'] = torch.float16
-        elif self.quantization_level == "int8":
-            try:
-                model = AutoModelForSeq2SeqLM.from_pretrained(model_name, **base_config)
-                return torch.quantization.quantize_dynamic(
-                    model, {torch.nn.Linear}, dtype=torch.qint8
-                )
-            except Exception as e:
-                logger.warning(f"⚠️ Quantification int8 échouée, fallback float32: {e}")
-                base_config['torch_dtype'] = torch.float32
-        else:
-            base_config['torch_dtype'] = torch.float32
-        
-        return AutoModelForSeq2SeqLM.from_pretrained(model_name, **base_config)
+            loop = asyncio.get_event_loop()
+            model, tokenizer = await asyncio.wait_for(
+                loop.run_in_executor(
+                    self.executor,
+                    self.model_manager.load_model_locally,
+                    model_name,
+                    self.quantization_level
+                ),
+                timeout=self.settings.model_load_timeout
+            )
+            return model, tokenizer
+            
+        except asyncio.TimeoutError:
+            raise Exception(f"Timeout chargement modèle {model_name} après {self.settings.model_load_timeout}s")
+        except Exception as e:
+            raise Exception(f"Erreur chargement modèle {model_name}: {e}")
+    
+
     
     async def translate(self, text: str, source_language: str, target_language: str, 
                        model_type: str = None, source_channel: str = "quantized") -> Dict[str, Any]:
@@ -570,3 +601,15 @@ class QuantizedMLService:
         self.executor.shutdown(wait=True)
         
         logger.info("✅ Nettoyage optimisé terminé")
+    
+    def get_models_status(self) -> Dict[str, Dict]:
+        """Retourne le statut détaillé de tous les modèles"""
+        model_names = set()
+        for config in self.model_configs.values():
+            model_names.add(config['model_name'])
+        
+        return self.model_manager.get_models_status(list(model_names))
+    
+    def get_model_path(self, model_name: str) -> str:
+        """Retourne le chemin local d'un modèle"""
+        return str(self.model_manager.get_model_local_path(model_name))
