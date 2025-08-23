@@ -43,20 +43,23 @@ export function FontSelector({ className }: FontSelectorProps) {
         onClick={() => handleFontChange(font.id)}
       >
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className={`font-medium ${font.cssClass}`} style={{ fontFamily: `var(${font.variable})` }}>
+          {/* En-tête de la carte */}
+          <div className="flex items-center justify-between mb-3">
+            <h4 className={`font-semibold text-base ${font.cssClass}`} style={{ fontFamily: `var(${font.variable})` }}>
               {font.name}
             </h4>
             {isSelected && <Check className="h-4 w-4 text-primary" />}
           </div>
           
-          <p className={`text-sm text-muted-foreground mb-3 ${font.cssClass}`} 
+          {/* Description */}
+          <p className={`text-sm text-muted-foreground mb-4 ${font.cssClass}`} 
              style={{ fontFamily: `var(${font.variable})` }}>
             {font.description}
           </p>
           
-          <div className="flex flex-wrap gap-1 mb-3">
-            <Badge variant={font.category === 'friendly' ? 'default' : 'secondary'} className="text-xs">
+          {/* Badges d'information */}
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            <Badge variant={font.category === 'friendly' ? 'default' : 'secondary'} className="text-xs px-2 py-1">
               {font.category === 'modern' && '🚀 Moderne'}
               {font.category === 'friendly' && '😊 Amical'}
               {font.category === 'professional' && '💼 Pro'}
@@ -64,7 +67,7 @@ export function FontSelector({ className }: FontSelectorProps) {
               {font.category === 'technical' && '⚡ Tech'}
             </Badge>
             
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs px-2 py-1">
               {font.ageGroup === 'kids' && '👶 Enfants'}
               {font.ageGroup === 'teens' && '🧑‍🎓 Ados'}
               {font.ageGroup === 'adults' && '👨‍💼 Adultes'}
@@ -72,19 +75,30 @@ export function FontSelector({ className }: FontSelectorProps) {
             </Badge>
             
             {font.accessibility === 'high' && (
-              <Badge variant="outline" className="text-xs text-green-600">
+              <Badge variant="outline" className="text-xs px-2 py-1 text-green-600 border-green-200">
                 ♿ Accessible
               </Badge>
             )}
           </div>
           
-          {/* Exemple de texte avec la police */}
-          <div className={`text-lg ${font.cssClass}`} 
+          {/* Exemple de titre et contenu avec la police */}
+          <div className={`${font.cssClass}`} 
                style={{ fontFamily: `var(${font.variable})` }}>
-            <p>Bonjour ! Hello! ¡Hola!</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Les messages se traduisent automatiquement
-            </p>
+            {/* Exemple de titre */}
+            <h5 className="text-lg font-semibold mb-2 text-foreground">
+              Titre d'exemple
+            </h5>
+            
+            {/* Exemple de contenu */}
+            <div className="space-y-2">
+              <p className="text-sm text-foreground">
+                Bonjour ! Hello! ¡Hola! 👋
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Les messages se traduisent automatiquement dans votre langue préférée. 
+                Choisissez la police qui vous convient le mieux !
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -136,10 +150,10 @@ export function FontSelector({ className }: FontSelectorProps) {
 
         {/* Polices recommandées */}
         <div>
-          <Label className="text-base font-medium mb-3 block">
+          <Label className="text-base font-medium mb-4 block">
             🌟 Polices recommandées
           </Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {recommendedFonts.map((font) => (
               <FontCard key={font.id} font={font} />
             ))}
@@ -147,23 +161,35 @@ export function FontSelector({ className }: FontSelectorProps) {
         </div>
 
         {/* Autres polices */}
-        <div>
-          <Label className="text-base font-medium mb-3 block">
-            📝 Autres polices disponibles
-          </Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {otherFonts.map((font) => (
-              <FontCard key={font.id} font={font} />
-            ))}
+        {otherFonts.length > 0 && (
+          <div>
+            <Label className="text-base font-medium mb-4 block">
+              📝 Autres polices disponibles
+            </Label>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {otherFonts.map((font) => (
+                <FontCard key={font.id} font={font} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Info */}
-        <div className="p-4 rounded-lg bg-muted/50">
-          <p className="text-sm text-muted-foreground">
-            💡 <strong>Astuce :</strong> Les polices marquées "Accessible" sont optimisées pour la lisibilité.
-            Les polices "Amical" sont parfaites pour les jeunes utilisateurs.
-          </p>
+        {/* Info et conseils */}
+        <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+          <div className="flex items-start gap-3">
+            <div className="text-blue-600 text-lg">💡</div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-blue-900">
+                Conseils pour choisir votre police
+              </p>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• <strong>Accessible</strong> : Optimisées pour la lisibilité</li>
+                <li>• <strong>Amical</strong> : Parfaites pour les jeunes utilisateurs</li>
+                <li>• <strong>Moderne</strong> : Design contemporain et élégant</li>
+                <li>• <strong>Pro</strong> : Idéales pour un usage professionnel</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

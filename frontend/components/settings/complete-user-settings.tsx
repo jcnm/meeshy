@@ -7,16 +7,12 @@ import { User } from '@/types';
 import { 
   Globe, 
   User as UserIcon, 
-  Palette, 
-  BarChart3,
-  Brain,
-  Type
+  Palette
 } from 'lucide-react';
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
 import { ThemeSettings } from './theme-settings';
-import { FontSelector } from './font-selector';
-import { TranslationStats } from '@/components/translation/translation-stats';
+import { useTranslations } from 'next-intl';
 
 interface CompleteUserSettingsProps {
   user: User | null;
@@ -25,12 +21,13 @@ interface CompleteUserSettingsProps {
 }
 
 export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteUserSettingsProps) {
+  const t = useTranslations('settings');
   const [activeTab, setActiveTab] = useState('user');
 
   // Gérer l'ancrage URL pour les tabs
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['user', 'translation', 'models', 'theme', 'fonts', 'notifications', 'stats'].includes(hash)) {
+    if (hash && ['user', 'translation', 'theme'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -46,20 +43,20 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
   const tabItems = [
     {
       value: "user",
-      label: "Profil",
+      label: t('tabs.profile'),
       icon: <UserIcon className="h-3 w-3 lg:h-4 lg:w-4" />,
       content: <UserSettings user={user} onUserUpdate={onUserUpdate} />
     },
     {
       value: "translation",
-      label: "Traduction",
+      label: t('tabs.translation'),
       icon: <Globe className="h-3 w-3 lg:h-4 lg:w-4" />,
       content: (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Configuration des langues et traduction</CardTitle>
+            <CardTitle className="text-lg">{t('translation.title')}</CardTitle>
             <CardDescription>
-              Définissez vos langues et paramètres de traduction
+              {t('translation.description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -70,21 +67,9 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
     },
     {
       value: "theme",
-      label: "Thème",
+      label: t('tabs.theme'),
       icon: <Palette className="h-3 w-3 lg:h-4 lg:w-4" />,
       content: <ThemeSettings />
-    },
-    {
-      value: "fonts",
-      label: "Polices",
-      icon: <Type className="h-3 w-3 lg:h-4 lg:w-4" />,
-      content: <FontSelector />
-    },
-    {
-      value: "stats",
-      label: "Stats",
-      icon: <BarChart3 className="h-3 w-3 lg:h-4 lg:w-4" />,
-      content: <TranslationStats />
     }
   ];
 

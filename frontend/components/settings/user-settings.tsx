@@ -11,6 +11,8 @@ import { User as UserType } from '@/types';
 import { getUserInitials } from '@/utils/user';
 import { toast } from 'sonner';
 import { Upload, Camera } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { buildApiUrl } from '@/lib/config';
 
 interface UserSettingsProps {
   user: UserType | null;
@@ -18,6 +20,7 @@ interface UserSettingsProps {
 }
 
 export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
+  const t = useTranslations('settings');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -52,18 +55,18 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
     setIsLoading(true);
     try {
       // Appel API pour sauvegarder les modifications
-      const response = await fetch('/users/me', {
+      const response = await fetch(buildApiUrl('/users/me'), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}` // Utiliser auth_token comme dans la page principale
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify(formData)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la mise à jour du profil');
+        throw new Error(errorData.error || t('profile.actions.updateError'));
       }
 
       const responseData = await response.json();
@@ -75,10 +78,10 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
       };
       
       onUserUpdate(updatedUser);
-      toast.success(responseData.message || 'Profil mis à jour avec succès');
+      toast.success(responseData.message || t('profile.actions.profileUpdated'));
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la mise à jour du profil');
+      toast.error(error instanceof Error ? error.message : t('profile.actions.updateError'));
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +91,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
     return (
       <Card>
         <CardContent className="p-6">
-          <p className="text-muted-foreground">Aucun utilisateur connecté</p>
+          <p className="text-muted-foreground">{t('noUserConnected')}</p>
         </CardContent>
       </Card>
     );
@@ -98,9 +101,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Photo de profil</CardTitle>
+          <CardTitle>{t('profile.photo.title')}</CardTitle>
           <CardDescription>
-            Personnalisez votre photo de profil visible par les autres utilisateurs
+            {t('profile.photo.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -114,11 +117,11 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <Upload className="h-4 w-4 mr-2" />
-                Télécharger une image
+                {t('profile.photo.uploadImage')}
               </Button>
               <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <Camera className="h-4 w-4 mr-2" />
-                Prendre une photo
+                {t('profile.photo.takePhoto')}
               </Button>
             </div>
           </div>
@@ -127,74 +130,74 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Informations personnelles</CardTitle>
+          <CardTitle>{t('profile.personalInfo.title')}</CardTitle>
           <CardDescription>
-            Modifiez vos informations de profil
+            {t('profile.personalInfo.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="firstName">Prénom</Label>
+              <Label htmlFor="firstName">{t('profile.personalInfo.firstName')}</Label>
               <Input
                 id="firstName"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
-                placeholder="Votre prénom"
+                placeholder={t('profile.personalInfo.firstName')}
                 className="w-full"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Nom</Label>
+              <Label htmlFor="lastName">{t('profile.personalInfo.lastName')}</Label>
               <Input
                 id="lastName"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
-                placeholder="Votre nom"
+                placeholder={t('profile.personalInfo.lastName')}
                 className="w-full"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="displayName">Nom d&apos;affichage</Label>
+            <Label htmlFor="displayName">{t('profile.personalInfo.displayName')}</Label>
             <Input
               id="displayName"
               value={formData.displayName}
               onChange={(e) => handleInputChange('displayName', e.target.value)}
-              placeholder="Comment vous voulez apparaître dans les conversations"
+              placeholder={t('profile.personalInfo.displayNamePlaceholder')}
               className="w-full"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="votre.email@exemple.com"
+                placeholder={t('profile.personalInfo.emailPlaceholder')}
                 className="w-full"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Numéro de téléphone</Label>
+              <Label htmlFor="phoneNumber">{t('profile.personalInfo.phoneNumber')}</Label>
               <Input
                 id="phoneNumber"
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                placeholder="+33 1 23 45 67 89"
+                placeholder={t('profile.personalInfo.phoneNumberPlaceholder')}
                 className="w-full"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Nom d&apos;utilisateur</Label>
+            <Label htmlFor="username">{t('profile.personalInfo.username')}</Label>
             <Input
               id="username"
               value={user.username}
@@ -202,7 +205,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
               className="bg-muted w-full"
             />
             <p className="text-sm text-muted-foreground">
-              Le nom d&apos;utilisateur ne peut pas être modifié
+              {t('profile.personalInfo.usernameCannotChange')}
             </p>
           </div>
         </CardContent>
@@ -216,10 +219,10 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           email: user.email || '',
           phoneNumber: user.phoneNumber || '',
         })}>
-          Annuler
+          {t('profile.actions.cancel')}
         </Button>
         <Button onClick={handleSave} disabled={isLoading}>
-          {isLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+          {isLoading ? t('profile.actions.saving') : t('profile.actions.save')}
         </Button>
       </div>
     </div>

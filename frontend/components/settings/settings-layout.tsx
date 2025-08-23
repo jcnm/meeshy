@@ -18,9 +18,11 @@ import {
   Save,
   RotateCcw
 } from 'lucide-react';
-import { User as UserType, SUPPORTED_LANGUAGES, LanguageCode } from '@/types';
+import { User as UserType, SUPPORTED_LANGUAGES, INTERFACE_LANGUAGES, LanguageCode } from '@/types';
+import { FontSelector } from '@/components/settings/font-selector';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { useTranslations } from 'next-intl';
 
 interface SettingsLayoutProps {
   currentUser: UserType;
@@ -35,6 +37,7 @@ interface SettingsSection {
 }
 
 export function SettingsLayout({ currentUser, initialTab = 'profile' }: SettingsLayoutProps) {
+  const t = useTranslations('settings');
   // États principaux
   const [selectedSection, setSelectedSection] = useState<string>(initialTab);
   const [localSettings, setLocalSettings] = useState<Partial<UserType>>({});
@@ -45,32 +48,32 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
   const settingsSections: SettingsSection[] = [
     {
       id: 'profile',
-      title: 'Profil',
-      description: 'Informations personnelles',
+      title: t('profile.title'),
+      description: t('profile.description'),
       icon: User
     },
     {
       id: 'language',
-      title: 'Langues',
-      description: 'Préférences de traduction',
+      title: t('language.title'),
+      description: t('language.description'),
       icon: Languages
     },
     {
       id: 'notifications',
-      title: 'Notifications',
-      description: 'Alertes et notifications',
+      title: t('notifications.title'),
+      description: t('notifications.description'),
       icon: Bell
     },
     {
       id: 'privacy',
-      title: 'Confidentialité',
-      description: 'Paramètres de confidentialité',
+      title: t('privacy.title'),
+      description: t('privacy.description'),
       icon: Shield
     },
     {
       id: 'appearance',
-      title: 'Apparence',
-      description: 'Thème et interface',
+      title: t('theme.title'),
+      description: t('theme.description'),
       icon: Palette
     }
   ];
@@ -224,104 +227,24 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
             <div>
               <h3 className="text-lg font-medium mb-4">Paramètres de langue</h3>
               
+              {/* Section Interface - Langues limitées */}
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="systemLanguage">Langue du système</Label>
-                  <Select 
-                    value={localSettings.systemLanguage} 
-                    onValueChange={(value) => updateSetting('systemLanguage', value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {lang.flag} {lang.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="regionalLanguage">Langue régionale</Label>
-                  <Select 
-                    value={localSettings.regionalLanguage} 
-                    onValueChange={(value) => updateSetting('regionalLanguage', value)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
-                        <SelectItem key={lang.code} value={lang.code}>
-                          {lang.flag} {lang.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">Langue d'interface</Label>
+                  <p className="text-sm text-gray-500 mb-3">Choisissez la langue de l'interface utilisateur</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Traduction automatique</Label>
-                      <p className="text-sm text-gray-500">Activer la traduction automatique des messages</p>
-                    </div>
-                    <Switch
-                      checked={localSettings.autoTranslateEnabled}
-                      onCheckedChange={(checked) => updateSetting('autoTranslateEnabled', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Traduire vers la langue système</Label>
-                      <p className="text-sm text-gray-500">Traduire les messages vers votre langue système</p>
-                    </div>
-                    <Switch
-                      checked={localSettings.translateToSystemLanguage}
-                      onCheckedChange={(checked) => updateSetting('translateToSystemLanguage', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Traduire vers la langue régionale</Label>
-                      <p className="text-sm text-gray-500">Traduire les messages vers votre langue régionale</p>
-                    </div>
-                    <Switch
-                      checked={localSettings.translateToRegionalLanguage}
-                      onCheckedChange={(checked) => updateSetting('translateToRegionalLanguage', checked)}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>Utiliser une destination personnalisée</Label>
-                      <p className="text-sm text-gray-500">Utiliser une langue de destination personnalisée</p>
-                    </div>
-                    <Switch
-                      checked={localSettings.useCustomDestination}
-                      onCheckedChange={(checked) => updateSetting('useCustomDestination', checked)}
-                    />
-                  </div>
-
-                  {localSettings.useCustomDestination && (
-                    <div>
-                      <Label htmlFor="customDestinationLanguage">Langue de destination personnalisée</Label>
+                      <Label htmlFor="systemLanguage" className="text-sm">Langue du système</Label>
                       <Select 
-                        value={localSettings.customDestinationLanguage || ''} 
-                        onValueChange={(value) => updateSetting('customDestinationLanguage', value)}
+                        value={localSettings.systemLanguage} 
+                        onValueChange={(value) => updateSetting('systemLanguage', value)}
                       >
                         <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Choisir une langue" />
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
+                          {INTERFACE_LANGUAGES.map((lang: LanguageCode) => (
                             <SelectItem key={lang.code} value={lang.code}>
                               {lang.flag} {lang.name}
                             </SelectItem>
@@ -329,8 +252,103 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
+
+                    <div>
+                      <Label htmlFor="regionalLanguage" className="text-sm">Langue régionale</Label>
+                      <Select 
+                        value={localSettings.regionalLanguage} 
+                        onValueChange={(value) => updateSetting('regionalLanguage', value)}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INTERFACE_LANGUAGES.map((lang: LanguageCode) => (
+                            <SelectItem key={lang.code} value={lang.code}>
+                              {lang.flag} {lang.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
+
+                <Separator />
+
+                {/* Section Traduction - Options en 2 colonnes */}
+                <div>
+                  <Label className="text-base font-medium">Options de traduction</Label>
+                  <p className="text-sm text-gray-500 mb-3">Configurez la traduction automatique des messages</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <Label className="text-sm font-medium">Traduction automatique</Label>
+                        <p className="text-xs text-gray-500">Activer la traduction automatique</p>
+                      </div>
+                      <Switch
+                        checked={localSettings.autoTranslateEnabled}
+                        onCheckedChange={(checked) => updateSetting('autoTranslateEnabled', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <Label className="text-sm font-medium">Traduire vers la langue système</Label>
+                        <p className="text-xs text-gray-500">Traduire vers votre langue système</p>
+                      </div>
+                      <Switch
+                        checked={localSettings.translateToSystemLanguage}
+                        onCheckedChange={(checked) => updateSetting('translateToSystemLanguage', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <Label className="text-sm font-medium">Traduire vers la langue régionale</Label>
+                        <p className="text-xs text-gray-500">Traduire vers votre langue régionale</p>
+                      </div>
+                      <Switch
+                        checked={localSettings.translateToRegionalLanguage}
+                        onCheckedChange={(checked) => updateSetting('translateToRegionalLanguage', checked)}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <Label className="text-sm font-medium">Utiliser une langue personnalisée</Label>
+                        <p className="text-xs text-gray-500">Définir une langue de destination spécifique</p>
+                      </div>
+                      <Switch
+                        checked={localSettings.useCustomDestination}
+                        onCheckedChange={(checked) => updateSetting('useCustomDestination', checked)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section Langue personnalisée */}
+                {localSettings.useCustomDestination && (
+                  <div>
+                    <Label htmlFor="customDestinationLanguage" className="text-sm">Langue de destination personnalisée</Label>
+                    <Select 
+                      value={localSettings.customDestinationLanguage || ''} 
+                      onValueChange={(value) => updateSetting('customDestinationLanguage', value)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Choisir une langue" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_LANGUAGES.map((lang: LanguageCode) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            {lang.flag} {lang.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -365,9 +383,12 @@ export function SettingsLayout({ currentUser, initialTab = 'profile' }: Settings
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-medium mb-4">Paramètres d'apparence</h3>
-              <div className="text-center text-gray-500 py-8">
-                Paramètres d'apparence à implémenter
-              </div>
+              <p className="text-sm text-gray-500 mb-6">
+                Personnalisez l'apparence de votre interface utilisateur
+              </p>
+              
+              {/* Sélecteur de police avec aperçus visuels */}
+              <FontSelector />
             </div>
           </div>
         );

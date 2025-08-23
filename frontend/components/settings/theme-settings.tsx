@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Palette, Monitor, Sun, Moon } from 'lucide-react';
+import { Palette, Monitor, Sun, Moon, Languages } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/context/LanguageContext';
+import { useTranslations } from 'next-intl';
 
 interface ThemeConfig {
   theme: 'light' | 'dark' | 'system';
@@ -15,15 +17,21 @@ interface ThemeConfig {
   fontSize: 'small' | 'medium' | 'large';
   compactMode: boolean;
   animationsEnabled: boolean;
+  fontFamily: string;
+  lineHeight: 'tight' | 'normal' | 'relaxed' | 'loose';
 }
 
 export function ThemeSettings() {
+  const t = useTranslations('settings');
+  const { currentInterfaceLanguage, setInterfaceLanguage, getSupportedLanguages } = useLanguage();
   const [config, setConfig] = useState<ThemeConfig>({
     theme: 'system',
     accentColor: 'blue',
     fontSize: 'medium',
     compactMode: false,
     animationsEnabled: true,
+    fontFamily: 'inter',
+    lineHeight: 'normal',
   });
 
   useEffect(() => {
@@ -37,16 +45,21 @@ export function ThemeSettings() {
     const newConfig = { ...config, [key]: value };
     setConfig(newConfig);
     localStorage.setItem('meeshy-theme-config', JSON.stringify(newConfig));
-    toast.success('Thème mis à jour');
+    toast.success(t('theme.settingsUpdated'));
+  };
+
+  const handleInterfaceLanguageChange = (languageCode: string) => {
+    setInterfaceLanguage(languageCode);
+    toast.success(t('theme.interfaceLanguageUpdated'));
   };
 
   const accentColors = [
-    { value: 'blue', label: 'Bleu', color: 'bg-blue-500' },
-    { value: 'green', label: 'Vert', color: 'bg-green-500' },
-    { value: 'purple', label: 'Violet', color: 'bg-purple-500' },
-    { value: 'red', label: 'Rouge', color: 'bg-red-500' },
-    { value: 'orange', label: 'Orange', color: 'bg-orange-500' },
-    { value: 'pink', label: 'Rose', color: 'bg-pink-500' },
+    { value: 'blue', label: t('theme.accentColor.blue'), color: 'bg-blue-500' },
+    { value: 'green', label: t('theme.accentColor.green'), color: 'bg-green-500' },
+    { value: 'purple', label: t('theme.accentColor.purple'), color: 'bg-purple-500' },
+    { value: 'red', label: t('theme.accentColor.red'), color: 'bg-red-500' },
+    { value: 'orange', label: t('theme.accentColor.orange'), color: 'bg-orange-500' },
+    { value: 'pink', label: t('theme.accentColor.pink'), color: 'bg-pink-500' },
   ];
 
   return (
@@ -55,15 +68,15 @@ export function ThemeSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
-            Thème et couleurs
+            {t('theme.title')}
           </CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            Personnalisez l&apos;apparence de l&apos;application
+            {t('theme.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label className="text-sm sm:text-base">Mode d&apos;affichage</Label>
+            <Label className="text-sm sm:text-base">{t('theme.displayMode.title')}</Label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Button
                 variant={config.theme === 'light' ? 'default' : 'outline'}
@@ -71,7 +84,7 @@ export function ThemeSettings() {
                 className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Sun className="h-4 w-4" />
-                <span className="text-sm sm:text-base">Clair</span>
+                <span className="text-sm sm:text-base">{t('theme.displayMode.light')}</span>
               </Button>
               <Button
                 variant={config.theme === 'dark' ? 'default' : 'outline'}
@@ -79,7 +92,7 @@ export function ThemeSettings() {
                 className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Moon className="h-4 w-4" />
-                <span className="text-sm sm:text-base">Sombre</span>
+                <span className="text-sm sm:text-base">{t('theme.displayMode.dark')}</span>
               </Button>
               <Button
                 variant={config.theme === 'system' ? 'default' : 'outline'}
@@ -87,13 +100,13 @@ export function ThemeSettings() {
                 className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Monitor className="h-4 w-4" />
-                <span className="text-sm sm:text-base">Système</span>
+                <span className="text-sm sm:text-base">{t('theme.displayMode.system')}</span>
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm sm:text-base">Couleur d&apos;accent</Label>
+            <Label className="text-sm sm:text-base">{t('theme.accentColor.title')}</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
               {accentColors.map((color) => (
                 <Button
@@ -108,80 +121,183 @@ export function ThemeSettings() {
               ))}
             </div>
           </div>
+
+
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">Interface utilisateur</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">{t('theme.ui.title')}</CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            Options d&apos;affichage et de comportement
+            {t('theme.ui.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6">
-          <div className="space-y-2">
-            <Label className="text-sm sm:text-base">Taille de police</Label>
-            <Select
-              value={config.fontSize}
-              onValueChange={(value) => handleConfigChange('fontSize', value)}
-            >
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="small">Petite</SelectItem>
-                <SelectItem value="medium">Moyenne</SelectItem>
-                <SelectItem value="large">Grande</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Première ligne en deux colonnes */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Colonne 1 */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm sm:text-base">{t('theme.ui.fontSize.title')}</Label>
+                <Select
+                  value={config.fontSize}
+                  onValueChange={(value) => handleConfigChange('fontSize', value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">{t('theme.ui.fontSize.small')}</SelectItem>
+                    <SelectItem value="medium">{t('theme.ui.fontSize.medium')}</SelectItem>
+                    <SelectItem value="large">{t('theme.ui.fontSize.large')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1 flex-1">
-              <Label className="text-sm sm:text-base">Mode compact</Label>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Réduit l&apos;espacement pour afficher plus de contenu
-              </p>
-            </div>
-            <Switch
-              checked={config.compactMode}
-              onCheckedChange={(checked) => handleConfigChange('compactMode', checked)}
-            />
-          </div>
+              <div className="space-y-2">
+                <Label className="text-sm sm:text-base">{t('theme.ui.fontFamily.title')}</Label>
+                <Select
+                  value={config.fontFamily || 'inter'}
+                  onValueChange={(value) => handleConfigChange('fontFamily', value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inter">Inter</SelectItem>
+                    <SelectItem value="nunito">Nunito</SelectItem>
+                    <SelectItem value="poppins">Poppins</SelectItem>
+                    <SelectItem value="open-sans">Open Sans</SelectItem>
+                    <SelectItem value="lato">Lato</SelectItem>
+                    <SelectItem value="comic-neue">Comic Neue</SelectItem>
+                    <SelectItem value="lexend">Lexend</SelectItem>
+                    <SelectItem value="roboto">Roboto</SelectItem>
+                    <SelectItem value="geist">Geist</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {t('theme.ui.fontFamily.description')}
+                </p>
+              </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1 flex-1">
-              <Label className="text-sm sm:text-base">Animations</Label>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Active les transitions et animations de l&apos;interface
-              </p>
+              <div className="space-y-2">
+                <Label className="text-sm sm:text-base">{t('theme.ui.lineHeight.title')}</Label>
+                <Select
+                  value={config.lineHeight || 'normal'}
+                  onValueChange={(value) => handleConfigChange('lineHeight', value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tight">{t('theme.ui.lineHeight.tight')}</SelectItem>
+                    <SelectItem value="normal">{t('theme.ui.lineHeight.normal')}</SelectItem>
+                    <SelectItem value="relaxed">{t('theme.ui.lineHeight.relaxed')}</SelectItem>
+                    <SelectItem value="loose">{t('theme.ui.lineHeight.loose')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {t('theme.ui.lineHeight.description')}
+                </p>
+              </div>
             </div>
-            <Switch
-              checked={config.animationsEnabled}
-              onCheckedChange={(checked) => handleConfigChange('animationsEnabled', checked)}
-            />
+
+            {/* Colonne 2 */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm sm:text-base">{t('theme.ui.interfaceLanguage.title')}</Label>
+                <Select
+                  value={currentInterfaceLanguage}
+                  onValueChange={handleInterfaceLanguageChange}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getSupportedLanguages().map((language) => (
+                      <SelectItem key={language.code} value={language.code}>
+                        <div className="flex items-center gap-2">
+                          <span>{language.nativeName}</span>
+                          <span className="text-muted-foreground text-xs">({language.name})</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {t('theme.ui.interfaceLanguage.description')}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 p-3 border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1 flex-1">
+                    <Label className="text-sm sm:text-base">{t('theme.ui.compactMode.title')}</Label>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {t('theme.ui.compactMode.description')}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={config.compactMode}
+                    onCheckedChange={(checked) => handleConfigChange('compactMode', checked)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 p-3 border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1 flex-1">
+                    <Label className="text-sm sm:text-base">{t('theme.ui.animations.title')}</Label>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {t('theme.ui.animations.description')}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={config.animationsEnabled}
+                    onCheckedChange={(checked) => handleConfigChange('animationsEnabled', checked)}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">Aperçu</CardTitle>
+          <CardTitle className="text-lg sm:text-xl">{t('theme.preview.title')}</CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            Prévisualisation des paramètres appliqués
+            {t('theme.preview.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="p-3 sm:p-4 border rounded-lg bg-muted/50">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className={`font-medium ${config.fontSize === 'small' ? 'text-sm' : config.fontSize === 'large' ? 'text-lg' : 'text-base'}`}>
-                  Exemple de message
+                <span 
+                  className={`font-medium ${config.fontSize === 'small' ? 'text-sm' : config.fontSize === 'large' ? 'text-lg' : 'text-base'}`}
+                  style={{ 
+                    fontFamily: `var(--font-${config.fontFamily})`,
+                    lineHeight: config.lineHeight === 'tight' ? '1.25' : 
+                               config.lineHeight === 'relaxed' ? '1.75' : 
+                               config.lineHeight === 'loose' ? '2' : '1.5'
+                  }}
+                >
+                                    {t('theme.preview.exampleMessage')}
                 </span>
                 <span className="text-xs text-muted-foreground">12:34</span>
               </div>
-              <p className={`text-muted-foreground ${config.fontSize === 'small' ? 'text-xs' : config.fontSize === 'large' ? 'text-base' : 'text-sm'}`}>
-                Ceci est un aperçu de l&apos;apparence des messages avec vos paramètres actuels.
+              <p 
+                className={`text-muted-foreground ${config.fontSize === 'small' ? 'text-xs' : config.fontSize === 'large' ? 'text-base' : 'text-sm'}`}
+                style={{ 
+                  fontFamily: `var(--font-${config.fontFamily})`,
+                  lineHeight: config.lineHeight === 'tight' ? '1.25' : 
+                             config.lineHeight === 'relaxed' ? '1.75' : 
+                             config.lineHeight === 'loose' ? '2' : '1.5'
+                }}
+              >
+                                {t('theme.preview.exampleText')}
               </p>
             </div>
           </div>
