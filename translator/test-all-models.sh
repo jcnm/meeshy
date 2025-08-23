@@ -5,9 +5,9 @@ echo "[TEST] 🧪 Test de la configuration de tous les modèles ML..."
 
 # Variables d'environnement de test
 export MODEL_TYPE="all"
-export BASIC_MODEL="t5-small"
-export MEDIUM_MODEL="nllb-200-distilled-600M"
-export PREMIUM_MODEL="nllb-200-distilled-1.3B"
+export BASIC_MODEL="google/t5-small"
+export MEDIUM_MODEL="facebook/nllb-200-distilled-600M"
+export PREMIUM_MODEL="facebook/nllb-200-distilled-1.3B"
 
 # Fonction pour nettoyer après les tests
 cleanup() {

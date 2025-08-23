@@ -47,14 +47,19 @@ class Settings:
         
         # Configuration des modèles de traduction - NLLB pour multi-langues
         # NLLB-600M est meilleur que T5-small pour les traductions multilingues
-        self.basic_model = os.getenv("BASIC_MODEL", "nllb-200-distilled-600M")  # Corrigé: NLLB au lieu de T5
-        self.medium_model = os.getenv("MEDIUM_MODEL", "nllb-200-distilled-600M")
-        self.premium_model = os.getenv("PREMIUM_MODEL", "nllb-200-distilled-1.3B")
+        self.basic_model = os.getenv("BASIC_MODEL", "facebook/nllb-200-distilled-600M") 
+        self.medium_model = os.getenv("MEDIUM_MODEL", "facebook/nllb-200-distilled-600M")
+        self.premium_model = os.getenv("PREMIUM_MODEL", "facebook/nllb-200-distilled-1.3B")
         
         # Configuration des performances
-        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "30"))
+        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "15"))  # Réduit de 30 à 15 secondes
         self.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", "1000"))
         self.concurrent_translations = int(os.getenv("CONCURRENT_TRANSLATIONS", "10"))
+        
+        # Configuration des timeouts pour le chargement des modèles
+        self.model_load_timeout = int(os.getenv("MODEL_LOAD_TIMEOUT", "60"))  # 60 secondes pour charger un modèle
+        self.tokenizer_load_timeout = int(os.getenv("TOKENIZER_LOAD_TIMEOUT", "30"))  # 30 secondes pour charger un tokenizer
+        self.huggingface_timeout = int(os.getenv("HUGGINGFACE_TIMEOUT", "120"))  # 120 secondes pour les téléchargements HF
     
     @property
     def supported_languages_list(self):

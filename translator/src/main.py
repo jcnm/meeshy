@@ -25,6 +25,7 @@ from config.settings import Settings
 from services.zmq_server import ZMQTranslationServer
 from services.unified_ml_service import get_unified_ml_service
 from services.quantized_ml_service import QuantizedMLService
+from services.simple_translation_service import SimpleTranslationService
 from api.translation_api import TranslationAPI
 
 # Configuration du logging
@@ -50,7 +51,7 @@ class MeeshyTranslationServer:
         self.is_initialized = False
     
     async def initialize(self) -> bool:
-        """Initialise le serveur de traduction avec architecture unifiée"""
+        """Initialise le serveur de traduction avec architecture unifiée et fallback ultime"""
         try:
             logger.info("[TRANSLATOR] 🚀 Initialisation du serveur de traduction avec ML quantifié...")
             
@@ -58,16 +59,28 @@ class MeeshyTranslationServer:
             max_workers = int(os.getenv('TRANSLATION_WORKERS', '50'))  # Augmenté de 10 à 50 pour 100 msg/sec
             quantization_level = os.getenv('QUANTIZATION_LEVEL', 'float16')  # float32 par défaut pour stabilité
             
-            # Utiliser le service quantifié avec le modèle basic seulement pour le démarrage rapide
-            self.translation_service = QuantizedMLService("basic", quantization_level, max_workers=max_workers)
+            # Utiliser le service quantifié avec tous les modèles pour supporter tous les types de requêtes
+            self.translation_service = QuantizedMLService("all", quantization_level, max_workers=max_workers)
             
             # Charger les modèles ML au démarrage
             logger.info("[TRANSLATOR] 📚 Chargement des modèles ML...")
             ml_initialized = await self.translation_service.initialize()
             if not ml_initialized:
-                logger.warning("[TRANSLATOR] ⚠️ Modèles ML non disponibles, fonctionnement en mode fallback")
+                logger.warning("[TRANSLATOR] ⚠️ Modèles ML non disponibles, passage au service de traduction simple")
+                # Fallback vers le service de traduction simple
+                self.translation_service = SimpleTranslationService()
+                logger.info("[TRANSLATOR] ✅ Service de traduction simple initialisé (fallback ultime)")
             else:
                 logger.info(f"[TRANSLATOR] ✅ Service ML quantifié ({quantization_level}) initialisé avec succès")
+                
+                # Vérifier si au moins un modèle est disponible
+                available_models = self.translation_service.get_available_models()
+                if not available_models:
+                    logger.warning("[TRANSLATOR] ⚠️ Aucun modèle ML chargé, passage au service de traduction simple")
+                    self.translation_service = SimpleTranslationService()
+                    logger.info("[TRANSLATOR] ✅ Service de traduction simple initialisé (fallback ultime)")
+                else:
+                    logger.info(f"[TRANSLATOR] ✅ Modèles disponibles: {available_models}")
             
             # 2. Initialiser le serveur ZMQ avec le service ML unifié
             zmq_push_port = int(os.getenv('TRANSLATOR_ZMQ_PULL_PORT', '5555'))
