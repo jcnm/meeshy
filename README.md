@@ -463,10 +463,10 @@ docker-compose -f docker-compose.unified.yml up -d
 ### Docker Registry Images
 ```bash
 # Pull latest images
-docker pull isopen/meeshy-translator:0.5.15-alpha
-docker pull isopen/meeshy-gateway:0.5.15-alpha
-docker pull isopen/meeshy-frontend:0.5.15-alpha
-docker pull isopen/meeshy:0.5.15-alpha
+docker pull isopen/meeshy-translator:0.5.16-alpha
+docker pull isopen/meeshy-gateway:0.5.16-alpha
+docker pull isopen/meeshy-frontend:0.5.16-alpha
+docker pull isopen/meeshy:0.5.16-alpha
 ```
 
 ### Automated Deployment

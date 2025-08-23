@@ -1333,9 +1333,75 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       }));
 
+      // Récupérer les participants anonymes
+      const anonymousParticipants = await prisma.anonymousParticipant.findMany({
+        where: {
+          conversationId: id,
+          isActive: true
+        },
+        select: {
+          id: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          language: true,
+          isOnline: true,
+          joinedAt: true,
+          canSendMessages: true,
+          canSendFiles: true,
+          canSendImages: true
+        },
+        orderBy: { joinedAt: 'desc' }
+      });
+
+      // Transformer les participants anonymes pour correspondre au format attendu
+      const formattedAnonymousParticipants = anonymousParticipants.map(participant => ({
+        id: participant.id,
+        username: participant.username,
+        firstName: participant.firstName,
+        lastName: participant.lastName,
+        displayName: participant.username, // Utiliser username comme displayName pour les anonymes
+        avatar: null,
+        email: '',
+        role: 'MEMBER',
+        isOnline: participant.isOnline,
+        lastSeen: participant.joinedAt,
+        lastActiveAt: participant.joinedAt,
+        systemLanguage: participant.language,
+        regionalLanguage: participant.language,
+        customDestinationLanguage: participant.language,
+        autoTranslateEnabled: true,
+        translateToSystemLanguage: true,
+        translateToRegionalLanguage: false,
+        useCustomDestination: false,
+        isActive: true,
+        createdAt: participant.joinedAt,
+        updatedAt: participant.joinedAt,
+        // Permissions pour les participants anonymes
+        permissions: {
+          canAccessAdmin: false,
+          canManageUsers: false,
+          canManageGroups: false,
+          canManageConversations: false,
+          canViewAnalytics: false,
+          canModerateContent: false,
+          canViewAuditLogs: false,
+          canManageNotifications: false,
+          canManageTranslations: false,
+        },
+        // Propriétés spécifiques aux participants anonymes
+        isAnonymous: true,
+        canSendMessages: participant.canSendMessages,
+        canSendFiles: participant.canSendFiles,
+        canSendImages: participant.canSendImages
+      }));
+
+      // Combiner les participants authentifiés et anonymes
+      const allParticipants = [...formattedParticipants, ...formattedAnonymousParticipants];
+
       reply.send({
         success: true,
-        data: formattedParticipants
+        data: allParticipants
       });
 
     } catch (error) {
@@ -1892,4 +1958,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
     }
   });
+
+
 }

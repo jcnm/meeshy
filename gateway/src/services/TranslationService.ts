@@ -548,82 +548,20 @@ export class TranslationService extends EventEmitter {
    * Extrait les informations techniques du champ translationModel
    * Format: "modelType|workerId|poolType|translationTime|queueTime|memoryUsage|cpuUsage"
    */
-  private _extractTechnicalInfo(translationModel: string): {
-    modelType: string;
-    workerId: string;
-    poolType: string;
-    translationTime: number;
-    queueTime: number;
-    memoryUsage: number;
-    cpuUsage: number;
-  } {
-    try {
-      const parts = translationModel.split('|');
-      if (parts.length >= 7) {
-        return {
-          modelType: parts[0],
-          workerId: parts[1],
-          poolType: parts[2],
-          translationTime: parseFloat(parts[3]) || 0,
-          queueTime: parseFloat(parts[4]) || 0,
-          memoryUsage: parseFloat(parts[5]) || 0,
-          cpuUsage: parseFloat(parts[6]) || 0
-        };
-      }
-    } catch (error) {
-      console.error(`❌ [TranslationService] Erreur extraction infos techniques: ${error}`);
-    }
-    
-    // Valeurs par défaut si le format n'est pas reconnu
-    return {
-      modelType: translationModel,
-      workerId: 'unknown',
-      poolType: 'normal',
-      translationTime: 0,
-      queueTime: 0,
-      memoryUsage: 0,
-      cpuUsage: 0
-    };
-  }
+
 
   private async _saveTranslationToDatabase(result: TranslationResult, metadata?: any) {
-    try {
-      const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
-      
-      // Upsert pour éviter les conflits de concurrence sur la contrainte unique (cacheKey)
-      await this.prisma.messageTranslation.upsert({
-        where: { cacheKey },
-        update: {
-          translatedContent: result.translatedText,
-          confidenceScore: result.confidenceScore,
-          sourceLanguage: result.sourceLanguage,
-          targetLanguage: result.targetLanguage,
-          translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
-        },
-        create: {
-          messageId: result.messageId,
-          sourceLanguage: result.sourceLanguage,
-          targetLanguage: result.targetLanguage,
-          translatedContent: result.translatedText,
-          confidenceScore: result.confidenceScore,
-          cacheKey: cacheKey,
-          translationModel: `${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`
-        }
-      });
-      
-      console.log(`💾 [TranslationService] Traduction sauvegardée (upsert) avec métadonnées: ${cacheKey}`);
-      console.log(`🔧 [TranslationService] Informations techniques stockées: ${result.modelType}|${result.workerId || 'unknown'}|${result.poolType || 'normal'}|${result.translationTime || 0}|${result.queueTime || 0}|${result.memoryUsage || 0}|${result.cpuUsage || 0}`);
-      
-    } catch (error) {
-      console.error(`❌ [TranslationService] Erreur sauvegarde: ${error}`);
-    }
+    // La gateway ne doit pas sauvegarder les traductions dans la base de données
+    // Cette responsabilité appartient au service de traduction
+    const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
+    console.log(`💾 [TranslationService] Traduction mise en cache uniquement: ${cacheKey}`);
   }
 
 
 
   async getTranslation(messageId: string, targetLanguage: string, sourceLanguage?: string): Promise<TranslationResult | null> {
     try {
-      // Vérifier le cache mémoire
+      // Vérifier le cache mémoire uniquement
       const cacheKey = sourceLanguage 
         ? `${messageId}_${sourceLanguage}_${targetLanguage}`
         : `${messageId}_${targetLanguage}`;
@@ -634,58 +572,9 @@ export class TranslationService extends EventEmitter {
         return cachedResult;
       }
       
-      // Vérifier la base de données - try multiple cache key formats
-      let dbTranslation = null;
-      
-      if (sourceLanguage) {
-        // Try with source language first
-        dbTranslation = await this.prisma.messageTranslation.findUnique({
-          where: { cacheKey: cacheKey }
-        });
-      }
-      
-      if (!dbTranslation) {
-        // Try with composite key as fallback
-        dbTranslation = await this.prisma.messageTranslation.findUnique({
-          where: { 
-            messageId_targetLanguage: {
-              messageId: messageId,
-              targetLanguage: targetLanguage
-            }
-          }
-        });
-      }
-      
-      if (dbTranslation) {
-        // Extraire les informations techniques du champ translationModel
-        const technicalInfo = this._extractTechnicalInfo(dbTranslation.translationModel);
-        
-        const result: TranslationResult = {
-          messageId: dbTranslation.messageId,
-          translatedText: dbTranslation.translatedContent,
-          sourceLanguage: dbTranslation.sourceLanguage,
-          targetLanguage: dbTranslation.targetLanguage,
-          confidenceScore: dbTranslation.confidenceScore || 0,
-          processingTime: technicalInfo.translationTime,
-          modelType: technicalInfo.modelType,
-          // Ajouter les informations techniques enrichies
-          translatorModel: technicalInfo.modelType,
-          workerId: technicalInfo.workerId,
-          poolType: technicalInfo.poolType,
-          translationTime: technicalInfo.translationTime,
-          queueTime: technicalInfo.queueTime,
-          memoryUsage: technicalInfo.memoryUsage,
-          cpuUsage: technicalInfo.cpuUsage
-        };
-        
-        // Mettre en cache
-        this._addToCache(cacheKey, result);
-        
-        console.log(`📋 [TranslationService] Traduction récupérée avec infos techniques: ${technicalInfo.modelType}|${technicalInfo.workerId}|${technicalInfo.poolType}|${technicalInfo.translationTime}ms|${technicalInfo.queueTime}ms|${technicalInfo.memoryUsage}MB|${technicalInfo.cpuUsage}%`);
-        
-        return result;
-      }
-      
+      // La gateway ne doit pas lire les traductions depuis la base de données
+      // Cette responsabilité appartient au service de traduction
+      console.log(`📋 [TranslationService] Traduction non trouvée en cache: ${messageId} -> ${targetLanguage}`);
       return null;
       
     } catch (error) {

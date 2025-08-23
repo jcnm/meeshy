@@ -344,7 +344,7 @@ export class ConversationsService {
 
   /**
    * Obtenir tous les participants d'une conversation (authentifiés et anonymes)
-   * Cette méthode utilise l'endpoint /links/:conversationId pour récupérer les participants anonymes
+   * Cette méthode utilise l'endpoint /conversations/:conversationId/participants qui retourne tous les participants
    */
   async getAllParticipants(conversationId: string): Promise<{
     authenticatedParticipants: User[];
@@ -362,29 +362,52 @@ export class ConversationsService {
     }>;
   }> {
     try {
-      // Récupérer les participants authentifiés
-      const authenticatedParticipants = await this.getParticipants(conversationId);
-      
-      // Récupérer les participants anonymes via l'endpoint /links/:conversationId
-      const linkResponse = await apiService.get<{
+      // Récupérer tous les participants via l'endpoint /conversations/:conversationId/participants
+      const response = await apiService.get<{
         success: boolean;
-        data: {
-          anonymousParticipants: Array<{
-            id: string;
-            username: string;
-            firstName: string;
-            lastName: string;
-            language: string;
-            isOnline: boolean;
-            joinedAt: string;
-            canSendMessages: boolean;
-            canSendFiles: boolean;
-            canSendImages: boolean;
-          }>;
-        };
-      }>(`/links/${conversationId}`);
+        data: Array<User & {
+          isAnonymous?: boolean;
+          canSendMessages?: boolean;
+          canSendFiles?: boolean;
+          canSendImages?: boolean;
+        }>;
+      }>(`/conversations/${conversationId}/participants`);
       
-      const anonymousParticipants = linkResponse.data.data?.anonymousParticipants || [];
+      const allParticipants = response.data.data || [];
+      
+      // Séparer les participants authentifiés et anonymes
+      const authenticatedParticipants: User[] = [];
+      const anonymousParticipants: Array<{
+        id: string;
+        username: string;
+        firstName: string;
+        lastName: string;
+        language: string;
+        isOnline: boolean;
+        joinedAt: string;
+        canSendMessages: boolean;
+        canSendFiles: boolean;
+        canSendImages: boolean;
+      }> = [];
+      
+      allParticipants.forEach(participant => {
+        if (participant.isAnonymous) {
+          anonymousParticipants.push({
+            id: participant.id,
+            username: participant.username,
+            firstName: participant.firstName,
+            lastName: participant.lastName,
+            language: participant.systemLanguage || 'fr',
+            isOnline: participant.isOnline,
+            joinedAt: participant.createdAt?.toISOString() || new Date().toISOString(),
+            canSendMessages: participant.canSendMessages || false,
+            canSendFiles: participant.canSendFiles || false,
+            canSendImages: participant.canSendImages || false
+          });
+        } else {
+          authenticatedParticipants.push(participant);
+        }
+      });
       
       return {
         authenticatedParticipants,
