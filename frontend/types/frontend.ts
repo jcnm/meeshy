@@ -115,6 +115,13 @@ export const SUPPORTED_LANGUAGES: LanguageCode[] = [
   { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
 ];
 
+// Langues d'interface limitées (EN, FR, PT uniquement)
+export const INTERFACE_LANGUAGES: LanguageCode[] = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'pt', name: 'Português', flag: '🇵🇹' },
+];
+
 export interface JoinConversationResponse {
   user: User;
   conversation: Conversation;

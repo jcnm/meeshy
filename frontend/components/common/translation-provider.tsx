@@ -2,6 +2,7 @@
 
 import { NextIntlClientProvider } from 'next-intl';
 import { useLanguage } from '@/context/LanguageContext';
+import { INTERFACE_LANGUAGES } from '@/types';
 import { useEffect, useState } from 'react';
 
 interface TranslationProviderProps {
@@ -17,7 +18,14 @@ export function TranslationProvider({ children }: TranslationProviderProps) {
     const loadMessages = async () => {
       try {
         setIsLoading(true);
-        const messages = await import(`../../locales/${currentInterfaceLanguage}.json`);
+        
+        // Check if the current interface language is supported
+        const supportedLanguages = INTERFACE_LANGUAGES.map(lang => lang.code);
+        const languageToLoad = supportedLanguages.includes(currentInterfaceLanguage) 
+          ? currentInterfaceLanguage 
+          : 'en';
+        
+        const messages = await import(`../../locales/${languageToLoad}.json`);
         setMessages(messages.default);
       } catch (error) {
         console.error(`Failed to load messages for locale: ${currentInterfaceLanguage}`, error);

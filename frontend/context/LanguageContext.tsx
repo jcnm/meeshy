@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { UserLanguageConfig } from '@/types';
+import { UserLanguageConfig, INTERFACE_LANGUAGES } from '@/types';
+import { SUPPORTED_LANGUAGES } from '@/lib/constants/languages';
 
 interface LanguageContextType {
   userLanguageConfig: UserLanguageConfig;
@@ -14,14 +15,9 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
-// Supported languages configuration
-const SUPPORTED_LANGUAGES = [
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
-] as const;
-
+// Utiliser les langues supportées depuis le fichier constants
 const SUPPORTED_LANGUAGE_CODES = SUPPORTED_LANGUAGES.map(lang => lang.code);
+const INTERFACE_LANGUAGE_CODES = INTERFACE_LANGUAGES.map(lang => lang.code);
 
 // Default configuration
 const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
@@ -36,12 +32,12 @@ const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
 
 // Language detection utilities
 function detectSystemLanguage(): string {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return 'fr';
   
-  const browserLanguage = navigator.language || navigator.languages?.[0] || 'en';
+  const browserLanguage = navigator.language || navigator.languages?.[0] || 'fr';
   const languageCode = browserLanguage.split('-')[0].toLowerCase();
   
-  return SUPPORTED_LANGUAGE_CODES.includes(languageCode as any) ? languageCode : 'en';
+  return SUPPORTED_LANGUAGE_CODES.includes(languageCode as any) ? languageCode : 'fr';
 }
 
 function detectRegionalLanguage(): string {
@@ -88,7 +84,7 @@ function loadInterfaceLanguage(): string {
   
   try {
     const stored = localStorage.getItem(INTERFACE_LANGUAGE_KEY);
-    if (stored && SUPPORTED_LANGUAGE_CODES.includes(stored as any)) {
+    if (stored && INTERFACE_LANGUAGE_CODES.includes(stored as any)) {
       return stored;
     }
   } catch (error) {
@@ -139,11 +135,8 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       customDestinationLanguage: savedConfig.customDestinationLanguage || systemLanguage,
     };
     
-    // Set interface language (use custom destination if available, otherwise system language)
-    const interfaceLanguage = savedInterfaceLanguage || 
-      (initialConfig.customDestinationLanguage && SUPPORTED_LANGUAGE_CODES.includes(initialConfig.customDestinationLanguage as any) 
-        ? initialConfig.customDestinationLanguage 
-        : systemLanguage);
+    // Set interface language (use saved interface language or fallback to English)
+    const interfaceLanguage = savedInterfaceLanguage || 'en';
     
     console.log('[LANGUAGE_CONTEXT] Initial config:', {
       systemLanguage,
@@ -199,8 +192,8 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   };
 
   const setInterfaceLanguage = (language: string) => {
-    if (!SUPPORTED_LANGUAGE_CODES.includes(language as any)) {
-      console.warn('[LANGUAGE_CONTEXT] Unsupported language:', language);
+    if (!INTERFACE_LANGUAGE_CODES.includes(language as any)) {
+      console.warn('[LANGUAGE_CONTEXT] Unsupported interface language:', language);
       return;
     }
     
@@ -215,11 +208,15 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   };
 
   const isLanguageSupported = (language: string): boolean => {
-    return SUPPORTED_LANGUAGE_CODES.includes(language as any);
+    return INTERFACE_LANGUAGE_CODES.includes(language as any);
   };
 
   const getSupportedLanguages = () => {
-    return SUPPORTED_LANGUAGES;
+    return INTERFACE_LANGUAGES.map(lang => ({
+      code: lang.code,
+      name: lang.name,
+      nativeName: lang.name
+    }));
   };
 
   const contextValue: LanguageContextType = {

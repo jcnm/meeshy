@@ -147,6 +147,8 @@
     "clearSessionDescription": "Esta ação removerá todos os seus dados de sessão e irá desconectá-lo."
   },
   "language": {
+    "title": "Idiomas",
+    "description": "Preferências de tradução",
     "selectLanguage": "Selecionar idioma",
     "interfaceLanguage": "Idioma da interface",
     "systemLanguage": "Idioma do sistema",
@@ -339,30 +341,12 @@
   },
   "settings": {
     "title": "Configurações",
-    "profileTitle": "Configurações do Perfil",
-    "profileDescription": "Configurações para {username}",
-    "profilePhoto": "Foto do Perfil",
-    "profilePhotoDescription": "Personalize sua foto de perfil visível para outros usuários",
-    "uploadImage": "Enviar uma imagem",
-    "takePhoto": "Tirar uma foto",
-    "personalInfo": "Informações Pessoais",
-    "personalInfoDescription": "Modifique suas informações de perfil",
-    "firstName": "Nome",
-    "lastName": "Sobrenome",
-    "displayName": "Nome de exibição",
-    "displayNamePlaceholder": "Como você quer aparecer nas conversas",
-    "email": "Email",
-    "emailPlaceholder": "seu.email@exemplo.com",
-    "phoneNumber": "Número de telefone",
-    "phoneNumberPlaceholder": "+55 11 1234 5678",
-    "username": "Nome de usuário",
-    "usernameCannotChange": "O nome de usuário não pode ser modificado",
-    "cancel": "Cancelar",
-    "save": "Salvar",
-    "saving": "Salvando...",
-    "profileUpdated": "Perfil atualizado com sucesso",
-    "updateError": "Erro ao atualizar perfil",
-    "noUserConnected": "Nenhum usuário conectado",
+    "pageTitle": "Configurações para {username}",
+    "loadingSettings": "Carregando configurações...",
+    "settingsError": "Erro ao carregar configurações",
+    "settingsSaved": "Configurações salvas com sucesso",
+    "settingsSaveError": "Erro ao salvar configurações",
+    
     "tabs": {
       "profile": "Perfil",
       "translation": "Tradução",
@@ -370,10 +354,178 @@
       "fonts": "Fontes",
       "stats": "Estatísticas"
     },
+    
+    "profile": {
+      "title": "Perfil",
+      "description": "Informações pessoais",
+      "settingsTitle": "Configurações do Perfil",
+      "settingsDescription": "Configurações para {username}",
+      "photo": {
+        "title": "Foto do Perfil",
+        "description": "Personalize sua foto de perfil visível para outros usuários",
+        "uploadImage": "Enviar uma imagem",
+        "takePhoto": "Tirar uma foto",
+        "removePhoto": "Remover foto",
+        "photoUpdated": "Foto do perfil atualizada"
+      },
+      "personalInfo": {
+        "title": "Informações Pessoais",
+        "description": "Modifique suas informações de perfil",
+        "firstName": "Nome",
+        "lastName": "Sobrenome",
+        "displayName": "Nome de exibição",
+        "displayNamePlaceholder": "Como você quer aparecer nas conversas",
+        "email": "Email",
+        "emailPlaceholder": "seu.email@exemplo.com",
+        "phoneNumber": "Número de telefone",
+        "phoneNumberPlaceholder": "+55 11 1234 5678",
+        "username": "Nome de usuário",
+        "usernameCannotChange": "O nome de usuário não pode ser modificado"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "profileUpdated": "Perfil atualizado com sucesso",
+        "updateError": "Erro ao atualizar perfil"
+      }
+    },
+    
     "translation": {
       "title": "Configuração de Idiomas e Tradução",
-      "description": "Defina seus idiomas e configurações de tradução"
-    }
+      "description": "Defina seus idiomas e configurações de tradução",
+      "systemLanguage": "Idioma do sistema",
+      "regionalLanguage": "Idioma regional",
+      "customDestinationLanguage": "Idioma de destino personalizado",
+      "autoTranslateEnabled": "Tradução automática ativada",
+      "translateToSystemLanguage": "Traduzir para o idioma do sistema",
+      "translateToRegionalLanguage": "Traduzir para o idioma regional",
+      "useCustomDestination": "Usar destino personalizado",
+      "customDestinationPlaceholder": "Selecione um idioma"
+    },
+    
+    "theme": {
+      "title": "Tema e interface",
+      "description": "Personalize a aparência, idioma e fontes da aplicação",
+      "displayMode": {
+        "title": "Modo de exibição",
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
+      },
+      "accentColor": {
+        "title": "Cor de destaque",
+        "blue": "Azul",
+        "green": "Verde",
+        "purple": "Roxo",
+        "red": "Vermelho",
+        "orange": "Laranja",
+        "pink": "Rosa"
+      },
+      "interfaceLanguage": {
+        "title": "Idioma da interface",
+        "description": "Define o idioma da interface do usuário"
+      },
+      "ui": {
+        "title": "Interface do usuário",
+        "description": "Opções de exibição e comportamento",
+        "fontSize": {
+          "title": "Tamanho da fonte",
+          "small": "Pequeno",
+          "medium": "Médio",
+          "large": "Grande"
+        },
+        "compactMode": {
+          "title": "Modo compacto",
+          "description": "Reduz o espaçamento para exibir mais conteúdo"
+        },
+        "animations": {
+          "title": "Animações",
+          "description": "Ativa as transições e animações da interface"
+        },
+        "interfaceLanguage": {
+          "title": "Idioma da interface",
+          "description": "Define o idioma da interface do usuário"
+        },
+        "fontFamily": {
+          "title": "Família da fonte",
+          "description": "Escolha a fonte principal da aplicação"
+        },
+        "lineHeight": {
+          "title": "Altura da linha",
+          "description": "Espaçamento entre as linhas de texto",
+          "tight": "Apertada",
+          "normal": "Normal",
+          "relaxed": "Relaxada",
+          "loose": "Solta"
+        }
+      },
+      "preview": {
+        "title": "Visualização",
+        "description": "Prévia das configurações aplicadas",
+        "exampleMessage": "Exemplo de mensagem",
+        "exampleText": "Esta é uma prévia de como as mensagens aparecerão com suas configurações atuais."
+      },
+      "settingsUpdated": "Tema atualizado",
+      "interfaceLanguageUpdated": "Idioma da interface atualizado"
+    },
+    
+    "fonts": {
+      "title": "Seleção de fontes",
+      "description": "Personalize a aparência do texto na aplicação",
+      "fontFamily": {
+        "title": "Família da fonte",
+        "description": "Escolha a fonte principal da aplicação"
+      },
+      "fontSize": {
+        "title": "Tamanho da fonte",
+        "description": "Ajuste o tamanho do texto"
+      },
+      "lineHeight": {
+        "title": "Altura da linha",
+        "description": "Espaçamento entre as linhas de texto"
+      }
+    },
+    
+    "stats": {
+      "title": "Estatísticas de tradução",
+      "description": "Visualize suas estatísticas de uso de tradução",
+      "totalTranslations": "Total de traduções",
+      "languagesUsed": "Idiomas utilizados",
+      "translationAccuracy": "Precisão da tradução",
+      "mostTranslatedLanguage": "Idioma mais traduzido",
+      "translationHistory": "Histórico de traduções"
+    },
+    
+    "notifications": {
+      "title": "Notificações",
+      "description": "Configure suas preferências de notificação",
+      "emailNotifications": "Notificações por email",
+      "pushNotifications": "Notificações push",
+      "messageNotifications": "Notificações de mensagens",
+      "groupNotifications": "Notificações de grupo",
+      "translationNotifications": "Notificações de tradução"
+    },
+    
+    "privacy": {
+      "title": "Privacidade",
+      "description": "Gerencie suas configurações de privacidade",
+      "dataSharing": "Compartilhamento de dados",
+      "translationHistory": "Histórico de traduções",
+      "analytics": "Analytics",
+      "cookies": "Cookies"
+    },
+    
+    "security": {
+      "title": "Segurança",
+      "description": "Configurações de segurança da sua conta",
+      "password": "Senha",
+      "twoFactorAuth": "Autenticação de dois fatores",
+      "loginHistory": "Histórico de login",
+      "activeSessions": "Sessões ativas"
+    },
+    
+    "noUserConnected": "Nenhum usuário conectado"
   },
   "notFound": {
     "title": "Página não encontrada",

@@ -147,6 +147,8 @@
     "clearSessionDescription": "Cette action supprimera toutes vos données de session et vous déconnectera."
   },
   "language": {
+    "title": "Langues",
+    "description": "Préférences de traduction",
     "selectLanguage": "Sélectionner la langue",
     "interfaceLanguage": "Langue de l'interface",
     "systemLanguage": "Langue système",
@@ -339,30 +341,13 @@
   },
   "settings": {
     "title": "Paramètres",
-    "profileTitle": "Paramètres du profil",
-    "profileDescription": "Paramètres pour {username}",
-    "profilePhoto": "Photo de profil",
-    "profilePhotoDescription": "Personnalisez votre photo de profil visible par les autres utilisateurs",
-    "uploadImage": "Télécharger une image",
-    "takePhoto": "Prendre une photo",
-    "personalInfo": "Informations personnelles",
-    "personalInfoDescription": "Modifiez vos informations de profil",
-    "firstName": "Prénom",
-    "lastName": "Nom",
-    "displayName": "Nom d'affichage",
-    "displayNamePlaceholder": "Comment vous voulez apparaître dans les conversations",
-    "email": "Email",
-    "emailPlaceholder": "votre.email@exemple.com",
-    "phoneNumber": "Numéro de téléphone",
-    "phoneNumberPlaceholder": "+33 1 23 45 67 89",
-    "username": "Nom d'utilisateur",
-    "usernameCannotChange": "Le nom d'utilisateur ne peut pas être modifié",
-    "cancel": "Annuler",
-    "save": "Sauvegarder",
-    "saving": "Sauvegarde...",
-    "profileUpdated": "Profil mis à jour avec succès",
-    "updateError": "Erreur lors de la mise à jour du profil",
+    "pageTitle": "Paramètres de {username}",
+    "loadingSettings": "Chargement des paramètres...",
+    "settingsError": "Erreur lors du chargement des paramètres",
+    "settingsSaved": "Paramètres enregistrés avec succès",
+    "settingsSaveError": "Erreur lors de l'enregistrement des paramètres",
     "noUserConnected": "Aucun utilisateur connecté",
+    
     "tabs": {
       "profile": "Profil",
       "translation": "Traduction",
@@ -370,10 +355,214 @@
       "fonts": "Polices",
       "stats": "Statistiques"
     },
+    
+    "profile": {
+      "title": "Profil",
+      "description": "Informations personnelles",
+      "settingsTitle": "Paramètres du profil",
+      "settingsDescription": "Paramètres pour {username}",
+      "photo": {
+        "title": "Photo de profil",
+        "description": "Personnalisez votre photo de profil visible par les autres utilisateurs",
+        "uploadImage": "Télécharger une image",
+        "takePhoto": "Prendre une photo",
+        "removePhoto": "Supprimer la photo",
+        "photoUpdated": "Photo de profil mise à jour"
+      },
+      "personalInfo": {
+        "title": "Informations personnelles",
+        "description": "Modifiez vos informations de profil",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "displayName": "Nom d'affichage",
+        "displayNamePlaceholder": "Comment vous voulez apparaître dans les conversations",
+        "email": "Email",
+        "emailPlaceholder": "votre.email@exemple.com",
+        "phoneNumber": "Numéro de téléphone",
+        "phoneNumberPlaceholder": "+33 1 23 45 67 89",
+        "username": "Nom d'utilisateur",
+        "usernameCannotChange": "Le nom d'utilisateur ne peut pas être modifié"
+      },
+      "actions": {
+        "cancel": "Annuler",
+        "save": "Sauvegarder",
+        "saving": "Sauvegarde...",
+        "profileUpdated": "Profil mis à jour avec succès",
+        "updateError": "Erreur lors de la mise à jour du profil"
+      }
+    },
+    
     "translation": {
       "title": "Configuration des langues et traduction",
-      "description": "Définissez vos langues et paramètres de traduction"
-    }
+      "description": "Définissez vos langues et paramètres de traduction",
+      "mainLanguages": {
+        "title": "Langues principales",
+        "description": "Configurez vos langues préférées pour la communication",
+        "systemLanguage": "Langue système",
+        "systemLanguageDescription": "Langue principale de votre interface et de vos messages",
+        "regionalLanguage": "Langue régionale",
+        "regionalLanguageDescription": "Langue de votre région ou langue secondaire préférée",
+        "customDestinationLanguage": "Langue de destination personnalisée",
+        "customDestinationLanguageDescription": "Langue spécifique pour la traduction automatique (optionnel)",
+        "selectLanguage": "Sélectionner une langue",
+        "none": "Aucune"
+      },
+      "autoTranslation": {
+        "title": "Options de traduction automatique",
+        "description": "Configurez comment les messages sont traduits automatiquement",
+        "enabled": "Traduction automatique",
+        "enabledDescription": "Active la traduction automatique des messages entrants",
+        "exclusiveMode": "Mode exclusif : Activez une seule option de traduction à la fois.",
+        "translateToSystem": "Traduire vers la langue système uniquement",
+        "translateToSystemDescription": "Traduit les messages vers {flag} {language} seulement",
+        "translateToRegional": "Traduire vers la langue régionale uniquement",
+        "translateToRegionalDescription": "Traduit les messages vers {flag} {language} seulement",
+        "translateToCustom": "Traduire vers la langue personnalisée uniquement",
+        "translateToCustomDescription": "Traduit les messages vers {flag} {language} seulement",
+        "noCustomLanguage": "Aucune langue personnalisée définie - définissez-en une ci-dessus",
+        "tip": "Astuce :",
+        "tipDescription": "Si aucune option n'est sélectionnée, les messages seront traduits vers toutes vos langues configurées (système + régionale + personnalisée)."
+      },
+      "preview": {
+        "title": "Aperçu de la configuration",
+        "systemLanguage": "Langue système",
+        "regionalLanguage": "Langue régionale",
+        "customLanguage": "Langue personnalisée",
+        "autoTranslation": "Traduction automatique",
+        "enabled": "Activée",
+        "disabled": "Désactivée"
+      },
+      "actions": {
+        "save": "Sauvegarder",
+        "saving": "Sauvegarde...",
+        "cancel": "Annuler",
+        "settingsUpdated": "Paramètres de langue mis à jour",
+        "updateError": "Erreur lors de la mise à jour des paramètres de langue"
+      }
+    },
+    
+    "theme": {
+      "title": "Thème et interface",
+      "description": "Personnalisez l'apparence, la langue et les polices de l'application",
+      "displayMode": {
+        "title": "Mode d'affichage",
+        "light": "Clair",
+        "dark": "Sombre",
+        "system": "Système"
+      },
+      "accentColor": {
+        "title": "Couleur d'accent",
+        "blue": "Bleu",
+        "green": "Vert",
+        "purple": "Violet",
+        "red": "Rouge",
+        "orange": "Orange",
+        "pink": "Rose"
+      },
+      "interfaceLanguage": {
+        "title": "Langue de l'interface",
+        "description": "Définit la langue de l'interface utilisateur"
+      },
+      "ui": {
+        "title": "Interface utilisateur",
+        "description": "Options d'affichage et de comportement",
+        "fontSize": {
+          "title": "Taille de police",
+          "small": "Petite",
+          "medium": "Moyenne",
+          "large": "Grande"
+        },
+        "compactMode": {
+          "title": "Mode compact",
+          "description": "Réduit l'espacement pour afficher plus de contenu"
+        },
+        "animations": {
+          "title": "Animations",
+          "description": "Active les transitions et animations de l'interface"
+        },
+        "interfaceLanguage": {
+          "title": "Langue de l'interface",
+          "description": "Définit la langue de l'interface utilisateur"
+        },
+        "fontFamily": {
+          "title": "Famille de police",
+          "description": "Choisissez la police principale de l'application"
+        },
+        "lineHeight": {
+          "title": "Hauteur de ligne",
+          "description": "Espacement entre les lignes de texte",
+          "tight": "Serrée",
+          "normal": "Normale",
+          "relaxed": "Relâchée",
+          "loose": "Lâche"
+        }
+      },
+      "preview": {
+        "title": "Aperçu",
+        "description": "Prévisualisation des paramètres appliqués",
+        "exampleMessage": "Exemple de message",
+        "exampleText": "Ceci est un aperçu de l'apparence des messages avec vos paramètres actuels."
+      },
+      "settingsUpdated": "Thème mis à jour",
+      "interfaceLanguageUpdated": "Langue de l'interface mise à jour"
+    },
+    
+    "fonts": {
+      "title": "Sélection des polices",
+      "description": "Personnalisez l'apparence du texte dans l'application",
+      "fontFamily": {
+        "title": "Famille de police",
+        "description": "Choisissez la police principale de l'application"
+      },
+      "fontSize": {
+        "title": "Taille de police",
+        "description": "Ajustez la taille du texte"
+      },
+      "lineHeight": {
+        "title": "Hauteur de ligne",
+        "description": "Espacement entre les lignes de texte"
+      }
+    },
+    
+    "stats": {
+      "title": "Statistiques de traduction",
+      "description": "Consultez vos statistiques d'utilisation de la traduction",
+      "totalTranslations": "Total des traductions",
+      "languagesUsed": "Langues utilisées",
+      "translationAccuracy": "Précision de traduction",
+      "mostTranslatedLanguage": "Langue la plus traduite",
+      "translationHistory": "Historique des traductions"
+    },
+    
+    "notifications": {
+      "title": "Notifications",
+      "description": "Configurez vos préférences de notifications",
+      "emailNotifications": "Notifications par email",
+      "pushNotifications": "Notifications push",
+      "messageNotifications": "Notifications de messages",
+      "groupNotifications": "Notifications de groupe",
+      "translationNotifications": "Notifications de traduction"
+    },
+    
+    "privacy": {
+      "title": "Confidentialité",
+      "description": "Gérez vos paramètres de confidentialité",
+      "dataSharing": "Partage de données",
+      "translationHistory": "Historique des traductions",
+      "analytics": "Analytics",
+      "cookies": "Cookies"
+    },
+    
+    "security": {
+      "title": "Sécurité",
+      "description": "Paramètres de sécurité de votre compte",
+      "password": "Mot de passe",
+      "twoFactorAuth": "Authentification à deux facteurs",
+      "loginHistory": "Historique de connexion",
+      "activeSessions": "Sessions actives"
+    },
+    
+    "noUserConnected": "Aucun utilisateur connecté"
   },
   "notFound": {
     "title": "Page non trouvée",
