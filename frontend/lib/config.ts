@@ -154,15 +154,13 @@ export const APP_CONFIG = {
   BACKEND_PORT: config.backend.port,
   
   getBackendUrl: () => {
-    return config.backend.url;
+    return getBackendUrl();
   },
-  
-  getFrontendUrl: () => {
-    if (typeof window !== 'undefined') {
-      return config.frontend.url;
-    }
-    return config.frontend.url;
+
+  getWebSocketUrl: () => {
+    return getWebSocketUrl();
   }
+
 };
 
 export default config;
@@ -213,19 +211,24 @@ export const API_ENDPOINTS = {
 // HTTP base URL for the Gateway - Gère automatiquement client/serveur
 export const getBackendUrl = (): string => {
   if (isBrowser()) {
+    // Côté client (navigateur) - utiliser NEXT_PUBLIC_BACKEND_URL
     return trimSlashes(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000');
   }
+  // Côté serveur (SSR) - utiliser INTERNAL_BACKEND_URL
   return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'http://localhost:3000');
 };
 
 // WebSocket base URL for the Gateway - Gère automatiquement client/serveur
 export const getWebSocketUrl = (): string => {
   if (isBrowser()) {
+    // Côté client (navigateur) - utiliser NEXT_PUBLIC_WS_URL
     const fromEnv = process.env.NEXT_PUBLIC_WS_URL;
     if (fromEnv) return trimSlashes(fromEnv);
+    
     // Derive from backend if WS not provided
     return trimSlashes(getBackendUrl().replace(/^http(s?):\/\//, (_m, s) => (s ? 'wss://' : 'ws://')));
   }
+  // Côté serveur (SSR) - utiliser INTERNAL_WS_URL
   return trimSlashes(process.env.INTERNAL_WS_URL || 'ws://localhost:3000');
 };
 

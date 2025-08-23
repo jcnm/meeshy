@@ -32,7 +32,6 @@ class ApiServiceError extends Error {
 
 class ApiService {
   private config: ApiConfig;
-
   constructor(config: Partial<ApiConfig> = {}) {
     this.config = {
       baseUrl: APP_CONFIG.getBackendUrl(),
