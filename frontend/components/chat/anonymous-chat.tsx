@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAnonymousMessages, type AnonymousMessage } from '@/hooks/use-anonymous-messages';
-import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface AnonymousChatProps {
   linkId: string;
@@ -32,6 +32,7 @@ interface AnonymousChatProps {
 }
 
 export function AnonymousChat({ linkId, participant, conversation }: AnonymousChatProps) {
+  const t = useTranslations('anonymousChat');
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -102,9 +103,9 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
       return message.sender.displayName || 
              `${message.sender.firstName || ''} ${message.sender.lastName || ''}`.trim() ||
              message.sender.username ||
-             (message.sender.isMeeshyer ? 'Utilisateur' : 'Anonyme');
+             (message.sender.isMeeshyer ? t('user') : t('anonymous'));
     }
-    return 'Anonyme';
+    return t('anonymous');
   };
 
   // Obtenir l'avatar d'un message
@@ -122,16 +123,16 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
       const lastName = message.sender.lastName || '';
       return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     }
-    return '?';
+    return t('unknownUser');
   };
 
   if (!hasActiveSession) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Session anonyme non active</p>
+          <p className="text-gray-500 mb-4">{t('sessionNotActive')}</p>
           <Button onClick={() => window.location.reload()}>
-            Recharger la page
+            {t('reloadPage')}
           </Button>
         </div>
       </div>
@@ -144,7 +145,7 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
           <Button onClick={() => window.location.reload()}>
-            Recharger la page
+            {t('reloadPage')}
           </Button>
         </div>
       </div>
@@ -156,10 +157,14 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
       {/* Header de la conversation */}
       <div className="border-b border-gray-200 p-4 bg-white">
         <h2 className="text-lg font-semibold text-gray-900">
-          {conversation.title || 'Conversation'}
+          {conversation.title || t('title')}
         </h2>
         <p className="text-sm text-gray-500">
-          Connecté en tant que {participant.firstName} {participant.lastName} (@{participant.username})
+          {t('connectedAs', { 
+            firstName: participant.firstName, 
+            lastName: participant.lastName, 
+            username: participant.username 
+          })}
         </p>
       </div>
 
@@ -168,7 +173,7 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
         {isLoading && messages.length === 0 ? (
           <div className="flex items-center justify-center h-32">
             <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-500">Chargement des messages...</span>
+            <span className="ml-2 text-gray-500">{t('loadingMessages')}</span>
           </div>
         ) : (
           <>
@@ -184,10 +189,10 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
                   {isLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Chargement...
+                      {t('loading')}
                     </>
                   ) : (
-                    'Charger plus de messages'
+                    t('loadMore')
                   )}
                 </Button>
               </div>
@@ -237,7 +242,7 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Tapez votre message..."
+              placeholder={t('messagePlaceholder')}
               className="flex-1 resize-none"
               rows={1}
               disabled={isSending}

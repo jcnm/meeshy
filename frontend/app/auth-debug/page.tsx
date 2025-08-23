@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { buildApiUrl } from '@/lib/runtime-urls';
+import { buildApiUrl } from '@/lib/config';
 
 export default function AuthDebugPage() {
   const [status, setStatus] = useState<string>('Initializing...');

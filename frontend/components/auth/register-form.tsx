@@ -13,9 +13,10 @@ import { useTranslations } from 'next-intl';
 
 interface RegisterFormProps {
   onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior
+  disabled?: boolean; // Pour désactiver les inputs quand le modal est fermé
 }
 
-export function RegisterForm({ onSuccess }: RegisterFormProps) {
+export function RegisterForm({ onSuccess, disabled = false }: RegisterFormProps) {
   const { login } = useAuth();
   const t = useTranslations('register');
   const [formData, setFormData] = useState({
@@ -74,7 +75,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="firstName">{t('firstNameLabel')}</Label>
@@ -84,7 +85,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             placeholder={t('firstNamePlaceholder')}
             value={formData.firstName}
             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
             required
           />
         </div>
@@ -96,7 +97,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             placeholder={t('lastNamePlaceholder')}
             value={formData.lastName}
             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
             required
           />
         </div>
@@ -110,7 +111,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           placeholder={t('usernamePlaceholder')}
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           required
         />
       </div>
@@ -123,7 +124,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           placeholder={t('emailPlaceholder')}
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           required
         />
       </div>
@@ -136,7 +137,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           placeholder={t('phonePlaceholder')}
           value={formData.phoneNumber}
           onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
         />
       </div>
 
@@ -148,7 +149,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           placeholder={t('passwordPlaceholder')}
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           required
         />
       </div>
@@ -159,6 +160,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <Select 
             value={formData.systemLanguage} 
             onValueChange={(value) => setFormData({ ...formData, systemLanguage: value })}
+            disabled={disabled}
           >
             <SelectTrigger>
               <SelectValue placeholder={t('systemLanguageLabel')} />
@@ -177,6 +179,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <Select 
             value={formData.regionalLanguage} 
             onValueChange={(value) => setFormData({ ...formData, regionalLanguage: value })}
+            disabled={disabled}
           >
             <SelectTrigger>
               <SelectValue placeholder={t('regionalLanguageLabel')} />
@@ -195,7 +198,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       <Button 
         type="submit" 
         className="w-full" 
-        disabled={isLoading}
+        disabled={isLoading || disabled}
       >
         {isLoading ? t('creating') : t('registerButton')}
       </Button>

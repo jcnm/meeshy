@@ -88,6 +88,7 @@ import { useMessageTranslations } from '@/hooks/use-message-translations';
 import { useTranslationStats } from '@/hooks/use-translation-stats';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
+import { useTranslations } from 'next-intl';
 import type { User, Message, BubbleTranslation } from '@/shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
@@ -97,7 +98,8 @@ import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
 
-export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
+export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
+  const t = useTranslations('bubbleStream');
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -430,8 +432,8 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
       console.log('🔍 Diagnostic après délai:', newDiagnostics);
       
       if (connectionStatus.isConnected && connectionStatus.hasSocket && !hasShownConnectionToast) {
-        console.log('✅ WebSocket connecté - Messages en temps réel');
-        toast.success('🎉 Connexion établie ! Messages en temps réel activés');
+        console.log(`✅ ${t('websocketConnected')}`);
+        toast.success(`🎉 ${t('connected')}`);
         setHasShownConnectionToast(true);
       } else if (!connectionStatus.isConnected || !connectionStatus.hasSocket) {
         console.log('⚠️ WebSocket non connecté après délai');
@@ -561,10 +563,10 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
   useEffect(() => {
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
-      console.log('🌐 Connexion WebSocket établie - Messages en temps réel activés');
+      console.log(`🌐 ${t('websocketEstablished')}`);
       
       if (!hasShownConnectionToast) {
-        toast.success('🎉 Connexion établie ! Messages en temps réel activés');
+        toast.success(`🎉 ${t('connected')}`);
         setHasShownConnectionToast(true);
       }
     } else {
@@ -681,10 +683,10 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
       <LoadingState 
         message={
           !hasLoadedMessages 
-            ? "Chargement des messages..." 
+            ? t('loading')
             : !hasEstablishedConnection
-            ? "Connexion au serveur en cours..."
-            : "Initialisation..."
+            ? t('connecting')
+            : t('initializing')
         }
         fullScreen={true}
       />
@@ -870,10 +872,10 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
                   <Loader2 className="h-3 w-3 animate-spin" />
                   <span>
                     {typingUsers.length === 1 
-                      ? `${typingUsers[0].displayName} est en train d'écrire...`
+                      ? t('typing.single', { name: typingUsers[0].displayName })
                       : typingUsers.length === 2
-                      ? `${typingUsers[0].displayName} et ${typingUsers[1].displayName} sont en train d'écrire...`
-                      : `${typingUsers[0].displayName} et ${typingUsers.length - 1} autres sont en train d'écrire...`
+                      ? t('typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
+                      : t('typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
                     }
                   </span>
                 </div>
@@ -888,10 +890,10 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
                     connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
                   }`} />
                   <span className="font-medium">
-                    Messages en temps réel
+                    {t('realTimeMessages')}
                   </span>
                   {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                    <span className="text-xs opacity-75">• Connexion en cours...</span>
+                    <span className="text-xs opacity-75">• {t('connectionInProgress')}</span>
                   )}
                   {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
                     <>
@@ -903,7 +905,7 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
                           const diagnostics = getDiagnostics();
                           console.log('🔍 Diagnostic avant reconnexion:', diagnostics);
                           
-                          toast.info('🔄 Tentative de reconnexion...');
+                          toast.info(`🔄 ${t('reconnecting')}`);
                           reconnect();
                           
                           // Vérifier après un délai
@@ -965,8 +967,8 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
                   currentUser={user}
                   userLanguage={userLanguage}
                   usedLanguages={usedLanguages}
-                  emptyStateMessage="Aucun message pour le moment"
-                  emptyStateDescription="Soyez le premier à publier dans le stream global !"
+                  emptyStateMessage={t('emptyStateMessage')}
+                  emptyStateDescription={t('emptyStateDescription')}
                   reverseOrder={true}
                   className="space-y-5"
                 />
@@ -1012,7 +1014,7 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
                   <LanguageSelector
                     value={selectedInputLanguage}
                     onValueChange={setSelectedInputLanguage}
-                    placeholder="Langue d'écriture"
+                    placeholder={t('languagePlaceholder')}
                     className="border-gray-200 hover:border-blue-300"
                     choices={languageChoices}
                   />
@@ -1076,7 +1078,7 @@ export function BubbleStreamPage({ user, conversationId = 'any', isAnonymousMode
 
             {/* Section Langues Actives - Foldable */}
             <FoldableSection
-              title="Langues Actives"
+              title={t('activeLanguages')}
               icon={<Languages className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >

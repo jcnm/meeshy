@@ -20,6 +20,7 @@ import {
 import { User, UserRoleEnum } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { toast } from 'sonner';
+import { getDefaultPermissions } from '@/utils/user-adapter';
 
 interface AdminStats {
   totalUsers: number;
@@ -72,15 +73,41 @@ const AdminDashboard: React.FC = () => {
           return;
         }
 
-        const userData = await userResponse.json();
+        const response = await userResponse.json();
+        
+        // Extraire les données utilisateur de la réponse API
+        let userData;
+        if (response.success && response.data?.user) {
+          userData = response.data.user;
+        } else if (response.user) {
+          userData = response.user;
+        } else {
+          userData = response;
+        }
+        
         setUser(userData);
 
+        // S'assurer que les permissions sont définies
+        if (!userData.permissions) {
+          userData.permissions = getDefaultPermissions(userData.role);
+        }
+
         // Vérifier les permissions admin
-        if (!userData.permissions?.canAccessAdmin) {
+        const hasAdminAccess = userData.permissions?.canAccessAdmin || false;
+        console.log('[ADMIN] Vérification permissions:', {
+          role: userData.role,
+          permissions: userData.permissions,
+          canAccessAdmin: hasAdminAccess
+        });
+
+        if (!hasAdminAccess) {
+          console.log('[ADMIN] Accès refusé - permissions insuffisantes');
           router.push('/dashboard');
           toast.error('Accès non autorisé à l\'administration');
           return;
         }
+
+        console.log('[ADMIN] Accès autorisé - utilisateur:', userData.username, 'rôle:', userData.role);
 
         // Mock des données admin pour l'instant
         setDashboardData({

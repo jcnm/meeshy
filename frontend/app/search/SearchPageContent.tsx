@@ -22,7 +22,7 @@ import {
   Star,
   Filter
 } from 'lucide-react';
-import { buildApiUrl } from '@/lib/runtime-urls';
+import { buildApiUrl } from '@/lib/config';
 import { User, Group, Message } from '@/types';
 
 interface SearchResults {

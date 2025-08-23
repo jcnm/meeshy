@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { useMessageSender } from '@/hooks/use-message-sender';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -72,6 +73,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthChecking } = useUser(); // user est garanti d'exister grâce au wrapper
+  const t = useTranslations('conversations');
 
   // Si on est en train de vérifier l'authentification, afficher un loader
   if (isAuthChecking) {
@@ -79,7 +81,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Vérification de l'authentification...</p>
+          <p className="text-muted-foreground">{t('authChecking')}</p>
         </div>
       </div>
     );
@@ -551,11 +553,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
       // Ajouter la conversation globale "meeshy" si elle n'est pas déjà présente
       let conversationsWithAny = [...conversationsData];
-      const hasAnyConversation = conversationsData.some(c => c.id === 'any');
+      const hasAnyConversation = conversationsData.some(c => c.id === 'meeshy');
       
       if (!hasAnyConversation) {
         const anyConversation: Conversation = {
-          id: 'any',
+          id: 'meeshy',
           name: 'Meeshy',
           title: 'Meeshy',
           type: 'global',
@@ -819,13 +821,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   }, [selectedConversation?.id, loadConversationParticipants]);
 
   return (
-    <DashboardLayout title="Conversations">
+    <DashboardLayout title={t('title')}>
 
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Chargement des conversations...</p>
+            <p className="text-muted-foreground">{t('loading')}</p>
           </div>
         </div>
       ) : (
@@ -839,7 +841,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             <div className="flex-shrink-0 p-4 border-b border-border/30">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-foreground">Conversations</h2>
+                  <h2 className="text-xl font-bold text-foreground">{t('title')}</h2>
                 </div>
                 <div className="relative">
                   <MessageSquare className="h-6 w-6 text-primary" />
@@ -854,14 +856,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               {/* Sélecteur de modèle de traduction */}
               <div className="mb-2">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Modèle de traduction
+                  {t('translationModel')}
                 </label>
                 <Select
                   value={selectedTranslationModel}
                   onValueChange={(value) => setSelectedTranslationModel(value)}
                 >
                   <SelectTrigger className="w-full h-8 text-sm">
-                    <SelectValue placeholder="Choisir un modèle" />
+                    <SelectValue placeholder={t('chooseModel')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="api-service">
@@ -869,9 +871,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         <div
                           className="w-2 h-2 rounded-full bg-green-500"
                         />
-                        <span className="text-sm">Service API</span>
+                        <span className="text-sm">{t('apiService')}</span>
                         <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
-                          Actif
+                          {t('active')}
                         </Badge>
                       </div>
                     </SelectItem>
@@ -885,7 +887,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               {/* Debug info */}
               {process.env.NODE_ENV === 'development' && (
                 <div className="p-2 bg-yellow-100 text-yellow-800 text-xs">
-                  Debug: {conversations.length} conversations | Loading: {isLoading ? 'oui' : 'non'} | User: {user ? 'connecté' : 'non connecté'}
+                  {t('debug', { 
+                    count: conversations.length, 
+                    loading: isLoading ? t('yes') : t('no'), 
+                    user: user ? t('connected') : t('notConnected') 
+                  })}
                 </div>
               )}
               
@@ -893,12 +899,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <MessageSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">
-                    {isLoading ? 'Chargement...' : 'Aucune conversation'}
+                    {isLoading ? t('loadingConversations') : t('noConversations')}
                   </h3>
                   <p className="text-muted-foreground mb-6">
                     {isLoading 
-                      ? 'Récupération de vos conversations...' 
-                      : 'Commencez une nouvelle conversation pour discuter avec vos amis !'
+                      ? t('loadingConversationsDescription')
+                      : t('noConversationsDescription')
                     }
                   </p>
                 </div>
@@ -907,10 +913,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                   {/* Séparer les conversations en publiques et privées */}
                   {(() => {
                     const publicConversations = conversations.filter(conv => 
-                      conv.id === 'any' || conv.type === 'GLOBAL' || !conv.isPrivate
+                      conv.id === 'meeshy' || conv.type === 'GLOBAL' || !conv.isPrivate
                     );
                     const privateConversations = conversations.filter(conv => 
-                      conv.id !== 'any' && conv.type !== 'GLOBAL' && conv.isPrivate
+                      conv.id !== 'meeshy' && conv.type !== 'GLOBAL' && conv.isPrivate
                     );
 
                     return (
@@ -920,7 +926,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           <div className="mb-6">
                             <div className="px-4 py-2 mb-3">
                               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                                Public
+                                {t('public')}
                               </h3>
                             </div>
                             <div className="space-y-2">
@@ -988,7 +994,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           <div className="mb-6">
                             <div className="px-4 py-2 mb-3">
                               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                                Privé
+                                {t('private')}
                               </h3>
                             </div>
                             <div className="space-y-2">
@@ -1065,14 +1071,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                   onClick={() => setIsCreateLinkModalOpen(true)}
                 >
                   <Link2 className="h-5 w-5 mr-2" />
-                  Créer un lien
+                  {t('createLink')}
                 </Button>
                 <Button
                   className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
                   onClick={() => setIsCreateConversationModalOpen(true)}
                 >
                   <Plus className="h-5 w-5 mr-2" />
-                  Nouvelle conversation
+                  {t('newConversation')}
                 </Button>
               </div>
             </div>
@@ -1144,12 +1150,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       isGroup={selectedConversation.isGroup || false}
                       conversationType={selectedConversation.type}
                       onParticipantRemoved={(userId) => {
-                        console.log('Participant supprimé:', userId);
+                        console.log(t('participantRemoved', { userId }));
                         // Recharger les participants
                         loadConversationParticipants(selectedConversation.id);
                       }}
                       onParticipantAdded={(userId) => {
-                        console.log('Participant ajouté:', userId);
+                        console.log(t('participantAdded', { userId }));
                         // Recharger les participants
                         loadConversationParticipants(selectedConversation.id);
                       }}
@@ -1164,7 +1170,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       variant="ghost"
                       onClick={() => setIsDetailsSidebarOpen(true)}
                       className="rounded-full h-10 w-10 p-0 hover:bg-accent/50"
-                      title="Détails de la conversation"
+                      title={t('conversationDetails')}
                     >
                       <Info className="h-5 w-5" />
                     </Button>
@@ -1183,8 +1189,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       user.regionalLanguage,
                       user.customDestinationLanguage
                     ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage)}
-                    emptyStateMessage="Aucun message dans cette conversation"
-                    emptyStateDescription="Commencez la conversation en envoyant un message !"
+                    emptyStateMessage={t('noMessages')}
+                    emptyStateDescription={t('noMessagesDescription')}
                     reverseOrder={false}
                     className="space-y-4"
                   />
@@ -1211,7 +1217,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     selectedLanguage={selectedLanguage}
                     onLanguageChange={setSelectedLanguage}
                     isComposingEnabled={!isSending}
-                    placeholder="Écris ton message..."
+                    placeholder={t('writeMessage')}
                     choices={user ? getUserLanguageChoices(user) : undefined}
                     onKeyPress={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -1232,16 +1238,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                   {conversations.length > 0 ? (
                     <>
-                      <h3 className="text-xl font-bold text-foreground mb-2 text-center">Choisis une conversation !</h3>
+                      <h3 className="text-xl font-bold text-foreground mb-2 text-center">{t('chooseConversation')}</h3>
                       <p className="text-muted-foreground text-base mb-6 text-center">
-                        Clique sur une conversation à gauche pour commencer à discuter
+                        {t('chooseConversationDescription')}
                       </p>
                     </>
                   ) : (
                     <>
-                      <h3 className="text-xl font-bold text-foreground mb-2 text-center">Bienvenue ! 🎉</h3>
+                      <h3 className="text-xl font-bold text-foreground mb-2 text-center">{t('welcome')}</h3>
                       <p className="text-muted-foreground text-base mb-6 text-center">
-                        Tu n&apos;as pas encore de conversations. Commence par en créer une !
+                        {t('welcomeDescription')}
                       </p>
                     </>
                   )}
@@ -1254,7 +1260,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all"
                   >
                     <Plus className="h-5 w-5 mr-2" />
-                    Nouvelle conversation
+                    {t('newConversation')}
                   </Button>
                   <Button
                     onClick={() => setIsCreateLinkModalOpen(true)}
@@ -1262,7 +1268,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     className="rounded-2xl px-6 py-3 border-2 border-primary/20 hover:border-primary/40 font-semibold shadow-md hover:shadow-lg transition-all"
                   >
                     <Link2 className="h-5 w-5 mr-2" />
-                    Créer un lien
+                    {t('createLink')}
                   </Button>
                 </div>
               </div>
@@ -1335,8 +1341,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 setShowConversationList(false);
               }
             }).catch((error) => {
-              console.error('Erreur lors du chargement de la nouvelle conversation:', error);
-              toast.error('Erreur lors du chargement de la conversation. Rechargement...');
+              console.error(t('errorLoadingNewConversation'), error);
+              toast.error(t('errorLoadingConversation'));
               setTimeout(() => {
                 loadData();
               }, 1000);
