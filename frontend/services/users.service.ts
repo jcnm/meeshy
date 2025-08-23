@@ -61,14 +61,20 @@ export const usersService = {
    */
   async getMyProfile(): Promise<ApiResponse<User>> {
     try {
-      const response = await apiService.get<User>('/users/me');
+      const response = await apiService.get<{ user: User }>('/auth/me');
+      
+      // Extraire l'utilisateur de la réponse /auth/me
+      const userData = response.data?.user || response.data;
       
       // S'assurer que les permissions sont définies
-      if (response.data && !response.data.permissions) {
-        response.data.permissions = getDefaultPermissions(response.data.role);
+      if (userData && !userData.permissions) {
+        userData.permissions = getDefaultPermissions(userData.role);
       }
       
-      return response;
+      return {
+        ...response,
+        data: userData
+      };
     } catch (error) {
       console.error('Erreur lors de la récupération du profil:', error);
       throw error;

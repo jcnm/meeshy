@@ -8,7 +8,7 @@ const updateUserSchema = z.object({
   lastName: z.string().min(1).optional(),
   displayName: z.string().optional(),
   email: z.string().email().optional(),
-  phoneNumber: z.string().optional(),
+  phoneNumber: z.string().nullable().optional().or(z.literal('')),
   systemLanguage: z.string().min(2).max(5).optional(),
   regionalLanguage: z.string().min(2).max(5).optional(),
   customDestinationLanguage: z.string().min(2).max(5).optional(),
@@ -19,11 +19,6 @@ const updateUserSchema = z.object({
 });
 
 export async function userRoutes(fastify: FastifyInstance) {
-  // Route pour obtenir les informations utilisateur
-  fastify.get('/users/me', async (request, reply) => {
-    reply.send({ message: 'User routes - to be implemented' });
-  });
-
   // Route pour obtenir les statistiques du tableau de bord de l'utilisateur connecté
   fastify.get('/users/me/dashboard-stats', {
     onRequest: [fastify.authenticate]
@@ -268,7 +263,10 @@ export async function userRoutes(fastify: FastifyInstance) {
       if (body.lastName !== undefined) updateData.lastName = body.lastName;
       if (body.displayName !== undefined) updateData.displayName = body.displayName;
       if (body.email !== undefined) updateData.email = body.email;
-      if (body.phoneNumber !== undefined) updateData.phoneNumber = body.phoneNumber;
+      if (body.phoneNumber !== undefined) {
+        // Convertir les chaînes vides en null pour la base de données
+        updateData.phoneNumber = body.phoneNumber === '' ? null : body.phoneNumber;
+      }
       
       // Champs de configuration des langues
       if (body.systemLanguage !== undefined) updateData.systemLanguage = body.systemLanguage;
@@ -311,8 +309,8 @@ export async function userRoutes(fastify: FastifyInstance) {
         }
       }
 
-      // Vérifier si le numéro de téléphone est unique (si modifié)
-      if (body.phoneNumber) {
+      // Vérifier si le numéro de téléphone est unique (si modifié et non vide)
+      if (body.phoneNumber && body.phoneNumber.trim() !== '') {
         const existingUser = await fastify.prisma.user.findFirst({
           where: { 
             phoneNumber: body.phoneNumber,

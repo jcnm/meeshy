@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, formatLanguageName } from '@/utils/language-detection';
+import { INTERFACE_LANGUAGES } from '@/types';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 
 interface LanguageSelectorProps {
@@ -27,6 +28,7 @@ interface LanguageSelectorProps {
   placeholder?: string;
   className?: string;
   choices?: LanguageChoice[]; // Choix de langues spécifiques ou utilise SUPPORTED_LANGUAGES par défaut
+  interfaceOnly?: boolean; // Si true, utilise seulement les langues d'interface (EN, FR, PT)
 }
 
 export function LanguageSelector({
@@ -36,13 +38,16 @@ export function LanguageSelector({
   placeholder = "Sélectionner une langue...",
   className,
   choices,
+  interfaceOnly = false,
 }: LanguageSelectorProps) {
   const [open, setOpen] = useState(false);
 
-  // Utiliser les choix fournis ou les langues supportées par défaut
+  // Utiliser les choix fournis, les langues d'interface limitées, ou les langues supportées par défaut
   const availableLanguages = choices 
     ? choices.map(choice => SUPPORTED_LANGUAGES.find(lang => lang.code === choice.code)).filter(Boolean)
-    : SUPPORTED_LANGUAGES;
+    : interfaceOnly 
+      ? INTERFACE_LANGUAGES
+      : SUPPORTED_LANGUAGES;
 
   const selectedLanguage = availableLanguages.find(
     (language) => language?.code === value

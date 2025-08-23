@@ -7,9 +7,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { User as UserType, SUPPORTED_LANGUAGES } from '@/types';
+import { User as UserType, SUPPORTED_LANGUAGES, INTERFACE_LANGUAGES } from '@/types';
 import { toast } from 'sonner';
 import { Globe, Languages, Target } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { buildApiUrl } from '@/lib/config';
 
 interface LanguageSettingsProps {
   user: UserType | null;
@@ -17,6 +19,7 @@ interface LanguageSettingsProps {
 }
 
 export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) {
+  const t = useTranslations('settings');
   const [settings, setSettings] = useState({
     systemLanguage: 'fr',
     regionalLanguage: 'fr',
@@ -69,18 +72,18 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
     setIsLoading(true);
     try {
       // Appel API pour sauvegarder les modifications des paramètres de langue
-      const response = await fetch('/users/me', {
+      const response = await fetch(buildApiUrl('/users/me'), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}` // Utiliser auth_token comme dans la page principale
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify(settings)
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de la mise à jour des paramètres de langue');
+        throw new Error(errorData.error || t('translation.actions.updateError'));
       }
 
       const responseData = await response.json();
@@ -92,10 +95,10 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
       };
       
       onUserUpdate(updatedUser);
-      toast.success(responseData.message || 'Paramètres de langue mis à jour');
+      toast.success(responseData.message || t('translation.actions.settingsUpdated'));
     } catch (err) {
-      console.error('Erreur lors de la mise à jour:', err);
-      toast.error(err instanceof Error ? err.message : 'Erreur lors de la mise à jour');
+      console.error('Erreur lors de la mise à jour des paramètres de langue:', err);
+      toast.error(err instanceof Error ? err.message : t('translation.actions.updateError'));
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +118,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
     return (
       <Card>
         <CardContent className="p-6">
-          <p className="text-muted-foreground">Aucun utilisateur connecté</p>
+          <p className="text-muted-foreground">{t('noUserConnected')}</p>
         </CardContent>
       </Card>
     );
@@ -127,16 +130,16 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
-            Langues principales
+            {t('translation.mainLanguages.title')}
           </CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            Configurez vos langues préférées pour la communication
+            {t('translation.mainLanguages.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6">
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="systemLanguage" className="text-sm sm:text-base">Langue système</Label>
+              <Label htmlFor="systemLanguage" className="text-sm sm:text-base">{t('translation.mainLanguages.systemLanguage')}</Label>
               <Select
                 value={settings.systemLanguage}
                 onValueChange={(value) => handleSettingChange('systemLanguage', value)}
@@ -145,7 +148,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SUPPORTED_LANGUAGES.map((lang) => (
+                  {INTERFACE_LANGUAGES.map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
                         <span>{lang.flag}</span>
@@ -156,12 +159,12 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                 </SelectContent>
               </Select>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Langue principale de votre interface et de vos messages
+                {t('translation.mainLanguages.systemLanguageDescription')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="regionalLanguage" className="text-sm sm:text-base">Langue régionale</Label>
+              <Label htmlFor="regionalLanguage" className="text-sm sm:text-base">{t('translation.mainLanguages.regionalLanguage')}</Label>
               <Select
                 value={settings.regionalLanguage}
                 onValueChange={(value) => handleSettingChange('regionalLanguage', value)}
@@ -170,7 +173,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {SUPPORTED_LANGUAGES.map((lang) => (
+                  {INTERFACE_LANGUAGES.map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
                         <span>{lang.flag}</span>
@@ -181,21 +184,21 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                 </SelectContent>
               </Select>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Langue de votre région ou langue secondaire préférée
+                {t('translation.mainLanguages.regionalLanguageDescription')}
               </p>
             </div>
 
             <div className="space-y-2 lg:col-span-2 xl:col-span-1">
-              <Label htmlFor="customDestinationLanguage" className="text-sm sm:text-base">Langue de destination personnalisée</Label>
+              <Label htmlFor="customDestinationLanguage" className="text-sm sm:text-base">{t('translation.mainLanguages.customDestinationLanguage')}</Label>
               <Select
                 value={settings.customDestinationLanguage || "none"}
                 onValueChange={(value) => handleSettingChange('customDestinationLanguage', value === "none" ? "" : value)}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Sélectionner une langue" />
+                  <SelectValue placeholder={t('translation.mainLanguages.selectLanguage')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Aucune</SelectItem>
+                  <SelectItem value="none">{t('translation.mainLanguages.none')}</SelectItem>
                   {SUPPORTED_LANGUAGES.map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
@@ -207,7 +210,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                 </SelectContent>
               </Select>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Langue spécifique pour la traduction automatique (optionnel)
+                {t('translation.mainLanguages.customDestinationLanguageDescription')}
               </p>
             </div>
           </div>
@@ -218,18 +221,18 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Languages className="h-4 w-4 sm:h-5 sm:w-5" />
-            Options de traduction automatique
+            {t('translation.autoTranslation.title')}
           </CardTitle>
           <CardDescription className="text-sm sm:text-base">
-            Configurez comment les messages sont traduits automatiquement
+            {t('translation.autoTranslation.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1 flex-1">
-              <Label htmlFor="autoTranslateEnabled" className="text-sm sm:text-base">Traduction automatique</Label>
+              <Label htmlFor="autoTranslateEnabled" className="text-sm sm:text-base">{t('translation.autoTranslation.enabled')}</Label>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Active la traduction automatique des messages entrants
+                {t('translation.autoTranslation.enabledDescription')}
               </p>
             </div>
             <Switch
@@ -243,17 +246,20 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
             <div className="space-y-4 sm:space-y-6">
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-xs sm:text-sm text-blue-800 font-medium">
-                  ⚠️ Mode exclusif : Activez une seule option de traduction à la fois.
+                  ⚠️ {t('translation.autoTranslation.exclusiveMode')}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1 flex-1">
                   <Label htmlFor="translateToSystemLanguage" className="text-sm sm:text-base font-medium">
-                    Traduire vers la langue système uniquement
+                    {t('translation.autoTranslation.translateToSystem')}
                   </Label>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Traduit les messages vers {getLanguageFlag(settings.systemLanguage)} {getLanguageName(settings.systemLanguage)} seulement
+                    {t('translation.autoTranslation.translateToSystemDescription', { 
+                      flag: getLanguageFlag(settings.systemLanguage), 
+                      language: getLanguageName(settings.systemLanguage) 
+                    })}
                   </p>
                 </div>
                 <Switch
@@ -266,10 +272,13 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1 flex-1">
                   <Label htmlFor="translateToRegionalLanguage" className="text-sm sm:text-base font-medium">
-                    Traduire vers la langue régionale uniquement
+                    {t('translation.autoTranslation.translateToRegional')}
                   </Label>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Traduit les messages vers {getLanguageFlag(settings.regionalLanguage)} {getLanguageName(settings.regionalLanguage)} seulement
+                    {t('translation.autoTranslation.translateToRegionalDescription', { 
+                      flag: getLanguageFlag(settings.regionalLanguage), 
+                      language: getLanguageName(settings.regionalLanguage) 
+                    })}
                   </p>
                 </div>
                 <Switch
@@ -282,13 +291,16 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1 flex-1">
                   <Label htmlFor="useCustomDestination" className="text-sm sm:text-base font-medium">
-                    Traduire vers la langue personnalisée uniquement
+                    {t('translation.autoTranslation.translateToCustom')}
                   </Label>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {settings.customDestinationLanguage ? (
-                      <>Traduit les messages vers {getLanguageFlag(settings.customDestinationLanguage)} {getLanguageName(settings.customDestinationLanguage)} seulement</>
+                      t('translation.autoTranslation.translateToCustomDescription', { 
+                        flag: getLanguageFlag(settings.customDestinationLanguage), 
+                        language: getLanguageName(settings.customDestinationLanguage) 
+                      })
                     ) : (
-                      'Aucune langue personnalisée définie - définissez-en une ci-dessus'
+                      t('translation.autoTranslation.noCustomLanguage')
                     )}
                   </p>
                 </div>
@@ -302,7 +314,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
 
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-xs sm:text-sm text-amber-800">
-                  <strong>💡 Astuce :</strong> Si aucune option n'est sélectionnée, les messages seront traduits vers toutes vos langues configurées (système + régionale + personnalisée).
+                  <strong>💡 {t('translation.autoTranslation.tip')}</strong> {t('translation.autoTranslation.tipDescription')}
                 </p>
               </div>
             </div>
@@ -314,26 +326,26 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Target className="h-4 w-4 sm:h-5 sm:w-5" />
-            Aperçu de la configuration
+            {t('translation.preview.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-              <Badge variant="secondary" className="text-xs sm:text-sm w-fit">Langue système</Badge>
+              <Badge variant="secondary" className="text-xs sm:text-sm w-fit">{t('translation.preview.systemLanguage')}</Badge>
               <span className="flex items-center gap-1 text-sm sm:text-base">
                 {getLanguageFlag(settings.systemLanguage)} {getLanguageName(settings.systemLanguage)}
               </span>
             </div>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-              <Badge variant="secondary" className="text-xs sm:text-sm w-fit">Langue régionale</Badge>
+              <Badge variant="secondary" className="text-xs sm:text-sm w-fit">{t('translation.preview.regionalLanguage')}</Badge>
               <span className="flex items-center gap-1 text-sm sm:text-base">
                 {getLanguageFlag(settings.regionalLanguage)} {getLanguageName(settings.regionalLanguage)}
               </span>
             </div>
             {settings.customDestinationLanguage && (
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-                <Badge variant="secondary" className="text-xs sm:text-sm w-fit">Langue personnalisée</Badge>
+                <Badge variant="secondary" className="text-xs sm:text-sm w-fit">{t('translation.preview.customLanguage')}</Badge>
                 <span className="flex items-center gap-1 text-sm sm:text-base">
                   {getLanguageFlag(settings.customDestinationLanguage)} {getLanguageName(settings.customDestinationLanguage)}
                 </span>
@@ -341,9 +353,9 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
             )}
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
               <Badge variant={settings.autoTranslateEnabled ? "default" : "outline"} className="text-xs sm:text-sm w-fit">
-                Traduction automatique
+                {t('translation.preview.autoTranslation')}
               </Badge>
-              <span className="text-sm sm:text-base">{settings.autoTranslateEnabled ? 'Activée' : 'Désactivée'}</span>
+              <span className="text-sm sm:text-base">{settings.autoTranslateEnabled ? t('translation.preview.enabled') : t('translation.preview.disabled')}</span>
             </div>
           </div>
         </CardContent>
@@ -367,10 +379,10 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
             }
           }}
         >
-          Annuler
+          {t('translation.actions.cancel')}
         </Button>
         <Button onClick={handleSave} disabled={isLoading} className="w-full sm:w-auto">
-          {isLoading ? 'Sauvegarde...' : 'Sauvegarder'}
+          {isLoading ? t('translation.actions.saving') : t('translation.actions.save')}
         </Button>
       </div>
     </div>

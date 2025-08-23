@@ -15,6 +15,9 @@ import type {
 // Ré-export de tous les types partagés
 export * from '@/shared/types';
 
+// Ré-export des types frontend
+export * from './frontend';
+
 // Types spécifiques au frontend uniquement
 export interface FrontendConfig {
   apiUrl: string;
