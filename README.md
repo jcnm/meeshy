@@ -66,6 +66,7 @@ Breaking language barriers in real-time communication! Meeshy empowers global te
 
 ## 🏛️ System Architecture
 
+### Microservices Architecture
 ```
 ┌─────────────────┐    WebSocket/HTTP   ┌──────────────────┐
 │   Frontend      │◄───────────────────►│    Gateway       │
@@ -81,6 +82,37 @@ Breaking language barriers in real-time communication! Meeshy empowers global te
 │   + Redis       │    + Cache          │   PyTorch 2.0+   │
 └─────────────────┘                     └──────────────────┘
 ```
+
+### Unified Architecture (Nginx Reverse Proxy)
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Nginx Reverse Proxy                      │
+│                    (Port 80 - Public)                       │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+        ┌─────────────┼─────────────┐
+        │             │             │
+┌───────▼──────┐ ┌────▼────┐ ┌──────▼──────┐
+│   Frontend   │ │ Gateway │ │ Translator  │
+│   (Port 3100)│ │(Port 3000)│ │ (Port 8000) │
+│   (Internal) │ │(Internal)│ │ (Internal)  │
+└──────────────┘ └─────────┘ └─────────────┘
+        │             │             │
+        └─────────────┼─────────────┘
+                      │
+              ┌───────▼──────┐
+              │  PostgreSQL  │
+              │  + Redis     │
+              │  (Internal)  │
+              └──────────────┘
+```
+
+**Avantages de l'architecture unifiée :**
+- **Port unique** : Seul le port 80 est exposé publiquement
+- **Sécurité renforcée** : Services internes non accessibles directement
+- **Load balancing** : Nginx gère la distribution des requêtes
+- **SSL/TLS centralisé** : Configuration SSL unique sur Nginx
+- **Simplification** : Un seul container pour tous les services
 
 ### Service Responsibilities
 
@@ -149,6 +181,27 @@ interface UserLanguageConfig {
    • User D (systemLanguage: "en") → receives "Hello"
 ```
 
+## 📸 Screenshots
+
+### 🔐 Authentication & User Management
+![Login Modal](assets/login_modal.png)
+*Modal de connexion avec gestion des sessions utilisateur*
+
+![Authentication Loading](assets/auth_loading.png)
+*Écran de chargement pendant l'authentification*
+
+![Shared Conversation](assets/shared_conversation.png)
+*Conversation partagée avec traduction multilingue*
+
+### 🎛️ User Interface & Dashboard
+![User Dashboard](assets/user_dashboard.png)
+*Tableau de bord utilisateur avec navigation intuitive*
+
+### ⚠️ Error Handling
+![Session Token Error](assets/session_token_error.png)
+*Gestion d'erreur pour les tokens de session expirés*
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -173,9 +226,11 @@ docker-compose up -d
 git clone https://github.com/jcnm/meeshy.git
 cd meeshy
 
-# Run with unified container
+# Run with unified container (Nginx reverse proxy)
 docker-compose -f docker-compose.unified.yml up -d
 ```
+
+**Note**: L'architecture unifiée utilise Nginx comme reverse proxy. Seul le port 80 est exposé publiquement. Les services internes (Frontend:3100, Gateway:3000, Translator:8000) ne sont accessibles que via Nginx.
 
 ### Option 3: Automated Pipeline
 ```bash
@@ -189,7 +244,7 @@ cd meeshy
 
 🌐 **Access the application**: 
 - **Microservices**: http://localhost:3100 (Frontend), http://localhost:3000 (Gateway)
-- **Unified**: http://localhost (via Nginx proxy)
+- **Unified**: http://localhost (Nginx reverse proxy - Frontend + API unifiés)
 
 ## 📊 Supported Languages & Performance
 
@@ -403,13 +458,15 @@ docker-compose up -d
 docker-compose -f docker-compose.unified.yml up -d
 ```
 
+**Architecture unifiée** : Nginx reverse proxy sur le port 80, services internes non exposés
+
 ### Docker Registry Images
 ```bash
 # Pull latest images
-docker pull isopen/meeshy-translator:0.5.12-alpha
-docker pull isopen/meeshy-gateway:0.5.12-alpha
-docker pull isopen/meeshy-frontend:0.5.12-alpha
-docker pull isopen/meeshy:0.5.12-alpha
+docker pull isopen/meeshy-translator:0.5.15-alpha
+docker pull isopen/meeshy-gateway:0.5.15-alpha
+docker pull isopen/meeshy-frontend:0.5.15-alpha
+docker pull isopen/meeshy:0.5.15-alpha
 ```
 
 ### Automated Deployment
