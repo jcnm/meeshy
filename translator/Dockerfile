@@ -48,9 +48,9 @@ ARG DEBUG=false
 ARG SUPPORTED_LANGUAGES="fr,en,es,de,pt,zh,ja,ar"
 ARG DEFAULT_LANGUAGE=fr
 ARG MAX_TEXT_LENGTH=5000
-ARG BASIC_MODEL=t5-small
-ARG MEDIUM_MODEL=nllb-200-distilled-600M
-ARG PREMIUM_MODEL=nllb-200-distilled-1.3B
+ARG BASIC_MODEL=facebook/nllb-200-distilled-600M
+ARG MEDIUM_MODEL=facebook/nllb-200-distilled-600M
+ARG PREMIUM_MODEL=facebook/nllb-200-distilled-1.3B
 ARG DEVICE=cpu
 ARG ML_BATCH_SIZE=4
 ARG GPU_MEMORY_FRACTION=0.8
@@ -120,7 +120,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         postgresql-client \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g pnpm@${PNPM_VERSION} prisma \
+    && npm install -g pnpm@${PNPM_VERSION} prisma@latest \
     && groupadd -g 1001 translator \
     && useradd -u 1001 -g translator -m translator \
     && mkdir -p /app/{logs,cache,models,shared,generated} \
@@ -148,25 +148,20 @@ RUN pip install --upgrade pip --no-cache-dir \
 # Copie du code source et du schéma Prisma
 COPY --chown=translator:translator . .
 
-# Copie du dossier shared pour les migrations Prisma
-COPY --chown=translator:translator ../shared ./shared
 
 # OPTIMISATION: Génération du client Prisma pendant le build (après installation des dépendances)
 RUN echo "🔧 Génération du client Prisma..." \
     && mkdir -p /app/generated \
-    && chown -R translator:translator /app/generated \
-    && npx prisma@5.17.0 generate --schema=./shared/prisma/schema.prisma \
+    && cd /app/generated \
+    && prisma generate --schema=/app/shared/prisma/schema.prisma \
     && chown -R translator:translator /app/generated \
     && echo "✅ Client Prisma généré avec succès"
-
-# OPTIMISATION: Pré-téléchargement des modèles ML de base
-RUN echo "🤖 Pré-téléchargement des modèles ML de base..." \
-    && python3 -c "import os; from transformers import AutoTokenizer, AutoModelForSeq2SeqLM; import torch; print('📥 Téléchargement t5-small...'); tokenizer = AutoTokenizer.from_pretrained('t5-small', cache_dir='/app/models'); model = AutoModelForSeq2SeqLM.from_pretrained('t5-small', cache_dir='/app/models'); print('✅ t5-small téléchargé avec succès'); del tokenizer, model; torch.cuda.empty_cache() if torch.cuda.is_available() else None" || echo "⚠️ Pré-téléchargement des modèles échoué (normal au build)"
 
 # OPTIMISATION: Configuration des permissions et optimisation finale
 RUN chown -R translator:translator /app \
     && chmod +x /app/docker-diagnostic.sh \
     && chmod +x /app/docker-entrypoint.sh \
+    && ls -ial -R /app \
     && python3 -m compileall /app/src \
     && find /app -name '*.pyc' -delete
 

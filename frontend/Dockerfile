@@ -51,7 +51,7 @@ RUN \
   if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
   elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
+  else corepack enable pnpm && pnpm install; \
   fi
 
 # ===== BUILDER STAGE =====
@@ -65,9 +65,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set build environment variables
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://gateway:3000} \
-    NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-ws://gateway:3000} \
-    NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://gateway:3000} \
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000} \
+    NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-ws://localhost:3000} \
+    NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3000} \
     NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION:-false} \
     NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY:-true}
 
@@ -80,7 +80,7 @@ RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
   elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-  else echo "Lockfile not found." && exit 1; \
+  else corepack enable pnpm && pnpm run build; \
   fi
 
 # ===== RUNNER STAGE =====

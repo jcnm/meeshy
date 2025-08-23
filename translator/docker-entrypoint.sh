@@ -13,7 +13,7 @@ wait_for_database() {
     DB_NAME=$(echo $DATABASE_URL | sed -n 's/.*\/\([^?]*\).*/\1/p')
     DB_USER=$(echo $DATABASE_URL | sed -n 's/.*:\/\/\([^:]*\):.*/\1/p')
     DB_PASS=$(echo $DATABASE_URL | sed -n 's/.*:\/\/[^:]*:\([^@]*\)@.*/\1/p')
-    
+    echo "DATABASE_URL: $DATABASE_URL"
     # Attendre que PostgreSQL soit prêt
     until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME"; do
         echo "[TRANSLATOR] ⏳ Base de données non prête, attente de 5 secondes..."
@@ -43,27 +43,28 @@ run_prisma_migrations() {
     echo "[TRANSLATOR] 🔧 Initialisation et migrations de la base de données..."
     
     # Vérifier si le client Prisma est déjà généré (pendant le build)
-               echo "[TRANSLATOR] 📦 Vérification du client Prisma..."
-           if [ -d "/app/generated/prisma" ] && [ -f "/app/generated/prisma/__init__.py" ]; then
-               echo "[TRANSLATOR] ✅ Client Prisma déjà généré pendant le build"
-           else
-               echo "[TRANSLATOR] 🔧 Génération du client Prisma..."
-               # Utiliser un répertoire temporaire pour éviter les problèmes de permissions
-               mkdir -p /tmp/prisma-generate
-               cd /tmp/prisma-generate
-               if npx prisma@5.17.0 generate --schema=/app/shared/prisma/schema.prisma; then
-                   # Copier le client généré vers le répertoire final
-                   mkdir -p /app/generated
-                   cp -r /tmp/prisma-generate/* /app/generated/ 2>/dev/null || true
-                   chown -R translator:translator /app/generated
-                   echo "[TRANSLATOR] ✅ Client Prisma généré avec succès"
-               else
-                   echo "[TRANSLATOR] ⚠️ Échec de la génération du client Prisma"
-                   echo "[TRANSLATOR] 🔄 Continuation sans client Prisma généré"
-               fi
-               cd /app
-           fi
-    
+    echo "[TRANSLATOR] 📦 Vérification du client Prisma..."
+    if [ -d "/usr/local/lib/python3.12/site-packages/prisma" ] && [ -f "/usr/local/lib/python3.12/site-packages/prisma/__init__.py" ]; then
+        echo "[TRANSLATOR] ✅ Client Prisma déjà généré pendant le build"
+        cp -rf /usr/local/lib/python3.12/site-packages/prisma /app/generated
+    elif [ -d "/app/generated/prisma" ] && [ -f "/app/generated/prisma/__init__.py" ]; then
+        echo "[TRANSLATOR] ✅ Client Prisma trouvé dans /app/generated - utilisation directe"
+    else
+        echo "[TRANSLATOR] 🔧 Génération du client Prisma..."
+        # Utiliser le répertoire généré existant
+        mkdir -p /app/generated
+        cd /app/generated
+        if prisma generate --schema=/app/shared/prisma/schema.prisma; then
+            cp -rf /usr/local/lib/python3.12/site-packages/prisma /app/generated
+            chown -R translator:translator /app/generated
+            echo "[TRANSLATOR] ✅ Client Prisma généré avec succès"
+        else
+            echo "[TRANSLATOR] ⚠️ Échec de la génération du client Prisma"
+            echo "[TRANSLATOR] 🔄 Continuation sans client Prisma généré"
+        fi
+        cd /app
+    fi
+   
     # Vérifier si la base de données existe et a des tables
     echo "[TRANSLATOR] 🔍 Vérification de l'état de la base de données..."
     

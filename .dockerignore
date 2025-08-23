@@ -111,6 +111,24 @@
 **/.cache/
 **/.tmp/
 
+# ===== MODÈLES ML (téléchargés au runtime) =====
+**/models/
+**/translator/models/
+**/translator/models/*
+**/*.safetensors
+**/*.bin
+**/*.model
+**/*.pt
+**/*.pth
+**/*.onnx
+**/*.tflite
+**/*.pb
+**/*.h5
+**/*.keras
+**/*.joblib
+**/*.pickle
+**/*.pkl
+
 # ===== FICHIERS ESSENTIELS POUR DOCKER (NE PAS IGNORER) =====
 # Les fichiers suivants sont utilisés par les Dockerfiles et DOIVENT être préservés :
 # - package.json (dans chaque service)

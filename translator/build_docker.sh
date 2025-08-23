@@ -57,9 +57,9 @@ SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
 AUTO_DETECT_LANGUAGE=true
 
 # Modèles de traduction
-BASIC_MODEL=t5-small
-MEDIUM_MODEL=nllb-200-distilled-600M
-PREMIUM_MODEL=nllb-200-distilled-1.3B
+BASIC_MODEL=google/t5-small
+MEDIUM_MODEL=facebook/nllb-200-distilled-600M
+PREMIUM_MODEL=facebook/nllb-200-distilled-1.3B
 
 # Performance
 TRANSLATION_TIMEOUT=30

@@ -5,15 +5,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.unified
-    image: isopen/meeshy:0.5.12-alpha
+    image: isopen/meeshy:0.5.15-alpha
     container_name: meeshy
     restart: unless-stopped
     ports:
-      - "80:80"      # Frontend (Nginx)
-      - "3000:3000"  # Gateway API
-      - "8000:8000"  # Translator API
-      - "5432:5432"  # PostgreSQL (optionnel)
-      - "6379:6379"  # Redis (optionnel)
+      - "80:80"      # Nginx Reverse Proxy (Frontend + API)
+      # Ports internes non exposés - accès via Nginx uniquement
+      # - "3000:3000"  # Gateway API (interne)
+      # - "8000:8000"  # Translator API (interne)
+      # - "5432:5432"  # PostgreSQL (interne)
+      # - "6379:6379"  # Redis (interne)
     environment:
       # Configuration des services
       - NODE_ENV=production
@@ -37,18 +38,18 @@ services:
       - QUANTIZATION_LEVEL=float16
       - ENABLE_DYNAMIC_SCALING=true
       
-      # Configuration Gateway
+      # Configuration Gateway (ports internes)
       - GATEWAY_PORT=3000
       - ZMQ_TRANSLATOR_HOST=localhost
       - ZMQ_TRANSLATOR_PUSH_PORT=5555
       - ZMQ_TRANSLATOR_SUB_PORT=5558
-      - CORS_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80,http://localhost:3100
-      - ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80,http://localhost:3100
+      - CORS_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:80,http://127.0.0.1,http://127.0.0.1:80
       
-      # Configuration Frontend
+      # Configuration Frontend (ports internes, accès via Nginx)
       - PORT=3100
-      - NEXT_PUBLIC_API_URL=http://localhost:3000
-      - NEXT_PUBLIC_WS_URL=ws://localhost:3000
+      - NEXT_PUBLIC_API_URL=http://localhost/api
+      - NEXT_PUBLIC_WS_URL=ws://localhost/ws
     volumes:
       - meeshy_data:/app/data
       - meeshy_logs:/app/logs
