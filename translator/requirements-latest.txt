@@ -1,49 +1,53 @@
-# Requirements avec les dernières versions (pour comparaison)
-# Vérifiées le 19 Août 2025
+# Configuration d'environnement
+python-dotenv>=1.1.1
 
-# Core ML dependencies - Dernières versions
-torch==2.8.0
-transformers==4.55.2
-accelerate==0.30.0
-optimum==1.20.0
+# Framework web
+fastapi>=0.116.1
+uvicorn[standard]>=0.35.0
+pydantic-settings>=2.10.1
+pydantic>=2.11.7
 
-# Optimisations spécifiques
-torch-quantization==0.1.0
-onnx==1.16.0
-onnxruntime==1.18.0
+# Communication gRPC et ZeroMQ
+grpcio>=1.74.0
+grpcio-tools>=1.74.0
+grpcio-reflection>=1.74.0
+protobuf>=6.32.0
+pyzmq>=27.0.2
 
-# Accélération CPU
-intel-extension-for-pytorch==2.2.0
-openblas==0.3.26
+# Machine Learning et NLP (versions compatibles)
+torch>=2.8.0
+transformers>=4.55.4
+tokenizers>=0.21.4
+accelerate>=1.10.0
+datasets>=4.0.0
+sentencepiece>=0.2.1
 
-# Cache et performance
-redis==5.0.1
-aioredis==2.0.1
+# Cache et base de données
+redis>=6.4.0
+prisma>=0.15.0
+asyncpg>=0.30.0
+aiosqlite>=0.21.0
 
-# Monitoring et métriques
-psutil==5.9.8
-prometheus-client==0.20.0
+# Détection de langue et analyse de texte
+langdetect>=1.0.9
+nltk>=3.9.1
+textstat>=0.7.8
 
-# Web framework - Dernière version
-fastapi==0.116.1
-uvicorn[standard]==0.32.0
+# Utilitaires système
+psutil>=7.0.0
+numpy>=2.3.2
+pandas>=2.3.2
+aiohttp>=3.12.15
+python-multipart>=0.0.20
+aiofiles>=24.1.0
 
-# Communication
-pyzmq==25.1.2
-grpcio==1.64.0
-grpcio-tools==1.64.0
+# Logging et monitoring
+loguru>=0.7.3
+prometheus-client>=0.22.1
 
-# Database
-prisma==0.13.0
-sqlalchemy==2.0.35
+# Tests
+pytest>=8.4.1
+pytest-asyncio>=1.1.0
+pytest-cov>=6.2.1
+httpx>=0.28.1
 
-# Utils
-python-dotenv==1.0.1
-pydantic==2.10.0
-python-multipart==0.0.9
-
-# Development
-pytest==8.2.0
-pytest-asyncio==0.24.0
-black==24.10.0
-flake8==7.1.0
