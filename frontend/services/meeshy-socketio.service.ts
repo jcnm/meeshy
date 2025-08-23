@@ -6,7 +6,7 @@
 'use client';
 
 import { io, Socket } from 'socket.io-client';
-import { getWebSocketUrl } from '@/lib/runtime-urls';
+import { getWebSocketUrl } from '@/lib/config';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
 import type { 

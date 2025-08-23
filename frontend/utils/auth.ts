@@ -1,5 +1,5 @@
 import { User } from '@/types';
-import { buildApiUrl } from '@/lib/runtime-urls';
+import { buildApiUrl } from '@/lib/config';
 
 export interface AuthState {
   isAuthenticated: boolean;

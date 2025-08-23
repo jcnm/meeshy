@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FontFamily, defaultFont, getFontConfig } from '@/lib/fonts';
-import { buildApiUrl } from '@/lib/runtime-urls';
+import { buildApiUrl } from '@/lib/config';
 
 const FONT_PREFERENCE_KEY = 'font-family';
 

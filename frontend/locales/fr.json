@@ -28,6 +28,12 @@
     "register": "Inscription"
   },
   "landing": {
+    "navigation": {
+      "home": "Accueil",
+      "features": "Fonctionnalités",
+      "about": "À propos",
+      "contact": "Contact"
+    },
     "hero": {
       "badge": "Traduction en temps réel",
       "title": "Communiquez sans",
@@ -68,7 +74,7 @@
       },
       "groupChats": {
         "title": "Conversations de Groupe",
-        "description": "Créez des groupes multilingues et gérez les permissions facilement."
+        "description": "Créez des communautés multilingues et gérez les permissions facilement."
       },
       "multiLanguage": {
         "title": "Multi-Langues Personnalisées",
@@ -236,21 +242,100 @@
   "dashboard": {
     "title": "Tableau de bord",
     "welcome": "Bon retour",
+    "greeting": "Bonjour, {name} ! 👋",
+    "greetingFallback": "Bonjour, Utilisateur ! 👋",
+    "overview": "Voici un aperçu de votre activité de messagerie aujourd'hui.",
     "stats": {
       "totalConversations": "Conversations totales",
-      "totalGroups": "Groupes totaux",
+      "totalCommunities": "Communautés totales",
+      "totalGroups": "Communautés totales",
       "totalMessages": "Messages totaux",
       "activeConversations": "Conversations actives",
       "translationsToday": "Traductions aujourd'hui",
-      "totalLinks": "Liens totaux"
+      "totalLinks": "Liens totaux",
+      "conversations": "Conversations",
+      "communities": "Communautés",
+      "groups": "Communautés",
+      "messages": "Messages",
+      "activeConversationsTitle": "Conversations actives",
+      "translations": "Traductions",
+      "links": "Liens",
+      "total": "Total",
+      "active": "Actifs",
+      "thisWeek": "Cette semaine",
+      "inProgress": "En cours",
+      "today": "Aujourd'hui",
+      "created": "Créés"
     },
     "recentConversations": "Conversations récentes",
-    "recentGroups": "Groupes récents",
+    "recentCommunities": "Communautés récentes",
+    "recentGroups": "Communautés récentes",
     "createLink": "Créer un lien",
+    "newConversation": "Nouvelle conv.",
+    "createCommunity": "Créer comm.",
     "refresh": "Actualiser",
     "retry": "Réessayer",
     "loadingError": "Erreur de chargement",
-    "noData": "Aucune donnée disponible"
+    "noData": "Aucune donnée disponible",
+    "loading": "Chargement du dashboard...",
+    "errorLoading": "❌ Erreur de chargement : {message}",
+    "errorUnknown": "Erreur inconnue",
+    "dataLoadingError": "Erreur lors du chargement des données",
+    "actions": {
+      "createLink": "Créer un lien",
+      "newConversation": "Nouvelle conversation",
+      "createCommunity": "Créer une communauté",
+      "createGroup": "Créer une communauté",
+      "viewAll": "Voir tout",
+      "startConversation": "Démarrer une conversation",
+      "createCommunityButton": "Créer une communauté",
+      "createGroupButton": "Créer une communauté",
+      "settings": "Paramètres"
+    },
+    "quickActions": {
+      "title": "Actions rapides",
+      "description": "Accédez rapidement aux fonctionnalités principales",
+      "newConversation": "Nouvelle conversation",
+      "createLink": "Créer un lien",
+      "createCommunity": "Créer une communauté",
+      "createGroup": "Créer une communauté",
+      "settings": "Paramètres"
+    },
+    "emptyStates": {
+      "noRecentConversations": "Aucune conversation récente",
+      "noRecentCommunities": "Aucune communauté récente",
+      "noRecentGroups": "Aucune communauté récente"
+    },
+    "success": {
+      "linkCreated": "Lien de conversation créé avec succès !"
+    },
+    "time": {
+      "format": "fr-FR"
+    }
+  },
+  "layout": {
+    "header": {
+      "searchPlaceholder": "Rechercher conversations, communautés, contacts...",
+      "notifications": "Notifications",
+      "unreadCount": "{count} non lus",
+      "userMenu": "Menu utilisateur"
+    },
+    "navigation": {
+      "dashboard": "Tableau de bord",
+      "conversations": "Conversations",
+      "communities": "Communautés",
+      "contacts": "Contacts",
+      "links": "Liens",
+      "profile": "Profil",
+      "settings": "Paramètres",
+      "admin": "Administration",
+      "logout": "Déconnexion"
+    },
+    "auth": {
+      "checking": "Vérification de l'authentification...",
+      "logoutSuccess": "Déconnexion réussie",
+      "logoutError": "Erreur lors de la déconnexion"
+    }
   },
   "settings": {
     "title": "Paramètres",
@@ -296,7 +381,7 @@
     "suggestions": [
       "Retourner au dashboard",
       "Consulter vos conversations",
-      "Voir vos groupes"
+      "Voir vos communautés"
     ],
     "backToDashboard": "Retour au dashboard",
     "previousPage": "Page précédente"
@@ -316,5 +401,86 @@
     "li_zh": "Li Wei (Chinois)",
     "yuki_ja": "Yuki Tanaka (Japonais)",
     "maria_pt": "Maria Silva (Portugais)"
+  },
+  "communities": {
+    "private": "Privé",
+    "members": "membres",
+    "member": "membre",
+    "membersCount": "{count} membres"
+  },
+  "conversations": {
+    "title": "Conversations",
+    "loading": "Chargement des conversations...",
+    "loadingConversations": "Chargement...",
+    "loadingConversationsDescription": "Récupération de vos conversations...",
+    "noConversations": "Aucune conversation",
+    "noConversationsDescription": "Commencez une nouvelle conversation pour discuter avec vos amis !",
+    "chooseConversation": "Choisis une conversation !",
+    "chooseConversationDescription": "Clique sur une conversation à gauche pour commencer à discuter",
+    "welcome": "Bienvenue ! 🎉",
+    "welcomeDescription": "Tu n'as pas encore de conversations. Commence par en créer une !",
+    "newConversation": "Nouvelle conversation",
+    "createLink": "Créer un lien",
+    "public": "Public",
+    "private": "Privé",
+    "translationModel": "Modèle de traduction",
+    "chooseModel": "Choisir un modèle",
+    "apiService": "Service API",
+    "active": "Actif",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "connected": "connecté",
+    "notConnected": "non connecté",
+    "yes": "oui",
+    "no": "non",
+    "conversationDetails": "Détails de la conversation",
+    "writeMessage": "Écris ton message...",
+    "noMessages": "Aucun message dans cette conversation",
+    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
+    "errorLoadingConversation": "Erreur lors du chargement de la conversation. Rechargement...",
+    "participantRemoved": "Participant supprimé: {userId}",
+    "participantAdded": "Participant ajouté: {userId}",
+    "linkCreated": "Lien créé",
+    "conversationCreated": "Conversation créée",
+    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation:",
+    "lastMessage": "Dernier message",
+    "noLastMessage": "Aucun message encore",
+    "authChecking": "Vérification de l'authentification..."
+  },
+  "bubbleStream": {
+    "loading": "Chargement des messages...",
+    "connecting": "Connexion au serveur en cours...",
+    "initializing": "Initialisation...",
+    "emptyStateMessage": "Aucun message pour le moment",
+    "emptyStateDescription": "Soyez le premier à publier dans le stream global !",
+    "languagePlaceholder": "Langue d'écriture",
+    "activeLanguages": "Langues Actives",
+    "typing": {
+      "single": "{name} est en train d'écrire...",
+      "double": "{name1} et {name2} sont en train d'écrire...",
+      "multiple": "{name} et {count} autres sont en train d'écrire..."
+    },
+    "realTimeMessages": "Messages en temps réel",
+    "connectionInProgress": "Connexion en cours...",
+    "connected": "Connexion établie ! Messages en temps réel activés",
+    "websocketConnected": "WebSocket connecté - Messages en temps réel",
+    "websocketEstablished": "Connexion WebSocket établie - Messages en temps réel activés",
+    "reconnecting": "Tentative de reconnexion...",
+    "retry": "Réessayer",
+    "diagnostics": "Diagnostic",
+    "connectionError": "Erreur de connexion",
+    "tryAgain": "Réessayer"
+  },
+  "anonymousChat": {
+    "title": "Conversation",
+    "connectedAs": "Connecté en tant que {firstName} {lastName} (@{username})",
+    "loadingMessages": "Chargement des messages...",
+    "loadMore": "Charger plus de messages",
+    "loading": "Chargement...",
+    "sessionNotActive": "Session anonyme non active",
+    "reloadPage": "Recharger la page",
+    "messagePlaceholder": "Tapez votre message...",
+    "user": "Utilisateur",
+    "anonymous": "Anonyme",
+    "unknownUser": "?"
   }
 }

@@ -69,6 +69,13 @@ const parseArray = (value: string | undefined, defaultValue: string[] = []): str
   return value.split(',').map(item => item.trim()).filter(Boolean);
 };
 
+// Fonction helper pour vérifier si on est côté client
+const isBrowser = (): boolean => typeof window !== 'undefined';
+
+// Fonction helper pour nettoyer les URLs
+const trimSlashes = (value: string): string => value.replace(/\/$/, '');
+const ensureLeadingSlash = (path: string): string => (path.startsWith('/') ? path : `/${path}`);
+
 // Configuration principale
 export const config: MeeshyConfig = {
   frontend: {
@@ -201,21 +208,40 @@ export const API_ENDPOINTS = {
   }
 };
 
-// Helper pour construire une URL complète vers l'API
-export const buildApiUrl = (endpoint: string): string => {
-  return `${APP_CONFIG.getBackendUrl()}${endpoint}`;
+// === FONCTIONS UNIFIÉES POUR LES URLs ===
+
+// HTTP base URL for the Gateway - Gère automatiquement client/serveur
+export const getBackendUrl = (): string => {
+  if (isBrowser()) {
+    return trimSlashes(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000');
+  }
+  return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'http://localhost:3000');
 };
 
-// Helper pour construire une URL WebSocket
+// WebSocket base URL for the Gateway - Gère automatiquement client/serveur
 export const getWebSocketUrl = (): string => {
-  const backendUrl = APP_CONFIG.getBackendUrl();
-  // Convertir HTTP/HTTPS en WS/WSS
-  return backendUrl.replace(/^https?:\/\//, (match) => 
-    match === 'https://' ? 'wss://' : 'ws://'
-  );
+  if (isBrowser()) {
+    const fromEnv = process.env.NEXT_PUBLIC_WS_URL;
+    if (fromEnv) return trimSlashes(fromEnv);
+    // Derive from backend if WS not provided
+    return trimSlashes(getBackendUrl().replace(/^http(s?):\/\//, (_m, s) => (s ? 'wss://' : 'ws://')));
+  }
+  return trimSlashes(process.env.INTERNAL_WS_URL || 'ws://localhost:3000');
 };
 
-// Helper pour construire une URL WebSocket complète avec path
+// Helper pour construire une URL complète vers l'API - Version unifiée
+export const buildApiUrl = (endpoint: string): string => {
+  return `${getBackendUrl()}${ensureLeadingSlash(endpoint)}`;
+};
+
+// Helper pour construire une URL WebSocket complète avec path - Version unifiée
+export const buildWsUrl = (path = '/ws'): string => {
+  return `${getWebSocketUrl()}${ensureLeadingSlash(path)}`;
+};
+
+// === FONCTIONS DE COMPATIBILITÉ (pour éviter les breaking changes) ===
+
+// Helper pour construire une URL WebSocket (ancienne version)
 export const buildWebSocketUrl = (path = '/ws'): string => {
-  return `${getWebSocketUrl()}${path}`;
+  return buildWsUrl(path);
 };

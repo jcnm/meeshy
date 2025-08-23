@@ -1,5 +1,6 @@
 import { apiService, ApiResponse } from './api.service';
 import { User } from '@/types';
+import { getDefaultPermissions } from '@/utils/user-adapter';
 // Importer les types partagés pour cohérence
 import type { UpdateUserRequest, UpdateUserResponse } from '../shared/types';
 
@@ -61,6 +62,12 @@ export const usersService = {
   async getMyProfile(): Promise<ApiResponse<User>> {
     try {
       const response = await apiService.get<User>('/users/me');
+      
+      // S'assurer que les permissions sont définies
+      if (response.data && !response.data.permissions) {
+        response.data.permissions = getDefaultPermissions(response.data.role);
+      }
+      
       return response;
     } catch (error) {
       console.error('Erreur lors de la récupération du profil:', error);

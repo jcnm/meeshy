@@ -4,7 +4,7 @@
  */
 
 import axios from 'axios';
-import { buildApiUrl } from '@/lib/runtime-urls';
+import { buildApiUrl } from '@/lib/config';
 
 // === TYPES ET INTERFACES ===
 export interface ForceTranslationRequest {

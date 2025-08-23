@@ -3,7 +3,7 @@ import type { User, Conversation } from '@/types';
 
 export interface DashboardStats {
   totalConversations: number;
-  totalGroups: number;
+  totalCommunities: number;
   totalMessages: number;
   activeConversations: number;
   translationsToday: number;
@@ -11,7 +11,7 @@ export interface DashboardStats {
   lastUpdated: Date;
 }
 
-export interface DashboardGroup {
+export interface DashboardCommunity {
   id: string;
   name: string;
   description?: string;
@@ -28,7 +28,7 @@ export interface DashboardGroup {
 export interface DashboardData {
   stats: DashboardStats;
   recentConversations: Conversation[];
-  recentGroups: DashboardGroup[];
+  recentCommunities: DashboardCommunity[];
 }
 
 export interface ShareLink {
@@ -59,10 +59,25 @@ export const dashboardService = {
    */
   async getDashboardData(): Promise<ApiResponse<DashboardData>> {
     try {
-      const response = await apiService.get<{ success: boolean; data: DashboardData }>('/users/me/dashboard-stats');
-      // Retourner directement les données du dashboard
+      const response = await apiService.get<{ success: boolean; data: any }>('/users/me/dashboard-stats');
+      
+      // Transformation des données pour assurer la compatibilité
+      const data = response.data.data;
+      
+      // Si le backend retourne encore totalGroups, le convertir en totalCommunities
+      if (data.stats && data.stats.totalGroups !== undefined && data.stats.totalCommunities === undefined) {
+        data.stats.totalCommunities = data.stats.totalGroups;
+        delete data.stats.totalGroups;
+      }
+      
+      // Si le backend retourne encore recentGroups, le convertir en recentCommunities
+      if (data.recentGroups && !data.recentCommunities) {
+        data.recentCommunities = data.recentGroups;
+        delete data.recentGroups;
+      }
+      
       return {
-        data: response.data.data,
+        data: data as DashboardData,
         status: response.status,
         message: response.message
       };
