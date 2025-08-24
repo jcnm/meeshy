@@ -218,6 +218,11 @@ export class TranslationService extends EventEmitter {
     }
   }
 
+  /**
+   * Traite les traductions d'un nouveau message de manière asynchrone
+   * OPTIMISATION: Filtre automatiquement les langues cibles identiques à la langue source
+   * pour éviter les traductions inutiles (ex: fr → fr)
+   */
   private async _processTranslationsAsync(message: any, targetLanguage?: string) {
     try {
       console.log(`🔄 Démarrage traitement asynchrone des traductions pour ${message.id}`);
@@ -240,19 +245,34 @@ export class TranslationService extends EventEmitter {
         targetLanguages = await this._extractConversationLanguages(message.conversationId);
         
         if (targetLanguages.length === 0) {
-          console.log(`ℹ️ Aucune langue cible trouvée pour la conversation ${message.conversationId}, utilisation de 'en' par défaut`);
-          targetLanguages = ['en'];
+          console.log(`ℹ️ Aucune langue cible trouvée pour la conversation ${message.conversationId}`);
         }
       }
       
-      console.log(`🌍 Langues cibles finales: ${targetLanguages.join(', ')}`);
+      // OPTIMISATION: Filtrer les langues cibles pour éviter les traductions inutiles
+      const filteredTargetLanguages = targetLanguages.filter(targetLang => {
+        const sourceLang = message.originalLanguage;
+        if (sourceLang && sourceLang !== 'auto' && sourceLang === targetLang) {
+          console.log(`🔄 [TranslationService] Langue identique filtrée: ${sourceLang} → ${targetLang}`);
+          return false;
+        }
+        return true;
+      });
+      
+      console.log(`🌍 Langues cibles finales (après filtrage): ${filteredTargetLanguages.join(', ')}`);
+      
+      // Si aucune langue cible après filtrage, ne pas envoyer de requête
+      if (filteredTargetLanguages.length === 0) {
+        console.log(`✅ [TranslationService] Aucune traduction nécessaire pour ${message.id} (langues identiques)`);
+        return;
+      }
       
       // 2. ENVOYER LA REQUÊTE DE TRADUCTION VIA PUB
       const request: TranslationRequest = {
         messageId: message.id,
         text: message.content,
         sourceLanguage: message.originalLanguage,
-        targetLanguages: targetLanguages,
+        targetLanguages: filteredTargetLanguages,
         conversationId: message.conversationId,
         modelType: (message as any).modelType || ((message.content?.length ?? 0) < 80 ? 'medium' : 'premium')
       };
@@ -261,7 +281,7 @@ export class TranslationService extends EventEmitter {
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
-      console.log(`📤 Requête de traduction envoyée: ${taskId} (${targetLanguages.length} langues)`);
+      console.log(`📤 Requête de traduction envoyée: ${taskId} (${filteredTargetLanguages.length} langues)`);
       
     } catch (error) {
       console.error(`❌ Erreur traitement asynchrone: ${error}`);
@@ -271,6 +291,8 @@ export class TranslationService extends EventEmitter {
 
   /**
    * Traite une retraduction d'un message existant
+   * OPTIMISATION: Filtre automatiquement les langues cibles identiques à la langue source
+   * pour éviter les traductions inutiles (ex: fr → fr)
    */
   private async _processRetranslationAsync(messageId: string, messageData: MessageData) {
     try {
@@ -302,26 +324,38 @@ export class TranslationService extends EventEmitter {
         targetLanguages = await this._extractConversationLanguages(existingMessage.conversationId);
         
         if (targetLanguages.length === 0) {
-          console.log(`ℹ️ Aucune langue cible trouvée pour la retraduction de ${messageId}, utilisation de 'en' par défaut`);
-          targetLanguages = ['en'];
+          console.log(`ℹ️ Aucune langue cible trouvée pour la retraduction de ${messageId}`);
         }
       }
       
-      console.log(`🌍 Langues cibles pour retraduction: ${targetLanguages.join(', ')}`);
+      // OPTIMISATION: Filtrer les langues cibles pour éviter les traductions inutiles
+      const filteredTargetLanguages = targetLanguages.filter(targetLang => {
+        const sourceLang = existingMessage.originalLanguage;
+        if (sourceLang && sourceLang !== 'auto' && sourceLang === targetLang) {
+          console.log(`🔄 [TranslationService] Langue identique filtrée pour retraduction: ${sourceLang} → ${targetLang}`);
+          return false;
+        }
+        return true;
+      });
+      
+      console.log(`🌍 Langues cibles pour retraduction (après filtrage): ${filteredTargetLanguages.join(', ')}`);
+      
+      // Si aucune langue cible après filtrage, ne pas envoyer de requête
+      if (filteredTargetLanguages.length === 0) {
+        console.log(`✅ [TranslationService] Aucune retraduction nécessaire pour ${messageId} (langues identiques)`);
+        return;
+      }
       
       // 2. SUPPRIMER LES ANCIENNES TRADUCTIONS (optionnel)
       // On peut choisir de supprimer les anciennes traductions ou les garder
-      console.log(`🗑️ Suppression des anciennes traductions pour ${messageId}`);
-      await this.prisma.messageTranslation.deleteMany({
-        where: { messageId: messageId }
-      });
+      // Pour le moment, on ne supprime pas les anciennes traductions, besoin de définir un comportement plus adapté
       
       // 3. ENVOYER LA REQUÊTE DE RETRADUCTION VIA PUB
       const request: TranslationRequest = {
         messageId: messageId,
         text: existingMessage.content,
         sourceLanguage: existingMessage.originalLanguage,
-        targetLanguages: targetLanguages,
+        targetLanguages: filteredTargetLanguages,
         conversationId: existingMessage.conversationId,
         modelType: (messageData as any).modelType || ((existingMessage.content?.length ?? 0) < 80 ? 'medium' : 'premium')
       };
@@ -329,7 +363,7 @@ export class TranslationService extends EventEmitter {
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
-      console.log(`📤 Requête de retraduction envoyée: ${taskId} (${targetLanguages.length} langues)`);
+      console.log(`📤 Requête de retraduction envoyée: ${taskId} (${filteredTargetLanguages.length} langues)`);
       
     } catch (error) {
       console.error(`❌ Erreur retraduction: ${error}`);
@@ -337,6 +371,12 @@ export class TranslationService extends EventEmitter {
     }
   }
 
+  /**
+   * Extrait les langues cibles des participants d'une conversation
+   * Inclut les langues des utilisateurs authentifiés ET des participants anonymes
+   * NOTE: Cette méthode retourne toutes les langues sans filtrage.
+   * Le filtrage des langues identiques à la source se fait dans les méthodes de traitement.
+   */
   private async _extractConversationLanguages(conversationId: string): Promise<string[]> {
     try {
       const languages = new Set<string>();
@@ -367,6 +407,9 @@ export class TranslationService extends EventEmitter {
         where: { 
           conversationId: conversationId,
           isActive: true 
+        },
+        select: {
+          language: true
         }
       });
       
@@ -374,37 +417,30 @@ export class TranslationService extends EventEmitter {
       for (const member of members) {
         if (member.user.autoTranslateEnabled) {
           if (member.user.translateToSystemLanguage) {
-            languages.add(member.user.systemLanguage);
+            languages.add(member.user.systemLanguage); 
           }
           if (member.user.translateToRegionalLanguage) {
-            languages.add(member.user.regionalLanguage);
+            languages.add(member.user.regionalLanguage); 
           }
           if (member.user.useCustomDestination && member.user.customDestinationLanguage) {
-            languages.add(member.user.customDestinationLanguage);
+            languages.add(member.user.customDestinationLanguage); 
           }
         }
       }
       
-      // Pour les participants anonymes, utiliser les langues par défaut
-      if (anonymousParticipants.length > 0) {
-        languages.add('fr'); // Français par défaut
-        languages.add('en'); // Anglais par défaut
+      // Extraire les langues des participants anonymes
+      for (const anonymousParticipant of anonymousParticipants) {
+        if (anonymousParticipant.language) {
+          languages.add(anonymousParticipant.language); 
+        }
       }
       
-      // Filtrer les langues identiques à la langue source
-      const sourceLanguage = await this._getMessageSourceLanguage(conversationId);
-      // let filteredLanguages = Array.from(languages).filter(lang => lang !== sourceLanguage);
+      // Retourner toutes les langues (le filtrage se fera dans les méthodes de traitement)
+      const allLanguages = Array.from(languages);
       
-      // // Si aucune langue n'est trouvée, utiliser des langues par défaut
-      // if (filteredLanguages.length === 0) {
-      //   console.log(`⚠️ Aucune langue cible trouvée pour la conversation ${conversationId}, utilisation des langues par défaut`);
-      //   filteredLanguages = ['en', 'fr', 'es', 'de', 'pt', 'zh', 'ja'].filter(lang => lang !== sourceLanguage);
-      // }
-      const filteredLanguages = Array.from(languages).filter(lang => lang !== sourceLanguage);
+      // console.log(`🌍 Langues extraites pour ${conversationId}: ${allLanguages.join(', ')}`);
       
-      console.log(`🌍 Langues extraites pour ${conversationId}: ${filteredLanguages.join(', ')}`);
-      
-      return filteredLanguages;
+      return allLanguages;
       
     } catch (error) {
       console.error(`❌ Erreur extraction langues: ${error}`);
@@ -690,3 +726,5 @@ export class TranslationService extends EventEmitter {
     }
   }
 }
+
+

@@ -72,6 +72,25 @@ export async function translationRoutes(fastify: FastifyInstance) {
       
       const startTime = Date.now();
       
+      // OPTIMISATION: Éviter la traduction si source = target
+      if (validatedData.source_language && validatedData.source_language !== 'auto' && 
+          validatedData.source_language === validatedData.target_language) {
+        console.log(`🔄 [GATEWAY] Langues identiques (${validatedData.source_language} → ${validatedData.target_language}), pas de traduction nécessaire`);
+        return reply.send({
+          success: true,
+          data: {
+            originalText: validatedData.text,
+            translatedText: validatedData.text,
+            sourceLanguage: validatedData.source_language,
+            targetLanguage: validatedData.target_language,
+            modelUsed: 'none',
+            confidence: 1.0,
+            processingTime: 0,
+            fromCache: false
+          }
+        });
+      }
+      
       // Déterminer le type de modèle automatiquement si non spécifié ou si 'basic'
       const finalModelType = validatedData.model_type === 'basic'
         ? getPredictedModelType(validatedData.text.length)
