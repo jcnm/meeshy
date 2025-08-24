@@ -23,7 +23,6 @@ sys.path.insert(0, str(src_path))
 
 from config.settings import Settings
 from services.zmq_server import ZMQTranslationServer
-from services.unified_ml_service import get_unified_ml_service
 from services.quantized_ml_service import QuantizedMLService
 from services.simple_translation_service import SimpleTranslationService
 from api.translation_api import TranslationAPI

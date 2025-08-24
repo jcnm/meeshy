@@ -16,14 +16,26 @@ import threading
 # Import des settings
 from config.settings import get_settings
 
-# Import des utilitaires de gestion des modèles
-from utils.model_utils import create_model_manager
+
 
 # Import des modèles ML optimisés
 try:
     import torch
     from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
     ML_AVAILABLE = True
+    
+    # OPTIMISATION XET: Configuration pour réduire les warnings du nouveau système
+    import os
+    os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
+    os.environ['HF_HUB_DISABLE_IMPLICIT_TOKEN'] = '1'
+    os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+    
+    # Suppression des warnings de retry Xet
+    import warnings
+    warnings.filterwarnings("ignore", message=".*Retry attempt.*")
+    warnings.filterwarnings("ignore", message=".*reqwest.*")
+    warnings.filterwarnings("ignore", message=".*xethub.*")
+    
 except ImportError:
     ML_AVAILABLE = False
     print("⚠️ Dependencies ML non disponibles")
@@ -45,8 +57,7 @@ class QuantizedMLService:
         self.quantization_level = quantization_level
         self.max_workers = max_workers
         
-        # Gestionnaire de modèles
-        self.model_manager = create_model_manager(self.settings.models_path)
+
         
         # Cache des configurations avec lazy loading
         self._model_configs = None
@@ -154,10 +165,7 @@ class QuantizedMLService:
         try:
             logger.info(f"🚀 Initialisation optimisée: {self.model_type} ({self.quantization_level})")
             
-            # Nettoyer les téléchargements incomplets
-            cleaned = self.model_manager.cleanup_incomplete_downloads()
-            if cleaned > 0:
-                logger.info(f"🧹 {cleaned} téléchargement(s) incomplet(s) nettoyé(s)")
+            # Pas de nettoyage automatique pour éviter les problèmes
             
             if self.model_type == "all":
                 # Chargement concurrent de tous les modèles
@@ -174,11 +182,8 @@ class QuantizedMLService:
             return False
     
     async def _load_all_models_concurrently(self):
-        """Charge tous les modèles de façon concurrente avec vérification préalable"""
+        """Charge tous les modèles de façon concurrente - Version simplifiée"""
         shared_models_info, _ = self._get_shared_models_analysis()
-        
-        # Vérifier et télécharger les modèles manquants
-        await self._ensure_models_available()
         
         # Créer les tâches de chargement
         load_tasks = []
@@ -213,77 +218,11 @@ class QuantizedMLService:
             
             logger.info(f"✅ Chargement concurrent terminé: {len(results) - len(failed_loads)}/{len(results)} succès")
     
-    async def _ensure_models_available(self):
-        """Vérifie et télécharge les modèles manquants"""
-        logger.info("🔍 Vérification de la disponibilité des modèles...")
-        
-        # Récupérer tous les modèles nécessaires
-        model_names = set()
-        for config in self.model_configs.values():
-            model_names.add(config['model_name'])
-        
-        # Vérifier le statut de chaque modèle
-        models_status = self.model_manager.get_models_status(list(model_names))
-        
-        # Identifier les modèles manquants
-        missing_models = []
-        for model_name, status in models_status.items():
-            if not status['local']:
-                missing_models.append(model_name)
-                logger.info(f"📥 Modèle manquant: {model_name} ({status.get('size_mb', 0):.1f} MB)")
-            else:
-                logger.info(f"✅ Modèle disponible: {model_name}")
-        
-        # Télécharger les modèles manquants
-        if missing_models:
-            logger.info(f"🚀 Téléchargement de {len(missing_models)} modèle(s) manquant(s)...")
-            
-            download_tasks = []
-            for model_name in missing_models:
-                task = asyncio.create_task(
-                    self._download_model_async(model_name)
-                )
-                download_tasks.append(task)
-            
-            # Attendre tous les téléchargements
-            if download_tasks:
-                results = await asyncio.gather(*download_tasks, return_exceptions=True)
-                
-                # Vérifier les résultats
-                failed_downloads = [r for r in results if isinstance(r, Exception)]
-                if failed_downloads:
-                    logger.error(f"❌ {len(failed_downloads)} téléchargement(s) échoué(s)")
-                    for error in failed_downloads:
-                        logger.error(f"   - {error}")
-                else:
-                    logger.info(f"✅ Tous les modèles téléchargés avec succès")
-        else:
-            logger.info("✅ Tous les modèles sont disponibles localement")
-    
-    async def _download_model_async(self, model_name: str):
-        """Télécharge un modèle de façon asynchrone"""
-        try:
-            loop = asyncio.get_event_loop()
-            success = await loop.run_in_executor(
-                self.executor,
-                self.model_manager.download_model_if_needed,
-                model_name,
-                False  # force_download
-            )
-            
-            if not success:
-                raise Exception(f"Échec du téléchargement de {model_name}")
-                
-        except Exception as e:
-            logger.error(f"❌ Erreur téléchargement {model_name}: {e}")
-            raise
+
     
     async def _load_model_with_optimized_fallback(self):
-        """Fallback optimisé sans boucles multiples avec vérification préalable"""
+        """Fallback optimisé sans boucles multiples - Version simplifiée"""
         fallback_order = ['basic', 'medium', 'premium']
-        
-        # Vérifier et télécharger les modèles manquants
-        await self._ensure_models_available()
         
         # Calculer les modèles candidats en une seule passe
         try:
@@ -380,24 +319,90 @@ class QuantizedMLService:
             raise
     
     async def _load_model_and_tokenizer_optimized(self, model_name: str) -> Tuple:
-        """Chargement optimisé depuis le stockage local"""
-        try:
-            loop = asyncio.get_event_loop()
-            model, tokenizer = await asyncio.wait_for(
-                loop.run_in_executor(
-                    self.executor,
-                    self.model_manager.load_model_locally,
-                    model_name,
-                    self.quantization_level
-                ),
-                timeout=self.settings.model_load_timeout
+        """Chargement optimisé avec retry exponentiel - Version simplifiée et robuste"""
+        async def load_with_timeout(loader_func, timeout: int, description: str):
+            try:
+                loop = asyncio.get_event_loop()
+                return await asyncio.wait_for(
+                    loop.run_in_executor(self.executor, loader_func),
+                    timeout=timeout
+                )
+            except asyncio.TimeoutError:
+                raise Exception(f"Timeout {description} après {timeout}s")
+        
+        # Chargement concurrent tokenizer + modèle avec timeouts
+        tokenizer_task = load_with_timeout(
+            lambda: self._load_tokenizer_sync(model_name),
+            self.settings.tokenizer_load_timeout,
+            "tokenizer"
+        )
+        
+        model_task = load_with_timeout(
+            lambda: self._load_model_sync(model_name),
+            self.settings.model_load_timeout,
+            "modèle"
+        )
+        
+        # Chargement parallèle
+        tokenizer, model = await asyncio.gather(tokenizer_task, model_task)
+        return model, tokenizer
+    
+    def _load_tokenizer_sync(self, model_name: str):
+        """Chargement synchrone du tokenizer - Version simple et robuste"""
+        import warnings
+        import os
+        from pathlib import Path
+        
+        # Configuration du cache local - utiliser self.settings
+        cache_dir = Path(self.settings.models_path)
+        cache_dir.mkdir(exist_ok=True)
+        
+        # Suppression temporaire des warnings pendant le chargement
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return AutoTokenizer.from_pretrained(
+                model_name,
+                local_files_only=False,
+                trust_remote_code=True,
+                cache_dir=str(cache_dir)
             )
-            return model, tokenizer
-            
-        except asyncio.TimeoutError:
-            raise Exception(f"Timeout chargement modèle {model_name} après {self.settings.model_load_timeout}s")
-        except Exception as e:
-            raise Exception(f"Erreur chargement modèle {model_name}: {e}")
+    
+    def _load_model_sync(self, model_name: str):
+        """Chargement synchrone du modèle avec quantification - Version simple et robuste"""
+        import warnings
+        import os
+        from pathlib import Path
+        
+        # Configuration du cache local - utiliser self.settings
+        cache_dir = Path(self.settings.models_path)
+        cache_dir.mkdir(exist_ok=True)
+        
+        # Configuration de base simple
+        base_config = {
+            'local_files_only': False,
+            'trust_remote_code': True,
+            'cache_dir': str(cache_dir)
+        }
+        
+        # Quantification simple
+        if self.quantization_level == "float16":
+            base_config['torch_dtype'] = torch.float16
+        elif self.quantization_level == "int8":
+            try:
+                model = AutoModelForSeq2SeqLM.from_pretrained(model_name, **base_config)
+                return torch.quantization.quantize_dynamic(
+                    model, {torch.nn.Linear}, dtype=torch.qint8
+                )
+            except Exception as e:
+                logger.warning(f"⚠️ Quantification int8 échouée, fallback float32: {e}")
+                base_config['torch_dtype'] = torch.float32
+        else:
+            base_config['torch_dtype'] = torch.float32
+        
+        # Suppression temporaire des warnings pendant le chargement
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return AutoModelForSeq2SeqLM.from_pretrained(model_name, **base_config)
     
 
     
@@ -408,6 +413,19 @@ class QuantizedMLService:
             model_type = self.model_type
         
         start_time = time.time()
+        
+        # OPTIMISATION: Éviter la traduction si source = target
+        if source_language == target_language:
+            logger.info(f"🔄 [TRANSLATOR] Langues identiques ({source_language} → {target_language}), pas de traduction nécessaire")
+            return {
+                'translated_text': text,
+                'detected_language': source_language,
+                'confidence': 1.0,
+                'model_used': f"none",
+                'from_cache': False,
+                'processing_time': 0.0,
+                'source_channel': source_channel
+            }
         
         try:
             # Fallback optimisé sans boucles multiples
@@ -485,26 +503,129 @@ class QuantizedMLService:
     
     async def _ml_translate_optimized(self, text: str, source_language: str, 
                                     target_language: str, model_type: str) -> str:
-        """Traduction ML optimisée"""
+        """Traduction ML optimisée avec tokenization thread-local"""
         def translate_sync():
             try:
                 # Nettoyage mémoire optimisé
                 self._cleanup_memory()
                 
                 model = self.models[model_type]
-                tokenizer = self.tokenizers[model_type]
                 model_name = self.model_configs[model_type]['model_name']
+                
+                # SOLUTION: Créer un tokenizer unique pour ce thread
+                import threading
+                thread_id = threading.current_thread().ident
+                cache_key = f"{model_type}_{thread_id}"
+                
+                # Modèle partagé (thread-safe en lecture) mais tokenizer local
+                model_path = self.model_configs[model_type]['model_name']
+                
+                # OPTIMISATION: Créer un tokenizer frais avec paramètres optimisés
+                thread_tokenizer = AutoTokenizer.from_pretrained(
+                    model_path,
+                    cache_dir=str(self.settings.models_path),
+                    local_files_only=True,  # Utiliser le modèle local
+                    use_fast=True,  # Tokenizer rapide
+                    model_max_length=512  # Limiter la taille
+                )
                 
                 # Détection automatique du type de modèle
                 is_t5_model = "t5" in model_name.lower()
                 
-                # Configuration du pipeline optimisée
-                pipeline_config = self._get_pipeline_config(model, tokenizer, is_t5_model)
-                
+                # OPTIMISATION: Différencier T5 et NLLB avec pipelines appropriés
                 if is_t5_model:
-                    return self._translate_t5(pipeline_config, text, source_language, target_language)
+                    # T5: utiliser text2text-generation avec tokenizer thread-local
+                    temp_pipeline = pipeline(
+                        "text2text-generation",
+                        model=model,
+                        tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
+                        device=0 if torch.cuda.is_available() else -1,
+                        max_length=128,
+                        torch_dtype=torch.float32  # Type de données standard
+                    )
+                    
+                    # T5: format avec noms complets de langues
+                    source_name = self.language_names.get(source_language, source_language.capitalize())
+                    target_name = self.language_names.get(target_language, target_language.capitalize())
+                    instruction = f"translate {source_name} to {target_name}: {text}"
+                    
+                    # OPTIMISATION: Traduction avec paramètres optimisés
+                    result = temp_pipeline(
+                        instruction,
+                        max_new_tokens=64,
+                        num_beams=2,  # Réduire pour économiser la mémoire
+                        do_sample=False,
+                        early_stopping=True,
+                        repetition_penalty=1.1,
+                        length_penalty=1.0,
+                        pad_token_id=thread_tokenizer.eos_token_id
+                    )
+                    
+                    # T5 retourne generated_text
+                    if result and len(result) > 0 and 'generated_text' in result[0]:
+                        raw_text = result[0]['generated_text']
+                        
+                        # Nettoyer l'instruction si présente dans le résultat
+                        instruction_prefix = f"translate {source_name} to {target_name}:"
+                        if instruction_prefix in raw_text:
+                            parts = raw_text.split(instruction_prefix, 1)
+                            if len(parts) > 1:
+                                translated = parts[1].strip()
+                            else:
+                                translated = raw_text.strip()
+                        else:
+                            translated = raw_text.strip()
+                            
+                        # Validation: si vide ou identique au texte original, utiliser fallback
+                        if not translated or translated.lower() == text.lower() or "translate" in translated.lower():
+                            logger.warning(f"T5 traduction invalide: '{translated}', utilisation fallback")
+                            translated = f"[T5-Fallback] {text}"
+                            
+                    else:
+                        translated = f"[T5-No-Result] {text}"
+                        
                 else:
-                    return self._translate_nllb(pipeline_config, text, source_language, target_language)
+                    # NLLB: utiliser translation avec tokenizer thread-local
+                    temp_pipeline = pipeline(
+                        "translation",
+                        model=model,
+                        tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
+                        device=0 if torch.cuda.is_available() else -1,
+                        max_length=128,
+                        torch_dtype=torch.float32  # Type de données standard
+                    )
+                    
+                    # NLLB: codes de langue spéciaux
+                    nllb_source = self.lang_codes.get(source_language, 'eng_Latn')
+                    nllb_target = self.lang_codes.get(target_language, 'fra_Latn')
+                    
+                    # OPTIMISATION: Traduction avec paramètres optimisés
+                    result = temp_pipeline(
+                        text, 
+                        src_lang=nllb_source, 
+                        tgt_lang=nllb_target, 
+                        max_length=128,
+                        num_beams=2,  # Réduire pour économiser la mémoire
+                        early_stopping=True
+                    )
+                    
+                    # NLLB retourne translation_text
+                    if result and len(result) > 0 and 'translation_text' in result[0]:
+                        translated = result[0]['translation_text']
+                    else:
+                        translated = f"[NLLB-No-Result] {text}"
+                
+                # OPTIMISATION: Nettoyer tokenizer et pipeline temporaires
+                del thread_tokenizer
+                del temp_pipeline
+                
+                # Nettoyer la mémoire après traduction
+                import gc
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                
+                return translated
                     
             except Exception as e:
                 logger.error(f"❌ Erreur pipeline: {e}")
@@ -519,43 +640,6 @@ class QuantizedMLService:
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-    
-    def _get_pipeline_config(self, model, tokenizer, is_t5_model: bool) -> Dict:
-        """Configuration optimisée du pipeline"""
-        config = {
-            'model': model,
-            'tokenizer': tokenizer,
-            'max_length': 256 if not is_t5_model else 128
-        }
-        
-        # Device automatique si pas d'accelerate
-        try:
-            import accelerate
-        except ImportError:
-            config['device'] = 0 if torch.cuda.is_available() else -1
-        
-        return config
-    
-    def _translate_t5(self, pipeline_config: Dict, text: str, source_lang: str, target_lang: str) -> str:
-        """Traduction T5 optimisée"""
-        pipe = pipeline("text2text-generation", **pipeline_config)
-        
-        source_name = self.language_names.get(source_lang, source_lang.capitalize())
-        target_name = self.language_names.get(target_lang, target_lang.capitalize())
-        instruction = f"translate {source_name} to {target_name}: {text}"
-        
-        result = pipe(instruction, max_new_tokens=64)
-        return result[0]['generated_text'] if result else f"[T5-Error] {text}"
-    
-    def _translate_nllb(self, pipeline_config: Dict, text: str, source_lang: str, target_lang: str) -> str:
-        """Traduction NLLB optimisée"""
-        pipe = pipeline("translation", **pipeline_config)
-        
-        nllb_source = self.lang_codes.get(source_lang, 'eng_Latn')
-        nllb_target = self.lang_codes.get(target_lang, 'fra_Latn')
-        
-        result = pipe(text, src_lang=nllb_source, tgt_lang=nllb_target)
-        return result[0]['translation_text'] if result else f"[NLLB-Error] {text}"
     
     def get_stats(self) -> Dict[str, Any]:
         """Stats optimisées avec calculs en cache"""
@@ -602,14 +686,35 @@ class QuantizedMLService:
         
         logger.info("✅ Nettoyage optimisé terminé")
     
-    def get_models_status(self) -> Dict[str, Dict]:
-        """Retourne le statut détaillé de tous les modèles"""
-        model_names = set()
-        for config in self.model_configs.values():
-            model_names.add(config['model_name'])
-        
-        return self.model_manager.get_models_status(list(model_names))
+    async def close(self):
+        """Ferme le service et libère les ressources"""
+        try:
+            logger.info("🛑 Fermeture du service ML quantifié...")
+            
+            # Fermer le thread pool
+            if hasattr(self, 'executor'):
+                self.executor.shutdown(wait=True)
+            
+            # Libérer les modèles de la mémoire
+            if hasattr(self, 'models'):
+                for model_name, model in self.models.items():
+                    if hasattr(model, 'cpu'):
+                        model.cpu()
+                    del model
+                self.models.clear()
+            
+            if hasattr(self, 'tokenizers'):
+                self.tokenizers.clear()
+            
+            if hasattr(self, 'shared_models'):
+                for model_name, model in self.shared_models.items():
+                    if hasattr(model, 'cpu'):
+                        model.cpu()
+                    del model
+                self.shared_models.clear()
+            
+            logger.info("✅ Service ML quantifié fermé")
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur lors de la fermeture: {e}")
     
-    def get_model_path(self, model_name: str) -> str:
-        """Retourne le chemin local d'un modèle"""
-        return str(self.model_manager.get_model_local_path(model_name))

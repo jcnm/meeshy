@@ -119,6 +119,20 @@ class TranslationAPI:
                 if not request.text.strip():
                     raise HTTPException(status_code=400, detail="Text cannot be empty")
                 
+                # OPTIMISATION: Éviter la traduction si source = target
+                if request.source_language != "auto" and request.source_language == request.target_language:
+                    logger.info(f"🔄 [TRANSLATOR-API] Langues identiques ({request.source_language} → {request.target_language}), pas de traduction nécessaire")
+                    return TranslationResponse(
+                        original_text=request.text,
+                        translated_text=request.text,
+                        source_language=request.source_language,
+                        target_language=request.target_language,
+                        model_used="none",
+                        confidence_score=1.0,
+                        processing_time_ms=0,
+                        from_cache=False
+                    )
+                
                 # Appel au service de traduction unifié
                 result = await self.translation_service.translate(
                     text=request.text,

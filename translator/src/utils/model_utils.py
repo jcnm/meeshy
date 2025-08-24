@@ -110,35 +110,77 @@ class ModelManager:
             }
     
     def download_model_if_needed(self, model_name: str, force_download: bool = False) -> bool:
-        """Télécharge un modèle seulement s'il n'existe pas localement"""
+        """Télécharge un modèle seulement s'il n'existe pas localement avec retry après 3 timeouts"""
         if not force_download and self.is_model_downloaded(model_name):
             logger.info(f"📁 Modèle {model_name} déjà présent localement")
             return True
         
-        try:
-            logger.info(f"📥 Téléchargement du modèle {model_name}...")
-            
-            # Utiliser snapshot_download pour un téléchargement complet
-            local_path = self.get_model_local_path(model_name)
-            
-            # Créer le répertoire si nécessaire
-            local_path.mkdir(parents=True, exist_ok=True)
-            
-            # Télécharger le modèle
-            snapshot_download(
-                repo_id=model_name,
-                local_dir=str(local_path),
-                local_dir_use_symlinks=False,  # Copier les fichiers
-                resume_download=True,  # Reprendre si interrompu
-                max_retries=3
-            )
-            
-            logger.info(f"✅ Modèle {model_name} téléchargé avec succès")
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Erreur téléchargement {model_name}: {e}")
-            return False
+        # Configuration des retries depuis les variables d'environnement
+        max_retries = int(os.getenv('MODEL_DOWNLOAD_MAX_RETRIES', '3'))
+        timeout_seconds = int(os.getenv('MODEL_DOWNLOAD_TIMEOUT', '300'))  # 5 minutes par défaut
+        consecutive_timeout_limit = int(os.getenv('MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS', '3'))
+        
+        consecutive_timeouts = 0
+        total_attempts = 0
+        
+        while total_attempts < max_retries:
+            total_attempts += 1
+            try:
+                logger.info(f"📥 Téléchargement du modèle {model_name} (tentative {total_attempts}/{max_retries})...")
+                
+                # Utiliser snapshot_download pour un téléchargement complet
+                local_path = self.get_model_local_path(model_name)
+                
+                # Créer le répertoire si nécessaire
+                local_path.mkdir(parents=True, exist_ok=True)
+                
+                # Télécharger le modèle avec timeout configurable
+                snapshot_download(
+                    repo_id=model_name,
+                    local_dir=str(local_path),
+                    local_dir_use_symlinks=False,  # Copier les fichiers
+                    resume_download=True,  # Reprendre si interrompu
+                    timeout=timeout_seconds
+                )
+                
+                logger.info(f"✅ Modèle {model_name} téléchargé avec succès après {total_attempts} tentative(s)")
+                return True
+                
+            except Exception as e:
+                error_msg = str(e).lower()
+                
+                # Détecter les timeouts spécifiquement
+                is_timeout = any(timeout_indicator in error_msg for timeout_indicator in [
+                    'timeout', 'timed out', 'connection timed out', 'read timeout'
+                ])
+                
+                if is_timeout:
+                    consecutive_timeouts += 1
+                    logger.warning(f"⏰ Timeout lors du téléchargement de {model_name} (timeout {consecutive_timeouts}/{consecutive_timeout_limit})")
+                    
+                    # Si on a atteint la limite de timeouts consécutifs, on échoue
+                    if consecutive_timeouts >= consecutive_timeout_limit:
+                        logger.error(f"❌ Échec du téléchargement de {model_name} après {consecutive_timeouts} timeouts consécutifs")
+                        return False
+                    
+                    # Attendre avant de réessayer (backoff exponentiel)
+                    wait_time = min(30 * (2 ** (consecutive_timeouts - 1)), 300)  # Max 5 minutes
+                    logger.info(f"⏳ Attente de {wait_time} secondes avant nouvelle tentative...")
+                    import time
+                    time.sleep(wait_time)
+                else:
+                    # Réinitialiser le compteur de timeouts pour les autres types d'erreurs
+                    consecutive_timeouts = 0
+                    logger.error(f"❌ Erreur téléchargement {model_name} (tentative {total_attempts}): {e}")
+                    
+                    # Pour les erreurs non-timeout, on peut réessayer immédiatement
+                    if total_attempts < max_retries:
+                        logger.info(f"🔄 Nouvelle tentative dans 5 secondes...")
+                        import time
+                        time.sleep(5)
+        
+        logger.error(f"❌ Échec définitif du téléchargement de {model_name} après {max_retries} tentatives")
+        return False
     
     def load_model_locally(self, model_name: str, quantization_level: str = "float16") -> Tuple[AutoModelForSeq2SeqLM, AutoTokenizer]:
         """Charge un modèle depuis le stockage local"""

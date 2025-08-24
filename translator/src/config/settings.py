@@ -30,29 +30,29 @@ class Settings:
         # Configuration ML
         self.ml_batch_size = int(os.getenv("ML_BATCH_SIZE", "32"))
         self.gpu_memory_fraction = float(os.getenv("GPU_MEMORY_FRACTION", "0.8"))
-        # Chemin des modèles - absolu depuis la racine du projet
+        
+        # Chemin des modèles - utiliser le dossier models local du translator
         models_path_env = os.getenv("MODELS_PATH", "models")
         if os.path.isabs(models_path_env):
             self.models_path = models_path_env
         else:
-            # Si chemin relatif, le calculer depuis la racine du projet (parent de src)
+            # Si chemin relatif, le calculer depuis le dossier translator
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(current_dir))  # remonte de src/config vers racine
-            self.models_path = os.path.join(project_root, models_path_env)
+            translator_dir = os.path.dirname(os.path.dirname(current_dir))  # remonte de src/config vers translator
+            self.models_path = os.path.join(translator_dir, models_path_env)
         
         # Configuration des langues
         self.default_language = os.getenv("DEFAULT_LANGUAGE", "fr")
         self.supported_languages = os.getenv("SUPPORTED_LANGUAGES", "fr,en,es,de,pt,zh,ja,ar")
         self.auto_detect_language = os.getenv("AUTO_DETECT_LANGUAGE", "true").lower() == "true"
         
-        # Configuration des modèles de traduction - NLLB pour multi-langues
-        # NLLB-600M est meilleur que T5-small pour les traductions multilingues
-        self.basic_model = os.getenv("BASIC_MODEL", "facebook/nllb-200-distilled-600M") 
+        # Configuration des modèles de traduction - utiliser les valeurs du .env
+        self.basic_model = os.getenv("BASIC_MODEL", "t5-small") 
         self.medium_model = os.getenv("MEDIUM_MODEL", "facebook/nllb-200-distilled-600M")
         self.premium_model = os.getenv("PREMIUM_MODEL", "facebook/nllb-200-distilled-1.3B")
         
         # Configuration des performances
-        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "15"))  # Réduit de 30 à 15 secondes
+        self.translation_timeout = int(os.getenv("TRANSLATION_TIMEOUT", "150"))  # Réduit de 30 à 15 secondes
         self.max_text_length = int(os.getenv("MAX_TEXT_LENGTH", "1000"))
         self.concurrent_translations = int(os.getenv("CONCURRENT_TRANSLATIONS", "10"))
         
@@ -60,6 +60,11 @@ class Settings:
         self.model_load_timeout = int(os.getenv("MODEL_LOAD_TIMEOUT", "60"))  # 60 secondes pour charger un modèle
         self.tokenizer_load_timeout = int(os.getenv("TOKENIZER_LOAD_TIMEOUT", "30"))  # 30 secondes pour charger un tokenizer
         self.huggingface_timeout = int(os.getenv("HUGGINGFACE_TIMEOUT", "120"))  # 120 secondes pour les téléchargements HF
+        
+        # Configuration des retries pour le téléchargement des modèles
+        self.model_download_max_retries = int(os.getenv("MODEL_DOWNLOAD_MAX_RETRIES", "3"))
+        self.model_download_timeout = int(os.getenv("MODEL_DOWNLOAD_TIMEOUT", "300"))  # 5 minutes par défaut
+        self.model_download_consecutive_timeouts = int(os.getenv("MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS", "3"))
     
     @property
     def supported_languages_list(self):

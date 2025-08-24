@@ -55,6 +55,19 @@ class SimpleTranslationService:
         """
         start_time = time.time()
         
+        # OPTIMISATION: Éviter la traduction si source = target
+        if source_language == target_language:
+            logger.info(f"🔄 [SIMPLE] Langues identiques ({source_language} → {target_language}), pas de traduction nécessaire")
+            return {
+                'translated_text': text,
+                'detected_language': source_language,
+                'confidence': 1.0,
+                'model_used': 'no_translation_needed',
+                'from_cache': False,
+                'processing_time': 0.0,
+                'source_channel': source_channel
+            }
+        
         try:
             # Normaliser le texte
             normalized_text = text.lower().strip()

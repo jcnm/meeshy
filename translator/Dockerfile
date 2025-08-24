@@ -18,7 +18,7 @@ ARG NODE_VERSION=22
 ARG PNPM_VERSION=latest
 
 # Variables d'environnement pour l'application
-ENV PYTHONPATH=/app \
+ENV PYTHONPATH=/app:/app/generated \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -34,7 +34,11 @@ ENV PYTHONPATH=/app \
     OMP_NUM_THREADS=4 \
     MKL_NUM_THREADS=4 \
     NUMEXPR_NUM_THREADS=4 \
-    TOKENIZERS_PARALLELISM=false
+    TOKENIZERS_PARALLELISM=true \
+    # OPTIMISATION XET: Variables d'environnement pour le nouveau système de téléchargement
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    HF_HUB_DISABLE_TELEMETRY=1 \
+    HF_HUB_DISABLE_IMPLICIT_TOKEN=1
 
 # Variables d'environnement configurables via build args
 ARG GRPC_HOST=0.0.0.0
@@ -48,9 +52,9 @@ ARG DEBUG=false
 ARG SUPPORTED_LANGUAGES="fr,en,es,de,pt,zh,ja,ar"
 ARG DEFAULT_LANGUAGE=fr
 ARG MAX_TEXT_LENGTH=5000
-ARG BASIC_MODEL=facebook/nllb-200-distilled-600M
-ARG MEDIUM_MODEL=facebook/nllb-200-distilled-600M
-ARG PREMIUM_MODEL=facebook/nllb-200-distilled-1.3B
+ARG BASIC_MODEL=Helsinki-NLP/opus-mt-en-fr
+ARG MEDIUM_MODEL=Helsinki-NLP/opus-mt-mul-en
+ARG PREMIUM_MODEL=facebook/nllb-200-distilled-600M
 ARG DEVICE=cpu
 ARG ML_BATCH_SIZE=4
 ARG GPU_MEMORY_FRACTION=0.8
@@ -139,7 +143,7 @@ COPY --chown=translator:translator .env.docker ./.env
 
 # OPTIMISATION: Installation des dépendances Python avec optimisations ML
 RUN pip install --upgrade pip --no-cache-dir \
-    && pip install --no-cache-dir prisma python-dotenv \
+    && pip install --no-cache-dir prisma hf_transfer python-dotenv \
     # OPTIMISATION ML: Installation de PyTorch CPU optimisé
     && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu \
     && pip install --default-timeout=300 --no-cache-dir -r requirements.txt \
@@ -148,20 +152,19 @@ RUN pip install --upgrade pip --no-cache-dir \
 # Copie du code source et du schéma Prisma
 COPY --chown=translator:translator . .
 
-
-# OPTIMISATION: Génération du client Prisma pendant le build (après installation des dépendances)
-RUN echo "🔧 Génération du client Prisma..." \
+# OPTIMISATION: Génération du client Prisma dans /app/generated
+RUN echo "🔧 Génération du client Prisma dans /app/generated..." \
     && mkdir -p /app/generated \
-    && cd /app/generated \
+    && cd /app/generated \ 
     && prisma generate --schema=/app/shared/prisma/schema.prisma \
-    && chown -R translator:translator /app/generated \
-    && echo "✅ Client Prisma généré avec succès"
+    && chown -R translator:translator /app/generated /usr/local/lib/python3.12/site-packages/prisma \
+    && chmod 755 -R /app/generated /usr/local/lib/python3.12/site-packages/prisma \
+    && echo "✅ Client Prisma généré avec succès "
 
 # OPTIMISATION: Configuration des permissions et optimisation finale
 RUN chown -R translator:translator /app \
     && chmod +x /app/docker-diagnostic.sh \
-    && chmod +x /app/docker-entrypoint.sh \
-    && ls -ial -R /app \
+    && chmod +x /app/docker-entrypoint.sh \ 
     && python3 -m compileall /app/src \
     && find /app -name '*.pyc' -delete
 
