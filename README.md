@@ -184,21 +184,21 @@ interface UserLanguageConfig {
 ## 📸 Screenshots
 
 ### 🔐 Authentication & User Management
-![Login Modal](assets/login_modal.png)
+![Login Modal](docs/assets/login_modal.png)
 *Modal de connexion avec gestion des sessions utilisateur*
 
-![Authentication Loading](assets/auth_loading.png)
+![Authentication Loading](docs/assets/auth_loading.png)
 *Écran de chargement pendant l'authentification*
 
-![Shared Conversation](assets/shared_conversation.png)
+![Shared Conversation](docs/assets/shared_conversation.png)
 *Conversation partagée avec traduction multilingue*
 
 ### 🎛️ User Interface & Dashboard
-![User Dashboard](assets/user_dashboard.png)
+![User Dashboard](docs/assets/user_dashboard.png)
 *Tableau de bord utilisateur avec navigation intuitive*
 
 ### ⚠️ Error Handling
-![Session Token Error](assets/session_token_error.png)
+![Session Token Error](docs/assets/session_token_error.png)
 *Gestion d'erreur pour les tokens de session expirés*
 ---
 
