@@ -131,5 +131,5 @@ Les logs affichent la configuration au démarrage :
 ### Problème : Scaling dynamique ne fonctionne pas
 **Solution** : Vérifiez que `enable_dynamic_scaling` est activé
 
-### Problème : Trop de workers créés
-**Solution** : Réduisez `NORMAL_WORKERS_MAX` et `ANY_WORKERS_MAX`
+### Problem : Too many workers created
+**Solution** : Reduce `NORMAL_WORKERS_MAX` and `ANY_WORKERS_MAX`

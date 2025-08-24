@@ -185,21 +185,21 @@ interface UserLanguageConfig {
 
 ### 🔐 Authentication & User Management
 ![Login Modal](docs/assets/login_modal.png)
-*Modal de connexion avec gestion des sessions utilisateur*
+*Login modal with user session management*
 
 ![Authentication Loading](docs/assets/auth_loading.png)
-*Écran de chargement pendant l'authentification*
+*Loading screen during authentication*
 
 ![Shared Conversation](docs/assets/shared_conversation.png)
-*Conversation partagée avec traduction multilingue*
+*Shared conversation with multilingual translation*
 
 ### 🎛️ User Interface & Dashboard
 ![User Dashboard](docs/assets/user_dashboard.png)
-*Tableau de bord utilisateur avec navigation intuitive*
+*User dashboard with intuitive navigation*
 
 ### ⚠️ Error Handling
 ![Session Token Error](docs/assets/session_token_error.png)
-*Gestion d'erreur pour les tokens de session expirés*
+*Error handling for expired session tokens*
 ---
 
 ## 🚀 Quick Start
@@ -230,7 +230,7 @@ cd meeshy
 docker-compose -f docker-compose.unified.yml up -d
 ```
 
-**Note**: L'architecture unifiée utilise Nginx comme reverse proxy. Seul le port 80 est exposé publiquement. Les services internes (Frontend:3100, Gateway:3000, Translator:8000) ne sont accessibles que via Nginx.
+**Note**: The unified architecture uses Nginx as a reverse proxy. Only port 80 is publicly exposed. Internal services (Frontend:3100, Gateway:3000, Translator:8000) are only accessible through Nginx.
 
 ### Option 3: Automated Pipeline
 ```bash

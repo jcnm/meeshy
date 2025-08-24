@@ -303,7 +303,7 @@ docker-compose exec translator curl http://localhost:8000/health
 
 ### Ajout d'un nouveau modèle
 
-1. Définir la configuration dans `settings.py`
+1. Define configuration in `settings.py`
 2. Implémenter le chargement dans `TranslationService`
 3. Ajouter le type dans les APIs
 4. Tester les performances et qualité

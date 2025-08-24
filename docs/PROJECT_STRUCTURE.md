@@ -50,11 +50,11 @@ meeshy/
 ### 📁 `/docs/` - Documentation
 ```
 docs/
-├── PROJECT_STRUCTURE.md         # Ce fichier
-├── TRANSLATION_LOADING_FIX.md   # Documentation du fix de traduction
-├── WORKER_CONFIGURATION.md      # Configuration des workers
-├── package.json.bak             # Sauvegarde package.json
-├── assets/                      # Assets de documentation
+├── PROJECT_STRUCTURE.md         # This file
+├── TRANSLATION_LOADING_FIX.md   # Translation fix documentation
+├── WORKER_CONFIGURATION.md      # Worker configuration
+├── package.json.bak             # Package.json backup
+├── assets/                      # Documentation assets
 │   ├── auth_loading.png
 │   ├── chat_loading.png
 │   ├── login.png
@@ -63,21 +63,21 @@ docs/
 │   ├── shared_conversation.png
 │   ├── user_dashboard.png
 │   └── Logo-LinkedIn.svg
-└── screenshots/                 # Captures d'écran
+└── screenshots/                 # Screenshots
 ```
 
-### 📁 `/scripts/` - Scripts utilitaires
+### 📁 `/scripts/` - Utility scripts
 ```
 scripts/
-├── README.md                    # Documentation des scripts
-├── build-and-test-applications.sh  # Build et test des applications
-├── start-all.sh                 # Démarrage de tous les services
-├── deployment/                  # Scripts de déploiement
-├── development/                 # Scripts de développement
+├── README.md                    # Scripts documentation
+├── build-and-test-applications.sh  # Build and test applications
+├── start-all.sh                 # Start all services
+├── deployment/                  # Deployment scripts
+├── development/                 # Development scripts
 │   ├── check-types-consistency.js
 │   ├── start-frontend-dev.sh
 │   └── update-user-language-preferences.js
-├── maintenance/                 # Scripts de maintenance
+├── maintenance/                 # Maintenance scripts
 │   ├── debug-maintenance.sh
 │   ├── diagnostic.sh
 │   ├── diagnostic-separated.sh
@@ -86,7 +86,7 @@ scripts/
 │   ├── rebuild-translator.sh
 │   ├── restart-translator.sh
 │   └── test-maintenance-active.sh
-├── tests/                       # Scripts de test
+├── tests/                       # Test scripts
 │   ├── test-admin-access.js
 │   ├── test-anonymous-participants.js
 │   ├── test-api-translations.js
@@ -100,93 +100,93 @@ scripts/
 │   ├── test-translation-request.js
 │   ├── test-translation-service.sh
 │   └── test-worker-config.sh
-└── utils/                       # Utilitaires
+└── utils/                       # Utilities
 ```
 
-### 📁 `/docker/` - Configuration Docker
+### 📁 `/docker/` - Docker Configuration
 ```
 docker/
-├── scripts/                     # Scripts Docker
+├── scripts/                     # Docker scripts
 │   ├── docker-start-unified.sh
 │   └── run-unified-with-logs.sh
-├── nginx/                       # Configuration Nginx
-├── supervisor/                  # Configuration Supervisor
-├── elasticsearch/               # Configuration Elasticsearch
-└── logstash/                    # Configuration Logstash
+├── nginx/                       # Nginx configuration
+├── supervisor/                  # Supervisor configuration
+├── elasticsearch/               # Elasticsearch configuration
+└── logstash/                    # Logstash configuration
 ```
 
-### 📁 `/shared/` - Code partagé
+### 📁 `/shared/` - Shared code
 ```
 shared/
-├── .version                     # Version du projet
-├── schema.prisma                # Schéma de base de données
-├── version.txt                  # Version partagée
-├── prisma/                      # Client Prisma généré
-├── proto/                       # Fichiers Protocol Buffers
-├── types/                       # Types TypeScript partagés
-└── scripts/                     # Scripts partagés
+├── .version                     # Project version
+├── schema.prisma                # Database schema
+├── version.txt                  # Shared version
+├── prisma/                      # Generated Prisma client
+├── proto/                       # Protocol Buffer files
+├── types/                       # Shared TypeScript types
+└── scripts/                     # Shared scripts
 ```
 
-## Fichiers supprimés lors du nettoyage
+## Files removed during cleanup
 
-### 🗑️ Dossiers supprimés
-- `coverage/` - Rapports de couverture de tests
-- `logs/` - Fichiers de logs (régénérés automatiquement)
-- `assets/` - Déplacé vers `docs/assets/`
+### 🗑️ Removed directories
+- `coverage/` - Test coverage reports
+- `logs/` - Log files (automatically regenerated)
+- `assets/` - Moved to `docs/assets/`
 
-### 🗑️ Fichiers supprimés
-- `.DS_Store` - Fichiers système macOS
-- `*.log` - Fichiers de logs
-- `*.tmp` - Fichiers temporaires
-- `*.pyc` - Fichiers Python compilés
-- `__pycache__/` - Cache Python
-- `.pytest_cache/` - Cache pytest
+### 🗑️ Removed files
+- `.DS_Store` - macOS system files
+- `*.log` - Log files
+- `*.tmp` - Temporary files
+- `*.pyc` - Compiled Python files
+- `__pycache__/` - Python cache
+- `.pytest_cache/` - Pytest cache
 
-## Organisation des scripts
+## Script organization
 
-### 🔧 Scripts de développement (`/scripts/development/`)
-- Scripts pour le développement local
-- Outils de vérification de types
-- Scripts de configuration utilisateur
+### 🔧 Development scripts (`/scripts/development/`)
+- Scripts for local development
+- Type checking tools
+- User configuration scripts
 
-### 🧪 Scripts de test (`/scripts/tests/`)
-- Tests d'API et d'intégration
-- Tests de traduction
-- Tests de maintenance
-- Tests de configuration
+### 🧪 Test scripts (`/scripts/tests/`)
+- API and integration tests
+- Translation tests
+- Maintenance tests
+- Configuration tests
 
-### 🔧 Scripts de maintenance (`/scripts/maintenance/`)
-- Scripts de diagnostic
-- Scripts de redémarrage
-- Scripts de reconstruction
-- Scripts de nettoyage
+### 🔧 Maintenance scripts (`/scripts/maintenance/`)
+- Diagnostic scripts
+- Restart scripts
+- Rebuild scripts
+- Cleanup scripts
 
-### 🚀 Scripts de déploiement (`/scripts/deployment/`)
-- Scripts de déploiement
-- Scripts de configuration d'environnement
+### 🚀 Deployment scripts (`/scripts/deployment/`)
+- Deployment scripts
+- Environment configuration scripts
 
-## Bonnes pratiques
+## Best practices
 
 ### 📝 Documentation
-- Toute nouvelle fonctionnalité doit être documentée dans `/docs/`
-- Les captures d'écran vont dans `/docs/assets/`
-- Les diagrammes et schémas dans `/docs/screenshots/`
+- All new features must be documented in `/docs/`
+- Screenshots go in `/docs/assets/`
+- Diagrams and schemas in `/docs/screenshots/`
 
 ### 🔧 Scripts
-- Les nouveaux scripts doivent être placés dans le bon sous-dossier
-- Chaque script doit avoir un commentaire descriptif
-- Les scripts de test doivent être dans `/scripts/tests/`
+- New scripts must be placed in the correct subfolder
+- Each script must have a descriptive comment
+- Test scripts must be in `/scripts/tests/`
 
-### 🧹 Nettoyage
-- Supprimer régulièrement les fichiers temporaires
-- Ne pas commiter les logs ou fichiers de cache
-- Maintenir une structure claire et organisée
+### 🧹 Cleanup
+- Regularly remove temporary files
+- Don't commit logs or cache files
+- Maintain a clear and organized structure
 
 ## Maintenance
 
-### 🔄 Nettoyage régulier
+### 🔄 Regular cleanup
 ```bash
-# Supprimer les fichiers temporaires
+# Remove temporary files
 find . -name "*.log" -delete
 find . -name "*.tmp" -delete
 find . -name ".DS_Store" -delete
@@ -195,10 +195,10 @@ find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 find . -name ".pytest_cache" -type d -exec rm -rf {} + 2>/dev/null || true
 ```
 
-### 📊 Vérification de la structure
+### 📊 Structure verification
 ```bash
-# Vérifier la structure du projet
+# Check project structure
 tree -I 'node_modules|.git|__pycache__|*.pyc|*.log|*.tmp|.DS_Store'
 ```
 
-Cette organisation garantit une structure claire, maintenable et évolutive pour le projet Meeshy.
+This organization ensures a clear, maintainable and scalable structure for the Meeshy project.

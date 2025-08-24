@@ -1,19 +1,19 @@
-# Résumé du Nettoyage et de la Réorganisation
+# Cleanup and Reorganization Summary
 
-## 🎯 Objectif
-Nettoyer et réorganiser la racine du projet Meeshy pour améliorer la maintenabilité et la lisibilité.
+## 🎯 Objective
+Clean and reorganize the Meeshy project root to improve maintainability and readability.
 
 ## 📅 Date
-24 août 2025
+August 24, 2025
 
-## 🧹 Actions réalisées
+## 🧹 Actions performed
 
-### 1. Réorganisation des dossiers
+### 1. Directory reorganization
 
-#### 📁 Assets et Documentation
-- **Avant** : `assets/` à la racine
-- **Après** : `docs/assets/` et `docs/screenshots/`
-- **Fichiers déplacés** :
+#### 📁 Assets and Documentation
+- **Before** : `assets/` at root
+- **After** : `docs/assets/` and `docs/screenshots/`
+- **Moved files** :
   - `auth_loading.png`
   - `chat_loading.png`
   - `login.png`
@@ -23,8 +23,8 @@ Nettoyer et réorganiser la racine du projet Meeshy pour améliorer la maintenab
   - `user_dashboard.png`
   - `Logo-LinkedIn.svg`
 
-#### 📁 Scripts organisés par catégorie
-- **`scripts/tests/`** : Scripts de test
+#### 📁 Scripts organized by category
+- **`scripts/tests/`** : Test scripts
   - `test-admin-access.js`
   - `test-anonymous-participants.js`
   - `test-api-translations.js`
@@ -39,7 +39,7 @@ Nettoyer et réorganiser la racine du projet Meeshy pour améliorer la maintenab
   - `test-translation-service.sh`
   - `test-worker-config.sh`
 
-- **`scripts/maintenance/`** : Scripts de maintenance
+- **`scripts/maintenance/`** : Maintenance scripts
   - `debug-maintenance.sh`
   - `diagnostic.sh`
   - `diagnostic-separated.sh`
@@ -48,161 +48,161 @@ Nettoyer et réorganiser la racine du projet Meeshy pour améliorer la maintenab
   - `rebuild-translator.sh`
   - `restart-translator.sh`
   - `test-maintenance-active.sh`
-  - `cleanup.sh` (nouveau)
+  - `cleanup.sh` (new)
 
-- **`scripts/development/`** : Scripts de développement
+- **`scripts/development/`** : Development scripts
   - `check-types-consistency.js`
   - `start-frontend-dev.sh`
   - `update-user-language-preferences.js`
 
-- **`scripts/deployment/`** : Scripts de déploiement (existant)
+- **`scripts/deployment/`** : Deployment scripts (existing)
 
-#### 📁 Scripts Docker
-- **Avant** : Scripts à la racine
-- **Après** : `docker/scripts/`
-- **Fichiers déplacés** :
+#### 📁 Docker Scripts
+- **Before** : Scripts at root
+- **After** : `docker/scripts/`
+- **Moved files** :
   - `docker-start-unified.sh`
   - `run-unified-with-logs.sh`
 
-#### 📁 Scripts principaux
+#### 📁 Main Scripts
 - **`start-all.sh`** → `scripts/start-all.sh`
 - **`kill-all-meeshy.sh`** → `scripts/maintenance/kill-all-meeshy.sh`
 
-### 2. Nettoyage des fichiers
+### 2. File cleanup
 
-#### 🗑️ Dossiers supprimés
-- `coverage/` - Rapports de couverture de tests
-- `logs/` - Fichiers de logs (régénérés automatiquement)
-- `assets/` - Déplacé vers `docs/assets/`
+#### 🗑️ Removed directories
+- `coverage/` - Test coverage reports
+- `logs/` - Log files (automatically regenerated)
+- `assets/` - Moved to `docs/assets/`
 
-#### 🗑️ Fichiers supprimés
-- `.DS_Store` - Fichiers système macOS
-- `*.log` - Fichiers de logs
-- `*.tmp` - Fichiers temporaires
-- `*.pyc` - Fichiers Python compilés
-- `__pycache__/` - Cache Python
-- `.pytest_cache/` - Cache pytest
-- Fichiers de cache Node.js et TypeScript
+#### 🗑️ Removed files
+- `.DS_Store` - macOS system files
+- `*.log` - Log files
+- `*.tmp` - Temporary files
+- `*.pyc` - Compiled Python files
+- `__pycache__/` - Python cache
+- `.pytest_cache/` - Pytest cache
+- Node.js and TypeScript cache files
 
-#### 📁 Fichiers déplacés
+#### 📁 Moved files
 - `.version` → `shared/.version`
 - `package.json.bak` → `docs/package.json.bak`
 
-### 3. Améliorations de la configuration
+### 3. Configuration improvements
 
 #### 📝 Documentation
-- **Créé** : `docs/PROJECT_STRUCTURE.md` - Documentation complète de l'organisation
-- **Créé** : `docs/CLEANUP_SUMMARY.md` - Ce résumé
+- **Created** : `docs/PROJECT_STRUCTURE.md` - Complete organization documentation
+- **Created** : `docs/CLEANUP_SUMMARY.md` - This summary
 
 #### 🔧 Scripts
-- **Créé** : `scripts/maintenance/cleanup.sh` - Script de nettoyage automatique
-- **Fonctionnalités** :
-  - Nettoyage des fichiers temporaires
-  - Nettoyage du cache Python et Node.js
-  - Nettoyage des fichiers de build
-  - Options `--force` et `--deep`
-  - Messages colorés et informatifs
+- **Created** : `scripts/maintenance/cleanup.sh` - Automatic cleanup script
+- **Features** :
+  - Temporary file cleanup
+  - Python and Node.js cache cleanup
+  - Build file cleanup
+  - `--force` and `--deep` options
+  - Colored and informative messages
 
 #### ⚙️ Configuration
-- **Mis à jour** : `.gitignore` - Ajout des patterns pour les fichiers temporaires
-- **Ajouté** : Patterns pour `*.tmp`, `*.temp`, `.pytest_cache/`, `.coverage`, `htmlcov/`
+- **Updated** : `.gitignore` - Added patterns for temporary files
+- **Added** : Patterns for `*.tmp`, `*.temp`, `.pytest_cache/`, `.coverage`, `htmlcov/`
 
-## 📊 Résultats
+## 📊 Results
 
-### ✅ Avant/Après
-- **Avant** : 50+ fichiers à la racine, structure confuse
-- **Après** : 35 fichiers à la racine, structure claire et organisée
+### ✅ Before/After
+- **Before** : 50+ files at root, confusing structure
+- **After** : 35 files at root, clear and organized structure
 
-### 📁 Structure finale de la racine
+### 📁 Final root structure
 ```
 meeshy/
-├── README.md                    # Documentation principale
-├── PROJECT_OVERVIEW.md          # Vue d'ensemble
-├── CHANGELOG.md                 # Historique
-├── CONTRIBUTORS.md              # Contributeurs
-├── CODE_OF_CONDUCT.md           # Code de conduite
-├── CONTRIBUTING.md              # Guide de contribution
-├── SECURITY.md                  # Politique de sécurité
-├── SUPPORT.md                   # Guide de support
-├── LICENSE                      # Licence
-├── .cursorrules                 # Configuration Cursor
-├── .gitignore                   # Fichiers ignorés
-├── .dockerignore                # Fichiers Docker ignorés
-├── .eslintrc.json               # Configuration ESLint
-├── eslint.config.mjs            # ESLint moderne
-├── components.json              # Composants
+├── README.md                    # Main documentation
+├── PROJECT_OVERVIEW.md          # Overview
+├── CHANGELOG.md                 # History
+├── CONTRIBUTORS.md              # Contributors
+├── CODE_OF_CONDUCT.md           # Code of conduct
+├── CONTRIBUTING.md              # Contribution guide
+├── SECURITY.md                  # Security policy
+├── SUPPORT.md                   # Support guide
+├── LICENSE                      # License
+├── .cursorrules                 # Cursor configuration
+├── .gitignore                   # Ignored files
+├── .dockerignore                # Docker ignored files
+├── .eslintrc.json               # ESLint configuration
+├── eslint.config.mjs            # Modern ESLint
+├── components.json              # Components
 ├── next.config.ts               # Next.js
-├── next-env.d.ts                # Types Next.js
+├── next-env.d.ts                # Next.js types
 ├── postcss.config.mjs           # PostCSS
 ├── tsconfig.json                # TypeScript
-├── package.json                 # Dépendances
+├── package.json                 # Dependencies
 ├── pnpm-lock.yaml               # Lock file
-├── env.example                  # Variables d'environnement
-├── Dockerfile                   # Docker principal
-├── Dockerfile.unified           # Docker unifié
+├── env.example                  # Environment variables
+├── Dockerfile                   # Main Docker
+├── Dockerfile.unified           # Unified Docker
 ├── docker-compose.yml           # Docker Compose
-├── docker-compose.unified.yml   # Docker Compose unifié
+├── docker-compose.unified.yml   # Unified Docker Compose
 ├── .github/                     # GitHub
 ├── .vscode/                     # VS Code
-├── node_modules/                # Dépendances
-├── frontend/                    # Application Next.js
-├── gateway/                     # Service Fastify
-├── translator/                  # Service Python
-├── shared/                      # Code partagé
-├── docker/                      # Configuration Docker
+├── node_modules/                # Dependencies
+├── frontend/                    # Next.js application
+├── gateway/                     # Fastify service
+├── translator/                  # Python service
+├── shared/                      # Shared code
+├── docker/                      # Docker configuration
 ├── docs/                        # Documentation
-└── scripts/                     # Scripts utilitaires
+└── scripts/                     # Utility scripts
 ```
 
-## 🚀 Avantages
+## 🚀 Advantages
 
-### 📈 Maintenabilité
-- Structure claire et logique
-- Scripts organisés par fonction
-- Documentation complète
-- Nettoyage automatique
+### 📈 Maintainability
+- Clear and logical structure
+- Scripts organized by function
+- Complete documentation
+- Automatic cleanup
 
-### 🔍 Lisibilité
-- Racine du projet épurée
-- Fichiers regroupés logiquement
-- Navigation intuitive
+### 🔍 Readability
+- Cleaned project root
+- Files logically grouped
+- Intuitive navigation
 
-### 🛠️ Développement
-- Scripts facilement accessibles
-- Configuration centralisée
-- Maintenance automatisée
+### 🛠️ Development
+- Easily accessible scripts
+- Centralized configuration
+- Automated maintenance
 
 ### 📚 Documentation
-- Structure documentée
-- Guides de maintenance
-- Bonnes pratiques établies
+- Documented structure
+- Maintenance guides
+- Established best practices
 
-## 🔄 Maintenance future
+## 🔄 Future maintenance
 
-### 🧹 Nettoyage automatique
+### 🧹 Automatic cleanup
 ```bash
-# Nettoyage standard
+# Standard cleanup
 ./scripts/maintenance/cleanup.sh
 
-# Nettoyage avec suppression des fichiers de verrouillage
+# Cleanup with lock file removal
 ./scripts/maintenance/cleanup.sh --force
 
-# Nettoyage complet avec suppression des node_modules
+# Complete cleanup with node_modules removal
 ./scripts/maintenance/cleanup.sh --deep
 ```
 
-### 📋 Bonnes pratiques
-- Exécuter le script de nettoyage régulièrement
-- Placer les nouveaux scripts dans le bon dossier
-- Documenter les nouvelles fonctionnalités
-- Maintenir la structure organisée
+### 📋 Best practices
+- Run cleanup script regularly
+- Place new scripts in the correct folder
+- Document new features
+- Maintain organized structure
 
 ## ✅ Conclusion
 
-Le projet Meeshy est maintenant :
-- **Propre** : Fichiers temporaires supprimés
-- **Organisé** : Structure logique et claire
-- **Maintenable** : Scripts et documentation appropriés
-- **Évolutif** : Structure extensible pour les futures fonctionnalités
+The Meeshy project is now:
+- **Clean** : Temporary files removed
+- **Organized** : Logical and clear structure
+- **Maintainable** : Appropriate scripts and documentation
+- **Scalable** : Extensible structure for future features
 
-Cette réorganisation améliore significativement l'expérience de développement et la maintenabilité du projet.
+This reorganization significantly improves the development experience and project maintainability.

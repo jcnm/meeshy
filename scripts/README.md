@@ -70,7 +70,7 @@ Gestionnaire automatique des versions avec mise à jour de tous les fichiers de 
 # Incrémenter la version majeure
 ./scripts/utils/version-manager.sh auto-increment major
 
-# Définir une version spécifique
+# Define a specific version
 ./scripts/utils/version-manager.sh update 1.0.0-alpha
 ```
 

@@ -87,7 +87,7 @@ tests/
 # Afficher l'aide
 ./test-translate.sh --help
 
-# Afficher le log complet à la fin
+# Display complete log at the end
 ./test-translate.sh --log
 ```
 

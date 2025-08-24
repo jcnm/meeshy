@@ -97,7 +97,7 @@ clearAllAuthData();
 ## Sécurité
 
 ### Nettoyage automatique
-- Tokens invalides sont automatiquement supprimés
+- Invalid tokens are automatically removed
 - Redirection vers la page d'authentification appropriée
 - Nettoyage de toutes les données en cas d'erreur
 
