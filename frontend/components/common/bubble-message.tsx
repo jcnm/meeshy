@@ -186,6 +186,14 @@ function BubbleMessageInner({
     return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
   };
 
+  // Obtenir les traductions disponibles (pour affichage du badge)
+  const getAvailableTranslations = () => {
+    return message.translations.filter(t => t.status === 'completed');
+  };
+
+  // Vérifier si des traductions sont disponibles
+  const hasAvailableTranslations = getAvailableTranslations().length > 0;
+
   const handleForceTranslation = async (targetLanguage: string) => {
     setIsTranslationPopoverOpen(false);
     setTranslationFilter(''); // Réinitialiser le filtre
@@ -391,9 +399,47 @@ function BubbleMessageInner({
                 }}
                 ref={contentRef}
               >
-                <p className="text-gray-900 leading-relaxed whitespace-pre-wrap text-base">
-                  {getCurrentContent()}
-                </p>
+                <div className="flex items-start justify-between">
+                  <p className="text-gray-900 leading-relaxed whitespace-pre-wrap text-base flex-1">
+                    {getCurrentContent()}
+                  </p>
+                  {/* Indicateur de traductions disponibles */}
+                  {hasAvailableTranslations && currentDisplayLanguage === message.originalLanguage && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="ml-2 mt-1 flex items-center space-x-1">
+                          <div className="flex -space-x-1">
+                            {getAvailableTranslations().slice(0, 3).map((translation, index) => (
+                              <div
+                                key={translation.language}
+                                className="w-4 h-4 rounded-full border border-white bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-600"
+                                title={`${getLanguageInfo(translation.language).name}: ${translation.content.substring(0, 20)}...`}
+                              >
+                                {getLanguageInfo(translation.language).flag}
+                              </div>
+                            ))}
+                          </div>
+                          {getAvailableTranslations().length > 3 && (
+                            <span className="text-xs text-gray-500 font-medium">
+                              +{getAvailableTranslations().length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="text-xs">
+                          <div className="font-medium mb-1">Traductions disponibles:</div>
+                          {getAvailableTranslations().map(translation => (
+                            <div key={translation.language} className="flex items-center space-x-1">
+                              <span>{getLanguageInfo(translation.language).flag}</span>
+                              <span>{getLanguageInfo(translation.language).name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
               </motion.div>
             </AnimatePresence>
           </div>

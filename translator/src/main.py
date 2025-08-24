@@ -23,8 +23,8 @@ sys.path.insert(0, str(src_path))
 
 from config.settings import Settings
 from services.zmq_server import ZMQTranslationServer
-from services.quantized_ml_service import QuantizedMLService
-from services.simple_translation_service import SimpleTranslationService
+from services.translation_ml_service import TranslationMLService
+
 from api.translation_api import TranslationAPI
 
 # Configuration du logging
@@ -50,69 +50,81 @@ class MeeshyTranslationServer:
         self.is_initialized = False
     
     async def initialize(self) -> bool:
-        """Initialise le serveur de traduction avec architecture unifiée et fallback ultime"""
+        """Initialise le serveur de traduction avec QuantizedMLService uniquement"""
         try:
-            logger.info("[TRANSLATOR] 🚀 Initialisation du serveur de traduction avec ML quantifié...")
+            logger.info("[TRANSLATOR] 🚀 Initialisation du serveur de traduction avec TranslationMLService...")
             
-            # 1. Initialiser le service ML quantifié (optimisé)
-            max_workers = int(os.getenv('TRANSLATION_WORKERS', '50'))  # Augmenté de 10 à 50 pour 100 msg/sec
-            quantization_level = os.getenv('QUANTIZATION_LEVEL', 'float16')  # float32 par défaut pour stabilité
+            # 1. Initialiser le service ML unifié (obligatoire)
+            max_workers = int(os.getenv('TRANSLATION_WORKERS', '50'))
+            quantization_level = os.getenv('QUANTIZATION_LEVEL', 'float16')
             
-            # Utiliser le service quantifié avec tous les modèles pour supporter tous les types de requêtes
-            self.translation_service = QuantizedMLService("all", quantization_level, max_workers=max_workers)
+            # Utiliser le service ML unifié avec tous les modèles
+            self.translation_service = TranslationMLService(self.settings, model_type="all", max_workers=max_workers, quantization_level=quantization_level)
             
             # Charger les modèles ML au démarrage
             logger.info("[TRANSLATOR] 📚 Chargement des modèles ML...")
             ml_initialized = await self.translation_service.initialize()
             if not ml_initialized:
-                logger.warning("[TRANSLATOR] ⚠️ Modèles ML non disponibles, passage au service de traduction simple")
-                # Fallback vers le service de traduction simple
-                self.translation_service = SimpleTranslationService()
-                logger.info("[TRANSLATOR] ✅ Service de traduction simple initialisé (fallback ultime)")
-            else:
-                logger.info(f"[TRANSLATOR] ✅ Service ML quantifié ({quantization_level}) initialisé avec succès")
-                
-                # Vérifier si au moins un modèle est disponible
-                available_models = self.translation_service.get_available_models()
-                if not available_models:
-                    logger.warning("[TRANSLATOR] ⚠️ Aucun modèle ML chargé, passage au service de traduction simple")
-                    self.translation_service = SimpleTranslationService()
-                    logger.info("[TRANSLATOR] ✅ Service de traduction simple initialisé (fallback ultime)")
-                else:
-                    logger.info(f"[TRANSLATOR] ✅ Modèles disponibles: {available_models}")
+                logger.error("[TRANSLATOR] ❌ Échec de l'initialisation du service ML unifié")
+                return False
+            
+            # Vérifier si au moins un modèle est disponible
+            stats = await self.translation_service.get_stats()
+            available_models = list(stats.get('models_loaded', {}).keys())
+            if not available_models:
+                logger.error("[TRANSLATOR] ❌ Aucun modèle ML disponible")
+                return False
+            
+            logger.info(f"[TRANSLATOR] ✅ Service ML unifié initialisé avec succès")
+            logger.info(f"[TRANSLATOR] ✅ Modèles disponibles: {available_models}")
             
             # 2. Initialiser le serveur ZMQ avec le service ML unifié
             zmq_push_port = int(os.getenv('TRANSLATOR_ZMQ_PULL_PORT', '5555'))
             zmq_pub_port = int(os.getenv('TRANSLATOR_ZMQ_PUB_PORT', '5558'))
             
-            # Configuration optimisée des workers pour haute performance (100 msg/sec)
-            normal_workers = max(20, max_workers // 2)  # Minimum 20 workers normaux (au lieu de 4)
-            any_workers = max(10, max_workers // 4)     # Minimum 10 workers any (au lieu de 2)
+            # Configuration des workers avec valeurs configurables
+            normal_workers_default = int(os.getenv('NORMAL_WORKERS_DEFAULT', '20'))
+            any_workers_default = int(os.getenv('ANY_WORKERS_DEFAULT', '10'))
+            
+            # Calculer les workers en fonction de max_workers si pas configuré explicitement
+            if os.getenv('NORMAL_WORKERS_DEFAULT') is None:
+                normal_workers = max(normal_workers_default, max_workers // 2)
+            else:
+                normal_workers = normal_workers_default
+                
+            if os.getenv('ANY_WORKERS_DEFAULT') is None:
+                any_workers = max(any_workers_default, max_workers // 4)
+            else:
+                any_workers = any_workers_default
+            
+            # Récupérer l'URL de la base de données
+            database_url = os.getenv('DATABASE_URL', 'postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy')
             
             self.zmq_server = ZMQTranslationServer(
                 gateway_push_port=zmq_push_port,  # Port où Translator PULL bind (Gateway PUSH connect ici)
                 gateway_sub_port=zmq_pub_port,    # Port où Translator PUB bind (Gateway SUB connect ici)
                 normal_workers=normal_workers,
                 any_workers=any_workers,
-                translation_service=self.translation_service 
+                translation_service=self.translation_service,
+                database_url=database_url
             )
             
             logger.info(f"[TRANSLATOR] 🔧 Configuration workers haute performance: normal={normal_workers}, any={any_workers}, total={normal_workers + any_workers}")
             logger.info(f"[TRANSLATOR] 🚀 Capacité estimée: ~{normal_workers + any_workers} traductions simultanées")
             # Initialiser le serveur ZMQ
             await self.zmq_server.initialize()
-            logger.info("[TRANSLATOR] ✅ Serveur ZMQ configuré avec service ML quantifié")
+            logger.info("[TRANSLATOR] ✅ Serveur ZMQ configuré avec service ML unifié")
             
             # 3. Initialiser l'API FastAPI avec le service ML unifié
             self.translation_api = TranslationAPI(
                 translation_service=self.translation_service,  # Service ML unifié
                 zmq_server=self.zmq_server
             )
-            logger.info("[TRANSLATOR] ✅ API FastAPI configurée avec service ML quantifié")
+            logger.info("[TRANSLATOR] ✅ API FastAPI configurée avec service ML unifié")
             
             self.is_initialized = True
             logger.info("[TRANSLATOR] ✅ Architecture unifiée initialisée avec succès")
-            logger.info(f"[TRANSLATOR] 🎯 Tous les canaux (ZMQ, REST) utilisent le service ML quantifié ({quantization_level})")
+            logger.info(f"[TRANSLATOR] 🎯 Tous les canaux (ZMQ, REST) utilisent le service ML unifié")
             
             return True
             

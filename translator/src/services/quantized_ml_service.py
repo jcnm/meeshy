@@ -21,6 +21,10 @@ from config.settings import get_settings
 # Import des modèles ML optimisés
 try:
     import torch
+    
+    # SOLUTION: Désactiver les tensors meta avant d'importer les autres modules
+    torch._C._disable_meta = True  # Désactiver les tensors meta au niveau PyTorch
+    
     from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
     ML_AVAILABLE = True
     
@@ -30,11 +34,42 @@ try:
     os.environ['HF_HUB_DISABLE_IMPLICIT_TOKEN'] = '1'
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'
     
+    # OPTIMISATION RÉSEAU: Configuration pour améliorer la connectivité Docker
+    os.environ['HF_HUB_ENABLE_HF_TRANSFER'] = '1'
+    os.environ['HF_HUB_DOWNLOAD_TIMEOUT'] = '600'  # 10 minutes
+    os.environ['HF_HUB_DOWNLOAD_RETRY_DELAY'] = '5'
+    os.environ['HF_HUB_DOWNLOAD_MAX_RETRIES'] = '5'
+    
+    # SOLUTION: Désactiver les tensors meta pour éviter l'erreur Tensor.item()
+    os.environ['PYTORCH_DISABLE_META'] = '1'
+    os.environ['PYTORCH_FORCE_CUDA'] = '0'  # Forcer CPU si pas de GPU
+    os.environ['PYTORCH_NO_CUDA_MEMORY_CACHING'] = '1'
+    
+    # Configuration pour éviter les problèmes de proxy/corporate network
+    # Vérifier si le fichier de certificats existe, sinon utiliser le système par défaut
+    if os.path.exists('/etc/ssl/certs/ca-certificates.crt'):
+        os.environ['REQUESTS_CA_BUNDLE'] = '/etc/ssl/certs/ca-certificates.crt'
+        os.environ['CURL_CA_BUNDLE'] = '/etc/ssl/certs/ca-certificates.crt'
+    elif os.path.exists('/etc/ssl/certs/ca-bundle.crt'):
+        os.environ['REQUESTS_CA_BUNDLE'] = '/etc/ssl/certs/ca-bundle.crt'
+        os.environ['CURL_CA_BUNDLE'] = '/etc/ssl/certs/ca-bundle.crt'
+    else:
+        # Utiliser le système par défaut
+        print("⚠️ Fichier de certificats SSL non trouvé, utilisation du système par défaut")
+    
+    # Option pour désactiver temporairement la vérification SSL si nécessaire
+    if os.getenv('HF_HUB_DISABLE_SSL_VERIFICATION', '0') == '1':
+        os.environ['REQUESTS_CA_BUNDLE'] = ''
+        os.environ['CURL_CA_BUNDLE'] = ''
+        print("⚠️ Vérification SSL désactivée pour Hugging Face (HF_HUB_DISABLE_SSL_VERIFICATION=1)")
+    
     # Suppression des warnings de retry Xet
     import warnings
     warnings.filterwarnings("ignore", message=".*Retry attempt.*")
     warnings.filterwarnings("ignore", message=".*reqwest.*")
     warnings.filterwarnings("ignore", message=".*xethub.*")
+    warnings.filterwarnings("ignore", message=".*IncompleteMessage.*")
+    warnings.filterwarnings("ignore", message=".*SendRequest.*")
     
 except ImportError:
     ML_AVAILABLE = False
@@ -221,7 +256,7 @@ class QuantizedMLService:
 
     
     async def _load_model_with_optimized_fallback(self):
-        """Fallback optimisé sans boucles multiples - Version simplifiée"""
+        """Tentative de chargement avec fallback - Version simplifiée"""
         fallback_order = ['basic', 'medium', 'premium']
         
         # Calculer les modèles candidats en une seule passe
@@ -231,7 +266,7 @@ class QuantizedMLService:
         except ValueError:
             candidate_models = fallback_order
         
-        # Essayer les candidats séquentiellement (nécessaire pour le fallback)
+        # Essayer les candidats séquentiellement
         last_error = None
         for model_type in candidate_models:
             if model_type not in self.model_configs:
@@ -247,7 +282,10 @@ class QuantizedMLService:
                 last_error = e
                 logger.warning(f"⚠️ Échec {model_type}: {e}")
         
-        raise Exception(f"Aucun modèle chargeable: {last_error}")
+        # Si aucun modèle ne peut être chargé, lever une exception claire
+        error_msg = f"Échec du chargement de tous les modèles de traduction. Dernière erreur: {last_error}"
+        logger.error(f"❌ {error_msg}")
+        raise Exception(error_msg)
     
     async def _load_model_with_sharing_optimized(self, model_type: str):
         """Chargement optimisé avec gestion du partage"""
@@ -348,61 +386,190 @@ class QuantizedMLService:
         return model, tokenizer
     
     def _load_tokenizer_sync(self, model_name: str):
-        """Chargement synchrone du tokenizer - Version simple et robuste"""
+        """Chargement synchrone du tokenizer - Version robuste avec retry et fallback"""
         import warnings
         import os
+        import time
+        import requests
         from pathlib import Path
+        from huggingface_hub import HfApi
         
         # Configuration du cache local - utiliser self.settings
         cache_dir = Path(self.settings.models_path)
         cache_dir.mkdir(exist_ok=True)
         
-        # Suppression temporaire des warnings pendant le chargement
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            return AutoTokenizer.from_pretrained(
-                model_name,
-                local_files_only=False,
-                trust_remote_code=True,
-                cache_dir=str(cache_dir)
-            )
+        # Configuration des retries
+        max_retries = int(os.getenv('HF_HUB_DOWNLOAD_MAX_RETRIES', '5'))
+        retry_delay = int(os.getenv('HF_HUB_DOWNLOAD_RETRY_DELAY', '5'))
+        
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"📥 Tentative {attempt + 1}/{max_retries} de chargement du tokenizer {model_name}")
+                
+                # Test de connectivité Hugging Face
+                try:
+                    api = HfApi()
+                    api.model_info(model_name, timeout=30)
+                    logger.info(f"✅ Connectivité Hugging Face OK pour {model_name}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Problème de connectivité HF pour {model_name}: {e}")
+                    # Continuer quand même, peut-être que le modèle est en cache local
+                
+                # Suppression temporaire des warnings pendant le chargement
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    
+                    # Configuration optimisée pour Docker
+                    tokenizer = AutoTokenizer.from_pretrained(
+                        model_name,
+                        local_files_only=False,
+                        trust_remote_code=True,
+                        cache_dir=str(cache_dir),
+                        use_auth_token=None,  # Pas de token pour les modèles publics
+                        resume_download=True,  # Reprendre les téléchargements interrompus
+                        force_download=False,  # Ne pas forcer le re-téléchargement
+                        proxies=None  # Pas de proxy par défaut
+                    )
+                
+                logger.info(f"✅ Tokenizer {model_name} chargé avec succès")
+                return tokenizer
+                
+            except Exception as e:
+                last_error = e
+                logger.warning(f"⚠️ Tentative {attempt + 1} échouée pour {model_name}: {e}")
+                
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # Backoff exponentiel
+                    logger.info(f"⏳ Attente de {wait_time}s avant la prochaine tentative...")
+                    time.sleep(wait_time)
+        
+        # Si toutes les tentatives ont échoué, essayer avec des paramètres de fallback
+        logger.warning(f"🔄 Tentative de fallback pour le tokenizer {model_name}")
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                return AutoTokenizer.from_pretrained(
+                    model_name,
+                    local_files_only=True,  # Essayer seulement le cache local
+                    trust_remote_code=True,
+                    cache_dir=str(cache_dir)
+                )
+        except Exception as fallback_error:
+            logger.error(f"❌ Échec du fallback pour {model_name}: {fallback_error}")
+            raise last_error or fallback_error
     
     def _load_model_sync(self, model_name: str):
-        """Chargement synchrone du modèle avec quantification - Version simple et robuste"""
+        """Chargement synchrone du modèle avec quantification - Version robuste avec retry et fallback"""
         import warnings
         import os
+        import time
         from pathlib import Path
+        from huggingface_hub import HfApi
         
         # Configuration du cache local - utiliser self.settings
         cache_dir = Path(self.settings.models_path)
         cache_dir.mkdir(exist_ok=True)
         
-        # Configuration de base simple
+        # Configuration des retries
+        max_retries = int(os.getenv('HF_HUB_DOWNLOAD_MAX_RETRIES', '5'))
+        retry_delay = int(os.getenv('HF_HUB_DOWNLOAD_RETRY_DELAY', '5'))
+        
+        # Configuration de base optimisée pour Docker avec désactivation complète des tensors meta
         base_config = {
             'local_files_only': False,
             'trust_remote_code': True,
-            'cache_dir': str(cache_dir)
+            'cache_dir': str(cache_dir),
+            'use_auth_token': None,  # Pas de token pour les modèles publics
+            'resume_download': True,  # Reprendre les téléchargements interrompus
+            'force_download': False,  # Ne pas forcer le re-téléchargement
+            'proxies': None,  # Pas de proxy par défaut
+            'low_cpu_mem_usage': False,  # Désactiver l'optimisation mémoire qui peut causer des tensors meta
+            'torch_dtype': torch.float32,  # Forcer float32 pour éviter les meta tensors
+            'attn_implementation': 'eager',  # Forcer l'implémentation eager pour éviter les meta tensors
+            'device_map': None  # Pas de device mapping automatique
         }
         
-        # Quantification simple
-        if self.quantization_level == "float16":
-            base_config['torch_dtype'] = torch.float16
-        elif self.quantization_level == "int8":
-            try:
-                model = AutoModelForSeq2SeqLM.from_pretrained(model_name, **base_config)
-                return torch.quantization.quantize_dynamic(
-                    model, {torch.nn.Linear}, dtype=torch.qint8
-                )
-            except Exception as e:
-                logger.warning(f"⚠️ Quantification int8 échouée, fallback float32: {e}")
-                base_config['torch_dtype'] = torch.float32
-        else:
-            base_config['torch_dtype'] = torch.float32
+        # Configuration forcée pour éviter les meta tensors
+        # Note: torch_dtype et attn_implementation sont déjà définis dans base_config
         
-        # Suppression temporaire des warnings pendant le chargement
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            return AutoModelForSeq2SeqLM.from_pretrained(model_name, **base_config)
+        last_error = None
+        
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"📥 Tentative {attempt + 1}/{max_retries} de chargement du modèle {model_name}")
+                
+                # Test de connectivité Hugging Face
+                try:
+                    api = HfApi()
+                    api.model_info(model_name, timeout=30)
+                    logger.info(f"✅ Connectivité Hugging Face OK pour {model_name}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Problème de connectivité HF pour {model_name}: {e}")
+                    # Continuer quand même, peut-être que le modèle est en cache local
+                
+                # Suppression temporaire des warnings pendant le chargement
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    
+                                    # Chargement du modèle avec désactivation des tensors meta
+                model = AutoModelForSeq2SeqLM.from_pretrained(
+                    model_name, 
+                    **base_config
+                )
+                
+                # Initialisation simple sans dummy input pour éviter les erreurs
+                model.eval()  # Mode évaluation
+                logger.info(f"✅ Modèle {model_name} chargé avec succès")
+                
+                # Quantification int8 si demandée
+                if self.quantization_level == "int8":
+                    try:
+                        model = torch.quantization.quantize_dynamic(
+                            model, {torch.nn.Linear}, dtype=torch.qint8
+                        )
+                        logger.info(f"✅ Modèle {model_name} quantifié en int8")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Quantification int8 échouée pour {model_name}, modèle en float32: {e}")
+                
+                logger.info(f"✅ Modèle {model_name} chargé avec succès")
+                return model
+                
+            except Exception as e:
+                last_error = e
+                logger.warning(f"⚠️ Tentative {attempt + 1} échouée pour {model_name}: {e}")
+                
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # Backoff exponentiel
+                    logger.info(f"⏳ Attente de {wait_time}s avant la prochaine tentative...")
+                    time.sleep(wait_time)
+        
+        # Si toutes les tentatives ont échoué, essayer avec des paramètres de fallback
+        logger.warning(f"🔄 Tentative de fallback pour le modèle {model_name}")
+        try:
+            fallback_config = {
+                'local_files_only': True,  # Essayer seulement le cache local
+                'trust_remote_code': True,
+                'cache_dir': str(cache_dir),
+                'torch_dtype': torch.float32,  # Fallback vers float32
+                'low_cpu_mem_usage': False,   # Désactiver l'optimisation mémoire
+                'device_map': None,           # Pas de device mapping automatique
+                'attn_implementation': 'eager'  # Forcer eager
+            }
+            
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                model = AutoModelForSeq2SeqLM.from_pretrained(model_name, **fallback_config)
+                
+                # Initialisation simple pour le fallback aussi
+                model.eval()
+                logger.info(f"✅ Modèle {model_name} chargé en fallback (cache local)")
+                return model
+                
+        except Exception as fallback_error:
+            logger.error(f"❌ Échec du fallback pour {model_name}: {fallback_error}")
+            raise last_error or fallback_error
     
 
     
@@ -456,8 +623,15 @@ class QuantizedMLService:
             logger.error(f"❌ Erreur traduction: {e}")
             processing_time = time.time() - start_time
             
+            # Retourner un message d'échec clair
+            error_message = f"[ÉCHEC TRADUCTION] {text}"
+            if "Aucun modèle de traduction disponible" in str(e):
+                error_message = f"[MODÈLES NON DISPONIBLES] {text}"
+            elif "Échec du chargement" in str(e):
+                error_message = f"[MODÈLES NON CHARGÉS] {text}"
+            
             return {
-                'translated_text': f"[QUANTIZED-ERROR] {text}",
+                'translated_text': error_message,
                 'detected_language': source_language,
                 'confidence': 0.0,
                 'model_used': f"{model_type}_{self.quantization_level}_error",
@@ -487,7 +661,11 @@ class QuantizedMLService:
             if model_type in self.models:
                 return model_type
         
-        raise Exception(f"Aucun modèle disponible pour {requested_model}")
+        # Si aucun modèle n'est disponible, lever une exception claire
+        available_models = list(self.models.keys())
+        error_msg = f"Aucun modèle de traduction disponible. Modèles demandés: {requested_model}, Modèles chargés: {available_models}"
+        logger.error(f"❌ {error_msg}")
+        raise Exception(error_msg)
     
     def _update_stats(self, processing_time: float):
         """Mise à jour optimisée des statistiques"""
@@ -526,7 +704,8 @@ class QuantizedMLService:
                     cache_dir=str(self.settings.models_path),
                     local_files_only=True,  # Utiliser le modèle local
                     use_fast=True,  # Tokenizer rapide
-                    model_max_length=512  # Limiter la taille
+                    model_max_length=512,  # Limiter la taille
+                    torch_dtype=torch.float32  # Forcer float32
                 )
                 
                 # Détection automatique du type de modèle
@@ -539,9 +718,9 @@ class QuantizedMLService:
                         "text2text-generation",
                         model=model,
                         tokenizer=thread_tokenizer,  # ← TOKENIZER THREAD-LOCAL
-                        device=0 if torch.cuda.is_available() else -1,
+                        device=-1,  # Forcer CPU pour éviter les problèmes de tensors meta
                         max_length=128,
-                        torch_dtype=torch.float32  # Type de données standard
+                        torch_dtype=torch.float32  # Forcer float32
                     )
                     
                     # T5: format avec noms complets de langues

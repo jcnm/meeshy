@@ -72,30 +72,6 @@ export async function translationRoutes(fastify: FastifyInstance) {
       
       const startTime = Date.now();
       
-      // OPTIMISATION: Éviter la traduction si source = target
-      if (validatedData.source_language && validatedData.source_language !== 'auto' && 
-          validatedData.source_language === validatedData.target_language) {
-        console.log(`🔄 [GATEWAY] Langues identiques (${validatedData.source_language} → ${validatedData.target_language}), pas de traduction nécessaire`);
-        return reply.send({
-          success: true,
-          data: {
-            originalText: validatedData.text,
-            translatedText: validatedData.text,
-            sourceLanguage: validatedData.source_language,
-            targetLanguage: validatedData.target_language,
-            modelUsed: 'none',
-            confidence: 1.0,
-            processingTime: 0,
-            fromCache: false
-          }
-        });
-      }
-      
-      // Déterminer le type de modèle automatiquement si non spécifié ou si 'basic'
-      const finalModelType = validatedData.model_type === 'basic'
-        ? getPredictedModelType(validatedData.text.length)
-        : (validatedData.model_type || 'basic');
-      
       let result: any;
       let messageId: string;
       
@@ -147,6 +123,24 @@ export async function translationRoutes(fastify: FastifyInstance) {
         const messageText = validatedData.text || existingMessage.content;
         const messageSourceLanguage = validatedData.source_language || existingMessage.originalLanguage;
         
+        // OPTIMISATION: Éviter la traduction si source = target (après récupération du message)
+        if (messageSourceLanguage && messageSourceLanguage !== 'auto' && 
+            messageSourceLanguage === validatedData.target_language) {
+          console.log(`🔄 [GATEWAY] Langues identiques (${messageSourceLanguage} → ${validatedData.target_language}), pas de traduction nécessaire`);
+          return reply.send({
+            success: true,
+            data: {
+              message_id: validatedData.message_id,
+              translated_text: messageText,
+              source_language: messageSourceLanguage,
+              target_language: validatedData.target_language,
+              confidence: 1.0,
+              processing_time: 0,
+              timestamp: new Date().toISOString()
+            }
+          });
+        }
+        
         // Déterminer le type de modèle pour le texte récupéré
         const finalModelType = validatedData.model_type === 'basic'
           ? getPredictedModelType(messageText.length)
@@ -166,14 +160,22 @@ export async function translationRoutes(fastify: FastifyInstance) {
         const handleResult = await translationService.handleNewMessage(messageData);
         messageId = handleResult.messageId;
         
-        // Attendre un peu pour que la traduction soit traitée
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Attendre la vraie traduction avec un timeout plus long
+        let translationResult = null;
+        const maxWaitTime = 10000; // 10 secondes
+        const checkInterval = 500; // Vérifier toutes les 500ms
+        let waitedTime = 0;
         
-        // Récupérer le résultat de traduction
-        result = await translationService.getTranslation(messageId, validatedData.target_language);
+        while (!translationResult && waitedTime < maxWaitTime) {
+          await new Promise(resolve => setTimeout(resolve, checkInterval));
+          waitedTime += checkInterval;
+          
+          translationResult = await translationService.getTranslation(messageId, validatedData.target_language);
+        }
         
-        if (!result) {
-          // Fallback si la traduction n'est pas encore disponible
+        if (!translationResult) {
+          // Fallback seulement si la traduction n'est pas disponible après le timeout
+          console.log(`⚠️ [GATEWAY] Timeout de traduction après ${maxWaitTime}ms, utilisation du fallback`);
           result = {
             translatedText: `[${validatedData.target_language.toUpperCase()}] ${messageText}`,
             sourceLanguage: messageSourceLanguage,
@@ -182,6 +184,9 @@ export async function translationRoutes(fastify: FastifyInstance) {
             processingTime: 0.001,
             modelType: 'fallback'
           };
+        } else {
+          console.log(`✅ [GATEWAY] Traduction reçue après ${waitedTime}ms`);
+          result = translationResult;
         }
         
       } else {
@@ -194,6 +199,11 @@ export async function translationRoutes(fastify: FastifyInstance) {
             error: 'conversation_id is required when message_id is not provided'
           });
         }
+        
+        // Déterminer le type de modèle pour le nouveau message
+        const finalModelType = validatedData.model_type === 'basic'
+          ? getPredictedModelType(validatedData.text.length)
+          : (validatedData.model_type || 'basic');
         
         // Créer les données du message
         const messageData: any = {
@@ -208,14 +218,22 @@ export async function translationRoutes(fastify: FastifyInstance) {
         const handleResult = await translationService.handleNewMessage(messageData);
         messageId = handleResult.messageId;
         
-        // Attendre un peu pour que la traduction soit traitée
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Attendre la vraie traduction avec un timeout plus long
+        let translationResult2 = null;
+        const maxWaitTime2 = 10000; // 10 secondes
+        const checkInterval2 = 500; // Vérifier toutes les 500ms
+        let waitedTime2 = 0;
         
-        // Récupérer le résultat de traduction
-        result = await translationService.getTranslation(messageId, validatedData.target_language);
+        while (!translationResult2 && waitedTime2 < maxWaitTime2) {
+          await new Promise(resolve => setTimeout(resolve, checkInterval2));
+          waitedTime2 += checkInterval2;
+          
+          translationResult2 = await translationService.getTranslation(messageId, validatedData.target_language);
+        }
         
-        if (!result) {
-          // Fallback si la traduction n'est pas encore disponible
+        if (!translationResult2) {
+          // Fallback seulement si la traduction n'est pas disponible après le timeout
+          console.log(`⚠️ [GATEWAY] Timeout de traduction après ${maxWaitTime2}ms, utilisation du fallback`);
           result = {
             translatedText: `[${validatedData.target_language.toUpperCase()}] ${validatedData.text}`,
             sourceLanguage: validatedData.source_language || 'auto',
@@ -224,6 +242,9 @@ export async function translationRoutes(fastify: FastifyInstance) {
             processingTime: 0.001,
             modelType: 'fallback'
           };
+        } else {
+          console.log(`✅ [GATEWAY] Traduction reçue après ${waitedTime2}ms`);
+          result = translationResult2;
         }
       }
 
@@ -232,9 +253,9 @@ export async function translationRoutes(fastify: FastifyInstance) {
       console.log(`✅ [GATEWAY] Traduction terminée en ${processingTime}s:`, {
         messageId: messageId,
         original: validatedData.text,
-        translated: result.translatedText,
-        modelUsed: result.modelType,
-        confidence: result.confidenceScore
+        translated: result?.translatedText || 'N/A',
+        modelUsed: result?.modelType || 'N/A',
+        confidence: result?.confidenceScore || 0
       });
 
       return {

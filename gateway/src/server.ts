@@ -30,6 +30,7 @@ import { adminRoutes } from './routes/admin';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import { translationRoutes } from './routes/translation';
+import { maintenanceRoutes } from './routes/maintenance';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -455,6 +456,9 @@ class MeeshyServer {
     
     // Register user preferences routes with /users prefix
     await this.server.register(userPreferencesRoutes, { prefix: '/users' });
+
+    // Register maintenance routes with /maintenance prefix
+    await this.server.register(maintenanceRoutes, { prefix: '/maintenance' });
     
     logger.info('✓ REST API routes configured successfully');
   }

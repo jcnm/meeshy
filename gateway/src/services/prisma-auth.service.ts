@@ -84,18 +84,31 @@ export class PrismaAuthService {
    */
   async register(data: RegisterData): Promise<SocketIOUser | null> {
     try {
-      // Vérifier si l'username ou l'email existe déjà
+      // Nettoyer le phoneNumber (traiter les chaînes vides comme null)
+      const cleanPhoneNumber = data.phoneNumber && data.phoneNumber.trim() !== '' ? data.phoneNumber.trim() : null;
+
+      // Vérifier si l'username, l'email ou le phoneNumber existe déjà
       const existingUser = await this.prisma.user.findFirst({
         where: {
           OR: [
             { username: data.username },
-            { email: data.email }
+            { email: data.email },
+            ...(cleanPhoneNumber ? [{ phoneNumber: cleanPhoneNumber }] : [])
           ]
         }
       });
 
       if (existingUser) {
-        throw new Error('Username ou email déjà utilisé');
+        if (existingUser.username === data.username) {
+          throw new Error('Nom d\'utilisateur déjà utilisé');
+        }
+        if (existingUser.email === data.email) {
+          throw new Error('Email déjà utilisé');
+        }
+        if (cleanPhoneNumber && existingUser.phoneNumber === cleanPhoneNumber) {
+          throw new Error('Numéro de téléphone déjà utilisé');
+        }
+        throw new Error('Utilisateur déjà existant');
       }
 
       // Hasher le mot de passe
@@ -109,7 +122,7 @@ export class PrismaAuthService {
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
-          phoneNumber: data.phoneNumber,
+          phoneNumber: cleanPhoneNumber,
           systemLanguage: data.systemLanguage || 'fr',
           regionalLanguage: data.regionalLanguage || 'fr',
           displayName: `${data.firstName} ${data.lastName}`,

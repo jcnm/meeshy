@@ -105,60 +105,14 @@
   "auth": {
     "login": {
       "title": "Entrar",
-      "description": "Bem-vindo de volta ao Meeshy",
+      "description": "Entre na sua conta para continuar",
       "email": "Email",
       "password": "Senha",
-      "loginButton": "Entrar",
-      "forgotPassword": "Esqueceu a senha?",
-      "noAccount": "Não tem uma conta?",
-      "registerLink": "Registre-se aqui"
-    },
-    "register": {
-      "title": "Criar uma conta",
-      "description": "Junte-se ao Meeshy e comunique sem barreiras",
-      "firstName": "Nome",
-      "lastName": "Sobrenome",
-      "username": "Nome de usuário",
-      "email": "Email",
-      "password": "Senha",
-      "confirmPassword": "Confirmar senha",
-      "registerButton": "Criar conta",
-      "hasAccount": "Já tem uma conta?",
-      "loginLink": "Entre aqui"
-    },
-    "joinConversation": {
-      "title": "Entrar em uma conversa",
-      "description": "Digite o link da conversa que você recebeu",
-      "resumeTitle": "Retomar ou entrar em uma conversa",
-      "resumeDescription": "Você tem uma conversa em andamento. Você pode retomá-la ou entrar em uma nova conversa.",
-      "ongoingConversation": "Conversa em andamento",
-      "ongoingDescription": "Você tem uma conversa ativa que pode retomar.",
-      "resumeButton": "Retomar conversa em andamento",
-      "orJoinNew": "Ou entrar em uma nova conversa",
-      "newConversationDescription": "Digite um novo link de conversa abaixo:",
-      "linkPlaceholder": "Digite o link da conversa",
-      "joinButton": "Entrar na conversa"
+      "loginButton": "Entrar"
     }
   },
-  "header": {
-    "shareLinkCopied": "Link de compartilhamento copiado para a área de transferência",
-    "clearSession": "Limpar sessão",
-    "clearSessionConfirm": "Tem certeza de que deseja limpar sua sessão? Isso irá desconectá-lo.",
-    "clearSessionDescription": "Esta ação removerá todos os seus dados de sessão e irá desconectá-lo."
-  },
-  "language": {
-    "title": "Idiomas",
-    "description": "Preferências de tradução",
-    "selectLanguage": "Selecionar idioma",
-    "interfaceLanguage": "Idioma da interface",
-    "systemLanguage": "Idioma do sistema",
-    "regionalLanguage": "Idioma regional",
-    "customLanguage": "Idioma personalizado",
-    "autoTranslate": "Tradução automática",
-    "translateToSystem": "Traduzir para o idioma do sistema",
-    "translateToRegional": "Traduzir para o idioma regional",
-    "useCustomDestination": "Usar destino personalizado"
-  },
+  "header": "Cabeçalho",
+  "language": "Idioma",
   "errors": {
     "loginFailed": "Falha no login",
     "registrationFailed": "Falha no registro",
@@ -174,73 +128,9 @@
     "profileUpdated": "Perfil atualizado com sucesso",
     "welcome": "Bem-vindo"
   },
-  "login": {
-    "title": "Entrar",
-    "subtitle": "Conecte-se à sua conta",
-    "formTitle": "Entrar",
-    "formDescription": "Digite suas credenciais ou use uma conta de teste",
-    "usernameLabel": "Nome de usuário ou email",
-    "usernamePlaceholder": "alice_fr, bob_en, carlos_es...",
-    "usernameHelp": "Use o nome de usuário (ex: alice_fr) ou clique em 'Login Rápido' abaixo",
-    "passwordLabel": "Senha",
-    "passwordPlaceholder": "password123",
-    "passwordHelp": "Senha de teste: password123",
-    "showPassword": "Mostrar senha",
-    "hidePassword": "Ocultar senha",
-    "loginButton": "Entrar",
-    "loggingIn": "Entrando...",
-    "quickLoginTitle": "Login Rápido",
-    "quickLoginDescription": "Clique em um usuário para fazer login automaticamente. Senha para todos: password123",
-    "debugInfo": "Info de Debug",
-    "backendUrl": "URL do Backend",
-    "loginEndpoint": "Endpoint de login",
-    "accountsLoaded": "Contas carregadas",
-    "verifyingAuth": "Verificando autenticação...",
-    "redirecting": "Redirecionando...",
-    "loading": "Carregando..."
-  },
-  "register": {
-    "title": "Criar uma conta",
-    "description": "Junte-se ao Meeshy e comunique-se sem barreiras",
-    "firstNameLabel": "Nome *",
-    "firstNamePlaceholder": "Seu nome",
-    "lastNameLabel": "Sobrenome *",
-    "lastNamePlaceholder": "Seu sobrenome",
-    "usernameLabel": "Nome de usuário *",
-    "usernamePlaceholder": "Escolha um nome de usuário",
-    "emailLabel": "Email *",
-    "emailPlaceholder": "seu@email.com",
-    "phoneLabel": "Telefone",
-    "phonePlaceholder": "+55123456789",
-    "passwordLabel": "Senha *",
-    "passwordPlaceholder": "Escolha uma senha",
-    "systemLanguageLabel": "Idioma do sistema",
-    "regionalLanguageLabel": "Idioma regional",
-    "registerButton": "Criar conta",
-    "creating": "Criando...",
-    "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios",
-    "accountCreationError": "Erro ao criar conta"
-  },
-  "joinConversation": {
-    "title": "Entrar em uma conversa",
-    "description": "Digite o link da conversa que você recebeu",
-    "resumeTitle": "Retomar ou entrar em uma conversa",
-    "resumeDescription": "Você tem uma conversa em andamento. Você pode retomá-la ou entrar em uma nova conversa.",
-    "ongoingConversation": "Conversa em andamento",
-    "ongoingDescription": "Você tem uma conversa ativa que pode retomar.",
-    "resumeButton": "Retomar conversa em andamento",
-    "orJoinNew": "Ou entrar em uma nova conversa",
-    "newConversationDescription": "Digite um novo link de conversa abaixo:",
-    "linkLabel": "Link da conversa",
-    "linkPlaceholder": "Cole o link aqui ou digite o ID",
-    "joinButton": "Entrar na conversa",
-    "verifying": "Verificando...",
-    "enterLink": "Por favor, digite um link de conversa",
-    "invalidLink": "Link de conversa inválido",
-    "expiredLink": "Link de conversa inválido ou expirado",
-    "verificationError": "Erro de verificação do link",
-    "validLink": "Link válido! Redirecionando..."
-  },
+  "login": "Entrar",
+  "register": "Registrar",
+  "joinConversation": "Entrar na conversa",
   "dashboard": {
     "title": "Painel",
     "welcome": "Bem-vindo de volta",
@@ -339,194 +229,7 @@
       "logoutError": "Erro durante o logout"
     }
   },
-  "settings": {
-    "title": "Configurações",
-    "pageTitle": "Configurações para {username}",
-    "loadingSettings": "Carregando configurações...",
-    "settingsError": "Erro ao carregar configurações",
-    "settingsSaved": "Configurações salvas com sucesso",
-    "settingsSaveError": "Erro ao salvar configurações",
-    
-    "tabs": {
-      "profile": "Perfil",
-      "translation": "Tradução",
-      "theme": "Tema",
-      "fonts": "Fontes",
-      "stats": "Estatísticas"
-    },
-    
-    "profile": {
-      "title": "Perfil",
-      "description": "Informações pessoais",
-      "settingsTitle": "Configurações do Perfil",
-      "settingsDescription": "Configurações para {username}",
-      "photo": {
-        "title": "Foto do Perfil",
-        "description": "Personalize sua foto de perfil visível para outros usuários",
-        "uploadImage": "Enviar uma imagem",
-        "takePhoto": "Tirar uma foto",
-        "removePhoto": "Remover foto",
-        "photoUpdated": "Foto do perfil atualizada"
-      },
-      "personalInfo": {
-        "title": "Informações Pessoais",
-        "description": "Modifique suas informações de perfil",
-        "firstName": "Nome",
-        "lastName": "Sobrenome",
-        "displayName": "Nome de exibição",
-        "displayNamePlaceholder": "Como você quer aparecer nas conversas",
-        "email": "Email",
-        "emailPlaceholder": "seu.email@exemplo.com",
-        "phoneNumber": "Número de telefone",
-        "phoneNumberPlaceholder": "+55 11 1234 5678",
-        "username": "Nome de usuário",
-        "usernameCannotChange": "O nome de usuário não pode ser modificado"
-      },
-      "actions": {
-        "cancel": "Cancelar",
-        "save": "Salvar",
-        "saving": "Salvando...",
-        "profileUpdated": "Perfil atualizado com sucesso",
-        "updateError": "Erro ao atualizar perfil"
-      }
-    },
-    
-    "translation": {
-      "title": "Configuração de Idiomas e Tradução",
-      "description": "Defina seus idiomas e configurações de tradução",
-      "systemLanguage": "Idioma do sistema",
-      "regionalLanguage": "Idioma regional",
-      "customDestinationLanguage": "Idioma de destino personalizado",
-      "autoTranslateEnabled": "Tradução automática ativada",
-      "translateToSystemLanguage": "Traduzir para o idioma do sistema",
-      "translateToRegionalLanguage": "Traduzir para o idioma regional",
-      "useCustomDestination": "Usar destino personalizado",
-      "customDestinationPlaceholder": "Selecione um idioma"
-    },
-    
-    "theme": {
-      "title": "Tema e interface",
-      "description": "Personalize a aparência, idioma e fontes da aplicação",
-      "displayMode": {
-        "title": "Modo de exibição",
-        "light": "Claro",
-        "dark": "Escuro",
-        "system": "Sistema"
-      },
-      "accentColor": {
-        "title": "Cor de destaque",
-        "blue": "Azul",
-        "green": "Verde",
-        "purple": "Roxo",
-        "red": "Vermelho",
-        "orange": "Laranja",
-        "pink": "Rosa"
-      },
-      "interfaceLanguage": {
-        "title": "Idioma da interface",
-        "description": "Define o idioma da interface do usuário"
-      },
-      "ui": {
-        "title": "Interface do usuário",
-        "description": "Opções de exibição e comportamento",
-        "fontSize": {
-          "title": "Tamanho da fonte",
-          "small": "Pequeno",
-          "medium": "Médio",
-          "large": "Grande"
-        },
-        "compactMode": {
-          "title": "Modo compacto",
-          "description": "Reduz o espaçamento para exibir mais conteúdo"
-        },
-        "animations": {
-          "title": "Animações",
-          "description": "Ativa as transições e animações da interface"
-        },
-        "interfaceLanguage": {
-          "title": "Idioma da interface",
-          "description": "Define o idioma da interface do usuário"
-        },
-        "fontFamily": {
-          "title": "Família da fonte",
-          "description": "Escolha a fonte principal da aplicação"
-        },
-        "lineHeight": {
-          "title": "Altura da linha",
-          "description": "Espaçamento entre as linhas de texto",
-          "tight": "Apertada",
-          "normal": "Normal",
-          "relaxed": "Relaxada",
-          "loose": "Solta"
-        }
-      },
-      "preview": {
-        "title": "Visualização",
-        "description": "Prévia das configurações aplicadas",
-        "exampleMessage": "Exemplo de mensagem",
-        "exampleText": "Esta é uma prévia de como as mensagens aparecerão com suas configurações atuais."
-      },
-      "settingsUpdated": "Tema atualizado",
-      "interfaceLanguageUpdated": "Idioma da interface atualizado"
-    },
-    
-    "fonts": {
-      "title": "Seleção de fontes",
-      "description": "Personalize a aparência do texto na aplicação",
-      "fontFamily": {
-        "title": "Família da fonte",
-        "description": "Escolha a fonte principal da aplicação"
-      },
-      "fontSize": {
-        "title": "Tamanho da fonte",
-        "description": "Ajuste o tamanho do texto"
-      },
-      "lineHeight": {
-        "title": "Altura da linha",
-        "description": "Espaçamento entre as linhas de texto"
-      }
-    },
-    
-    "stats": {
-      "title": "Estatísticas de tradução",
-      "description": "Visualize suas estatísticas de uso de tradução",
-      "totalTranslations": "Total de traduções",
-      "languagesUsed": "Idiomas utilizados",
-      "translationAccuracy": "Precisão da tradução",
-      "mostTranslatedLanguage": "Idioma mais traduzido",
-      "translationHistory": "Histórico de traduções"
-    },
-    
-    "notifications": {
-      "title": "Notificações",
-      "description": "Configure suas preferências de notificação",
-      "emailNotifications": "Notificações por email",
-      "pushNotifications": "Notificações push",
-      "messageNotifications": "Notificações de mensagens",
-      "groupNotifications": "Notificações de grupo",
-      "translationNotifications": "Notificações de tradução"
-    },
-    
-    "privacy": {
-      "title": "Privacidade",
-      "description": "Gerencie suas configurações de privacidade",
-      "dataSharing": "Compartilhamento de dados",
-      "translationHistory": "Histórico de traduções",
-      "analytics": "Analytics",
-      "cookies": "Cookies"
-    },
-    
-    "security": {
-      "title": "Segurança",
-      "description": "Configurações de segurança da sua conta",
-      "password": "Senha",
-      "twoFactorAuth": "Autenticação de dois fatores",
-      "loginHistory": "Histórico de login",
-      "activeSessions": "Sessões ativas"
-    },
-    
-    "noUserConnected": "Nenhum usuário conectado"
-  },
+  "settings": "Configurações",
   "notFound": {
     "title": "Página não encontrada",
     "description": "Desculpe, esta página ainda não existe.",
@@ -560,79 +263,298 @@
     "member": "membro",
     "membersCount": "{count} membros"
   },
-  "conversations": {
-    "title": "Conversas",
-    "loading": "Carregando conversas...",
-    "loadingConversations": "Carregando...",
-    "loadingConversationsDescription": "Recuperando suas conversas...",
-    "noConversations": "Nenhuma conversa",
-    "noConversationsDescription": "Inicie uma nova conversa para conversar com seus amigos!",
-    "chooseConversation": "Escolha uma conversa!",
-    "chooseConversationDescription": "Clique em uma conversa à esquerda para começar a conversar",
-    "welcome": "Bem-vindo! 🎉",
-    "welcomeDescription": "Você ainda não tem conversas. Comece criando uma!",
-    "newConversation": "Nova conversa",
-    "createLink": "Criar um link",
-    "public": "Público",
-    "private": "Privado",
-    "translationModel": "Modelo de tradução",
-    "chooseModel": "Escolher um modelo",
-    "apiService": "Serviço API",
-    "active": "Ativo",
-    "debug": "Debug: {count} conversas | Carregando: {loading} | Usuário: {user}",
-    "connected": "conectado",
-    "notConnected": "não conectado",
-    "yes": "sim",
-    "no": "não",
-    "conversationDetails": "Detalhes da conversa",
-    "writeMessage": "Escreva sua mensagem...",
-    "noMessages": "Nenhuma mensagem nesta conversa",
-    "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
-    "errorLoadingConversation": "Erro ao carregar conversa. Recarregando...",
-    "participantRemoved": "Participante removido: {userId}",
-    "participantAdded": "Participante adicionado: {userId}",
-    "linkCreated": "Link criado",
-    "conversationCreated": "Conversa criada",
-    "errorLoadingNewConversation": "Erro ao carregar nova conversa:",
-    "lastMessage": "Última mensagem",
-    "noLastMessage": "Nenhuma mensagem ainda",
-    "authChecking": "Verificando autenticação..."
+  "conversations": "Conversas",
+  "title": "Título",
+  "loading": "Carregando...",
+  "bubbleStream": "Stream de bolhas",
+  "anonymousChat": "Chat anônimo",
+  "tabs": {
+    "profile": "Perfil",
+    "translation": "Tradução",
+    "theme": "Tema"
   },
-  "bubbleStream": {
-    "loading": "Carregando mensagens...",
-    "connecting": "Conectando ao servidor...",
-    "initializing": "Inicializando...",
-    "emptyStateMessage": "Nenhuma mensagem ainda",
-    "emptyStateDescription": "Seja o primeiro a postar no stream global!",
-    "languagePlaceholder": "Idioma de escrita",
-    "activeLanguages": "Idiomas Ativos",
-    "typing": {
-      "single": "{name} está digitando...",
-      "double": "{name1} e {name2} estão digitando...",
-      "multiple": "{name} e {count} outros estão digitando..."
+  "translation": {
+    "title": "Configurações de Tradução",
+    "description": "Configure suas preferências de tradução e idiomas",
+    "actions": {
+      "updateError": "Erro ao atualizar configurações de tradução",
+      "settingsUpdated": "Configurações de tradução atualizadas com sucesso",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "save": "Salvar"
     },
-    "realTimeMessages": "Mensagens em tempo real",
-    "connectionInProgress": "Conectando...",
-    "connected": "Conexão estabelecida! Mensagens em tempo real ativadas",
-    "websocketConnected": "WebSocket conectado - Mensagens em tempo real",
-    "websocketEstablished": "Conexão WebSocket estabelecida - Mensagens em tempo real ativadas",
-    "reconnecting": "Tentando reconectar...",
-    "retry": "Tentar novamente",
-    "diagnostics": "Diagnósticos",
-    "connectionError": "Erro de conexão",
-    "tryAgain": "Tentar novamente"
+    "mainLanguages": {
+      "title": "Idiomas Principais",
+      "description": "Configure seus idiomas principais para tradução automática",
+      "systemLanguage": "Idioma do Sistema",
+      "systemLanguageDescription": "Idioma configurado no seu dispositivo",
+      "regionalLanguage": "Idioma Regional",
+      "regionalLanguageDescription": "Idioma da sua região ou país",
+      "customDestinationLanguage": "Idioma de Destino Personalizado",
+      "selectLanguage": "Selecionar idioma",
+      "none": "Nenhum",
+      "customDestinationLanguageDescription": "Idioma personalizado para tradução automática"
+    },
+    "autoTranslation": {
+      "title": "Tradução Automática",
+      "description": "Configure como as mensagens são traduzidas automaticamente",
+      "enabled": "Tradução automática habilitada",
+      "enabledDescription": "Traduzir automaticamente mensagens recebidas",
+      "exclusiveMode": "Modo exclusivo",
+      "translateToSystem": "Traduzir para o idioma do sistema",
+      "translateToSystemDescription": "Traduzir automaticamente para o idioma do seu dispositivo",
+      "translateToRegional": "Traduzir para o idioma regional",
+      "translateToRegionalDescription": "Traduzir automaticamente para o idioma da sua região",
+      "translateToCustom": "Traduzir para idioma personalizado",
+      "translateToCustomDescription": "Traduzir automaticamente para o idioma personalizado",
+      "noCustomLanguage": "Nenhum idioma personalizado configurado",
+      "tip": "Dica",
+      "tipDescription": "A tradução automática funciona melhor quando você configura pelo menos um idioma de destino"
+    },
+    "preview": {
+      "title": "Visualização",
+      "description": "Veja como suas configurações afetarão a tradução",
+      "systemLanguage": "Idioma do Sistema",
+      "regionalLanguage": "Idioma Regional",
+      "customLanguage": "Idioma Personalizado",
+      "autoTranslation": "Tradução Automática",
+      "enabled": "Habilitada",
+      "disabled": "Desabilitada"
+    }
   },
-  "anonymousChat": {
-    "title": "Conversa",
-    "connectedAs": "Conectado como {firstName} {lastName} (@{username})",
-    "loadingMessages": "Carregando mensagens...",
-    "loadMore": "Carregar mais mensagens",
-    "loading": "Carregando...",
-    "sessionNotActive": "Sessão anônima não ativa",
-    "reloadPage": "Recarregar página",
-    "messagePlaceholder": "Digite sua mensagem...",
-    "user": "Usuário",
-    "anonymous": "Anônimo",
-    "unknownUser": "?"
-  }
+  "theme": {
+    "title": "Configurações de Tema",
+    "description": "Personalize a aparência da interface",
+    "settingsUpdated": "Configurações de tema atualizadas com sucesso",
+    "interfaceLanguageUpdated": "Idioma da interface atualizado com sucesso",
+    "displayMode": {
+      "title": "Modo de Exibição",
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema"
+    },
+    "accentColor": {
+      "title": "Cor de Destaque",
+      "blue": "Azul",
+      "green": "Verde",
+      "purple": "Roxo",
+      "red": "Vermelho",
+      "orange": "Laranja",
+      "pink": "Rosa"
+    },
+    "ui": {
+      "title": "Interface do Usuário",
+      "description": "Personalize a interface do usuário",
+      "fontSize": {
+        "title": "Tamanho da Fonte",
+        "small": "Pequeno",
+        "medium": "Médio",
+        "large": "Grande"
+      },
+      "fontFamily": {
+        "title": "Família da Fonte",
+        "description": "Escolha a fonte para a interface"
+      },
+      "lineHeight": {
+        "title": "Altura da Linha",
+        "tight": "Apertado",
+        "normal": "Normal",
+        "relaxed": "Relaxado",
+        "loose": "Solto",
+        "description": "Ajuste o espaçamento entre as linhas"
+      },
+      "interfaceLanguage": {
+        "title": "Idioma da Interface",
+        "description": "Escolha o idioma da interface do usuário"
+      },
+      "compactMode": {
+        "title": "Modo Compacto",
+        "description": "Reduz o espaçamento para uma interface mais compacta"
+      },
+      "animations": {
+        "title": "Animações",
+        "description": "Habilita ou desabilita as animações da interface"
+      }
+    },
+    "preview": {
+      "title": "Visualização",
+      "description": "Veja como suas configurações de tema se parecem",
+      "exampleMessage": "Exemplo de mensagem",
+      "exampleText": "Esta é uma mensagem de exemplo para mostrar como o tema se parece."
+    }
+  },
+  "profile": {
+    "title": "Configurações de Perfil",
+    "description": "Gerencie suas informações pessoais",
+    "actions": {
+      "updateError": "Erro ao atualizar perfil",
+      "profileUpdated": "Perfil atualizado com sucesso",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "save": "Salvar"
+    },
+    "photo": {
+      "title": "Foto do Perfil",
+      "description": "Adicione uma foto para personalizar seu perfil",
+      "uploadImage": "Enviar imagem",
+      "takePhoto": "Tirar foto"
+    },
+    "personalInfo": {
+      "title": "Informações Pessoais",
+      "description": "Atualize suas informações pessoais",
+      "firstName": "Nome",
+      "lastName": "Sobrenome",
+      "displayName": "Nome de Exibição",
+      "displayNamePlaceholder": "Digite seu nome de exibição",
+      "email": "Email",
+      "emailPlaceholder": "Digite seu email",
+      "phoneNumber": "Número de Telefone",
+      "phoneNumberPlaceholder": "Digite seu número de telefone",
+      "username": "Nome de Usuário",
+      "usernameCannotChange": "O nome de usuário não pode ser alterado"
+    }
+  },
+  "noUserConnected": "Nenhum usuário conectado",
+  "notifications": {
+    "title": "Notificações",
+    "description": "Gerencie suas notificações"
+  },
+  "privacy": {
+    "title": "Privacidade",
+    "description": "Configure suas configurações de privacidade"
+  },
+  "user": "Usuário",
+  "anonymous": "Anônimo",
+  "unknownUser": "?",
+  "sessionNotActive": "Sessão anônima não ativa",
+  "reloadPage": "Recarregar página",
+  "messagePlaceholder": "Digite sua mensagem...",
+  "connectedAs": "Conectado como",
+  "loadMore": "Carregar mais",
+  "loadingMessages": "Carregando mensagens...",
+  "usernameLabel": "Nome de usuário",
+  "usernamePlaceholder": "Digite seu nome de usuário",
+  "usernameHelp": "Seu nome de usuário único",
+  "passwordLabel": "Senha",
+  "passwordPlaceholder": "Digite sua senha",
+  "passwordHelp": "Sua senha deve ter pelo menos 6 caracteres",
+  "loggingIn": "Entrando...",
+  "loginButton": "Entrar",
+  "fillRequiredFields": "Preencha todos os campos obrigatórios",
+  "accountCreationError": "Erro ao criar conta. Tente novamente.",
+  "firstNameLabel": "Nome",
+  "firstNamePlaceholder": "Digite seu nome",
+  "lastNameLabel": "Sobrenome",
+  "lastNamePlaceholder": "Digite seu sobrenome",
+  "emailLabel": "Email",
+  "emailPlaceholder": "Digite seu email",
+  "phoneLabel": "Telefone",
+  "phonePlaceholder": "Digite seu número de telefone",
+  "systemLanguageLabel": "Idioma do sistema",
+  "regionalLanguageLabel": "Idioma regional",
+  "creating": "Criando conta...",
+  "registerButton": "Criar conta",
+  "authChecking": "Verificando autenticação...",
+  "translationModel": "Modelo de tradução",
+  "chooseModel": "Escolher um modelo",
+  "apiService": "Serviço API",
+  "active": "Ativo",
+  "yes": "sim",
+  "no": "não",
+  "connected": "conectado",
+  "notConnected": "não conectado",
+  "loadingConversations": "Carregando...",
+  "noConversations": "Nenhuma conversa",
+  "loadingConversationsDescription": "Recuperando suas conversas...",
+  "noConversationsDescription": "Inicie uma nova conversa para conversar com seus amigos!",
+  "public": "Público",
+  "private": "Privado",
+  "createLink": "Criar um link",
+  "newConversation": "Nova conversa",
+  "conversationDetails": "Detalhes da conversa",
+  "noMessages": "Nenhuma mensagem nesta conversa",
+  "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
+  "writeMessage": "Escreva sua mensagem...",
+  "chooseConversation": "Escolha uma conversa!",
+  "chooseConversationDescription": "Clique em uma conversa à esquerda para começar a conversar",
+  "welcome": "Bem-vindo! 🎉",
+  "welcomeDescription": "Você ainda não tem conversas. Comece criando uma!",
+  "errorLoadingNewConversation": "Erro ao carregar nova conversa:",
+  "errorLoadingConversation": "Erro ao carregar conversa. Recarregando...",
+  "debug": "Debug: {count} conversas | Carregando: {loading} | Usuário: {user}",
+  "participantRemoved": "Participante removido: {userId}",
+  "participantAdded": "Participante adicionado: {userId}",
+  "shareLinkCopied": "Link copiado para a área de transferência!",
+  "clearSession": "Limpar sessão",
+  "clearSessionConfirm": "Tem certeza que deseja limpar a sessão?",
+  "clearSessionDescription": "Isso irá desconectar você e limpar todos os dados da sessão atual.",
+  "selectLanguage": "Selecionar idioma",
+  "websocketConnected": "WebSocket conectado - Mensagens em tempo real",
+  "websocketEstablished": "Conexão WebSocket estabelecida - Mensagens em tempo real ativadas",
+  "connecting": "Conectando ao servidor...",
+  "initializing": "Inicializando...",
+  "realTimeMessages": "Mensagens em tempo real",
+  "connectionInProgress": "Conectando...",
+  "reconnecting": "Tentando reconectar...",
+  "emptyStateMessage": "Nenhuma mensagem ainda",
+  "emptyStateDescription": "Seja o primeiro a postar no stream global!",
+  "languagePlaceholder": "Idioma de escrita",
+  "activeLanguages": "Idiomas Ativos",
+  "loadingSettings": "Carregando configurações...",
+  "pageTitle": "Título da página",
+  "enterLink": "Digite o link da conversa",
+  "validLink": "Link válido",
+  "invalidLink": "Link inválido",
+  "expiredLink": "Link expirado",
+  "verificationError": "Erro de verificação",
+  "linkLabel": "Link da conversa",
+  "linkPlaceholder": "Cole o link da conversa aqui",
+  "verifying": "Verificando...",
+  "joinButton": "Entrar",
+  "typing": {
+    "single": "{name} está digitando...",
+    "double": "{name1} e {name2} estão digitando...",
+    "multiple": "{name} e {count} outros estão digitando..."
+  },
+  "hero.badge": "Tradução em tempo real",
+  "hero.title": "Comunique sem",
+  "hero.titleHighlight": "barreiras linguísticas",
+  "hero.subtitle": "O Meeshy traduz automaticamente suas mensagens em tempo real usando IA, diretamente no seu navegador. Nenhum dado sai do seu dispositivo.",
+  "hero.startFree": "Começar gratuitamente",
+  "hero.resumeOrJoin": "Retomar ou entrar em uma conversa",
+  "hero.joinConversation": "Entrar em uma conversa",
+  "mission.title": "Nossa Missão",
+  "mission.slogan": "Encontre-se sem timidez! 🌍✨",
+  "mission.tagline": "Conecte o mundo, uma tradução por vez",
+  "mission.description": "Acreditamos que as barreiras linguísticas nunca devem se interpor no caminho de conexões significativas. Nossa plataforma capacita pessoas de todos os cantos do globo a se comunicarem livremente, derrubando os muros que nos separam e construindo pontes de compreensão.",
+  "mission.signature.line1": "❤️ Feito com ❤️",
+  "mission.signature.line2": "por desenvolvedores que acreditam que a comunicação não deve ter fronteiras.",
+  "features.title": "Por que escolher o Meeshy?",
+  "features.subtitle": "Uma plataforma de mensagens moderna que quebra barreiras linguísticas",
+  "features.universalTranslation.title": "Tradução Universal",
+  "features.universalTranslation.description": "Suporte para mais de 15 idiomas com modelos de IA avançados (MT5 e NLLB)",
+  "features.autoDetection.title": "Detecção Automática",
+  "features.autoDetection.description": "Detecta automaticamente o idioma das mensagens para uma tradução mais precisa.",
+  "features.privacy.title": "100% Privado",
+  "features.privacy.description": "Tradução apenas no lado do cliente. Seus dados permanecem no seu dispositivo.",
+  "features.realtime.title": "Tempo Real",
+  "features.realtime.description": "Mensagens traduzidas instantaneamente com indicadores de digitação e presença.",
+  "features.groupChats.title": "Conversas em Grupo",
+  "features.groupChats.description": "Crie comunidades multilíngues e gerencie permissões facilmente.",
+  "features.multiLanguage.title": "Multi-Idiomas Personalizados",
+  "features.multiLanguage.description": "Configure seus idiomas do sistema e regional para uma experiência sob medida.",
+  "features.modernInterface.title": "Interface Moderna",
+  "features.modernInterface.description": "Design responsivo e intuitivo para uma experiência do usuário ideal.",
+  "features.internationalColleagues.title": "Colegas Internacionais",
+  "features.internationalColleagues.description": "Comunique com seus colegas estrangeiros sem se preocupar com a barreira linguística.",
+  "features.multilingualClassrooms.title": "Salas de Aula Multilíngues",
+  "features.multilingualClassrooms.description": "Troque com seus colegas de classe em sua língua nativa, não importa de onde eles venham.",
+  "cta.title": "Pronto para se comunicar sem limites?",
+  "cta.subtitle": "Junte-se a milhares de usuários que já usam o Meeshy para quebrar barreiras linguísticas.",
+  "cta.createAccount": "Criar minha conta",
+  "footer.copyright": "© 2024 Meeshy. Todos os direitos reservados.",
+  "landing": "Página inicial",
+  "auth": "Autenticação",
+  "language.title": "Configurações de Idioma",
+  "language.description": "Configure seus idiomas preferidos"
 }

@@ -7,6 +7,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
+import { MaintenanceService } from '../services/maintenance.service';
 import jwt from 'jsonwebtoken';
 import type { 
   ServerToClientEvents, 
@@ -37,6 +38,7 @@ export class MeeshySocketIOManager {
   private io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>;
   private prisma: PrismaClient;
   private translationService: TranslationService;
+  private maintenanceService: MaintenanceService;
   
   // Mapping des utilisateurs connectés
   private connectedUsers: Map<string, SocketUser> = new Map();
@@ -54,6 +56,7 @@ export class MeeshySocketIOManager {
   constructor(httpServer: HTTPServer, prisma: PrismaClient) {
     this.prisma = prisma;
     this.translationService = new TranslationService(prisma);
+    this.maintenanceService = new MaintenanceService(prisma);
     
     // Initialiser Socket.IO avec les types shared
     this.io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
@@ -82,6 +85,17 @@ export class MeeshySocketIOManager {
       this._setupSocketEvents();
       // Démarrer le ticker périodique des stats en ligne
       this._ensureOnlineStatsTicker();
+      
+      // Démarrer les tâches de maintenance
+      console.log('[GATEWAY] 🚀 Tentative de démarrage des tâches de maintenance...');
+      try {
+        console.log('[GATEWAY] 🔧 MaintenanceService instance:', !!this.maintenanceService);
+        await this.maintenanceService.startMaintenanceTasks();
+        console.log('[GATEWAY] ✅ Tâches de maintenance démarrées avec succès');
+      } catch (error) {
+        console.error('[GATEWAY] ❌ Erreur lors du démarrage des tâches de maintenance:', error);
+        console.error('[GATEWAY] ❌ Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+      }
       
       // Note: Les événements de traduction sont gérés via le singleton ZMQ
       
@@ -230,6 +244,9 @@ export class MeeshySocketIOManager {
             // Enregistrer l'utilisateur
             this.connectedUsers.set(user.id, user);
             this.socketToUser.set(socket.id, user.id);
+
+            // Mettre à jour l'état en ligne dans la base de données
+            await this.maintenanceService.updateUserOnlineStatus(user.id, true);
 
             // Rejoindre les conversations de l'utilisateur
             await this._joinUserConversations(socket, user.id, false);
@@ -709,12 +726,15 @@ export class MeeshySocketIOManager {
     return targetUsers;
   }
 
-  private _handleDisconnection(socket: any) {
+  private async _handleDisconnection(socket: any) {
     const userId = this.socketToUser.get(socket.id);
     
     if (userId) {
       this.connectedUsers.delete(userId);
       this.socketToUser.delete(socket.id);
+      
+      // Mettre à jour l'état en ligne/hors ligne dans la base de données
+      await this.maintenanceService.updateUserOnlineStatus(userId, false);
       
       console.log(`🔌 Déconnexion: ${userId} (socket: ${socket.id})`);
     }

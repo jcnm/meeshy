@@ -87,9 +87,13 @@ EOF
                 
                 echo "  📝 Schema Prisma Python généré avec client 'prisma-client-py'"
                 
-                # Aussi copier les migrations directement dans le translator pour utilisation immédiate
-                cp -pri migrations "$service_dir/shared/prisma/"
-                echo "  ✅ Schema et migration copiés vers $service_name/shared/prisma"
+                # Aussi copier les migrations directement dans le translator pour utilisation immédiate (si elles existent)
+                if [ -d "migrations" ]; then
+                    cp -pri migrations "$service_dir/shared/prisma/"
+                    echo "  ✅ Schema et migration copiés vers $service_name/shared/prisma"
+                else
+                    echo "  ⚠️  Dossier migrations non trouvé, ignoré"
+                fi
             fi
    
             # Copier les fichiers Proto source pour génération Python

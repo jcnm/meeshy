@@ -9,12 +9,16 @@ import logging
 import uuid
 import zmq
 import zmq.asyncio
+import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Set
 from concurrent.futures import ThreadPoolExecutor
 import time
 import psutil
 from collections import defaultdict
+
+# Import du service de base de données
+from .database_service import DatabaseService
 
 # Configuration du logging
 logging.basicConfig(
@@ -54,11 +58,37 @@ class TranslationPoolManager:
         self.normal_pool = asyncio.Queue(maxsize=normal_pool_size)
         self.any_pool = asyncio.Queue(maxsize=any_pool_size)
         
-        # Configuration des workers
-        self.normal_workers = normal_workers
-        self.any_workers = any_workers
-        self.max_normal_workers = normal_workers * 2  # Limite max pour scaling
-        self.max_any_workers = any_workers * 2        # Limite max pour scaling
+        # Configuration des workers avec valeurs par défaut configurables
+        import os
+        
+        # Valeurs par défaut configurables
+        self.normal_workers_default = int(os.getenv('NORMAL_WORKERS_DEFAULT', '20'))
+        self.any_workers_default = int(os.getenv('ANY_WORKERS_DEFAULT', '10'))
+        
+        # Limites minimales configurables
+        self.normal_workers_min = int(os.getenv('NORMAL_WORKERS_MIN', '2'))
+        self.any_workers_min = int(os.getenv('ANY_WORKERS_MIN', '2'))
+        
+        # Limites maximales configurables
+        self.normal_workers_max = int(os.getenv('NORMAL_WORKERS_MAX', '40'))
+        self.any_workers_max = int(os.getenv('ANY_WORKERS_MAX', '20'))
+        
+        # Utiliser les valeurs fournies ou les valeurs par défaut
+        self.normal_workers = normal_workers if normal_workers is not None else self.normal_workers_default
+        self.any_workers = any_workers if any_workers is not None else self.any_workers_default
+        
+        # S'assurer que les valeurs sont dans les limites
+        self.normal_workers = max(self.normal_workers_min, min(self.normal_workers, self.normal_workers_max))
+        self.any_workers = max(self.any_workers_min, min(self.any_workers, self.any_workers_max))
+        
+        # Limites max pour scaling (peuvent être différentes des limites absolues)
+        self.max_normal_workers = int(os.getenv('NORMAL_WORKERS_SCALING_MAX', str(self.normal_workers_max)))
+        self.max_any_workers = int(os.getenv('ANY_WORKERS_SCALING_MAX', str(self.any_workers_max)))
+        
+        # Log de la configuration
+        logger.info(f"[TRANSLATOR] 🔧 Configuration workers:")
+        logger.info(f"  Normal: {self.normal_workers} (min: {self.normal_workers_min}, max: {self.normal_workers_max}, scaling_max: {self.max_normal_workers})")
+        logger.info(f"  Any: {self.any_workers} (min: {self.any_workers_min}, max: {self.any_workers_max}, scaling_max: {self.max_any_workers})")
         
         # Gestion dynamique
         self.enable_dynamic_scaling = enable_dynamic_scaling
@@ -178,8 +208,8 @@ class TranslationPoolManager:
                 await self._scale_normal_workers(new_normal_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling UP normal workers: {self.normal_workers} → {new_normal_workers}")
         
-        elif normal_queue_size < 10 and normal_utilization < 0.3 and self.normal_workers > 20:
-            new_normal_workers = max(self.normal_workers - 2, 20)
+        elif normal_queue_size < 10 and normal_utilization < 0.3 and self.normal_workers > self.normal_workers_min:
+            new_normal_workers = max(self.normal_workers - 2, self.normal_workers_min)
             if new_normal_workers < self.normal_workers:
                 await self._scale_normal_workers(new_normal_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling DOWN normal workers: {self.normal_workers} → {new_normal_workers}")
@@ -191,8 +221,8 @@ class TranslationPoolManager:
                 await self._scale_any_workers(new_any_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling UP any workers: {self.any_workers} → {new_any_workers}")
         
-        elif any_queue_size < 5 and any_utilization < 0.3 and self.any_workers > 10:
-            new_any_workers = max(self.any_workers - 1, 10)
+        elif any_queue_size < 5 and any_utilization < 0.3 and self.any_workers > self.any_workers_min:
+            new_any_workers = max(self.any_workers - 1, self.any_workers_min)
             if new_any_workers < self.any_workers:
                 await self._scale_any_workers(new_any_workers)
                 logger.info(f"[TRANSLATOR] 🔧 Scaling DOWN any workers: {self.any_workers} → {new_any_workers}")
@@ -463,7 +493,8 @@ class ZMQTranslationServer:
                  any_pool_size: int = 10000,
                  normal_workers: int = 3,
                  any_workers: int = 2,
-                 translation_service=None):
+                 translation_service=None,
+                 database_url: str = None):
         
         self.host = host
         self.gateway_push_port = gateway_push_port  # Port pour PULL (recevoir commandes)
@@ -486,6 +517,9 @@ class ZMQTranslationServer:
         # Remplacer la méthode de publication du pool manager
         self.pool_manager._publish_translation_result = self._publish_translation_result
         
+        # Service de base de données
+        self.database_service = DatabaseService(database_url)
+        
         # État du serveur
         self.running = False
         self.worker_tasks = []
@@ -496,6 +530,14 @@ class ZMQTranslationServer:
     async def initialize(self):
         """Initialise les sockets ZMQ avec architecture PUSH/PULL + PUB/SUB"""
         try:
+            # Connexion à la base de données
+            logger.info("[TRANSLATOR] 🔗 Connexion à la base de données...")
+            db_connected = await self.database_service.connect()
+            if not db_connected:
+                logger.warning("[TRANSLATOR] ⚠️ Impossible de se connecter à la base de données, sauvegarde désactivée")
+            else:
+                logger.info("[TRANSLATOR] ✅ Connexion à la base de données établie")
+            
             # Socket PULL pour recevoir les commandes du Gateway (remplace SUB)
             self.pull_socket = self.context.socket(zmq.PULL)
             self.pull_socket.bind(f"tcp://{self.host}:{self.gateway_push_port}")
@@ -688,14 +730,55 @@ class ZMQTranslationServer:
             
             # DEBUG: Logs réduits de 60% - Suppression des détails techniques
             
-            # Utiliser le socket PUB configuré pour envoyer à la gateway
+            # VÉRIFICATION DE LA QUALITÉ DE LA TRADUCTION
+            translated_text = result.get('translatedText', '')
+            is_valid_translation = self._is_valid_translation(translated_text, result)
+            
+            if not is_valid_translation:
+                # Traduction invalide - NE PAS ENVOYER à la Gateway
+                logger.error(f"❌ [TRANSLATOR] Traduction invalide détectée - PAS D'ENVOI à la Gateway:")
+                logger.error(f"   📋 Task ID: {task_id}")
+                logger.error(f"   📋 Message ID: {result.get('messageId')}")
+                logger.error(f"   📋 Source: {result.get('sourceLanguage')} -> Target: {target_language}")
+                logger.error(f"   📋 Texte original: {result.get('originalText', 'N/A')}")
+                logger.error(f"   📋 Texte traduit: '{translated_text}'")
+                logger.error(f"   📋 Modèle utilisé: {result.get('modelType', 'unknown')}")
+                logger.error(f"   📋 Worker: {result.get('workerName', 'unknown')}")
+                logger.error(f"   📋 Raison: {self._get_translation_error_reason(translated_text)}")
+                return  # Sortir sans envoyer à la Gateway
+            
+            # Traduction valide - SAUVEGARDE ET ENVOI
+            try:
+                # Préparer les données pour la sauvegarde
+                save_data = {
+                    'messageId': result.get('messageId'),
+                    'sourceLanguage': result.get('sourceLanguage'),
+                    'targetLanguage': result.get('targetLanguage'),
+                    'translatedText': result.get('translatedText'),
+                    'translatorModel': result.get('translatorModel', result.get('modelType', 'basic')),
+                    'confidenceScore': result.get('confidenceScore', 0.9),
+                    'processingTime': result.get('processingTime', 0.0),
+                    'workerName': result.get('workerName', 'unknown'),
+                    'poolType': result.get('poolType', 'normal')
+                }
+                
+                # Sauvegarder en base de données (si connecté)
+                if self.database_service.is_db_connected():
+                    save_success = await self.database_service.save_translation(save_data)
+                    if save_success:
+                        logger.info(f"💾 [TRANSLATOR] Traduction sauvegardée en base: {result.get('messageId')} -> {target_language}")
+                    else:
+                        logger.warning(f"⚠️ [TRANSLATOR] Échec sauvegarde en base: {result.get('messageId')} -> {target_language}")
+                else:
+                    logger.info(f"📋 [TRANSLATOR] Base de données non connectée, pas de sauvegarde pour: {result.get('messageId')} -> {target_language}")
+                    
+            except Exception as e:
+                logger.error(f"❌ [TRANSLATOR] Erreur sauvegarde base de données: {e}")
+            
+            # ENVOI À LA GATEWAY (seulement si traduction valide)
             if self.pub_socket:
-                # DEBUG: Logs réduits de 60% - Suppression des vérifications d'envoi
-                
                 await self.pub_socket.send(json.dumps(message).encode('utf-8'))
-                
-                # DEBUG: Logs réduits de 60% - Suppression des vérifications post-envoi
-                logger.info(f"📤 [TRANSLATOR] Résultat envoyé: {task_id} -> {target_language}")
+                logger.info(f"📤 [TRANSLATOR] Résultat envoyé à la Gateway: {task_id} -> {target_language}")
             else:
                 logger.error("❌ Socket PUB non initialisé")
             
@@ -703,6 +786,99 @@ class ZMQTranslationServer:
             logger.error(f"Erreur lors de la publication du résultat enrichi: {e}")
             import traceback
             traceback.print_exc()
+    
+    def _is_valid_translation(self, translated_text: str, result: dict) -> bool:
+        """
+        Vérifie si une traduction est valide et peut être envoyée à la Gateway
+        
+        Args:
+            translated_text: Le texte traduit
+            result: Le résultat complet de la traduction
+        
+        Returns:
+            bool: True si la traduction est valide, False sinon
+        """
+        # Vérifier que le texte traduit existe et n'est pas vide
+        if not translated_text or translated_text.strip() == '':
+            return False
+        
+        # Vérifier que ce n'est pas un message d'erreur
+        error_patterns = [
+            r'^\[.*Error.*\]',
+            r'^\[.*Failed.*\]',
+            r'^\[.*No.*Result.*\]',
+            r'^\[.*Fallback.*\]',
+            r'^\[.*ML.*Error.*\]',
+            r'^\[.*ÉCHEC.*\]',
+            r'^\[.*MODÈLES.*NON.*\]',
+            r'^\[.*MODÈLES.*NON.*CHARGÉS.*\]',
+            r'^\[.*T5.*No.*Result.*\]',
+            r'^\[.*NLLB.*No.*Result.*\]',
+            r'^\[.*T5.*Fallback.*\]',
+            r'^\[.*NLLB.*Fallback.*\]',
+            r'^\[.*ERREUR.*\]',
+            r'^\[.*FAILED.*\]',
+            r'^\[.*TIMEOUT.*\]',
+            r'^\[.*META.*TENSOR.*\]'
+        ]
+        
+        for pattern in error_patterns:
+            if re.search(pattern, translated_text, re.IGNORECASE):
+                return False
+        
+        # Vérifier que le texte traduit n'est pas identique au texte source
+        original_text = result.get('originalText', '')
+        if original_text and translated_text.strip().lower() == original_text.strip().lower():
+            return False
+        
+        # Vérifier que le score de confiance est acceptable
+        confidence_score = result.get('confidenceScore', 1.0)
+        if confidence_score < 0.1:
+            return False
+        
+        # Vérifier qu'il n'y a pas d'erreur dans le résultat
+        if result.get('error'):
+            return False
+        
+        return True
+    
+    def _get_translation_error_reason(self, translated_text: str) -> str:
+        """
+        Retourne la raison de l'échec de traduction
+        
+        Args:
+            translated_text: Le texte traduit
+        
+        Returns:
+            str: La raison de l'échec
+        """
+        if not translated_text or translated_text.strip() == '':
+            return "Texte traduit vide"
+        
+        error_patterns = [
+            (r'^\[.*Error.*\]', "Message d'erreur détecté"),
+            (r'^\[.*Failed.*\]', "Échec de traduction détecté"),
+            (r'^\[.*No.*Result.*\]', "Aucun résultat de traduction"),
+            (r'^\[.*Fallback.*\]', "Fallback de traduction détecté"),
+            (r'^\[.*ML.*Error.*\]', "Erreur ML détectée"),
+            (r'^\[.*ÉCHEC.*\]', "Échec de traduction"),
+            (r'^\[.*MODÈLES.*NON.*\]', "Modèles non disponibles"),
+            (r'^\[.*MODÈLES.*NON.*CHARGÉS.*\]', "Modèles non chargés"),
+            (r'^\[.*T5.*No.*Result.*\]', "T5: Aucun résultat"),
+            (r'^\[.*NLLB.*No.*Result.*\]', "NLLB: Aucun résultat"),
+            (r'^\[.*T5.*Fallback.*\]', "T5: Fallback"),
+            (r'^\[.*NLLB.*Fallback.*\]', "NLLB: Fallback"),
+            (r'^\[.*ERREUR.*\]', "Erreur générale"),
+            (r'^\[.*FAILED.*\]', "Échec général"),
+            (r'^\[.*TIMEOUT.*\]', "Timeout de traduction"),
+            (r'^\[.*META.*TENSOR.*\]', "Erreur meta tensor")
+        ]
+        
+        for pattern, reason in error_patterns:
+            if re.search(pattern, translated_text, re.IGNORECASE):
+                return reason
+        
+        return "Erreur de validation inconnue"
     
     async def stop(self):
         """Arrête le serveur"""
@@ -714,6 +890,9 @@ class ZMQTranslationServer:
         # Attendre que tous les workers se terminent
         if self.worker_tasks:
             await asyncio.gather(*self.worker_tasks, return_exceptions=True)
+        
+        # Fermer la connexion à la base de données
+        await self.database_service.disconnect()
         
         # Fermer les sockets
         if self.pull_socket:

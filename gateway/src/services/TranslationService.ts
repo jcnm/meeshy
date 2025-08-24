@@ -500,12 +500,18 @@ export class TranslationService extends EventEmitter {
       
       this.stats.translations_received++;
       
+      // SAUVEGARDE EN BASE DE DONNÉES (traduction validée par le Translator)
+      try {
+        await this._saveTranslationToDatabase(data.result, data.metadata);
+        console.log(`💾 [TranslationService] Traduction sauvegardée en base: ${data.result.messageId} -> ${data.targetLanguage}`);
+      } catch (error) {
+        console.error(`❌ [TranslationService] Erreur sauvegarde traduction: ${error}`);
+        // Continuer même si la sauvegarde échoue
+      }
+      
       // Mettre en cache avec métadonnées (écrase l'ancienne traduction)
       const cacheKey = `${data.result.messageId}_${data.result.sourceLanguage}_${data.targetLanguage}`;
       this._addToCache(cacheKey, data.result);
-      
-      // Sauvegarder en base avec informations techniques (upsert = mise à jour si existe)
-      await this._saveTranslationToDatabase(data.result, data.metadata);
       
       // Incrémenter le compteur de traductions pour l'utilisateur
       await this._incrementUserTranslationStats(data.result.messageId);
@@ -547,6 +553,8 @@ export class TranslationService extends EventEmitter {
     this.memoryCache.set(key, result);
   }
 
+
+
   /**
    * Incrémente le compteur de traductions pour l'utilisateur qui a envoyé le message
    */
@@ -587,17 +595,72 @@ export class TranslationService extends EventEmitter {
 
 
   private async _saveTranslationToDatabase(result: TranslationResult, metadata?: any) {
-    // La gateway ne doit pas sauvegarder les traductions dans la base de données
-    // Cette responsabilité appartient au service de traduction
-    const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
-    console.log(`💾 [TranslationService] Traduction mise en cache uniquement: ${cacheKey}`);
+    try {
+      console.log(`💾 [TranslationService] Sauvegarde traduction en base: ${result.messageId} -> ${result.targetLanguage}`);
+      
+      // Vérifier si la traduction existe déjà
+      const existingTranslation = await this.prisma.messageTranslation.findUnique({
+        where: {
+          messageId_targetLanguage: {
+            messageId: result.messageId,
+            targetLanguage: result.targetLanguage
+          }
+        }
+      });
+
+      // Créer la clé de cache
+      const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
+      
+      // Extraire les informations techniques du modèle
+      const modelInfo = result.translatorModel || result.modelType || 'basic';
+      const confidenceScore = result.confidenceScore || 0.9;
+
+      if (existingTranslation) {
+        // Mettre à jour la traduction existante
+        await this.prisma.messageTranslation.update({
+          where: {
+            messageId_targetLanguage: {
+              messageId: result.messageId,
+              targetLanguage: result.targetLanguage
+            }
+          },
+          data: {
+            translatedContent: result.translatedText,
+            translationModel: modelInfo,
+            confidenceScore: confidenceScore,
+            cacheKey: cacheKey
+          }
+        });
+        
+        console.log(`🔄 [TranslationService] Traduction mise à jour: ${result.messageId} -> ${result.targetLanguage}`);
+      } else {
+        // Créer une nouvelle traduction
+        await this.prisma.messageTranslation.create({
+          data: {
+            messageId: result.messageId,
+            sourceLanguage: result.sourceLanguage,
+            targetLanguage: result.targetLanguage,
+            translatedContent: result.translatedText,
+            translationModel: modelInfo,
+            confidenceScore: confidenceScore,
+            cacheKey: cacheKey
+          }
+        });
+        
+        console.log(`✅ [TranslationService] Nouvelle traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage}`);
+      }
+
+    } catch (error) {
+      console.error(`❌ [TranslationService] Erreur sauvegarde traduction: ${error}`);
+      throw error; // Remonter l'erreur pour la gestion dans _handleTranslationCompleted
+    }
   }
 
 
 
   async getTranslation(messageId: string, targetLanguage: string, sourceLanguage?: string): Promise<TranslationResult | null> {
     try {
-      // Vérifier le cache mémoire uniquement
+      // Vérifier d'abord le cache mémoire
       const cacheKey = sourceLanguage 
         ? `${messageId}_${sourceLanguage}_${targetLanguage}`
         : `${messageId}_${targetLanguage}`;
@@ -608,9 +671,39 @@ export class TranslationService extends EventEmitter {
         return cachedResult;
       }
       
-      // La gateway ne doit pas lire les traductions depuis la base de données
-      // Cette responsabilité appartient au service de traduction
-      console.log(`📋 [TranslationService] Traduction non trouvée en cache: ${messageId} -> ${targetLanguage}`);
+      // Si pas en cache, chercher dans la base de données
+      console.log(`🔍 [TranslationService] Recherche traduction en base: ${messageId} -> ${targetLanguage}`);
+      
+      const dbTranslation = await this.prisma.messageTranslation.findUnique({
+        where: {
+          messageId_targetLanguage: {
+            messageId: messageId,
+            targetLanguage: targetLanguage
+          }
+        }
+      });
+      
+      if (dbTranslation) {
+        // Convertir la traduction de la base en format TranslationResult
+        const result: TranslationResult = {
+          messageId: dbTranslation.messageId,
+          sourceLanguage: dbTranslation.sourceLanguage,
+          targetLanguage: dbTranslation.targetLanguage,
+          translatedText: dbTranslation.translatedContent,
+          translatorModel: dbTranslation.translationModel,
+          confidenceScore: dbTranslation.confidenceScore || 0.9,
+          processingTime: 0, // Pas disponible depuis la base
+          modelType: dbTranslation.translationModel || 'basic'
+        };
+        
+        // Mettre en cache pour les prochaines requêtes
+        this._addToCache(cacheKey, result);
+        
+        console.log(`✅ [TranslationService] Traduction trouvée en base: ${messageId} -> ${targetLanguage}`);
+        return result;
+      }
+      
+      console.log(`📋 [TranslationService] Traduction non trouvée: ${messageId} -> ${targetLanguage}`);
       return null;
       
     } catch (error) {

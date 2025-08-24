@@ -38,7 +38,15 @@ ENV PYTHONPATH=/app:/app/generated \
     # OPTIMISATION XET: Variables d'environnement pour le nouveau système de téléchargement
     HF_HUB_ENABLE_HF_TRANSFER=1 \
     HF_HUB_DISABLE_TELEMETRY=1 \
-    HF_HUB_DISABLE_IMPLICIT_TOKEN=1
+    HF_HUB_DISABLE_IMPLICIT_TOKEN=1 \
+    # OPTIMISATION RÉSEAU: Configuration pour améliorer la connectivité Docker
+    HF_HUB_DOWNLOAD_TIMEOUT=600 \
+    HF_HUB_DOWNLOAD_RETRY_DELAY=5 \
+    HF_HUB_DOWNLOAD_MAX_RETRIES=5 \
+    REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    SSL_CERT_DIR=/etc/ssl/certs
 
 # Variables d'environnement configurables via build args
 ARG GRPC_HOST=0.0.0.0
@@ -115,6 +123,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         tini \
         curl \
         git \
+        ca-certificates \
+        openssl \
         # OPTIMISATION ML: Dépendances système pour PyTorch (sans libatlas-base-dev obsolète)
         libopenblas-dev \
         liblapack-dev \
@@ -122,6 +132,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
         # OPTIMISATION: Outils PostgreSQL pour les migrations Prisma
         postgresql-client \
+        # OPTIMISATION RÉSEAU: Outils pour diagnostiquer les problèmes de connectivité
+        netcat-openbsd \
+        iputils-ping \
+        dnsutils \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && npm install -g pnpm@${PNPM_VERSION} prisma@latest \
@@ -129,6 +143,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd -u 1001 -g translator -m translator \
     && mkdir -p /app/{logs,cache,models,shared,generated} \
     && chown -R translator:translator /app \
+    # OPTIMISATION SSL: Mise à jour des certificats SSL
+    && update-ca-certificates \
+    && ln -sf /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-bundle.crt \
     # OPTIMISATION: Nettoyage pour réduire la taille de l'image
     && apt-get purge -y --auto-remove build-essential wget unzip gnupg curl git \
     && rm -rf /var/lib/apt/lists/* \
@@ -164,6 +181,7 @@ RUN echo "🔧 Génération du client Prisma dans /app/generated..." \
 # OPTIMISATION: Configuration des permissions et optimisation finale
 RUN chown -R translator:translator /app \
     && chmod +x /app/docker-diagnostic.sh \
+    && chmod +x /app/docker-network-diagnostic.sh \
     && chmod +x /app/docker-entrypoint.sh \ 
     && python3 -m compileall /app/src \
     && find /app -name '*.pyc' -delete

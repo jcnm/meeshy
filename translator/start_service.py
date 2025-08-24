@@ -19,8 +19,15 @@ if str(src_dir) not in sys.path:
 # Maintenant exécuter main.py directement
 if __name__ == "__main__":
     try:
-        os.chdir(str(src_dir))
-        print("🔧 [TRANSLATOR] Changement de répertoire vers:", str(src_dir))
+        # Vérifier si nous sommes en mode Docker ou local
+        if os.path.exists("/app"):
+            # Mode Docker
+            os.chdir("/app/translator/src")
+            print("🔧 [TRANSLATOR] Changement de répertoire vers: /app/translator/src")
+        else:
+            # Mode local
+            os.chdir(str(src_dir))
+            print("🔧 [TRANSLATOR] Changement de répertoire vers:", str(src_dir))
         
         # Importer et exécuter main
         import main

@@ -194,8 +194,7 @@ class ModelManager:
         # Configuration de base
         base_config = {
             'local_files_only': True,  # Forcer l'utilisation locale
-            'trust_remote_code': True,
-            'low_cpu_mem_usage': True
+            'trust_remote_code': True
         }
         
         # Configuration de quantification

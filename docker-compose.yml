@@ -118,17 +118,33 @@ services:
       CONCURRENT_TRANSLATIONS: 5
       # OPTIMISATION: Paramètres de performance pour tous les modèles
       TRANSLATION_WORKERS: 8
-      NORMAL_WORKERS: 4
-      ANY_WORKERS: 2
+      # Configuration des workers avec scaling dynamique
+      NORMAL_WORKERS_DEFAULT: ${NORMAL_WORKERS_DEFAULT:-10}
+      ANY_WORKERS_DEFAULT: ${ANY_WORKERS_DEFAULT:-4}
+      NORMAL_WORKERS_MIN: ${NORMAL_WORKERS_MIN:-2}
+      ANY_WORKERS_MIN: ${ANY_WORKERS_MIN:-2}
+      NORMAL_WORKERS_MAX: ${NORMAL_WORKERS_MAX:-40}
+      ANY_WORKERS_MAX: ${ANY_WORKERS_MAX:-20}
+      NORMAL_WORKERS_SCALING_MAX: ${NORMAL_WORKERS_SCALING_MAX:-40}
+      ANY_WORKERS_SCALING_MAX: ${ANY_WORKERS_SCALING_MAX:-20}
       # OPTIMISATION: Gestion mémoire
       PYTORCH_CUDA_ALLOC_CONF: "max_split_size_mb:128"
       OMP_NUM_THREADS: 4
       MKL_NUM_THREADS: 4
       NUMEXPR_NUM_THREADS: 4
       # Configuration des retries de téléchargement de modèles
-      MODEL_DOWNLOAD_MAX_RETRIES: ${MODEL_DOWNLOAD_MAX_RETRIES:-3}
-      MODEL_DOWNLOAD_TIMEOUT: ${MODEL_DOWNLOAD_TIMEOUT:-300}
-      MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS: ${MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS:-3}
+      MODEL_DOWNLOAD_MAX_RETRIES: ${MODEL_DOWNLOAD_MAX_RETRIES:-5}
+      MODEL_DOWNLOAD_TIMEOUT: ${MODEL_DOWNLOAD_TIMEOUT:-600}
+      MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS: ${MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS:-5}
+      # OPTIMISATION RÉSEAU: Configuration pour améliorer la connectivité Docker
+      HF_HUB_ENABLE_HF_TRANSFER: 1
+      HF_HUB_DOWNLOAD_TIMEOUT: 600
+      HF_HUB_DOWNLOAD_RETRY_DELAY: 5
+      HF_HUB_DOWNLOAD_MAX_RETRIES: 5
+      REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+      CURL_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+      SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+      SSL_CERT_DIR: /etc/ssl/certs
       # CORRECTION: Configuration du cache Prisma dans /app/generated
       PRISMA_CACHE_DIR: /app/generated/.cache
     ports:

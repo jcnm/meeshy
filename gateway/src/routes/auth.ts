@@ -137,6 +137,18 @@ export async function authRoutes(fastify: FastifyInstance) {
       
     } catch (error) {
       console.error('[GATEWAY] Error in register:', error);
+      
+      // Gestion spécifique des erreurs de validation
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+        if (errorMessage.includes('déjà utilisé')) {
+          return reply.status(400).send({
+            success: false,
+            error: errorMessage
+          });
+        }
+      }
+      
       reply.status(500).send({
         success: false,
         error: 'Erreur lors de la création du compte'
