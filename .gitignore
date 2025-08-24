@@ -80,6 +80,13 @@ logs/
 venv/
 test_venv/
 test_env/
+
+# Temporary files
+*.tmp
+*.temp
+.pytest_cache/
+.coverage
+htmlcov/
 ./gateway/node_modules
 ./gateway/libs
 ./gateway/dist

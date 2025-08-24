@@ -44,7 +44,7 @@ services:
 
   # ===== TRANSLATOR SERVICE (FastAPI + ML) =====
   translator:
-    image: isopen/meeshy-translator:latest
+    image: isopen/meeshy-translator:0.6.35-alpha
     build:
       context: translator
       dockerfile: Dockerfile
@@ -171,7 +171,7 @@ services:
 
   # ===== GATEWAY SERVICE (Fastify + WebSocket) =====
   gateway:
-    image: isopen/meeshy-gateway:latest
+    image: isopen/meeshy-gateway:0.6.35-alpha
     build:
       context: gateway
       dockerfile: Dockerfile
@@ -238,7 +238,7 @@ services:
 
   # ===== FRONTEND SERVICE (Next.js) =====
   frontend:
-    image: isopen/meeshy-frontend:latest
+    image: isopen/meeshy-frontend:0.6.35-alpha
     build:
       context: frontend
       dockerfile: Dockerfile
