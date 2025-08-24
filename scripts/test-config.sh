@@ -52,3 +52,4 @@ grep "environment=" docker/supervisor/frontend.conf || echo "Variable environmen
 echo ""
 echo "✅ Test de configuration terminé"
 
+

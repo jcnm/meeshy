@@ -216,3 +216,4 @@ LOG_FILE=logs/meeshy.log
 ./scripts/restart-separated.sh
 ```
 
+
