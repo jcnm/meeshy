@@ -246,6 +246,176 @@ cd meeshy
 - **Microservices**: http://localhost:3100 (Frontend), http://localhost:3000 (Gateway)
 - **Unified**: http://localhost (Nginx reverse proxy - Frontend + API unifiés)
 
+## 🐳 Docker Hub Testing
+
+### Quick Test with Official Docker Images
+
+You can quickly test Meeshy using the official Docker images from Docker Hub without building from source:
+
+#### Option 1: Individual Services Test
+```bash
+# Test Gateway Service
+docker run -d --name meeshy-gateway-test \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@host.docker.internal:5432/meeshy" \
+  -e REDIS_URL="redis://host.docker.internal:6379" \
+  isopen/meeshy-gateway:latest
+
+# Test Translator Service
+docker run -d --name meeshy-translator-test \
+  -p 8000:8000 \
+  -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@host.docker.internal:5432/meeshy" \
+  -e REDIS_URL="redis://host.docker.internal:6379" \
+  isopen/meeshy-translator:latest
+
+# Test Frontend Service
+docker run -d --name meeshy-frontend-test \
+  -p 3100:3100 \
+  -e NEXT_PUBLIC_API_URL="http://localhost:3000/api" \
+  -e NEXT_PUBLIC_WS_URL="ws://localhost:3000/ws" \
+  isopen/meeshy-frontend:latest
+```
+
+#### Option 2: Complete Stack Test
+```bash
+# Create a test network
+docker network create meeshy-test
+
+# Start PostgreSQL and Redis
+docker run -d --name meeshy-postgres-test \
+  --network meeshy-test \
+  -e POSTGRES_DB=meeshy \
+  -e POSTGRES_USER=meeshy \
+  -e POSTGRES_PASSWORD=MeeshyP@ssword \
+  -p 5432:5432 \
+  postgres:15
+
+docker run -d --name meeshy-redis-test \
+  --network meeshy-test \
+  -p 6379:6379 \
+  redis:7
+
+# Start Meeshy services
+docker run -d --name meeshy-gateway-test \
+  --network meeshy-test \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@meeshy-postgres-test:5432/meeshy" \
+  -e REDIS_URL="redis://meeshy-redis-test:6379" \
+  isopen/meeshy-gateway:latest
+
+docker run -d --name meeshy-translator-test \
+  --network meeshy-test \
+  -p 8000:8000 \
+  -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@meeshy-postgres-test:5432/meeshy" \
+  -e REDIS_URL="redis://meeshy-redis-test:6379" \
+  isopen/meeshy-translator:latest
+
+docker run -d --name meeshy-frontend-test \
+  --network meeshy-test \
+  -p 3100:3100 \
+  -e NEXT_PUBLIC_API_URL="http://localhost:3000/api" \
+  -e NEXT_PUBLIC_WS_URL="ws://localhost:3000/ws" \
+  isopen/meeshy-frontend:latest
+```
+
+#### Option 3: Docker Compose with Hub Images
+```bash
+# Create docker-compose.test.yml
+cat > docker-compose.test.yml << 'EOF'
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: meeshy
+      POSTGRES_USER: meeshy
+      POSTGRES_PASSWORD: MeeshyP@ssword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  gateway:
+    image: isopen/meeshy-gateway:latest
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://meeshy:MeeshyP@ssword@postgres:5432/meeshy
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  translator:
+    image: isopen/meeshy-translator:latest
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://meeshy:MeeshyP@ssword@postgres:5432/meeshy
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    image: isopen/meeshy-frontend:latest
+    ports:
+      - "3100:3100"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000/api
+      NEXT_PUBLIC_WS_URL: ws://localhost:3000/ws
+    depends_on:
+      - gateway
+
+volumes:
+  postgres_data:
+EOF
+
+# Run the test stack
+docker-compose -f docker-compose.test.yml up -d
+```
+
+### Testing the Services
+
+Once the containers are running, you can test the services:
+
+```bash
+# Test Gateway API
+curl http://localhost:3000/api/health
+
+# Test Translator API
+curl http://localhost:8000/health
+
+# Test Frontend
+curl http://localhost:3100
+
+# Check container logs
+docker logs meeshy-gateway-test
+docker logs meeshy-translator-test
+docker logs meeshy-frontend-test
+```
+
+### Cleanup Test Environment
+```bash
+# Stop and remove test containers
+docker stop meeshy-gateway-test meeshy-translator-test meeshy-frontend-test
+docker rm meeshy-gateway-test meeshy-translator-test meeshy-frontend-test
+
+# Or if using docker-compose
+docker-compose -f docker-compose.test.yml down -v
+```
+
+### Available Docker Images
+
+- **[isopen/meeshy-gateway](https://hub.docker.com/r/isopen/meeshy-gateway)**: Fastify-based API gateway with WebSocket support
+- **[isopen/meeshy-translator](https://hub.docker.com/r/isopen/meeshy-translator)**: FastAPI-based translation service with ML models
+- **[isopen/meeshy-frontend](https://hub.docker.com/r/isopen/meeshy-frontend)**: Next.js-based frontend application
+
 ## 📊 Supported Languages & Performance
 
 | Language | Code | Model | Performance | Quality |
