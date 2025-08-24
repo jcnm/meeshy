@@ -59,9 +59,9 @@ services:
         - SUPPORTED_LANGUAGES=${SUPPORTED_LANGUAGES:-"fr,en,es,de,pt,zh,ja,ar"}
         - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE:-fr}
         - MAX_TEXT_LENGTH=${MAX_TEXT_LENGTH:-5000}
-        - BASIC_MODEL=${BASIC_MODEL:-google/t5-small}
-        - MEDIUM_MODEL=${MEDIUM_MODEL:-facebook/nllb-200-distilled-600M}
-        - PREMIUM_MODEL=${PREMIUM_MODEL:-facebook/nllb-200-distilled-1.3B}
+        - BASIC_MODEL=${BASIC_MODEL:-Helsinki-NLP/opus-mt-en-fr}
+        - MEDIUM_MODEL=${MEDIUM_MODEL:-Helsinki-NLP/opus-mt-mul-en}
+        - PREMIUM_MODEL=${PREMIUM_MODEL:-facebook/nllb-200-distilled-600M}
         - MODEL_TYPE=${MODEL_TYPE:-all}
         - DEVICE=${DEVICE:-cpu}
         - ML_BATCH_SIZE=${ML_BATCH_SIZE:-4}
@@ -73,6 +73,9 @@ services:
         - FORCE_MODEL_REDOWNLOAD=${FORCE_MODEL_REDOWNLOAD:-false}
         - TRANSLATION_CACHE_TTL=${TRANSLATION_CACHE_TTL:-3600}
         - QUANTIZATION_LEVEL=${QUANTIZATION_LEVEL:-float32}
+        - MODEL_DOWNLOAD_MAX_RETRIES=${MODEL_DOWNLOAD_MAX_RETRIES:-3}
+        - MODEL_DOWNLOAD_TIMEOUT=${MODEL_DOWNLOAD_TIMEOUT:-300}
+        - MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS=${MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS:-3}
     container_name: translator
     restart: unless-stopped
     # OPTIMISATION: Resource limits optimisés pour tous les modèles ML
@@ -95,6 +98,9 @@ services:
       TRANSLATOR_HTTP_PORT: 8000
       TRANSLATOR_ZMQ_PULL_PORT: 5555
       TRANSLATOR_ZMQ_PUB_PORT: 5558
+      BASIC_MODEL: ${BASIC_MODEL:-Helsinki-NLP/opus-mt-en-fr}
+      MEDIUM_MODEL: ${MEDIUM_MODEL:-Helsinki-NLP/opus-mt-mul-en}
+      PREMIUM_MODEL: ${PREMIUM_MODEL:-facebook/nllb-200-distilled-600M}
       # OPTIMISATION: Paramètres ML optimisés pour Docker
       ML_BATCH_SIZE: 4
       SUPPORTED_LANGUAGES: "fr,en,es,de,pt,zh,ja,ar"
@@ -119,6 +125,12 @@ services:
       OMP_NUM_THREADS: 4
       MKL_NUM_THREADS: 4
       NUMEXPR_NUM_THREADS: 4
+      # Configuration des retries de téléchargement de modèles
+      MODEL_DOWNLOAD_MAX_RETRIES: ${MODEL_DOWNLOAD_MAX_RETRIES:-3}
+      MODEL_DOWNLOAD_TIMEOUT: ${MODEL_DOWNLOAD_TIMEOUT:-300}
+      MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS: ${MODEL_DOWNLOAD_CONSECUTIVE_TIMEOUTS:-3}
+      # CORRECTION: Configuration du cache Prisma dans /app/generated
+      PRISMA_CACHE_DIR: /app/generated/.cache
     ports:
       - "${TRANSLATOR_HTTP_PORT:-8000}:8000"
       - "${TRANSLATOR_GRPC_PORT:-50051}:50051"
@@ -135,7 +147,7 @@ services:
     healthcheck:
       test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=10)"]
       interval: 60s
-      timeout: 30s
+      timeout: 50s
       retries: 5
       start_period: 600s  # OPTIMISATION: Plus de temps pour les migrations Prisma et le chargement de tous les modèles
     networks:

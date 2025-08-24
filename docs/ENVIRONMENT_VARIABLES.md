@@ -215,3 +215,4 @@ LOG_FILE=logs/meeshy.log
 # Redémarrer avec nouvelle configuration
 ./scripts/restart-separated.sh
 ```
+
