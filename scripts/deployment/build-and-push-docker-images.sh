@@ -102,15 +102,55 @@ if ! docker buildx version > /dev/null 2>&1; then
     exit 1
 fi
 
-# Créer un nouveau builder si nécessaire
+# Fonction de nettoyage
+cleanup_buildx() {
+    echo -e "${YELLOW}🧹 Nettoyage des builders et caches buildx...${NC}"
+    docker buildx prune -f > /dev/null 2>&1 || true
+    docker system prune -f > /dev/null 2>&1 || true
+    echo -e "${GREEN}✅ Nettoyage terminé${NC}"
+}
+
+# Fonction timeout compatible macOS
+timeout_cmd() {
+    local duration=$1
+    shift
+    
+    # Vérifier si timeout est disponible
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "$duration" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "$duration" "$@"
+    else
+        # Fallback: exécuter sans timeout sur macOS
+        echo -e "${YELLOW}⚠️  Timeout non disponible, exécution sans limite de temps${NC}"
+        "$@"
+    fi
+}
+
+# Nettoyer avant de commencer
+cleanup_buildx
+
+# Nettoyer et créer un nouveau builder si nécessaire
 BUILDER_NAME="meeshy-builder"
-if ! docker buildx inspect $BUILDER_NAME > /dev/null 2>&1; then
-    echo -e "${YELLOW}🔧 Création du builder buildx: $BUILDER_NAME${NC}"
-    docker buildx create --name $BUILDER_NAME --use
-else
-    echo -e "${YELLOW}🔧 Utilisation du builder existant: $BUILDER_NAME${NC}"
-    docker buildx use $BUILDER_NAME
+echo -e "${YELLOW}🔧 Configuration du builder buildx...${NC}"
+
+# Supprimer l'ancien builder s'il existe et est corrompu
+if docker buildx inspect $BUILDER_NAME > /dev/null 2>&1; then
+    echo -e "${YELLOW}🔧 Suppression de l'ancien builder: $BUILDER_NAME${NC}"
+    docker buildx rm $BUILDER_NAME || true
 fi
+
+# Créer un nouveau builder
+echo -e "${YELLOW}🔧 Création du nouveau builder: $BUILDER_NAME${NC}"
+docker buildx create --name $BUILDER_NAME --use --driver docker-container
+
+# Vérifier que le builder fonctionne
+if ! docker buildx inspect $BUILDER_NAME > /dev/null 2>&1; then
+    echo -e "${RED}❌ Impossible de créer le builder buildx${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Builder buildx configuré avec succès${NC}"
 
 # Fonction pour construire et publier une image
 build_and_push() {
@@ -118,25 +158,34 @@ build_and_push() {
     local dockerfile=$2
     local context=$3
     local image_name="${REGISTRY}/meeshy-${service}:${VERSION}"
-     local image_name_latest="${REGISTRY}/meeshy-${service}:latest"
+    local image_name_latest="${REGISTRY}/meeshy-${service}:latest"
     
     echo -e "${BLUE}🔨 Construction de ${image_name}${NC}"
     echo -e "${YELLOW}   Dockerfile: ${dockerfile}${NC}"
     echo -e "${YELLOW}   Context: ${context}${NC}"
     
-    # Construire et publier avec buildx
-    docker buildx build \
+    # Construire et publier avec buildx avec timeout
+    echo -e "${YELLOW}⏳ Démarrage du build et push (timeout: 15 minutes)...${NC}"
+    
+    # Utiliser timeout pour éviter les blocages
+    if timeout_cmd 900 docker buildx build \
         --platform $PLATFORMS \
-        --file $dockerfile  --progress=plain  \
+        --file $dockerfile \
+        --progress=plain \
         --tag $image_name \
         --tag $image_name_latest \
         --push \
-        $context
-
-    if [ $? -eq 0 ]; then
+        $context; then
         echo -e "${GREEN}✅ ${image_name} publié avec succès${NC}"
     else
-        echo -e "${RED}❌ Échec de la publication de ${image_name}${NC}"
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            echo -e "${RED}❌ Timeout lors du build/push de ${image_name} (15 minutes dépassées)${NC}"
+        else
+            echo -e "${RED}❌ Échec de la publication de ${image_name} (code: $exit_code)${NC}"
+        fi
+        echo -e "${YELLOW}💡 Tentative de nettoyage...${NC}"
+        docker buildx prune -f > /dev/null 2>&1 || true
         exit 1
     fi
     
@@ -151,19 +200,28 @@ build_and_push_unified() {
     echo -e "${YELLOW}   Dockerfile: Dockerfile.unified${NC}"
     echo -e "${YELLOW}   Context: .${NC}"
     
-    # Construire et publier avec buildx
-    docker buildx build \
+    # Construire et publier avec buildx avec timeout
+    echo -e "${YELLOW}⏳ Démarrage du build et push unifié (timeout: 20 minutes)...${NC}"
+    
+    # Utiliser timeout pour éviter les blocages
+    if timeout_cmd 1200 docker buildx build \
         --platform $PLATFORMS \
         --file Dockerfile.unified \
+        --progress=plain \
         --tag $image_name \
         --tag $image_name_latest \
         --push \
-        .
-    
-    if [ $? -eq 0 ]; then
+        .; then
         echo -e "${GREEN}✅ ${image_name} publié avec succès${NC}"
     else
-        echo -e "${RED}❌ Échec de la publication de ${image_name}${NC}"
+        local exit_code=$?
+        if [ $exit_code -eq 124 ]; then
+            echo -e "${RED}❌ Timeout lors du build/push de ${image_name} (20 minutes dépassées)${NC}"
+        else
+            echo -e "${RED}❌ Échec de la publication de ${image_name} (code: $exit_code)${NC}"
+        fi
+        echo -e "${YELLOW}💡 Tentative de nettoyage...${NC}"
+        docker buildx prune -f > /dev/null 2>&1 || true
         exit 1
     fi
     
