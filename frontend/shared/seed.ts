@@ -285,10 +285,10 @@ async function main() {
   
   // Créer la conversation globale "Meeshy" accessible à tous
   const anyConversation = await prisma.conversation.upsert({
-    where: { id: "meeshy" },
+    where: { identifier: "meeshy" },
     update: {},
     create: {
-      id: "meeshy",
+      identifier: "meeshy",
       type: 'GLOBAL',
       title: 'Meeshy',
       description: 'Conversation globale pour tous les utilisateurs de Meeshy'

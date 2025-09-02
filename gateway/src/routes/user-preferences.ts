@@ -57,12 +57,10 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const preference = await fastify.prisma.userPreference.findUnique({
+      const preference = await fastify.prisma.userPreference.findFirst({
         where: {
-          userId_key: {
-            userId,
-            key
-          }
+          userId,
+          key
         }
       });
 
@@ -113,24 +111,32 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
         }
       }
 
-      // Utiliser upsert pour créer ou mettre à jour
-      const preference = await fastify.prisma.userPreference.upsert({
+      // Vérifier si la préférence existe déjà
+      const existingPreference = await fastify.prisma.userPreference.findFirst({
         where: {
-          userId_key: {
-            userId,
-            key
-          }
-        },
-        update: {
-          value,
-          updatedAt: new Date()
-        },
-        create: {
           userId,
-          key,
-          value
+          key
         }
       });
+
+      let preference;
+      if (existingPreference) {
+        preference = await fastify.prisma.userPreference.update({
+          where: { id: existingPreference.id },
+          data: {
+            value,
+            updatedAt: new Date()
+          }
+        });
+      } else {
+        preference = await fastify.prisma.userPreference.create({
+          data: {
+            userId,
+            key,
+            value
+          }
+        });
+      }
 
       reply.send({
         success: true,
@@ -161,14 +167,18 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
         });
       }
 
-      await fastify.prisma.userPreference.delete({
+      const existingPreference = await fastify.prisma.userPreference.findFirst({
         where: {
-          userId_key: {
-            userId,
-            key
-          }
+          userId,
+          key
         }
       });
+
+      if (existingPreference) {
+        await fastify.prisma.userPreference.delete({
+          where: { id: existingPreference.id }
+        });
+      }
 
       reply.send({
         success: true,

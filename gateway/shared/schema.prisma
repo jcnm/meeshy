@@ -1,22 +1,22 @@
 generator client {
   provider = "prisma-client-js"
-  output   = env("PRISMA_CLIENT_OUTPUT_DIRECTORY")
-  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-1.1.x", "linux-musl-arm64-openssl-3.0.x"]
+  output   = "./prisma/client"
+  binaryTargets = ["native"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 /// Utilisateur enregistré de la plateforme
 model User {
-  id                          String                   @id @default(cuid())
+  id                          String                   @id @default(auto()) @map("_id") @db.ObjectId
   username                    String                   @unique
   firstName                   String
   lastName                    String
   email                       String                   @unique
-  phoneNumber                 String?                  @unique
+  phoneNumber                 String?
   password                    String
   displayName                 String?
   avatar                      String?
@@ -50,22 +50,22 @@ model User {
   typingIndicators            TypingIndicator[]
   preferences                 UserPreference[]
   stats                       UserStats?
-  adminCommunities            Community[]              @relation("CommunityAdmins")
-  moderatorCommunities        Community[]              @relation("CommunityModerators")
-
-  @@map("users")
+  communityAdmins             CommunityAdmin[]
+  communityModerators         CommunityModerator[]
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
 model Conversation {
-  id                    String                   @id @default(cuid())
+  id                    String                   @id @default(auto()) @map("_id") @db.ObjectId
+  /// Identifiant lisible par l'homme (ex: "meeshy", "general", "support")
+  identifier            String?                  @unique
   /// direct, group, public, global
   type                  String
   title                 String?
   description           String?
   image                 String?
   avatar                String?
-  communityId           String?
+  communityId           String?                  @db.ObjectId
   isActive              Boolean                  @default(true)
   isArchived            Boolean                  @default(false)
   lastMessageAt         DateTime                 @default(now())
@@ -79,15 +79,13 @@ model Conversation {
   community             Community?               @relation(fields: [communityId], references: [id])
   messages              Message[]
   typingIndicators      TypingIndicator[]
-
-  @@map("conversations")
 }
 
 /// Appartenance d'un utilisateur à une conversation
 model ConversationMember {
-  id               String       @id @default(cuid())
-  conversationId   String
-  userId           String
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId   String       @db.ObjectId
+  userId           String       @db.ObjectId
   /// admin, moderator, member
   role             String       @default("member")
   canSendMessage   Boolean      @default(true)
@@ -101,19 +99,18 @@ model ConversationMember {
   leftAt           DateTime?
   isActive         Boolean      @default(true)
   
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@unique([conversationId, userId])
-  @@map("conversation_members")
+  user             User         @relation(fields: [userId], references: [id])
+  conversation     Conversation @relation(fields: [conversationId], references: [id])
 }
 
 /// Lien de partage pour accès anonyme à une conversation
 model ConversationShareLink {
-  id                     String                 @id @default(cuid())
+  id                     String                 @id @default(auto()) @map("_id") @db.ObjectId
   linkId                 String                 @unique
-  conversationId         String
-  createdBy              String
+  /// Identifiant lisible par l'homme (ex: "meeshy-public", "support-link")
+  identifier             String?                @unique
+  conversationId         String                 @db.ObjectId
+  createdBy              String                 @db.ObjectId
   name                   String?
   description            String?
   maxUses                Int?
@@ -137,17 +134,15 @@ model ConversationShareLink {
   updatedAt              DateTime               @updatedAt
   
   anonymousParticipants  AnonymousParticipant[] @relation("ShareLinkParticipants")
-  creator                User                   @relation("ShareLinkCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  conversation           Conversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@map("conversation_share_links")
+  creator                User                   @relation("ShareLinkCreator", fields: [createdBy], references: [id])
+  conversation           Conversation           @relation(fields: [conversationId], references: [id])
 }
 
 /// Participant anonyme via lien de partage
 model AnonymousParticipant {
-  id              String                @id @default(cuid())
-  conversationId  String
-  shareLinkId     String
+  id              String                @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId  String                @db.ObjectId
+  shareLinkId     String                @db.ObjectId
   firstName       String
   lastName        String
   username        String
@@ -167,20 +162,17 @@ model AnonymousParticipant {
   lastSeenAt      DateTime              @default(now())
   leftAt          DateTime?
   
-  shareLink       ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id], onDelete: Cascade)
-  conversation    Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  shareLink       ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id])
+  conversation    Conversation          @relation(fields: [conversationId], references: [id])
   sentMessages    Message[]             @relation("AnonymousMessageSender")
-
-  @@unique([conversationId, sessionToken])
-  @@map("anonymous_participants")
 }
 
 /// Message dans une conversation
 model Message {
-  id                String                @id @default(cuid())
-  conversationId    String
-  senderId          String?
-  anonymousSenderId String?
+  id                String                @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId    String                @db.ObjectId
+  senderId          String?               @db.ObjectId
+  anonymousSenderId String?               @db.ObjectId
   content           String
   originalLanguage  String                @default("fr")
   /// text, image, file, audio, video, location, system
@@ -189,25 +181,23 @@ model Message {
   editedAt          DateTime?
   isDeleted         Boolean               @default(false)
   deletedAt         DateTime?
-  replyToId         String?
+  replyToId         String?               @db.ObjectId
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
   
   readStatus        MessageReadStatus[]
   translations      MessageTranslation[]
-  replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id])
+  replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies           Message[]             @relation("MessageReplies")
-  anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id], onDelete: Cascade)
-  sender            User?                 @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  conversation      Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@map("messages")
+  anonymousSender   AnonymousParticipant? @relation("AnonymousMessageSender", fields: [anonymousSenderId], references: [id])
+  sender            User?                 @relation("MessageSender", fields: [senderId], references: [id])
+  conversation      Conversation          @relation(fields: [conversationId], references: [id])
 }
 
 /// Traduction d'un message
 model MessageTranslation {
-  id                String   @id @default(cuid())
-  messageId         String
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId         String   @db.ObjectId
   sourceLanguage    String
   targetLanguage    String
   translatedContent String
@@ -216,63 +206,51 @@ model MessageTranslation {
   confidenceScore   Float?
   createdAt         DateTime @default(now())
   
-  message           Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-
-  @@unique([messageId, targetLanguage])
-  @@map("message_translations")
+  message           Message  @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// Statut de lecture d'un message par un utilisateur
 model MessageReadStatus {
-  id        String   @id @default(cuid())
-  messageId String
-  userId    String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId String   @db.ObjectId
+  userId    String   @db.ObjectId
   readAt    DateTime @default(now())
   
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-
-  @@unique([messageId, userId])
-  @@map("message_read_status")
+  user      User     @relation(fields: [userId], references: [id])
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// Demande d'amitié entre utilisateurs
 model FriendRequest {
-  id         String   @id @default(cuid())
-  senderId   String
-  receiverId String
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
   /// pending, accepted, rejected, blocked
   status     String   @default("pending")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   
-  receiver   User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  sender     User     @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@unique([senderId, receiverId])
-  @@map("friend_requests")
+  receiver   User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
+  sender     User     @relation("FriendRequestSender", fields: [senderId], references: [id])
 }
 
 /// Indicateur de frappe en cours pour des tests... A supprimer après les tests
 model TypingIndicator {
-  id             String       @id @default(cuid())
-  conversationId String
-  userId         String
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  userId         String       @db.ObjectId
   isTyping       Boolean      @default(true)
   startedAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@unique([conversationId, userId])
-  @@map("typing_indicators")
+  user           User         @relation(fields: [userId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
 }
 
 /// Notification pour un utilisateur
 model Notification {
-  id        String    @id @default(cuid())
-  userId    String
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
   /// new_conversation, new_message, message_edited, friend_request, etc.
   type      String
   title     String
@@ -285,49 +263,43 @@ model Notification {
   expiresAt DateTime?
   createdAt DateTime  @default(now())
   
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
+  user      User      @relation(fields: [userId], references: [id])
 }
 
 /// Communauté (représente une communauté de conversation)
 model Community {
-  id          String        @id @default(cuid())
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
   avatar      String?
   isPrivate   Boolean       @default(true)
-  createdBy   String
+  createdBy   String        @db.ObjectId
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   members     CommunityMember[]
   creator     User          @relation("CommunityCreator", fields: [createdBy], references: [id])
-  admins      User[]        @relation("CommunityAdmins")
-  moderators  User[]        @relation("CommunityModerators")
+  admins      CommunityAdmin[]
+  moderators  CommunityModerator[]
 
-  @@map("communities")
   Conversation Conversation[]
 }
 
 /// Appartenance aux communautés (legacy)
 model CommunityMember {
-  id          String   @id @default(cuid())
-  communityId String
-  userId      String
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  communityId String   @db.ObjectId
+  userId      String   @db.ObjectId
   joinedAt    DateTime @default(now())
 
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
-
-  @@unique([communityId, userId])
-  @@map("community_members")
+  user        User     @relation(fields: [userId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id])
 }
 
 /// Statistiques d'utilisation d'un utilisateur
 model UserStats {
-  id                       String   @id @default(cuid())
-  userId                   String   @unique
+  id                       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                   String   @unique @db.ObjectId
   messagesSent             Int      @default(0)
   messagesReceived         Int      @default(0)
   charactersTyped          Int      @default(0)
@@ -346,15 +318,13 @@ model UserStats {
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
   
-  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_stats")
+  user                     User     @relation(fields: [userId], references: [id])
 }
 
 /// Préférence utilisateur générale
 model UserPreference {
-  id          String   @id @default(cuid())
-  userId      String
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
   key         String
   value       String
   valueType   String   @default("string")
@@ -362,17 +332,14 @@ model UserPreference {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, key])
-  @@map("user_preferences")
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 /// Préférence spécifique à une conversation
 model ConversationPreference {
-  id             String       @id @default(cuid())
-  conversationId String
-  userId         String
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String       @db.ObjectId
+  userId         String       @db.ObjectId
   key            String
   value          String
   valueType      String       @default("string")
@@ -380,9 +347,28 @@ model ConversationPreference {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+}
 
-  @@unique([conversationId, userId, key])
-  @@map("conversation_preferences")
+/// Relation many-to-many pour les administrateurs de communauté
+model CommunityAdmin {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  communityId String    @db.ObjectId
+  userId      String    @db.ObjectId
+  assignedAt  DateTime  @default(now())
+  
+  user        User      @relation(fields: [userId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id])
+}
+
+/// Relation many-to-many pour les modérateurs de communauté
+model CommunityModerator {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  communityId String    @db.ObjectId
+  userId      String    @db.ObjectId
+  assignedAt  DateTime  @default(now())
+  
+  user        User      @relation(fields: [userId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id])
 }

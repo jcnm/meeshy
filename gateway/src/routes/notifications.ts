@@ -300,18 +300,23 @@ export async function notificationRoutes(fastify: FastifyInstance) {
 
       // Utiliser upsert pour chaque préférence
       for (const update of updates) {
-        await fastify.prisma.userPreference.upsert({
+        const existingPreference = await fastify.prisma.userPreference.findFirst({
           where: {
-            userId_key: {
-              userId: update.userId,
-              key: update.key
-            }
-          },
-          update: {
-            value: update.value
-          },
-          create: update
+            userId: update.userId,
+            key: update.key
+          }
         });
+
+        if (existingPreference) {
+          await fastify.prisma.userPreference.update({
+            where: { id: existingPreference.id },
+            data: { value: update.value }
+          });
+        } else {
+          await fastify.prisma.userPreference.create({
+            data: update
+          });
+        }
       }
 
       return reply.send({

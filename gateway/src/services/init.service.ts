@@ -5,7 +5,7 @@ import { UserRoleEnum } from '../../shared/types';
 export class InitService {
   private prisma: PrismaClient;
   private authService: PrismaAuthService;
-
+  private globalConversationId: string;
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
     this.authService = new PrismaAuthService(prisma, process.env.JWT_SECRET || 'default-jwt-secret');
@@ -27,6 +27,14 @@ export class InitService {
       console.log('[INIT] ✅ Initialisation de la base de données terminée avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de l\'initialisation:', error);
+      console.error('[INIT] 💡 Détails de l\'erreur:', error.message);
+      
+      // En mode développement, on ne fait pas échouer le serveur
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[INIT] ⚠️ Mode développement: Continuation sans initialisation de la base');
+        return;
+      }
+      
       throw error;
     }
   }
@@ -38,8 +46,8 @@ export class InitService {
     console.log('[INIT] 🔍 Vérification de la conversation globale "meeshy"...');
 
     try {
-      const existingConversation = await this.prisma.conversation.findUnique({
-        where: { id: 'meeshy' }
+      let existingConversation = await this.prisma.conversation.findFirst({
+        where: { identifier: 'meeshy' }
       });
 
       if (existingConversation) {
@@ -49,9 +57,9 @@ export class InitService {
 
       console.log('[INIT] 🆕 Création de la conversation globale "meeshy"...');
 
-      await this.prisma.conversation.create({
+      const newConversation = await this.prisma.conversation.create({
         data: {
-          id: 'meeshy',
+          identifier: 'meeshy',
           title: 'Meeshy Global',
           description: 'Conversation globale de la communauté Meeshy',
           type: 'GLOBAL',
@@ -60,6 +68,8 @@ export class InitService {
           updatedAt: new Date()
         }
       });
+
+      this.globalConversationId = newConversation.id;
 
       console.log('[INIT] ✅ Conversation globale "meeshy" créée avec succès');
     } catch (error) {
@@ -98,7 +108,7 @@ export class InitService {
     console.log(`[INIT] 🔍 Vérification de l'utilisateur Bigboss "${username}"...`);
 
     try {
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await this.prisma.user.findFirst({
         where: { username }
       });
 
@@ -136,7 +146,7 @@ export class InitService {
       // Ajouter l'utilisateur comme CREATOR de la conversation meeshy
       await this.prisma.conversationMember.create({
         data: {
-          conversationId: 'meeshy',
+          conversationId: this.globalConversationId,
           userId: user.id,
           role: 'CREATOR',
           joinedAt: new Date(),
@@ -161,7 +171,7 @@ export class InitService {
     console.log(`[INIT] 🔍 Vérification de l'utilisateur Admin "${username}"...`);
 
     try {
-      const existingUser = await this.prisma.user.findUnique({
+      const existingUser = await this.prisma.user.findFirst({
         where: { username }
       });
 
@@ -208,13 +218,22 @@ export class InitService {
         });
       }
 
+      // Récupérer l'ID de la conversation globale
+      const globalConversation = await this.prisma.conversation.findFirst({
+        where: { identifier: 'meeshy' }
+      });
+
+      if (!globalConversation) {
+        console.log(`[INIT] ⚠️ Conversation globale "meeshy" non trouvée, impossible d'ajouter l'utilisateur`);
+        return;
+      }
+
       // Vérifier si l'utilisateur admin est déjà membre de la conversation
-      const existingMember = await this.prisma.conversationMember.findUnique({
+      const userId = existingUser ? existingUser.id : (await this.prisma.user.findFirst({ where: { username } }))!.id;
+      const existingMember = await this.prisma.conversationMember.findFirst({
         where: {
-          conversationId_userId: {
-            conversationId: 'meeshy',
-            userId: existingUser ? existingUser.id : (await this.prisma.user.findUnique({ where: { username } }))!.id
-          }
+          conversationId: globalConversation.id,
+          userId: userId
         }
       });
 
@@ -222,8 +241,8 @@ export class InitService {
         // Ajouter l'utilisateur comme ADMIN de la conversation meeshy
         await this.prisma.conversationMember.create({
           data: {
-            conversationId: 'meeshy',
-            userId: existingUser ? existingUser.id : (await this.prisma.user.findUnique({ where: { username } }))!.id,
+            conversationId: globalConversation.id,
+            userId: existingUser ? existingUser.id : (await this.prisma.user.findFirst({ where: { username } }))!.id,
             role: 'ADMIN',
             joinedAt: new Date(),
             isActive: true
@@ -248,16 +267,16 @@ export class InitService {
   async shouldInitialize(): Promise<boolean> {
     try {
       // Vérifier si la conversation globale existe
-      const globalConversation = await this.prisma.conversation.findUnique({
-        where: { id: 'meeshy' }
+      const globalConversation = await this.prisma.conversation.findFirst({
+        where: { identifier: 'meeshy' }
       });
 
       // Vérifier si les utilisateurs par défaut existent
-      const bigbossUser = await this.prisma.user.findUnique({
+      const bigbossUser = await this.prisma.user.findFirst({
         where: { username: 'meeshy' }
       });
 
-      const adminUser = await this.prisma.user.findUnique({
+      const adminUser = await this.prisma.user.findFirst({
         where: { username: 'admin' }
       });
 
@@ -266,23 +285,19 @@ export class InitService {
       let adminMember = null;
 
       if (globalConversation && bigbossUser) {
-        bigbossMember = await this.prisma.conversationMember.findUnique({
+        bigbossMember = await this.prisma.conversationMember.findFirst({
           where: {
-            conversationId_userId: {
-              conversationId: 'meeshy',
-              userId: bigbossUser.id
-            }
+            conversationId: globalConversation.id,
+            userId: bigbossUser.id
           }
         });
       }
 
       if (globalConversation && adminUser) {
-        adminMember = await this.prisma.conversationMember.findUnique({
+        adminMember = await this.prisma.conversationMember.findFirst({
           where: {
-            conversationId_userId: {
-              conversationId: 'meeshy',
-              userId: adminUser.id
-            }
+            conversationId: globalConversation.id,
+            userId: adminUser.id
           }
         });
       }

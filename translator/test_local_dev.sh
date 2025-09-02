@@ -49,3 +49,4 @@ except Exception as e:
 "
 
 echo "�� Tests terminés !"
+

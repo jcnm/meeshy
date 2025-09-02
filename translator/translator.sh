@@ -15,7 +15,7 @@ cd "$SCRIPT_DIR"
 
 # Fonction de chargement du fichier .env
 load_env_file() {
-    local env_file=".env"
+    local env_file="../.env"
     
     if [[ -f "$env_file" ]]; then
         echo -e "${GREEN}✅ [TRA] Chargement des variables depuis $env_file${NC}"
@@ -52,7 +52,7 @@ fi
 # Vérifier Prisma
 if ! command -v prisma >/dev/null 2>&1; then
     echo -e "${RED}❌ Installation de prisma non trouvé${NC}"
-    npm install -g prisma
+    python3 -m pip install prisma
 fi
 
 echo -e "${GREEN}✅ [TRA] Python version: $(python3 --version)${NC}"

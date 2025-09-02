@@ -66,31 +66,16 @@ distribute_to_service() {
                 # Créer une version Python du schema avec l'en-tête modifié
                 python_schema="$service_dir/shared/prisma/schema.prisma"
                 
-                # Écrire l'en-tête Python
-                cat > "$python_schema" << 'EOF'
-generator client {
-  provider             = "prisma-client-py"
-  interface            = "asyncio"
-  recursive_type_depth = 5
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-EOF
+                # Modifier le générateur pour Python avec interface asyncio et corriger binaryTargets
+                sed 's/provider = "prisma-client-js"/provider = "prisma-client-py"\n  interface = "asyncio"\n  recursive_type_depth = 5/' schema.prisma | \
+                sed 's/binaryTargets = \["native", "linux-musl-arm64-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-1.1.x", "linux-musl-arm64-openssl-3.0.x"\]/binaryTargets = ["native"]/' > "$python_schema"
                 
-                # Ajouter le reste du schema (modèles et enums)
-                # Extraire tout après la première ligne vide qui suit datasource
-                awk '/^datasource/,/^$/ {next} /^generator/,/^$/ {next} NR > 10 {print}' schema.prisma >> "$python_schema"
-                
-                echo "  📝 Schema Prisma Python généré avec client 'prisma-client-py'"
+                echo "  ✅ Schema Prisma Python généré avec interface asyncio"
                 
                 # Aussi copier les migrations directement dans le translator pour utilisation immédiate (si elles existent)
                 if [ -d "migrations" ]; then
                     cp -pri migrations "$service_dir/shared/prisma/"
-                    echo "  ✅ Schema et migration copiés vers $service_name/shared/prisma"
+                    echo "  ✅ Migrations copiées vers $service_name/shared/prisma"
                 else
                     echo "  ⚠️  Dossier migrations non trouvé, ignoré"
                 fi

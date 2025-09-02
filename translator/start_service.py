@@ -22,8 +22,8 @@ if __name__ == "__main__":
         # Vérifier si nous sommes en mode Docker ou local
         if os.path.exists("/app"):
             # Mode Docker
-            os.chdir("/app/translator/src")
-            print("🔧 [TRANSLATOR] Changement de répertoire vers: /app/translator/src")
+            os.chdir("/app/src")
+            print("🔧 [TRANSLATOR] Changement de répertoire vers: /app/src")
         else:
             # Mode local
             os.chdir(str(src_dir))

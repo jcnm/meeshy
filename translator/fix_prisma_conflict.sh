@@ -18,3 +18,4 @@ prisma generate --schema=../shared/schema.prisma
 export REDIS_URL=$OLD_REDIS_URL
 
 echo "✅ Conflit résolu !"
+

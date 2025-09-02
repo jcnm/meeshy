@@ -103,7 +103,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       const { id } = request.params as { id: string };
       const userId = (request as any).user.id;
       
-      const community = await fastify.prisma.community.findUnique({
+      const community = await fastify.prisma.community.findFirst({
         where: { id },
         include: {
           creator: {
@@ -219,7 +219,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.id;
       
       // Vérifier l'accès à la communauté
-      const community = await fastify.prisma.community.findUnique({
+      const community = await fastify.prisma.community.findFirst({
         where: { id },
         select: {
           createdBy: true,
@@ -285,7 +285,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.id;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
-      const community = await fastify.prisma.community.findUnique({
+      const community = await fastify.prisma.community.findFirst({
         where: { id },
         select: { createdBy: true }
       });
@@ -305,7 +305,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       }
 
       // Vérifier que l'utilisateur à ajouter existe
-      const userToAdd = await fastify.prisma.user.findUnique({
+      const userToAdd = await fastify.prisma.user.findFirst({
         where: { id: validatedData.userId },
         select: { id: true }
       });
@@ -317,31 +317,37 @@ export async function communityRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Ajouter le membre (ou ignorer si déjà membre)
-      const member = await fastify.prisma.communityMember.upsert({
+      // Vérifier si le membre existe déjà
+      const existingMember = await fastify.prisma.communityMember.findFirst({
         where: {
-          communityId_userId: {
-            communityId: id,
-            userId: validatedData.userId
-          }
-        },
-        update: {},
-        create: {
           communityId: id,
           userId: validatedData.userId
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              displayName: true,
-              avatar: true,
-              isOnline: true
-            }
-          }
         }
       });
+
+      let member;
+      if (existingMember) {
+        member = existingMember;
+      } else {
+        // Ajouter le membre
+        member = await fastify.prisma.communityMember.create({
+          data: {
+            communityId: id,
+            userId: validatedData.userId
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true,
+                isOnline: true
+              }
+            }
+          }
+        });
+      }
 
       reply.send({
         success: true,
@@ -363,7 +369,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.id;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
-      const community = await fastify.prisma.community.findUnique({
+      const community = await fastify.prisma.community.findFirst({
         where: { id },
         select: { createdBy: true }
       });
@@ -411,7 +417,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.id;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
-      const community = await fastify.prisma.community.findUnique({
+      const community = await fastify.prisma.community.findFirst({
         where: { id },
         select: { createdBy: true }
       });
@@ -471,7 +477,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.id;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
-      const community = await fastify.prisma.community.findUnique({
+      const community = await fastify.prisma.community.findFirst({
         where: { id },
         select: { createdBy: true }
       });
@@ -514,7 +520,7 @@ export async function communityRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.id;
       
       // Vérifier l'accès à la communauté
-      const community = await fastify.prisma.community.findUnique({
+      const community = await fastify.prisma.community.findFirst({
         where: { id },
         select: {
           createdBy: true,

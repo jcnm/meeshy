@@ -96,8 +96,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             },
             // Conversation globale "meeshy" accessible à tous les utilisateurs connectés
             {
-              id: "meeshy",
-              type: 'global'
+              identifier: "meeshy",
+              type: 'GLOBAL'
             }
           ],
           isActive: true
@@ -188,10 +188,17 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Vérifier les permissions d'accès
       let canAccess = false;
+      let conversationId = id;
       
+      // Si l'ID est "meeshy", chercher par identifiant lisible
       if (id === "meeshy") {
-        // Conversation globale accessible à tous les utilisateurs connectés
-        canAccess = true;
+        const globalConversation = await prisma.conversation.findFirst({
+          where: { identifier: "meeshy" }
+        });
+        if (globalConversation) {
+          conversationId = globalConversation.id;
+          canAccess = true; // Conversation globale accessible à tous les utilisateurs connectés
+        }
       } else {
         // Vérifier si l'utilisateur est membre de la conversation
         const membership = await prisma.conversationMember.findFirst({
@@ -211,8 +218,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      const conversation = await prisma.conversation.findUnique({
-        where: { id },
+      const conversation = await prisma.conversation.findFirst({
+        where: { id: conversationId },
         include: {
           members: {
             include: {
@@ -381,7 +388,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       if (before) {
         // Pagination par curseur (pour défilement historique)
-        const beforeMessage = await prisma.message.findUnique({
+        const beforeMessage = await prisma.message.findFirst({
           where: { id: before },
           select: { createdAt: true }
         });
@@ -442,7 +449,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       // Récupérer les préférences linguistiques de l'utilisateur (pour information)
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { id: userId },
         select: {
           systemLanguage: true,
@@ -501,7 +508,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         const messageIds = messages.map(m => m.id);
         try {
           // Vérifier que l'utilisateur existe avant de marquer les messages comme lus
-          const userExists = await prisma.user.findUnique({
+          const userExists = await prisma.user.findFirst({
             where: { id: userId },
             select: { id: true }
           });
@@ -1089,7 +1096,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier que le message existe et appartient à l'utilisateur
-      const message = await prisma.message.findUnique({
+      const message = await prisma.message.findFirst({
         where: { id: messageId },
         include: {
           conversation: {
@@ -1121,11 +1128,22 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Vérifier que l'utilisateur est membre de la conversation
-      if (message.conversationId !== "meeshy" && message.conversation.members.length === 0) {
-        return reply.status(403).send({
-          success: false,
-          error: 'Accès non autorisé à cette conversation'
+      // Pour la conversation globale "meeshy", l'accès est autorisé
+      if (message.conversation.identifier !== "meeshy") {
+        const membership = await prisma.conversationMember.findFirst({
+          where: {
+            conversationId: message.conversationId,
+            userId: userId,
+            isActive: true
+          }
         });
+        
+        if (!membership) {
+          return reply.status(403).send({
+            success: false,
+            error: 'Accès non autorisé à cette conversation'
+          });
+        }
       }
 
       // Mettre à jour le contenu du message
@@ -1184,7 +1202,17 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const userId = (request as any).user.userId || (request as any).user.id;
 
       // Vérifier que l'utilisateur a accès à cette conversation
-      if (id !== "meeshy") {
+      let conversationId = id;
+      
+      if (id === "meeshy") {
+        // Pour la conversation globale, chercher par identifiant
+        const globalConversation = await prisma.conversation.findFirst({
+          where: { identifier: "meeshy" }
+        });
+        if (globalConversation) {
+          conversationId = globalConversation.id;
+        }
+      } else {
         const membership = await prisma.conversationMember.findFirst({
           where: {
             conversationId: id,
@@ -1203,7 +1231,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Construire les filtres dynamiquement
       const whereConditions: any = {
-        conversationId: id,
+        conversationId: conversationId,
         isActive: true,
         user: {
           isActive: true
@@ -1442,7 +1470,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Vérifier que l'utilisateur à ajouter existe
-      const userToAdd = await prisma.user.findUnique({
+      const userToAdd = await prisma.user.findFirst({
         where: { id: userId }
       });
 
@@ -1882,7 +1910,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Vérifier que le lien existe et est valide
-      const shareLink = await prisma.conversationShareLink.findUnique({
+      const shareLink = await prisma.conversationShareLink.findFirst({
         where: { linkId },
         include: {
           conversation: true
@@ -1911,12 +1939,10 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Vérifier si l'utilisateur est déjà membre de la conversation
-      const existingMember = await prisma.conversationMember.findUnique({
+      const existingMember = await prisma.conversationMember.findFirst({
         where: {
-          conversationId_userId: {
-            conversationId: shareLink.conversationId,
-            userId: userToken.userId || userToken.id
-          }
+          conversationId: shareLink.conversationId,
+          userId: userToken.userId || userToken.id
         }
       });
 

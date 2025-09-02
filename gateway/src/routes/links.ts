@@ -104,9 +104,30 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
       if (conversationId) {
         // Vérifier que l'utilisateur est membre de la conversation
-        const member = await fastify.prisma.conversationMember.findFirst({
-          where: { conversationId, userId, isActive: true }
-        });
+        // Support pour les conversations avec identifiants (comme "meeshy")
+        let member;
+        
+        if (conversationId === "meeshy") {
+          // Pour la conversation globale "meeshy", chercher par identifiant
+          const globalConversation = await fastify.prisma.conversation.findFirst({
+            where: { identifier: "meeshy" }
+          });
+          
+          if (globalConversation) {
+            member = await fastify.prisma.conversationMember.findFirst({
+              where: { 
+                conversationId: globalConversation.id, 
+                userId, 
+                isActive: true 
+              }
+            });
+          }
+        } else {
+          // Pour les autres conversations, chercher directement par ID
+          member = await fastify.prisma.conversationMember.findFirst({
+            where: { conversationId, userId, isActive: true }
+          });
+        }
 
         if (!member) {
           console.log('[CREATE_LINK] Utilisateur non membre de la conversation:', { userId, conversationId });
@@ -236,6 +257,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
           conversation: {
             select: {
               id: true,
+              identifier: true, // Ajouter l'identifiant pour la vérification Meeshy
               title: true,
               description: true,
               type: true,
@@ -294,6 +316,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
             conversation: {
               select: {
                 id: true,
+                identifier: true, // Ajouter l'identifiant pour la vérification Meeshy
                 title: true,
                 description: true,
                 type: true,
@@ -358,10 +381,15 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
       if (hybridRequest.isAuthenticated && hybridRequest.user) {
         // Utilisateur authentifié - vérifier s'il est membre de la conversation
-        const isMember = shareLink.conversation.members.some(
-          member => member.userId === hybridRequest.user.id && member.isActive
-        );
-        hasAccess = isMember;
+        // Pour les conversations Meeshy, tous les utilisateurs connectés ont accès
+        if (shareLink.conversation.identifier === "meeshy") {
+          hasAccess = true; // Conversation globale accessible à tous les utilisateurs connectés
+        } else {
+          const isMember = shareLink.conversation.members.some(
+            member => member.userId === hybridRequest.user.id && member.isActive
+          );
+          hasAccess = isMember;
+        }
       } else if (hybridRequest.isAnonymous && hybridRequest.anonymousParticipant) {
         // Participant anonyme - vérifier s'il appartient à ce lien
         hasAccess = hybridRequest.anonymousParticipant.shareLinkId === shareLink.id;
@@ -933,6 +961,183 @@ export async function linksRoutes(fastify: FastifyInstance) {
         });
       }
       logError(fastify.log, 'Send link message error:', error);
+      return reply.status(500).send({ 
+        success: false, 
+        message: 'Erreur interne du serveur' 
+      });
+    }
+  });
+
+  // 6. Envoyer un message via un lien partagé (utilisateurs authentifiés)
+  fastify.post('/links/:identifier/messages/auth', { 
+    onRequest: [authenticatedOnly] 
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { identifier } = request.params as { identifier: string };
+      const body = sendMessageSchema.parse(request.body);
+      const { userId } = (request as any).user;
+
+      // Déterminer si l'identifiant est un linkId ou un conversationShareLinkId
+      const isLinkId = identifier.startsWith('mshy_');
+      
+      // Récupérer le lien de partage
+      let shareLink;
+      if (isLinkId) {
+        // C'est un linkId au format mshy_...
+        shareLink = await fastify.prisma.conversationShareLink.findUnique({
+          where: { linkId: identifier },
+          include: {
+            conversation: {
+              select: {
+                id: true,
+                identifier: true, // Pour la vérification Meeshy
+                title: true,
+                type: true
+              }
+            }
+          }
+        });
+      } else {
+        // C'est un conversationShareLinkId (ID de base)
+        shareLink = await fastify.prisma.conversationShareLink.findUnique({
+          where: { id: identifier },
+          include: {
+            conversation: {
+              select: {
+                id: true,
+                identifier: true, // Pour la vérification Meeshy
+                title: true,
+                type: true
+              }
+            }
+          }
+        });
+      }
+
+      if (!shareLink) {
+        return reply.status(404).send({ 
+          success: false, 
+          message: 'Lien de partage non trouvé' 
+        });
+      }
+
+      if (!shareLink.isActive) {
+        return reply.status(410).send({ 
+          success: false, 
+          message: 'Ce lien n\'est plus actif' 
+        });
+      }
+
+      if (shareLink.expiresAt && new Date() > shareLink.expiresAt) {
+        return reply.status(410).send({ 
+          success: false, 
+          message: 'Ce lien a expiré' 
+        });
+      }
+
+      // Vérifier que l'utilisateur est membre de la conversation
+      let isMember = false;
+      
+      if (shareLink.conversation.identifier === "meeshy") {
+        // Pour les conversations Meeshy, tous les utilisateurs connectés ont accès
+        isMember = true;
+      } else {
+        // Pour les autres conversations, vérifier l'appartenance
+        const member = await fastify.prisma.conversationMember.findFirst({
+          where: {
+            conversationId: shareLink.conversationId,
+            userId: userId,
+            isActive: true
+          }
+        });
+        isMember = !!member;
+      }
+
+      if (!isMember) {
+        return reply.status(403).send({ 
+          success: false, 
+          message: 'Vous n\'êtes pas membre de cette conversation' 
+        });
+      }
+
+      // Créer le message
+      const message = await fastify.prisma.message.create({
+        data: {
+          conversationId: shareLink.conversationId,
+          senderId: userId, // Utilisateur authentifié
+          content: body.content,
+          originalLanguage: body.originalLanguage,
+          messageType: body.messageType,
+          anonymousSenderId: null // Pas de sender anonyme
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true,
+              systemLanguage: true
+            }
+          }
+        }
+      });
+
+      // Émettre l'événement WebSocket
+      const socketManager = (fastify as any).socketManager;
+      if (socketManager) {
+        socketManager.emitToConversation(shareLink.conversationId, 'link:message:new', {
+          message: {
+            id: message.id,
+            content: message.content,
+            originalLanguage: message.originalLanguage,
+            messageType: message.messageType,
+            isEdited: message.isEdited,
+            editedAt: message.editedAt,
+            isDeleted: message.isDeleted,
+            deletedAt: message.deletedAt,
+            replyToId: message.replyToId,
+            createdAt: message.createdAt,
+            updatedAt: message.updatedAt,
+            sender: message.sender,
+            senderAnonymous: null
+          }
+        });
+      }
+
+      return reply.status(201).send({
+        success: true,
+        data: {
+          messageId: message.id,
+          message: {
+            id: message.id,
+            content: message.content,
+            originalLanguage: message.originalLanguage,
+            messageType: message.messageType,
+            isEdited: message.isEdited,
+            editedAt: message.editedAt,
+            isDeleted: message.isDeleted,
+            deletedAt: message.deletedAt,
+            replyToId: message.replyToId,
+            createdAt: message.createdAt,
+            updatedAt: message.updatedAt,
+            sender: message.sender,
+            senderAnonymous: null
+          }
+        }
+      });
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({ 
+          success: false, 
+          message: 'Données invalides', 
+          errors: error.errors 
+        });
+      }
+      logError(fastify.log, 'Send authenticated link message error:', error);
       return reply.status(500).send({ 
         success: false, 
         message: 'Erreur interne du serveur' 

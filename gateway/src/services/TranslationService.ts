@@ -110,7 +110,7 @@ export class TranslationService extends EventEmitter {
         isRetranslation = true;
         
         // Vérifier que le message existe en base
-        const existingMessage = await this.prisma.message.findUnique({
+        const existingMessage = await this.prisma.message.findFirst({
           where: { id: messageData.id }
         });
         
@@ -147,7 +147,7 @@ export class TranslationService extends EventEmitter {
           } else {
             // Pour un nouveau message, on récupère les données complètes
             console.log(`🔄 [TranslationService] Traitement nouveau message...`);
-            const savedMessage = await this.prisma.message.findUnique({
+            const savedMessage = await this.prisma.message.findFirst({
               where: { id: messageId }
             });
             if (savedMessage) {
@@ -175,7 +175,7 @@ export class TranslationService extends EventEmitter {
   private async _saveMessageToDatabase(messageData: MessageData) {
     try {
       // Vérifier si la conversation existe, sinon la créer
-      const existingConversation = await this.prisma.conversation.findUnique({
+      const existingConversation = await this.prisma.conversation.findFirst({
         where: { id: messageData.conversationId }
       });
       
@@ -304,7 +304,7 @@ export class TranslationService extends EventEmitter {
       });
       
       // Récupérer le message existant depuis la base
-      const existingMessage = await this.prisma.message.findUnique({
+      const existingMessage = await this.prisma.message.findFirst({
         where: { id: messageId }
       });
       
@@ -561,7 +561,7 @@ export class TranslationService extends EventEmitter {
   private async _incrementUserTranslationStats(messageId: string) {
     try {
       // Récupérer le message pour obtenir l'ID de l'utilisateur
-      const message = await this.prisma.message.findUnique({
+      const message = await this.prisma.message.findFirst({
         where: { id: messageId },
         select: { senderId: true }
       });
@@ -599,12 +599,10 @@ export class TranslationService extends EventEmitter {
       console.log(`💾 [TranslationService] Sauvegarde traduction en base: ${result.messageId} -> ${result.targetLanguage}`);
       
       // Vérifier si la traduction existe déjà
-      const existingTranslation = await this.prisma.messageTranslation.findUnique({
+      const existingTranslation = await this.prisma.messageTranslation.findFirst({
         where: {
-          messageId_targetLanguage: {
-            messageId: result.messageId,
-            targetLanguage: result.targetLanguage
-          }
+          messageId: result.messageId,
+          targetLanguage: result.targetLanguage
         }
       });
 
@@ -619,10 +617,7 @@ export class TranslationService extends EventEmitter {
         // Mettre à jour la traduction existante
         await this.prisma.messageTranslation.update({
           where: {
-            messageId_targetLanguage: {
-              messageId: result.messageId,
-              targetLanguage: result.targetLanguage
-            }
+            id: existingTranslation.id
           },
           data: {
             translatedContent: result.translatedText,
@@ -674,12 +669,10 @@ export class TranslationService extends EventEmitter {
       // Si pas en cache, chercher dans la base de données
       console.log(`🔍 [TranslationService] Recherche traduction en base: ${messageId} -> ${targetLanguage}`);
       
-      const dbTranslation = await this.prisma.messageTranslation.findUnique({
+      const dbTranslation = await this.prisma.messageTranslation.findFirst({
         where: {
-          messageId_targetLanguage: {
-            messageId: messageId,
-            targetLanguage: targetLanguage
-          }
+          messageId: messageId,
+          targetLanguage: targetLanguage
         }
       });
       

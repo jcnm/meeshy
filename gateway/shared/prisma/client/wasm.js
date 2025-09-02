@@ -113,13 +113,6 @@ Prisma.NullTypes = {
  * Enums
  */
 
-exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
-  ReadUncommitted: 'ReadUncommitted',
-  ReadCommitted: 'ReadCommitted',
-  RepeatableRead: 'RepeatableRead',
-  Serializable: 'Serializable'
-});
-
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   username: 'username',
@@ -149,6 +142,7 @@ exports.Prisma.UserScalarFieldEnum = {
 
 exports.Prisma.ConversationScalarFieldEnum = {
   id: 'id',
+  identifier: 'identifier',
   type: 'type',
   title: 'title',
   description: 'description',
@@ -182,6 +176,7 @@ exports.Prisma.ConversationMemberScalarFieldEnum = {
 exports.Prisma.ConversationShareLinkScalarFieldEnum = {
   id: 'id',
   linkId: 'linkId',
+  identifier: 'identifier',
   conversationId: 'conversationId',
   createdBy: 'createdBy',
   name: 'name',
@@ -363,6 +358,20 @@ exports.Prisma.ConversationPreferenceScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CommunityAdminScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  userId: 'userId',
+  assignedAt: 'assignedAt'
+};
+
+exports.Prisma.CommunityModeratorScalarFieldEnum = {
+  id: 'id',
+  communityId: 'communityId',
+  userId: 'userId',
+  assignedAt: 'assignedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -371,11 +380,6 @@ exports.Prisma.SortOrder = {
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
-};
-
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
 };
 
 
@@ -395,7 +399,9 @@ exports.Prisma.ModelName = {
   CommunityMember: 'CommunityMember',
   UserStats: 'UserStats',
   UserPreference: 'UserPreference',
-  ConversationPreference: 'ConversationPreference'
+  ConversationPreference: 'ConversationPreference',
+  CommunityAdmin: 'CommunityAdmin',
+  CommunityModerator: 'CommunityModerator'
 };
 
 /**

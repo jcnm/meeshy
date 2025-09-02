@@ -127,7 +127,13 @@ export class ConversationStatsService {
     // Participants and participants per language
     let participantCount = 0;
     const participantsPerLanguage: Record<string, number> = {};
-    if (conversationId === "meeshy") {
+    
+    // Vérifier si c'est la conversation globale "meeshy"
+    const isGlobalConversation = await prisma.conversation.findFirst({
+      where: { id: conversationId, identifier: "meeshy" }
+    }).then(conv => !!conv);
+    
+    if (isGlobalConversation) {
       const users = await prisma.user.findMany({
         where: { isActive: true },
         select: { id: true, systemLanguage: true }
@@ -168,7 +174,13 @@ export class ConversationStatsService {
     if (connectedUserIds.length === 0) return [];
 
     let allowedIds: string[] = connectedUserIds;
-    if (conversationId !== "meeshy") {
+    
+    // Vérifier si c'est la conversation globale "meeshy"
+    const isGlobalConversation = await prisma.conversation.findFirst({
+      where: { id: conversationId, identifier: "meeshy" }
+    }).then(conv => !!conv);
+    
+    if (!isGlobalConversation) {
       const members = await prisma.conversationMember.findMany({
         where: { conversationId, isActive: true, userId: { in: connectedUserIds } },
         select: { userId: true }

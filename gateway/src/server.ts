@@ -469,12 +469,12 @@ class MeeshyServer {
 
   private async initializeServices(): Promise<void> {
     logger.info('Initializing external services...');
-    logger.info('Database URL:', JSON.stringify(config, null, 2));
     
     // Test database connection
     try {
+      logger.info('🔍 Testing database connection...');
       // Test connection with a simple query instead
-      await this.prisma.$queryRaw`SELECT 1`;
+      await this.prisma.user.findFirst();
       logger.info(`✓ Database connected successfully`);
       
       // Initialize database with default data
@@ -493,9 +493,12 @@ class MeeshyServer {
       
     } catch (error) {
       logger.error('✗ Database connection failed:', error);
-      logger.info('Database connection failed, but continuing without database (development mode)');
-      // Don't throw error in development mode
-      // throw new Error('Database initialization failed');
+      logger.info('⚠️ Continuing without database initialization (development mode)');
+      logger.info('💡 To fix database issues:');
+      logger.info('   1. Check MongoDB credentials in .env file');
+      logger.info('   2. Ensure MongoDB is running and accessible');
+      logger.info('   3. Verify network connectivity to database');
+      // Don't throw error in development mode - continue without database
     }
 
     // Initialize translation service
