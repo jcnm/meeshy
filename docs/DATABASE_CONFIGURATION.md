@@ -1,41 +1,34 @@
-# Configuration de Base de Données Configurable - Meeshy
+# Configuration MongoDB - Meeshy
 
 ## Vue d'Ensemble
 
-Meeshy supporte maintenant **deux types de bases de données** de manière configurable :
-- **MongoDB** (par défaut) - Base de données NoSQL orientée document
-- **PostgreSQL** - Base de données relationnelle robuste
-
-Cette configuration permet de choisir la base de données selon vos besoins et contraintes d'infrastructure.
+Meeshy utilise **exclusivement MongoDB** comme base de données. Cette configuration simplifiée offre :
+- **Performance optimisée** pour les données documentaires
+- **Scalabilité horizontale** native
+- **Schéma flexible** adapté aux applications de messagerie
+- **Support des transactions** pour la cohérence des données
 
 ## 🚀 Configuration Rapide
 
-### 1. Configuration MongoDB (Par Défaut)
+### Configuration MongoDB
 ```bash
-./scripts/configure-database.sh -t MONGODB
+./scripts/configure-database.sh
 ```
 
-### 2. Configuration PostgreSQL
+### Configuration avec Image Personnalisée
 ```bash
-./scripts/configure-database.sh -t POSTGRESQL
-```
-
-### 3. Configuration avec Image Personnalisée
-```bash
-./scripts/configure-database.sh -t POSTGRESQL -i postgres:16
+./scripts/configure-database.sh -i mongo:7.0
 ```
 
 ## 📁 Fichiers de Configuration
 
 ### Fichiers Créés/Modifiés
-- **`.env.database`** - Configuration de la base de données
-- **`docker-compose.yml`** - Services Docker avec base configurable
+- **`.env.database`** - Configuration MongoDB
+- **`docker-compose.yml`** - Services Docker avec MongoDB
 - **`shared/init-mongo.js`** - Script d'initialisation MongoDB
-- **`shared/init-postgresql.sql`** - Script d'initialisation PostgreSQL
 
-### Schémas Prisma
-- **`shared/schema.prisma`** - Schéma MongoDB
-- **`shared/schema.postgresql.prisma`** - Schéma PostgreSQL
+### Schéma Prisma
+- **`shared/schema.prisma`** - Schéma MongoDB exclusif
 
 ## 🔧 Configuration Détaillée
 
@@ -44,73 +37,56 @@ Cette configuration permet de choisir la base de données selon vos besoins et c
 #### MongoDB
 ```bash
 DATABASE_TYPE=MONGODB
-MONGODB_URL=mongodb://meeshy:MeeshyPassword123@database:27017/meeshy?authSource=admin
+DATABASE_URL=mongodb://meeshy:MeeshyPassword123@database:27017/meeshy?authSource=admin
 MONGODB_DATABASE=meeshy
 MONGODB_USER=meeshy
 MONGODB_PASSWORD=MeeshyPassword123
 ```
 
-#### PostgreSQL
-```bash
-DATABASE_TYPE=POSTGRESQL
-POSTGRESQL_URL=postgresql://meeshy:MeeshyPassword123@database:5432/meeshy
-POSTGRESQL_DATABASE=meeshy
-POSTGRESQL_USER=meeshy
-POSTGRESQL_PASSWORD=MeeshyPassword123
-```
-
 ### Configuration Prisma
 ```bash
-# MongoDB
-PRISMA_DATABASE_URL=${MONGODB_URL}
+# MongoDB (exclusif)
+DATABASE_URL=${MONGODB_URL}
 PRISMA_SCHEMA_PATH=./shared/schema.prisma
-
-# PostgreSQL
-PRISMA_DATABASE_URL=${POSTGRESQL_URL}
-PRISMA_SCHEMA_PATH=./shared/schema.postgresql.prisma
 ```
 
 ## 🐳 Services Docker
 
-### Service de Base de Données
-Le service `database` s'adapte automatiquement selon le type choisi :
+### Service MongoDB
+Le service `database` utilise MongoDB exclusivement :
 
 ```yaml
 database:
-  image: ${DATABASE_IMAGE:-mongo:8.0}  # ou postgres:15-alpine
+  image: ${DATABASE_IMAGE:-mongo:8.0}
   environment:
-    # Variables MongoDB
     MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-meeshy}
     MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-meeshy}
     MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-MeeshyPassword123}
-    # Variables PostgreSQL
-    POSTGRES_DB: ${POSTGRESQL_DATABASE:-meeshy}
-    POSTGRES_USER: ${POSTGRESQL_USER:-meeshy}
-    POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD:-MeeshyPassword123}
+  ports:
+    - "27017:27017"
 ```
 
 ### Ports
 - **MongoDB** : `27017`
-- **PostgreSQL** : `5432`
 
-## 📊 Comparaison des Bases de Données
+## 📊 Avantages de MongoDB
 
-| Aspect | MongoDB | PostgreSQL |
-|--------|---------|------------|
-| **Type** | NoSQL Document | SQL Relationnel |
-| **Performance** | Excellente pour lectures | Excellente pour transactions |
-| **Scalabilité** | Horizontale native | Verticale + extensions |
-| **Schéma** | Flexible | Strict |
-| **Transactions** | Supportées (4.0+) | ACID complètes |
-| **Requêtes** | Agrégation puissante | SQL standard |
-| **Indexation** | Multi-dimensionnelle | B-tree, GIN, GiST |
+| Aspect | Avantage |
+|--------|----------|
+| **Performance** | Excellente pour lectures et écritures |
+| **Scalabilité** | Horizontale native avec sharding |
+| **Schéma** | Flexible et évolutif |
+| **Transactions** | Supportées (4.0+) |
+| **Requêtes** | Agrégation puissante avec pipeline |
+| **Indexation** | Multi-dimensionnelle et géospatiale |
+| **JSON** | Support natif des documents JSON |
 
 ## 🚀 Déploiement
 
 ### Déploiement Local
 ```bash
-# 1. Configurer la base de données
-./scripts/configure-database.sh -t MONGODB
+# 1. Configurer MongoDB
+./scripts/configure-database.sh
 
 # 2. Démarrer les services
 docker-compose up -d
@@ -124,46 +100,15 @@ docker-compose logs -f
 # Déploiement MongoDB
 ./scripts/deploy-configurable.sh 157.230.15.51
 
-# Déploiement PostgreSQL
-./scripts/deploy-configurable.sh -t POSTGRESQL 157.230.15.51
-
 # Déploiement avec SSL
 ./scripts/deploy-configurable.sh -s -d meeshy.me 157.230.15.51
-```
-
-## 🔄 Migration entre Bases
-
-### MongoDB → PostgreSQL
-```bash
-# 1. Sauvegarder les données MongoDB
-mongodump --db meeshy --out ./backup
-
-# 2. Configurer PostgreSQL
-./scripts/configure-database.sh -t POSTGRESQL
-
-# 3. Migrer les données (script personnalisé requis)
-# 4. Redémarrer les services
-docker-compose up -d
-```
-
-### PostgreSQL → MongoDB
-```bash
-# 1. Sauvegarder les données PostgreSQL
-pg_dump -U meeshy -d meeshy > ./backup.sql
-
-# 2. Configurer MongoDB
-./scripts/configure-database.sh -t MONGODB
-
-# 3. Migrer les données (script personnalisé requis)
-# 4. Redémarrer les services
-docker-compose up -d
 ```
 
 ## 🛠️ Scripts Disponibles
 
 ### Configuration
-- **`configure-database.sh`** - Configuration de la base de données
-- **`deploy-configurable.sh`** - Déploiement configurable
+- **`configure-database.sh`** - Configuration MongoDB exclusive
+- **`deploy-configurable.sh`** - Déploiement MongoDB
 
 ### Build et Push
 - **`build-and-push-images.sh`** - Construction et push des images Docker
@@ -174,9 +119,6 @@ docker-compose up -d
 ./scripts/configure-database.sh -h
 ./scripts/deploy-configurable.sh -h
 ./scripts/build-and-push-images.sh -h
-
-# Mode dry-run
-./scripts/build-and-push-images.sh -d
 ```
 
 ## 🔍 Vérification
@@ -187,7 +129,7 @@ docker-compose up -d
 cat .env.database | grep DATABASE_TYPE
 
 # Vérifier les variables Prisma
-cat .env.database | grep PRISMA
+cat .env.database | grep DATABASE_URL
 ```
 
 ### Vérifier les Services
@@ -195,12 +137,11 @@ cat .env.database | grep PRISMA
 # Statut des services
 docker-compose ps
 
-# Logs de la base de données
+# Logs de MongoDB
 docker-compose logs database
 
 # Test de connexion
-docker-compose exec database mongosh --eval "db.adminCommand('ping')"  # MongoDB
-docker-compose exec database pg_isready -U meeshy -d meeshy            # PostgreSQL
+docker-compose exec database mongosh --eval "db.adminCommand('ping')"
 ```
 
 ## 🚨 Dépannage
@@ -210,11 +151,10 @@ docker-compose exec database pg_isready -U meeshy -d meeshy            # Postgre
 #### 1. Échec d'Authentification
 ```bash
 # Vérifier les variables d'environnement
-docker-compose exec database env | grep -E "(MONGO|POSTGRES)"
+docker-compose exec database env | grep MONGO
 
 # Vérifier les utilisateurs
-docker-compose exec database mongosh --eval "db.getUsers()"  # MongoDB
-docker-compose exec database psql -U meeshy -d meeshy -c "\du"  # PostgreSQL
+docker-compose exec database mongosh --eval "db.getUsers()"
 ```
 
 #### 2. Schéma Prisma Incorrect
@@ -229,8 +169,7 @@ docker-compose exec translator prisma generate
 #### 3. Ports en Conflit
 ```bash
 # Vérifier les ports utilisés
-lsof -i :27017  # MongoDB
-lsof -i :5432   # PostgreSQL
+lsof -i :27017
 
 # Modifier les ports dans .env.database si nécessaire
 ```
@@ -239,31 +178,55 @@ lsof -i :5432   # PostgreSQL
 
 ### Documentation
 - [MongoDB Documentation](https://docs.mongodb.com/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [Prisma Documentation](https://www.prisma.io/docs/)
+- [Prisma MongoDB Documentation](https://www.prisma.io/docs/concepts/database-connectors/mongodb)
 
 ### Scripts d'Initialisation
 - **MongoDB** : `shared/init-mongo.js`
-- **PostgreSQL** : `shared/init-postgresql.sql`
 
 ### Configuration Docker
 - **Template** : `docker-compose.configurable.yml`
 - **Généré** : `docker-compose.yml`
 
-## 🎯 Recommandations
+## 🎯 Recommandations MongoDB
 
-### MongoDB Recommandé Pour
-- Applications avec schémas flexibles
-- Données non structurées ou semi-structurées
-- Besoins de scalabilité horizontale
-- Requêtes d'agrégation complexes
+### Optimisations
+- **Indexation** : Créer des index sur les champs fréquemment utilisés
+- **Sharding** : Pour les très grandes bases de données
+- **Réplica Set** : Pour la haute disponibilité
+- **Compression** : Activer la compression des données
 
-### PostgreSQL Recommandé Pour
-- Applications avec schémas stricts
-- Besoins de transactions ACID
-- Intégrité référentielle importante
-- Requêtes SQL complexes
+### Monitoring
+- **MongoDB Compass** : Interface graphique pour la gestion
+- **MongoDB Ops Manager** : Monitoring et alertes
+- **Logs** : Surveiller les logs de performance
+
+## 🔄 Migration et Maintenance
+
+### Sauvegarde
+```bash
+# Sauvegarde complète
+mongodump --db meeshy --out ./backup
+
+# Sauvegarde d'une collection spécifique
+mongodump --db meeshy --collection User --out ./backup
+```
+
+### Restauration
+```bash
+# Restauration complète
+mongorestore --db meeshy ./backup/meeshy
+
+# Restauration d'une collection
+mongorestore --db meeshy --collection User ./backup/meeshy/User.bson
+```
+
+### Mise à Jour
+```bash
+# Mise à jour de MongoDB
+docker-compose pull database
+docker-compose up -d database
+```
 
 ---
 
-**Note** : Cette configuration permet de basculer facilement entre MongoDB et PostgreSQL selon vos besoins, sans modifier le code de l'application.
+**Note** : Meeshy utilise MongoDB exclusivement pour offrir une expérience optimisée et cohérente. Cette approche simplifie la maintenance et garantit la compatibilité avec toutes les fonctionnalités de l'application.

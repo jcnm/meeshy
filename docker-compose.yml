@@ -1,28 +1,21 @@
 version: '3.8'
 
 services:
-  # Database Service (MongoDB or PostgreSQL)
+  # MongoDB Database Service
   database:
     image: ${DATABASE_IMAGE:-mongo:8.0}
     container_name: meeshy-database
     restart: unless-stopped
     environment:
-      # MongoDB Environment Variables
       MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-meeshy}
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-meeshy}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-MeeshyPassword123}
-      # PostgreSQL Environment Variables
-      POSTGRES_DB: ${POSTGRESQL_DATABASE:-meeshy}
-      POSTGRES_USER: ${POSTGRESQL_USER:-meeshy}
-      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD:-MeeshyPassword123}
     volumes:
       - database_data:/data/db
       - database_config:/data/configdb
       - ./shared/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-      - ./shared/init-postgresql.sql:/docker-entrypoint-initdb.d/init-postgresql.sql:ro
     ports:
-      - "27017:27017"  # MongoDB
-      - "5432:5432"    # PostgreSQL
+      - "27017:27017"
     networks:
       - meeshy-network
     healthcheck:
@@ -55,7 +48,6 @@ services:
     container_name: meeshy-translator
     restart: unless-stopped
     environment:
-      - DATABASE_TYPE=${DATABASE_TYPE:-MONGODB}
       - DATABASE_URL=
       - PRISMA_SCHEMA_PATH=
       - PYTHONPATH=/workspace:/workspace/generated
@@ -87,7 +79,6 @@ services:
     container_name: meeshy-gateway
     restart: unless-stopped
     environment:
-      - DATABASE_TYPE=${DATABASE_TYPE:-MONGODB}
       - DATABASE_URL=
       - REDIS_URL=redis://redis:6379
       - TRANSLATOR_URL=http://translator:8000
