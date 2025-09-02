@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# MongoDB Deployment Script for Meeshy
-# This script deploys Meeshy with MongoDB exclusively
+# Database Deployment Script for Meeshy
+# This script deploys Meeshy with configurable database (MongoDB or PostgreSQL)
 
 set -e
 
@@ -14,6 +14,7 @@ NC='\033[0m' # No Color
 
 # Default values
 SERVER_IP=""
+DATABASE_TYPE="MONGODB"
 DOMAIN="meeshy.me"
 CERTBOT_EMAIL="admin@meeshy.me"
 DEPLOY_SSL=false
@@ -42,16 +43,19 @@ show_help() {
     echo "Usage: $0 [OPTIONS] SERVER_IP"
     echo ""
     echo "Options:"
+    echo "  -t, --type TYPE       Database type: MONGODB or POSTGRESQL (default: MONGODB)"
     echo "  -d, --domain DOMAIN   Domain name for SSL (default: meeshy.me)"
     echo "  -e, --email EMAIL     Email for Let's Encrypt (default: admin@meeshy.me)"
     echo "  -s, --ssl             Deploy with SSL certificates"
     echo "  -h, --help            Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 157.230.15.51                    # Deploy with MongoDB"
+    echo "  $0 157.230.15.51                    # Deploy with MongoDB (default)"
+    echo "  $0 -t POSTGRESQL 157.230.15.51      # Deploy with PostgreSQL"
     echo "  $0 -s -d example.com 157.230.15.51  # Deploy with SSL for example.com"
     echo ""
     echo "Environment Variables:"
+    echo "  DATABASE_TYPE         Database type (MONGODB or POSTGRESQL)"
     echo "  DOMAIN               Domain name for SSL"
     echo "  CERTBOT_EMAIL        Email for Let's Encrypt"
 }
@@ -60,6 +64,10 @@ show_help() {
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
+            -t|--type)
+                DATABASE_TYPE="$2"
+                shift 2
+                ;;
             -d|--domain)
                 DOMAIN="$2"
                 shift 2
@@ -107,6 +115,17 @@ validate_arguments() {
         exit 1
     fi
     
+    # Validate database type
+    case "$DATABASE_TYPE" in
+        MONGODB|POSTGRESQL)
+            ;;
+        *)
+            print_error "Invalid database type: $DATABASE_TYPE"
+            print_error "Valid types: MONGODB, POSTGRESQL"
+            exit 1
+            ;;
+    esac
+    
     # Validate domain
     if [[ ! "$DOMAIN" =~ ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
         print_error "Invalid domain name: $DOMAIN"
@@ -120,14 +139,14 @@ validate_arguments() {
     fi
 }
 
-# Function to configure MongoDB for production
-configure_mongodb_prod() {
-    print_status "Configuring MongoDB for production deployment"
+# Function to configure database for production
+configure_database_prod() {
+    print_status "Configuring $DATABASE_TYPE for production deployment"
     
     if [ -f "scripts/configure-database.sh" ]; then
-        ./scripts/configure-database.sh -e prod
+        ./scripts/configure-database.sh -t "$DATABASE_TYPE" -e prod
     else
-        print_error "MongoDB configuration script not found"
+        print_error "Database configuration script not found"
         exit 1
     fi
 }
@@ -199,16 +218,16 @@ deploy_ssl() {
 
 # Function to show deployment summary
 show_deployment_summary() {
-    print_header "MongoDB Production Deployment Summary"
+    print_header "$DATABASE_TYPE Production Deployment Summary"
     echo "Server IP: $SERVER_IP"
     echo "Environment: Production"
-    echo "Database: MongoDB (exclusive)"
+    echo "Database: $DATABASE_TYPE"
     echo "Domain: $DOMAIN"
     echo "SSL Deployed: $DEPLOY_SSL"
     echo ""
     
     echo "Services deployed:"
-    echo "  - Database: MongoDB"
+    echo "  - Database: $DATABASE_TYPE"
     echo "  - Redis: Cache service"
     echo "  - Translator: ML translation service (production image)"
     echo "  - Gateway: API gateway (production image)"
@@ -252,7 +271,7 @@ show_deployment_summary() {
 
 # Main script
 main() {
-    print_header "Meeshy MongoDB Production Deployment"
+    print_header "Meeshy $DATABASE_TYPE Production Deployment"
     
     # Parse and validate arguments
     parse_arguments "$@"
@@ -262,13 +281,13 @@ main() {
     print_status "Deployment Configuration:"
     echo "  Server IP: $SERVER_IP"
     echo "  Environment: Production"
-    echo "  Database: MongoDB (exclusive)"
+    echo "  Database: $DATABASE_TYPE"
     echo "  Domain: $DOMAIN"
     echo "  SSL: $DEPLOY_SSL"
     echo ""
     
-    # Configure MongoDB for production
-    configure_mongodb_prod
+    # Configure database for production
+    configure_database_prod
     
     # Test SSH connection
     test_ssh_connection
@@ -285,7 +304,7 @@ main() {
     # Show summary
     show_deployment_summary
     
-    print_status "MongoDB production deployment completed successfully!"
+    print_status "$DATABASE_TYPE production deployment completed successfully!"
 }
 
 # Run main function
