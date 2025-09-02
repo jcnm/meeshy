@@ -18,6 +18,7 @@ DOMAIN="meeshy.me"
 CERTBOT_EMAIL="admin@meeshy.me"
 DEPLOY_SSL=false
 SHOW_HELP=false
+ENVIRONMENT="prod"
 
 # Function to print colored output
 print_status() {
@@ -119,12 +120,12 @@ validate_arguments() {
     fi
 }
 
-# Function to configure MongoDB locally
-configure_mongodb() {
-    print_status "Configuring MongoDB (exclusive)"
+# Function to configure MongoDB for production
+configure_mongodb_prod() {
+    print_status "Configuring MongoDB for production deployment"
     
     if [ -f "scripts/configure-database.sh" ]; then
-        ./scripts/configure-database.sh
+        ./scripts/configure-database.sh -e prod
     else
         print_error "MongoDB configuration script not found"
         exit 1
@@ -156,7 +157,7 @@ deploy_to_server() {
     
     # Copy configuration files
     print_status "Copying configuration files..."
-    scp -o StrictHostKeyChecking=no docker-compose.yml root@"$SERVER_IP":/opt/meeshy/
+    scp -o StrictHostKeyChecking=no docker-compose.prod.yml root@"$SERVER_IP":/opt/meeshy/docker-compose.yml
     scp -o StrictHostKeyChecking=no .env.database root@"$SERVER_IP":/opt/meeshy/.env
     scp -o StrictHostKeyChecking=no shared/* root@"$SERVER_IP":/opt/meeshy/shared/
     scp -o StrictHostKeyChecking=no docker/nginx/* root@"$SERVER_IP":/opt/meeshy/docker/nginx/
@@ -198,8 +199,9 @@ deploy_ssl() {
 
 # Function to show deployment summary
 show_deployment_summary() {
-    print_header "MongoDB Deployment Summary"
+    print_header "MongoDB Production Deployment Summary"
     echo "Server IP: $SERVER_IP"
+    echo "Environment: Production"
     echo "Database: MongoDB (exclusive)"
     echo "Domain: $DOMAIN"
     echo "SSL Deployed: $DEPLOY_SSL"
@@ -208,10 +210,11 @@ show_deployment_summary() {
     echo "Services deployed:"
     echo "  - Database: MongoDB"
     echo "  - Redis: Cache service"
-    echo "  - Translator: ML translation service"
-    echo "  - Gateway: API gateway"
-    echo "  - Frontend: Next.js application"
-    echo "  - Nginx: Reverse proxy"
+    echo "  - Translator: ML translation service (production image)"
+    echo "  - Gateway: API gateway (production image)"
+    echo "  - Frontend: Next.js application (production image)"
+    echo "  - Nginx: Reverse proxy with SSL"
+    echo "  - Certbot: Let's Encrypt certificates"
     echo ""
     
     if [ "$DEPLOY_SSL" = true ]; then
@@ -233,6 +236,11 @@ show_deployment_summary() {
     fi
     
     echo ""
+    echo "Docker Compose Files:"
+    echo "  - Local: docker-compose.dev.yml (development)"
+    echo "  - Server: docker-compose.prod.yml (production)"
+    echo ""
+    
     echo "Next steps:"
     echo "  1. Wait for all services to be healthy"
     echo "  2. Test the application endpoints"
@@ -244,7 +252,7 @@ show_deployment_summary() {
 
 # Main script
 main() {
-    print_header "Meeshy MongoDB Deployment"
+    print_header "Meeshy MongoDB Production Deployment"
     
     # Parse and validate arguments
     parse_arguments "$@"
@@ -253,13 +261,14 @@ main() {
     # Show deployment configuration
     print_status "Deployment Configuration:"
     echo "  Server IP: $SERVER_IP"
+    echo "  Environment: Production"
     echo "  Database: MongoDB (exclusive)"
     echo "  Domain: $DOMAIN"
     echo "  SSL: $DEPLOY_SSL"
     echo ""
     
-    # Configure MongoDB locally
-    configure_mongodb
+    # Configure MongoDB for production
+    configure_mongodb_prod
     
     # Test SSH connection
     test_ssh_connection
@@ -276,7 +285,7 @@ main() {
     # Show summary
     show_deployment_summary
     
-    print_status "MongoDB deployment completed successfully!"
+    print_status "MongoDB production deployment completed successfully!"
 }
 
 # Run main function
