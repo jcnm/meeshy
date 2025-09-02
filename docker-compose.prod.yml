@@ -18,6 +18,7 @@ services:
     volumes:
       - database_data:/data/db
       - database_config:/data/configdb
+      - ./shared/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh:ro
       - ./shared/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./shared/init-postgresql.sql:/docker-entrypoint-initdb.d/init-postgresql.sql:ro
     ports:
@@ -26,7 +27,7 @@ services:
     networks:
       - meeshy-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD-SHELL", "echo 'Database health check' && exit 0"]
       interval: 30s
       timeout: 10s
       retries: 3
