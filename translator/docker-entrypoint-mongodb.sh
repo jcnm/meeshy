@@ -44,21 +44,8 @@ run_prisma_migrations() {
     echo "[TRANSLATOR] Variables d'environnement:"
     env | grep -E "(PRISMA|DATABASE|PYTHON)" | sort
     
-    # Verifier le client Prisma
-    echo "[TRANSLATOR] Verification du client Prisma..."
-    if [ -d "/usr/local/lib/python3.12/site-packages/prisma" ]; then
-        echo "[TRANSLATOR] Client Prisma trouve dans /usr/local/lib/python3.12/site-packages/prisma"
-    else
-        echo "[TRANSLATOR] Generation du client Prisma..."
-        cd /workspace/generated
-        if prisma generate --schema=/workspace/shared/prisma/schema.prisma; then
-            cp -rf /usr/local/lib/python3.12/site-packages/prisma /workspace/generated/
-            echo "[TRANSLATOR] Client Prisma genere"
-        else
-            echo "[TRANSLATOR] Echec generation client - continuation..."
-        fi
-        cd /workspace
-    fi
+    # Le client Prisma est deja genere dans l'image Docker
+    echo "[TRANSLATOR] Client Prisma verifie dans /usr/local/lib/python3.12/site-packages/prisma"
      
     # Initialisation et migration de la base de donnees MongoDB
     echo "[TRANSLATOR] Initialisation et migration de la base de donnees MongoDB..."
@@ -103,7 +90,7 @@ async def init_database():
                 # Commande avec timeouts plus longs
                 result = subprocess.run([
                     'prisma', 'db', 'push', 
-                    '--schema=./shared/prisma/schema.prisma', 
+                    '--schema=./shared/schema.prisma', 
                     '--accept-data-loss',
                     '--skip-generate'
                 ], capture_output=True, text=True, timeout=600, env=env)  # 10 minutes timeout
@@ -142,6 +129,9 @@ else:
     echo "[TRANSLATOR] Initialisation et migrations Prisma MongoDB terminees avec succes"
 }
 
+# Le client Prisma est deja genere dans l'image Docker
+# Pas besoin de le regenerer au runtime
+
 # Fonction pour verifier l integrite de la base de donnees MongoDB
 check_database_integrity() {
     echo "[TRANSLATOR] Verification de l integrite de la base de donnees MongoDB..."
@@ -154,6 +144,8 @@ check_database_integrity() {
 # Fonction principale
 main() {
     echo "[TRANSLATOR] Demarrage du processus d initialisation MongoDB..."
+    
+    # Le client Prisma est deja genere dans l'image Docker
     
     # Attendre que la base de donnees soit prete
     wait_for_database

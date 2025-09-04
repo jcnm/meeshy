@@ -113,9 +113,14 @@ COPY --chown=gateway:nodejs tsconfig.json ./
 COPY --chown=gateway:nodejs docker-entrypoint.sh ./
 
 # Build de l'application avec nettoyage
-RUN mkdir -p ./shared/prisma \
-    && PRISMA_CLIENT_OUTPUT_DIRECTORY=./shared/prisma npx prisma generate --schema=./shared/schema.prisma \
-    && DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy pnpm run build \
+RUN echo "🔧 Génération du client Prisma Node.js..." \
+    && cd /app/shared \
+    && npx prisma generate --schema=./schema.prisma \
+    && mkdir -p ./prisma \
+    && mv ./client ./prisma/ \
+    && echo "✅ Client Prisma Node.js généré avec succès" \
+    && cd /app \
+    && DATABASE_URL=mongodb://dummy:dummy@localhost:27017/dummy pnpm run build \
     && rm -rf src/ tsconfig.json \
     && pnpm install --prod --ignore-scripts \
     && pnpm store prune \

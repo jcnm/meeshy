@@ -1,6 +1,6 @@
 {
   "name": "meeshy-frontend",
-  "version": "0.6.35-alpha",
+  "version": "1.0.36-alpha",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 3100",

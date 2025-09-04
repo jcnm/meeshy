@@ -185,12 +185,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         liblapack-dev \
         gfortran \
         pkg-config \
-        # OPTIMISATION: Services de base de données complets (PostgreSQL 17)
-        postgresql-17 \
-        postgresql-client-17 \
-        postgresql-contrib-17 \
-        postgresql-server-dev-17 \
-        postgresql-common \
+        # OPTIMISATION: Services de base de données complets (MongoDB)
+        mongodb \
+        mongodb-tools \
+        mongodb-clients \
         redis-server \
         # OPTIMISATION: Outils système
         supervisor \
@@ -320,11 +318,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         gnupg \
         ca-certificates \
-        postgresql-17 \
-        postgresql-client-17 \
-        postgresql-contrib-17 \
-        postgresql-server-dev-17 \
-        postgresql-common \
+        mongodb \
+        mongodb-tools \
+        mongodb-clients \
         redis-server \
         redis-tools \
         nodejs \
@@ -359,7 +355,7 @@ COPY docker/supervisor/ /etc/supervisor/conf.d/
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY scripts/ /app/scripts/
-COPY docker-start-unified.sh /app/docker-start-unified.sh
+COPY docker/scripts/docker-start-unified.sh /app/docker-start-unified.sh
 
 # Rendre les scripts exécutables
 RUN chmod +x /app/scripts/*.sh && \
@@ -382,9 +378,9 @@ ENV NODE_ENV=production \
     PORT=3100 \
     GATEWAY_PORT=3000 \
     TRANSLATOR_PORT=8000 \
-    POSTGRES_PORT=5432 \
+    MONGODB_PORT=27017 \
     REDIS_PORT=6379 \
-    DATABASE_URL=postgresql://meeshy:MeeshyP@ssword@localhost:5432/meeshy \
+    DATABASE_URL=mongodb://meeshy:MeeshyP@ssword@localhost:27017/meeshy \
     REDIS_URL=redis://localhost:6379 \
     USE_EXTERNAL_DB=false \
     USE_EXTERNAL_REDIS=false \
@@ -395,7 +391,7 @@ ENV NODE_ENV=production \
 USER meeshy
 
 # Exposer les ports
-EXPOSE 80 3000 8000 5432 6379
+EXPOSE 80 3000 8000 27017 6379
 
 # === HEALTH CHECK ===
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

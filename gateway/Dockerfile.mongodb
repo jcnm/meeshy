@@ -136,3 +136,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
 
 # === STARTUP COMMAND ===
 CMD ["sh", "-c", "echo '[GATEWAY-MONGODB] 🚀 Démarrage du service Gateway avec MongoDB...' && node dist/src/server.js"]
+
+

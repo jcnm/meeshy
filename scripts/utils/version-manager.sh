@@ -6,8 +6,8 @@
 set -e
 
 # Configuration
-VERSION_FILE=".version"
-DEFAULT_VERSION="0.5.1-alpha"
+VERSION_FILE="shared/version.txt"
+DEFAULT_VERSION="1.0.1-alpha"
 REGISTRY="isopen"
 
 # Couleurs pour les messages
@@ -88,13 +88,27 @@ update_version_in_files() {
         echo -e "${GREEN}✅ gateway/package.json mis à jour${NC}"
     fi
     
-    # Mettre à jour les images Docker dans docker-compose.yml
+    # Mettre à jour les images Docker dans docker-compose.yml (gérer les liens symboliques)
     if [ -f "docker-compose.yml" ]; then
-        sed -i.bak "s/isopen\/meeshy-translator:.*/isopen\/meeshy-translator:$version/" docker-compose.yml
-        sed -i.bak "s/isopen\/meeshy-gateway:.*/isopen\/meeshy-gateway:$version/" docker-compose.yml
-        sed -i.bak "s/isopen\/meeshy-frontend:.*/isopen\/meeshy-frontend:$version/" docker-compose.yml
-        rm -f docker-compose.yml.bak
-        echo -e "${GREEN}✅ docker-compose.yml mis à jour${NC}"
+        # Vérifier si c'est un lien symbolique
+        if [ -L "docker-compose.yml" ]; then
+            local target_file=$(readlink "docker-compose.yml")
+            echo -e "${YELLOW}⚠️  docker-compose.yml est un lien symbolique vers $target_file${NC}"
+            # Mettre à jour le fichier cible
+            if [ -f "$target_file" ]; then
+                sed -i.bak "s/isopen\/meeshy-translator:.*/isopen\/meeshy-translator:$version/" "$target_file"
+                sed -i.bak "s/isopen\/meeshy-gateway:.*/isopen\/meeshy-gateway:$version/" "$target_file"
+                sed -i.bak "s/isopen\/meeshy-frontend:.*/isopen\/meeshy-frontend:$version/" "$target_file"
+                rm -f "$target_file.bak"
+                echo -e "${GREEN}✅ $target_file mis à jour${NC}"
+            fi
+        else
+            sed -i.bak "s/isopen\/meeshy-translator:.*/isopen\/meeshy-translator:$version/" docker-compose.yml
+            sed -i.bak "s/isopen\/meeshy-gateway:.*/isopen\/meeshy-gateway:$version/" docker-compose.yml
+            sed -i.bak "s/isopen\/meeshy-frontend:.*/isopen\/meeshy-frontend:$version/" docker-compose.yml
+            rm -f docker-compose.yml.bak
+            echo -e "${GREEN}✅ docker-compose.yml mis à jour${NC}"
+        fi
     fi
     
     # Mettre à jour l'image unifiée dans docker-compose.unified.yml

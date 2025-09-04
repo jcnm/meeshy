@@ -86,11 +86,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Obtenir la version actuelle
+# Obtenir et incrémenter la version
 if [ -f "$VERSION_MANAGER" ]; then
-    VERSION=$(bash "$VERSION_MANAGER" current)
+    echo -e "${BLUE}🔄 Incrémentation automatique de la version...${NC}"
+    # Capturer seulement la version finale, pas tout le output
+    VERSION=$(bash "$VERSION_MANAGER" auto-increment patch 2>&1 | tail -1 | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+-[a-zA-Z]\+')
+    echo -e "${GREEN}✅ Nouvelle version: ${VERSION}${NC}"
 else
-    VERSION="0.5.1-alpha"
+    VERSION="2.1.0-alpha"
+    echo -e "${YELLOW}⚠️  Script version-manager.sh non trouvé, utilisation de la version par défaut${NC}"
 fi
 
 echo -e "${BLUE}🚀 Build et publication des images Docker Meeshy v${VERSION}${NC}"
@@ -129,6 +133,17 @@ timeout_cmd() {
 
 # Nettoyer avant de commencer
 cleanup_buildx
+
+# Exécuter le script de distribution des schémas Prisma
+echo -e "${BLUE}📁 Distribution des schémas Prisma...${NC}"
+if [ -f "$PROJECT_ROOT/shared/scripts/distribute.sh" ]; then
+    cd "$PROJECT_ROOT/shared"
+    bash ./scripts/distribute.sh
+    cd "$PROJECT_ROOT"
+    echo -e "${GREEN}✅ Schémas Prisma distribués avec succès${NC}"
+else
+    echo -e "${YELLOW}⚠️  Script distribute.sh non trouvé, continuation sans distribution${NC}"
+fi
 
 # Nettoyer et créer un nouveau builder si nécessaire
 BUILDER_NAME="meeshy-builder"
@@ -227,6 +242,24 @@ build_and_push_unified() {
     
     echo ""
 }
+
+# Distribution automatique des schémas Prisma
+echo "🔧 Distribution des schémas Prisma..."
+if [ -f "./shared/scripts/distribute.sh" ]; then
+    chmod +x ./shared/scripts/distribute.sh
+    cd ./shared && ./scripts/distribute.sh && cd ..
+    echo "✅ Schémas Prisma distribués avec succès"
+    
+    # Vérifier si un rebuild est nécessaire
+    if [ "$FORCE_REBUILD" != "true" ] && [ -f "./shared/dist/version.txt" ]; then
+        LAST_VERSION=$(cat ./shared/dist/version.txt)
+        echo "📋 Dernière version distribuée: $LAST_VERSION"
+        echo "💡 Utilisez --force-rebuild pour forcer la reconstruction complète"
+    fi
+else
+    echo "❌ Script de distribution non trouvé: ./shared/scripts/distribute.sh"
+    exit 1
+fi
 
 # Vérifier que nous sommes dans le bon répertoire
 cd "$PROJECT_ROOT"

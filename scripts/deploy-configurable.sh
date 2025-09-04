@@ -178,13 +178,31 @@ deploy_to_server() {
     print_status "Copying configuration files..."
     scp -o StrictHostKeyChecking=no docker-compose.prod.yml root@"$SERVER_IP":/opt/meeshy/docker-compose.yml
     scp -o StrictHostKeyChecking=no .env.database root@"$SERVER_IP":/opt/meeshy/.env
-    scp -o StrictHostKeyChecking=no shared/* root@"$SERVER_IP":/opt/meeshy/shared/
-    scp -o StrictHostKeyChecking=no docker/nginx/* root@"$SERVER_IP":/opt/meeshy/docker/nginx/
+    
+    # Copy shared files individually to avoid directory issues
+    print_status "Copying shared files..."
+    ssh -o StrictHostKeyChecking=no root@"$SERVER_IP" "mkdir -p /opt/meeshy/shared"
+    scp -o StrictHostKeyChecking=no shared/init-database.sh root@"$SERVER_IP":/opt/meeshy/shared/
+    scp -o StrictHostKeyChecking=no shared/init-mongo.js root@"$SERVER_IP":/opt/meeshy/shared/
+    scp -o StrictHostKeyChecking=no shared/init-postgresql.sql root@"$SERVER_IP":/opt/meeshy/shared/
+    scp -o StrictHostKeyChecking=no shared/schema.prisma root@"$SERVER_IP":/opt/meeshy/shared/
+    scp -o StrictHostKeyChecking=no shared/schema.postgresql.prisma root@"$SERVER_IP":/opt/meeshy/shared/
+    scp -o StrictHostKeyChecking=no shared/version.txt root@"$SERVER_IP":/opt/meeshy/shared/
+    
+    # Note: Les scripts d'entrée MongoDB sont maintenant intégrés dans l'image Docker
+    print_status "Scripts d'entrée MongoDB intégrés dans l'image Docker"
+    
+    # Copy nginx configuration
+    print_status "Copying nginx configuration..."
+    ssh -o StrictHostKeyChecking=no root@"$SERVER_IP" "mkdir -p /opt/meeshy/docker/nginx"
+    scp -o StrictHostKeyChecking=no docker/nginx/prod.conf root@"$SERVER_IP":/opt/meeshy/docker/nginx/
+    scp -o StrictHostKeyChecking=no docker/nginx/nginx.conf root@"$SERVER_IP":/opt/meeshy/docker/nginx/
     
     # Copy scripts
     print_status "Copying deployment scripts..."
+    ssh -o StrictHostKeyChecking=no root@"$SERVER_IP" "mkdir -p /opt/meeshy/scripts"
     scp -o StrictHostKeyChecking=no scripts/manage-ssl.sh root@"$SERVER_IP":/opt/meeshy/scripts/
-    chmod +x root@"$SERVER_IP":/opt/meeshy/scripts/manage-ssl.sh
+    ssh -o StrictHostKeyChecking=no root@"$SERVER_IP" "chmod +x /opt/meeshy/scripts/manage-ssl.sh"
     
     print_status "Files copied successfully"
 }

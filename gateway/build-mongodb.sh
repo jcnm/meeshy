@@ -61,3 +61,5 @@ echo "🚀 Images poussées vers le registry Docker Hub"
 echo ""
 echo "💡 Pour tester localement:"
 echo "   docker run -p 3000:3000 ${IMAGE_NAME}:${TAG_MONGODB}"
+
+

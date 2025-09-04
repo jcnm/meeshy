@@ -22,21 +22,7 @@ class DatabaseService:
         """Établit la connexion à la base de données"""
         try:
             if not self.prisma:
-                # Utiliser le schéma Prisma partagé
-                import os
-                from pathlib import Path
-                
-                # Chemin vers le schéma partagé
-                current_dir = Path(__file__).parent.parent.parent  # translator/src/services -> translator
-                shared_schema_path = current_dir / "shared" / "prisma" / "schema.prisma"
-                
-                if shared_schema_path.exists():
-                    # Configurer Prisma avec le schéma partagé
-                    os.environ['PRISMA_SCHEMA_PATH'] = str(shared_schema_path)
-                    logger.info(f"📋 [TRANSLATOR-DB] Utilisation du schéma Prisma: {shared_schema_path}")
-                else:
-                    logger.warning(f"⚠️ [TRANSLATOR-DB] Schéma partagé non trouvé: {shared_schema_path}")
-                
+                # Le client Prisma est déjà généré dans l'image Docker
                 self.prisma = Prisma()
             
             # Utiliser la configuration par défaut (le DATABASE_URL est dans .env)

@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   meeshy:
     build:
       context: .
       dockerfile: Dockerfile.unified
-    image: isopen/meeshy:0.6.35-alpha
+    image: isopen/meeshy:1.0.36-alpha
     container_name: meeshy
     restart: unless-stopped
     ports:

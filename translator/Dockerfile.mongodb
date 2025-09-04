@@ -175,23 +175,19 @@ RUN pip install --upgrade pip --no-cache-dir \
 # Copie du code source et du schéma Prisma
 COPY --chown=42420:42420 . .
 
-# OPTIMISATION: Génération du client Prisma dans /workspace/generated
-RUN echo "🔧 Génération du client Prisma dans /workspace/generated..." \
-    && mkdir -p /workspace/generated \
-    && cd /workspace/generated \ 
-    && prisma generate --schema=/workspace/shared/prisma/schema.prisma \
-    && chown -R 42420:42420 /workspace/generated /usr/local/lib/python3.12/site-packages/prisma \
-    && chmod 755 -R /workspace/generated /usr/local/lib/python3.12/site-packages/prisma \
-    && echo "✅ Client Prisma généré avec succès "
-
 # OPTIMISATION: Configuration des permissions et optimisation finale
 RUN chown -R 42420:42420 /workspace \
-    && chmod +x /workspace/docker-diagnostic.sh \
-    && chmod +x /workspace/docker-network-diagnostic.sh \
     && chmod +x /workspace/docker-entrypoint-mongodb.sh \
     && chmod +x /workspace/mongodb-health-check.py \
     && python3 -m compileall /workspace/src \
     && find /workspace -name '*.pyc' -delete
+# OPTIMISATION: Le dossier shared est déjà copié avec le COPY . . précédent
+RUN echo "🔧 Génération du client Prisma Python..." \
+    && cd /workspace/shared \
+    && prisma generate --schema=./prisma/schema.prisma \
+    && chown -R 42420:42420 /workspace/shared /usr/local/lib/python3.12/site-packages/prisma \
+    && chmod 755 -R /workspace/shared /usr/local/lib/python3.12/site-packages/prisma \
+    && echo "✅ Client Prisma Python généré et installé avec succès"
 
 # OPTIMISATION: Exposition des ports pour AI Deploy
 EXPOSE ${HTTP_PORT} ${GRPC_PORT} ${ZMQ_PUSH_PORT} ${ZMQ_SUB_PORT}

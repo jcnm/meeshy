@@ -115,3 +115,5 @@ docker run -e DEBUG=true -e LOG_LEVEL=debug isopen/meeshy-gateway:mongodb
 
 - linux/amd64
 - linux/arm64
+
+

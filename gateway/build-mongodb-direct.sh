@@ -35,3 +35,5 @@ echo "   - isopen/meeshy-gateway:mongodb"
 echo "   - isopen/meeshy-gateway:mongodb-ovh"
 echo ""
 echo "🖥️  Plateformes supportées: linux/amd64, linux/arm64"
+
+
