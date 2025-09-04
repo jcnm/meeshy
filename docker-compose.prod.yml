@@ -66,7 +66,7 @@ services:
       - "5555:5555"      # ZMQ PUSH
       - "5558:5558"      # ZMQ SUB
     volumes:
-      - ./shared:/workspace/shared:ro
+      - models_data:/workspace/models
     depends_on:
       database:
         condition: service_healthy
@@ -180,6 +180,7 @@ volumes:
   redis_data:
   ssl_certs:
   certbot_www:
+  models_data:
 
 networks:
   meeshy-network:
