@@ -17,7 +17,7 @@ COMMAND="${1:-}"
 DROPLET_IP="$2"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-DOCKER_COMPOSE_FILE="docker-compose.prod.yml"
+DOCKER_COMPOSE_FILE="docker-compose.traefik.yml"
 FORCE_REFRESH=false
 
 # Fonctions utilitaires
@@ -636,6 +636,267 @@ EOF
     rm -f /tmp/verify-conn.sh
 }
 
+# Déploiement Traefik avec SSL automatique
+deploy_traefik() {
+    local ip="$1"
+    local domain="${2:-meeshy.me}"
+    log_info "🚀 Déploiement Traefik avec SSL automatique sur $ip (domaine: $domain)"
+
+    # Créer répertoire temporaire
+    local deploy_dir="/tmp/meeshy-traefik-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$deploy_dir"
+
+    # Préparer fichiers Traefik
+    log_info "📁 Préparation des fichiers Traefik..."
+    cp "$PROJECT_ROOT/docker-compose.traefik.yml" "$deploy_dir/docker-compose.yml"
+    cp "$PROJECT_ROOT/env.digitalocean" "$deploy_dir/.env"
+    cp -r "$PROJECT_ROOT/config" "$deploy_dir/" 2>/dev/null || log_warning "Dossier config non trouvé (optionnel)"
+
+    # Envoyer sur serveur
+    log_info "📤 Envoi des fichiers Traefik..."
+    ssh -o StrictHostKeyChecking=no root@$ip "mkdir -p /opt/meeshy"
+    scp -o StrictHostKeyChecking=no "$deploy_dir/docker-compose.yml" root@$ip:/opt/meeshy/
+    scp -o StrictHostKeyChecking=no "$deploy_dir/.env" root@$ip:/opt/meeshy/
+    if [ -d "$deploy_dir/config" ]; then
+        scp -r -o StrictHostKeyChecking=no "$deploy_dir/config" root@$ip:/opt/meeshy/
+    fi
+
+    # Script de déploiement Traefik
+    cat << 'EOF' > /tmp/deploy-traefik.sh
+#!/bin/bash
+set -e
+cd /opt/meeshy
+
+echo "🚀 DÉPLOIEMENT TRAEFIK AVEC SSL AUTOMATIQUE"
+echo "==========================================="
+
+# Installer Docker si pas présent
+if ! command -v docker &> /dev/null; then
+    echo "🐳 Installation de Docker..."
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
+    usermod -aG docker $USER
+    systemctl enable docker
+    systemctl start docker
+    rm get-docker.sh
+fi
+
+# Installer Docker Compose
+if ! command -v docker-compose &> /dev/null; then
+    echo "📦 Installation de Docker Compose..."
+    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+    ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+fi
+
+echo "🧹 Nettoyage..."
+docker-compose down --remove-orphans || true
+docker system prune -f || true
+
+echo "📦 Téléchargement des images..."
+docker-compose pull
+
+echo "🚀 Démarrage des services Traefik..."
+docker-compose up -d
+
+echo "⏳ Attente du démarrage (60 secondes)..."
+sleep 60
+
+echo "📊 État des services:"
+docker-compose ps
+
+echo "🔍 Tests de connectivité..."
+echo "Frontend: $(curl -k -s -o /dev/null -w '%{http_code}' https://$DOMAIN || echo 'ERROR')"
+echo "Traefik Dashboard: $(curl -k -s -o /dev/null -w '%{http_code}' https://traefik.$DOMAIN || echo 'ERROR')"
+echo "Gateway: $(curl -k -s -o /dev/null -w '%{http_code}' https://gate.$DOMAIN/health || echo 'ERROR')"
+echo "Translator: $(curl -k -s -o /dev/null -w '%{http_code}' https://ml.$DOMAIN/translate || echo 'ERROR')"
+echo "MongoDB UI: $(curl -k -s -o /dev/null -w '%{http_code}' https://mongo.$DOMAIN || echo 'ERROR')"
+echo "Redis UI: $(curl -k -s -o /dev/null -w '%{http_code}' https://redis.$DOMAIN || echo 'ERROR')"
+
+echo "🔐 Vérification des certificats SSL..."
+if docker-compose exec traefik cat /letsencrypt/acme.json >/dev/null 2>&1; then
+    echo "✅ Certificats Let's Encrypt:"
+    docker-compose exec traefik cat /letsencrypt/acme.json | jq '.letsencrypt.Certificates[] | .domain.main' 2>/dev/null || echo "Erreur de lecture"
+else
+    echo "⚠️  Fichier acme.json non accessible"
+fi
+
+echo "✅ Déploiement Traefik terminé !"
+echo ""
+echo "🔗 URLs disponibles:"
+echo "- Frontend: https://$DOMAIN"
+echo "- Traefik Dashboard: https://traefik.$DOMAIN (admin:admin)"
+echo "- Gateway API: https://gate.$DOMAIN/health"
+echo "- WebSocket: https://gate.$DOMAIN/socket.io/"
+echo "- Translator: https://ml.$DOMAIN/translate"
+echo "- MongoDB UI: https://mongo.$DOMAIN"
+echo "- Redis UI: https://redis.$DOMAIN"
+EOF
+
+    # Exécuter avec le domaine
+    scp -o StrictHostKeyChecking=no /tmp/deploy-traefik.sh root@$ip:/tmp/
+    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/deploy-traefik.sh && DOMAIN=$domain /tmp/deploy-traefik.sh"
+    rm -f /tmp/deploy-traefik.sh
+
+    # Vérification automatique
+    log_info "🔍 Vérification post-déploiement Traefik..."
+    sleep 10
+    health_check "$ip"
+    rm -rf "$deploy_dir"
+}
+
+# Déploiement incrémental (fichiers modifiés uniquement)
+deploy_incremental() {
+    local ip="$1"
+    log_info "🔄 Déploiement incrémental sur $ip (fichiers modifiés uniquement)"
+
+    # Créer répertoire temporaire
+    local deploy_dir="/tmp/meeshy-update-$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$deploy_dir"
+
+    # Détecter les fichiers modifiés
+    log_info "🔍 Détection des fichiers modifiés..."
+    
+    # Fichiers de configuration principaux
+    local modified_files=()
+    
+    # Vérifier docker-compose.traefik.yml
+    if [ -f "docker-compose.traefik.yml" ]; then
+        local local_hash=$(md5sum docker-compose.traefik.yml 2>/dev/null | cut -d' ' -f1 || echo "")
+        local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/docker-compose.traefik.yml 2>/dev/null | cut -d' ' -f1" || echo "")
+        if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
+            modified_files+=("docker-compose.traefik.yml")
+            log_info "📝 docker-compose.traefik.yml modifié"
+        fi
+    fi
+
+    # Vérifier env.digitalocean
+    if [ -f "env.digitalocean" ]; then
+        local local_hash=$(md5sum env.digitalocean 2>/dev/null | cut -d' ' -f1 || echo "")
+        local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/.env 2>/dev/null | cut -d' ' -f1" || echo "")
+        if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
+            modified_files+=("env.digitalocean")
+            log_info "📝 env.digitalocean modifié"
+        fi
+    fi
+
+    # Vérifier les fichiers de configuration
+    if [ -d "config" ]; then
+        local config_modified=false
+        for config_file in config/*; do
+            if [ -f "$config_file" ]; then
+                local filename=$(basename "$config_file")
+                local local_hash=$(md5sum "$config_file" 2>/dev/null | cut -d' ' -f1 || echo "")
+                local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/config/$filename 2>/dev/null | cut -d' ' -f1" || echo "")
+                if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
+                    config_modified=true
+                    log_info "📝 $config_file modifié"
+                fi
+            fi
+        done
+        if [ "$config_modified" = true ]; then
+            modified_files+=("config/")
+        fi
+    fi
+
+    # Vérifier les scripts
+    if [ -f "scripts/meeshy-deploy.sh" ]; then
+        local local_hash=$(md5sum scripts/meeshy-deploy.sh 2>/dev/null | cut -d' ' -f1 || echo "")
+        local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/scripts/meeshy-deploy.sh 2>/dev/null | cut -d' ' -f1" || echo "")
+        if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
+            modified_files+=("scripts/meeshy-deploy.sh")
+            log_info "📝 scripts/meeshy-deploy.sh modifié"
+        fi
+    fi
+
+    # Si aucun fichier modifié, sortir
+    if [ ${#modified_files[@]} -eq 0 ]; then
+        log_success "✅ Aucun fichier modifié détecté - déploiement non nécessaire"
+        return 0
+    fi
+
+    log_info "📦 Fichiers à déployer: ${modified_files[*]}"
+
+    # Copier les fichiers modifiés
+    for file in "${modified_files[@]}"; do
+        if [ -f "$file" ]; then
+            cp "$file" "$deploy_dir/"
+            log_info "📋 Copié: $file"
+        elif [ -d "$file" ]; then
+            cp -r "$file" "$deploy_dir/"
+            log_info "📁 Copié: $file"
+        fi
+    done
+
+    # Envoyer sur serveur
+    log_info "📤 Envoi des fichiers modifiés..."
+    for file in "${modified_files[@]}"; do
+        if [ -f "$file" ]; then
+            if [ "$file" = "env.digitalocean" ]; then
+                scp -o StrictHostKeyChecking=no "$deploy_dir/$file" root@$ip:/opt/meeshy/.env
+            else
+                scp -o StrictHostKeyChecking=no "$deploy_dir/$file" root@$ip:/opt/meeshy/
+            fi
+            log_info "📤 Envoyé: $file"
+        elif [ -d "$file" ]; then
+            scp -r -o StrictHostKeyChecking=no "$deploy_dir/$file" root@$ip:/opt/meeshy/
+            log_info "📤 Envoyé: $file"
+        fi
+    done
+
+    # Script de mise à jour incrémentale
+    cat << 'EOF' > /tmp/update-services.sh
+#!/bin/bash
+set -e
+cd /opt/meeshy
+
+echo "🔄 MISE À JOUR INCRÉMENTALE DES SERVICES"
+echo "======================================="
+
+# Vérifier si docker-compose.yml a changé
+if [ -f "docker-compose.traefik.yml" ]; then
+    echo "📝 Configuration Docker Compose mise à jour"
+    ln -sf docker-compose.traefik.yml docker-compose.yml
+fi
+
+# Redémarrer seulement les services affectés
+echo "🔄 Redémarrage des services affectés..."
+
+# Toujours redémarrer Traefik si la config a changé
+if [ -f "docker-compose.traefik.yml" ]; then
+    echo "🔄 Redémarrage de Traefik..."
+    docker-compose restart traefik
+    sleep 10
+fi
+
+# Redémarrer les autres services si nécessaire
+if [ -f ".env" ]; then
+    echo "🔄 Redémarrage des services (variables d'environnement mises à jour)..."
+    docker-compose restart
+    sleep 30
+fi
+
+echo "📊 État des services après mise à jour:"
+docker-compose ps
+
+echo "🔍 Tests rapides de connectivité..."
+echo "Frontend: $(curl -k -s -o /dev/null -w '%{http_code}' https://$DOMAIN || echo 'ERROR')"
+echo "Gateway: $(curl -k -s -o /dev/null -w '%{http_code}' https://gate.$DOMAIN/health || echo 'ERROR')"
+
+echo "✅ Mise à jour incrémentale terminée !"
+EOF
+
+    # Exécuter la mise à jour
+    scp -o StrictHostKeyChecking=no /tmp/update-services.sh root@$ip:/tmp/
+    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/update-services.sh && DOMAIN=$(grep '^DOMAIN=' env.digitalocean 2>/dev/null | cut -d'=' -f2 | tr -d '\"' || echo 'meeshy.me') /tmp/update-services.sh"
+    rm -f /tmp/update-services.sh
+
+    # Nettoyer
+    rm -rf "$deploy_dir"
+
+    log_success "✅ Déploiement incrémental terminé !"
+}
+
 # Redémarrage des services
 restart_services() {
     local ip="$1"
@@ -677,6 +938,8 @@ show_help() {
     echo -e "${CYAN}  restart${NC}      - Redémarrage des services"
     echo -e "${CYAN}  stop${NC}         - Arrêt des services"
     echo -e "${CYAN}  ssl${NC}          - Gestion SSL (dev/prod)"
+    echo -e "${CYAN}  traefik${NC}      - Déploiement Traefik avec SSL automatique"
+    echo -e "${CYAN}  update${NC}       - Déploiement incrémental (fichiers modifiés uniquement)"
     echo -e "${CYAN}  recreate${NC}     - Recréation du droplet"
     echo ""
     echo -e "${GREEN}Options:${NC}"
@@ -806,6 +1069,15 @@ main() {
             local domain="${4:-'meeshy.me'}"
             local email="${5:-'admin@meeshy.me'}"
             ssh -o StrictHostKeyChecking=no root@$DROPLET_IP "cd /opt/meeshy && ./scripts/manage-ssl.sh $ssl_command $domain $email"
+            ;;
+        "update")
+            if [ -z "$DROPLET_IP" ]; then
+                log_error "IP du droplet manquante"
+                show_help
+                exit 1
+            fi
+            test_ssh_connection "$DROPLET_IP" || exit 1
+            deploy_incremental "$DROPLET_IP"
             ;;
         "recreate")
             log_error "Fonction recreate non implémentée - utiliser DigitalOcean directement"

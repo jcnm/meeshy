@@ -2,46 +2,41 @@
 
 Ce document décrit le déploiement et la maintenance de l'infrastructure Traefik pour Meeshy.
 
-## 🚀 Scripts de déploiement
+## 🚀 Script de déploiement unifié
 
-### `deploy-traefik-production.sh`
-Script principal de déploiement complet de l'infrastructure Traefik.
-
-**Usage:**
-```bash
-./deploy-traefik-production.sh
-```
-
-**Fonctionnalités:**
-- Copie des fichiers de configuration
-- Arrêt des services existants
-- Téléchargement des images Docker
-- Démarrage des services
-- Tests de connectivité automatiques
-- Vérification des certificats SSL
-
-### `maintain-traefik.sh`
-Script de maintenance et diagnostic de l'infrastructure.
+### `scripts/meeshy-deploy.sh`
+Script principal de déploiement et maintenance de l'infrastructure Meeshy avec support Traefik.
 
 **Usage:**
 ```bash
-./maintain-traefik.sh [COMMAND] [SERVICE]
+./scripts/meeshy-deploy.sh [COMMAND] [DROPLET_IP]
 ```
 
 **Commandes disponibles:**
-- `status` - Afficher le statut des services
-- `logs [SERVICE]` - Afficher les logs (optionnel: service spécifique)
-- `restart [SERVICE]` - Redémarrer les services
-- `diagnose` - Diagnostic complet de l'infrastructure
-- `cleanup` - Nettoyage du système Docker
-- `help` - Afficher l'aide
+- `deploy` - Déploiement complet (Nginx par défaut)
+- `traefik` - Déploiement Traefik avec SSL automatique
+- `update` - **Déploiement incrémental (fichiers modifiés uniquement)**
+- `fix` - Correction rapide (redémarrage)
+- `test` - Tests complets post-déploiement
+- `verify` - Vérification des connexions
+- `health` - Vérification rapide de santé
+- `status` - État des services
+- `logs` - Logs des services
+- `restart` - Redémarrage des services
+- `stop` - Arrêt des services
+- `ssl` - Gestion SSL (dev/prod)
 
 **Exemples:**
 ```bash
-./maintain-traefik.sh status
-./maintain-traefik.sh logs traefik
-./maintain-traefik.sh restart gateway
-./maintain-traefik.sh diagnose
+# Déploiement Traefik complet
+./scripts/meeshy-deploy.sh traefik 157.230.15.51
+
+# Déploiement incrémental (fichiers modifiés uniquement)
+./scripts/meeshy-deploy.sh update 157.230.15.51
+
+# Tests et vérifications
+./scripts/meeshy-deploy.sh test 157.230.15.51
+./scripts/meeshy-deploy.sh health 157.230.15.51
 ```
 
 ## 🏗️ Architecture
@@ -79,19 +74,40 @@ Script de maintenance et diagnostic de l'infrastructure.
 
 ## 🛠️ Maintenance
 
+### Déploiement incrémental
+La commande `update` permet de déployer uniquement les fichiers modifiés :
+
+```bash
+# Déploiement incrémental (recommandé pour les mises à jour)
+./scripts/meeshy-deploy.sh update 157.230.15.51
+```
+
+**Fonctionnalités du déploiement incrémental :**
+- ✅ Détection automatique des fichiers modifiés (MD5)
+- ✅ Déploiement uniquement des fichiers changés
+- ✅ Redémarrage intelligent des services affectés
+- ✅ Tests de connectivité post-déploiement
+- ✅ Pas de téléchargement d'images inutile
+
+**Fichiers surveillés :**
+- `docker-compose.traefik.yml`
+- `env.digitalocean`
+- `config/` (dossier complet)
+- `scripts/meeshy-deploy.sh`
+
 ### Commandes utiles
 ```bash
 # Statut des services
-ssh root@157.230.15.51 "cd /opt/meeshy && docker-compose ps"
+./scripts/meeshy-deploy.sh status 157.230.15.51
 
 # Logs en temps réel
-ssh root@157.230.15.51 "cd /opt/meeshy && docker-compose logs -f"
+./scripts/meeshy-deploy.sh logs 157.230.15.51
 
-# Redémarrage d'un service
-ssh root@157.230.15.51 "cd /opt/meeshy && docker-compose restart [SERVICE]"
+# Redémarrage des services
+./scripts/meeshy-deploy.sh restart 157.230.15.51
 
-# Redémarrage complet
-ssh root@157.230.15.51 "cd /opt/meeshy && docker-compose restart"
+# Tests de santé
+./scripts/meeshy-deploy.sh health 157.230.15.51
 ```
 
 ### Surveillance
