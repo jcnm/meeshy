@@ -259,21 +259,21 @@ docker run -d --name meeshy-gateway-test \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@host.docker.internal:5432/meeshy" \
   -e REDIS_URL="redis://host.docker.internal:6379" \
-  isopen/meeshy-gateway:1.0.36-alpha
+  isopen/meeshy-gateway:1.0.37-alpha
 
 # Test Translator Service
 docker run -d --name meeshy-translator-test \
   -p 8000:8000 \
   -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@host.docker.internal:5432/meeshy" \
   -e REDIS_URL="redis://host.docker.internal:6379" \
-  isopen/meeshy-translator:1.0.36-alpha
+  isopen/meeshy-translator:1.0.37-alpha
 
 # Test Frontend Service
 docker run -d --name meeshy-frontend-test \
   -p 3100:3100 \
   -e NEXT_PUBLIC_API_URL="http://localhost:3000/api" \
   -e NEXT_PUBLIC_WS_URL="ws://localhost:3000/ws" \
-  isopen/meeshy-frontend:1.0.36-alpha
+  isopen/meeshy-frontend:1.0.37-alpha
 ```
 
 #### Option 2: Complete Stack Test
@@ -301,21 +301,21 @@ docker run -d --name meeshy-gateway-test \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@meeshy-postgres-test:5432/meeshy" \
   -e REDIS_URL="redis://meeshy-redis-test:6379" \
-  isopen/meeshy-gateway:1.0.36-alpha
+  isopen/meeshy-gateway:1.0.37-alpha
 
 docker run -d --name meeshy-translator-test \
   --network meeshy-test \
   -p 8000:8000 \
   -e DATABASE_URL="postgresql://meeshy:MeeshyP@ssword@meeshy-postgres-test:5432/meeshy" \
   -e REDIS_URL="redis://meeshy-redis-test:6379" \
-  isopen/meeshy-translator:1.0.36-alpha
+  isopen/meeshy-translator:1.0.37-alpha
 
 docker run -d --name meeshy-frontend-test \
   --network meeshy-test \
   -p 3100:3100 \
   -e NEXT_PUBLIC_API_URL="http://localhost:3000/api" \
   -e NEXT_PUBLIC_WS_URL="ws://localhost:3000/ws" \
-  isopen/meeshy-frontend:1.0.36-alpha
+  isopen/meeshy-frontend:1.0.37-alpha
 ```
 
 #### Option 3: Docker Compose with Hub Images
@@ -341,7 +341,7 @@ services:
       - "6379:6379"
 
   gateway:
-    image: isopen/meeshy-gateway:1.0.36-alpha
+    image: isopen/meeshy-gateway:1.0.37-alpha
     ports:
       - "3000:3000"
     environment:
@@ -352,7 +352,7 @@ services:
       - redis
 
   translator:
-    image: isopen/meeshy-translator:1.0.36-alpha
+    image: isopen/meeshy-translator:1.0.37-alpha
     ports:
       - "8000:8000"
     environment:
@@ -363,7 +363,7 @@ services:
       - redis
 
   frontend:
-    image: isopen/meeshy-frontend:1.0.36-alpha
+    image: isopen/meeshy-frontend:1.0.37-alpha
     ports:
       - "3100:3100"
     environment:
@@ -633,10 +633,10 @@ docker-compose -f docker-compose.unified.yml up -d
 ### Docker Registry Images
 ```bash
 # Pull latest images
-docker pull isopen/meeshy-translator:1.0.36-alpha
-docker pull isopen/meeshy-gateway:1.0.36-alpha
-docker pull isopen/meeshy-frontend:1.0.36-alpha
-docker pull isopen/meeshy:1.0.36-alpha
+docker pull isopen/meeshy-translator:1.0.37-alpha
+docker pull isopen/meeshy-gateway:1.0.37-alpha
+docker pull isopen/meeshy-frontend:1.0.37-alpha
+docker pull isopen/meeshy:1.0.37-alpha
 ```
 
 ### Automated Deployment

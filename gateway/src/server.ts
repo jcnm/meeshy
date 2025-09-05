@@ -251,7 +251,7 @@ class MeeshyServer {
         // Add your production domains here
         const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || 
                                process.env.ALLOWED_ORIGINS?.split(',') || 
-                               ['http://localhost:3100', 'http://localhost', 'http://localhost:80', 'http://127.0.0.1', 'http://127.0.0.1:80'];
+                               ['http://localhost:3100', 'http://localhost', 'http://localhost:80', 'http://127.0.0.1', 'http://127.0.0.1:80', 'http://meeshy.me', 'https://meeshy.me'];
         
         logger.info(`CORS check: origin="${origin}", allowed="${allowedOrigins.join(',')}"`);
         
@@ -532,10 +532,10 @@ class MeeshyServer {
 ║  Database:    ${dbStatus}                                          ║
 ║  Translator:  ${translateUrl}║
 ╠══════════════════════════════════════════════════════════════════╣
-║  📡 WebSocket:    ws://localhost:${config.port}/ws${' '.repeat(23)}  ║
-║  🏥 Health:       http://localhost:${config.port}/health${' '.repeat(18)} ║
-║  📖 Info:         http://localhost:${config.port}/info${' '.repeat(20)} ║
-║  🔄 Translate:    http://localhost:${config.port}/translate${' '.repeat(15)} ║
+║  📡 WebSocket:    ws://meeshy.me/api/ws${' '.repeat(23)}  ║
+║  🏥 Health:       http://meeshy.me/health${' '.repeat(18)} ║
+║  📖 Info:         http://meeshy.me/info${' '.repeat(20)} ║
+║  🔄 Translate:    http://meeshy.me/translate${' '.repeat(15)} ║
 ╚══════════════════════════════════════════════════════════════════╝
     `.trim();
     

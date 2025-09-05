@@ -518,7 +518,7 @@ export class ConversationsService {
     });
     
     // Retourner le lien complet
-    return `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3100'}/join/${response.data.data.linkId}`;
+    return `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://meeshy.me'}/join/${response.data.data.linkId}`;
   }
 
   /**

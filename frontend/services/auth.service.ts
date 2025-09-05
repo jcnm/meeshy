@@ -53,7 +53,7 @@ class AuthService {
   private baseUrl: string;
 
   private constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://meeshy.me';
   }
 
   public static getInstance(): AuthService {

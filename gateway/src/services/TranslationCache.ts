@@ -14,7 +14,7 @@ export class TranslationCache {
   private redis: Redis;
   private readonly TTL = 3600; // 1 heure par défaut
 
-  constructor(redisUrl: string = 'redis://localhost:6379') {
+  constructor(redisUrl: string = 'redis://meeshy.me:6379') {
     this.redis = new Redis(redisUrl);
   }
 

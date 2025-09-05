@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   
   // Configuration des images
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'meeshy.me'],
     unoptimized: true
   },
   
@@ -21,16 +21,16 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000'}/:path*`
+        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://meeshy.me'}/:path*`
       }
     ];
   },
   
   // Variables d'environnement publiques
   env: {
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000',
-    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000',
-    NEXT_PUBLIC_TRANSLATION_URL: process.env.NEXT_PUBLIC_TRANSLATION_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://meeshy.me',
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://meeshy.me',
+    NEXT_PUBLIC_TRANSLATION_URL: process.env.NEXT_PUBLIC_TRANSLATION_URL || 'http://meeshy.me/api',
   },
   
   // Configuration WebPack pour Docker

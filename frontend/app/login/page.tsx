@@ -296,7 +296,7 @@ function QuickLoginPageContent() {
           </CardHeader>
           <CardContent>
             <div className="text-xs text-gray-600 space-y-1">
-              <p><strong>Backend URL:</strong> {process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}</p>
+              <p><strong>Backend URL:</strong> {process.env.NEXT_PUBLIC_API_URL || 'http://meeshy.me'}</p>
               <p><strong>Login endpoint:</strong> /auth/login</p>
               <p><strong>Comptes chargés:</strong> {testAccounts.length}</p>
             </div>

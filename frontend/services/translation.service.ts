@@ -32,7 +32,7 @@ export interface TranslationError {
 }
 
 // === CONFIGURATION ===
-const API_BASE_URL = process.env.NEXT_PUBLIC_TRANSLATION_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_TRANSLATION_URL || 'http://meeshy.me/api';
 const TIMEOUT = 30000; // 30 secondes
 
 // === SERVICE DE TRADUCTION ===

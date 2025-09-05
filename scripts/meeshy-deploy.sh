@@ -17,7 +17,7 @@ COMMAND="${1:-}"
 DROPLET_IP="$2"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-DOCKER_COMPOSE_FILE="docker-compose-mongodb-production.yml"
+DOCKER_COMPOSE_FILE="docker-compose.prod.yml"
 FORCE_REFRESH=false
 
 # Fonctions utilitaires

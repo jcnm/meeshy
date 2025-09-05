@@ -1684,7 +1684,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       // Retour compatible avec le frontend de service conversations (string du lien complet)
-      const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3100'}/join/${finalLinkId}`;
+      const inviteLink = `${process.env.FRONTEND_URL || 'http://meeshy.me'}/join/${finalLinkId}`;
       reply.send({
         success: true,
         data: {

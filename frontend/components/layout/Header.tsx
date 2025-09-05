@@ -198,7 +198,7 @@ export function Header({
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <LogIn className="h-4 w-4" />
-                    <span>Connexion</span>
+                    <span className="hidden sm:inline">Connexion</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -216,7 +216,7 @@ export function Header({
                 <DialogTrigger asChild>
                   <Button className="flex items-center space-x-2">
                     <UserPlus className="h-4 w-4" />
-                    <span>Inscription</span>
+                    <span className="hidden sm:inline">Inscription</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
