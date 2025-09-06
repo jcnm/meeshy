@@ -37,7 +37,7 @@ interface SettingsSection {
 }
 
 export function SettingsLayout({ currentUser, initialTab = 'profile' }: SettingsLayoutProps) {
-  const t = useTranslations('settings');
+  const { t } = useTranslations('settings');
   // États principaux
   const [selectedSection, setSelectedSection] = useState<string>(initialTab);
   const [localSettings, setLocalSettings] = useState<Partial<UserType>>({});

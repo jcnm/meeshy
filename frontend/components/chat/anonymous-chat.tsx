@@ -32,7 +32,7 @@ interface AnonymousChatProps {
 }
 
 export function AnonymousChat({ linkId, participant, conversation }: AnonymousChatProps) {
-  const t = useTranslations('anonymousChat');
+  const { t } = useTranslations('anonymousChat');
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);

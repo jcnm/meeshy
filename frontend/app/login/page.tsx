@@ -20,7 +20,7 @@ function QuickLoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, isAuthenticated, isChecking } = useAuth();
-  const t = useTranslations('login');
+  const { t } = useTranslations('login');
 
   // Récupérer l'URL de retour depuis les paramètres de recherche
   const returnUrl = searchParams.get('returnUrl');

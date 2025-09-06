@@ -20,7 +20,7 @@ interface UserSettingsProps {
 }
 
 export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
-  const t = useTranslations('settings');
+  const { t } = useTranslations('settings');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -138,9 +138,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="firstName">{t('profile.personalInfo.firstName')}</Label>
+              <Label htmlFor="settings-firstName">{t('profile.personalInfo.firstName')}</Label>
               <Input
-                id="firstName"
+                id="settings-firstName"
                 value={formData.firstName}
                 onChange={(e) => handleInputChange('firstName', e.target.value)}
                 placeholder={t('profile.personalInfo.firstName')}
@@ -148,9 +148,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">{t('profile.personalInfo.lastName')}</Label>
+              <Label htmlFor="settings-lastName">{t('profile.personalInfo.lastName')}</Label>
               <Input
-                id="lastName"
+                id="settings-lastName"
                 value={formData.lastName}
                 onChange={(e) => handleInputChange('lastName', e.target.value)}
                 placeholder={t('profile.personalInfo.lastName')}
@@ -160,9 +160,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="displayName">{t('profile.personalInfo.displayName')}</Label>
+            <Label htmlFor="settings-displayName">{t('profile.personalInfo.displayName')}</Label>
             <Input
-              id="displayName"
+              id="settings-displayName"
               value={formData.displayName}
               onChange={(e) => handleInputChange('displayName', e.target.value)}
               placeholder={t('profile.personalInfo.displayNamePlaceholder')}
@@ -172,9 +172,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
+              <Label htmlFor="settings-email">{t('profile.personalInfo.email')}</Label>
               <Input
-                id="email"
+                id="settings-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
@@ -184,9 +184,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">{t('profile.personalInfo.phoneNumber')}</Label>
+              <Label htmlFor="settings-phoneNumber">{t('profile.personalInfo.phoneNumber')}</Label>
               <Input
-                id="phoneNumber"
+                id="settings-phoneNumber"
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
@@ -197,9 +197,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">{t('profile.personalInfo.username')}</Label>
+            <Label htmlFor="settings-username">{t('profile.personalInfo.username')}</Label>
             <Input
-              id="username"
+              id="settings-username"
               value={user.username}
               disabled
               className="bg-muted w-full"

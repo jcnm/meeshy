@@ -73,7 +73,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthChecking } = useUser(); // user est garanti d'exister grâce au wrapper
-  const t = useTranslations('conversations');
+  const { t } = useTranslations('conversations');
 
   // Si on est en train de vérifier l'authentification, afficher un loader
   if (isAuthChecking) {

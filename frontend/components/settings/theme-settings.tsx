@@ -22,7 +22,7 @@ interface ThemeConfig {
 }
 
 export function ThemeSettings() {
-  const t = useTranslations('settings');
+  const { t } = useTranslations('settings');
   const { currentInterfaceLanguage, setInterfaceLanguage, getSupportedLanguages } = useLanguage();
   const [config, setConfig] = useState<ThemeConfig>({
     theme: 'system',

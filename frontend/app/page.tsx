@@ -56,8 +56,8 @@ export default function LandingPage() {
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
-  const t = useTranslations('landing');
-  const tAuth = useTranslations('auth');
+  const { t } = useTranslations('landing');
+  const { t: tAuth } = useTranslations('auth');
 
   // État pour gérer l'affichage du lien de conversation anonyme
   const [anonymousChatLink, setAnonymousChatLink] = useState<string | null>(null);
@@ -171,7 +171,7 @@ export default function LandingPage() {
                     {tAuth('register.description')}
                   </DialogDescription>
                 </DialogHeader>
-                <RegisterForm />
+                <RegisterForm formPrefix="main-register" />
               </DialogContent>
             </Dialog>
             
@@ -379,24 +379,17 @@ export default function LandingPage() {
             {t('cta.subtitle')}
           </p>
           
-          <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
-            <DialogTrigger asChild>
-              <Button size="lg" variant="secondary" className="flex items-center space-x-2">
-                <UserPlus className="h-5 w-5" />
-                <span>{t('cta.createAccount')}</span>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{tAuth('register.title')}</DialogTitle>
-                <DialogDescription>
-                  {tAuth('register.description')}
-                </DialogDescription>
-              </DialogHeader>
-              <RegisterForm />
-            </DialogContent>
-          </Dialog>
+          {/* Bouton qui ouvre le même Dialog que dans la section hero */}
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            className="flex items-center space-x-2"
+            onClick={() => setAuthMode('register')}
+          >
+            <UserPlus className="h-5 w-5" />
+            <span>{t('cta.createAccount')}</span>
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </section>
 

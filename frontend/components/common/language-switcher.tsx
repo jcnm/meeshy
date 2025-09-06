@@ -15,7 +15,7 @@ import { useLanguageNames } from '@/hooks/useLanguageNames';
 
 export function LanguageSwitcher() {
   const { currentInterfaceLanguage, setInterfaceLanguage } = useLanguage();
-  const t = useTranslations('language');
+  const { t } = useTranslations('language');
   const translatedLanguages = useLanguageNames();
   const [isOpen, setIsOpen] = useState(false);
 

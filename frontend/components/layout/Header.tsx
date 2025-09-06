@@ -74,7 +74,7 @@ export function Header({
 }: HeaderProps) {
   const router = useRouter();
   const [showClearSessionDialog, setShowClearSessionDialog] = useState(false);
-  const t = useTranslations('header');
+  const { t } = useTranslations('header');
 
   const handleShare = () => {
     if (shareLink) {
@@ -226,7 +226,7 @@ export function Header({
                       {t('registerDescription')}
                     </DialogDescription>
                   </DialogHeader>
-                  <RegisterForm />
+                  <RegisterForm formPrefix="header-register" />
                 </DialogContent>
               </Dialog>
             </div>

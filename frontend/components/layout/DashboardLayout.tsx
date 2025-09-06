@@ -48,7 +48,7 @@ export function DashboardLayout({
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
   const { logout } = useAuth();
-  const t = useTranslations('layout');
+  const { t } = useTranslations('layout');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Gérer l'état de chargement basé sur l'utilisateur du hook

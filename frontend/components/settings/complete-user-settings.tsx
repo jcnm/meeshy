@@ -21,7 +21,7 @@ interface CompleteUserSettingsProps {
 }
 
 export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteUserSettingsProps) {
-  const t = useTranslations('settings');
+  const { t } = useTranslations('settings');
   const [activeTab, setActiveTab] = useState('user');
 
   // Gérer l'ancrage URL pour les tabs

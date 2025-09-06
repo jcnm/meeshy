@@ -8,10 +8,10 @@ import { ArrowLeft, Handshake, Mail, ExternalLink, Building2, GraduationCap, Use
 import Link from 'next/link';
 
 export default function PartnersPage() {
-  // SEO dynamique pour la page Partners
-  useDynamicSEO({ page: 'partners' });
+  // SEO temporairement désactivé pour debugging
+  // useDynamicSEO({ page: 'partners' });
 
-  const t = useTranslations('partners');
+  const { t } = useTranslations('partners');
 
   return (
     <div className="min-h-screen bg-gray-50">

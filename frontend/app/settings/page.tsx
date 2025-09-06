@@ -10,7 +10,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { toast } from 'sonner';
 export default function SettingsPage() {
   const router = useRouter();
-  const t = useTranslations('settings');
+  const { t } = useTranslations('settings');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

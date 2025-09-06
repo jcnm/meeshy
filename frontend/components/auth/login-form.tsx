@@ -16,7 +16,7 @@ interface LoginFormProps {
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const { login } = useAuth();
-  const t = useTranslations('login');
+  const { t } = useTranslations('login');
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -94,9 +94,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="username">{t('usernameLabel')}</Label>
+        <Label htmlFor="login-form-username">{t('usernameLabel')}</Label>
         <Input
-          id="username"
+          id="login-form-username"
           type="text"
           placeholder={t('usernamePlaceholder')}
           value={formData.username}
@@ -110,9 +110,9 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">{t('passwordLabel')}</Label>
+        <Label htmlFor="login-form-password">{t('passwordLabel')}</Label>
         <Input
-          id="password"
+          id="login-form-password"
           type="password"
           placeholder={t('passwordPlaceholder')}
           value={formData.password}

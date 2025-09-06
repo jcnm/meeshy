@@ -19,7 +19,7 @@ interface LanguageSettingsProps {
 }
 
 export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) {
-  const t = useTranslations('settings');
+  const { t } = useTranslations('settings');
   const [settings, setSettings] = useState({
     systemLanguage: 'fr',
     regionalLanguage: 'fr',

@@ -9,10 +9,10 @@ import { ArrowLeft, Users, Globe, Heart, Target, Lightbulb } from 'lucide-react'
 import Link from 'next/link';
 
 export default function AboutPage() {
-  // SEO dynamique pour la page About
-  useDynamicSEO({ page: 'about' });
+  // SEO temporairement désactivé pour debugging
+  // useDynamicSEO({ page: 'about' });
 
-  const t = useTranslations('about');
+  const { t } = useTranslations('about');
 
   return (
     <>

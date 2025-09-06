@@ -9,10 +9,10 @@ import { ArrowLeft, MapPin, Train, Bus, Car, Mail, Phone, Clock } from 'lucide-r
 import Link from 'next/link';
 
 export default function ContactPage() {
-  // SEO dynamique pour la page Contact
-  useDynamicSEO({ page: 'contact' });
+  // SEO temporairement désactivé pour debugging
+  // useDynamicSEO({ page: 'contact' });
 
-  const t = useTranslations('contact');
+  const { t } = useTranslations('contact');
 
   return (
     <>

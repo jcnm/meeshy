@@ -8,7 +8,7 @@ import { TranslationProvider } from "@/components/common/translation-provider";
 import { ErrorBoundary } from "@/components/common";
 import { FontInitializer } from "@/components/common/font-initializer";
 import { ClientOnly } from "@/components/common/client-only";
-import { LanguageDetectionNotification } from "@/components/LanguageDetectionNotification";
+// import { LanguageDetectionNotification } from "@/components/LanguageDetectionNotification";
 import { getAllFontVariables } from "@/lib/fonts";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { generateSEOMetadata, generateViewport } from "@/lib/seo-metadata";
@@ -64,7 +64,7 @@ export default function RootLayout({
                 <ErrorBoundary>
                   <ClientOnly>
                     <FontInitializer />
-                    <LanguageDetectionNotification />
+                    {/* <LanguageDetectionNotification /> */}
                     {/* Version dynamique pour les changements de langue */}
                     <StructuredData />
                   </ClientOnly>

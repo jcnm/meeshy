@@ -82,9 +82,9 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">Prénom *</Label>
+              <Label htmlFor="create-account-firstName">Prénom *</Label>
               <Input
-                id="firstName"
+                id="create-account-firstName"
                 value={formData.firstName}
                 onChange={(e) => updateFormData('firstName', e.target.value)}
                 required
@@ -92,9 +92,9 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Nom *</Label>
+              <Label htmlFor="create-account-lastName">Nom *</Label>
               <Input
-                id="lastName"
+                id="create-account-lastName"
                 value={formData.lastName}
                 onChange={(e) => updateFormData('lastName', e.target.value)}
                 required
@@ -104,9 +104,9 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="create-account-email">Email *</Label>
             <Input
-              id="email"
+              id="create-account-email"
               type="email"
               value={formData.email}
               onChange={(e) => updateFormData('email', e.target.value)}
@@ -116,9 +116,9 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Numéro de téléphone (optionnel)</Label>
+            <Label htmlFor="create-account-phoneNumber">Numéro de téléphone (optionnel)</Label>
             <Input
-              id="phoneNumber"
+              id="create-account-phoneNumber"
               type="tel"
               value={formData.phoneNumber}
               onChange={(e) => updateFormData('phoneNumber', e.target.value)}
@@ -127,9 +127,9 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Mot de passe *</Label>
+            <Label htmlFor="create-account-password">Mot de passe *</Label>
             <Input
-              id="password"
+              id="create-account-password"
               type="password"
               value={formData.password}
               onChange={(e) => updateFormData('password', e.target.value)}

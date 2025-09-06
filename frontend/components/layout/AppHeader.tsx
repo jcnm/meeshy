@@ -45,7 +45,7 @@ export function AppHeader({
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
   const { logout } = useAuth();
-  const t = useTranslations('toasts');
+  const { t } = useTranslations('toasts');
 
   const handleLogout = () => {
     logout();

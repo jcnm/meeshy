@@ -3,7 +3,7 @@
  * Permet de détecter les traductions manquantes et de les signaler
  */
 
-import { useTranslations } from 'next-intl';
+import { useTranslations } from './useTranslations';
 import { useEffect, useState } from 'react';
 
 interface TranslationStatus {
@@ -20,8 +20,8 @@ interface UseTranslationCheckerOptions {
 }
 
 export function useTranslationChecker(options: UseTranslationCheckerOptions = {}) {
-  const { namespace, requiredKeys = [], onMissingKey, onError } = options;
-  const t = useTranslations(namespace);
+  const { namespace = 'common', requiredKeys = [], onMissingKey, onError } = options;
+  const { t } = useTranslations(namespace);
   const [status, setStatus] = useState<TranslationStatus>({
     isLoaded: false,
     missingKeys: [],

@@ -29,7 +29,7 @@ import { dashboardService, type DashboardData } from '@/services/dashboard.servi
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useUser();
-  const t = useTranslations('dashboard');
+  const { t } = useTranslations('dashboard');
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

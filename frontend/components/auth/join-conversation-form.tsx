@@ -15,7 +15,7 @@ interface JoinConversationFormProps {
 export function JoinConversationForm({ onSuccess }: JoinConversationFormProps) {
   const [linkId, setLinkId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const t = useTranslations('joinConversation');
+  const { t } = useTranslations('joinConversation');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
