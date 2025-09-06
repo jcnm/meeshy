@@ -12,6 +12,7 @@ import { LanguageDetectionNotification } from "@/components/LanguageDetectionNot
 import { getAllFontVariables } from "@/lib/fonts";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { generateSEOMetadata } from "@/lib/seo-metadata";
+import StructuredDataSSR from "@/components/StructuredDataSSR";
 import StructuredData from "@/components/StructuredData";
 // import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
 
@@ -55,7 +56,8 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <StructuredData />
+        {/* Version SSR pour le SEO optimal (dans le head) */}
+        <StructuredDataSSR page="home" language="fr" />
       </head>
       <body
         className={`${getAllFontVariables()} antialiased font-nunito`}
@@ -68,6 +70,8 @@ export default function RootLayout({
                   <ClientOnly>
                     <FontInitializer />
                     <LanguageDetectionNotification />
+                    {/* Version dynamique pour les changements de langue */}
+                    <StructuredData />
                   </ClientOnly>
                   {children}
                 </ErrorBoundary>
