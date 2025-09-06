@@ -1,18 +1,6 @@
 import { SocketIOUser } from '@/types';
 import { UserRoleEnum } from '../shared/types';
 
-// Interface pour les utilisateurs de test
-export interface TestUser {
-  id: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  systemLanguage: string;
-  regionalLanguage: string;
-  customDestinationLanguage?: string;
-  role: UserRoleEnum;
-}
 
 // Interface pour la réponse d'authentification
 export interface AuthResponse {
@@ -42,7 +30,7 @@ export interface UserPermissions {
 export interface UserProfileResponse {
   success: boolean;
   data?: {
-    user: TestUser;
+    user: SocketIOUser;
     permissions: UserPermissions;
   };
   error?: string;
@@ -53,7 +41,7 @@ class AuthService {
   private baseUrl: string;
 
   private constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://meeshy.me';
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://gate.meeshy.me';
   }
 
   public static getInstance(): AuthService {
@@ -202,27 +190,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Récupère la liste des utilisateurs de test
-   */
-  async getTestUsers(): Promise<{ success: boolean; data?: { users: TestUser[]; total: number }; error?: string }> {
-    try {
-      const response = await fetch(`${this.baseUrl}/auth/test-users`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      return await response.json();
-    } catch (error) {
-      console.error('Erreur lors de la récupération des utilisateurs de test:', error);
-      return {
-        success: false,
-        error: 'Erreur de connexion au serveur'
-      };
-    }
-  }
 
   /**
    * Récupère le token d'authentification depuis le localStorage
@@ -237,7 +204,7 @@ class AuthService {
   /**
    * Récupère l'utilisateur connecté depuis le localStorage
    */
-  getStoredUser(): TestUser | null {
+  getStoredUser(): SocketIOUser | null {
     if (typeof window !== 'undefined') {
       const userStr = localStorage.getItem('user');
       if (userStr) {

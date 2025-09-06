@@ -1,6 +1,6 @@
 {
   "name": "meeshy-gateway",
-  "version": "1.0.37-alpha",
+  "version": "1.0.38-alpha",
   "description": "Fastify Gateway service for Meeshy real-time messaging",
   "main": "dist/src/server.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "node -r dotenv/config dist/src/server.js",
     "dev": "tsx watch -r dotenv/config src/server.ts dotenv_config_path=.env",
     "generate:seeds": "npm run generate:prisma && npx prisma db push --schema=shared/schema.prisma && npx tsx shared/seed.ts",
-    "generate:prisma": "cd ../shared/ ; ./scripts/distribute.sh ; cd - && prisma generate --schema=./shared/schema.prisma",
+    "generate:prisma": "cd ../shared/ ; ./scripts/distribute.sh ; cd - && prisma generate --schema=./shared/prisma/schema.prisma",
     "migrate": "prisma migrate dev --schema=shared/schema.prisma",
     "test": "jest --config=jest.config.json",
     "test:watch": "jest --config=jest.config.json --watch",

@@ -251,7 +251,7 @@ class MeeshyServer {
         // Add your production domains here
         const allowedOrigins = process.env.CORS_ORIGINS?.split(',') || 
                                process.env.ALLOWED_ORIGINS?.split(',') || 
-                               ['http://localhost:3100', 'http://localhost', 'http://localhost:80', 'http://127.0.0.1', 'http://127.0.0.1:80', 'http://meeshy.me', 'https://meeshy.me'];
+                               ['http://localhost:3100', 'http://localhost', 'http://localhost:80', 'http://127.0.0.1', 'http://127.0.0.1:80', 'https://meeshy.me', 'https://www.meeshy.me', 'https://gate.meeshy.me', 'https://ml.meeshy.me'];
         
         logger.info(`CORS check: origin="${origin}", allowed="${allowedOrigins.join(',')}"`);
         
@@ -415,7 +415,7 @@ class MeeshyServer {
           database: 'PostgreSQL + Prisma'
         },
         endpoints: {
-          websocket: '/ws',
+          websocket: '/socket.io/',
           health: '/health',
           translate: '/translate'
         },
@@ -532,10 +532,10 @@ class MeeshyServer {
 ║  Database:    ${dbStatus}                                          ║
 ║  Translator:  ${translateUrl}║
 ╠══════════════════════════════════════════════════════════════════╣
-║  📡 WebSocket:    ws://meeshy.me/api/ws${' '.repeat(23)}  ║
-║  🏥 Health:       http://meeshy.me/health${' '.repeat(18)} ║
-║  📖 Info:         http://meeshy.me/info${' '.repeat(20)} ║
-║  🔄 Translate:    http://meeshy.me/translate${' '.repeat(15)} ║
+║  📡 WebSocket:    wss://gate.meeshy.me/socket.io/${' '.repeat(11)}  ║
+║  🏥 Health:       https://gate.meeshy.me/health${' '.repeat(15)} ║
+║  📖 Info:         https://gate.meeshy.me/info${' '.repeat(17)} ║
+║  🔄 Translate:    https://ml.meeshy.me/translate${' '.repeat(12)} ║
 ╚══════════════════════════════════════════════════════════════════╝
     `.trim();
     

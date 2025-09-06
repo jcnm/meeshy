@@ -115,9 +115,7 @@ COPY --chown=gateway:nodejs docker-entrypoint.sh ./
 # Build de l'application avec nettoyage
 RUN echo "🔧 Génération du client Prisma Node.js..." \
     && cd /app/shared \
-    && npx prisma generate --schema=./schema.prisma \
-    && mkdir -p ./prisma \
-    && mv ./client ./prisma/ \
+    && npx prisma generate --schema=./prisma/schema.prisma \
     && echo "✅ Client Prisma Node.js généré avec succès" \
     && cd /app \
     && DATABASE_URL=mongodb://dummy:dummy@localhost:27017/dummy pnpm run build \

@@ -62,6 +62,23 @@ export async function linksRoutes(fastify: FastifyInstance) {
   const requireModeration = createModerationMiddleware();
   const requireAdmin = createAdminMiddleware();
 
+  /**
+   * Résout l'ID de ConversationShareLink réel à partir d'un identifiant (peut être un ObjectID ou un identifier)
+   */
+  async function resolveShareLinkId(identifier: string): Promise<string | null> {
+    // Si c'est déjà un ObjectID valide (24 caractères hexadécimaux), le retourner directement
+    if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
+      return identifier;
+    }
+    
+    // Sinon, chercher par le champ identifier
+    const shareLink = await fastify.prisma.conversationShareLink.findFirst({
+      where: { identifier: identifier }
+    });
+    
+    return shareLink ? shareLink.id : null;
+  }
+
   // Fonction utilitaire pour générer le linkId avec le format demandé
   function generateInitialLinkId(): string {
     const now = new Date();

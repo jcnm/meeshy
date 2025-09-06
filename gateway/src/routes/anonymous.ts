@@ -71,6 +71,22 @@ function isIpInRange(ip: string, range: string): boolean {
 }
 
 export async function anonymousRoutes(fastify: FastifyInstance) {
+  /**
+   * Résout l'ID de ConversationShareLink réel à partir d'un identifiant (peut être un ObjectID ou un identifier)
+   */
+  async function resolveShareLinkId(identifier: string): Promise<string | null> {
+    // Si c'est déjà un ObjectID valide (24 caractères hexadécimaux), le retourner directement
+    if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
+      return identifier;
+    }
+    
+    // Sinon, chercher par le champ identifier
+    const shareLink = await fastify.prisma.conversationShareLink.findFirst({
+      where: { identifier: identifier }
+    });
+    
+    return shareLink ? shareLink.id : null;
+  }
   
   // Route pour rejoindre une conversation de manière anonyme
   fastify.post('/anonymous/join/:linkId', async (request: FastifyRequest, reply: FastifyReply) => {
@@ -426,13 +442,11 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
     try {
       const { identifier } = request.params as { identifier: string };
 
-      // Détecter si c'est un linkId (commence par "mshy_") ou un conversationShareLinkId (ID de base de données)
-      const isLinkId = identifier.startsWith('mshy_');
-      
+      // Résoudre l'ID de ConversationShareLink réel
       let shareLink;
       
-      if (isLinkId) {
-        // Rechercher par linkId
+      // Si c'est un linkId au format mshy_..., chercher directement
+      if (identifier.startsWith('mshy_')) {
         shareLink = await fastify.prisma.conversationShareLink.findUnique({
           where: { linkId: identifier },
           include: {
@@ -458,9 +472,17 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
           }
         });
       } else {
-        // Rechercher par conversationShareLinkId (ID de base de données)
+        // Sinon, résoudre l'ID (peut être un ObjectID ou un identifier)
+        const shareLinkId = await resolveShareLinkId(identifier);
+        if (!shareLinkId) {
+          return reply.status(404).send({
+            success: false,
+            message: 'Lien de partage non trouvé'
+          });
+        }
+        
         shareLink = await fastify.prisma.conversationShareLink.findUnique({
-          where: { id: identifier },
+          where: { id: shareLinkId },
           include: {
             conversation: {
               select: {

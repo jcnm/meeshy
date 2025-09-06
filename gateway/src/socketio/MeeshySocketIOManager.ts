@@ -198,15 +198,21 @@ export class MeeshySocketIOManager {
         address: socket.handshake?.address
       });
 
-      // Récupérer les tokens depuis différentes sources (comme le middleware hybride)
+      // Récupérer les tokens depuis différentes sources avec types précis
       const authToken = socket.handshake?.headers?.authorization?.replace('Bearer ', '') || 
                        socket.handshake?.auth?.authToken;
       const sessionToken = socket.handshake?.headers?.['x-session-token'] as string || 
                           socket.handshake?.auth?.sessionToken;
       
+      // Récupérer les types de tokens pour validation précise
+      const tokenType = socket.handshake?.auth?.tokenType;
+      const sessionType = socket.handshake?.auth?.sessionType;
+      
       console.log(`🔍 Authentification hybride pour socket ${socket.id}:`, {
         hasAuthToken: !!authToken,
         hasSessionToken: !!sessionToken,
+        tokenType: tokenType || 'unknown',
+        sessionType: sessionType || 'unknown',
         authTokenLength: authToken?.length,
         sessionTokenLength: sessionToken?.length,
         authTokenPreview: authToken ? authToken.substring(0, 30) + '...' : 'none',
@@ -214,12 +220,12 @@ export class MeeshySocketIOManager {
       });
 
       // Tentative d'authentification avec Bearer token (utilisateur authentifié)
-      if (authToken) {
+      if (authToken && (!tokenType || tokenType === 'jwt')) {
         try {
           const jwtSecret = process.env.JWT_SECRET || 'default-secret';
           const decoded = jwt.verify(authToken, jwtSecret) as any;
           
-          console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId}`);
+          console.log(`🔐 Token JWT vérifié pour utilisateur: ${decoded.userId} (type: ${tokenType || 'jwt'})`);
 
           // Récupérer l'utilisateur depuis la base de données
           const dbUser = await this.prisma.user.findUnique({
@@ -268,7 +274,9 @@ export class MeeshySocketIOManager {
       }
 
       // Tentative d'authentification avec session token (participant anonyme)
-      if (sessionToken) {
+      if (sessionToken && (!sessionType || sessionType === 'anonymous')) {
+        console.log(`🔍 Tentative d'authentification session token (type: ${sessionType || 'anonymous'})`);
+        
         const participant = await this.prisma.anonymousParticipant.findUnique({
           where: { sessionToken },
           include: {
@@ -286,6 +294,8 @@ export class MeeshySocketIOManager {
         if (participant && participant.isActive && participant.shareLink.isActive) {
           // Vérifier l'expiration du lien
           if (!participant.shareLink.expiresAt || participant.shareLink.expiresAt > new Date()) {
+            console.log(`✅ Session token valide pour participant anonyme: ${participant.id}`);
+            
             // Créer l'utilisateur Socket.IO anonyme
             const user: SocketUser = {
               id: participant.id,

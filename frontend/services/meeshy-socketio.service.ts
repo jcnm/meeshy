@@ -159,13 +159,19 @@ class MeeshySocketIOService {
     });
 
     try {
-      // Essayer avec auth au lieu de extraHeaders pour Socket.IO v4+
+      // Préparer les données d'authentification avec types de tokens précis
       const authData: any = {};
+      
+      // Token JWT pour utilisateurs authentifiés
       if (authToken) {
-        authData.authToken = authToken;
+        authData.authToken = authToken;  // Token principal d'authentification
+        authData.tokenType = 'jwt';      // Type de token explicite
       }
+      
+      // Session token pour utilisateurs anonymes
       if (sessionToken) {
         authData.sessionToken = sessionToken;
+        authData.sessionType = 'anonymous';  // Type de session explicite
       }
 
       this.socket = io(serverUrl, {
@@ -175,7 +181,9 @@ class MeeshySocketIOService {
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
         reconnectionDelay: 1000,
-        timeout: 10000
+        timeout: 10000,
+        path: '/socket.io/',
+        forceNew: true
       });
 
       this.setupEventListeners();

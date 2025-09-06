@@ -6,7 +6,7 @@ export async function authRoutes(fastify: FastifyInstance) {
   // Créer une instance du service d'authentification Prisma
   const authService = new PrismaAuthService(
     (fastify as any).prisma,
-    process.env.JWT_SECRET || 'default-jwt-secret'
+    process.env.JWT_SECRET || 'meeshy-secret-key-dev'
   );
 
   // Route de connexion
