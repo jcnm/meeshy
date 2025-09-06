@@ -11,7 +11,7 @@ import { ClientOnly } from "@/components/common/client-only";
 import { LanguageDetectionNotification } from "@/components/LanguageDetectionNotification";
 import { getAllFontVariables } from "@/lib/fonts";
 import { AuthProvider } from "@/components/auth/auth-provider";
-import { generateSEOMetadata } from "@/lib/seo-metadata";
+import { generateSEOMetadata, generateViewport } from "@/lib/seo-metadata";
 import StructuredDataSSR from "@/components/StructuredDataSSR";
 import StructuredData from "@/components/StructuredData";
 // import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
@@ -41,12 +41,7 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 };
 
-export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#2563eb' },
-    { media: '(prefers-color-scheme: dark)', color: '#2563eb' },
-  ],
-};
+export const viewport: Viewport = generateViewport();
 
 export default function RootLayout({
   children,

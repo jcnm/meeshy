@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import { Metadata, Viewport } from 'next';
 
 // Types pour les métadonnées SEO
 export interface SEOMetadata {
@@ -552,7 +552,7 @@ export function generateSEOMetadata(
     
     // Métadonnées Open Graph
     openGraph: {
-      type: data.openGraph?.type || 'website',
+      type: (data.openGraph?.type as 'website' | 'article') || 'website',
       locale: lang === 'fr' ? 'fr_FR' : lang === 'en' ? 'en_US' : 'pt_BR',
       title: data.openGraph?.title || data.title,
       description: data.openGraph?.description || data.description,
@@ -605,8 +605,6 @@ export function generateSEOMetadata(
     // Informations de l'application
     applicationName: 'Meeshy',
     referrer: 'origin-when-cross-origin',
-    colorScheme: 'light',
-    viewport: 'width=device-width, initial-scale=1',
 
     // Données structurées
     other: {
@@ -694,4 +692,17 @@ export function generateStructuredData(
   }
 
   return webPageData;
+}
+
+// Fonction pour générer le viewport (séparé des métadonnées selon Next.js 14+)
+export function generateViewport(): Viewport {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    colorScheme: 'light',
+    themeColor: [
+      { media: '(prefers-color-scheme: light)', color: '#2563eb' },
+      { media: '(prefers-color-scheme: dark)', color: '#2563eb' },
+    ],
+  };
 }
