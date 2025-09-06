@@ -94,6 +94,15 @@ class MeeshySocketIOService {
       return;
     }
 
+    // Vérifier si on est sur une page publique (pas besoin de WebSocket)
+    const currentPath = window.location.pathname;
+    const publicPaths = ['/about', '/contact', '/privacy', '/terms', '/partners', '/'];
+    
+    if (publicPaths.includes(currentPath)) {
+      logger.socketio.debug('MeeshySocketIOService: Page publique détectée, connexion ignorée', { path: currentPath });
+      return;
+    }
+
     // Empêcher les connexions multiples
     if (this.isConnecting || (this.socket && this.isConnected)) {
       logger.socketio.debug('MeeshySocketIOService: Connexion déjà en cours ou établie, ignorée');
