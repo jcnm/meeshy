@@ -584,12 +584,16 @@ class MeeshySocketIOService {
         ...(originalLanguage && { originalLanguage })
       };
 
-      this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response) => {
+      this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response: any) => {
         console.log('📨 MeeshySocketIOService: Réponse envoi message', {
           response,
           hasResponse: !!response,
           responseType: typeof response,
-          responseKeys: response ? Object.keys(response) : []
+          responseKeys: response ? Object.keys(response) : [],
+          responseSuccess: response?.success,
+          responseError: response?.error,
+          responseMessage: response?.message,
+          fullResponse: JSON.stringify(response, null, 2)
         });
         
         if (response?.success) {
@@ -599,9 +603,27 @@ class MeeshySocketIOService {
           console.error('❌ MeeshySocketIOService: Erreur envoi message', {
             response,
             error: response?.error,
-            hasError: !!response?.error
+            hasError: !!response?.error,
+            errorMessage: response?.message || response?.error || 'Erreur inconnue',
+            conversationId,
+            messageData
           });
-          toast.error(response?.error || 'Erreur lors de l\'envoi du message');
+          
+          // Message d'erreur plus détaillé
+          const errorMsg = response?.message || response?.error || 'Erreur lors de l\'envoi du message';
+          console.error('🔍 MeeshySocketIOService: Détails erreur complète:', {
+            errorMsg,
+            fullResponse: response,
+            conversationId,
+            contentLength: content.length,
+            authStatus: {
+              hasAuthToken: !!authToken,
+              hasSessionToken: !!sessionToken,
+              userId: this.currentUser?.id
+            }
+          });
+          
+          toast.error(`Erreur: ${errorMsg}`);
           resolve(false);
         }
       });
