@@ -23,8 +23,8 @@ export function useTranslations(namespace: string) {
   useEffect(() => {
     const loadMessages = async () => {
       try {
-        // Utiliser français par défaut pour le SSR, puis la langue détectée côté client
-        const locale = isClient ? (currentInterfaceLanguage || 'fr') : 'fr';
+        // Utiliser anglais par défaut pour le SSR, puis la langue détectée côté client
+        const locale = isClient ? (currentInterfaceLanguage || 'en') : 'en';
         const messagesModule = await import(`@/locales/${locale}.json`);
         const allMessages = messagesModule.default;
         
@@ -32,16 +32,13 @@ export function useTranslations(namespace: string) {
         const namespaceMessages = (allMessages as any)[namespace] || {};
         setMessages(namespaceMessages);
       } catch (error) {
-        console.error(`Failed to load messages for locale ${currentInterfaceLanguage}, namespace ${namespace}:`, error);
-        
-        // Fallback vers le français
+        // Fallback vers l'anglais silencieusement
         try {
-          const fallbackModule = await import(`@/locales/fr.json`);
+          const fallbackModule = await import(`@/locales/en.json`);
           const fallbackMessages = fallbackModule.default;
           const namespaceFallback = (fallbackMessages as any)[namespace] || {};
           setMessages(namespaceFallback);
         } catch (fallbackError) {
-          console.error('Failed to load fallback messages:', fallbackError);
           setMessages({});
         }
       }
@@ -101,16 +98,13 @@ export function useTranslationsData(namespace: string) {
         const namespaceMessages = allMessages[namespace] || {};
         setMessages(namespaceMessages);
       } catch (error) {
-        console.error(`Failed to load messages for locale ${currentInterfaceLanguage}, namespace ${namespace}:`, error);
-        
-        // Fallback vers le français
+        // Fallback vers l'anglais silencieusement
         try {
-          const fallbackModule = await import(`@/locales/fr.json`);
+          const fallbackModule = await import(`@/locales/en.json`);
           const fallbackMessages = fallbackModule.default;
           const namespaceFallback = (fallbackMessages as any)[namespace] || {};
           setMessages(namespaceFallback);
         } catch (fallbackError) {
-          console.error('Failed to load fallback messages:', fallbackError);
           setMessages({});
         }
       } finally {
@@ -138,14 +132,11 @@ export function useGlobalTranslations() {
         const messagesModule = await import(`@/locales/${locale}.json`);
         setMessages(messagesModule.default);
       } catch (error) {
-        console.error(`Failed to load global messages for locale ${currentInterfaceLanguage}:`, error);
-        
-        // Fallback vers le français
+        // Fallback vers l'anglais silencieusement
         try {
-          const fallbackModule = await import(`@/locales/fr.json`);
+          const fallbackModule = await import(`@/locales/en.json`);
           setMessages(fallbackModule.default);
         } catch (fallbackError) {
-          console.error('Failed to load fallback global messages:', fallbackError);
           setMessages({});
         }
       }
