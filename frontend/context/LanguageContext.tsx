@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { UserLanguageConfig, INTERFACE_LANGUAGES } from '@/types';
 import { SUPPORTED_LANGUAGES } from '@/lib/constants/languages';
+import { logLanguageDetectionInfo } from '@/utils/language-detection-logger';
 
 interface LanguageContextType {
   userLanguageConfig: UserLanguageConfig;
@@ -19,7 +20,7 @@ const LanguageContext = createContext<LanguageContextType | null>(null);
 const SUPPORTED_LANGUAGE_CODES = SUPPORTED_LANGUAGES.map(lang => lang.code);
 const INTERFACE_LANGUAGE_CODES = INTERFACE_LANGUAGES.map(lang => lang.code);
 
-// Default configuration
+// Default configuration - Use French as default since it's the main target language
 const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
   systemLanguage: 'fr',
   regionalLanguage: 'fr',
@@ -34,19 +35,47 @@ const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
 function detectSystemLanguage(): string {
   if (typeof window === 'undefined') return 'fr';
   
-  const browserLanguage = navigator.language || navigator.languages?.[0] || 'fr';
-  const languageCode = browserLanguage.split('-')[0].toLowerCase();
+  // Obtenir toutes les langues préférées du navigateur
+  const browserLanguages = navigator.languages || [navigator.language || 'en'];
   
-  return SUPPORTED_LANGUAGE_CODES.includes(languageCode as any) ? languageCode : 'fr';
+  console.log('[LANGUAGE_CONTEXT] Detecting system language from:', browserLanguages);
+  
+  // Vérifier chaque langue du navigateur dans l'ordre de préférence
+  for (const lang of browserLanguages) {
+    const languageCode = lang.split('-')[0].toLowerCase();
+    
+    // Vérifier si la langue est supportée dans la liste complète des langues supportées
+    if (SUPPORTED_LANGUAGE_CODES.includes(languageCode as any)) {
+      console.log('[LANGUAGE_CONTEXT] Detected system language:', languageCode);
+      return languageCode;
+    }
+  }
+  
+  // Fallback vers le français si aucune langue supportée n'est trouvée
+  console.log('[LANGUAGE_CONTEXT] No supported system language found, falling back to French');
+  return 'fr';
 }
 
 function detectRegionalLanguage(): string {
   if (typeof window === 'undefined') return 'fr';
   
-  const browserLanguage = navigator.language || navigator.languages?.[0] || 'fr';
-  const languageCode = browserLanguage.split('-')[0].toLowerCase();
+  // Pour la langue régionale, on peut utiliser la même logique que pour la langue système
+  // mais on pourrait aussi considérer des facteurs géographiques
+  const browserLanguages = navigator.languages || [navigator.language || 'en'];
   
-  return SUPPORTED_LANGUAGE_CODES.includes(languageCode as any) ? languageCode : 'fr';
+  console.log('[LANGUAGE_CONTEXT] Detecting regional language from:', browserLanguages);
+  
+  // Prendre la deuxième langue préférée si disponible, sinon la première
+  const secondaryLang = browserLanguages[1] || browserLanguages[0] || 'fr';
+  const languageCode = secondaryLang.split('-')[0].toLowerCase();
+  
+  if (SUPPORTED_LANGUAGE_CODES.includes(languageCode as any)) {
+    console.log('[LANGUAGE_CONTEXT] Detected regional language:', languageCode);
+    return languageCode;
+  }
+  
+  // Fallback vers la langue système détectée
+  return detectSystemLanguage();
 }
 
 // Storage utilities
@@ -79,19 +108,47 @@ function saveLanguageConfig(config: UserLanguageConfig): void {
   }
 }
 
-function loadInterfaceLanguage(): string {
+function detectBrowserLanguage(): string {
   if (typeof window === 'undefined') return 'en';
+  
+  // Obtenir toutes les langues préférées du navigateur
+  const browserLanguages = navigator.languages || [navigator.language || 'en'];
+  
+  console.log('[LANGUAGE_CONTEXT] Detected browser languages:', browserLanguages);
+  
+  // Vérifier chaque langue du navigateur dans l'ordre de préférence
+  for (const lang of browserLanguages) {
+    const languageCode = lang.split('-')[0].toLowerCase();
+    
+    // Vérifier si la langue est supportée comme langue d'interface
+    if (INTERFACE_LANGUAGE_CODES.includes(languageCode as any)) {
+      console.log('[LANGUAGE_CONTEXT] Using detected browser language:', languageCode);
+      return languageCode;
+    }
+  }
+  
+  // Fallback vers le français si aucune langue supportée n'est trouvée
+  console.log('[LANGUAGE_CONTEXT] No supported language found in browser preferences, falling back to French');
+  return 'fr';
+}
+
+function loadInterfaceLanguage(): string {
+  if (typeof window === 'undefined') return 'fr';
   
   try {
     const stored = localStorage.getItem(INTERFACE_LANGUAGE_KEY);
     if (stored && INTERFACE_LANGUAGE_CODES.includes(stored as any)) {
+      console.log('[LANGUAGE_CONTEXT] Using stored interface language:', stored);
       return stored;
     }
   } catch (error) {
     console.error('[LANGUAGE_CONTEXT] Error loading interface language:', error);
   }
   
-  return 'en';
+  // Si aucune langue sauvegardée n'est trouvée, détecter automatiquement la langue du navigateur
+  const detectedLanguage = detectBrowserLanguage();
+  console.log('[LANGUAGE_CONTEXT] Auto-detected interface language:', detectedLanguage);
+  return detectedLanguage;
 }
 
 function saveInterfaceLanguage(language: string): void {
@@ -110,7 +167,7 @@ interface LanguageProviderProps {
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [userLanguageConfig, setUserLanguageConfig] = useState<UserLanguageConfig>(DEFAULT_LANGUAGE_CONFIG);
-  const [currentInterfaceLanguage, setCurrentInterfaceLanguage] = useState<string>('en');
+  const [currentInterfaceLanguage, setCurrentInterfaceLanguage] = useState<string>('fr');
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize language configuration on first load
@@ -119,31 +176,40 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
     console.log('[LANGUAGE_CONTEXT] Initializing language configuration...');
     
+    // Log detailed detection information in development
+    if (process.env.NODE_ENV === 'development') {
+      logLanguageDetectionInfo();
+    }
+    
     // Load saved configuration
     const savedConfig = loadLanguageConfig();
-    const savedInterfaceLanguage = loadInterfaceLanguage();
+    const savedInterfaceLanguage = loadInterfaceLanguage(); // This now includes auto-detection
     
     // Detect system and regional languages
-    const systemLanguage = detectSystemLanguage();
-    const regionalLanguage = detectRegionalLanguage();
+    const detectedSystemLanguage = detectSystemLanguage();
+    const detectedRegionalLanguage = detectRegionalLanguage();
     
-    // Create initial configuration
+    // Create initial configuration - prioritize saved config, then detected languages, then defaults
     const initialConfig: UserLanguageConfig = {
+      ...DEFAULT_LANGUAGE_CONFIG,
       ...savedConfig,
-      systemLanguage: savedConfig.systemLanguage || systemLanguage,
-      regionalLanguage: savedConfig.regionalLanguage || regionalLanguage,
-      customDestinationLanguage: savedConfig.customDestinationLanguage || systemLanguage,
+      // Use detected languages if no saved configuration exists
+      systemLanguage: savedConfig.systemLanguage || detectedSystemLanguage,
+      regionalLanguage: savedConfig.regionalLanguage || detectedRegionalLanguage,
+      // Set custom destination to the detected system language if not already set
+      customDestinationLanguage: savedConfig.customDestinationLanguage || detectedSystemLanguage,
     };
     
-    // Set interface language (use saved interface language or fallback to English)
-    const interfaceLanguage = savedInterfaceLanguage || 'en';
+    // Interface language is automatically detected in loadInterfaceLanguage() if not saved
+    const interfaceLanguage = savedInterfaceLanguage;
     
     console.log('[LANGUAGE_CONTEXT] Initial config:', {
-      systemLanguage,
-      regionalLanguage,
+      detectedSystemLanguage,
+      detectedRegionalLanguage,
       interfaceLanguage,
-      savedConfig: savedConfig,
-      initialConfig
+      savedConfig,
+      initialConfig,
+      browserLanguages: typeof window !== 'undefined' ? navigator.languages : 'server-side'
     });
     
     setUserLanguageConfig(initialConfig);
@@ -154,7 +220,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     saveLanguageConfig(initialConfig);
     saveInterfaceLanguage(interfaceLanguage);
     
-    console.log('[LANGUAGE_CONTEXT] Language configuration initialized');
+    console.log('[LANGUAGE_CONTEXT] Language configuration initialized with browser detection');
   }, [isInitialized]);
 
   // Save configuration when it changes

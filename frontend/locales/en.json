@@ -99,7 +99,407 @@
       "createAccount": "Create my account"
     },
     "footer": {
-      "copyright": "© 2024 Meeshy. Communication without language barriers."
+      "copyright": "© 2026 Meeshy",
+      "tagline": "Meet without shyness",
+      "links": {
+        "about": "About",
+        "policy": "Policy",
+        "terms": "Terms",
+        "contact": "Contact",
+        "partners": "Partners"
+      },
+      "social": {
+        "followUs": "Follow us"
+      },
+      "usefulLinks": "Useful Links"
+    },
+    "about": {
+      "title": "About Meeshy",
+      "subtitle": "We believe that language barriers should never stand in the way of meaningful connections.",
+      "backHome": "Back to home",
+      "mission": {
+        "title": "Our Mission",
+        "description": "Connect the world, one translation at a time. Our platform empowers people from all corners of the globe to communicate freely, breaking down the walls that separate us and building bridges of understanding."
+      },
+      "values": {
+        "globalAccess": {
+          "title": "Global Accessibility",
+          "description": "Making multilingual communication accessible to everyone, everywhere in the world."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "Using the latest AI technologies for accurate and fast translations."
+        },
+        "privacy": {
+          "title": "Privacy Respect",
+          "description": "Your conversations remain private and secure. and soon, translations done locally in your browser."
+        }
+      },
+      "team": {
+        "title": "Our Team",
+        "description": "Made with ❤️ by developers who believe communication should have no boundaries.",
+        "details": "Meeshy is developed by a passionate team of developers, linguists and designers who share a common vision: a world where language is no longer an obstacle to human communication."
+      },
+      "cta": {
+        "title": "Want to know more?",
+        "contact": "Contact us"
+      }
+    },
+    "partners": {
+      "title": "Partners",
+      "subtitle": "Join our partner ecosystem and help connect the world through breaking language barriers.",
+      "backHome": "Back to home",
+      "enterprise": {
+        "title": "Enterprise Teams",
+        "description": "Deploy Meeshy in your company to enable seamless multilingual communication across global teams.",
+        "features": {
+          "deployment": "On-premise or cloud deployment",
+          "sso": "SSO and Active Directory integration",
+          "analytics": "Team communication analytics",
+          "support": "24/7 enterprise support",
+          "customization": "Custom branding and features"
+        },
+        "pricing": "Contact us for enterprise pricing"
+      },
+      "education": {
+        "title": "Educational Institutions",
+        "description": "Enable international collaboration in schools and universities with multilingual communication tools.",
+        "features": {
+          "classrooms": "Multilingual virtual classrooms",
+          "exchange": "Student exchange programs support",
+          "learning": "Language learning integration",
+          "admin": "Administrative dashboard",
+          "curriculum": "Curriculum-based language support"
+        },
+        "pricing": "Special pricing for educational institutions"
+      },
+      "types": {
+        "tech": {
+          "title": "Technology Partners",
+          "description": "Integrate Meeshy into your applications and services to offer multilingual translation capabilities to your users.",
+          "features": [
+            "Real-time translation API",
+            "SDK for mobile applications",
+            "Simple web integration",
+            "Dedicated technical support"
+          ]
+        },
+        "strategic": {
+          "title": "Strategic Partners",
+          "description": "Collaborate with us to develop new features and expand our global reach.",
+          "features": [
+            "Feature co-development",
+            "Distribution partnerships",
+            "Certification programs",
+            "Events and conferences"
+          ]
+        }
+      },
+      "deployment": {
+        "title": "Deployment Solutions",
+        "onPremise": {
+          "title": "On-Premise Deployment",
+          "description": "Full control over your data with on-premise installation.",
+          "features": {
+            "security": "Enhanced security and privacy",
+            "compliance": "Meet compliance requirements",
+            "customization": "Full customization capabilities",
+            "performance": "Optimized performance for your infrastructure"
+          }
+        },
+        "cloud": {
+          "title": "Cloud Deployment",
+          "description": "Quick setup with our managed cloud solution.",
+          "features": {
+            "quick": "Quick 5-minute setup",
+            "scalable": "Auto-scaling infrastructure",
+            "maintenance": "No maintenance required",
+            "updates": "Automatic updates and features"
+          }
+        }
+      },
+      "useCases": {
+        "title": "Use Cases & Success Stories",
+        "business": {
+          "title": "Business Teams",
+          "items": {
+            "meetings": "Multilingual team meetings",
+            "support": "International customer support",
+            "collaboration": "Cross-border project collaboration",
+            "training": "Global training programs"
+          }
+        },
+        "education": {
+          "title": "Educational Institutions",
+          "items": {
+            "language": "Language learning programs",
+            "international": "International student support",
+            "research": "Collaborative research projects",
+            "cultural": "Cultural exchange programs"
+          }
+        },
+        "community": {
+          "title": "Community Organizations",
+          "items": {
+            "nonprofits": "Non-profit international outreach",
+            "events": "Multilingual events and conferences",
+            "volunteer": "Volunteer coordination programs",
+            "healthcare": "Healthcare communication support"
+          }
+        }
+      },
+      "benefits": {
+        "title": "Partnership Benefits",
+        "priority": {
+          "title": "Priority Access",
+          "description": "Early access to new features and APIs"
+        },
+        "support": {
+          "title": "Dedicated Support",
+          "description": "Dedicated technical support team for your projects"
+        },
+        "visibility": {
+          "title": "Visibility",
+          "description": "Showcase your partnership on our platforms"
+        }
+      },
+      "become": {
+        "title": "Become a Partner",
+        "description": "Interested in partnering with Meeshy? Contact us to discuss collaboration opportunities.",
+        "contact": "Contact us",
+        "about": "About us",
+        "api": "API Documentation"
+      }
+    },
+    "contact": {
+      "title": "Contact us",
+      "subtitle": "We are located in the heart of La Défense, Paris",
+      "backHome": "Back to home",
+      "address": {
+        "title": "Our Address",
+        "company": "Meeshy",
+        "building": "Tour First",
+        "street": "1 Place des Saisons",
+        "city": "92400 Courbevoie, France"
+      },
+      "contact": {
+        "title": "Contact",
+        "email": {
+          "label": "Email",
+          "value": "contact@meeshy.com"
+        },
+        "phone": {
+          "label": "Phone",
+          "value": "+33 1 23 45 67 89"
+        }
+      },
+      "hours": {
+        "title": "Opening Hours",
+        "weekdays": "Monday - Friday",
+        "weekdaysTime": "9:00 AM - 6:00 PM",
+        "saturday": "Saturday",
+        "saturdayTime": "10:00 AM - 4:00 PM",
+        "sunday": "Sunday",
+        "sundayTime": "Closed"
+      },
+      "transport": {
+        "title": "How to reach us",
+        "train": {
+          "title": "By Train",
+          "rer": "RER A: \"La Défense - Grande Arche\" station",
+          "transilien": "Transilien L: \"La Défense\" station",
+          "time": "From Paris: 10-15 minutes from Châtelet-Les Halles"
+        },
+        "metro": {
+          "title": "By Metro",
+          "line1": "Line 1: \"La Défense - Grande Arche\" station",
+          "time": "From central Paris: 20-25 minutes"
+        },
+        "bus": {
+          "title": "By Bus",
+          "lines": "Lines: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+          "stop": "\"La Défense - Grande Arche\" stop"
+        },
+        "lineU": {
+          "title": "Line U",
+          "transilien": "Transilien U: \"La Défense\" station",
+          "time": "From western Paris: 15-20 minutes"
+        },
+        "lineE277": {
+          "title": "Line E277",
+          "bus": "Bus E277: \"La Défense - Grande Arche\" stop",
+          "time": "Express service from the west"
+        },
+        "car": {
+          "title": "By Car",
+          "highway": "Highway A14: \"La Défense\" exit",
+          "parking": "Parking: Several parking lots available in the area",
+          "rates": "Rates: €2-4/hour depending on parking"
+        }
+      },
+      "cta": {
+        "title": "Want to know more?",
+        "learnMore": "Learn more",
+        "collaborate": "Collaborate with us"
+      }
+    },
+    "terms": {
+      "title": "Terms of Use",
+      "lastUpdated": "Last updated: January 1, 2026",
+      "sections": {
+        "acceptance": {
+          "title": "1. Acceptance of Terms",
+          "content": "By accessing and using Meeshy, you agree to be bound by these terms of use. If you do not agree to these terms, please do not use our service."
+        },
+        "description": {
+          "title": "2. Service Description",
+          "content": "Meeshy is a multilingual messaging platform that uses artificial intelligence to automatically translate messages in real-time. Our service enables communication without language barriers directly in your browser."
+        },
+        "acceptableUse": {
+          "title": "3. Acceptable Use",
+          "content": "You agree to:",
+          "list": [
+            "Use the service legally and respectfully",
+            "Not publish offensive, illegal or inappropriate content",
+            "Respect privacy and the rights of others",
+            "Not attempt to compromise service security",
+            "Not use the service for commercial purposes without authorization"
+          ]
+        },
+        "privacy": {
+          "title": "4. Privacy and Data",
+          "content": "We are committed to protecting your privacy. Translations are performed locally in your browser when possible. No personal data is stored without your explicit consent. See our privacy policy for more details."
+        },
+        "intellectualProperty": {
+          "title": "5. Intellectual Property",
+          "content": "Meeshy and its content are protected by copyright and other intellectual property laws. You may not copy, modify or distribute our service without authorization."
+        },
+        "limitation": {
+          "title": "6. Limitation of Liability",
+          "content": "Meeshy is provided \"as is\". We do not guarantee that the service will be uninterrupted or error-free. We will not be liable for indirect or consequential damages resulting from the use of our service."
+        },
+        "modifications": {
+          "title": "7. Modifications",
+          "content": "We reserve the right to modify these terms at any time. Changes will take effect upon their publication on this page. Your continued use of the service constitutes your acceptance of the modified terms."
+        },
+        "contact": {
+          "title": "8. Contact",
+          "content": "For any questions regarding these terms of use, please contact us at: contact@meeshy.com"
+        }
+      },
+      "navigation": {
+        "title": "Learn more about Meeshy",
+        "about": "About us",
+        "contact": "Contact us",
+        "partners": "Become a partner"
+      }
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: January 1, 2026",
+      "backHome": "Back to home",
+      "print": "Print",
+      "sections": {
+        "introduction": {
+          "title": "1. Introduction",
+          "content": "At Meeshy, we are committed to protecting your privacy and personal data. This privacy policy explains how we collect, use and protect your information when you use our multilingual messaging service."
+        },
+        "dataCollection": {
+          "title": "2. Information we collect",
+          "personal": {
+            "title": "2.1 Personal information",
+            "list": [
+              "Username and email address (upon registration)",
+              "Language preferences",
+              "Profile information (optional)"
+            ]
+          },
+          "translation": {
+            "title": "2.2 Translation data",
+            "list": [
+              "Translated messages (processed locally in your browser)",
+              "Source and target languages",
+              "Translation metadata (without message content)"
+            ]
+          },
+          "technical": {
+            "title": "2.3 Technical data",
+            "list": [
+              "IP address (anonymized)",
+              "Browser type and version",
+              "Service usage data (anonymous statistics)"
+            ]
+          }
+        },
+        "usage": {
+          "title": "3. How we use your information",
+          "list": [
+            "Service provision: Real-time translation of your messages",
+            "Service improvement: Development of new features",
+            "Customer support: Answering your questions and resolving issues",
+            "Security: Protection against abuse and fraud",
+            "Communication: Important information about the service"
+          ]
+        },
+        "protection": {
+          "title": "4. Protection of your data",
+          "local": {
+            "title": "4.1 Local processing",
+            "content": "Most translations are performed directly in your browser, meaning your messages never leave your device."
+          },
+          "encryption": {
+            "title": "4.2 Encryption",
+            "content": "All communications between your browser and our servers are encrypted using TLS 1.3."
+          },
+          "storage": {
+            "title": "4.3 Secure storage",
+            "content": "Data stored on our servers is protected by enterprise-level security measures, including encryption at rest."
+          }
+        },
+        "sharing": {
+          "title": "5. Information sharing",
+          "content": "We do not sell, rent or share your personal information with third parties, except in the following cases:",
+          "list": [
+            "With your explicit consent",
+            "To comply with a legal obligation",
+            "To protect our rights, property or security",
+            "With trusted service providers (under confidentiality agreement)"
+          ]
+        },
+        "rights": {
+          "title": "6. Your rights",
+          "content": "In accordance with GDPR, you have the right to:",
+          "list": [
+            "Access your personal data",
+            "Rectify inaccurate information",
+            "Delete your personal data",
+            "Limit the processing of your data",
+            "Data portability",
+            "Object to processing"
+          ],
+          "contact": "To exercise these rights, contact us at: privacy@meeshy.com"
+        },
+        "cookies": {
+          "title": "7. Cookies and similar technologies",
+          "content": "We use essential cookies for service functionality and analytical cookies to improve user experience. You can manage your cookie preferences in your browser settings."
+        },
+        "modifications": {
+          "title": "8. Modifications to this policy",
+          "content": "We may update this privacy policy from time to time. Important changes will be communicated by email or via a notification in the application. The last update date is indicated at the top of this page."
+        },
+        "contact": {
+          "title": "9. Contact",
+          "content": "For any questions regarding this privacy policy or the processing of your personal data, please contact us:",
+          "email": "Email: privacy@meeshy.com",
+          "address": "Address: Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+        }
+      },
+      "navigation": {
+        "title": "Learn more about Meeshy",
+        "about": "About us",
+        "contact": "Contact us",
+        "partners": "Become a partner"
+      }
     }
   },
   "auth": {
@@ -143,8 +543,23 @@
   "header": {
     "shareLinkCopied": "Share link copied to clipboard",
     "clearSession": "Clear session",
-    "clearSessionConfirm": "Are you sure you want to clear your session? This will log you out.",
-    "clearSessionDescription": "This action will remove all your session data and log you out."
+    "clearSessionConfirm": "Are you sure you want to clear your session?",
+    "clearSessionDescription": "This action will remove all your session data and log you out.",
+    "share": "Share",
+    "login": "Login",
+    "register": "Register",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout",
+    "anonymousSession": "Anonymous session",
+    "cancel": "Cancel",
+    "clearSessionButton": "Clear session",
+    "loginTitle": "Login",
+    "loginDescription": "Sign in to your Meeshy account",
+    "registerTitle": "Create account",
+    "registerDescription": "Join Meeshy and communicate without barriers"
   },
   "language": {
     "title": "Languages",
@@ -178,23 +593,17 @@
     "title": "Login",
     "subtitle": "Connect to your account",
     "formTitle": "Login",
-    "formDescription": "Enter your credentials or use a test account",
+    "formDescription": "Enter your credentials to log in",
     "usernameLabel": "Username or email",
-    "usernamePlaceholder": "alice_fr, bob_en, carlos_es...",
-    "usernameHelp": "Use the username (ex: alice_fr) or click 'Quick Login' below",
+    "usernamePlaceholder": "Your username",
+    "usernameHelp": "Enter your username or email address",
     "passwordLabel": "Password",
-    "passwordPlaceholder": "password123",
-    "passwordHelp": "Test password: password123",
+    "passwordPlaceholder": "Your password",
+    "passwordHelp": "Enter your personal password",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "loginButton": "Login",
     "loggingIn": "Logging in...",
-    "quickLoginTitle": "Quick Login",
-    "quickLoginDescription": "Click on a user to automatically log in. Password for all: password123",
-    "debugInfo": "Debug Info",
-    "backendUrl": "Backend URL",
-    "loginEndpoint": "Login endpoint",
-    "accountsLoaded": "Accounts loaded",
     "verifyingAuth": "Verifying authentication...",
     "redirecting": "Redirecting...",
     "loading": "Loading..."
@@ -633,15 +1042,6 @@
     "passwordTooShort": "Password must be at least 6 characters",
     "passwordsDoNotMatch": "Passwords do not match"
   },
-  "testAccounts": {
-    "alice_fr": "Alice Martin (French)",
-    "bob_en": "Bob Smith (English)",
-    "carlos_es": "Carlos Rodriguez (Spanish)",
-    "dieter_de": "Dieter Mueller (German)",
-    "li_zh": "Li Wei (Chinese)",
-    "yuki_ja": "Yuki Tanaka (Japanese)",
-    "maria_pt": "Maria Silva (Portuguese)"
-  },
   "bubbleStream": {
     "loading": "Loading messages...",
     "connecting": "Connecting to server...",
@@ -678,5 +1078,475 @@
     "user": "User",
     "anonymous": "Anonymous",
     "unknownUser": "?"
+  },
+  "toasts": {
+    "connection": {
+      "established": "Connection established",
+      "disconnected": "Disconnected by server",
+      "lost": "Connection lost, reconnecting...",
+      "reconnecting": "Connecting - Please wait...",
+      "websocketConnecting": "WebSocket connection in progress...",
+      "reconnectSuccess": "Reconnection successful!",
+      "reconnectFailed": "Reconnection failed - Check server",
+      "cannotReconnect": "Unable to reconnect. Please reload the page."
+    },
+    "messages": {
+      "sent": "Message sent!",
+      "sendError": "Error sending message",
+      "editSoon": "Message editing coming soon",
+      "translationError": "Error requesting translation",
+      "translationMaxTier": "This translation already uses the highest tier",
+      "translationInProgress": "Translation in progress...",
+      "retranslationInProgress": "Forced retranslation in progress...",
+      "translationSuccess": "Message translated with {model}",
+      "textCopied": "Text copied"
+    },
+    "conversations": {
+      "loadError": "Unable to load conversations",
+      "loadErrorGeneric": "Error loading conversation"
+    },
+    "auth": {
+      "logoutSuccess": "Logout successful",
+      "fillAllFields": "Please fill in all fields",
+      "connectionError": "Connection error",
+      "serverConnectionError": "Server connection error"
+    },
+    "settings": {
+      "saved": "Settings saved successfully",
+      "saveError": "Error saving settings",
+      "reset": "Settings reset"
+    },
+    "links": {
+      "copied": "Link copied to clipboard",
+      "generated": "Link generated successfully!",
+      "generatedAndCopied": "Link generated and copied to clipboard!",
+      "generateError": "Error generating link"
+    },
+    "participants": {
+      "removed": "Participant removed from conversation",
+      "removeError": "Error removing participant"
+    },
+    "conversation": {
+      "nameUpdated": "Conversation name updated",
+      "nameUpdateError": "Error updating name",
+      "created": "Conversation created successfully"
+    }
+  },
+  "partners": {
+    "backHome": "Back Home",
+    "title": "Meeshy Partnerships",
+    "subtitle": "Join our ecosystem and provide multilingual communication solutions to your teams, students, and communities.",
+    "enterprise": {
+      "title": "Enterprise Teams",
+      "description": "Dedicated solutions for organizations wanting to integrate real-time translation into their workflows.",
+      "features": {
+        "deployment": "On-premise or cloud deployment",
+        "sso": "SSO integration and user management",
+        "analytics": "Advanced dashboards and analytics",
+        "support": "24/7 priority support",
+        "customization": "Complete interface customization"
+      },
+      "pricing": "Custom pricing - Contact us"
+    },
+    "education": {
+      "title": "Educational Institutions",
+      "description": "Special programs for schools, universities, and training centers that want to facilitate international exchanges.",
+      "features": {
+        "classrooms": "Multilingual virtual classrooms",
+        "exchange": "Facilitated exchange programs",
+        "learning": "Adaptive learning tools",
+        "admin": "Centralized institutional management",
+        "curriculum": "Integration with existing curricula"
+      },
+      "pricing": "Preferential education rates - 50% discount"
+    },
+    "types": {
+      "tech": {
+        "title": "Technology Partners",
+        "description": "Integrate our translation APIs into your existing applications and services.",
+        "features": {
+          "0": "Complete REST and WebSocket APIs",
+          "1": "SDKs available in multiple languages",
+          "2": "Detailed technical documentation",
+          "3": "Dedicated developer support"
+        }
+      }
+    },
+    "deployment": {
+      "title": "Deployment Solutions",
+      "onPremise": {
+        "title": "On-Premise Deployment",
+        "description": "Complete installation in your infrastructure for total control and maximum security.",
+        "features": {
+          "security": "Enhanced security and confidentiality",
+          "compliance": "Compliance with specific regulations",
+          "customization": "Advanced customization according to your needs",
+          "performance": "Performance optimization on your network"
+        }
+      },
+      "cloud": {
+        "title": "Cloud Solution",
+        "description": "Fast deployment and simplified management with our secure cloud infrastructure.",
+        "features": {
+          "quick": "Quick setup in less than 24h",
+          "scalable": "Automatic scaling",
+          "maintenance": "Automatic maintenance and updates",
+          "updates": "Continuous new features"
+        }
+      }
+    },
+    "useCases": {
+      "title": "Use Cases",
+      "business": {
+        "title": "Business",
+        "items": {
+          "meetings": "Smooth international meetings",
+          "support": "Multilingual customer support",
+          "collaboration": "Distributed team collaboration",
+          "training": "Global training and onboarding"
+        }
+      },
+      "education": {
+        "title": "Education",
+        "items": {
+          "language": "Immersive language learning",
+          "international": "International programs",
+          "research": "Global research collaboration",
+          "cultural": "Enriching cultural exchanges"
+        }
+      },
+      "community": {
+        "title": "Communities",
+        "items": {
+          "nonprofits": "Non-profit organizations",
+          "events": "Multicultural events",
+          "volunteer": "International volunteer programs",
+          "healthcare": "Community healthcare services"
+        }
+      }
+    },
+    "benefits": {
+      "title": "Partner Benefits",
+      "priority": {
+        "title": "Priority Support",
+        "description": "Direct access to our technical team with guaranteed response times."
+      },
+      "support": {
+        "title": "Dedicated Support",
+        "description": "A dedicated partner manager to accompany you in your deployment."
+      },
+      "visibility": {
+        "title": "Enhanced Visibility",
+        "description": "Highlighting your organization in our partner ecosystem."
+      }
+    },
+    "become": {
+      "title": "Become a Partner",
+      "description": "Ready to transform communication in your organization? Contact us to discuss a customized partnership.",
+      "contact": "Contact Us",
+      "about": "Learn More",
+      "api": "API Documentation"
+    }
+  },
+  "about": {
+    "backHome": "Back Home",
+    "title": "About Meeshy",
+    "subtitle": "We believe that communication should never be limited by language barriers.",
+    "mission": {
+      "title": "Our Mission",
+      "description": "At Meeshy, we strive to create a world where every conversation is possible, regardless of the language spoken. Our messaging platform with automatic translation enables people from all backgrounds to connect authentically and share their ideas without limitations."
+    },
+    "values": {
+      "globalAccess": {
+        "title": "Global Access",
+        "description": "We make multilingual communication accessible to everyone, everywhere in the world."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "We push the boundaries of translation technology to provide a seamless experience."
+      },
+      "privacy": {
+        "title": "Privacy",
+        "description": "Your conversations remain private. Translation happens locally on your device."
+      }
+    },
+    "team": {
+      "title": "Our Team",
+      "description": "We are a passionate team of developers, linguists, and designers working together to break down language barriers.",
+      "details": "Based in France, we understand the importance of preserving cultural nuances in every conversation while facilitating mutual understanding."
+    },
+    "cta": {
+      "title": "Want to learn more about our vision?",
+      "contact": "Contact Us",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
+    }
+  },
+  "contact": {
+    "backHome": "Back Home",
+    "title": "Contact Us",
+    "subtitle": "We would love to discuss your multilingual communication needs with you.",
+    "address": {
+      "title": "Our Address",
+      "company": "Meeshy SAS",
+      "building": "Ariane Tower",
+      "street": "5 Place de la Pyramide",
+      "city": "92800 Puteaux, France"
+    },
+    "contact": {
+      "title": "Contact Information",
+      "email": {
+        "label": "Email",
+        "value": "contact@meeshy.com"
+      },
+      "phone": {
+        "label": "Phone",
+        "value": "+33 (0)1 47 17 67 00"
+      }
+    },
+    "hours": {
+      "title": "Opening Hours",
+      "weekdays": "Monday - Friday",
+      "weekdaysTime": "9:00 AM - 6:00 PM",
+      "saturday": "Saturday",
+      "saturdayTime": "10:00 AM - 4:00 PM",
+      "sunday": "Sunday",
+      "sundayTime": "Closed"
+    },
+    "directions": {
+      "title": "How to reach us",
+      "train": {
+        "title": "By Train",
+        "rera": "RER A: \"La Défense - Grande Arche\" Station",
+        "transilien": "Transilien L: \"La Défense\" Station",
+        "duration": "From Paris: 10-15 minutes from Châtelet-Les Halles"
+      },
+      "metro": {
+        "title": "By Metro",
+        "line1": "Line 1: \"La Défense - Grande Arche\" Station",
+        "duration": "From central Paris: 20-25 minutes"
+      },
+      "bus": {
+        "title": "By Bus",
+        "lines": "Lines: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+        "stop": "Stop \"La Défense - Grande Arche\""
+      },
+      "lineU": {
+        "title": "Line U",
+        "transilien": "Transilien U: \"La Défense\" Station",
+        "duration": "From west Paris: 15-20 minutes"
+      },
+      "express": {
+        "title": "Line E277",
+        "bus": "Bus E277: \"La Défense - Grande Arche\" Stop",
+        "service": "Express service from the west"
+      },
+      "car": {
+        "title": "By Car",
+        "highway": "Highway A14: \"La Défense\" Exit",
+        "parking": "Parking: Several parking lots available in the area",
+        "rates": "Rates: €2-4/hour depending on parking"
+      }
+    },
+    "cta": {
+      "title": "Want to know more?",
+      "about": "Learn More",
+      "partners": "Partner with Us"
+    }
+  },
+  "privacy": {
+    "backHome": "Back Home",
+    "print": "Print",
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: September 6, 2025",
+    "introduction": {
+      "title": "1. Introduction",
+      "content": "At Meeshy, we are committed to protecting your privacy and personal data. This privacy policy explains how we collect, use, and protect your information when you use our multilingual messaging service."
+    },
+    "dataCollection": {
+      "title": "2. Information We Collect",
+      "personal": {
+        "title": "2.1 Personal Information",
+        "items": [
+          "Username and email address (during registration)",
+          "Language preferences",
+          "Profile information (optional)"
+        ]
+      },
+      "translation": {
+        "title": "2.2 Translation Data",
+        "items": [
+          "Translated messages (processed locally in your browser)",
+          "Source and target languages",
+          "Translation metadata (without message content)"
+        ]
+      },
+      "technical": {
+        "title": "2.3 Technical Data",
+        "items": [
+          "IP address (anonymized)",
+          "Browser type and version",
+          "Service usage data (anonymous statistics)"
+        ]
+      }
+    },
+    "usage": {
+      "title": "3. How We Use Your Information",
+      "items": [
+        {
+          "title": "Service provision:",
+          "description": "Real-time translation of your messages"
+        },
+        {
+          "title": "Service improvement:",
+          "description": "Development of new features"
+        },
+        {
+          "title": "Customer support:",
+          "description": "Responding to your questions and resolving issues"
+        },
+        {
+          "title": "Security:",
+          "description": "Protection against abuse and fraud"
+        },
+        {
+          "title": "Communication:",
+          "description": "Important service information"
+        }
+      ]
+    },
+    "protection": {
+      "title": "4. Data Protection",
+      "local": {
+        "title": "4.1 Local Processing",
+        "content": "Most translations are performed directly in your browser, which means your messages never leave your device."
+      },
+      "encryption": {
+        "title": "4.2 Encryption",
+        "content": "All communications between your browser and our servers are encrypted using TLS 1.3."
+      },
+      "storage": {
+        "title": "4.3 Secure Storage",
+        "content": "Data stored on our servers is protected by enterprise-grade security measures, including encryption at rest."
+      }
+    },
+    "sharing": {
+      "title": "5. Information Sharing",
+      "intro": "We do not sell, rent, or share your personal information with third parties, except in the following cases:",
+      "cases": [
+        "With your explicit consent",
+        "To comply with legal obligations",
+        "To protect our rights, property, or security",
+        "With trusted service providers (under confidentiality agreements)"
+      ]
+    },
+    "rights": {
+      "title": "6. Your Rights",
+      "intro": "In accordance with GDPR, you have the right to:",
+      "list": [
+        "Access your personal data",
+        "Rectify inaccurate information",
+        "Delete your personal data",
+        "Limit data processing",
+        "Data portability",
+        "Object to processing"
+      ],
+      "contact": "To exercise these rights, contact us at: privacy@meeshy.com"
+    },
+    "cookies": {
+      "title": "7. Cookies and Similar Technologies",
+      "content": "We use essential cookies for service functionality and analytical cookies to improve user experience. You can manage your cookie preferences in your browser settings."
+    },
+    "changes": {
+      "title": "8. Changes to This Policy",
+      "content": "We may update this privacy policy from time to time. Important changes will be communicated by email or via an in-app notification. The last update date is indicated at the top of this page."
+    },
+    "contact": {
+      "title": "9. Contact",
+      "intro": "For any questions regarding this privacy policy or the processing of your personal data, please contact us:",
+      "email": "Email: privacy@meeshy.com",
+      "address": "Address: Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+    },
+    "footer": {
+      "title": "Learn more about Meeshy",
+      "about": "About Us",
+      "contact": "Contact Us",
+      "partners": "Become a Partner"
+    }
+  },
+  "terms": {
+    "backHome": "Back to Home",
+    "print": "Print",
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: January 1, 2026",
+    "acceptance": {
+      "title": "1. Acceptance of Terms",
+      "content": "By accessing and using Meeshy, you agree to be bound by these terms of service. If you do not agree to these terms, please do not use our service."
+    },
+    "service": {
+      "title": "2. Service Description",
+      "content": "Meeshy is a multilingual messaging service that enables real-time message translation. We reserve the right to modify, suspend, or discontinue the service at any time."
+    },
+    "account": {
+      "title": "3. User Account",
+      "intro": "To use certain features of Meeshy, you must create an account. You agree to:",
+      "responsibilities": [
+        "Provide accurate and complete information",
+        "Maintain the security of your password",
+        "Notify us immediately of any unauthorized use",
+        "Be responsible for all activities under your account"
+      ]
+    },
+    "usage": {
+      "title": "4. Acceptable Use",
+      "intro": "You agree not to use the service to:",
+      "prohibited": [
+        "Violate local, national, or international laws",
+        "Harass, abuse, or harm others",
+        "Transmit illegal, offensive, or inappropriate content",
+        "Distribute viruses or other malicious code",
+        "Impersonate another person",
+        "Circumvent the service's security measures"
+      ]
+    },
+    "content": {
+      "title": "5. User Content",
+      "ownership": "You retain ownership of any content you submit to Meeshy.",
+      "license": "By submitting content, you grant us a worldwide, non-exclusive, royalty-free license to use, modify, and distribute this content as part of the service.",
+      "responsibility": "You are fully responsible for the content you share and warrant that it does not violate any third-party rights."
+    },
+    "privacy": {
+      "title": "6. Privacy",
+      "content": "Your privacy is important to us. Please review our Privacy Policy to understand how we collect, use, and protect your information."
+    },
+    "termination": {
+      "title": "7. Termination",
+      "content": "We may terminate or suspend your account at any time, with or without notice, for any violation of these terms. You may also terminate your account at any time by contacting us."
+    },
+    "limitation": {
+      "title": "8. Limitation of Liability",
+      "content": "To the fullest extent permitted by law, Meeshy shall not be liable for any indirect, incidental, special, or consequential damages resulting from the use of the service."
+    },
+    "changes": {
+      "title": "9. Changes to Terms",
+      "content": "We reserve the right to modify these terms at any time. Significant changes will be notified by email or through the application. Continued use of the service after changes constitutes your acceptance of the new terms."
+    },
+    "governing": {
+      "title": "10. Governing Law",
+      "content": "These terms are governed by French law. Any disputes will be subject to the exclusive jurisdiction of French courts."
+    },
+    "contact": {
+      "title": "11. Contact",
+      "intro": "For any questions regarding these terms of service, contact us:",
+      "email": "Email: legal@meeshy.com",
+      "address": "Address: Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+    },
+    "footer": {
+      "title": "Learn more about Meeshy",
+      "about": "About Us",
+      "contact": "Contact Us",
+      "partners": "Become a Partner",
+      "privacy": "Privacy Policy"
+    }
   }
 }

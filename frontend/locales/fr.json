@@ -99,7 +99,407 @@
       "createAccount": "Créer mon compte"
     },
     "footer": {
-      "copyright": "© 2024 Meeshy. Communication sans barrières linguistiques."
+      "copyright": "© 2026 Meeshy",
+      "tagline": "Rencontrez sans timidité",
+      "links": {
+        "about": "À propos",
+        "policy": "Politique",
+        "terms": "Conditions",
+        "contact": "Contact",
+        "partners": "Partenaires"
+      },
+      "social": {
+        "followUs": "Suivez-nous"
+      },
+      "usefulLinks": "Liens Utiles"
+    },
+    "about": {
+      "title": "À propos de Meeshy",
+      "subtitle": "Nous croyons que les barrières linguistiques ne devraient jamais empêcher des connexions significatives.",
+      "backHome": "Retour à l'accueil",
+      "mission": {
+        "title": "Notre Mission",
+        "description": "Connecter le monde, une traduction à la fois. Notre plateforme permet aux personnes de tous les coins du globe de communiquer librement, en brisant les murs qui nous séparent et en construisant des ponts de compréhension."
+      },
+      "values": {
+        "globalAccess": {
+          "title": "Accessibilité Globale",
+          "description": "Rendre la communication multilingue accessible à tous, partout dans le monde."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "Utiliser les dernières technologies d'IA pour des traductions précises et rapides."
+        },
+        "privacy": {
+          "title": "Respect de la Vie Privée",
+          "description": "Vos conversations restent privées sécurisées."
+        }
+      },
+      "team": {
+        "title": "Notre Équipe",
+        "description": "Créé avec ❤️ par des développeurs qui croient que la communication ne devrait avoir aucune frontière.",
+        "details": "Meeshy est développé par une équipe passionnée de développeurs, linguistes et designers qui partagent une vision commune : un monde où la langue n'est plus un obstacle à la communication humaine."
+      },
+      "cta": {
+        "title": "Vous voulez en savoir plus ?",
+        "contact": "Nous contacter"
+      }
+    },
+    "partners": {
+      "title": "Partenaires",
+      "subtitle": "Rejoignez notre écosystème de partenaires et contribuez à connecter le monde en brisant les barrières linguistiques.",
+      "backHome": "Retour à l'accueil",
+      "enterprise": {
+        "title": "Équipes d'Entreprise",
+        "description": "Déployez Meeshy dans votre entreprise pour permettre une communication multilingue fluide entre les équipes mondiales.",
+        "features": {
+          "deployment": "Déploiement sur site ou dans le cloud",
+          "sso": "Intégration SSO et Active Directory",
+          "analytics": "Analyse de communication d'équipe",
+          "support": "Support entreprise 24/7",
+          "customization": "Personnalisation et fonctionnalités sur mesure"
+        },
+        "pricing": "Contactez-nous pour les tarifs entreprise"
+      },
+      "education": {
+        "title": "Institutions Éducatives",
+        "description": "Favorisez la collaboration internationale dans les écoles et universités avec des outils de communication multilingues.",
+        "features": {
+          "classrooms": "Salles de classe virtuelles multilingues",
+          "exchange": "Support des programmes d'échange étudiant",
+          "learning": "Intégration à l'apprentissage des langues",
+          "admin": "Tableau de bord administratif",
+          "curriculum": "Support linguistique basé sur le programme"
+        },
+        "pricing": "Tarifs spéciaux pour les institutions éducatives"
+      },
+      "types": {
+        "tech": {
+          "title": "Partenaires Technologiques",
+          "description": "Intégrez Meeshy dans vos applications et services pour offrir des capacités de traduction multilingue à vos utilisateurs.",
+          "features": [
+            "API de traduction en temps réel",
+            "SDK pour applications mobiles",
+            "Intégration web simple",
+            "Support technique dédié"
+          ]
+        },
+        "strategic": {
+          "title": "Partenaires Stratégiques",
+          "description": "Collaborez avec nous pour développer de nouvelles fonctionnalités et étendre notre portée mondiale.",
+          "features": [
+            "Co-développement de fonctionnalités",
+            "Partenariats de distribution",
+            "Programmes de certification",
+            "Événements et conférences"
+          ]
+        }
+      },
+      "deployment": {
+        "title": "Solutions de Déploiement",
+        "onPremise": {
+          "title": "Déploiement Sur Site",
+          "description": "Contrôle total sur vos données avec une installation sur site.",
+          "features": {
+            "security": "Sécurité et confidentialité renforcées",
+            "compliance": "Respect des exigences de conformité",
+            "customization": "Capacités de personnalisation complètes",
+            "performance": "Performance optimisée pour votre infrastructure"
+          }
+        },
+        "cloud": {
+          "title": "Déploiement Cloud",
+          "description": "Configuration rapide avec notre solution cloud gérée.",
+          "features": {
+            "quick": "Configuration rapide en 5 minutes",
+            "scalable": "Infrastructure auto-évolutive",
+            "maintenance": "Aucune maintenance requise",
+            "updates": "Mises à jour et fonctionnalités automatiques"
+          }
+        }
+      },
+      "useCases": {
+        "title": "Cas d'Usage & Success Stories",
+        "business": {
+          "title": "Équipes d'Entreprise",
+          "items": {
+            "meetings": "Réunions d'équipe multilingues",
+            "support": "Support client international",
+            "collaboration": "Collaboration de projets transfrontaliers",
+            "training": "Programmes de formation globaux"
+          }
+        },
+        "education": {
+          "title": "Institutions Éducatives",
+          "items": {
+            "language": "Programmes d'apprentissage des langues",
+            "international": "Support aux étudiants internationaux",
+            "research": "Projets de recherche collaboratifs",
+            "cultural": "Programmes d'échange culturel"
+          }
+        },
+        "community": {
+          "title": "Organisations Communautaires",
+          "items": {
+            "nonprofits": "Sensibilisation internationale des ONG",
+            "events": "Événements et conférences multilingues",
+            "volunteer": "Programmes de coordination des bénévoles",
+            "healthcare": "Support de communication en santé"
+          }
+        }
+      },
+      "benefits": {
+        "title": "Avantages du Partenariat",
+        "priority": {
+          "title": "Accès Prioritaire",
+          "description": "Accès en avant-première aux nouvelles fonctionnalités et API"
+        },
+        "support": {
+          "title": "Support Dédié",
+          "description": "Équipe de support technique dédiée pour vos projets"
+        },
+        "visibility": {
+          "title": "Visibilité",
+          "description": "Mise en avant de votre partenariat sur nos plateformes"
+        }
+      },
+      "become": {
+        "title": "Devenir Partenaire",
+        "description": "Vous êtes intéressé par un partenariat avec Meeshy ? Contactez-nous pour discuter des opportunités de collaboration.",
+        "contact": "Nous contacter",
+        "about": "À propos de nous",
+        "api": "Documentation API"
+      }
+    },
+    "contact": {
+      "title": "Contactez-nous",
+      "subtitle": "Nous sommes situés au cœur de La Défense, Paris",
+      "backHome": "Retour à l'accueil",
+      "address": {
+        "title": "Notre Adresse",
+        "company": "Meeshy",
+        "building": "Tour First",
+        "street": "1 Place des Saisons",
+        "city": "92400 Courbevoie, France"
+      },
+      "contact": {
+        "title": "Contact",
+        "email": {
+          "label": "Email",
+          "value": "contact@meeshy.com"
+        },
+        "phone": {
+          "label": "Téléphone",
+          "value": "+33 1 23 45 67 89"
+        }
+      },
+      "hours": {
+        "title": "Horaires d'Ouverture",
+        "weekdays": "Lundi - Vendredi",
+        "weekdaysTime": "9h00 - 18h00",
+        "saturday": "Samedi",
+        "saturdayTime": "10h00 - 16h00",
+        "sunday": "Dimanche",
+        "sundayTime": "Fermé"
+      },
+      "transport": {
+        "title": "Comment nous rejoindre",
+        "train": {
+          "title": "En Train",
+          "rer": "RER A : Station \"La Défense - Grande Arche\"",
+          "transilien": "Transilien L : Station \"La Défense\"",
+          "time": "Depuis Paris : 10-15 minutes depuis Châtelet-Les Halles"
+        },
+        "metro": {
+          "title": "En Métro",
+          "line1": "Ligne 1 : Station \"La Défense - Grande Arche\"",
+          "time": "Depuis le centre de Paris : 20-25 minutes"
+        },
+        "bus": {
+          "title": "En Bus",
+          "lines": "Lignes : 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+          "stop": "Arrêt \"La Défense - Grande Arche\""
+        },
+        "lineU": {
+          "title": "Ligne U",
+          "transilien": "Transilien U : Station \"La Défense\"",
+          "time": "Depuis l'ouest de Paris : 15-20 minutes"
+        },
+        "lineE277": {
+          "title": "Ligne E277",
+          "bus": "Bus E277 : Arrêt \"La Défense - Grande Arche\"",
+          "time": "Service express depuis l'ouest"
+        },
+        "car": {
+          "title": "En Voiture",
+          "highway": "Autoroute A14 : Sortie \"La Défense\"",
+          "parking": "Parking : Plusieurs parkings disponibles dans le quartier",
+          "rates": "Tarifs : 2-4€/heure selon le parking"
+        }
+      },
+      "cta": {
+        "title": "Vous voulez en savoir plus ?",
+        "learnMore": "En savoir plus",
+        "collaborate": "Collaborer avec nous"
+      }
+    },
+    "terms": {
+      "title": "Conditions d'Utilisation",
+      "lastUpdated": "Dernière mise à jour : 1er janvier 2026",
+      "sections": {
+        "acceptance": {
+          "title": "1. Acceptation des Conditions",
+          "content": "En accédant et en utilisant Meeshy, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service."
+        },
+        "description": {
+          "title": "2. Description du Service",
+          "content": "Meeshy est une plateforme de messagerie multilingue qui utilise l'intelligence artificielle pour traduire automatiquement les messages en temps réel. Notre service permet la communication sans barrières linguistiques directement dans votre navigateur."
+        },
+        "acceptableUse": {
+          "title": "3. Utilisation Acceptable",
+          "content": "Vous vous engagez à :",
+          "list": [
+            "Utiliser le service de manière légale et respectueuse",
+            "Ne pas publier de contenu offensant, illégal ou inapproprié",
+            "Respecter la vie privée et les droits d'autrui",
+            "Ne pas tenter de compromettre la sécurité du service",
+            "Ne pas utiliser le service à des fins commerciales sans autorisation"
+          ]
+        },
+        "privacy": {
+          "title": "4. Confidentialité et Données",
+          "content": "Nous nous engageons à protéger votre vie privée. Les traductions sont effectuées localement dans votre navigateur lorsque possible. Aucune donnée personnelle n'est stockée sans votre consentement explicite. Consultez notre politique de confidentialité pour plus de détails."
+        },
+        "intellectualProperty": {
+          "title": "5. Propriété Intellectuelle",
+          "content": "Meeshy et son contenu sont protégés par les droits d'auteur et autres lois sur la propriété intellectuelle. Vous ne pouvez pas copier, modifier ou distribuer notre service sans autorisation."
+        },
+        "limitation": {
+          "title": "6. Limitation de Responsabilité",
+          "content": "Meeshy est fourni \"en l'état\". Nous ne garantissons pas que le service sera ininterrompu ou exempt d'erreurs. Nous ne serons pas responsables des dommages indirects ou consécutifs résultant de l'utilisation de notre service."
+        },
+        "modifications": {
+          "title": "7. Modifications",
+          "content": "Nous nous réservons le droit de modifier ces conditions à tout moment. Les modifications prendront effet dès leur publication sur cette page. Votre utilisation continue du service constitue votre acceptation des conditions modifiées."
+        },
+        "contact": {
+          "title": "8. Contact",
+          "content": "Pour toute question concernant ces conditions d'utilisation, veuillez nous contacter à l'adresse : contact@meeshy.com"
+        }
+      },
+      "navigation": {
+        "title": "En savoir plus sur Meeshy",
+        "about": "À propos de nous",
+        "contact": "Nous contacter",
+        "partners": "Devenir partenaire"
+      }
+    },
+    "privacy": {
+      "title": "Politique de Confidentialité",
+      "lastUpdated": "Dernière mise à jour : 1er janvier 2026",
+      "backHome": "Retour à l'accueil",
+      "print": "Imprimer",
+      "sections": {
+        "introduction": {
+          "title": "1. Introduction",
+          "content": "Chez Meeshy, nous nous engageons à protéger votre vie privée et vos données personnelles. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre service de messagerie multilingue."
+        },
+        "dataCollection": {
+          "title": "2. Informations que nous collectons",
+          "personal": {
+            "title": "2.1 Informations personnelles",
+            "list": [
+              "Nom d'utilisateur et adresse e-mail (lors de l'inscription)",
+              "Préférences linguistiques",
+              "Informations de profil (optionnelles)"
+            ]
+          },
+          "translation": {
+            "title": "2.2 Données de traduction",
+            "list": [
+              "Messages traduits (traités localement dans votre navigateur)",
+              "Langues source et cible",
+              "Métadonnées de traduction (sans contenu des messages)"
+            ]
+          },
+          "technical": {
+            "title": "2.3 Données techniques",
+            "list": [
+              "Adresse IP (anonymisée)",
+              "Type de navigateur et version",
+              "Données d'utilisation du service (statistiques anonymes)"
+            ]
+          }
+        },
+        "usage": {
+          "title": "3. Comment nous utilisons vos informations",
+          "list": [
+            "Fourniture du service : Traduction en temps réel de vos messages",
+            "Amélioration du service : Développement de nouvelles fonctionnalités",
+            "Support client : Réponse à vos questions et résolution de problèmes",
+            "Sécurité : Protection contre les abus et la fraude",
+            "Communication : Informations importantes sur le service"
+          ]
+        },
+        "protection": {
+          "title": "4. Protection de vos données",
+          "local": {
+            "title": "4.1 Traitement local",
+            "content": "La plupart des traductions sont effectuées directement dans votre navigateur, ce qui signifie que vos messages ne quittent jamais votre appareil."
+          },
+          "encryption": {
+            "title": "4.2 Chiffrement",
+            "content": "Toutes les communications entre votre navigateur et nos serveurs sont chiffrées en utilisant TLS 1.3."
+          },
+          "storage": {
+            "title": "4.3 Stockage sécurisé",
+            "content": "Les données stockées sur nos serveurs sont protégées par des mesures de sécurité de niveau entreprise, incluant le chiffrement au repos."
+          }
+        },
+        "sharing": {
+          "title": "5. Partage d'informations",
+          "content": "Nous ne vendons, ne louons ni ne partageons vos informations personnelles avec des tiers, sauf dans les cas suivants :",
+          "list": [
+            "Avec votre consentement explicite",
+            "Pour se conformer à une obligation légale",
+            "Pour protéger nos droits, propriété ou sécurité",
+            "Avec des prestataires de services de confiance (sous contrat de confidentialité)"
+          ]
+        },
+        "rights": {
+          "title": "6. Vos droits",
+          "content": "Conformément au RGPD, vous avez le droit de :",
+          "list": [
+            "Accéder à vos données personnelles",
+            "Rectifier des informations inexactes",
+            "Supprimer vos données personnelles",
+            "Limiter le traitement de vos données",
+            "Portabilité de vos données",
+            "Vous opposer au traitement"
+          ],
+          "contact": "Pour exercer ces droits, contactez-nous à : privacy@meeshy.com"
+        },
+        "cookies": {
+          "title": "7. Cookies et technologies similaires",
+          "content": "Nous utilisons des cookies essentiels pour le fonctionnement du service et des cookies analytiques pour améliorer l'expérience utilisateur. Vous pouvez gérer vos préférences de cookies dans les paramètres de votre navigateur."
+        },
+        "modifications": {
+          "title": "8. Modifications de cette politique",
+          "content": "Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Les modifications importantes seront communiquées par e-mail ou via une notification dans l'application. La date de dernière mise à jour est indiquée en haut de cette page."
+        },
+        "contact": {
+          "title": "9. Contact",
+          "content": "Pour toute question concernant cette politique de confidentialité ou le traitement de vos données personnelles, veuillez nous contacter :",
+          "email": "Email : privacy@meeshy.com",
+          "address": "Adresse : Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+        }
+      },
+      "navigation": {
+        "title": "En savoir plus sur Meeshy",
+        "about": "À propos de nous",
+        "contact": "Nous contacter",
+        "partners": "Devenir partenaire"
+      }
     }
   },
   "auth": {
@@ -143,8 +543,23 @@
   "header": {
     "shareLinkCopied": "Lien de partage copié dans le presse-papiers",
     "clearSession": "Effacer la session",
-    "clearSessionConfirm": "Êtes-vous sûr de vouloir effacer votre session ? Cela vous déconnectera.",
-    "clearSessionDescription": "Cette action supprimera toutes vos données de session et vous déconnectera."
+    "clearSessionConfirm": "Êtes-vous sûr de vouloir effacer votre session ?",
+    "clearSessionDescription": "Cette action supprimera toutes vos données de session et vous déconnectera.",
+    "share": "Partager",
+    "login": "Connexion",
+    "register": "Inscription", 
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "anonymousSession": "Session anonyme",
+    "cancel": "Annuler",
+    "clearSessionButton": "Effacer la session",
+    "loginTitle": "Connexion",
+    "loginDescription": "Connectez-vous à votre compte Meeshy",
+    "registerTitle": "Créer un compte",
+    "registerDescription": "Rejoignez Meeshy et communiquez sans barrières"
   },
   "language": {
     "title": "Langues",
@@ -178,26 +593,29 @@
     "title": "Connexion",
     "subtitle": "Connectez-vous à votre compte",
     "formTitle": "Connexion",
-    "formDescription": "Entrez vos identifiants ou utilisez un compte de test",
+    "formDescription": "Entrez vos identifiants pour vous connecter",
     "usernameLabel": "Nom d'utilisateur ou email",
-    "usernamePlaceholder": "alice_fr, bob_en, carlos_es...",
-    "usernameHelp": "Utilisez le username (ex: alice_fr) ou cliquez sur 'Connexion rapide' ci-dessous",
+    "usernamePlaceholder": "Votre nom d'utilisateur",
+    "usernameHelp": "Entrez votre nom d'utilisateur ou votre adresse email",
     "passwordLabel": "Mot de passe",
-    "passwordPlaceholder": "password123",
-    "passwordHelp": "Mot de passe de test : password123",
+    "passwordPlaceholder": "Votre mot de passe",
+    "passwordHelp": "Entrez votre mot de passe personnel",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Masquer le mot de passe",
     "loginButton": "Se connecter",
     "loggingIn": "Connexion...",
-    "quickLoginTitle": "Connexion rapide",
-    "quickLoginDescription": "Cliquez sur un utilisateur pour vous connecter automatiquement. Mot de passe pour tous : password123",
-    "debugInfo": "Info de debug",
-    "backendUrl": "Backend URL",
-    "loginEndpoint": "Login endpoint",
-    "accountsLoaded": "Comptes chargés",
     "verifyingAuth": "Vérification de l'authentification...",
     "redirecting": "Redirection en cours...",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "validation": {
+      "required": "Tous les champs sont requis"
+    },
+    "success": {
+      "loginSuccess": "Connexion réussie !"
+    },
+    "errors": {
+      "loginFailed": "Échec de la connexion. Vérifiez vos identifiants."
+    }
   },
   "register": {
     "title": "Créer un compte",
@@ -219,7 +637,18 @@
     "registerButton": "Créer un compte",
     "creating": "Création...",
     "fillRequiredFields": "Veuillez remplir tous les champs obligatoires",
-    "accountCreationError": "Erreur lors de la création du compte"
+    "accountCreationError": "Erreur lors de la création du compte",
+    "validation": {
+      "required": "Tous les champs sont requis",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "passwordLength": "Le mot de passe doit contenir au moins 6 caractères"
+    },
+    "success": {
+      "registerSuccess": "Compte créé avec succès !"
+    },
+    "errors": {
+      "registerFailed": "Échec de l'inscription. Veuillez réessayer."
+    }
   },
   "joinConversation": {
     "title": "Rejoindre une conversation",
@@ -560,9 +989,7 @@
       "twoFactorAuth": "Authentification à deux facteurs",
       "loginHistory": "Historique de connexion",
       "activeSessions": "Sessions actives"
-    },
-    
-    "noUserConnected": "Aucun utilisateur connecté"
+    }
   },
   "notFound": {
     "title": "Page non trouvée",
@@ -581,15 +1008,6 @@
     "invalidPhone": "Numéro de téléphone invalide",
     "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
     "passwordsDoNotMatch": "Les mots de passe ne correspondent pas"
-  },
-  "testAccounts": {
-    "alice_fr": "Alice Martin (Français)",
-    "bob_en": "Bob Smith (Anglais)",
-    "carlos_es": "Carlos Rodriguez (Espagnol)",
-    "dieter_de": "Dieter Mueller (Allemand)",
-    "li_zh": "Li Wei (Chinois)",
-    "yuki_ja": "Yuki Tanaka (Japonais)",
-    "maria_pt": "Maria Silva (Portugais)"
   },
   "communities": {
     "private": "Privé",
@@ -671,5 +1089,475 @@
     "user": "Utilisateur",
     "anonymous": "Anonyme",
     "unknownUser": "?"
+  },
+  "toasts": {
+    "connection": {
+      "established": "Connexion établie",
+      "disconnected": "Déconnecté par le serveur",
+      "lost": "Connexion perdue, reconnexion...",
+      "reconnecting": "Connexion en cours - Veuillez patienter...",
+      "websocketConnecting": "Connexion WebSocket en cours...",
+      "reconnectSuccess": "Reconnexion réussie !",
+      "reconnectFailed": "Reconnexion échouée - Vérifiez le serveur",
+      "cannotReconnect": "Impossible de se reconnecter. Veuillez recharger la page."
+    },
+    "messages": {
+      "sent": "Message envoyé !",
+      "sendError": "Erreur lors de l'envoi du message",
+      "editSoon": "Édition de message bientôt disponible",
+      "translationError": "Erreur lors de la demande de traduction",
+      "translationMaxTier": "Cette traduction utilise déjà le tier le plus élevé",
+      "translationInProgress": "Traduction en cours...",
+      "retranslationInProgress": "Retraduction forcée en cours...",
+      "translationSuccess": "Message traduit avec {model}",
+      "textCopied": "Texte copié"
+    },
+    "conversations": {
+      "loadError": "Impossible de charger les conversations",
+      "loadErrorGeneric": "Erreur lors du chargement de la conversation"
+    },
+    "auth": {
+      "logoutSuccess": "Déconnexion réussie",
+      "fillAllFields": "Veuillez remplir tous les champs",
+      "connectionError": "Erreur de connexion",
+      "serverConnectionError": "Erreur de connexion au serveur"
+    },
+    "settings": {
+      "saved": "Paramètres sauvegardés avec succès",
+      "saveError": "Erreur lors de la sauvegarde",
+      "reset": "Paramètres réinitialisés"
+    },
+    "links": {
+      "copied": "Lien copié dans le presse-papiers",
+      "generated": "Lien généré avec succès !",
+      "generatedAndCopied": "Lien généré et copié dans le presse-papiers !",
+      "generateError": "Erreur lors de la génération du lien"
+    },
+    "participants": {
+      "removed": "Participant supprimé de la conversation",
+      "removeError": "Erreur lors de la suppression du participant"
+    },
+    "conversation": {
+      "nameUpdated": "Nom de la conversation mis à jour",
+      "nameUpdateError": "Erreur lors de la mise à jour du nom",
+      "created": "Conversation créée avec succès"
+    }
+  },
+  "partners": {
+    "backHome": "Retour à l'accueil",
+    "title": "Partenariats Meeshy",
+    "subtitle": "Rejoignez notre écosystème et offrez des solutions de communication multilingues à vos équipes, étudiants et communautés.",
+    "enterprise": {
+      "title": "Équipes d'Entreprise",
+      "description": "Solutions dédiées pour les organisations qui souhaitent intégrer la traduction en temps réel dans leurs flux de travail.",
+      "features": {
+        "deployment": "Déploiement sur site ou dans le cloud",
+        "sso": "Intégration SSO et gestion des utilisateurs",
+        "analytics": "Tableaux de bord et analyses avancées",
+        "support": "Support prioritaire 24/7",
+        "customization": "Personnalisation complète de l'interface"
+      },
+      "pricing": "Tarification sur mesure - Nous contacter"
+    },
+    "education": {
+      "title": "Institutions Éducatives",
+      "description": "Programmes spéciaux pour les écoles, universités et centres de formation qui veulent faciliter les échanges internationaux.",
+      "features": {
+        "classrooms": "Salles de classe virtuelles multilingues",
+        "exchange": "Programmes d'échange facilités",
+        "learning": "Outils d'apprentissage adaptatifs",
+        "admin": "Gestion centralisée des établissements",
+        "curriculum": "Intégration dans les cursus existants"
+      },
+      "pricing": "Tarifs préférentiels pour l'éducation - 50% de réduction"
+    },
+    "types": {
+      "tech": {
+        "title": "Partenaires Technologiques",
+        "description": "Intégrez nos API de traduction dans vos applications et services existants.",
+        "features": {
+          "0": "API REST et WebSocket complètes",
+          "1": "SDK disponibles en plusieurs langages",
+          "2": "Documentation technique détaillée",
+          "3": "Support développeur dédié"
+        }
+      }
+    },
+    "deployment": {
+      "title": "Solutions de Déploiement",
+      "onPremise": {
+        "title": "Déploiement Sur Site",
+        "description": "Installation complète dans votre infrastructure pour un contrôle total et une sécurité maximale.",
+        "features": {
+          "security": "Sécurité et confidentialité renforcées",
+          "compliance": "Conformité aux réglementations spécifiques",
+          "customization": "Personnalisation avancée selon vos besoins",
+          "performance": "Optimisation des performances sur votre réseau"
+        }
+      },
+      "cloud": {
+        "title": "Solution Cloud",
+        "description": "Déploiement rapide et gestion simplifiée avec notre infrastructure cloud sécurisée.",
+        "features": {
+          "quick": "Mise en place rapide en moins de 24h",
+          "scalable": "Montée en charge automatique",
+          "maintenance": "Maintenance et mises à jour automatiques",
+          "updates": "Nouvelles fonctionnalités en continu"
+        }
+      }
+    },
+    "useCases": {
+      "title": "Cas d'Usage",
+      "business": {
+        "title": "Entreprises",
+        "items": {
+          "meetings": "Réunions internationales fluides",
+          "support": "Support client multilingue",
+          "collaboration": "Collaboration d'équipes dispersées",
+          "training": "Formation et onboarding globaux"
+        }
+      },
+      "education": {
+        "title": "Éducation",
+        "items": {
+          "language": "Apprentissage des langues immersif",
+          "international": "Programmes internationaux",
+          "research": "Collaboration de recherche mondiale",
+          "cultural": "Échanges culturels enrichissants"
+        }
+      },
+      "community": {
+        "title": "Communautés",
+        "items": {
+          "nonprofits": "Organisations à but non lucratif",
+          "events": "Événements multiculturels",
+          "volunteer": "Programmes de bénévolat internationaux",
+          "healthcare": "Services de santé communautaires"
+        }
+      }
+    },
+    "benefits": {
+      "title": "Avantages Partenaires",
+      "priority": {
+        "title": "Support Prioritaire",
+        "description": "Accès direct à notre équipe technique avec des temps de réponse garantis."
+      },
+      "support": {
+        "title": "Accompagnement Dédié",
+        "description": "Un responsable partenaire dédié pour vous accompagner dans votre déploiement."
+      },
+      "visibility": {
+        "title": "Visibilité Renforcée",
+        "description": "Mise en avant de votre organisation dans notre écosystème de partenaires."
+      }
+    },
+    "become": {
+      "title": "Devenir Partenaire",
+      "description": "Prêt à transformer la communication dans votre organisation ? Contactez-nous pour discuter d'un partenariat personnalisé.",
+      "contact": "Nous Contacter",
+      "about": "En Savoir Plus",
+      "api": "Documentation API"
+    }
+  },
+  "about": {
+    "backHome": "Retour à l'accueil",
+    "title": "À Propos de Meeshy",
+    "subtitle": "Nous croyons que la communication ne devrait jamais être limitée par les barrières linguistiques.",
+    "mission": {
+      "title": "Notre Mission",
+      "description": "Chez Meeshy, nous nous efforçons de créer un monde où chaque conversation est possible, peu importe la langue parlée. Notre plateforme de messagerie avec traduction automatique permet aux personnes de tous horizons de se connecter authentiquement et de partager leurs idées sans limitations."
+    },
+    "values": {
+      "globalAccess": {
+        "title": "Accès Global",
+        "description": "Nous rendons la communication multilingue accessible à tous, partout dans le monde."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "Nous repoussons les limites de la technologie de traduction pour offrir une expérience fluide."
+      },
+      "privacy": {
+        "title": "Confidentialité",
+        "description": "Vos conversations restent privées. La traduction se fait localement sur votre appareil."
+      }
+    },
+    "team": {
+      "title": "Notre Équipe",
+      "description": "Nous sommes une équipe passionnée de développeurs, linguistes et designers qui travaillent ensemble pour briser les barrières linguistiques.",
+      "details": "Basés en France, nous comprenons l'importance de préserver les nuances culturelles dans chaque conversation tout en facilitant la compréhension mutuelle."
+    },
+    "cta": {
+      "title": "Vous voulez en savoir plus sur notre vision ?",
+      "contact": "Contactez-nous",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité"
+    }
+  },
+  "contact": {
+    "backHome": "Retour à l'accueil",
+    "title": "Nous Contacter",
+    "subtitle": "Nous serions ravis d'échanger avec vous sur vos besoins en communication multilingue.",
+    "address": {
+      "title": "Notre Adresse",
+      "company": "Meeshy SAS",
+      "building": "Tour Ariane",
+      "street": "5 Place de la Pyramide",
+      "city": "92800 Puteaux, France"
+    },
+    "contact": {
+      "title": "Informations de Contact",
+      "email": {
+        "label": "Email",
+        "value": "contact@meeshy.com"
+      },
+      "phone": {
+        "label": "Téléphone",
+        "value": "+33 (0)1 47 17 67 00"
+      }
+    },
+    "hours": {
+      "title": "Horaires d'Ouverture",
+      "weekdays": "Lundi - Vendredi",
+      "weekdaysTime": "9h00 - 18h00",
+      "saturday": "Samedi",
+      "saturdayTime": "10h00 - 16h00",
+      "sunday": "Dimanche",
+      "sundayTime": "Fermé"
+    },
+    "directions": {
+      "title": "Comment nous rejoindre",
+      "train": {
+        "title": "En Train",
+        "rera": "RER A : Station \"La Défense - Grande Arche\"",
+        "transilien": "Transilien L : Station \"La Défense\"",
+        "duration": "Depuis Paris : 10-15 minutes depuis Châtelet-Les Halles"
+      },
+      "metro": {
+        "title": "En Métro",
+        "line1": "Ligne 1 : Station \"La Défense - Grande Arche\"",
+        "duration": "Depuis le centre de Paris : 20-25 minutes"
+      },
+      "bus": {
+        "title": "En Bus",
+        "lines": "Lignes : 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+        "stop": "Arrêt \"La Défense - Grande Arche\""
+      },
+      "lineU": {
+        "title": "Ligne U",
+        "transilien": "Transilien U : Station \"La Défense\"",
+        "duration": "Depuis l'ouest de Paris : 15-20 minutes"
+      },
+      "express": {
+        "title": "Ligne E277",
+        "bus": "Bus E277 : Arrêt \"La Défense - Grande Arche\"",
+        "service": "Service express depuis l'ouest"
+      },
+      "car": {
+        "title": "En Voiture",
+        "highway": "Autoroute A14 : Sortie \"La Défense\"",
+        "parking": "Parking : Plusieurs parkings disponibles dans le quartier",
+        "rates": "Tarifs : 2-4€/heure selon le parking"
+      }
+    },
+    "cta": {
+      "title": "Vous voulez en savoir plus ?",
+      "about": "En savoir plus",
+      "partners": "Collaborer avec nous"
+    }
+  },
+  "privacy": {
+    "backHome": "Retour à l'accueil",
+    "print": "Imprimer",
+    "title": "Politique de Confidentialité",
+    "lastUpdated": "Dernière mise à jour : 6 septembre 2025",
+    "introduction": {
+      "title": "1. Introduction",
+      "content": "Chez Meeshy, nous nous engageons à protéger votre vie privée et vos données personnelles. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre service de messagerie multilingue."
+    },
+    "dataCollection": {
+      "title": "2. Informations que nous collectons",
+      "personal": {
+        "title": "2.1 Informations personnelles",
+        "items": [
+          "Nom d'utilisateur et adresse e-mail (lors de l'inscription)",
+          "Préférences linguistiques",
+          "Informations de profil (optionnelles)"
+        ]
+      },
+      "translation": {
+        "title": "2.2 Données de traduction",
+        "items": [
+          "Messages traduits (traités localement dans votre navigateur)",
+          "Langues source et cible",
+          "Métadonnées de traduction (sans contenu des messages)"
+        ]
+      },
+      "technical": {
+        "title": "2.3 Données techniques",
+        "items": [
+          "Adresse IP (anonymisée)",
+          "Type de navigateur et version",
+          "Données d'utilisation du service (statistiques anonymes)"
+        ]
+      }
+    },
+    "usage": {
+      "title": "3. Comment nous utilisons vos informations",
+      "items": [
+        {
+          "title": "Fourniture du service :",
+          "description": "Traduction en temps réel de vos messages"
+        },
+        {
+          "title": "Amélioration du service :",
+          "description": "Développement de nouvelles fonctionnalités"
+        },
+        {
+          "title": "Support client :",
+          "description": "Réponse à vos questions et résolution de problèmes"
+        },
+        {
+          "title": "Sécurité :",
+          "description": "Protection contre les abus et la fraude"
+        },
+        {
+          "title": "Communication :",
+          "description": "Informations importantes sur le service"
+        }
+      ]
+    },
+    "protection": {
+      "title": "4. Protection de vos données",
+      "local": {
+        "title": "4.1 Traitement local",
+        "content": "La plupart des traductions sont effectuées directement dans votre navigateur, ce qui signifie que vos messages ne quittent jamais votre appareil."
+      },
+      "encryption": {
+        "title": "4.2 Chiffrement",
+        "content": "Toutes les communications entre votre navigateur et nos serveurs sont chiffrées en utilisant TLS 1.3."
+      },
+      "storage": {
+        "title": "4.3 Stockage sécurisé",
+        "content": "Les données stockées sur nos serveurs sont protégées par des mesures de sécurité de niveau entreprise, incluant le chiffrement au repos."
+      }
+    },
+    "sharing": {
+      "title": "5. Partage d'informations",
+      "intro": "Nous ne vendons, ne louons ni ne partageons vos informations personnelles avec des tiers, sauf dans les cas suivants :",
+      "cases": [
+        "Avec votre consentement explicite",
+        "Pour se conformer à une obligation légale",
+        "Pour protéger nos droits, propriété ou sécurité",
+        "Avec des prestataires de services de confiance (sous contrat de confidentialité)"
+      ]
+    },
+    "rights": {
+      "title": "6. Vos droits",
+      "intro": "Conformément au RGPD, vous avez le droit de :",
+      "list": [
+        "Accéder à vos données personnelles",
+        "Rectifier des informations inexactes",
+        "Supprimer vos données personnelles",
+        "Limiter le traitement de vos données",
+        "Portabilité de vos données",
+        "Vous opposer au traitement"
+      ],
+      "contact": "Pour exercer ces droits, contactez-nous à : privacy@meeshy.com"
+    },
+    "cookies": {
+      "title": "7. Cookies et technologies similaires",
+      "content": "Nous utilisons des cookies essentiels pour le fonctionnement du service et des cookies analytiques pour améliorer l'expérience utilisateur. Vous pouvez gérer vos préférences de cookies dans les paramètres de votre navigateur."
+    },
+    "changes": {
+      "title": "8. Modifications de cette politique",
+      "content": "Nous pouvons mettre à jour cette politique de confidentialité de temps à autre. Les modifications importantes seront communiquées par e-mail ou via une notification dans l'application. La date de dernière mise à jour est indiquée en haut de cette page."
+    },
+    "contact": {
+      "title": "9. Contact",
+      "intro": "Pour toute question concernant cette politique de confidentialité ou le traitement de vos données personnelles, veuillez nous contacter :",
+      "email": "Email : privacy@meeshy.com",
+      "address": "Adresse : Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+    },
+    "footer": {
+      "title": "En savoir plus sur Meeshy",
+      "about": "À propos de nous",
+      "contact": "Nous contacter",
+      "partners": "Devenir partenaire"
+    }
+  },
+  "terms": {
+    "backHome": "Retour à l'accueil",
+    "print": "Imprimer",
+    "title": "Conditions d'Utilisation",
+    "lastUpdated": "Dernière mise à jour : 1er janvier 2026",
+    "acceptance": {
+      "title": "1. Acceptation des Conditions",
+      "content": "En accédant et en utilisant Meeshy, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service."
+    },
+    "service": {
+      "title": "2. Description du Service",
+      "content": "Meeshy est un service de messagerie multilingue qui permet la traduction en temps réel de messages. Nous nous réservons le droit de modifier, suspendre ou interrompre le service à tout moment."
+    },
+    "account": {
+      "title": "3. Compte Utilisateur",
+      "intro": "Pour utiliser certaines fonctionnalités de Meeshy, vous devez créer un compte. Vous vous engagez à :",
+      "responsibilities": [
+        "Fournir des informations exactes et complètes",
+        "Maintenir la sécurité de votre mot de passe",
+        "Nous notifier immédiatement de tout usage non autorisé",
+        "Être responsable de toutes les activités sous votre compte"
+      ]
+    },
+    "usage": {
+      "title": "4. Utilisation Acceptable",
+      "intro": "Vous vous engagez à ne pas utiliser le service pour :",
+      "prohibited": [
+        "Violer les lois locales, nationales ou internationales",
+        "Harceler, abuser ou nuire à autrui",
+        "Transmettre du contenu illégal, offensant ou inapproprié",
+        "Distribuer des virus ou autres codes malveillants",
+        "Usurper l'identité d'une autre personne",
+        "Contourner les mesures de sécurité du service"
+      ]
+    },
+    "content": {
+      "title": "5. Contenu Utilisateur",
+      "ownership": "Vous conservez la propriété de tout contenu que vous soumettez à Meeshy.",
+      "license": "En soumettant du contenu, vous nous accordez une licence mondiale, non exclusive, libre de redevances pour utiliser, modifier et distribuer ce contenu dans le cadre du service.",
+      "responsibility": "Vous êtes entièrement responsable du contenu que vous partagez et garantissez qu'il ne viole aucun droit de tiers."
+    },
+    "privacy": {
+      "title": "6. Confidentialité",
+      "content": "Votre vie privée est importante pour nous. Veuillez consulter notre Politique de Confidentialité pour comprendre comment nous collectons, utilisons et protégeons vos informations."
+    },
+    "termination": {
+      "title": "7. Résiliation",
+      "content": "Nous pouvons résilier ou suspendre votre compte à tout moment, avec ou sans préavis, pour toute violation de ces conditions. Vous pouvez également résilier votre compte à tout moment en nous contactant."
+    },
+    "limitation": {
+      "title": "8. Limitation de Responsabilité",
+      "content": "Dans toute la mesure permise par la loi, Meeshy ne sera pas responsable des dommages indirects, accessoires, spéciaux ou consécutifs résultant de l'utilisation du service."
+    },
+    "changes": {
+      "title": "9. Modifications des Conditions",
+      "content": "Nous nous réservons le droit de modifier ces conditions à tout moment. Les modifications importantes seront notifiées par e-mail ou via l'application. L'utilisation continue du service après les modifications constitue votre acceptation des nouvelles conditions."
+    },
+    "governing": {
+      "title": "10. Droit Applicable",
+      "content": "Ces conditions sont régies par les lois françaises. Tout litige sera soumis à la juridiction exclusive des tribunaux français."
+    },
+    "contact": {
+      "title": "11. Contact",
+      "intro": "Pour toute question concernant ces conditions d'utilisation, contactez-nous :",
+      "email": "Email : legal@meeshy.com",
+      "address": "Adresse : Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+    },
+    "footer": {
+      "title": "En savoir plus sur Meeshy",
+      "about": "À propos de nous",
+      "contact": "Nous contacter",
+      "partners": "Devenir partenaire",
+      "privacy": "Politique de Confidentialité"
+    }
   }
 }
