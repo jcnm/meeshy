@@ -1,4 +1,19 @@
 {
+  "languageNames": {
+    "en": "Anglais",
+    "fr": "Français", 
+    "pt": "Portugais",
+    "es": "Espagnol",
+    "de": "Allemand",
+    "it": "Italien",
+    "zh": "Chinois",
+    "ja": "Japonais",
+    "ar": "Arabe",
+    "ru": "Russe",
+    "ko": "Coréen",
+    "hi": "Hindi",
+    "tr": "Turc"
+  },
   "common": {
     "loading": "Chargement...",
     "error": "Erreur",

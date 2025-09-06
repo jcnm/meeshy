@@ -247,20 +247,11 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       return;
     }
     
-    setUserLanguageConfig(prev => {
-      const newConfig = {
-        ...prev,
-        customDestinationLanguage: language,
-        useCustomDestination: true,
-      };
-      
-      // Also update interface language if it matches the previous custom destination
-      if (prev.customDestinationLanguage === currentInterfaceLanguage) {
-        setCurrentInterfaceLanguage(language);
-      }
-      
-      return newConfig;
-    });
+    setUserLanguageConfig(prev => ({
+      ...prev,
+      customDestinationLanguage: language,
+      useCustomDestination: true,
+    }));
   };
 
   const setInterfaceLanguage = (language: string) => {
@@ -284,11 +275,16 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   };
 
   const getSupportedLanguages = () => {
-    return INTERFACE_LANGUAGES.map(lang => ({
-      code: lang.code,
-      name: lang.name,
-      nativeName: lang.name
-    }));
+    return INTERFACE_LANGUAGES.map(lang => {
+      // Pour éviter une dépendance circulaire avec useTranslations, 
+      // nous retournons le nom natif et laissons les composants 
+      // utiliser leurs propres traductions
+      return {
+        code: lang.code,
+        name: lang.name, // Nom en anglais
+        nativeName: lang.name // Nom natif (sera traduit par le composant)
+      };
+    });
   };
 
   const contextValue: LanguageContextType = {

@@ -4,9 +4,13 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { X, Languages, Globe } from 'lucide-react';
 import { useBrowserLanguageDetection } from '@/hooks/useBrowserLanguageDetection';
 import { useLanguage } from '@/context/LanguageContext';
+import { useLanguageName } from '@/hooks/useLanguageNames';
 
 interface LanguageDetectionNotificationProps {
   showNotification?: boolean;
@@ -28,6 +32,9 @@ export function LanguageDetectionNotification({
   const { currentInterfaceLanguage, setInterfaceLanguage } = useLanguage();
   const [shouldShowNotification, setShouldShowNotification] = useState(false);
   const [hasBeenShown, setHasBeenShown] = useState(false);
+  
+  // Obtenir le nom de la langue détectée traduit dans la langue de l'interface
+  const detectedLanguageName = useLanguageName(detectedInterfaceLanguage);
 
   useEffect(() => {
     if (!isDetectionComplete || hasBeenShown || !showNotification) return;
@@ -72,15 +79,6 @@ export function LanguageDetectionNotification({
     return null;
   }
 
-  const getLanguageName = (code: string) => {
-    const languageNames: Record<string, string> = {
-      'en': 'English',
-      'fr': 'Français',
-      'pt': 'Português'
-    };
-    return languageNames[code] || code.toUpperCase();
-  };
-
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4">
       <div className="flex items-start space-x-3">
@@ -92,7 +90,7 @@ export function LanguageDetectionNotification({
             Langue détectée
           </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Nous avons détecté que votre navigateur préfère <strong>{getLanguageName(detectedInterfaceLanguage)}</strong>. 
+            Nous avons détecté que votre navigateur préfère <strong>{detectedLanguageName}</strong>. 
             Souhaitez-vous changer la langue de l'interface ?
           </p>
           <div className="flex space-x-2 mt-3">
