@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { RegisterForm } from '@/components/auth/register-form';
 import { LoginForm } from '@/components/auth/login-form';
 import { AccessDenied } from '@/components/ui/access-denied';
+import { AnonymousChatErrorHandler } from '@/components/chat/anonymous-chat-error-handler';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface ConversationData {
   conversation: {
@@ -67,6 +69,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<'welcome' | 'login' | 'register' | 'join'>('welcome');
+  const { t } = useTranslations('anonymousChat');
 
   const conversationShareLinkId = params.conversationShareLinkId as string;
 
@@ -86,7 +89,7 @@ export default function ChatPage() {
   useEffect(() => {
     async function loadConversationData() {
       if (!conversationShareLinkId) {
-        setError('ID de lien manquant');
+        setError(t('missingLinkId'));
         setLoading(false);
         return;
       }
@@ -115,26 +118,60 @@ export default function ChatPage() {
           }
         });
         
-        // Préparer les options d'authentification
+        // Validation améliorée de l'authentification
         const options: any = {};
+        let hasValidAuth = false;
         
         console.log('[CHAT_PAGE] User object:', user);
         console.log('[CHAT_PAGE] Token from authState:', token);
         console.log('[CHAT_PAGE] Is anonymous:', isAnonymous);
         
         if (isAnonymous && token) {
-          // Session anonyme
-          options.sessionToken = token;
-          console.log('[CHAT_PAGE] Utilisation sessionToken:', token);
+          // Session anonyme - vérifier que le token est valide
+          const sessionToken = localStorage.getItem('anonymous_session_token');
+          const participant = localStorage.getItem('anonymous_participant');
+          
+          if (sessionToken && participant) {
+            try {
+              const participantData = JSON.parse(participant);
+              if (participantData.id && participantData.username) {
+                options.sessionToken = sessionToken;
+                hasValidAuth = true;
+                console.log('[CHAT_PAGE] Session anonyme valide détectée');
+              }
+            } catch (e) {
+              console.error('[CHAT_PAGE] Erreur parsing participant:', e);
+            }
+          }
         } else if (user && typeof user === 'object' && user.id) {
           // Utilisateur authentifié
           const authToken = localStorage.getItem('auth_token');
           if (authToken) {
             options.authToken = authToken;
-            console.log('[CHAT_PAGE] Utilisation authToken');
+            hasValidAuth = true;
+            console.log('[CHAT_PAGE] Utilisateur authentifié valide détecté');
           }
-        } else {
-          console.log('[CHAT_PAGE] Aucune authentification détectée');
+        }
+        
+        if (!hasValidAuth) {
+          console.log('[CHAT_PAGE] Aucune authentification valide détectée');
+          // Pour les utilisateurs anonymes, rediriger vers la page de jointure
+          if (conversationShareLinkId.startsWith('mshy_')) {
+            // C'est un linkId, rediriger vers /join
+            router.push(`/join/${conversationShareLinkId}`);
+            return;
+          } else {
+            // C'est un conversationShareLinkId, essayer de récupérer le linkId
+            const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+            if (storedLinkId) {
+              router.push(`/join/${storedLinkId}`);
+              return;
+            } else {
+              setError('Session expirée. Veuillez rejoindre la conversation à nouveau.');
+              setLoading(false);
+              return;
+            }
+          }
         }
         
         const data = await LinkConversationService.getConversationData(conversationShareLinkId, options);
@@ -148,51 +185,84 @@ export default function ChatPage() {
         });
         setConversationData(data);
       } catch (err) {
-        console.error('Erreur lors du chargement:', err);
+        console.error('[CHAT_PAGE] Erreur chargement conversation:', err);
         
-        // Si l'erreur est "Lien de partage non trouvé", essayer avec un format différent
-        if (err instanceof Error && err.message.includes('Lien de partage non trouvé')) {
-          console.log('[CHAT_PAGE] Tentative de fallback avec format différent...');
-          
-          try {
-            // Préparer les options d'authentification pour le fallback
-            const fallbackOptions: any = {};
+        // Gestion d'erreur améliorée
+        let errorMessage = 'Erreur lors du chargement de la conversation';
+        let shouldRedirect = false;
+        let redirectPath = '';
+        
+        if (err instanceof Error) {
+          if (err.message.includes('403') || err.message.includes('Forbidden')) {
+            errorMessage = 'Accès non autorisé à cette conversation';
+          } else if (err.message.includes('404') || err.message.includes('Not Found') || err.message.includes('Lien de partage non trouvé')) {
+            errorMessage = 'Conversation introuvable';
+            // Essayer avec un format différent
+            console.log('[CHAT_PAGE] Tentative de fallback avec format différent...');
             
-            if (isAnonymous && token) {
-              fallbackOptions.sessionToken = token;
-            } else if (user && typeof user === 'object' && user.id) {
-              const authToken = localStorage.getItem('auth_token');
-              if (authToken) {
-                fallbackOptions.authToken = authToken;
+            try {
+              // Préparer les options d'authentification pour le fallback
+              const fallbackOptions: any = {};
+              
+              if (isAnonymous && token) {
+                fallbackOptions.sessionToken = token;
+              } else if (user && typeof user === 'object' && user.id) {
+                const authToken = localStorage.getItem('auth_token');
+                if (authToken) {
+                  fallbackOptions.authToken = authToken;
+                }
               }
+              
+              // Si l'identifiant ne commence pas par 'mshy_', essayer d'ajouter le préfixe
+              let fallbackIdentifier = conversationShareLinkId;
+              if (!conversationShareLinkId.startsWith('mshy_')) {
+                fallbackIdentifier = `mshy_${conversationShareLinkId}`;
+                console.log('[CHAT_PAGE] Essai avec préfixe mshy_:', fallbackIdentifier);
+              } else {
+                // Si l'identifiant commence par 'mshy_', essayer sans le préfixe
+                fallbackIdentifier = conversationShareLinkId.replace('mshy_', '');
+                console.log('[CHAT_PAGE] Essai sans préfixe mshy_:', fallbackIdentifier);
+              }
+              
+              const fallbackData = await LinkConversationService.getConversationData(fallbackIdentifier, fallbackOptions);
+              console.log('[CHAT_PAGE] Données reçues avec fallback:', {
+                hasData: !!fallbackData,
+                hasCurrentUser: !!fallbackData?.currentUser,
+                userType: fallbackData?.userType,
+                conversationId: fallbackData?.conversation?.id
+              });
+              setConversationData(fallbackData);
+              return; // Succès avec fallback
+            } catch (fallbackErr) {
+              console.error('Erreur lors du fallback:', fallbackErr);
             }
-            
-            // Si l'identifiant ne commence pas par 'mshy_', essayer d'ajouter le préfixe
-            let fallbackIdentifier = conversationShareLinkId;
-            if (!conversationShareLinkId.startsWith('mshy_')) {
-              fallbackIdentifier = `mshy_${conversationShareLinkId}`;
-              console.log('[CHAT_PAGE] Essai avec préfixe mshy_:', fallbackIdentifier);
+          } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+            errorMessage = 'Session expirée. Veuillez vous reconnecter.';
+            shouldRedirect = true;
+            // Rediriger vers la page de jointure pour les sessions anonymes
+            if (isAnonymous) {
+              const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+              if (storedLinkId) {
+                redirectPath = `/join/${storedLinkId}`;
+              } else {
+                redirectPath = '/';
+              }
             } else {
-              // Si l'identifiant commence par 'mshy_', essayer sans le préfixe
-              fallbackIdentifier = conversationShareLinkId.replace('mshy_', '');
-              console.log('[CHAT_PAGE] Essai sans préfixe mshy_:', fallbackIdentifier);
+              redirectPath = '/login';
             }
-            
-            const fallbackData = await LinkConversationService.getConversationData(fallbackIdentifier, fallbackOptions);
-            console.log('[CHAT_PAGE] Données reçues avec fallback:', {
-              hasData: !!fallbackData,
-              hasCurrentUser: !!fallbackData?.currentUser,
-              userType: fallbackData?.userType,
-              conversationId: fallbackData?.conversation?.id
-            });
-            setConversationData(fallbackData);
-            return; // Succès avec fallback
-          } catch (fallbackErr) {
-            console.error('Erreur lors du fallback:', fallbackErr);
+          } else {
+            errorMessage = err.message;
           }
         }
         
-        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        setError(errorMessage);
+        
+        // Redirection si nécessaire
+        if (shouldRedirect && redirectPath) {
+          setTimeout(() => {
+            router.push(redirectPath);
+          }, 2000); // Attendre 2 secondes pour que l'utilisateur voie le message d'erreur
+        }
       } finally {
         setLoading(false);
       }
@@ -206,39 +276,27 @@ export default function ChatPage() {
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-blue-600 font-medium">Chargement de la conversation...</p>
+          <p className="mt-4 text-blue-600 font-medium">{t('loadingConversation')}</p>
         </div>
       </div>
     );
   }
 
   if (error) {
-    // Déterminer le type d'erreur pour choisir la variante appropriée
-    let variant: 'forbidden' | 'unauthorized' | 'not-found' | 'error' = 'error';
-    let title = "Erreur";
-    let description = error;
-
-    if (error.includes('403') || error.includes('Forbidden') || error.includes('Accès non autorisé')) {
-      variant = 'forbidden';
-      title = "Accès interdit";
-      description = "Vous n'avez pas les permissions nécessaires pour accéder à cette conversation.";
-    } else if (error.includes('401') || error.includes('Unauthorized')) {
-      variant = 'unauthorized';
-      title = "Authentification requise";
-      description = "Vous devez être connecté pour accéder à cette conversation.";
-    } else if (error.includes('404') || error.includes('Not Found') || error.includes('introuvable')) {
-      variant = 'not-found';
-      title = "Conversation introuvable";
-      description = "Cette conversation n'existe pas ou le lien est invalide.";
-    }
-
     return (
-      <AccessDenied
-        variant={variant}
-        title={title}
-        description={description}
-        showBackButton={true}
-        showHomeButton={true}
+      <AnonymousChatErrorHandler
+        error={error}
+        identifier={conversationShareLinkId}
+        isAnonymous={isAnonymous}
+        onRetry={() => {
+          setError(null);
+          setLoading(true);
+          // Recharger les données
+          window.location.reload();
+        }}
+        onRedirect={(path) => {
+          router.push(path);
+        }}
       />
     );
   }

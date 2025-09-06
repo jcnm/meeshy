@@ -29,7 +29,8 @@ import {
 } from 'lucide-react';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
-import { User, ConversationLink, AuthMode } from '@/types';
+import { User } from '@shared/types';
+import { ConversationLink, AuthMode } from '@/types/frontend';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';

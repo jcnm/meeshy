@@ -23,7 +23,8 @@ import {
   Filter
 } from 'lucide-react';
 import { buildApiUrl } from '@/lib/config';
-import { User, Group, Message } from '@/types';
+import { User, Message } from '@shared/types';
+import { Group } from '@/types/frontend';
 
 interface SearchResults {
   users: User[];

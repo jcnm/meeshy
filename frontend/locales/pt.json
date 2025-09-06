@@ -1001,6 +1001,208 @@
       "partners": "Torne-se um Parceiro"
     }
   },
+  "settings": {
+    "title": "Configurações",
+    "pageTitle": "Configurações para {username}",
+    "loadingSettings": "Carregando configurações...",
+    "settingsError": "Erro ao carregar configurações",
+    "settingsSaved": "Configurações salvas com sucesso",
+    "settingsSaveError": "Erro ao salvar configurações",
+    
+    "tabs": {
+      "profile": "Perfil",
+      "translation": "Tradução",
+      "theme": "Tema",
+      "fonts": "Fontes",
+      "stats": "Estatísticas"
+    },
+    
+    "profile": {
+      "title": "Perfil",
+      "description": "Informações pessoais",
+      "settingsTitle": "Configurações do Perfil",
+      "settingsDescription": "Configurações para {username}",
+      "photo": {
+        "title": "Foto do Perfil",
+        "description": "Personalize sua foto de perfil visível para outros usuários",
+        "uploadImage": "Enviar uma imagem",
+        "takePhoto": "Tirar uma foto",
+        "removePhoto": "Remover foto",
+        "photoUpdated": "Foto do perfil atualizada"
+      },
+      "personalInfo": {
+        "title": "Informações Pessoais",
+        "description": "Modifique suas informações de perfil",
+        "firstName": "Nome",
+        "lastName": "Sobrenome",
+        "displayName": "Nome de exibição",
+        "displayNamePlaceholder": "Como você quer aparecer nas conversas",
+        "email": "Email",
+        "emailPlaceholder": "seu.email@exemplo.com",
+        "phoneNumber": "Número de telefone",
+        "phoneNumberPlaceholder": "+55 11 12345-6789",
+        "username": "Nome de usuário",
+        "usernameCannotChange": "Nome de usuário não pode ser modificado"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "profileUpdated": "Perfil atualizado com sucesso",
+        "updateError": "Erro ao atualizar perfil"
+      }
+    },
+    
+    "translation": {
+      "title": "Configuração de Idioma e Tradução",
+      "description": "Defina seus idiomas e configurações de tradução",
+      "mainLanguages": {
+        "title": "Idiomas Principais",
+        "description": "Configure seus idiomas preferidos para comunicação",
+        "systemLanguage": "Idioma do sistema",
+        "systemLanguageDescription": "Idioma principal da sua interface e mensagens",
+        "regionalLanguage": "Idioma regional",
+        "regionalLanguageDescription": "Idioma da sua região ou idioma secundário preferido",
+        "customDestinationLanguage": "Idioma de destino personalizado",
+        "customDestinationLanguageDescription": "Idioma específico para tradução automática (opcional)",
+        "selectLanguage": "Selecionar um idioma",
+        "none": "Nenhum"
+      },
+      "autoTranslation": {
+        "title": "Opções de Tradução Automática",
+        "description": "Configure como as mensagens são traduzidas automaticamente",
+        "enabled": "Tradução automática",
+        "enabledDescription": "Habilita a tradução automática de mensagens recebidas",
+        "exclusiveMode": "Modo exclusivo: Habilite apenas uma opção de tradução por vez.",
+        "translateToSystem": "Traduzir apenas para o idioma do sistema",
+        "translateToSystemDescription": "Traduz mensagens apenas para {flag} {language}",
+        "translateToRegional": "Traduzir apenas para o idioma regional",
+        "translateToRegionalDescription": "Traduz mensagens apenas para {flag} {language}",
+        "translateToCustom": "Traduzir apenas para o idioma personalizado",
+        "translateToCustomDescription": "Traduz mensagens apenas para {flag} {language}",
+        "noCustomLanguage": "Nenhum idioma personalizado definido - configure um acima",
+        "tip": "Dica:",
+        "tipDescription": "Se nenhuma opção for selecionada, as mensagens serão traduzidas para todos os seus idiomas configurados (sistema + regional + personalizado)."
+      },
+      "preview": {
+        "title": "Visualização da Configuração",
+        "systemLanguage": "Idioma do sistema",
+        "regionalLanguage": "Idioma regional",
+        "customLanguage": "Idioma personalizado",
+        "autoTranslation": "Tradução automática",
+        "enabled": "Habilitada",
+        "disabled": "Desabilitada"
+      },
+      "actions": {
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "cancel": "Cancelar",
+        "settingsUpdated": "Configurações de idioma atualizadas",
+        "updateError": "Erro ao atualizar configurações de idioma"
+      },
+      "systemLanguage": "Idioma do sistema",
+      "regionalLanguage": "Idioma regional",
+      "customDestinationLanguage": "Idioma de destino personalizado",
+      "autoTranslateEnabled": "Auto-tradução habilitada",
+      "translateToSystemLanguage": "Traduzir para o idioma do sistema",
+      "translateToRegionalLanguage": "Traduzir para o idioma regional",
+      "useCustomDestination": "Usar destino personalizado",
+      "customDestinationPlaceholder": "Selecionar um idioma"
+    },
+    
+    "theme": {
+      "title": "Tema e interface",
+      "description": "Personalize a aparência, idioma e fontes da aplicação",
+      "displayMode": {
+        "title": "Modo de exibição",
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
+      },
+      "accentColor": {
+        "title": "Cor de destaque",
+        "blue": "Azul",
+        "green": "Verde",
+        "purple": "Roxo",
+        "red": "Vermelho",
+        "orange": "Laranja",
+        "pink": "Rosa"
+      },
+      "interfaceLanguage": {
+        "title": "Idioma da interface",
+        "description": "Define o idioma da interface do usuário"
+      },
+      "ui": {
+        "title": "Interface do usuário",
+        "description": "Opções de exibição e comportamento",
+        "fontSize": {
+          "title": "Tamanho da fonte",
+          "small": "Pequeno",
+          "medium": "Médio",
+          "large": "Grande"
+        },
+        "compactMode": {
+          "title": "Modo compacto",
+          "description": "Reduz o espaçamento para exibir mais conteúdo"
+        },
+        "animations": {
+          "title": "Animações",
+          "description": "Habilita transições e animações da interface"
+        },
+        "interfaceLanguage": {
+          "title": "Idioma da interface",
+          "description": "Define o idioma da interface do usuário"
+        },
+        "fontFamily": {
+          "title": "Família da fonte",
+          "description": "Escolha a fonte principal da aplicação"
+        },
+        "lineHeight": {
+          "title": "Altura da linha",
+          "description": "Espaçamento entre as linhas de texto",
+          "tight": "Apertado",
+          "normal": "Normal",
+          "relaxed": "Relaxado",
+          "loose": "Solto"
+        }
+      },
+      "preview": {
+        "title": "Visualização",
+        "description": "Visualização das configurações aplicadas",
+        "exampleMessage": "Mensagem de exemplo",
+        "exampleText": "Esta é uma visualização de como as mensagens aparecerão com suas configurações atuais."
+      },
+      "settingsUpdated": "Tema atualizado",
+      "interfaceLanguageUpdated": "Idioma da interface atualizado"
+    },
+    
+    "fonts": {
+      "title": "Seleção de fontes",
+      "description": "Personalize a aparência do texto na aplicação",
+      "fontFamily": {
+        "title": "Família da fonte",
+        "description": "Escolha a fonte principal da aplicação"
+      },
+      "fontSize": {
+        "title": "Tamanho da fonte",
+        "description": "Ajuste o tamanho do texto"
+      },
+      "lineHeight": {
+        "title": "Altura da linha",
+        "description": "Espaçamento entre as linhas de texto"
+      }
+    },
+    
+    "stats": {
+      "title": "Estatísticas de tradução",
+      "description": "Visualize suas estatísticas de uso de tradução",
+      "totalTranslations": "Total de traduções",
+      "languagesUsed": "Idiomas utilizados",
+      "translationAccuracy": "Precisão da tradução",
+      "mostTranslatedLanguage": "Idioma mais traduzido",
+      "translationHistory": "Histórico de tradução"
+    }
+  },
   "user": "Usuário",
   "anonymous": "Anônimo",
   "unknownUser": "?",

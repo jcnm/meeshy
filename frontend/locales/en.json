@@ -1079,7 +1079,25 @@
     "retry": "Retry",
     "diagnostics": "Diagnostics",
     "connectionError": "Connection error",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "translating": "Translating...",
+    "originalLanguage": "Original language",
+    "clickToViewOriginal": "Click to view original",
+    "availableTranslations": "Available translations",
+    "reply": "Reply",
+    "addToFavorites": "Add to favorites",
+    "copy": "Copy",
+    "report": "Report",
+    "share": "Share",
+    "pin": "Pin",
+    "edit": "Edit",
+    "filterLanguages": "Filter languages...",
+    "original": "Original",
+    "improveTranslationQuality": "Improve translation quality",
+    "noTranslationFound": "No translation found",
+    "noTranslationAvailable": "No translation available",
+    "translateToOtherLanguages": "Translate to other languages",
+    "translationsInProgress": "Translations in progress..."
   },
   "anonymousChat": {
     "title": "Conversation",
@@ -1092,7 +1110,18 @@
     "messagePlaceholder": "Type your message...",
     "user": "User",
     "anonymous": "Anonymous",
-    "unknownUser": "?"
+    "unknownUser": "?",
+    "missingLinkId": "Missing link ID",
+    "loadingError": "Error loading",
+    "unknownError": "Unknown error",
+    "loadingConversation": "Loading conversation...",
+    "error": "Error",
+    "accessDenied": "Access denied",
+    "accessDeniedDescription": "You don't have the necessary permissions to access this conversation.",
+    "authenticationRequired": "Authentication required",
+    "authenticationRequiredDescription": "You must be logged in to access this conversation.",
+    "conversationNotFound": "Conversation not found",
+    "conversationNotFoundDescription": "This conversation doesn't exist or the link is invalid."
   },
   "toasts": {
     "connection": {

@@ -2,6 +2,7 @@
 
 import { ConversationLayoutWrapper } from '../../components/conversations/ConversationLayoutWrapper';
 import { Suspense } from 'react';
+import { useTranslations } from '@/hooks/useTranslations';
 
 // Désactiver le prerendering pour éviter les problèmes avec Sharp
 
@@ -9,9 +10,14 @@ function ConversationsPageContent() {
   return <ConversationLayoutWrapper />;
 }
 
+function ConversationsPageFallback() {
+  const { t } = useTranslations('conversations');
+  return <div>{t('loading')}</div>;
+}
+
 export default function ConversationsPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<ConversationsPageFallback />}>
       <ConversationsPageContent />
     </Suspense>
   );

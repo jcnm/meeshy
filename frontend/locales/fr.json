@@ -1090,7 +1090,25 @@
     "retry": "Réessayer",
     "diagnostics": "Diagnostic",
     "connectionError": "Erreur de connexion",
-    "tryAgain": "Réessayer"
+    "tryAgain": "Réessayer",
+    "translating": "Traduction...",
+    "originalLanguage": "Langue originale",
+    "clickToViewOriginal": "Cliquer pour voir l'original",
+    "availableTranslations": "Traductions disponibles",
+    "reply": "Répondre",
+    "addToFavorites": "Ajouter aux favoris",
+    "copy": "Copier",
+    "report": "Signaler",
+    "share": "Partager",
+    "pin": "Épingler",
+    "edit": "Modifier",
+    "filterLanguages": "Filtrer les langues...",
+    "original": "Original",
+    "improveTranslationQuality": "Améliorer la qualité de traduction",
+    "noTranslationFound": "Aucune traduction trouvée",
+    "noTranslationAvailable": "Aucune traduction disponible",
+    "translateToOtherLanguages": "Traduire vers d'autres langues",
+    "translationsInProgress": "Traductions en cours..."
   },
   "anonymousChat": {
     "title": "Conversation",
@@ -1103,7 +1121,18 @@
     "messagePlaceholder": "Tapez votre message...",
     "user": "Utilisateur",
     "anonymous": "Anonyme",
-    "unknownUser": "?"
+    "unknownUser": "?",
+    "missingLinkId": "ID de lien manquant",
+    "loadingError": "Erreur lors du chargement",
+    "unknownError": "Erreur inconnue",
+    "loadingConversation": "Chargement de la conversation...",
+    "error": "Erreur",
+    "accessDenied": "Accès interdit",
+    "accessDeniedDescription": "Vous n'avez pas les permissions nécessaires pour accéder à cette conversation.",
+    "authenticationRequired": "Authentification requise",
+    "authenticationRequiredDescription": "Vous devez être connecté pour accéder à cette conversation.",
+    "conversationNotFound": "Conversation introuvable",
+    "conversationNotFoundDescription": "Cette conversation n'existe pas ou le lien est invalide."
   },
   "toasts": {
     "connection": {
