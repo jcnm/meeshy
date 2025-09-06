@@ -25,6 +25,60 @@ function generateFinalLinkId(conversationShareLinkId: string, initialId: string)
   return `mshy_${conversationShareLinkId}.${initialId}`;
 }
 
+/**
+ * Génère un identifiant unique pour une conversation
+ * Format: mshy_<titre_sanitisé>-YYYYMMDDHHMMSS ou mshy_<unique_id>-YYYYMMDDHHMMSS si pas de titre
+ */
+function generateConversationIdentifier(title?: string): string {
+  const now = new Date();
+  const timestamp = now.getFullYear().toString() +
+    (now.getMonth() + 1).toString().padStart(2, '0') +
+    now.getDate().toString().padStart(2, '0') +
+    now.getHours().toString().padStart(2, '0') +
+    now.getMinutes().toString().padStart(2, '0') +
+    now.getSeconds().toString().padStart(2, '0');
+  
+  if (title) {
+    // Sanitiser le titre : enlever les caractères spéciaux, remplacer les espaces par des tirets
+    const sanitizedTitle = title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Garder seulement lettres, chiffres, espaces et tirets
+      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
+      .replace(/-+/g, '-') // Remplacer les tirets multiples par un seul
+      .replace(/^-|-$/g, ''); // Enlever les tirets en début/fin
+    
+    if (sanitizedTitle.length > 0) {
+      return `mshy_${sanitizedTitle}-${timestamp}`;
+    }
+  }
+  
+  // Fallback: générer un identifiant unique avec préfixe mshy_
+  const uniqueId = Math.random().toString(36).slice(2, 10);
+  return `mshy_${uniqueId}-${timestamp}`;
+}
+
+/**
+ * Vérifie l'unicité d'un identifiant de conversation et génère une variante si nécessaire
+ */
+async function ensureUniqueConversationIdentifier(prisma: any, baseIdentifier: string): Promise<string> {
+  let identifier = baseIdentifier;
+  let counter = 1;
+  
+  while (true) {
+    const existing = await prisma.conversation.findFirst({
+      where: { identifier }
+    });
+    
+    if (!existing) {
+      return identifier;
+    }
+    
+    // Ajouter un suffixe numérique pour assurer l'unicité
+    identifier = `${baseIdentifier}-${counter}`;
+    counter++;
+  }
+}
+
 // Prisma et TranslationService sont décorés et fournis par le serveur principal
 
 
@@ -114,7 +168,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             // Conversation globale "meeshy" accessible à tous les utilisateurs connectés
             {
               identifier: "meeshy",
-              type: 'GLOBAL'
+              type: 'global'
             }
           ],
           isActive: true
@@ -313,8 +367,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Générer un identifiant unique pour la conversation
+      // Pour les conversations directes, utiliser un identifiant générique
+      const identifierTitle = type === 'direct' ? `direct-${userId}-${participantIds[0] || 'unknown'}` : title;
+      const baseIdentifier = generateConversationIdentifier(identifierTitle);
+      const uniqueIdentifier = await ensureUniqueConversationIdentifier(prisma, baseIdentifier);
+
       const conversation = await prisma.conversation.create({
         data: {
+          identifier: uniqueIdentifier,
           type,
           title,
           description,

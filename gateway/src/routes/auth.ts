@@ -1,10 +1,10 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { PrismaAuthService, LoginCredentials, RegisterData } from '../services/prisma-auth.service';
+import { AuthService, LoginCredentials, RegisterData } from '../services/auth.service';
 import { SocketIOUser } from '../../shared/types';
 
 export async function authRoutes(fastify: FastifyInstance) {
-  // Créer une instance du service d'authentification Prisma
-  const authService = new PrismaAuthService(
+  // Créer une instance du service d'authentification
+  const authService = new AuthService(
     (fastify as any).prisma,
     process.env.JWT_SECRET || 'meeshy-secret-key-dev'
   );

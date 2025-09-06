@@ -1,204 +1,335 @@
-import { UserRoleEnum } from '../../shared/types';
+import { PrismaClient } from '../../shared/prisma/client';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { SocketIOUser, UserRoleEnum } from '../../shared/types';
 
-// Interface pour les utilisateurs de test
-export interface TestUser {
-  id: string;
+export interface LoginCredentials {
   username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  systemLanguage: string;
-  regionalLanguage: string;
-  customDestinationLanguage?: string;
-  role: UserRoleEnum;
   password: string;
 }
 
-// Comptes de test basés sur COMPTES_DE_TEST.md
-export const TEST_USERS: TestUser[] = [
-  {
-    id: 'alice_fr_id',
-    username: 'alice_fr',
-    email: 'alice@meeshy.com',
-    firstName: 'Alice',
-    lastName: 'Dubois',
-    systemLanguage: 'fr',
-    regionalLanguage: 'fr',
-    role: UserRoleEnum.ADMIN,
-    password: 'password123'
-  },
-  {
-    id: 'bob_en_id',
-    username: 'bob_en',
-    email: 'bob@meeshy.com',
-    firstName: 'Bob',
-    lastName: 'Johnson',
-    systemLanguage: 'en',
-    regionalLanguage: 'es',
-    customDestinationLanguage: 'fr',
-    role: UserRoleEnum.USER,
-    password: 'password123'
-  },
-  {
-    id: 'carlos_es_id',
-    username: 'carlos_es',
-    email: 'carlos@meeshy.com',
-    firstName: 'Carlos',
-    lastName: 'García',
-    systemLanguage: 'es',
-    regionalLanguage: 'en',
-    role: UserRoleEnum.USER,
-    password: 'password123'
-  },
-  {
-    id: 'dieter_de_id',
-    username: 'dieter_de',
-    email: 'dieter@meeshy.com',
-    firstName: 'Dieter',
-    lastName: 'Schmidt',
-    systemLanguage: 'de',
-    regionalLanguage: 'fr',
-    role: UserRoleEnum.USER,
-    password: 'password123'
-  },
-  {
-    id: 'li_zh_id',
-    username: 'li_zh',
-    email: 'li@meeshy.com',
-    firstName: 'Li',
-    lastName: 'Wei',
-    systemLanguage: 'zh',
-    regionalLanguage: 'en',
-    customDestinationLanguage: 'fr',
-    role: UserRoleEnum.USER,
-    password: 'password123'
-  },
-  {
-    id: 'yuki_ja_id',
-    username: 'yuki_ja',
-    email: 'yuki@meeshy.com',
-    firstName: 'Yuki',
-    lastName: 'Tanaka',
-    systemLanguage: 'ja',
-    regionalLanguage: 'fr',
-    customDestinationLanguage: 'ru',
-    role: UserRoleEnum.USER,
-    password: 'password123'
-  },
-  {
-    id: 'maria_pt_id',
-    username: 'maria_pt',
-    email: 'maria@meeshy.com',
-    firstName: 'Maria',
-    lastName: 'Silva',
-    systemLanguage: 'pt',
-    regionalLanguage: 'ar',
-    role: UserRoleEnum.USER,
-    password: 'password123'
-  }
-];
+export interface RegisterData {
+  username: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  systemLanguage?: string;
+  regionalLanguage?: string;
+}
+
+export interface TokenPayload {
+  userId: string;
+  username: string;
+  role: string;
+}
 
 export class AuthService {
-  /**
-   * Authentifie un utilisateur par username/password
-   */
-  static authenticate(username: string, password: string): TestUser | null {
-    const user = TEST_USERS.find(u => u.username === username && u.password === password);
-    return user || null;
+  private prisma: PrismaClient;
+  private jwtSecret: string;
+
+  constructor(prisma: PrismaClient, jwtSecret: string) {
+    this.prisma = prisma;
+    this.jwtSecret = jwtSecret;
   }
 
   /**
-   * Authentifie un utilisateur par ID
+   * Authentifier un utilisateur avec username/password
    */
-  static authenticateById(userId: string): TestUser | null {
-    const user = TEST_USERS.find(u => u.id === userId);
-    return user || null;
-  }
-
-  /**
-   * Génère un token JWT simulé pour les tests
-   */
-  static generateToken(user: TestUser): string {
-    const payload = {
-      userId: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 heures
-    };
-    
-    // En mode développement, on simule un JWT
-    return Buffer.from(JSON.stringify(payload)).toString('base64');
-  }
-
-  /**
-   * Vérifie un token JWT simulé
-   */
-  static verifyToken(token: string): { userId: string; username: string; email: string; role: UserRoleEnum } | null {
+  async authenticate(credentials: LoginCredentials): Promise<SocketIOUser | null> {
     try {
-      const payload = JSON.parse(Buffer.from(token, 'base64').toString());
-      
-      // Vérifier l'expiration
-      if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+      // Rechercher l'utilisateur par username ou email
+      const user = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            { username: credentials.username },
+            { email: credentials.username },
+            { phoneNumber: credentials.username }
+          ],
+          isActive: true
+        }
+      });
+
+      if (!user) {
         return null;
       }
-      
-      return {
-        userId: payload.userId,
-        username: payload.username,
-        email: payload.email,
-        role: payload.role
-      };
+
+      // Vérifier le mot de passe
+      const passwordValid = await bcrypt.compare(credentials.password, user.password);
+      if (!passwordValid) {
+        return null;
+      }
+
+      // Mettre à jour la dernière connexion
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          isOnline: true,
+          lastSeen: new Date(),
+          lastActiveAt: new Date()
+        }
+      });
+
+      // Convertir en SocketIOUser
+      return this.userToSocketIOUser(user);
+
     } catch (error) {
+      console.error('Error in authenticate:', error);
       return null;
     }
   }
 
   /**
-   * Récupère les permissions d'un utilisateur
+   * Créer un nouveau utilisateur
    */
-  static getUserPermissions(user: TestUser) {
-    const { DEFAULT_PERMISSIONS } = require('../../shared/types');
-    return DEFAULT_PERMISSIONS[user.role] || DEFAULT_PERMISSIONS[UserRoleEnum.USER];
+  async register(data: RegisterData): Promise<SocketIOUser | null> {
+    try {
+      // Nettoyer le phoneNumber (traiter les chaînes vides comme null)
+      const cleanPhoneNumber = data.phoneNumber && data.phoneNumber.trim() !== '' ? data.phoneNumber.trim() : null;
+
+      // Vérifier si l'username, l'email ou le phoneNumber existe déjà
+      const existingUser = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            { username: data.username },
+            { email: data.email },
+            ...(cleanPhoneNumber ? [{ phoneNumber: cleanPhoneNumber }] : [])
+          ]
+        }
+      });
+
+      if (existingUser) {
+        if (existingUser.username === data.username) {
+          throw new Error('Nom d\'utilisateur déjà utilisé');
+        }
+        if (existingUser.email === data.email) {
+          throw new Error('Email déjà utilisé');
+        }
+        if (cleanPhoneNumber && existingUser.phoneNumber === cleanPhoneNumber) {
+          throw new Error('Numéro de téléphone déjà utilisé');
+        }
+        throw new Error('Utilisateur déjà existant');
+      }
+
+      // Hasher le mot de passe
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+
+      // Créer l'utilisateur
+      const user = await this.prisma.user.create({
+        data: {
+          username: data.username,
+          password: hashedPassword,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phoneNumber: cleanPhoneNumber,
+          systemLanguage: data.systemLanguage || 'fr',
+          regionalLanguage: data.regionalLanguage || 'fr',
+          displayName: `${data.firstName} ${data.lastName}`,
+          isOnline: true,
+          lastSeen: new Date(),
+          lastActiveAt: new Date()
+        }
+      });
+
+      return this.userToSocketIOUser(user);
+
+    } catch (error) {
+      console.error('Error in register:', error);
+      return null;
+    }
   }
 
   /**
-   * Vérifie si un utilisateur a une permission spécifique
+   * Récupérer un utilisateur par ID
    */
-  static hasPermission(user: TestUser, permission: keyof ReturnType<typeof AuthService.getUserPermissions>): boolean {
-    const permissions = this.getUserPermissions(user);
-    return permissions[permission] || false;
+  async getUserById(userId: string): Promise<SocketIOUser | null> {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: userId,
+          isActive: true
+        }
+      });
+
+      if (!user) {
+        return null;
+      }
+
+      return this.userToSocketIOUser(user);
+
+    } catch (error) {
+      console.error('Error in getUserById:', error);
+      return null;
+    }
   }
 
   /**
-   * Vérifie si un utilisateur a un rôle spécifique ou supérieur
+   * Générer un token JWT
    */
-  static hasRole(user: TestUser, requiredRole: UserRoleEnum): boolean {
-    const { ROLE_HIERARCHY } = require('../../shared/types');
-    const userLevel = ROLE_HIERARCHY[user.role] || 0;
-    const requiredLevel = ROLE_HIERARCHY[requiredRole] || 0;
-    return userLevel >= requiredLevel;
+  generateToken(user: SocketIOUser): string {
+    const payload: TokenPayload = {
+      userId: user.id,
+      username: user.username,
+      role: user.role
+    };
+
+    return jwt.sign(payload, this.jwtSecret, {
+      expiresIn: '24h'
+    });
   }
 
   /**
-   * Récupère tous les utilisateurs de test
+   * Vérifier un token JWT
    */
-  static getAllUsers(): TestUser[] {
-    return TEST_USERS.map(user => ({ ...user, password: '***' }));
+  verifyToken(token: string): TokenPayload | null {
+    try {
+      const decoded = jwt.verify(token, this.jwtSecret) as TokenPayload;
+      return decoded;
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      return null;
+    }
   }
 
   /**
-   * Récupère un utilisateur par username
+   * Mettre à jour le statut en ligne d'un utilisateur
    */
-  static getUserByUsername(username: string): TestUser | null {
-    return TEST_USERS.find(u => u.username === username) || null;
+  async updateOnlineStatus(userId: string, isOnline: boolean): Promise<void> {
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          isOnline,
+          lastSeen: new Date(),
+          lastActiveAt: isOnline ? new Date() : undefined
+        }
+      });
+    } catch (error) {
+      console.error('Error updating online status:', error);
+    }
   }
 
   /**
-   * Récupère un utilisateur par ID
+   * Récupérer les permissions d'un utilisateur
    */
-  static getUserById(userId: string): TestUser | null {
-    return TEST_USERS.find(u => u.id === userId) || null;
+  getUserPermissions(user: SocketIOUser) {
+    const role = user.role.toUpperCase() as keyof typeof UserRoleEnum;
+    
+    // Permissions basées sur le rôle
+    const basePermissions = {
+      canAccessAdmin: false,
+      canManageUsers: false,
+      canManageGroups: false,
+      canManageConversations: false,
+      canViewAnalytics: false,
+      canModerateContent: false,
+      canViewAuditLogs: false,
+      canManageNotifications: false,
+      canManageTranslations: false,
+    };
+
+    switch (role) {
+      case UserRoleEnum.BIGBOSS:
+        return {
+          ...basePermissions,
+          canAccessAdmin: true,
+          canManageUsers: true,
+          canManageGroups: true,
+          canManageConversations: true,
+          canViewAnalytics: true,
+          canModerateContent: true,
+          canViewAuditLogs: true,
+          canManageNotifications: true,
+          canManageTranslations: true,
+        };
+
+      case UserRoleEnum.ADMIN:
+        return {
+          ...basePermissions,
+          canAccessAdmin: true,
+          canManageUsers: true,
+          canManageGroups: true,
+          canManageConversations: true,
+          canViewAnalytics: true,
+          canModerateContent: true,
+          canManageNotifications: true,
+        };
+
+      case UserRoleEnum.CREATOR:
+        return {
+          ...basePermissions,
+          canAccessAdmin: true,
+          canManageUsers: true,
+          canManageGroups: true,
+          canManageConversations: true,
+          canViewAnalytics: true,
+          canModerateContent: true,
+          canViewAuditLogs: true,
+          canManageNotifications: true,
+        };
+
+      case UserRoleEnum.MODERATOR:
+        return {
+          ...basePermissions,
+          canAccessAdmin: true,
+          canModerateContent: true,
+          canManageConversations: true,
+        };
+
+      case UserRoleEnum.AUDIT:
+        return {
+          ...basePermissions,
+          canAccessAdmin: true,
+          canViewAuditLogs: true,
+          canViewAnalytics: true,
+        };
+
+      case UserRoleEnum.ANALYST:
+        return {
+          ...basePermissions,
+          canAccessAdmin: true,
+          canViewAnalytics: true,
+        };
+
+      default:
+        return basePermissions;
+    }
+  }
+
+  /**
+   * Convertir un User Prisma en SocketIOUser
+   */
+  private userToSocketIOUser(user: any): SocketIOUser {
+    return {
+      id: user.id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      displayName: user.displayName || `${user.firstName} ${user.lastName}`,
+      avatar: user.avatar,
+      role: user.role,
+      permissions: this.getUserPermissions({
+        ...user,
+        role: user.role
+      } as SocketIOUser),
+      isOnline: user.isOnline,
+      lastSeen: user.lastSeen,
+      lastActiveAt: user.lastActiveAt,
+      systemLanguage: user.systemLanguage,
+      regionalLanguage: user.regionalLanguage,
+      customDestinationLanguage: user.customDestinationLanguage,
+      autoTranslateEnabled: user.autoTranslateEnabled,
+      translateToSystemLanguage: user.translateToSystemLanguage,
+      translateToRegionalLanguage: user.translateToRegionalLanguage,
+      useCustomDestination: user.useCustomDestination,
+      isActive: user.isActive,
+      deactivatedAt: user.deactivatedAt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
   }
 }

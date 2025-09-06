@@ -8,17 +8,21 @@ import { Server as HTTPServer } from 'http';
 import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
+import { MessagingService } from '../services/MessagingService';
 import jwt from 'jsonwebtoken';
 import type { 
   ServerToClientEvents, 
   ClientToServerEvents,
   SocketIOMessage,
   SocketIOUser,
+  SocketIOResponse,
   TypingEvent,
   TranslationEvent
 } from '../../shared/types/socketio-events';
 import { CLIENT_EVENTS, SERVER_EVENTS } from '../../shared/types/socketio-events';
 import { conversationStatsService } from '../services/ConversationStatsService';
+import type { MessageRequest, MessageResponse } from '../../shared/types/messaging';
+import type { Message } from '../../shared/types/index';
 
 export interface SocketUser {
   id: string;
@@ -39,6 +43,7 @@ export class MeeshySocketIOManager {
   private prisma: PrismaClient;
   private translationService: TranslationService;
   private maintenanceService: MaintenanceService;
+  private messagingService: MessagingService;
   
   // Mapping des utilisateurs connectés
   private connectedUsers: Map<string, SocketUser> = new Map();
@@ -57,6 +62,7 @@ export class MeeshySocketIOManager {
     this.prisma = prisma;
     this.translationService = new TranslationService(prisma);
     this.maintenanceService = new MaintenanceService(prisma);
+    this.messagingService = new MessagingService(prisma, this.translationService);
     
     // Initialiser Socket.IO avec les types shared
     this.io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
@@ -70,7 +76,7 @@ export class MeeshySocketIOManager {
       }
     });
     
-    console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé');
+    console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé avec MessagingService');
   }
 
   async initialize(): Promise<void> {
@@ -121,22 +127,92 @@ export class MeeshySocketIOManager {
         await this._handleAuthentication(socket, data);
       });
       
-      // Réception d'un nouveau message (avec ACK)
+      // Réception d'un nouveau message (avec ACK) - PHASE 3.1: MessagingService Integration
       socket.on(CLIENT_EVENTS.MESSAGE_SEND, async (data: {
         conversationId: string;
         content: string;
         originalLanguage?: string;
         messageType?: string;
         replyToId?: string;
-      }, callback?: (response: { success: boolean; data?: { messageId: string }; error?: string }) => void) => {
+      }, callback?: (response: SocketIOResponse<{ messageId: string }>) => void) => {
         try {
-          const result = await this._handleNewMessage(socket, data);
-          if (callback && result?.messageId) {
-            callback({ success: true, data: { messageId: result.messageId } });
+          const userId = this.socketToUser.get(socket.id);
+          if (!userId) {
+            const errorResponse: SocketIOResponse<{ messageId: string }> = {
+              success: false,
+              error: 'User not authenticated'
+            };
+            
+            if (callback) callback(errorResponse);
+            socket.emit('error', { message: 'User not authenticated' });
+            return;
           }
-        } catch (e) {
+
+          // Mapper les données vers le format MessageRequest
+          const messageRequest: MessageRequest = {
+            conversationId: data.conversationId,
+            content: data.content,
+            originalLanguage: data.originalLanguage,
+            messageType: data.messageType || 'text',
+            replyToId: data.replyToId,
+            metadata: {
+              source: 'websocket',
+              socketId: socket.id,
+              clientTimestamp: Date.now()
+            }
+          };
+
+          console.log(`📝 [WEBSOCKET] Nouveau message via MessagingService de ${userId} dans ${data.conversationId}`);
+
+          // PHASE 3.1.1: Extraction des tokens d'authentification pour détection robuste
+          const jwtToken = this.extractJWTToken(socket);
+          const sessionToken = this.extractSessionToken(socket);
+
+          console.log(`🔐 [AUTH] Type détecté: ${jwtToken ? 'JWT' : sessionToken ? 'Session' : 'Unknown'}`);
+
+          // PHASE 3.1: Utilisation du MessagingService unifié avec contexte d'auth
+          const response: MessageResponse = await this.messagingService.handleMessage(
+            messageRequest, 
+            userId, 
+            true,
+            jwtToken,
+            sessionToken
+          );
+
+          // Réponse via callback - typage strict SocketIOResponse
           if (callback) {
-            callback({ success: false, error: 'Failed to send message' });
+            if (response.success && response.data) {
+              const socketResponse: SocketIOResponse<{ messageId: string }> = { 
+                success: true, 
+                data: { messageId: response.data.id } 
+              };
+              callback(socketResponse);
+            } else {
+              const socketResponse: SocketIOResponse<{ messageId: string }> = {
+                success: false,
+                error: response.error || 'Failed to send message'
+              };
+              callback(socketResponse);
+            }
+          }
+
+          // Broadcast temps réel vers tous les clients de la conversation (y compris l'auteur)
+          if (response.success && response.data) {
+            await this._broadcastNewMessage(response.data, data.conversationId);
+          }
+
+          this.stats.messages_processed++;
+          
+        } catch (error: any) {
+          console.error('[WEBSOCKET] Erreur envoi message:', error);
+          this.stats.errors++;
+
+          if (callback) {
+            const errorResponse: SocketIOResponse<{ messageId: string }> = {
+              success: false,
+              error: 'Failed to send message'
+            };
+            callback(errorResponse);
           }
         }
       });
@@ -809,6 +885,92 @@ export class MeeshySocketIOManager {
       () => this.getConnectedUsers()
     );
     socket.emit(SERVER_EVENTS.CONVERSATION_STATS, { conversationId, stats } as any);
+  }
+
+  /**
+   * PHASE 3.1: Broadcast d'un nouveau message via MessagingService
+   * Remplace l'ancienne logique de broadcast dans _handleNewMessage
+   */
+  private async _broadcastNewMessage(message: Message, conversationId: string): Promise<void> {
+    try {
+      // Récupérer les stats de conversation mises à jour
+      const updatedStats = await conversationStatsService.updateOnNewMessage(
+        this.prisma,
+        conversationId,
+        message.originalLanguage || 'fr',
+        () => this.getConnectedUsers()
+      );
+
+      // Construire le payload de message pour broadcast - compatible avec les types existants
+      const messagePayload = {
+        id: message.id,
+        conversationId: conversationId,
+        senderId: message.senderId || undefined,
+        content: message.content,
+        originalLanguage: message.originalLanguage || 'fr',
+        messageType: message.messageType || 'text',
+        isEdited: Boolean(message.isEdited),
+        isDeleted: Boolean(message.isDeleted),
+        createdAt: message.createdAt || new Date(),
+        updatedAt: message.updatedAt || new Date(),
+        sender: message.sender ? {
+          id: message.sender.id,
+          username: message.sender.username,
+          firstName: (message.sender as any).firstName || '',
+          lastName: (message.sender as any).lastName || '',
+          email: (message.sender as any).email || '',
+          displayName: (message.sender as any).displayName || message.sender.username,
+          avatar: (message.sender as any).avatar,
+          role: (message.sender as any).role || 'USER',
+          isOnline: false,
+          lastSeen: new Date(),
+          lastActiveAt: new Date(),
+          systemLanguage: (message.sender as any).systemLanguage || 'fr',
+          regionalLanguage: (message.sender as any).regionalLanguage || 'fr',
+          autoTranslateEnabled: (message.sender as any).autoTranslateEnabled ?? true,
+          translateToSystemLanguage: (message.sender as any).translateToSystemLanguage ?? true,
+          translateToRegionalLanguage: (message.sender as any).translateToRegionalLanguage ?? false,
+          useCustomDestination: (message.sender as any).useCustomDestination ?? false,
+          isActive: (message.sender as any).isActive ?? true,
+          createdAt: (message.sender as any).createdAt || new Date(),
+          updatedAt: (message.sender as any).updatedAt || new Date()
+        } : undefined,
+        meta: {
+          conversationStats: updatedStats
+        }
+      };
+
+      // Support pour anonymousSenderId si présent
+      if (message.anonymousSenderId) {
+        (messagePayload as any).anonymousSenderId = message.anonymousSenderId;
+      }
+
+      // Broadcast vers tous les clients de la conversation
+      this.io.to(`conversation_${conversationId}`).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
+      
+      console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers conversation ${conversationId}`);
+      
+    } catch (error) {
+      console.error('[PHASE 3.1] Erreur broadcast message:', error);
+    }
+  }
+
+  /**
+   * PHASE 3.1.1: Extraction du JWT Token depuis le socket
+   */
+  private extractJWTToken(socket: any): string | undefined {
+    return socket.handshake?.headers?.authorization?.replace('Bearer ', '') || 
+           socket.handshake?.auth?.authToken || 
+           socket.auth?.token;
+  }
+
+  /**
+   * PHASE 3.1.1: Extraction du Session Token depuis le socket  
+   */
+  private extractSessionToken(socket: any): string | undefined {
+    return socket.handshake?.headers?.['x-session-token'] || 
+           socket.handshake?.auth?.sessionToken || 
+           socket.auth?.sessionToken;
   }
 
   // Méthodes publiques pour les statistiques et la gestion

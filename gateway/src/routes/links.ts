@@ -3,11 +3,11 @@ import { z } from 'zod';
 import { logError } from '../utils/logger';
 import { UserRoleEnum } from '../../shared/types';
 import { 
-  createHybridAuthMiddleware, 
-  createAuthenticatedOnlyMiddleware, 
-  createModerationMiddleware,
-  createAdminMiddleware
-} from '../middleware/hybrid-auth';
+  createUnifiedAuthMiddleware,
+  UnifiedAuthRequest,
+  isRegisteredUser,
+  getUserPermissions
+} from '../middleware/auth';
 
 // Schémas de validation
 const createLinkSchema = z.object({
@@ -56,11 +56,50 @@ const sendMessageSchema = z.object({
 });
 
 export async function linksRoutes(fastify: FastifyInstance) {
-  // Middlewares
-  const hybridAuth = createHybridAuthMiddleware(fastify.prisma, { requireAuth: false });
-  const authenticatedOnly = createAuthenticatedOnlyMiddleware(fastify.prisma);
-  const requireModeration = createModerationMiddleware();
-  const requireAdmin = createAdminMiddleware();
+  // Middlewares d'authentification unifiés
+  const authOptional = createUnifiedAuthMiddleware(fastify.prisma, { 
+    requireAuth: false, 
+    allowAnonymous: true 
+  });
+  const authRequired = createUnifiedAuthMiddleware(fastify.prisma, { 
+    requireAuth: true, 
+    allowAnonymous: false 
+  });
+
+  /**
+   * Adapte le nouveau contexte d'authentification unifié au format legacy
+   */
+  function createLegacyHybridRequest(request: UnifiedAuthRequest): any {
+    const authContext = request.authContext;
+    
+    if (isRegisteredUser(authContext)) {
+      return {
+        isAuthenticated: true,
+        isAnonymous: false,
+        user: authContext.registeredUser,
+        anonymousParticipant: null
+      };
+    } else if (authContext.type === 'session' && authContext.anonymousUser) {
+      // Pour les utilisateurs anonymes, nous devons simuler l'ancienne structure
+      return {
+        isAuthenticated: true,
+        isAnonymous: true,
+        user: null,
+        anonymousParticipant: {
+          id: authContext.anonymousUser.sessionToken,
+          username: authContext.anonymousUser.username,
+          shareLinkId: authContext.anonymousUser.shareLinkId
+        }
+      };
+    } else {
+      return {
+        isAuthenticated: false,
+        isAnonymous: false,
+        user: null,
+        anonymousParticipant: null
+      };
+    }
+  }
 
   /**
    * Résout l'ID de ConversationShareLink réel à partir d'un identifiant (peut être un ObjectID ou un identifier)
@@ -100,12 +139,20 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
   // 1. Créer un lien - Les utilisateurs authentifiés peuvent créer des liens pour leurs conversations
   fastify.post('/links', { 
-    onRequest: [authenticatedOnly] 
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    onRequest: [authRequired] 
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
     try {
       const body = createLinkSchema.parse(request.body);
-      const { userId } = (request as any).user;
-      const userRole = (request as any).user.role;
+      
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          error: 'Utilisateur enregistré requis pour créer un lien'
+        });
+      }
+      
+      const user = request.authContext.registeredUser!;
+      const userId = user.id;
+      const userRole = user.role;
 
       console.log('[CREATE_LINK] Tentative création lien:', {
         userId,
@@ -255,11 +302,13 @@ export async function linksRoutes(fastify: FastifyInstance) {
   // 2. Récupérer les informations d'un lien par linkId ou conversationShareLinkId
   // Vérification accessToken ou sessionToken requise
   fastify.get('/links/:identifier', { 
-    onRequest: [hybridAuth] 
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    onRequest: [authOptional] 
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
     try {
       const { identifier } = request.params as { identifier: string };
-      const hybridRequest = request as any;
+      
+      // Créer un objet compatible avec l'ancien système
+      const hybridRequest = createLegacyHybridRequest(request);
 
       // Détecter si c'est un linkId (commence par "mshy_") ou un conversationShareLinkId (ID de base de données)
       const isLinkId = identifier.startsWith('mshy_');
@@ -647,12 +696,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
   // 3. Récupérer les messages d'un lien (avec sender et senderAnonymous distincts)
   fastify.get('/links/:identifier/messages', { 
-    onRequest: [hybridAuth] 
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    onRequest: [authOptional] 
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
     try {
       const { identifier } = request.params as { identifier: string };
       const { limit = '50', offset = '0' } = request.query as { limit?: string; offset?: string };
-      const hybridRequest = request as any;
+      const hybridRequest = createLegacyHybridRequest(request);
 
       // Déterminer si l'identifiant est un linkId ou un conversationShareLinkId
       const isLinkId = identifier.startsWith('mshy_');
@@ -987,12 +1036,19 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
   // 6. Envoyer un message via un lien partagé (utilisateurs authentifiés)
   fastify.post('/links/:identifier/messages/auth', { 
-    onRequest: [authenticatedOnly] 
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    onRequest: [authRequired] 
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
     try {
       const { identifier } = request.params as { identifier: string };
       const body = sendMessageSchema.parse(request.body);
-      const { userId } = (request as any).user;
+      
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+      
+      const userId = request.authContext.registeredUser!.id;
 
       // Déterminer si l'identifiant est un linkId ou un conversationShareLinkId
       const isLinkId = identifier.startsWith('mshy_');
@@ -1164,12 +1220,19 @@ export async function linksRoutes(fastify: FastifyInstance) {
 
   // 5. Mettre à jour un lien (seuls les admins de conversation ou créateur du lien)
   fastify.put('/links/:conversationShareLinkId', { 
-    onRequest: [authenticatedOnly] 
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    onRequest: [authRequired] 
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
     try {
       const { conversationShareLinkId } = request.params as { conversationShareLinkId: string };
       const body = updateLinkSchema.parse(request.body);
-      const { userId } = (request as any).user;
+      
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+      
+      const userId = request.authContext.registeredUser!.id;
 
       // Récupérer le lien de partage
       const shareLink = await fastify.prisma.conversationShareLink.findUnique({
