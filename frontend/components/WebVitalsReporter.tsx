@@ -8,6 +8,14 @@ interface WebVitalsData {
   rating: 'good' | 'needs-improvement' | 'poor';
 }
 
+// Déclaration globale pour gtag
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+    va?: (...args: any[]) => void;
+  }
+}
+
 export default function WebVitalsReporter() {
   useEffect(() => {
     // Importer web-vitals dynamiquement pour éviter les erreurs SSR
@@ -27,16 +35,16 @@ export default function WebVitalsReporter() {
         // En production, envoyez vers Google Analytics, Vercel Analytics, etc.
         if (process.env.NODE_ENV === 'production') {
           // Exemple pour Google Analytics 4
-          if (typeof gtag !== 'undefined') {
-            gtag('event', metric.name, {
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', metric.name, {
               value: Math.round(metric.value),
               custom_parameter_1: metric.rating,
             });
           }
 
           // Exemple pour Vercel Analytics
-          if (typeof window !== 'undefined' && (window as any).va) {
-            (window as any).va('track', 'Web Vitals', {
+          if (typeof window !== 'undefined' && window.va) {
+            window.va('track', 'Web Vitals', {
               metric: metric.name,
               value: Math.round(metric.value),
               rating: metric.rating
@@ -56,6 +64,9 @@ export default function WebVitalsReporter() {
       console.warn('Web Vitals not available:', error);
     });
   }, []);
+
+  return null; // Ce composant ne rend rien visuellement
+}
 
   return null; // Ce composant ne rend rien visuellement
 }

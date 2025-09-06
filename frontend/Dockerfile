@@ -12,19 +12,9 @@ LABEL maintainer="Meeshy Development Team <dev@meeshy.com>" \
       org.opencontainers.image.title="Meeshy Frontend" \
       org.opencontainers.image.description="Next.js frontend application for Meeshy platform"
 
-# === BUILD ARGUMENTS ===
-ARG NODE_ENV=production
-ARG PORT=80
+# === BUILD ARGUMENTS === 
 ARG PNPM_VERSION=9.15.0
-ARG NEXT_TELEMETRY_DISABLED=1
-ARG NEXT_PUBLIC_API_URL=http://meeshy.me/api
-ARG NEXT_PUBLIC_WS_URL=ws://meeshy.me/api/ws
-ARG NEXT_PUBLIC_BACKEND_URL=http://meeshy.me/api
-ARG NEXT_PUBLIC_TRANSLATION_URL=http://meeshy.me/translate
-ARG NEXT_PUBLIC_FRONTEND_URL=http://meeshy.me
-ARG NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=false
-ARG NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=true
-
+ARG NEXT_TELEMETRY_DISABLED=1 
 # === ENVIRONMENT VARIABLES ===
 ENV NODE_ENV=${NODE_ENV} \
     PORT=${PORT} \
@@ -69,9 +59,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set build environment variables
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://meeshy.me/api} \
-    NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-ws://meeshy.me/api/ws} \
-    NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://meeshy.me/api} \
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://gate.meeshy.me} \
+    NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-wss://gate.meeshy.me} \
+    NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-https://gate.meeshy.me} \
     NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION=${NEXT_PUBLIC_DISABLE_CLIENT_TRANSLATION:-false} \
     NEXT_PUBLIC_USE_API_TRANSLATION_ONLY=${NEXT_PUBLIC_USE_API_TRANSLATION_ONLY:-true}
 

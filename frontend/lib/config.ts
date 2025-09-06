@@ -79,17 +79,17 @@ const ensureLeadingSlash = (path: string): string => (path.startsWith('/') ? pat
 // Configuration principale
 export const config: MeeshyConfig = {
   frontend: {
-    url: process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://meeshy.me',
+    url: process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me',
     port: parseInt(process.env.NEXT_PUBLIC_FRONTEND_URL?.split(':')[2] || '3100'),
   },
   
   backend: {
-    url: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://meeshy.me',
+    url: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me',
     port: parseInt(process.env.PORT || '3000'),
   },
   
   translation: {
-    url: process.env.NEXT_PUBLIC_TRANSLATION_URL || 'http://meeshy.me/api',
+    url: process.env.NEXT_PUBLIC_TRANSLATION_URL || 'https://ml.meeshy.me/',
     port: parseInt(process.env.FASTAPI_PORT || '8000'),
     grpcPort: parseInt(process.env.GRPC_PORT || '50051'),
     zmqPort: parseInt(process.env.ZMQ_PORT || '5555'),
@@ -101,7 +101,7 @@ export const config: MeeshyConfig = {
   },
   
   redis: {
-    url: process.env.REDIS_URL || 'redis://meeshy.me:6379',
+    url: process.env.REDIS_URL || 'redis://redis:6379',
     ttl: parseInt(process.env.TRANSLATION_CACHE_TTL || '3600'),
     maxEntries: parseInt(process.env.CACHE_MAX_ENTRIES || '10000'),
   },
@@ -124,7 +124,7 @@ export const config: MeeshyConfig = {
   },
   
   cors: {
-    origin: parseArray(process.env.CORS_ORIGIN, ['http://meeshy.me']),
+    origin: parseArray(process.env.CORS_ORIGINS, ['https://meeshy.me']),
   },
 };
 
@@ -212,10 +212,10 @@ export const API_ENDPOINTS = {
 export const getBackendUrl = (): string => {
   if (isBrowser()) {
     // Côté client (navigateur) - utiliser NEXT_PUBLIC_BACKEND_URL
-    return trimSlashes(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://meeshy.me');
+    return trimSlashes(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me');
   }
   // Côté serveur (SSR) - utiliser INTERNAL_BACKEND_URL
-  return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'http://meeshy.me');
+  return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'http://gateway:3000');
 };
 
 // WebSocket base URL for the Gateway - Gère automatiquement client/serveur
@@ -229,7 +229,7 @@ export const getWebSocketUrl = (): string => {
     return trimSlashes(getBackendUrl().replace(/^http(s?):\/\//, (_m, s) => (s ? 'wss://' : 'ws://')));
   }
   // Côté serveur (SSR) - utiliser INTERNAL_WS_URL
-  return trimSlashes(process.env.INTERNAL_WS_URL || 'ws://meeshy.me');
+  return trimSlashes(process.env.INTERNAL_WS_URL || 'ws://gateway:3000');
 };
 
 // Helper pour construire une URL complète vers l'API - Version unifiée
@@ -238,13 +238,13 @@ export const buildApiUrl = (endpoint: string): string => {
 };
 
 // Helper pour construire une URL WebSocket complète avec path - Version unifiée
-export const buildWsUrl = (path = '/ws'): string => {
+export const buildWsUrl = (path = '/socket.io/'): string => {
   return `${getWebSocketUrl()}${ensureLeadingSlash(path)}`;
 };
 
 // === FONCTIONS DE COMPATIBILITÉ (pour éviter les breaking changes) ===
 
 // Helper pour construire une URL WebSocket (ancienne version)
-export const buildWebSocketUrl = (path = '/ws'): string => {
+export const buildWebSocketUrl = (path = '/socket.io/'): string => {
   return buildWsUrl(path);
 };

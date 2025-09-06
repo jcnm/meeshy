@@ -151,23 +151,62 @@ export function isSupportedLanguage(code: string): boolean {
 }
 
 /**
- * Obtient la langue préférée de l'utilisateur
+ * Obtient la langue préférée de l'utilisateur avec détection automatique améliorée
  */
 export function getUserPreferredLanguage(): string {
   if (typeof window === 'undefined') return 'en';
 
+  console.log('[LANGUAGE_DETECTION] Starting language detection...');
+  console.log('[LANGUAGE_DETECTION] Browser languages:', navigator.languages);
+
   // Vérifier le localStorage d'abord
   const savedLang = localStorage.getItem('meeshy-preferred-language');
   if (savedLang && isSupportedLanguage(savedLang)) {
+    console.log('[LANGUAGE_DETECTION] Using saved language:', savedLang);
     return savedLang;
   }
 
-  // Ensuite vérifier la langue du navigateur
-  const browserLang = navigator.language.split('-')[0];
-  if (isSupportedLanguage(browserLang)) {
-    return browserLang;
+  // Détecter automatiquement en utilisant toutes les langues préférées du navigateur
+  const browserLanguages = navigator.languages || [navigator.language || 'en'];
+  
+  for (const lang of browserLanguages) {
+    const languageCode = lang.split('-')[0].toLowerCase();
+    if (isSupportedLanguage(languageCode)) {
+      console.log('[LANGUAGE_DETECTION] Auto-detected supported language:', languageCode);
+      
+      // Sauvegarder la langue détectée automatiquement
+      saveUserPreferredLanguage(languageCode);
+      
+      return languageCode;
+    }
   }
 
+  // Fallback vers l'anglais si aucune langue supportée n'est trouvée
+  console.log('[LANGUAGE_DETECTION] No supported language found, using fallback: en');
+  saveUserPreferredLanguage('en');
+  return 'en';
+}
+
+/**
+ * Détecte automatiquement la meilleure langue d'interface basée sur les préférences du navigateur
+ */
+export function detectBestInterfaceLanguage(): string {
+  if (typeof window === 'undefined') return 'en';
+
+  const interfaceLanguages = ['en', 'fr', 'pt']; // Langues d'interface supportées
+  const browserLanguages = navigator.languages || [navigator.language || 'en'];
+  
+  console.log('[LANGUAGE_DETECTION] Detecting interface language from:', browserLanguages);
+  
+  for (const lang of browserLanguages) {
+    const languageCode = lang.split('-')[0].toLowerCase();
+    if (interfaceLanguages.includes(languageCode)) {
+      console.log('[LANGUAGE_DETECTION] Found matching interface language:', languageCode);
+      return languageCode;
+    }
+  }
+  
+  console.log('[LANGUAGE_DETECTION] No matching interface language, using English');
   return 'en';
 }
 

@@ -56,14 +56,14 @@ fi
 # Variables d'environnement
 export NODE_ENV=${NODE_ENV:-development}
 export PORT=${PORT:-3100}
-export NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-"http://meeshy.me/api"}
-export NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-"ws://meeshy.me/api/ws"}
-export NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-"http://meeshy.me/api"}
-export NEXT_PUBLIC_TRANSLATION_URL=${NEXT_PUBLIC_TRANSLATION_URL:-"http://meeshy.me/translate"}
+export NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-"http://localhost:3000"}
+export NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-"ws://localhost:3000"}
+export NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-"http://localhost:3000"}
+export NEXT_PUBLIC_TRANSLATION_URL=${NEXT_PUBLIC_TRANSLATION_URL:-"http://localhost:8000"}
 
 # Internal URLs for SSR when running locally (non-docker)
-export INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL:-"http://gateway:3000"}
-export INTERNAL_WS_URL=${INTERNAL_WS_URL:-"ws://gateway:3000"}
+export INTERNAL_BACKEND_URL=${INTERNAL_BACKEND_URL:-"http://localhost:3000"}
+export INTERNAL_WS_URL=${INTERNAL_WS_URL:-"ws://localhost:3000"}
 
 echo -e "${BLUE}📊 [APP] Configuration:${NC}"
 echo "   Port: $PORT"
