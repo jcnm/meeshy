@@ -24,7 +24,7 @@ export function useTranslations(namespace: string) {
     const loadMessages = async () => {
       try {
         // Utiliser français par défaut pour le SSR, puis la langue détectée côté client
-        const locale = isClient ? (currentInterfaceLanguage || 'en') : 'en';
+        const locale = isClient ? (currentInterfaceLanguage || 'fr') : 'fr';
         const messagesModule = await import(`@/locales/${locale}.json`);
         const allMessages = messagesModule.default;
         
@@ -34,9 +34,9 @@ export function useTranslations(namespace: string) {
       } catch (error) {
         console.error(`Failed to load messages for locale ${currentInterfaceLanguage}, namespace ${namespace}:`, error);
         
-        // Fallback vers l'anglais
+        // Fallback vers le français
         try {
-          const fallbackModule = await import(`@/locales/en.json`);
+          const fallbackModule = await import(`@/locales/fr.json`);
           const fallbackMessages = fallbackModule.default;
           const namespaceFallback = (fallbackMessages as any)[namespace] || {};
           setMessages(namespaceFallback);
@@ -59,13 +59,19 @@ export function useTranslations(namespace: string) {
       if (value && typeof value === 'object' && k in value) {
         value = value[k];
       } else {
-        console.warn(`Translation key "${key}" not found in namespace "${namespace}" for locale "${currentInterfaceLanguage}"`);
+        // Réduire les warnings en production et limiter en développement
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`Translation key "${key}" not found in namespace "${namespace}" for locale "${currentInterfaceLanguage}"`);
+        }
         return key; // Retourner la clé si la traduction n'est pas trouvée
       }
     }
     
     if (typeof value !== 'string') {
-      console.warn(`Translation key "${key}" does not resolve to a string in namespace "${namespace}"`);
+      // Réduire les warnings en production
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Translation key "${key}" does not resolve to a string in namespace "${namespace}"`);
+      }
       return key;
     }
     
@@ -103,9 +109,9 @@ export function useTranslationsData(namespace: string) {
       } catch (error) {
         console.error(`Failed to load messages for locale ${currentInterfaceLanguage}, namespace ${namespace}:`, error);
         
-        // Fallback vers l'anglais
+        // Fallback vers le français
         try {
-          const fallbackModule = await import(`@/locales/en.json`);
+          const fallbackModule = await import(`@/locales/fr.json`);
           const fallbackMessages = fallbackModule.default;
           const namespaceFallback = (fallbackMessages as any)[namespace] || {};
           setMessages(namespaceFallback);
@@ -140,9 +146,9 @@ export function useGlobalTranslations() {
       } catch (error) {
         console.error(`Failed to load global messages for locale ${currentInterfaceLanguage}:`, error);
         
-        // Fallback vers l'anglais
+        // Fallback vers le français
         try {
-          const fallbackModule = await import(`@/locales/en.json`);
+          const fallbackModule = await import(`@/locales/fr.json`);
           setMessages(fallbackModule.default);
         } catch (fallbackError) {
           console.error('Failed to load fallback global messages:', fallbackError);
