@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { AuthService, LoginCredentials, RegisterData } from '../services/auth.service';
 import { SocketIOUser } from '../../shared/types';
+import { createUnifiedAuthMiddleware } from '../middleware/auth';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // Créer une instance du service d'authentification
@@ -158,52 +159,92 @@ export async function authRoutes(fastify: FastifyInstance) {
 
   // Route pour récupérer les informations de l'utilisateur connecté
   fastify.get('/me', {
-    preValidation: [(fastify as any).authenticate]
+    preValidation: [createUnifiedAuthMiddleware((fastify as any).prisma, { requireAuth: true })]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const userId = (request as any).user.userId;
+      const authContext = (request as any).authContext;
       
-      // Récupérer l'utilisateur avec Prisma
-      const user = await authService.getUserById(userId);
-      
-      if (!user) {
-        return reply.status(404).send({
+      if (!authContext.isAuthenticated) {
+        return reply.status(401).send({
           success: false,
-          error: 'Utilisateur non trouvé'
+          error: 'Non authentifié'
         });
       }
-      
-      // Récupérer les permissions
-      const permissions = authService.getUserPermissions(user);
-      
-      reply.send({
-        success: true,
-        data: {
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            displayName: user.displayName,
-            avatar: user.avatar,
-            role: user.role,
-            systemLanguage: user.systemLanguage,
-            regionalLanguage: user.regionalLanguage,
-            customDestinationLanguage: user.customDestinationLanguage,
-            autoTranslateEnabled: user.autoTranslateEnabled,
-            translateToSystemLanguage: user.translateToSystemLanguage,
-            translateToRegionalLanguage: user.translateToRegionalLanguage,
-            useCustomDestination: user.useCustomDestination,
-            isOnline: user.isOnline,
-            lastSeen: user.lastSeen,
-            lastActiveAt: user.lastActiveAt,
-            isActive: user.isActive,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-            permissions
+
+      // Si c'est un utilisateur enregistré (JWT)
+      if (authContext.type === 'jwt' && authContext.registeredUser) {
+        const user = authContext.registeredUser;
+        const permissions = authService.getUserPermissions(user as any);
+        
+        return reply.send({
+          success: true,
+          data: {
+            user: {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              displayName: user.displayName,
+              avatar: user.avatar,
+              role: user.role,
+              systemLanguage: user.systemLanguage,
+              regionalLanguage: user.regionalLanguage,
+              customDestinationLanguage: user.customDestinationLanguage,
+              autoTranslateEnabled: user.autoTranslateEnabled,
+              translateToSystemLanguage: user.translateToSystemLanguage,
+              translateToRegionalLanguage: user.translateToRegionalLanguage,
+              useCustomDestination: user.useCustomDestination,
+              isOnline: user.isOnline,
+              lastSeen: user.lastActiveAt,
+              lastActiveAt: user.lastActiveAt,
+              isActive: true,
+              createdAt: new Date(), // TODO: Récupérer depuis la DB si nécessaire
+              updatedAt: new Date(),
+              permissions
+            }
           }
-        }
+        });
+      }
+
+      // Si c'est un utilisateur anonyme (Session)
+      if (authContext.type === 'session' && authContext.anonymousUser) {
+        const anonymousUser = authContext.anonymousUser;
+        
+        return reply.send({
+          success: true,
+          data: {
+            user: {
+              id: authContext.userId,
+              username: anonymousUser.username,
+              email: null,
+              firstName: anonymousUser.firstName,
+              lastName: anonymousUser.lastName,
+              displayName: authContext.displayName,
+              avatar: null,
+              role: 'ANONYMOUS',
+              systemLanguage: anonymousUser.language,
+              regionalLanguage: anonymousUser.language,
+              customDestinationLanguage: null,
+              autoTranslateEnabled: false,
+              translateToSystemLanguage: false,
+              translateToRegionalLanguage: false,
+              useCustomDestination: false,
+              isOnline: true,
+              lastSeen: new Date(),
+              lastActiveAt: new Date(),
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              permissions: anonymousUser.permissions
+            }
+          }
+        });
+      }
+
+      return reply.status(404).send({
+        success: false,
+        error: 'Utilisateur non trouvé'
       });
       
     } catch (error) {

@@ -16,26 +16,29 @@ cd "$SCRIPT_DIR"
 
 # Fonction de chargement du fichier .env
 load_env_file() {
-    local env_file="../.env"
+    local env_files=(".env.local" "../.env.local" "../.env")
     
-    if [[ -f "$env_file" ]]; then
-        echo -e "${GREEN}✅ [TRA] Chargement des variables depuis $env_file${NC}"
-        # Lire le fichier .env et exporter les variables
-        while IFS='=' read -r key value; do
-            # Ignorer les commentaires et les lignes vides
-            if [[ ! "$key" =~ ^[[:space:]]*# ]] && [[ -n "$key" ]]; then
-                # Supprimer les guillemets et espaces en début/fin
-                key=$(echo "$key" | xargs)
-                value=$(echo "$value" | xargs)
-                value=${value#\"}  # Supprimer guillemet de début
-                value=${value%\"}  # Supprimer guillemet de fin
-                export "$key=$value"
-                echo "  - $key=$value"
-            fi
-        done < "$env_file"
-    else
-        echo -e "${YELLOW}⚠️  [TRA] Fichier $env_file non trouvé, utilisation des valeurs par défaut${NC}"
-    fi
+    for env_file in "${env_files[@]}"; do
+        if [[ -f "$env_file" ]]; then
+            echo -e "${GREEN}✅ [GWY] Chargement des variables depuis $env_file${NC}"
+            # Lire le fichier .env et exporter les variables
+            while IFS='=' read -r key value; do
+                # Ignorer les commentaires et les lignes vides
+                if [[ ! "$key" =~ ^[[:space:]]*# ]] && [[ -n "$key" ]]; then
+                    # Supprimer les guillemets et espaces en début/fin
+                    key=$(echo "$key" | xargs)
+                    value=$(echo "$value" | xargs)
+                    value=${value#\"}  # Supprimer guillemet de début
+                    value=${value%\"}  # Supprimer guillemet de fin
+                    export "$key=$value"
+                    echo "  - $key=$value"
+                fi
+            done < "$env_file"
+            return 0
+        fi
+    done
+    
+    echo -e "${YELLOW}⚠️  [GWY] Aucun fichier .env trouvé, utilisation des valeurs par défaut${NC}"
 }
 
 # Charger les variables d'environnement

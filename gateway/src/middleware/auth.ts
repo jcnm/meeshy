@@ -247,7 +247,7 @@ export class AuthMiddleware {
         displayName: anonymousUser.firstName && anonymousUser.lastName 
           ? `${anonymousUser.firstName} ${anonymousUser.lastName}`.trim()
           : anonymousUser.username,
-        userId: sessionToken, // Utiliser sessionToken comme ID unifié
+        userId: anonymousParticipant.id, // Utiliser l'ID du participant anonyme
         
         canSendMessages: anonymousUser.permissions.canSendMessages,
         hasFullAccess: false
@@ -351,13 +351,6 @@ export function isRegisteredUser(authContext: UnifiedAuthContext): boolean {
  */
 export function isAnonymousUser(authContext: UnifiedAuthContext): boolean {
   return authContext.type === 'session' && authContext.isAnonymous;
-}
-
-/**
- * Obtenir l'ID utilisateur unifié
- */
-export function getUserId(authContext: UnifiedAuthContext): string {
-  return authContext.userId;
 }
 
 /**

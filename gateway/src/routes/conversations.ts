@@ -3,6 +3,77 @@ import { TranslationService } from '../services/TranslationService';
 import { conversationStatsService } from '../services/ConversationStatsService';
 import { z } from 'zod';
 import { UserRoleEnum } from '../../shared/types';
+import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth';
+
+/**
+ * Vérifie si un utilisateur peut accéder à une conversation
+ * @param prisma - Instance Prisma
+ * @param authContext - Contexte d'authentification
+ * @param conversationId - ID de la conversation
+ * @param conversationIdentifier - Identifiant de la conversation (peut avoir le préfixe mshy_)
+ * @returns Promise<boolean>
+ */
+async function canAccessConversation(
+  prisma: any,
+  authContext: any,
+  conversationId: string,
+  conversationIdentifier: string
+): Promise<boolean> {
+  // Si l'utilisateur n'est pas authentifié (pas de session token, pas de JWT token), aucun accès
+  if (!authContext.isAuthenticated) {
+    return false;
+  }
+  
+  if (authContext.isAnonymous) {
+    // Utilisateurs anonymes authentifiés : vérifier l'accès via liens d'invitation
+    // Le userId pour les anonymes est l'ID du participant anonyme
+    const anonymousAccess = await prisma.anonymousParticipant.findFirst({
+      where: {
+        id: authContext.userId,
+        isActive: true,
+        conversationId: conversationId
+      }
+    });
+    return !!anonymousAccess;
+  } else {
+    // Vérifier le préfixe mshy_ pour les identifiants de conversation
+    if (conversationIdentifier.startsWith('mshy_')) {
+      // Identifiant avec préfixe mshy_ - résoudre l'ID réel
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          OR: [
+            { id: conversationId },
+            { identifier: conversationIdentifier }
+          ]
+        }
+      });
+      
+      if (!conversation) {
+        return false;
+      } else {
+        // Vérifier l'appartenance à la conversation
+        const membership = await prisma.conversationMember.findFirst({
+          where: {
+            conversationId: conversation.id,
+            userId: authContext.userId,
+            isActive: true
+          }
+        });
+        return !!membership;
+      }
+    } else {
+      // Identifiant direct - vérifier l'appartenance à la conversation
+      const membership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: conversationId,
+          userId: authContext.userId,
+          isActive: true
+        }
+      });
+      return !!membership;
+    }
+  }
+}
 
 // Fonction utilitaire pour générer le linkId avec le format demandé
 // Étape 1: génère yymmddhhm_<random>
@@ -128,6 +199,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   // Récupérer prisma et le service de traduction décorés par le serveur
   const prisma = fastify.prisma;
   const translationService: TranslationService = (fastify as any).translationService;
+  
+  // Middleware d'authentification optionnel pour les conversations
+  const optionalAuth = createUnifiedAuthMiddleware(prisma, { 
+    requireAuth: false, 
+    allowAnonymous: true 
+  });
 
   /**
    * Résout l'ID de conversation réel à partir d'un identifiant (peut être un ObjectID ou un identifier)
@@ -148,10 +225,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   
   // Route pour obtenir toutes les conversations de l'utilisateur
   fastify.get('/conversations', {
-    preValidation: [fastify.authenticate]
+    preValidation: [optionalAuth]
   }, async (request: FastifyRequest, reply) => {
     try {
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      
+      // Vérifier que l'utilisateur est authentifié
+      if (!authRequest.authContext.isAuthenticated) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Authentification requise pour accéder aux conversations'
+        });
+      }
+      
+      const userId = authRequest.authContext.userId;
 
       const conversations = await prisma.conversation.findMany({
         where: {
@@ -164,11 +251,6 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   isActive: true
                 }
               }
-            },
-            // Conversation globale "meeshy" accessible à tous les utilisateurs connectés
-            {
-              identifier: "meeshy",
-              type: 'global'
             }
           ],
           isActive: true
@@ -186,6 +268,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   lastSeen: true
                 }
               }
+            }
+          },
+          anonymousParticipants: {
+            where: {
+              isActive: true
+            },
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              isOnline: true,
+              lastSeenAt: true,
+              joinedAt: true
             }
           },
           messages: {
@@ -251,42 +347,38 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
   // Route pour obtenir une conversation par ID
   fastify.get<{ Params: ConversationParams }>('/conversations/:id', {
-    preValidation: [fastify.authenticate]
+    preValidation: [optionalAuth]
   }, async (request, reply) => {
     try {
+      const authRequest = request as UnifiedAuthRequest;
+      
+      // Vérifier que l'utilisateur est authentifié
+      if (!authRequest.authContext.isAuthenticated) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Authentification requise pour accéder à cette conversation'
+        });
+      }
+      
       const { id } = request.params;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const userId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
         return reply.status(404).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Conversation not found'
         });
       }
 
       // Vérifier les permissions d'accès
-      let canAccess = false;
-      
-      if (id === "meeshy") {
-        canAccess = true; // Conversation globale accessible à tous les utilisateurs connectés
-      } else {
-        // Vérifier si l'utilisateur est membre de la conversation
-        const membership = await prisma.conversationMember.findFirst({
-          where: {
-            conversationId: conversationId,
-            userId: userId,
-            isActive: true
-          }
-        });
-        canAccess = !!membership;
-      }
+      const canAccess = await canAccessConversation(prisma, authRequest.authContext, conversationId, id);
 
       if (!canAccess) {
-        return reply.status(403).send({
+          return reply.status(403).send({
           success: false,
-          error: 'Accès non autorisé à cette conversation'
+          error: 'Unauthorized access to this conversation'
         });
       }
 
@@ -314,7 +406,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       if (!conversation) {
         return reply.status(404).send({
           success: false,
-          error: 'Conversation introuvable'
+          error: 'Conversation not found'
         });
       }
 
@@ -346,7 +438,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
   // Route pour créer une nouvelle conversation
   fastify.post<{ Body: CreateConversationBody }>('/conversations', {
-    preValidation: [fastify.authenticate]
+    preValidation: [optionalAuth]
   }, async (request, reply) => {
     try {
       const { type, title, description, participantIds = [], communityId } = request.body;
@@ -429,38 +521,25 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: ConversationParams;
     Querystring: MessagesQuery;
   }>('/conversations/:id/messages', {
-    preValidation: [fastify.authenticate]
+    preValidation: [optionalAuth]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
       const { limit = '20', offset = '0', before } = request.query;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
       // Vérifier les permissions d'accès
-      let canAccess = false;
-      
-      if (id === "meeshy") {
-        canAccess = true; // Conversation globale accessible à tous les utilisateurs connectés
-      } else {
-        // Vérifier si l'utilisateur est membre de la conversation
-        const membership = await prisma.conversationMember.findFirst({
-          where: {
-            conversationId: conversationId,
-            userId: userId,
-            isActive: true
-          }
-        });
-        canAccess = !!membership;
-      }
+      const canAccess = await canAccessConversation(prisma, authRequest.authContext, conversationId, id);
 
       if (!canAccess) {
         return reply.status(403).send({
@@ -654,36 +733,55 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: ConversationParams;
     Body: SendMessageBody;
   }>('/conversations/:id/messages', {
-    preValidation: [fastify.authenticate]
+    preValidation: [optionalAuth]
   }, async (request, reply) => {
     try {
+      const authRequest = request as UnifiedAuthRequest;
+      
+      // Vérifier que l'utilisateur est authentifié
+      if (!authRequest.authContext.isAuthenticated) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Authentification requise pour envoyer des messages'
+        });
+      }
+      
       const { id } = request.params;
       const { content, originalLanguage = 'fr', messageType = 'text', replyToId } = request.body;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const userId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
       // Vérifier les permissions d'accès et d'écriture
       let canSend = false;
       
-      if (id === "meeshy") {
-        canSend = true; // Tous les utilisateurs connectés peuvent écrire dans la conversation globale
+      // Règle simple : seuls les utilisateurs faisant partie de la conversation peuvent y écrire
+      const canAccess = await canAccessConversation(prisma, authRequest.authContext, conversationId, id);
+      if (!canAccess) {
+        canSend = false;
       } else {
-        const membership = await prisma.conversationMember.findFirst({
-          where: {
-            conversationId: conversationId,
-            userId: userId,
-            isActive: true
-          }
-        });
-        canSend = !!membership; // Dans l'ancien schéma, pas de canSendMessage, on assume que tous les membres peuvent envoyer
+        // Vérifier les permissions d'écriture spécifiques
+        if (authRequest.authContext.isAnonymous) {
+          // Pour les utilisateurs anonymes, vérifier les permissions d'écriture
+          const anonymousParticipant = await prisma.anonymousParticipant.findFirst({
+            where: {
+              id: authRequest.authContext.userId,
+              isActive: true,
+              canSendMessages: true
+            }
+          });
+          canSend = !!anonymousParticipant;
+        } else {
+          // Pour les utilisateurs connectés, l'accès implique l'écriture
+          canSend = true;
+        }
       }
 
       if (!canSend) {
@@ -803,9 +901,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
@@ -1158,9 +1256,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
@@ -1312,38 +1410,30 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       limit?: string;
     };
   }>('/conversations/:id/participants', {
-    preValidation: [fastify.authenticate]
+    preValidation: [optionalAuth]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
       const { onlineOnly, role, search, limit } = request.query;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
       // Vérifier que l'utilisateur a accès à cette conversation
-      if (id !== "meeshy") {
-        const membership = await prisma.conversationMember.findFirst({
-          where: {
-            conversationId: conversationId,
-            userId: userId,
-            isActive: true
-          }
+      const canAccess = await canAccessConversation(prisma, authRequest.authContext, conversationId, id);
+      if (!canAccess) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
         });
-
-        if (!membership) {
-          return reply.status(403).send({
-            success: false,
-            error: 'Accès non autorisé à cette conversation'
-          });
-        }
       }
 
       // Construire les filtres dynamiquement
@@ -1484,20 +1574,20 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           conversationId: conversationId, // Utiliser l'ID résolu
           isActive: true
         },
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          language: true,
-          isOnline: true,
-          joinedAt: true,
-          canSendMessages: true,
-          canSendFiles: true,
-          canSendImages: true
-        },
-        orderBy: { joinedAt: 'desc' }
-      });
+          select: {
+            id: true,
+            username: true,
+            firstName: true,
+            lastName: true,
+            language: true,
+            isOnline: true,
+            joinedAt: true,
+            canSendMessages: true,
+            canSendFiles: true,
+            canSendImages: true
+          },
+          orderBy: { joinedAt: 'desc' }
+        });
 
       // Transformer les participants anonymes pour correspondre au format attendu
       const formattedAnonymousParticipants = anonymousParticipants.map(participant => ({
@@ -1542,7 +1632,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }));
 
       // Combiner les participants authentifiés et anonymes
-      const allParticipants = [...formattedParticipants, ...formattedAnonymousParticipants];
+      const allParticipants = [...formattedParticipants, ...anonymousParticipants];
 
       reply.send({
         success: true,
@@ -1573,9 +1663,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
@@ -1660,9 +1750,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
@@ -1762,9 +1852,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 
@@ -1887,9 +1977,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
       if (!conversationId) {
-        return reply.status(404).send({
+        return reply.status(403).send({
           success: false,
-          error: 'Conversation non trouvée'
+          error: 'Accès non autorisé à cette conversation'
         });
       }
 

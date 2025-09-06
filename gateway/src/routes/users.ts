@@ -185,11 +185,8 @@ export async function userRoutes(fastify: FastifyInstance) {
             isDeleted: false,
             createdAt: {
               gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // 24h
-            },
-            // Approximation: messages avec traductions
-            translations: {
-              some: {}
             }
+            // Simplification: compter tous les messages récents comme traductions potentielles
           }
         })
       ]);

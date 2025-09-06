@@ -133,6 +133,48 @@ export class AuthService {
         }
       });
 
+      // Ajouter automatiquement l'utilisateur à la conversation globale "meeshy"
+      try {
+        const globalConversation = await this.prisma.conversation.findFirst({
+          where: { identifier: 'meeshy' }
+        });
+
+        if (globalConversation) {
+          // Vérifier si l'utilisateur n'est pas déjà membre
+          const existingMember = await this.prisma.conversationMember.findFirst({
+            where: {
+              conversationId: globalConversation.id,
+              userId: user.id
+            }
+          });
+
+          if (!existingMember) {
+            await this.prisma.conversationMember.create({
+              data: {
+                conversationId: globalConversation.id,
+                userId: user.id,
+                role: 'MEMBER',
+                canSendMessage: true,
+                canSendFiles: true,
+                canSendImages: true,
+                canSendVideos: true,
+                canSendAudios: true,
+                canSendLocations: true,
+                canSendLinks: true,
+                joinedAt: new Date(),
+                isActive: true
+              }
+            });
+            console.log(`[AUTH] ✅ Utilisateur "${user.username}" ajouté automatiquement à la conversation globale "meeshy"`);
+          }
+        } else {
+          console.warn('[AUTH] ⚠️ Conversation globale "meeshy" non trouvée - impossible d\'ajouter l\'utilisateur');
+        }
+      } catch (error) {
+        console.error('[AUTH] ❌ Erreur lors de l\'ajout à la conversation globale:', error);
+        // Ne pas faire échouer l'inscription si l'ajout à la conversation échoue
+      }
+
       return this.userToSocketIOUser(user);
 
     } catch (error) {

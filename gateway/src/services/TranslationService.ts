@@ -598,11 +598,15 @@ export class TranslationService extends EventEmitter {
     try {
       console.log(`💾 [TranslationService] Sauvegarde traduction en base: ${result.messageId} -> ${result.targetLanguage}`);
       
-      // Vérifier si la traduction existe déjà
-      const existingTranslation = await this.prisma.messageTranslation.findFirst({
+      // AMÉLIORATION: Utiliser upsert pour éviter les doublons
+      // Vérifier d'abord s'il y a des doublons existants
+      const existingTranslations = await this.prisma.messageTranslation.findMany({
         where: {
           messageId: result.messageId,
           targetLanguage: result.targetLanguage
+        },
+        orderBy: {
+          createdAt: 'desc'
         }
       });
 
@@ -613,17 +617,32 @@ export class TranslationService extends EventEmitter {
       const modelInfo = result.translatorModel || result.modelType || 'basic';
       const confidenceScore = result.confidenceScore || 0.9;
 
-      if (existingTranslation) {
-        // Mettre à jour la traduction existante
+      if (existingTranslations.length > 0) {
+        // Supprimer les doublons s'il y en a (garder seulement le plus récent)
+        if (existingTranslations.length > 1) {
+          const duplicatesToDelete = existingTranslations.slice(1);
+          await this.prisma.messageTranslation.deleteMany({
+            where: {
+              id: {
+                in: duplicatesToDelete.map(t => t.id)
+              }
+            }
+          });
+          console.log(`🧹 [TranslationService] ${duplicatesToDelete.length} doublons supprimés pour ${result.messageId} -> ${result.targetLanguage}`);
+        }
+        
+        // Mettre à jour la traduction existante (la plus récente)
+        const latestTranslation = existingTranslations[0];
         await this.prisma.messageTranslation.update({
           where: {
-            id: existingTranslation.id
+            id: latestTranslation.id
           },
           data: {
             translatedContent: result.translatedText,
             translationModel: modelInfo,
             confidenceScore: confidenceScore,
-            cacheKey: cacheKey
+            cacheKey: cacheKey,
+            updatedAt: new Date()
           }
         });
         

@@ -112,10 +112,49 @@ export class ConversationStatsService {
     conversationId: string,
     getConnectedUserIds: () => string[]
   ): Promise<ConversationStats> {
+    // Résoudre l'ID réel de la conversation si c'est un identifiant
+    let realConversationId = conversationId;
+    let isGlobalConversation = false;
+    
+    if (conversationId === "meeshy") {
+      const globalConversation = await prisma.conversation.findFirst({
+        where: { identifier: "meeshy" }
+      });
+      
+      if (globalConversation) {
+        realConversationId = globalConversation.id;
+        isGlobalConversation = true;
+      } else {
+        // Si la conversation globale n'existe pas, retourner des stats vides
+        return {
+          messagesPerLanguage: {},
+          participantsPerLanguage: {},
+          participantCount: 0,
+          onlineUsers: [],
+          updatedAt: new Date()
+        };
+      }
+    } else {
+      // Vérifier si c'est une conversation normale
+      const conversation = await prisma.conversation.findFirst({
+        where: { id: conversationId }
+      });
+      
+      if (!conversation) {
+        return {
+          messagesPerLanguage: {},
+          participantsPerLanguage: {},
+          participantCount: 0,
+          onlineUsers: [],
+          updatedAt: new Date()
+        };
+      }
+    }
+
     // Messages per language
     const messagesAgg = await prisma.message.groupBy({
       by: ['originalLanguage'],
-      where: { conversationId, isDeleted: false },
+      where: { conversationId: realConversationId, isDeleted: false },
       _count: { _all: true }
     }).catch(() => [] as any[]);
 
@@ -128,11 +167,6 @@ export class ConversationStatsService {
     let participantCount = 0;
     const participantsPerLanguage: Record<string, number> = {};
     
-    // Vérifier si c'est la conversation globale "meeshy"
-    const isGlobalConversation = await prisma.conversation.findFirst({
-      where: { id: conversationId, identifier: "meeshy" }
-    }).then(conv => !!conv);
-    
     if (isGlobalConversation) {
       const users = await prisma.user.findMany({
         where: { isActive: true },
@@ -144,7 +178,7 @@ export class ConversationStatsService {
       }
     } else {
       const members = await prisma.conversationMember.findMany({
-        where: { conversationId, isActive: true },
+        where: { conversationId: realConversationId, isActive: true },
         select: { user: { select: { id: true, systemLanguage: true } } }
       }).catch(() => [] as any[]);
       participantCount = members.length;
@@ -155,7 +189,7 @@ export class ConversationStatsService {
     }
 
     // Online users snapshot
-    const onlineUsers = await this.computeOnlineUsers(prisma, conversationId, getConnectedUserIds());
+    const onlineUsers = await this.computeOnlineUsers(prisma, realConversationId, getConnectedUserIds());
 
     return {
       messagesPerLanguage,
@@ -175,14 +209,35 @@ export class ConversationStatsService {
 
     let allowedIds: string[] = connectedUserIds;
     
-    // Vérifier si c'est la conversation globale "meeshy"
-    const isGlobalConversation = await prisma.conversation.findFirst({
-      where: { id: conversationId, identifier: "meeshy" }
-    }).then(conv => !!conv);
+    // Résoudre l'ID réel de la conversation si c'est un identifiant
+    let realConversationId = conversationId;
+    let isGlobalConversation = false;
+    
+    if (conversationId === "meeshy") {
+      const globalConversation = await prisma.conversation.findFirst({
+        where: { identifier: "meeshy" }
+      });
+      
+      if (globalConversation) {
+        realConversationId = globalConversation.id;
+        isGlobalConversation = true;
+      } else {
+        return []; // Conversation globale n'existe pas
+      }
+    } else {
+      // Vérifier si c'est une conversation normale
+      const conversation = await prisma.conversation.findFirst({
+        where: { id: conversationId }
+      });
+      
+      if (!conversation) {
+        return []; // Conversation n'existe pas
+      }
+    }
     
     if (!isGlobalConversation) {
       const members = await prisma.conversationMember.findMany({
-        where: { conversationId, isActive: true, userId: { in: connectedUserIds } },
+        where: { conversationId: realConversationId, isActive: true, userId: { in: connectedUserIds } },
         select: { userId: true }
       }).catch(() => [] as any[]);
       allowedIds = members.map((m: any) => m.userId);
