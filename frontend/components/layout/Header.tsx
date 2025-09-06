@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LanguageSwitcher } from '@/components/common/language-switcher';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface HeaderProps {
   // Mode d'affichage
@@ -117,14 +117,14 @@ export function Header({
           {mode === 'chat' && (
             <>
               {shareLink && (
-                <Button 
-                  onClick={handleShare}
-                  variant="outline"
-                  className="flex items-center space-x-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                >
-                  <Share className="h-4 w-4" />
-                  <span>Partager</span>
-                </Button>
+                  <Button 
+                    onClick={handleShare}
+                    variant="outline"
+                    className="flex items-center space-x-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                  >
+                    <Share className="h-4 w-4" />
+                    <span>{t('share')}</span>
+                  </Button>
               )}
               
               {/* Menu utilisateur */}
@@ -141,7 +141,7 @@ export function Header({
                       <p className="text-sm font-medium">{user.displayName || `${user.firstName} ${user.lastName}`}</p>
                       <p className="text-xs text-gray-500">@{user.username}</p>
                       {user.isAnonymous && (
-                        <p className="text-xs text-orange-600 mt-1">Session anonyme</p>
+                        <p className="text-xs text-orange-600 mt-1">{t('anonymousSession')}</p>
                       )}
                     </div>
                     <DropdownMenuSeparator />
@@ -150,11 +150,11 @@ export function Header({
                       <>
                         <DropdownMenuItem onClick={() => onAuthModeChange?.('login')}>
                           <LogIn className="h-4 w-4 mr-2" />
-                          Se connecter
+                          {t('signIn')}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onAuthModeChange?.('register')}>
                           <UserPlus className="h-4 w-4 mr-2" />
-                          S'inscrire
+                          {t('signUp')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
@@ -169,11 +169,11 @@ export function Header({
                       <>
                         <DropdownMenuItem onClick={() => router.push('/profile')}>
                           <User className="h-4 w-4 mr-2" />
-                          Profil
+                          {t('profile')}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => router.push('/settings')}>
                           <AlertTriangle className="h-4 w-4 mr-2" />
-                          Paramètres
+                          {t('settings')}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
@@ -181,7 +181,7 @@ export function Header({
                           className="text-red-600 focus:text-red-600"
                         >
                           <LogOut className="h-4 w-4 mr-2" />
-                          Déconnexion
+                          {t('logout')}
                         </DropdownMenuItem>
                       </>
                     )}
@@ -198,14 +198,14 @@ export function Header({
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
                     <LogIn className="h-4 w-4" />
-                    <span className="hidden sm:inline">Connexion</span>
+                    <span className="hidden sm:inline">{t('login')}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Connexion</DialogTitle>
+                    <DialogTitle>{t('loginTitle')}</DialogTitle>
                     <DialogDescription>
-                      Connectez-vous à votre compte Meeshy
+                      {t('loginDescription')}
                     </DialogDescription>
                   </DialogHeader>
                   <LoginForm />
@@ -216,14 +216,14 @@ export function Header({
                 <DialogTrigger asChild>
                   <Button className="flex items-center space-x-2">
                     <UserPlus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Inscription</span>
+                    <span className="hidden sm:inline">{t('register')}</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Créer un compte</DialogTitle>
+                    <DialogTitle>{t('registerTitle')}</DialogTitle>
                     <DialogDescription>
-                      Rejoignez Meeshy et communiquez sans barrières
+                      {t('registerDescription')}
                     </DialogDescription>
                   </DialogHeader>
                   <RegisterForm />
@@ -248,7 +248,7 @@ export function Header({
           </DialogHeader>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setShowClearSessionDialog(false)}>
-              Annuler
+              {t('cancel')}
             </Button>
             <Button 
               variant="destructive" 
@@ -257,7 +257,7 @@ export function Header({
                 setShowClearSessionDialog(false);
               }}
             >
-              Effacer la session
+              {t('clearSessionButton')}
             </Button>
           </div>
         </DialogContent>

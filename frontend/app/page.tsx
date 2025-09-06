@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { useDynamicSEO } from '@/hooks/useDynamicSEO';
+import RichSnippets from '@/components/RichSnippets';
 import { 
   Dialog, 
   DialogContent, 
@@ -27,7 +29,11 @@ import {
   Languages,
   Sparkles,
   Building2,
-  GraduationCap
+  GraduationCap,
+  Youtube,
+  Twitter,
+  Linkedin,
+  Instagram
 } from 'lucide-react';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
@@ -40,9 +46,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { isCurrentUserAnonymous } from '@/utils/auth';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
+import Link from 'next/link';
 
 export default function LandingPage() {
+  // SEO dynamique pour la page d'accueil
+  useDynamicSEO({ page: 'home' });
+
   const { user, isAuthChecking } = useUser();
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
@@ -69,59 +79,6 @@ export default function LandingPage() {
     }
   }, [user]);
 
-  const quickLogin = async (email: string) => {
-    try {
-      console.log('[LANDING] Tentative de connexion rapide pour:', email);
-      
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: email,
-          email,
-          password: 'password123',
-        }),
-      });
-
-      const result = await response.json();
-      console.log('[LANDING] Réponse connexion rapide:', result);
-
-      // Gérer les différents formats de réponse
-      let userData, token;
-      
-      if (result.success && result.data?.user && result.data?.token) {
-        // Format standardisé: { success: true, data: { user: {...}, token: "..." } }
-        userData = result.data.user;
-        token = result.data.token;
-      } else if (result.user && result.access_token) {
-        // Format alternatif: { user: {...}, access_token: "..." }
-        userData = result.user;
-        token = result.access_token;
-      } else if (result.user && result.token) {
-        // Format alternatif: { user: {...}, token: "..." }
-        userData = result.user;
-        token = result.token;
-      } else {
-        console.error('[LANDING] Format de réponse inattendu:', result);
-        toast.error(result.message || tAuth('errors.loginFailed'));
-        return;
-      }
-
-      if (userData && token) {
-        console.log('[LANDING] Connexion rapide réussie pour:', userData.username);
-        toast.success(`${tAuth('success.welcome')} ${userData.firstName} !`);
-        login(userData, token);
-        // Pas de redirection ici - la page se mettra à jour automatiquement
-      } else {
-        toast.error(tAuth('errors.invalidCredentials'));
-      }
-    } catch (error) {
-      console.error('[LANDING] Erreur login rapide:', error);
-      toast.error(tAuth('errors.loginFailed'));
-    }
-  };
 
   if (isAuthChecking) {
     return (
@@ -167,7 +124,10 @@ export default function LandingPage() {
   // Pour les utilisateurs anonymes et non connectés, afficher la landing page
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <>
+      <RichSnippets type="website" />
+      <RichSnippets type="service" />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header */}
       <Header 
         mode="landing"
@@ -444,19 +404,108 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="h-6 w-6 bg-gradient-to-br from-blue-600 to-indigo-600 rounded flex items-center justify-center">
-              <MessageSquare className="h-4 w-4 text-white" />
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Logo, Tagline et Copyright */}
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start space-x-2 mb-4">
+                <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded flex items-center justify-center">
+                  <MessageSquare className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xl font-bold">Meeshy</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-1 sm:space-y-0">
+                <p className="text-gray-300 text-lg">
+                  {t('footer.tagline')}
+                </p>
+                <span className="text-gray-400 hidden sm:inline">•</span>
+                <p className="text-gray-400">
+                  {t('footer.copyright')}
+                </p>
+              </div>
             </div>
-            <span className="text-lg font-bold">Meeshy</span>
+
+            {/* Liens et Réseaux Sociaux */}
+            <div className="text-center md:text-right">
+              {/* Liens Utiles */}
+              <div className="mb-6">
+                <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
+                  <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
+                    {t('footer.links.about')}
+                  </Link>
+                  <Link href="/terms" className="text-gray-300 hover:text-white transition-colors">
+                    {t('footer.links.terms')}
+                  </Link>
+                  <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
+                    {t('footer.links.contact')}
+                  </Link>
+                  <Link href="/privacy" className="text-gray-300 hover:text-white transition-colors">
+                    {t('footer.links.policy')}
+                  </Link>
+                  <Link href="/partners" className="text-gray-300 hover:text-white transition-colors">
+                    {t('footer.links.partners')}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Réseaux Sociaux */}
+              <div>
+                <div className="flex justify-center md:justify-end space-x-4">
+                  <a 
+                    href="https://youtube.com/@meeshy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-red-500 transition-colors"
+                    aria-label="YouTube"
+                  >
+                    <Youtube className="h-6 w-6" />
+                  </a>
+                  <a 
+                    href="https://x.com/meeshy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                    aria-label="X (Twitter)"
+                  >
+                    <Twitter className="h-6 w-6" />
+                  </a>
+                  <a 
+                    href="https://linkedin.com/company/meeshy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-blue-400 transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="h-6 w-6" />
+                  </a>
+                  <a 
+                    href="https://instagram.com/meeshy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-pink-500 transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="h-6 w-6" />
+                  </a>
+                  <a 
+                    href="https://tiktok.com/@meeshy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                    aria-label="TikTok"
+                  >
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-gray-400">
-            {t('footer.copyright')}
-          </p>
         </div>
       </footer>
     </div>
+    </>
   );
 }

@@ -26,6 +26,7 @@ import {
 import { useUser } from '@/context/AppContext';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
+import { useTranslations } from '@/hooks/useTranslations';
 import type { User } from '@/types';
 
 interface AppHeaderProps {
@@ -44,10 +45,11 @@ export function AppHeader({
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
   const { logout } = useAuth();
+  const t = useTranslations('toasts');
 
   const handleLogout = () => {
     logout();
-    toast.success('Déconnexion réussie');
+    toast.success(t('auth.logoutSuccess'));
   };
 
   const handleNavigation = (path: string) => {

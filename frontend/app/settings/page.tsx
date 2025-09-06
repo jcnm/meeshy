@@ -6,7 +6,7 @@ import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { CompleteUserSettings } from '@/components/settings/complete-user-settings';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {

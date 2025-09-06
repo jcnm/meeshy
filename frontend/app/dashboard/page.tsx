@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 import { 
   MessageSquare, 
   Users, 
@@ -30,7 +30,7 @@ import { dashboardService, type DashboardData } from '@/services/dashboard.servi
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useUser();
-  const t = useTranslations();
+  const t = useTranslations('dashboard');
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -365,7 +365,7 @@ export default function DashboardPage() {
                             </Badge>
                           )}
                           <Badge variant="outline" className="text-xs">
-                            {t('communities.membersCount', { count: community.members.length })}
+                            {t('communities.membersCount', { count: community.members.length.toString() })}
                           </Badge>
                         </div>
                       </div>

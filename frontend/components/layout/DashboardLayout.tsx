@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 import { 
   MessageSquare, 
   Bell, 
@@ -48,7 +48,7 @@ export function DashboardLayout({
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
   const { logout } = useAuth();
-  const t = useTranslations();
+  const t = useTranslations('layout');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Gérer l'état de chargement basé sur l'utilisateur du hook
@@ -78,10 +78,10 @@ export function DashboardLayout({
       
       // Utiliser la fonction logout centralisée (elle gère la redirection)
       logout();
-      toast.success(t('layout.auth.logoutSuccess'));
+      toast.success(t('auth.logoutSuccess'));
     } catch (error) {
       console.error('Erreur déconnexion:', error);
-      toast.error(t('layout.auth.logoutError'));
+      toast.error(t('auth.logoutError'));
       // En cas d'erreur, forcer la redirection quand même
       logout();
     }
@@ -99,7 +99,7 @@ export function DashboardLayout({
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('layout.auth.checking')}</p>
+          <p className="text-gray-600">{t('auth.checking')}</p>
         </div>
       </div>
     );
@@ -147,7 +147,7 @@ export function DashboardLayout({
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     type="text"
-                    placeholder={t('layout.header.searchPlaceholder')}
+                    placeholder={t('header.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 w-full"
@@ -194,39 +194,39 @@ export function DashboardLayout({
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                     <Home className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.dashboard')}</span>
+                    <span>{t('navigation.dashboard')}</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem onClick={() => router.push('/conversations')}>
                     <MessageSquare className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.conversations')}</span>
+                    <span>{t('navigation.conversations')}</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem onClick={() => router.push('/groups')}>
                     <Users className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.communities')}</span>
+                    <span>{t('navigation.communities')}</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem onClick={() => router.push('/contacts')}>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.contacts')}</span>
+                    <span>{t('navigation.contacts')}</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem onClick={() => router.push('/links')}>
                     <LinkIcon className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.links')}</span>
+                    <span>{t('navigation.links')}</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuSeparator />
                   
                   <DropdownMenuItem onClick={() => router.push('/profile')}>
                     <UserIcon className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.profile')}</span>
+                    <span>{t('navigation.profile')}</span>
                   </DropdownMenuItem>
                   
                   <DropdownMenuItem onClick={() => router.push('/settings')}>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.settings')}</span>
+                    <span>{t('navigation.settings')}</span>
                   </DropdownMenuItem>
                   
                   {/* Lien Admin - Affiché seulement si l'utilisateur a les permissions */}
@@ -235,7 +235,7 @@ export function DashboardLayout({
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => router.push('/admin')}>
                         <Shield className="mr-2 h-4 w-4" />
-                        <span>{t('layout.navigation.admin')}</span>
+                        <span>{t('navigation.admin')}</span>
                       </DropdownMenuItem>
                     </>
                   )}
@@ -244,7 +244,7 @@ export function DashboardLayout({
                   
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t('layout.navigation.logout')}</span>
+                    <span>{t('navigation.logout')}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

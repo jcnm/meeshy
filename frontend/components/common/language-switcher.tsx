@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Languages, Check } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export function LanguageSwitcher() {
   const { currentInterfaceLanguage, setInterfaceLanguage, getSupportedLanguages } = useLanguage();
