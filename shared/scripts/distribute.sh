@@ -17,14 +17,20 @@ FRONTEND_DIR="$ROOT_DIR/frontend"
 TRANSLATOR_DIR="$ROOT_DIR/translator"
 
 # Vérifier que nous sommes dans le bon répertoire
-if [ ! -f "package.json" ] || [ ! -f "schema.prisma" ]; then
-    echo "❌ Erreur: Ce script doit être exécuté depuis le répertoire shared/ après génération"
+if [ ! -f "package.json" ]; then
+    echo "❌ Erreur: Ce script doit être exécuté depuis le répertoire shared/"
+    exit 1
+fi
+
+# Vérifier que le build a été fait
+if [ ! -d "dist" ]; then
+    echo "❌ Erreur: Le dossier dist/ n'existe pas. Lancez 'pnpm build:types' d'abord."
     exit 1
 fi
 
 rm -rf "./node_modules"
 rm -rf "./prisma/client"
-rm -rf "./dist"
+
 # Fonction pour créer le répertoire libs et copier les fichiers
 distribute_to_service() {
     local service_name=$1
@@ -44,17 +50,35 @@ distribute_to_service() {
 
     case $target_lang in
         "typescript")
-            # Pour TypeScript (Gateway, Frontend)
+            # Pour TypeScript (Gateway, Frontend) - Copier le contenu compilé de dist/
             echo "  📝 Distribution shared vers $service_name/shared"
-            rm -rf "$service_dir/shared/*" 2>/dev/null || true
             
-            mkdir -p "$service_dir/shared/"
-            cp -pir ./* "$service_dir/shared/" 2>/dev/null || true
+            # Copier les types compilés depuis dist/
+            if [ -d "dist" ]; then
+                cp -pir dist/* "$service_dir/shared/" 2>/dev/null || true
+                echo "  ✅ Types compilés copiés depuis dist/ vers $service_name/shared/"
+            fi
+            
+            # Copier le client Prisma généré
+            if [ -d "prisma/client" ]; then
+                mkdir -p "$service_dir/shared/prisma"
+                cp -pir prisma/client "$service_dir/shared/prisma/" 2>/dev/null || true
+                echo "  ✅ Client Prisma copié vers $service_name/shared/prisma/"
+            fi
             
             # Créer le dossier prisma pour la génération du client
             mkdir -p "$service_dir/shared/prisma"
-            cp schema.prisma "$service_dir/shared/prisma/"
-            echo "  ✅ Schema Prisma copié vers $service_name/shared/prisma/"
+            if [ -f "schema.prisma" ]; then
+                cp schema.prisma "$service_dir/shared/prisma/"
+                echo "  ✅ Schema Prisma copié vers $service_name/shared/prisma/"
+            fi
+
+            # Copier les fichiers Proto s'ils existent
+            if [ -d "proto" ]; then
+                mkdir -p "$service_dir/shared/proto"
+                cp -pir proto/* "$service_dir/shared/proto/" 2>/dev/null || true
+                echo "  ✅ Fichiers Proto copiés vers $service_name/shared/proto/"
+            fi
 
             ;;
             

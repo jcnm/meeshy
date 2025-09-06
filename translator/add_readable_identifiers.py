@@ -54,16 +54,16 @@ try:
             identifier_mapping = {
                 # Conversation globale Meeshy
                 "meeshy": {
-                    "type": "GLOBAL",
+                    "type": "global",
                     "title": "Meeshy"
                 },
                 # Autres conversations possibles
                 "general": {
-                    "type": "PUBLIC",
+                    "type": "public",
                     "title": "General"
                 },
                 "support": {
-                    "type": "PUBLIC", 
+                    "type": "public", 
                     "title": "Support"
                 }
             }

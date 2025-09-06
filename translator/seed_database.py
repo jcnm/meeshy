@@ -218,7 +218,7 @@ try:
             print('💭 Création de la conversation "meeshy"...')
             
             meeshy_conversation = await prisma.conversation.create({
-                "type": "GLOBAL",
+                "type": "global",
                 "title": "Meeshy",
                 "identifier": "meeshy",
                 "description": "Conversation globale pour tous les utilisateurs de Meeshy"

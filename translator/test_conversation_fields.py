@@ -45,7 +45,7 @@ try:
             print('🔧 Test de création d\'une conversation...')
             
             conversation = await prisma.conversation.create({
-                "type": "GLOBAL",
+                "type": "global",
                 "title": "Test Conversation",
                 "description": "Conversation de test"
             })
