@@ -512,7 +512,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           cacheKey: `${messageId}-${targetLanguage}`,
           cached: false
         }],
-        sender: message.sender ? socketIOUserToUser(message.sender) : createDefaultUser(message.senderId)
+        sender: message.sender || createDefaultUser(message.senderId)
       };
 
 
@@ -551,26 +551,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Démarrer le chargement des conversations immédiatement
       const conversationsData = await conversationsService.getConversations();
 
-      // Ajouter la conversation globale "meeshy" si elle n'est pas déjà présente
+      // Utiliser directement les conversations récupérées depuis l'API
+      // Le service de conversations doit inclure automatiquement la conversation "meeshy"
       let conversationsWithAny = [...conversationsData];
-      const hasAnyConversation = conversationsData.some(c => c.id === 'meeshy');
-      
-      if (!hasAnyConversation) {
-        const anyConversation: Conversation = {
-          id: 'meeshy',
-          name: 'Meeshy',
-          title: 'Meeshy',
-          type: 'global',
-          isGroup: true,
-          isActive: true,
-          participants: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          unreadCount: 0
-        };
-        // Ajouter en premier dans la liste
-        conversationsWithAny = [anyConversation, ...conversationsData];
-      }
 
       setConversationsIfChanged(sanitizeConversations(conversationsWithAny));
 
@@ -913,10 +896,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                   {/* Séparer les conversations en publiques et privées */}
                   {(() => {
                     const publicConversations = conversations.filter(conv => 
-                      conv.type === 'GLOBAL' || conv.type === 'PUBLIC'
+                      conv.type === 'global' || conv.type === 'public'
                     );
                     const privateConversations = conversations.filter(conv => 
-                      conv.type !== 'GLOBAL' && conv.type !== 'PUBLIC'
+                      conv.type !== 'global' && conv.type !== 'public'
                     );
 
                     return (

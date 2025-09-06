@@ -438,7 +438,7 @@ export default function JoinConversationPage() {
           <Card className="shadow-xl">
             <CardHeader className="text-center">
               <div className="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                {conversationLink.conversation?.type === 'GROUP' ? (
+                {conversationLink.conversation?.type === 'group' ? (
                   <Users className="h-8 w-8 text-blue-600" />
                 ) : (
                   <MessageSquare className="h-8 w-8 text-blue-600" />
@@ -458,8 +458,8 @@ export default function JoinConversationPage() {
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-700">Type:</span>
-                  <Badge variant={conversationLink.conversation?.type === 'GROUP' ? "default" : "secondary"}>
-                    {conversationLink.conversation?.type === 'GROUP' ? 'Groupe' : 'Conversation privée'}
+                  <Badge variant={conversationLink.conversation?.type === 'group' ? "default" : "secondary"}>
+                    {conversationLink.conversation?.type === 'group' ? 'Groupe' : 'Conversation privée'}
                   </Badge>
                 </div>
                 

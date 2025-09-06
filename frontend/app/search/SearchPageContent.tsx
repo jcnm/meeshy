@@ -233,7 +233,7 @@ export function SearchPageContent() {
         },
         body: JSON.stringify({
           participantIds: [userId],
-          type: 'DIRECT'
+          type: 'direct'
         })
       });
 
