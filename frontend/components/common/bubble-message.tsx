@@ -204,7 +204,7 @@ function BubbleMessageInner({
         // Le toast de succès est géré dans bubble-stream-page.tsx, pas ici
       } catch (error) {
         console.error('❌ Erreur lors de la traduction forcée:', error);
-        toast.error('Erreur lors de la demande de traduction');
+        toast.error(t('toasts.messages.translationError'));
       }
     } else {
       toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
@@ -223,7 +223,7 @@ function BubbleMessageInner({
   const handleUpgradeTier = async (targetLanguage: string, currentTier: string) => {
     const nextTier = getNextTier(currentTier);
     if (!nextTier) {
-      toast.info('Cette traduction utilise déjà le tier le plus élevé');
+      toast.info(t('toasts.messages.translationMaxTier'));
       return;
     }
 
@@ -702,7 +702,7 @@ function BubbleMessageInner({
                     size="sm"
                     onClick={() => {
                       navigator.clipboard.writeText(getCurrentContent());
-                      toast.success('Texte copié');
+                      toast.success(t('toasts.messages.textCopied'));
                     }}
                     className="text-gray-500 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-full"
                   >

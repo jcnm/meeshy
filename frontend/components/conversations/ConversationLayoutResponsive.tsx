@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { useMessageSender } from '@/hooks/use-message-sender';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -466,7 +466,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Traduction avec modèle sélectionné
 
       // Afficher un indicateur de traduction en cours
-      toast.loading('Traduction en cours...', { id: `translate-${messageId}` });
+      toast.loading(t('toasts.messages.translationInProgress'), { id: `translate-${messageId}` });
 
       // Détecter la langue source si non fournie ou 'unknown'
       let sourceLanguage = forcedSourceLanguage || message.originalLanguage;
@@ -481,7 +481,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Si forceRetranslate est true, afficher un message spécifique
       if (forceRetranslate) {
         // Forcer la retraduction du message
-        toast.loading('Retraduction forcée en cours...', { id: `retranslate-${messageId}` });
+        toast.loading(t('toasts.messages.retranslationInProgress'), { id: `retranslate-${messageId}` });
       }
 
       const translationResult = await translationService.translateText({
@@ -518,7 +518,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
 
               // Message traduit avec succès
-      toast.success(`Message traduit avec ${selectedTranslationModel}`, { id: `translate-${messageId}` });
+      toast.success(t('toasts.messages.translationSuccess', { model: selectedTranslationModel }), { id: `translate-${messageId}` });
 
     } catch (error) {
       console.error('❌ Erreur lors de la traduction:', error);
@@ -529,7 +529,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   const handleEdit = async (messageId: string, newContent: string) => {
     // Édition de message
-    toast.info('Édition de message bientôt disponible');
+    toast.info(t('toasts.messages.editSoon'));
   };
 
   // Utilitaires
@@ -604,7 +604,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       }
 
       // Afficher l'erreur à l'utilisateur
-      toast.error('Impossible de charger les conversations');
+      toast.error(t('toasts.conversations.loadError'));
       
       // Laisser la liste de conversations vide pour utiliser les seeds de la DB
       setConversations([]);
@@ -913,10 +913,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                   {/* Séparer les conversations en publiques et privées */}
                   {(() => {
                     const publicConversations = conversations.filter(conv => 
-                      conv.id === 'meeshy' || conv.type === 'GLOBAL' || !conv.isPrivate
+                      conv.type === 'GLOBAL' || conv.type === 'PUBLIC'
                     );
                     const privateConversations = conversations.filter(conv => 
-                      conv.id !== 'meeshy' && conv.type !== 'GLOBAL' && conv.isPrivate
+                      conv.type !== 'GLOBAL' && conv.type !== 'PUBLIC'
                     );
 
                     return (
