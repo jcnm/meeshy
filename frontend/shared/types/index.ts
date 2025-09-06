@@ -5,6 +5,17 @@
  * Gateway, Frontend, et Translator
  */
 
+// ===== NOUVEAUX TYPES UNIFIÉS =====
+// Export des types unifiés Phase 1
+export * from './conversation';
+export * from './user';
+export * from './anonymous';
+export * from './api-responses';
+export * from './migration-utils';
+
+// Export des types unifiés Phase 2 - Messaging
+export * from './messaging';
+
 // ===== ÉVÉNEMENTS SOCKET.IO =====
 export * from './socketio-events';
 
@@ -72,15 +83,18 @@ export interface ServiceHealth {
   timestamp: Date;
 }
 
-// ===== TYPES POUR L'API REST =====
-export interface ApiResponse<T = unknown> {
+// ===== TYPES POUR L'API REST - LEGACY (DEPRECATED) =====
+// Ces types sont remplacés par ceux dans api-responses.ts
+// Gardés pour rétrocompatibilité temporaire
+
+export interface LegacyApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
   timestamp: Date;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+export interface PaginatedResponse<T> extends LegacyApiResponse<T[]> {
   pagination: {
     page: number;
     limit: number;
@@ -89,32 +103,16 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   };
 }
 
-// ===== TYPES POUR LES MESSAGES =====
-export interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  originalLanguage: string;
-  messageType: string;
-  isEdited: boolean;
-  isDeleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  sender?: SocketIOUser;
-  anonymousSender?: {
-    id: string;
-    username: string; // Renommé depuis nickname pour l'uniformité
-    firstName: string;
-    lastName: string;
-    language: string;
-    isMeeshyer: boolean; // false pour les anonymes
-  };
-}
+// ===== TYPES POUR LES MESSAGES - LEGACY (DEPRECATED) =====
+// Ces types sont remplacés par ceux dans conversation.ts
+// Gardés pour rétrocompatibilité temporaire
 
-export interface MessageWithTranslations extends Message {
-  translations?: MessageTranslationCache[];
-}
+// Importation du nouveau type Message unifié
+import type { Message as UnifiedMessage, MessageWithTranslations as UnifiedMessageWithTranslations } from './conversation';
+
+// Alias pour rétrocompatibilité
+export type Message = UnifiedMessage;
+export type MessageWithTranslations = UnifiedMessageWithTranslations;
 
 export interface BubbleTranslation {
   language: string;
@@ -261,7 +259,17 @@ export const DEFAULT_PERMISSIONS: Record<UserRoleEnum, UserPermissions> = {
   },
 };
 
-// ===== TYPES POUR LES CONVERSATIONS =====
+// ===== TYPES POUR LES CONVERSATIONS - LEGACY (DEPRECATED) =====
+// Ces types sont remplacés par ceux dans conversation.ts
+// Gardés pour rétrocompatibilité temporaire
+
+// Importation du nouveau type Conversation unifié
+import type { 
+  Conversation as UnifiedConversation, 
+  ConversationParticipant as UnifiedConversationParticipant 
+} from './conversation';
+
+// Alias pour rétrocompatibilité
 export interface ThreadMember {
   id: string;
   conversationId: string;
@@ -274,24 +282,8 @@ export interface ThreadMember {
 // Alias pour la rétrocompatibilité
 export interface ConversationMember extends ThreadMember {}
 
-export interface Conversation {
-  id: string;
-  type: string;
-  title?: string;
-  name?: string;
-  description?: string;
-  groupId?: string; // Référence au groupe si c'est une conversation de groupe
-  isGroup?: boolean;
-  isPrivate?: boolean;
-  isActive: boolean;
-  maxMembers?: number;
-  createdAt: Date;
-  updatedAt: Date;
-  participants?: ThreadMember[];
-  messages?: Message[];
-  lastMessage?: Message;
-  unreadCount?: number;
-}
+export type Conversation = UnifiedConversation;
+export type ConversationParticipant = UnifiedConversationParticipant;
 
 export interface GroupMember {
   id: string;
@@ -312,15 +304,6 @@ export interface Group {
   updatedAt: Date;
   members: GroupMember[];
   conversations: Conversation[];
-}
-
-export interface ConversationParticipant {
-  id: string;
-  username: string;
-  displayName?: string;
-  avatar?: string;
-  isOnline: boolean;
-  role: string;
 }
 
 export interface ConversationLink {

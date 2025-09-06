@@ -276,7 +276,7 @@ export interface AuthenticatedSocket extends BaseSocket {
     username: string;
     userData: SocketIOUser;
     connectedAt: Date;
-    currentConversations: Set<string>;
+    currentConversations: string[]; // Changé de Set<string> à string[] pour compatibilité
 }
 export type Message = SocketIOMessage;
 export type User = SocketIOUser;

@@ -3,6 +3,9 @@
  * Remplace les anciens types WebSocket pour correspondre à la nouvelle architecture Socket.IO
  */
 
+// Import pour AnonymousParticipant
+import type { AnonymousParticipant } from './anonymous';
+
 // ===== CONSTANTES D'ÉVÉNEMENTS =====
 
 // Événements du serveur vers le client
@@ -85,20 +88,30 @@ export interface ClientToServerEvents {
   [CLIENT_EVENTS.REQUEST_TRANSLATION]: (data: { messageId: string; targetLanguage: string }) => void;
 }
 
+// ===== TYPES DE BASE =====
+
+/**
+ * Types de messages supportés dans l'architecture Meeshy
+ * Défini une fois, réutilisé partout
+ */
+export type MessageType = 'text' | 'image' | 'file' | 'audio' | 'video' | 'location' | 'system';
+
 // ===== STRUCTURES DE DONNÉES =====
 
 export interface SocketIOMessage {
   id: string;
   conversationId: string;
-  senderId?: string;
+  senderId?: string; // ID unique - sera résolu en User ou AnonymousParticipant via requête
   content: string;
   originalLanguage: string;
-  messageType: string;
-  isEdited: boolean;
-  isDeleted: boolean;
+  messageType: MessageType;
+  editedAt?: Date; // Présent = message édité
+  deletedAt?: Date; // Présent = message supprimé
+  replyToId?: string; // Support des réponses
   createdAt: Date;
-  updatedAt: Date;
-  sender?: SocketIOUser;
+  // Sender résolu (authentifié ou anonyme) - sera attaché via requête
+  sender?: SocketIOUser | AnonymousParticipant;
+
 }
 
 export interface UserPermissions {
@@ -256,13 +269,13 @@ export interface AuthenticatedSocket extends BaseSocket {
   username: string;
   userData: SocketIOUser;
   connectedAt: Date;
-  currentConversations: Set<string>;
+  currentConversations: string[];
 }
 
 // ===== EXPORTS POUR RÉTROCOMPATIBILITÉ =====
 
 // Aliases pour faciliter la migration
-export type Message = SocketIOMessage;
+// ❌ SUPPRIMÉ : export type Message = SocketIOMessage; // Conflit avec conversation.ts
 export type User = SocketIOUser;
 export type Response<T = unknown> = SocketIOResponse<T>;
 
