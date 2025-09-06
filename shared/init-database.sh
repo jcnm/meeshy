@@ -33,20 +33,51 @@ print_header() {
 init_mongodb() {
     print_header "Initializing MongoDB"
     
-    # Wait for MongoDB to be ready
-    print_status "Waiting for MongoDB to be ready..."
-    until mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
-        sleep 1
-    done
-    
-    print_status "MongoDB is ready, initializing database..."
-    
-    # Execute MongoDB initialization script
-    if [ -f "/docker-entrypoint-initdb.d/init-mongo.js" ]; then
-        mongosh --file /docker-entrypoint-initdb.d/init-mongo.js
-        print_status "MongoDB initialization completed successfully"
+    # First, initialize replica set
+    if [ -f "/docker-entrypoint-initdb.d/init-mongodb-replica.sh" ]; then
+        print_status "Running MongoDB replica set initialization..."
+        bash /docker-entrypoint-initdb.d/init-mongodb-replica.sh
     else
-        print_warning "MongoDB initialization script not found"
+        print_warning "MongoDB replica set initialization script not found, using fallback method"
+        
+        # Wait for MongoDB to be ready
+        print_status "Waiting for MongoDB to be ready..."
+        until mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+            sleep 1
+        done
+        
+        print_status "MongoDB is ready, initializing replica set..."
+        
+        # Initialize replica set manually
+        mongosh --eval "
+            try {
+                rs.initiate({
+                    _id: 'rs0',
+                    members: [
+                        { _id: 0, host: 'localhost:27017' }
+                    ]
+                });
+                print('✅ Replica set rs0 initialized successfully');
+            } catch (e) {
+                if (e.message.includes('already initialized')) {
+                    print('⚠️  Replica set already initialized');
+                } else {
+                    print('❌ Error initializing replica set: ' + e.message);
+                }
+            }
+        "
+        
+        # Wait for replica set to be ready
+        print_status "Waiting for replica set to be ready..."
+        sleep 5
+        
+        # Execute MongoDB initialization script
+        if [ -f "/docker-entrypoint-initdb.d/init-mongo.js" ]; then
+            mongosh --file /docker-entrypoint-initdb.d/init-mongo.js
+            print_status "MongoDB initialization completed successfully"
+        else
+            print_warning "MongoDB initialization script not found"
+        fi
     fi
 }
 
