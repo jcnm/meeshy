@@ -28,10 +28,11 @@ import {
   UserPlus,
   Shield
 } from 'lucide-react';
-import { User, Group, GroupMember, Conversation } from '@/types';
+import { User, Conversation, GroupMember } from '@shared/types';
+import { Group } from '@/types/frontend';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { UserRoleEnum } from '@/shared/types';
+import { UserRoleEnum } from '@shared/types';
 
 interface GroupsLayoutProps {
   currentUser: User;

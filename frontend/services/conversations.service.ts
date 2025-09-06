@@ -1,6 +1,6 @@
 import { apiService } from './api.service';
 import { socketIOUserToUser } from '@/utils/user-adapter';
-import { UserRoleEnum } from '@/shared/types';
+import { UserRoleEnum } from '@shared/types';
 import type { 
   Conversation, 
   Message, 
@@ -9,7 +9,7 @@ import type {
   UserPermissions,
   CreateConversationRequest,
   SendMessageRequest 
-} from '../types';
+} from '@shared/types';
 
 /**
  * Options de filtrage pour les participants
@@ -51,6 +51,43 @@ export class ConversationsService {
       case 'MEMBER':
       default:
         return UserRoleEnum.MEMBER;
+    }
+  }
+
+  /**
+   * Convertir un rôle UserRoleEnum en string pour ConversationParticipant
+   */
+  private mapUserRoleToString(role: string): 'admin' | 'moderator' | 'member' {
+    switch (role.toUpperCase()) {
+      case 'ADMIN':
+      case 'BIGBOSS':
+      case 'CREATOR':
+        return 'admin';
+      case 'MODERATOR':
+      case 'AUDIT':
+      case 'ANALYST':
+        return 'moderator';
+      case 'USER':
+      case 'MEMBER':
+      default:
+        return 'member';
+    }
+  }
+
+  /**
+   * Convertir un type de conversation en format valide
+   */
+  private mapConversationType(type: string): 'direct' | 'group' | 'public' | 'global' {
+    switch (type.toLowerCase()) {
+      case 'group':
+        return 'group';
+      case 'public':
+        return 'public';
+      case 'global':
+        return 'global';
+      case 'direct':
+      default:
+        return 'direct';
     }
   }
 
@@ -139,13 +176,18 @@ export class ConversationsService {
     
     return {
       id: String(conv.id),
-      type: String(conv.type)?.toUpperCase() || 'direct',
+      type: this.mapConversationType(String(conv.type) || 'direct'),
       title: conv.title as string,
       name: (conv.name as string) || (conv.title as string),
       description: conv.description as string,
+      image: conv.image as string,
+      avatar: conv.avatar as string,
+      communityId: conv.communityId as string,
+      isActive: Boolean(conv.isActive),
+      isArchived: Boolean(conv.isArchived),
       isGroup: Boolean(conv.isGroup) || String(conv.type) === 'group',
       isPrivate: Boolean(conv.isPrivate),
-      isActive: Boolean(conv.isActive),
+      lastMessageAt: conv.lastMessageAt ? new Date(String(conv.lastMessageAt)) : new Date(String(conv.updatedAt)),
       createdAt: new Date(String(conv.createdAt)),
       updatedAt: new Date(String(conv.updatedAt)),
       participants: Array.isArray(conv.participants) ? conv.participants.map((p: unknown) => {
@@ -156,8 +198,17 @@ export class ConversationsService {
           id: String(participant.id),
           conversationId: String(participant.conversationId),
           userId: String(participant.userId),
+          role: this.mapUserRoleToString(String(participant.role || 'MEMBER')),
+          canSendMessage: Boolean(participant.canSendMessage ?? true),
+          canSendFiles: Boolean(participant.canSendFiles ?? true),
+          canSendImages: Boolean(participant.canSendImages ?? true),
+          canSendVideos: Boolean(participant.canSendVideos ?? true),
+          canSendAudios: Boolean(participant.canSendAudios ?? true),
+          canSendLocations: Boolean(participant.canSendLocations ?? true),
+          canSendLinks: Boolean(participant.canSendLinks ?? true),
           joinedAt: new Date(String(participant.joinedAt)),
-          role: this.stringToUserRole(String(participant.role || 'MEMBER')),
+          leftAt: participant.leftAt ? new Date(String(participant.leftAt)) : undefined,
+          isActive: Boolean(participant.isActive ?? true),
           user: socketIOUserToUser(user as any)
         };
       }) : [],

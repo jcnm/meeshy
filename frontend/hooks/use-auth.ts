@@ -126,6 +126,53 @@ export function useAuth() {
         return;
       }
       
+      // Validation améliorée pour les sessions anonymes
+      if (authState.isAnonymous) {
+        const sessionToken = localStorage.getItem('anonymous_session_token');
+        const participant = localStorage.getItem('anonymous_participant');
+        
+        if (!sessionToken || !participant) {
+          console.log('[USE_AUTH] Session anonyme incomplète, redirection vers join');
+          const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+          if (storedLinkId) {
+            redirectInProgress.current = true;
+            router.push(`/join/${storedLinkId}`);
+          } else {
+            redirectInProgress.current = true;
+            redirectToHome();
+          }
+          return;
+        }
+        
+        // Vérifier que les données du participant sont valides
+        try {
+          const participantData = JSON.parse(participant);
+          if (!participantData.id || !participantData.username) {
+            console.log('[USE_AUTH] Données participant invalides, redirection vers join');
+            const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+            if (storedLinkId) {
+              redirectInProgress.current = true;
+              router.push(`/join/${storedLinkId}`);
+            } else {
+              redirectInProgress.current = true;
+              redirectToHome();
+            }
+            return;
+          }
+        } catch (e) {
+          console.error('[USE_AUTH] Erreur parsing participant:', e);
+          const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+          if (storedLinkId) {
+            redirectInProgress.current = true;
+            router.push(`/join/${storedLinkId}`);
+          } else {
+            redirectInProgress.current = true;
+            redirectToHome();
+          }
+          return;
+        }
+      }
+      
       if (!canAccessSharedConversation(authState)) {
         // Pour les routes de chat partagé, nous devons utiliser le linkId original stocké
         const storedLinkId = localStorage.getItem('anonymous_current_link_id');
@@ -222,6 +269,13 @@ export function useAuth() {
 
   // Rejoindre une conversation anonymement
   const joinAnonymously = useCallback((participant: any, sessionToken: string, conversationShareLinkId?: string) => {
+    console.log('[USE_AUTH] Création de session anonyme:', {
+      participantId: participant.id,
+      username: participant.username,
+      conversationShareLinkId,
+      sessionTokenLength: sessionToken.length
+    });
+    
     localStorage.setItem('anonymous_session_token', sessionToken);
     localStorage.setItem('anonymous_participant', JSON.stringify(participant));
     
@@ -234,7 +288,7 @@ export function useAuth() {
     localStorage.setItem('anonymous_just_joined', 'true');
     setTimeout(() => {
       localStorage.removeItem('anonymous_just_joined');
-    }, 2000);
+    }, 3000); // Augmenter à 3 secondes pour plus de stabilité
     
     const newAuthState = {
       isAuthenticated: true,
@@ -246,6 +300,8 @@ export function useAuth() {
     
     setAuthState(newAuthState);
     setUserRef.current(participant);
+    
+    console.log('[USE_AUTH] Session anonyme créée avec succès');
   }, []);
 
   // Quitter une session anonyme

@@ -1,5 +1,4 @@
-import { UserRole, UserPermissions, User, DEFAULT_PERMISSIONS, ROLE_HIERARCHY } from '@/types';
-import { UserRoleEnum } from '@/shared/types';
+import { UserRole, UserPermissions, User, DEFAULT_PERMISSIONS, ROLE_HIERARCHY, UserRoleEnum } from '@shared/types';
 import { getDefaultPermissions } from '@/utils/user-adapter';
 
 /**

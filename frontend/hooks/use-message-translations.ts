@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import type { BubbleTranslation, User, Message } from '@/shared/types';
+import type { BubbleTranslation, User, Message } from '@shared/types';
 
 interface BubbleStreamMessage extends Message {
   location?: string;

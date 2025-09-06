@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { UserLanguageConfig, INTERFACE_LANGUAGES } from '@/types';
+import { UserLanguageConfig } from '@shared/types';
+import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
 interface LanguageContextType {
   userLanguageConfig: UserLanguageConfig;

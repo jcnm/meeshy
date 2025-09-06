@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
-import type { User, Message, TranslatedMessage, MessageWithTranslations, TranslationData, MessageTranslationCache } from '@/shared/types';
+import type { User, Message, TranslatedMessage, MessageWithTranslations, TranslationData, MessageTranslationCache } from '@shared/types';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 
 interface UseMessageLoaderProps {

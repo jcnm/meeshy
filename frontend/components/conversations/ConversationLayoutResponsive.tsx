@@ -25,7 +25,7 @@ import type {
   TranslationData,
   SocketIOUser as User,
   ThreadMember
-} from '@/shared/types';
+} from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { MessageComposer, MessageComposerRef } from '@/components/common/message-composer';
@@ -40,8 +40,8 @@ import { Badge } from '@/components/ui/badge';
 import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
 import { cleanTranslationOutput } from '@/utils/translation-cleaner';
 import { socketIOUserToUser, createDefaultUser } from '@/utils/user-adapter';
-import type { BubbleTranslation } from '@/shared/types';
-import { UserRoleEnum } from '@/shared/types';
+import type { BubbleTranslation } from '@shared/types';
+import { UserRoleEnum } from '@shared/types';
 import { ConversationParticipants } from '@/components/conversations/conversation-participants';
 import { ConversationParticipantsPopover } from '@/components/conversations/conversation-participants-popover';
 import { CreateLinkButton } from '@/components/conversations/create-link-button';

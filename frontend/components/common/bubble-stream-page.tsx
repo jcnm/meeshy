@@ -89,7 +89,7 @@ import { useTranslationStats } from '@/hooks/use-translation-stats';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import { useTranslations } from '@/hooks/useTranslations';
-import type { User, Message, BubbleTranslation } from '@/shared/types';
+import type { User, Message, BubbleTranslation } from '@shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { conversationsService } from '@/services';

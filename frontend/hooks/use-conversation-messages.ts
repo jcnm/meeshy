@@ -9,7 +9,7 @@ import type {
   MessageWithTranslations, 
   TranslationData,
   BubbleTranslation 
-} from '@/shared/types';
+} from '@shared/types';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 
 interface UseConversationMessagesProps {

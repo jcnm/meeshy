@@ -39,8 +39,9 @@ import {
 } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Message, User, BubbleTranslation } from '@/shared/types';
+import type { Message, User, BubbleTranslation } from '@shared/types';
 import { Z_CLASSES } from '@/lib/z-index';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface BubbleMessageProps {
   message: Message & {
@@ -73,6 +74,8 @@ function BubbleMessageInner({
   usedLanguages = [],
   onForceTranslation
 }: BubbleMessageProps) {
+  const { t } = useTranslations('bubbleStream');
+  
   // Debug: Afficher la structure du message reçu
   if (process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line no-console
@@ -82,7 +85,13 @@ function BubbleMessageInner({
       originalContent: message.originalContent,
       sender: message.sender?.username,
       hasTranslations: !!message.translations,
-      translationsCount: message.translations?.length || 0
+      translationsCount: message.translations?.length || 0,
+      translations: message.translations?.map(t => ({
+        language: t.language,
+        status: t.status,
+        content: t.content?.substring(0, 30) + '...',
+        timestamp: t.timestamp
+      }))
     });
   }
 
@@ -248,24 +257,53 @@ function BubbleMessageInner({
   const isUsedLanguage = usedLanguages?.includes(currentDisplayLanguage) || false;
 
   // Obtenir toutes les versions disponibles (original + traductions complètes)
+  // CORRECTION: Déduplication des traductions pour éviter les doublons
   const availableVersions = [
     {
       language: message.originalLanguage,
-      content: message.originalContent, // TOUJOURS le contenu original de l'auteur
+      content: message.originalContent || message.content, // TOUJOURS le contenu original de l'auteur
       isOriginal: true,
       status: 'completed' as const,
       confidence: 1,
       timestamp: new Date(message.createdAt)
     },
-    ...message.translations
-      .filter(t => t.status === 'completed' && t.language) // Filtrer les traductions valides
-      .map(t => ({
-        ...t,
-        isOriginal: false
-      }))
+    // Déduplication des traductions par langue - garder la plus récente
+    ...Object.values(
+      message.translations
+        .filter(t => t.status === 'completed' && t.language) // Filtrer les traductions valides
+        .reduce((acc, t) => {
+          // Garder la traduction la plus récente pour chaque langue
+          const currentTimestamp = new Date(t.timestamp || 0);
+          const existingTimestamp = acc[t.language] ? new Date(acc[t.language].timestamp || 0) : new Date(0);
+          
+          if (!acc[t.language] || currentTimestamp > existingTimestamp) {
+            acc[t.language] = {
+              ...t,
+              isOriginal: false
+            };
+          }
+          return acc;
+        }, {} as Record<string, any>)
+    )
   ];
 
   const isTranslated = currentDisplayLanguage !== message.originalLanguage;
+  
+  // Debug: Afficher le résultat de la déduplication
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line no-console
+    console.log('🔧 AvailableVersions après déduplication:', {
+      messageId: message.id,
+      totalVersions: availableVersions.length,
+      originalLanguage: message.originalLanguage,
+      versions: availableVersions.map(v => ({
+        language: v.language,
+        isOriginal: v.isOriginal,
+        content: v.content?.substring(0, 30) + '...',
+        timestamp: v.timestamp
+      }))
+    });
+  }
   
   // Permettre à l'émetteur de voir les traductions de son propre message
   const canSeeTranslations = availableVersions.length > 1;
@@ -329,7 +367,7 @@ function BubbleMessageInner({
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={message.sender?.avatar} alt={message.sender?.firstName} />
+                <AvatarImage src={(message.sender as any)?.avatar} alt={message.sender?.firstName} />
                 <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
                   {message.sender?.firstName?.charAt(0)?.toUpperCase()}{message.sender?.lastName?.charAt(0)?.toUpperCase()}
                 </AvatarFallback>
@@ -364,7 +402,7 @@ function BubbleMessageInner({
               {message.translations.some(t => t.status === 'translating') && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full">
                   <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-                  <span className="text-xs text-blue-600 font-medium">Traduction...</span>
+                  <span className="text-xs text-blue-600 font-medium">{t('translating')}</span>
                 </div>
               )}
               
@@ -380,7 +418,7 @@ function BubbleMessageInner({
                     {getLanguageInfo(message.originalLanguage).code.toUpperCase()}
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>Langue originale : {getLanguageInfo(message.originalLanguage).name} - Cliquer pour voir l'original</TooltipContent>
+                <TooltipContent>{t('originalLanguage')}: {getLanguageInfo(message.originalLanguage).name} - {t('clickToViewOriginal')}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -411,7 +449,7 @@ function BubbleMessageInner({
                           <div className="flex -space-x-1">
                             {getAvailableTranslations().slice(0, 3).map((translation, index) => (
                               <div
-                                key={translation.language}
+                                key={`${message.id}-translation-${translation.language}-${index}`}
                                 className="w-4 h-4 rounded-full border border-white bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-600"
                                 title={`${getLanguageInfo(translation.language).name}: ${translation.content.substring(0, 20)}...`}
                               >
@@ -428,9 +466,9 @@ function BubbleMessageInner({
                       </TooltipTrigger>
                       <TooltipContent>
                         <div className="text-xs">
-                          <div className="font-medium mb-1">Traductions disponibles:</div>
-                          {getAvailableTranslations().map(translation => (
-                            <div key={translation.language} className="flex items-center space-x-1">
+                          <div className="font-medium mb-1">{t('availableTranslations')}:</div>
+                          {getAvailableTranslations().map((translation, index) => (
+                            <div key={`${message.id}-tooltip-translation-${translation.language}-${index}`} className="flex items-center space-x-1">
                               <span>{getLanguageInfo(translation.language).flag}</span>
                               <span>{getLanguageInfo(translation.language).name}</span>
                             </div>
@@ -460,7 +498,7 @@ function BubbleMessageInner({
                     <MessageCircle className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Répondre</TooltipContent>
+                <TooltipContent>{t('reply')}</TooltipContent>
               </Tooltip>
 
               {/* Icône traduction - Interface complète */}
@@ -516,7 +554,7 @@ function BubbleMessageInner({
                           <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                           <Input
                             ref={filterInputRef}
-                            placeholder="Filtrer les langues..."
+                            placeholder={t('filterLanguages')}
                             value={translationFilter}
                             onChange={(e) => setTranslationFilter(e.target.value)}
                             className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 border-gray-200/60 focus:bg-white focus:border-blue-300 transition-all"
@@ -564,7 +602,7 @@ function BubbleMessageInner({
                                   </span>
                                   {version.isOriginal && (
                                     <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
-                                      Original
+                                      {t('original')}
                                     </span>
                                   )}
                                   {isCurrentlyDisplayed && (
@@ -588,7 +626,7 @@ function BubbleMessageInner({
                                           </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                          Améliorer la qualité de traduction
+                                          {t('improveTranslationQuality')}
                                         </TooltipContent>
                                       </Tooltip>
                                     )}
@@ -621,7 +659,7 @@ function BubbleMessageInner({
                         <div className="text-center p-4 text-gray-400">
                           <Languages className="h-6 w-6 mx-auto mb-2 opacity-60" />
                           <p className="text-xs">
-                            {translationFilter ? 'Aucune traduction trouvée' : 'Aucune traduction disponible'}
+                            {translationFilter ? t('noTranslationFound') : t('noTranslationAvailable')}
                           </p>
                         </div>
                       )}
@@ -634,7 +672,7 @@ function BubbleMessageInner({
                           <div className="flex-1 h-px bg-gray-200/60"></div>
                           <div className="px-3">
                             <span className="text-xs text-gray-500 bg-gray-100/60 px-2 py-1 rounded-full">
-                              Traduire vers d'autres langues
+                              {t('translateToOtherLanguages')}
                             </span>
                           </div>
                           <div className="flex-1 h-px bg-gray-200/60"></div>
@@ -669,7 +707,7 @@ function BubbleMessageInner({
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center space-x-2 text-sm text-blue-700 bg-blue-50 p-2 rounded">
                           <Loader2 className="h-3 w-3 animate-spin" />
-                          <span>Traductions en cours...</span>
+                          <span>{t('translationsInProgress')}</span>
                         </div>
                       </div>
                     )}
@@ -692,7 +730,7 @@ function BubbleMessageInner({
                     <Star className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Ajouter aux favoris</TooltipContent>
+                <TooltipContent>{t('addToFavorites')}</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -709,7 +747,7 @@ function BubbleMessageInner({
                     <Copy className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Copier</TooltipContent>
+                <TooltipContent>{t('copy')}</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -723,7 +761,7 @@ function BubbleMessageInner({
                     <AlertTriangle className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Signaler</TooltipContent>
+                <TooltipContent>{t('report')}</TooltipContent>
               </Tooltip>
             </div>
 
@@ -740,13 +778,13 @@ function BubbleMessageInner({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
-                  Partager
+                  {t('share')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
-                  Épingler
+                  {t('pin')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
-                  Modifier
+                  {t('edit')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

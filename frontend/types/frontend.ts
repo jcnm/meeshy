@@ -1,21 +1,10 @@
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  phoneNumber: string;
-  firstName: string;
-  lastName: string;
-  systemLanguage: string;
-  regionalLanguage: string;
-  customDestinationLanguage?: string;
-  autoTranslateEnabled: boolean;
-  translateToSystemLanguage: boolean;
-  translateToRegionalLanguage: boolean;
-  useCustomDestination: boolean;
-  isOnline: boolean;
-  createdAt: Date;
-  lastActiveAt: Date;
-}
+// Import des types partagés
+import type { 
+  User, 
+  Conversation, 
+  Message, 
+  LanguageCode 
+} from '@shared/types';
 
 export interface CreateUserDto {
   firstName: string;
@@ -37,43 +26,13 @@ export interface ConversationLink {
   url?: string;
 }
 
-export interface Conversation {
-  id: string;
-  linkId: string;
-  participants: string[];
-  messages: Message[];
-  createdAt: Date;
-  lastMessageAt: Date;
-}
+// Conversation est maintenant importé depuis @shared/types
 
-export interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  timestamp: Date;
-  originalLanguage: string;
-  sender?: User;
-}
+// Message est maintenant importé depuis @shared/types
 
-export interface TranslationCache {
-  key: string;
-  originalMessage: string;
-  sourceLanguage: string;
-  targetLanguage: string;
-  translatedMessage: string;
-  timestamp: Date;
-}
+// TranslationCache est maintenant importé depuis @shared/types (MessageTranslationCache)
 
-export interface TranslatedMessage extends Message {
-  originalContent?: string;
-  translatedContent?: string;
-  targetLanguage?: string;
-  isTranslated?: boolean;
-  isTranslating?: boolean;
-  showingOriginal?: boolean;
-  translationError?: string;
-}
+// TranslatedMessage est maintenant importé depuis @shared/types
 
 export interface ChatRoom {
   id: string;
@@ -82,11 +41,7 @@ export interface ChatRoom {
   createdAt: Date;
 }
 
-export interface SocketResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
+// SocketResponse est maintenant importé depuis @shared/types
 
 export interface TranslationModel {
   name: 'MT5' | 'NLLB';
@@ -94,26 +49,9 @@ export interface TranslationModel {
   model?: unknown;
 }
 
-export interface LanguageCode {
-  code: string;
-  name: string;
-  flag: string;
-}
+// LanguageCode est maintenant importé depuis @shared/types
 
-export const SUPPORTED_LANGUAGES: LanguageCode[] = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-  { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-  { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'pt', name: 'Português', flag: '🇵🇹' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
-];
+// SUPPORTED_LANGUAGES is now imported from @shared/types to avoid conflicts
 
 // Langues d'interface limitées (EN, FR, PT uniquement)
 export const INTERFACE_LANGUAGES: LanguageCode[] = [

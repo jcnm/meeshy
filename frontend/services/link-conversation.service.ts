@@ -1,4 +1,5 @@
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { analyzeLinkIdentifier, generateFallbackIdentifiers, isValidForApiRequest } from '@/utils/link-identifier';
 
 export interface LinkConversationData {
   conversation: {
@@ -115,51 +116,94 @@ export class LinkConversationService {
   ): Promise<LinkConversationData> {
     const { limit = 50, offset = 0, sessionToken, authToken } = options;
     
-    // Déterminer quel endpoint utiliser selon le type d'authentification
-    let endpoint: string;
-    let url: URL;
-    const headers: Record<string, string> = {};
-
-    // Détecter si c'est un linkId (commence par "mshy_") ou un conversationShareLinkId
-    const isLinkId = identifier.startsWith('mshy_');
+    // Analyser l'identifiant pour validation
+    const identifierInfo = analyzeLinkIdentifier(identifier);
     
-    // Toujours utiliser l'endpoint /links/:identifier qui retourne les données complètes
-    // même pour les utilisateurs non authentifiés
-    endpoint = `/links/${identifier}`;
-    url = new URL(buildApiUrl(endpoint));
-    
-    if (sessionToken) {
-      console.log('[LinkConversationService] Authentification avec sessionToken:', sessionToken);
-      headers['X-Session-Token'] = sessionToken;
-    } else if (authToken) {
-      console.log('[LinkConversationService] Authentification avec token:', authToken);
-      headers['Authorization'] = `Bearer ${authToken}`;
-    } else {
-      console.log('[LinkConversationService] Aucune authentification, utilisation de l\'endpoint /links/:identifier');
-      // Pas d'en-têtes d'authentification - l'endpoint gérera les utilisateurs non authentifiés
+    if (!isValidForApiRequest(identifier)) {
+      throw new Error(`Identifiant invalide: ${identifier}`);
     }
     
-    console.log('[LinkConversationService] Utilisation de l\'endpoint:', endpoint);
-    // Ajouter les paramètres de requête
+    console.log('[LinkConversationService] Analyse de l\'identifiant:', {
+      identifier,
+      type: identifierInfo.type,
+      isValid: identifierInfo.isValid
+    });
+    
+    // Préparer les headers d'authentification
+    const headers: Record<string, string> = {};
+    
+    if (sessionToken) {
+      console.log('[LinkConversationService] Authentification avec sessionToken');
+      headers['X-Session-Token'] = sessionToken;
+    } else if (authToken) {
+      console.log('[LinkConversationService] Authentification avec token');
+      headers['Authorization'] = `Bearer ${authToken}`;
+    } else {
+      console.log('[LinkConversationService] Aucune authentification');
+    }
+    
+    // Essayer d'abord avec l'identifiant original
+    let endpoint = `/links/${identifier}`;
+    let url = new URL(buildApiUrl(endpoint));
     url.searchParams.append('limit', limit.toString());
     url.searchParams.append('offset', offset.toString());
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers
-    });
+    console.log('[LinkConversationService] Tentative avec endpoint:', endpoint);
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    try {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Erreur lors de la récupération des données');
+      }
+
+      return data.data;
+    } catch (error) {
+      console.log('[LinkConversationService] Erreur avec identifiant original, tentative avec fallbacks');
+      
+      // Essayer avec les identifiants de fallback
+      const fallbacks = generateFallbackIdentifiers(identifier);
+      
+      for (const fallbackIdentifier of fallbacks) {
+        try {
+          console.log('[LinkConversationService] Tentative avec fallback:', fallbackIdentifier);
+          
+          const fallbackEndpoint = `/links/${fallbackIdentifier}`;
+          const fallbackUrl = new URL(buildApiUrl(fallbackEndpoint));
+          fallbackUrl.searchParams.append('limit', limit.toString());
+          fallbackUrl.searchParams.append('offset', offset.toString());
+
+          const fallbackResponse = await fetch(fallbackUrl.toString(), {
+            method: 'GET',
+            headers
+          });
+
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            
+            if (fallbackData.success) {
+              console.log('[LinkConversationService] Succès avec fallback:', fallbackIdentifier);
+              return fallbackData.data;
+            }
+          }
+        } catch (fallbackError) {
+          console.log('[LinkConversationService] Échec avec fallback:', fallbackIdentifier, fallbackError);
+          // Continuer avec le prochain fallback
+        }
+      }
+      
+      // Si tous les fallbacks échouent, relancer l'erreur originale
+      throw error;
     }
-
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.message || 'Erreur lors de la récupération des données');
-    }
-
-    return data.data;
   }
 
   /**

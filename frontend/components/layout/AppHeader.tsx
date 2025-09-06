@@ -27,7 +27,7 @@ import { useUser } from '@/context/AppContext';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';
-import type { User } from '@/types';
+import type { User } from '@shared/types';
 
 interface AppHeaderProps {
   showSearch?: boolean;

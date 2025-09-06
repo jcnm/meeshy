@@ -19,10 +19,10 @@ import {
   UserPlus,
   Link2
 } from 'lucide-react';
-import { ThreadMember } from '@/types';
+import { ThreadMember } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
-import { UserRoleEnum } from '@/shared/types';
+import { UserRoleEnum } from '@shared/types';
 
 interface ConversationParticipantsPopoverProps {
   conversationId: string;

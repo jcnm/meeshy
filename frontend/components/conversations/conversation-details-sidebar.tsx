@@ -23,12 +23,12 @@ import {
   Link2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Conversation, User, Message } from '@/types';
+import type { Conversation, User, Message } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
 import { toast } from 'sonner';
 import { ConversationLinksSection } from './conversation-links-section';
-import { UserRoleEnum } from '@/shared/types';
+import { UserRoleEnum } from '@shared/types';
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {

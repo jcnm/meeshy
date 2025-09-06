@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SUPPORTED_LANGUAGES, JoinConversationResponse } from '@/types/frontend';
+import { SUPPORTED_LANGUAGES } from '@shared/types';
+import { JoinConversationResponse } from '@/types/frontend';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 

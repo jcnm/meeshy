@@ -10,10 +10,10 @@ import type {
   MessageWithTranslations,
   SocketIOUser,
   TranslationData
-} from '@/shared/types';
+} from '@shared/types';
 
 // Ré-export de tous les types partagés
-export * from '@/shared/types';
+export * from '@shared/types';
 
 // Ré-export des types frontend
 export * from './frontend';
