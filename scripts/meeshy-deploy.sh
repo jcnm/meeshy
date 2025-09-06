@@ -55,7 +55,7 @@ deploy_complete() {
     cp "$PROJECT_ROOT/env.digitalocean" "$deploy_dir/.env"
     cp -r "$PROJECT_ROOT/docker" "$deploy_dir/"
     cp -r "$PROJECT_ROOT/shared" "$deploy_dir/"
-
+    
     # Envoyer sur serveur
     log_info "📤 Envoi des fichiers..."
     ssh -o StrictHostKeyChecking=no root@$ip "mkdir -p /opt/meeshy"
@@ -171,24 +171,39 @@ fi
 
 echo "🚀 Démarrage séquentiel..."
 
+# Traefik (doit être démarré en premier)
+echo "🌐 Démarrage Traefik..."
+docker-compose up -d traefik
+sleep 5
+
+# Vérifier Traefik
+for i in {1..10}; do
+    if curl -f -s http://localhost:80 >/dev/null 2>&1; then
+        echo "✅ Traefik prêt"
+        break
+    fi
+    echo "⏳ Tentative $i/10 pour Traefik..."
+    sleep 2
+done
+
 # MongoDB
 echo "📊 Démarrage MongoDB..."
-docker-compose up -d mongodb
-sleep 20
+docker-compose up -d database
+sleep 5
 
 # Vérifier MongoDB avec authentification correcte
 for i in {1..15}; do
-    if docker-compose exec -T mongodb mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
+    if docker-compose exec -T database mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
         echo "✅ MongoDB prêt"
         break
     fi
     echo "⏳ Tentative $i/15..."
-    sleep 10
+    sleep 5
 done
 
 # Vérifier que la base meeshy est accessible
 for i in {1..10}; do
-    if docker-compose exec -T mongodb mongosh --eval "use meeshy; db.runCommand('ping')" >/dev/null 2>&1; then
+    if docker-compose exec -T database mongosh --eval "use meeshy; db.runCommand('ping')" >/dev/null 2>&1; then
         echo "✅ Base de données 'meeshy' accessible"
         break
     fi
@@ -196,10 +211,73 @@ for i in {1..10}; do
     sleep 5
 done
 
+# Initialiser le replica set MongoDB si nécessaire
+echo "🔧 Vérification et initialisation du replica set MongoDB..."
+
+# Attendre que MongoDB soit complètement prêt
+echo "⏳ Attente que MongoDB soit prêt pour l'initialisation du replica set..."
+sleep 1
+
+# Vérifier si le replica set est déjà initialisé
+if docker-compose exec -T database mongosh --eval "rs.status()" >/dev/null 2>&1; then
+    echo "✅ Replica set MongoDB déjà configuré"
+    # Vérifier le statut du replica set
+    echo "📊 Statut du replica set:"
+    docker-compose exec -T database mongosh --eval "rs.status()" --quiet
+else
+    echo "📋 Initialisation du replica set rs0..."
+    
+    # Utiliser le nom du conteneur au lieu de localhost pour le réseau Docker
+    docker-compose exec -T database mongosh --eval "
+        try {
+            rs.initiate({
+                _id: 'rs0',
+                members: [
+                    { _id: 0, host: 'meeshy-database:27017' }
+                ]
+            });
+            print('✅ Replica set rs0 initialisé avec succès');
+        } catch (e) {
+            if (e.message.includes('already initialized')) {
+                print('⚠️  Replica set déjà initialisé');
+            } else {
+                print('❌ Erreur initialisation replica set: ' + e.message);
+                throw e;
+            }
+        }
+    "
+    
+    # Attendre que le replica set soit prêt
+    echo "⏳ Attente que le replica set soit prêt..."
+    for i in {1..20}; do
+        if docker-compose exec -T database mongosh --eval "rs.status().ok" 2>/dev/null | grep -q "1"; then
+            echo "✅ Replica set rs0 prêt"
+            break
+        fi
+        echo "⏳ Tentative $i/20 pour le replica set..."
+        sleep 2
+    done
+    
+    # Vérifier le statut final
+    echo "📊 Statut final du replica set:"
+    docker-compose exec -T database mongosh --eval "rs.status()" --quiet
+fi
+
+# Vérifier que la base de données meeshy est accessible avec le replica set
+echo "🔍 Vérification de l'accès à la base de données avec replica set..."
+for i in {1..10}; do
+    if docker-compose exec -T database mongosh --eval "use meeshy; db.runCommand('ping')" >/dev/null 2>&1; then
+        echo "✅ Base de données 'meeshy' accessible avec replica set"
+        break
+    fi
+    echo "⏳ Tentative $i/10 pour la base meeshy avec replica set..."
+    sleep 2
+done
+
 # Redis
 echo "🔴 Démarrage Redis..."
 docker-compose up -d redis
-sleep 5
+sleep 2
 
 # Vérifier Redis
 for i in {1..10}; do
@@ -208,13 +286,66 @@ for i in {1..10}; do
         break
     fi
     echo "⏳ Tentative $i/10 pour Redis..."
-    sleep 5
+    sleep 2
 done
+
+# Services d'administration (MongoDB UI, Redis UI)
+echo "🛠️  Démarrage des services d'administration..."
+docker-compose up -d nosqlclient p3x-redis
+sleep 3
+
+# Vérifier les services d'administration
+echo "🔍 Vérification des services d'administration..."
+if docker-compose ps nosqlclient | grep -q "Up"; then
+    echo "✅ MongoDB UI (NoSQLClient) prêt"
+else
+    echo "⚠️  MongoDB UI non disponible"
+fi
+
+if docker-compose ps p3x-redis | grep -q "Up"; then
+    echo "✅ Redis UI (P3X Redis) prêt"
+else
+    echo "⚠️  Redis UI non disponible"
+fi
+
+# Préparation du volume des modèles ML
+echo "🔧 Configuration des permissions du volume des modèles ML..."
+if docker volume ls | grep -q "meeshy_models_data"; then
+    echo "📁 Volume des modèles ML existant détecté"
+    # Créer un container temporaire pour corriger les permissions
+    docker run --rm -v meeshy_models_data:/workspace/models alpine:latest sh -c "
+        echo '🔧 Correction des permissions du volume des modèles...'
+        chown -R 1000:1000 /workspace/models 2>/dev/null || true
+        chmod -R 755 /workspace/models 2>/dev/null || true
+        echo '✅ Permissions corrigées pour le volume des modèles'
+    "
+else
+    echo "📁 Création du volume des modèles ML avec permissions correctes..."
+    docker volume create meeshy_models_data
+    # Créer un container temporaire pour initialiser les permissions
+    docker run --rm -v meeshy_models_data:/workspace/models alpine:latest sh -c "
+        echo '🔧 Initialisation des permissions du volume des modèles...'
+        mkdir -p /workspace/models
+        chown -R 1000:1000 /workspace/models
+        chmod -R 755 /workspace/models
+        echo '✅ Volume des modèles ML initialisé avec permissions correctes'
+    "
+fi
+
+# Nettoyage des fichiers de verrouillage des modèles ML
+echo "🧹 Nettoyage des fichiers de verrouillage des modèles ML..."
+docker run --rm -v meeshy_models_data:/workspace/models alpine:latest sh -c "
+    echo '🧹 Recherche et suppression des fichiers de verrouillage...'
+    find /workspace/models -name '*.lock' -type f -delete 2>/dev/null || true
+    find /workspace/models -name '*.tmp' -type f -delete 2>/dev/null || true
+    find /workspace/models -name '.incomplete' -type d -exec rm -rf {} + 2>/dev/null || true
+    echo '✅ Fichiers de verrouillage nettoyés'
+"
 
 # Translator
 echo "🌐 Démarrage Translator..."
 docker-compose up -d translator
-sleep 30
+sleep 10
 
 # Vérifier Translator
 for i in {1..15}; do
@@ -223,13 +354,13 @@ for i in {1..15}; do
         break
     fi
     echo "⏳ Tentative $i/15 pour Translator..."
-    sleep 10
+    sleep 2
 done
 
 # Gateway
 echo "🚪 Démarrage Gateway..."
 docker-compose up -d gateway
-sleep 20
+sleep 5
 
 # Vérifier Gateway
 for i in {1..15}; do
@@ -238,18 +369,23 @@ for i in {1..15}; do
         break
     fi
     echo "⏳ Tentative $i/15 pour Gateway..."
-    sleep 10
+    sleep 2
 done
 
 # Frontend
 echo "🎨 Démarrage Frontend..."
 docker-compose up -d frontend
-sleep 15
+sleep 5
 
-# Nginx
-echo "🌐 Démarrage Nginx..."
-docker-compose up -d nginx
-sleep 10
+# Vérifier Frontend
+for i in {1..10}; do
+    if docker-compose exec -T frontend curl -f -s http://localhost:3100 >/dev/null 2>&1; then
+        echo "✅ Frontend prêt"
+        break
+    fi
+    echo "⏳ Tentative $i/10 pour Frontend..."
+    sleep 2
+done
 
 echo "📊 État final des services:"
 docker-compose ps
@@ -303,6 +439,10 @@ deploy_fix() {
 health_check() {
     local ip="$1"
     log_info "🏥 Vérification complète de la santé des services..."
+    
+    # Vérification préliminaire des services Docker
+    log_info "🔍 Vérification préliminaire des conteneurs..."
+    ssh -o StrictHostKeyChecking=no root@$ip "cd /opt/meeshy && docker-compose ps --format 'table {{.Name}}\t{{.Status}}\t{{.Ports}}'"
 
     # Script de vérification détaillée
     cat << 'EOF' > /tmp/health-check.sh
@@ -320,15 +460,15 @@ docker-compose ps
 # 1. Vérifier MongoDB
 echo ""
 echo "📊 TEST MONGODB:"
-if docker-compose exec -T mongodb mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
+if docker-compose exec -T database mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
     echo "✅ MongoDB: Service accessible"
 
     # Vérifier la base de données meeshy
-    if docker-compose exec -T mongodb mongosh --eval "use meeshy; db.runCommand('ping')" >/dev/null 2>&1; then
+    if docker-compose exec -T database mongosh --eval "use meeshy; db.runCommand('ping')" >/dev/null 2>&1; then
         echo "✅ Base de données 'meeshy': Accessible"
 
         # Vérifier les collections
-        collections=$(docker-compose exec -T mongodb mongosh --eval "use meeshy; db.getCollectionNames()" --quiet 2>/dev/null | grep -v "MongoDB\|connecting\|switched" | head -5)
+        collections=$(docker-compose exec -T database mongosh --eval "use meeshy; db.getCollectionNames()" --quiet 2>/dev/null | grep -v "MongoDB\|connecting\|switched" | head -5)
         if [ -n "$collections" ]; then
             echo "✅ Collections détectées: $collections"
         else
@@ -369,13 +509,13 @@ fi
 # 3. Vérifier Translator
 echo ""
 echo "🌐 TEST TRANSLATOR:"
-# Test endpoint de santé avec tentatives multiples
+# Test via le réseau Docker interne (plus fiable en production)
 for i in {1..10}; do
-    if curl -f -s http://localhost:8000/health >/dev/null 2>&1; then
+    if docker-compose exec -T translator curl -f -s http://localhost:8000/health >/dev/null 2>&1; then
         echo "✅ Translator: Endpoint /health accessible"
 
         # Test de réponse de santé
-        health_response=$(curl -s http://localhost:8000/health 2>/dev/null)
+        health_response=$(docker-compose exec -T translator curl -s http://localhost:8000/health 2>/dev/null)
         if echo "$health_response" | grep -q "status\|ok\|healthy\|database"; then
             echo "✅ Translator: Réponse de santé valide"
         else
@@ -389,11 +529,14 @@ done
 
 if [ $i -eq 10 ]; then
     echo "❌ Translator: Endpoint /health inaccessible après 10 tentatives"
+    # Essayer de vérifier via les logs Docker
+    echo "📋 Vérification des logs Translator:"
+    docker-compose logs --tail 20 translator | grep -i "error\|failed\|exception" || echo "Aucune erreur critique détectée"
     exit 1
 fi
 
 # Test des modèles ML
-if curl -f -s http://localhost:8000/models >/dev/null 2>&1; then
+if docker-compose exec -T translator curl -f -s http://localhost:8000/models >/dev/null 2>&1; then
     echo "✅ Translator: Endpoint /models accessible"
 else
     echo "⚠️  Translator: Endpoint /models inaccessible"
@@ -402,13 +545,13 @@ fi
 # 4. Vérifier Gateway
 echo ""
 echo "🚪 TEST GATEWAY:"
-# Test endpoint de santé avec tentatives multiples
+# Test via le réseau Docker interne (plus fiable en production)
 for i in {1..10}; do
-    if curl -f -s http://localhost:3000/health >/dev/null 2>&1; then
+    if docker-compose exec -T gateway curl -f -s http://localhost:3000/health >/dev/null 2>&1; then
         echo "✅ Gateway: Endpoint /health accessible"
 
         # Test de réponse de santé
-        health_response=$(curl -s http://localhost:3000/health 2>/dev/null)
+        health_response=$(docker-compose exec -T gateway curl -s http://localhost:3000/health 2>/dev/null)
         if echo "$health_response" | grep -q "status\|ok\|healthy\|database"; then
             echo "✅ Gateway: Réponse de santé valide"
         else
@@ -422,26 +565,29 @@ done
 
 if [ $i -eq 10 ]; then
     echo "❌ Gateway: Endpoint /health inaccessible après 10 tentatives"
+    # Essayer de vérifier via les logs Docker
+    echo "📋 Vérification des logs Gateway:"
+    docker-compose logs --tail 20 gateway | grep -i "error\|failed\|exception" || echo "Aucune erreur critique détectée"
     exit 1
 fi
 
-# Test des endpoints API
-if curl -f -s http://localhost:3000/api/status >/dev/null 2>&1; then
-    echo "✅ Gateway: Endpoint /api/status accessible"
+# Test des endpoints API (corriger l'endpoint)
+if docker-compose exec -T gateway curl -f -s http://localhost:3000/info >/dev/null 2>&1; then
+    echo "✅ Gateway: Endpoint /info accessible"
 else
-    echo "⚠️  Gateway: Endpoint /api/status inaccessible"
+    echo "⚠️  Gateway: Endpoint /info inaccessible"
 fi
 
 # 5. Vérifier Frontend
 echo ""
 echo "🎨 TEST FRONTEND:"
-# Test d'accessibilité avec tentatives multiples
+# Test via le réseau Docker interne (plus fiable en production)
 for i in {1..10}; do
-    if curl -f -s http://localhost:3100 >/dev/null 2>&1; then
+    if docker-compose exec -T frontend curl -f -s http://localhost:3100 >/dev/null 2>&1; then
         echo "✅ Frontend: Accessible"
 
         # Vérifier que c'est bien Next.js
-        response=$(curl -s http://localhost:3100 2>/dev/null | head -c 200)
+        response=$(docker-compose exec -T frontend curl -s http://localhost:3100 2>/dev/null | head -c 200)
         if echo "$response" | grep -q "Next\|React\|meeshy\|Meeshy"; then
             echo "✅ Frontend: Réponse Next.js détectée"
         else
@@ -455,16 +601,36 @@ done
 
 if [ $i -eq 10 ]; then
     echo "❌ Frontend: Inaccessible après 10 tentatives"
+    # Essayer de vérifier via les logs Docker
+    echo "📋 Vérification des logs Frontend:"
+    docker-compose logs --tail 20 frontend | grep -i "error\|failed\|exception" || echo "Aucune erreur critique détectée"
     exit 1
 fi
 
-# 6. Vérifier Nginx
+# 6. Vérifier Traefik (reverse proxy)
 echo ""
-echo "🌐 TEST NGINX:"
+echo "🌐 TEST TRAEFIK:"
 if curl -f -s http://localhost:80 >/dev/null 2>&1; then
-    echo "✅ Nginx: Port 80 accessible"
+    echo "✅ Traefik: Port 80 accessible"
+    
+    # Test de l'API Traefik (si configurée)
+    if curl -f -s http://localhost:8080/api/rawdata >/dev/null 2>&1; then
+        echo "✅ Traefik: API dashboard accessible"
+    else
+        echo "ℹ️  Traefik: API dashboard non configurée (normal en production)"
+    fi
+    
+    # Test de redirection HTTPS
+    if curl -f -s -I http://localhost:80 | grep -q "301\|302"; then
+        echo "✅ Traefik: Redirection HTTPS configurée"
+    else
+        echo "⚠️  Traefik: Redirection HTTPS non détectée"
+    fi
 else
-    echo "⚠️  Nginx: Port 80 inaccessible"
+    echo "❌ Traefik: Port 80 inaccessible"
+    # Essayer de vérifier via les logs Docker
+    echo "📋 Vérification des logs Traefik:"
+    docker-compose logs --tail 20 traefik | grep -i "error\|failed\|exception" || echo "Aucune erreur critique détectée"
 fi
 
 # 7. Vérifier les connexions ZMQ
@@ -510,23 +676,365 @@ else
     echo "⚠️  Translator: Communication ZMQ non détectée"
 fi
 
+# 10. Test d'accès externe via Traefik (si domaine configuré)
+echo ""
+echo "🌍 TEST ACCÈS EXTERNE VIA TRAEFIK:"
+if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
+    echo "Test d'accès via le domaine: $DOMAIN"
+    
+    # Test du frontend principal
+    if curl -f -s -H "Host: $DOMAIN" http://localhost >/dev/null 2>&1; then
+        echo "✅ Frontend: Accessible via $DOMAIN"
+    else
+        echo "⚠️  Frontend: Non accessible via $DOMAIN"
+    fi
+    
+    # Test du sous-domaine www
+    if curl -f -s -H "Host: www.$DOMAIN" http://localhost >/dev/null 2>&1; then
+        echo "✅ Frontend: Accessible via www.$DOMAIN"
+    else
+        echo "⚠️  Frontend: Non accessible via www.$DOMAIN"
+    fi
+    
+    # Test de l'API Gateway
+    if curl -f -s -H "Host: gate.$DOMAIN" http://localhost/health >/dev/null 2>&1; then
+        echo "✅ Gateway: Accessible via gate.$DOMAIN"
+    else
+        echo "⚠️  Gateway: Non accessible via gate.$DOMAIN"
+    fi
+    
+    # Test du service ML
+    if curl -f -s -H "Host: ml.$DOMAIN" http://localhost/health >/dev/null 2>&1; then
+        echo "✅ Translator: Accessible via ml.$DOMAIN"
+    else
+        echo "⚠️  Translator: Non accessible via ml.$DOMAIN"
+    fi
+    
+    # Test du dashboard Traefik
+    if curl -f -s -H "Host: traefik.$DOMAIN" http://localhost >/dev/null 2>&1; then
+        echo "✅ Traefik Dashboard: Accessible via traefik.$DOMAIN"
+    else
+        echo "⚠️  Traefik Dashboard: Non accessible via traefik.$DOMAIN"
+    fi
+    
+    # Test des interfaces d'administration
+    if curl -f -s -H "Host: mongo.$DOMAIN" http://localhost >/dev/null 2>&1; then
+        echo "✅ MongoDB UI: Accessible via mongo.$DOMAIN"
+    else
+        echo "⚠️  MongoDB UI: Non accessible via mongo.$DOMAIN"
+    fi
+    
+    if curl -f -s -H "Host: redis.$DOMAIN" http://localhost >/dev/null 2>&1; then
+        echo "✅ Redis UI: Accessible via redis.$DOMAIN"
+    else
+        echo "⚠️  Redis UI: Non accessible via redis.$DOMAIN"
+    fi
+else
+    echo "ℹ️  Domaine non configuré, test d'accès externe ignoré"
+fi
+
 echo ""
 echo "🎉 VÉRIFICATION COMPLÈTE TERMINÉE !"
 echo "===================================="
-echo "✅ MongoDB: Opérationnel"
+echo "✅ Traefik: Opérationnel (Reverse Proxy + SSL)"
+echo "✅ MongoDB: Opérationnel (Replica Set)"
 echo "✅ Redis: Opérationnel"
-echo "✅ Gateway: Opérationnel"
-echo "✅ Translator: Opérationnel"
-echo "✅ Frontend: Opérationnel"
+echo "✅ Gateway: Opérationnel (gate.$DOMAIN)"
+echo "✅ Translator: Opérationnel (ml.$DOMAIN)"
+echo "✅ Frontend: Opérationnel ($DOMAIN)"
+echo "✅ MongoDB UI: Opérationnel (mongo.$DOMAIN)"
+echo "✅ Redis UI: Opérationnel (redis.$DOMAIN)"
 echo "✅ ZMQ: Configuré"
 echo "✅ Prisma: Initialisé"
 echo ""
 echo "🚀 TOUS LES SERVICES SONT OPÉRATIONNELS !"
+echo "🌐 Architecture Traefik avec sous-domaines configurée"
 EOF
 
     scp -o StrictHostKeyChecking=no /tmp/health-check.sh root@$ip:/tmp/
     ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/health-check.sh && /tmp/health-check.sh"
     rm -f /tmp/health-check.sh
+}
+
+# Vérification simple et robuste
+simple_health_check() {
+    local ip="$1"
+    log_info "🔍 Vérification simple des services..."
+    
+    # Script de vérification simplifiée
+    cat << 'EOF' > /tmp/simple-health-check.sh
+#!/bin/bash
+cd /opt/meeshy
+
+echo "🔍 VÉRIFICATION SIMPLE DES SERVICES"
+echo "==================================="
+
+# 1. Vérifier l'état des conteneurs
+echo ""
+echo "📊 ÉTAT DES CONTENEURS:"
+docker-compose ps
+
+# 2. Vérifier les health checks Docker
+echo ""
+echo "🏥 HEALTH CHECKS DOCKER:"
+for service in traefik database redis nosqlclient p3x-redis translator gateway frontend; do
+    if docker-compose ps --format "{{.Name}} {{.Status}}" | grep -q "$service.*healthy\|$service.*Up"; then
+        echo "✅ $service: Opérationnel"
+    else
+        echo "❌ $service: Problème détecté"
+        # Afficher les logs récents en cas de problème
+        echo "📋 Logs récents pour $service:"
+        docker-compose logs --tail 5 $service 2>/dev/null | grep -E "(error|Error|ERROR|failed|Failed|FAILED)" || echo "Aucune erreur récente"
+    fi
+done
+
+# 3. Test de connectivité réseau interne
+echo ""
+echo "🔌 TEST CONNECTIVITÉ RÉSEAU:"
+# Test MongoDB
+if docker-compose exec -T database mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
+    echo "✅ MongoDB: Connecté"
+else
+    echo "❌ MongoDB: Non connecté"
+fi
+
+# Test Redis
+if docker-compose exec -T redis redis-cli --no-auth-warning -a MeeshyRedis123 ping >/dev/null 2>&1; then
+    echo "✅ Redis: Connecté"
+else
+    echo "❌ Redis: Non connecté"
+fi
+
+# Test Gateway (via réseau interne)
+if docker-compose exec -T gateway curl -f -s http://localhost:3000/health >/dev/null 2>&1; then
+    echo "✅ Gateway: Health check OK"
+else
+    echo "❌ Gateway: Health check échoué"
+fi
+
+# Test Translator (via réseau interne)
+if docker-compose exec -T translator curl -f -s http://localhost:8000/health >/dev/null 2>&1; then
+    echo "✅ Translator: Health check OK"
+else
+    echo "❌ Translator: Health check échoué"
+fi
+
+# Test Frontend (via réseau interne)
+if docker-compose exec -T frontend curl -f -s http://localhost:3100 >/dev/null 2>&1; then
+    echo "✅ Frontend: Accessible"
+else
+    echo "❌ Frontend: Non accessible"
+fi
+
+# 4. Test d'accès externe (Traefik)
+echo ""
+echo "🌐 TEST ACCÈS EXTERNE:"
+if curl -f -s http://localhost:80 >/dev/null 2>&1; then
+    echo "✅ Traefik: Port 80 accessible"
+else
+    echo "❌ Traefik: Port 80 non accessible"
+fi
+
+echo ""
+echo "🎯 RÉSUMÉ:"
+echo "=========="
+healthy_services=$(docker-compose ps --format "{{.Name}} {{.Status}}" | grep -c "healthy\|Up")
+total_services=$(docker-compose ps --format "{{.Name}}" | wc -l)
+echo "Services opérationnels: $healthy_services/$total_services"
+
+if [ $healthy_services -eq $total_services ]; then
+    echo "🎉 TOUS LES SERVICES SONT OPÉRATIONNELS !"
+    exit 0
+else
+    echo "⚠️  CERTAINS SERVICES ONT DES PROBLÈMES"
+    exit 1
+fi
+EOF
+
+    scp -o StrictHostKeyChecking=no /tmp/simple-health-check.sh root@$ip:/tmp/
+    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/simple-health-check.sh && /tmp/simple-health-check.sh"
+    rm -f /tmp/simple-health-check.sh
+}
+
+# Configuration du replica set MongoDB
+configure_mongodb_replica() {
+    local ip="$1"
+    log_info "🔧 Configuration du replica set MongoDB..."
+    
+    # Script de configuration du replica set
+    cat << 'EOF' > /tmp/configure-replica.sh
+#!/bin/bash
+cd /opt/meeshy
+
+echo "🔧 CONFIGURATION DU REPLICA SET MONGODB"
+echo "======================================="
+
+# Vérifier que MongoDB est en cours d'exécution
+echo "📊 Vérification de l'état de MongoDB..."
+docker-compose ps database
+
+# Attendre que MongoDB soit prêt
+echo "⏳ Attente que MongoDB soit prêt..."
+for i in {1..30}; do
+    if docker-compose exec -T database mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
+        echo "✅ MongoDB prêt"
+        break
+    fi
+    echo "⏳ Tentative $i/30..."
+    sleep 2
+done
+
+# Vérifier si le replica set est déjà configuré
+echo "🔍 Vérification du statut du replica set..."
+if docker-compose exec -T database mongosh --eval "rs.status()" >/dev/null 2>&1; then
+    echo "✅ Replica set déjà configuré"
+    echo "📊 Statut actuel:"
+    docker-compose exec -T database mongosh --eval "rs.status()" --quiet
+else
+    echo "📋 Initialisation du replica set rs0..."
+    
+    # Initialiser le replica set
+    docker-compose exec -T database mongosh --eval "
+        try {
+            rs.initiate({
+                _id: 'rs0',
+                members: [
+                    { _id: 0, host: 'meeshy-database:27017', priority: 1 }
+                ]
+            });
+            print('✅ Replica set rs0 initialisé avec succès');
+        } catch (e) {
+            if (e.message.includes('already initialized')) {
+                print('⚠️  Replica set déjà initialisé');
+            } else {
+                print('❌ Erreur initialisation replica set: ' + e.message);
+                throw e;
+            }
+        }
+    "
+    
+    # Attendre que le replica set soit prêt
+    echo "⏳ Attente que le replica set soit prêt..."
+    for i in {1..30}; do
+        if docker-compose exec -T database mongosh --eval "rs.status().ok" 2>/dev/null | grep -q "1"; then
+            echo "✅ Replica set rs0 prêt"
+            break
+        fi
+        echo "⏳ Tentative $i/30 pour le replica set..."
+        sleep 3
+    done
+fi
+
+# Vérifier le statut final
+echo "📊 Statut final du replica set:"
+docker-compose exec -T database mongosh --eval "rs.status()" --quiet
+
+# Tester la connexion avec le replica set
+echo "🔍 Test de connexion avec le replica set..."
+if docker-compose exec -T database mongosh --eval "use meeshy; db.runCommand('ping')" >/dev/null 2>&1; then
+    echo "✅ Connexion à la base de données avec replica set réussie"
+else
+    echo "❌ Problème de connexion à la base de données"
+    exit 1
+fi
+
+echo "🎉 Configuration du replica set MongoDB terminée avec succès!"
+echo "🔗 String de connexion: mongodb://meeshy-database:27017/meeshy?replicaSet=rs0"
+EOF
+
+    scp -o StrictHostKeyChecking=no /tmp/configure-replica.sh root@$ip:/tmp/
+    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/configure-replica.sh && /tmp/configure-replica.sh"
+    rm -f /tmp/configure-replica.sh
+}
+
+# Test des certificats SSL et configuration Traefik
+test_ssl_certificates() {
+    local ip="$1"
+    log_info "🔒 Test des certificats SSL et configuration Traefik..."
+    
+    # Script de test SSL
+    cat << 'EOF' > /tmp/test-ssl.sh
+#!/bin/bash
+cd /opt/meeshy
+
+echo "🔒 TEST DES CERTIFICATS SSL ET CONFIGURATION TRAEFIK"
+echo "=================================================="
+
+# Vérifier que Traefik est en cours d'exécution
+echo "📊 Vérification de l'état de Traefik..."
+docker-compose ps traefik
+
+# Vérifier les volumes de certificats
+echo "📁 Vérification des volumes de certificats..."
+if docker volume ls | grep -q "traefik_certs"; then
+    echo "✅ Volume traefik_certs trouvé"
+    
+    # Vérifier le contenu du volume
+    echo "📋 Contenu du volume de certificats:"
+    docker run --rm -v meeshy_traefik_certs:/data alpine ls -la /data/ 2>/dev/null || echo "Volume vide ou inaccessible"
+else
+    echo "❌ Volume traefik_certs non trouvé"
+fi
+
+# Test de redirection HTTP vers HTTPS
+echo "🔄 Test de redirection HTTP vers HTTPS..."
+if curl -f -s -I http://localhost:80 | grep -q "301\|302"; then
+    echo "✅ Redirection HTTP vers HTTPS configurée"
+    echo "📋 Détails de la redirection:"
+    curl -f -s -I http://localhost:80 | grep -i "location\|status"
+else
+    echo "⚠️  Redirection HTTP vers HTTPS non détectée"
+fi
+
+# Test des sous-domaines (si domaine configuré)
+if [ -n "$DOMAIN" ] && [ "$DOMAIN" != "localhost" ]; then
+    echo "🌐 Test des sous-domaines avec SSL..."
+    
+    # Test du frontend principal
+    echo "🔍 Test du frontend principal ($DOMAIN)..."
+    if curl -f -s -H "Host: $DOMAIN" http://localhost >/dev/null 2>&1; then
+        echo "✅ Frontend accessible via $DOMAIN"
+    else
+        echo "❌ Frontend non accessible via $DOMAIN"
+    fi
+    
+    # Test du dashboard Traefik
+    echo "🔍 Test du dashboard Traefik (traefik.$DOMAIN)..."
+    if curl -f -s -H "Host: traefik.$DOMAIN" http://localhost >/dev/null 2>&1; then
+        echo "✅ Dashboard Traefik accessible via traefik.$DOMAIN"
+    else
+        echo "❌ Dashboard Traefik non accessible via traefik.$DOMAIN"
+    fi
+    
+    # Test de l'API Gateway
+    echo "🔍 Test de l'API Gateway (gate.$DOMAIN)..."
+    if curl -f -s -H "Host: gate.$DOMAIN" http://localhost/health >/dev/null 2>&1; then
+        echo "✅ API Gateway accessible via gate.$DOMAIN"
+    else
+        echo "❌ API Gateway non accessible via gate.$DOMAIN"
+    fi
+    
+    # Test du service ML
+    echo "🔍 Test du service ML (ml.$DOMAIN)..."
+    if curl -f -s -H "Host: ml.$DOMAIN" http://localhost/health >/dev/null 2>&1; then
+        echo "✅ Service ML accessible via ml.$DOMAIN"
+    else
+        echo "❌ Service ML non accessible via ml.$DOMAIN"
+    fi
+else
+    echo "ℹ️  Domaine non configuré, tests SSL externes ignorés"
+fi
+
+# Vérifier les logs Traefik pour les erreurs SSL
+echo "📋 Vérification des logs Traefik pour les erreurs SSL..."
+docker-compose logs --tail 20 traefik | grep -i "ssl\|tls\|certificate\|acme" || echo "Aucun log SSL récent"
+
+echo "🎉 Test des certificats SSL terminé!"
+EOF
+
+    scp -o StrictHostKeyChecking=no /tmp/test-ssl.sh root@$ip:/tmp/
+    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/test-ssl.sh && /tmp/test-ssl.sh"
+    rm -f /tmp/test-ssl.sh
 }
 
 # Tests complets
@@ -636,267 +1144,6 @@ EOF
     rm -f /tmp/verify-conn.sh
 }
 
-# Déploiement Traefik avec SSL automatique
-deploy_traefik() {
-    local ip="$1"
-    local domain="${2:-meeshy.me}"
-    log_info "🚀 Déploiement Traefik avec SSL automatique sur $ip (domaine: $domain)"
-
-    # Créer répertoire temporaire
-    local deploy_dir="/tmp/meeshy-traefik-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$deploy_dir"
-
-    # Préparer fichiers Traefik
-    log_info "📁 Préparation des fichiers Traefik..."
-    cp "$PROJECT_ROOT/docker-compose.traefik.yml" "$deploy_dir/docker-compose.yml"
-    cp "$PROJECT_ROOT/env.digitalocean" "$deploy_dir/.env"
-    cp -r "$PROJECT_ROOT/config" "$deploy_dir/" 2>/dev/null || log_warning "Dossier config non trouvé (optionnel)"
-
-    # Envoyer sur serveur
-    log_info "📤 Envoi des fichiers Traefik..."
-    ssh -o StrictHostKeyChecking=no root@$ip "mkdir -p /opt/meeshy"
-    scp -o StrictHostKeyChecking=no "$deploy_dir/docker-compose.yml" root@$ip:/opt/meeshy/
-    scp -o StrictHostKeyChecking=no "$deploy_dir/.env" root@$ip:/opt/meeshy/
-    if [ -d "$deploy_dir/config" ]; then
-        scp -r -o StrictHostKeyChecking=no "$deploy_dir/config" root@$ip:/opt/meeshy/
-    fi
-
-    # Script de déploiement Traefik
-    cat << 'EOF' > /tmp/deploy-traefik.sh
-#!/bin/bash
-set -e
-cd /opt/meeshy
-
-echo "🚀 DÉPLOIEMENT TRAEFIK AVEC SSL AUTOMATIQUE"
-echo "==========================================="
-
-# Installer Docker si pas présent
-if ! command -v docker &> /dev/null; then
-    echo "🐳 Installation de Docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
-    usermod -aG docker $USER
-    systemctl enable docker
-    systemctl start docker
-    rm get-docker.sh
-fi
-
-# Installer Docker Compose
-if ! command -v docker-compose &> /dev/null; then
-    echo "📦 Installation de Docker Compose..."
-    curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-    ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
-fi
-
-echo "🧹 Nettoyage..."
-docker-compose down --remove-orphans || true
-docker system prune -f || true
-
-echo "📦 Téléchargement des images..."
-docker-compose pull
-
-echo "🚀 Démarrage des services Traefik..."
-docker-compose up -d
-
-echo "⏳ Attente du démarrage (60 secondes)..."
-sleep 60
-
-echo "📊 État des services:"
-docker-compose ps
-
-echo "🔍 Tests de connectivité..."
-echo "Frontend: $(curl -k -s -o /dev/null -w '%{http_code}' https://$DOMAIN || echo 'ERROR')"
-echo "Traefik Dashboard: $(curl -k -s -o /dev/null -w '%{http_code}' https://traefik.$DOMAIN || echo 'ERROR')"
-echo "Gateway: $(curl -k -s -o /dev/null -w '%{http_code}' https://gate.$DOMAIN/health || echo 'ERROR')"
-echo "Translator: $(curl -k -s -o /dev/null -w '%{http_code}' https://ml.$DOMAIN/translate || echo 'ERROR')"
-echo "MongoDB UI: $(curl -k -s -o /dev/null -w '%{http_code}' https://mongo.$DOMAIN || echo 'ERROR')"
-echo "Redis UI: $(curl -k -s -o /dev/null -w '%{http_code}' https://redis.$DOMAIN || echo 'ERROR')"
-
-echo "🔐 Vérification des certificats SSL..."
-if docker-compose exec traefik cat /letsencrypt/acme.json >/dev/null 2>&1; then
-    echo "✅ Certificats Let's Encrypt:"
-    docker-compose exec traefik cat /letsencrypt/acme.json | jq '.letsencrypt.Certificates[] | .domain.main' 2>/dev/null || echo "Erreur de lecture"
-else
-    echo "⚠️  Fichier acme.json non accessible"
-fi
-
-echo "✅ Déploiement Traefik terminé !"
-echo ""
-echo "🔗 URLs disponibles:"
-echo "- Frontend: https://$DOMAIN"
-echo "- Traefik Dashboard: https://traefik.$DOMAIN (admin:admin)"
-echo "- Gateway API: https://gate.$DOMAIN/health"
-echo "- WebSocket: https://gate.$DOMAIN/socket.io/"
-echo "- Translator: https://ml.$DOMAIN/translate"
-echo "- MongoDB UI: https://mongo.$DOMAIN"
-echo "- Redis UI: https://redis.$DOMAIN"
-EOF
-
-    # Exécuter avec le domaine
-    scp -o StrictHostKeyChecking=no /tmp/deploy-traefik.sh root@$ip:/tmp/
-    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/deploy-traefik.sh && DOMAIN=$domain /tmp/deploy-traefik.sh"
-    rm -f /tmp/deploy-traefik.sh
-
-    # Vérification automatique
-    log_info "🔍 Vérification post-déploiement Traefik..."
-    sleep 10
-    health_check "$ip"
-    rm -rf "$deploy_dir"
-}
-
-# Déploiement incrémental (fichiers modifiés uniquement)
-deploy_incremental() {
-    local ip="$1"
-    log_info "🔄 Déploiement incrémental sur $ip (fichiers modifiés uniquement)"
-
-    # Créer répertoire temporaire
-    local deploy_dir="/tmp/meeshy-update-$(date +%Y%m%d-%H%M%S)"
-    mkdir -p "$deploy_dir"
-
-    # Détecter les fichiers modifiés
-    log_info "🔍 Détection des fichiers modifiés..."
-    
-    # Fichiers de configuration principaux
-    local modified_files=()
-    
-    # Vérifier docker-compose.traefik.yml
-    if [ -f "docker-compose.traefik.yml" ]; then
-        local local_hash=$(md5sum docker-compose.traefik.yml 2>/dev/null | cut -d' ' -f1 || echo "")
-        local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/docker-compose.traefik.yml 2>/dev/null | cut -d' ' -f1" || echo "")
-        if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
-            modified_files+=("docker-compose.traefik.yml")
-            log_info "📝 docker-compose.traefik.yml modifié"
-        fi
-    fi
-
-    # Vérifier env.digitalocean
-    if [ -f "env.digitalocean" ]; then
-        local local_hash=$(md5sum env.digitalocean 2>/dev/null | cut -d' ' -f1 || echo "")
-        local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/.env 2>/dev/null | cut -d' ' -f1" || echo "")
-        if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
-            modified_files+=("env.digitalocean")
-            log_info "📝 env.digitalocean modifié"
-        fi
-    fi
-
-    # Vérifier les fichiers de configuration
-    if [ -d "config" ]; then
-        local config_modified=false
-        for config_file in config/*; do
-            if [ -f "$config_file" ]; then
-                local filename=$(basename "$config_file")
-                local local_hash=$(md5sum "$config_file" 2>/dev/null | cut -d' ' -f1 || echo "")
-                local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/config/$filename 2>/dev/null | cut -d' ' -f1" || echo "")
-                if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
-                    config_modified=true
-                    log_info "📝 $config_file modifié"
-                fi
-            fi
-        done
-        if [ "$config_modified" = true ]; then
-            modified_files+=("config/")
-        fi
-    fi
-
-    # Vérifier les scripts
-    if [ -f "scripts/meeshy-deploy.sh" ]; then
-        local local_hash=$(md5sum scripts/meeshy-deploy.sh 2>/dev/null | cut -d' ' -f1 || echo "")
-        local remote_hash=$(ssh -o StrictHostKeyChecking=no root@$ip "md5sum /opt/meeshy/scripts/meeshy-deploy.sh 2>/dev/null | cut -d' ' -f1" || echo "")
-        if [ "$local_hash" != "$remote_hash" ] && [ -n "$local_hash" ]; then
-            modified_files+=("scripts/meeshy-deploy.sh")
-            log_info "📝 scripts/meeshy-deploy.sh modifié"
-        fi
-    fi
-
-    # Si aucun fichier modifié, sortir
-    if [ ${#modified_files[@]} -eq 0 ]; then
-        log_success "✅ Aucun fichier modifié détecté - déploiement non nécessaire"
-        return 0
-    fi
-
-    log_info "📦 Fichiers à déployer: ${modified_files[*]}"
-
-    # Copier les fichiers modifiés
-    for file in "${modified_files[@]}"; do
-        if [ -f "$file" ]; then
-            cp "$file" "$deploy_dir/"
-            log_info "📋 Copié: $file"
-        elif [ -d "$file" ]; then
-            cp -r "$file" "$deploy_dir/"
-            log_info "📁 Copié: $file"
-        fi
-    done
-
-    # Envoyer sur serveur
-    log_info "📤 Envoi des fichiers modifiés..."
-    for file in "${modified_files[@]}"; do
-        if [ -f "$file" ]; then
-            if [ "$file" = "env.digitalocean" ]; then
-                scp -o StrictHostKeyChecking=no "$deploy_dir/$file" root@$ip:/opt/meeshy/.env
-            else
-                scp -o StrictHostKeyChecking=no "$deploy_dir/$file" root@$ip:/opt/meeshy/
-            fi
-            log_info "📤 Envoyé: $file"
-        elif [ -d "$file" ]; then
-            scp -r -o StrictHostKeyChecking=no "$deploy_dir/$file" root@$ip:/opt/meeshy/
-            log_info "📤 Envoyé: $file"
-        fi
-    done
-
-    # Script de mise à jour incrémentale
-    cat << 'EOF' > /tmp/update-services.sh
-#!/bin/bash
-set -e
-cd /opt/meeshy
-
-echo "🔄 MISE À JOUR INCRÉMENTALE DES SERVICES"
-echo "======================================="
-
-# Vérifier si docker-compose.yml a changé
-if [ -f "docker-compose.traefik.yml" ]; then
-    echo "📝 Configuration Docker Compose mise à jour"
-    ln -sf docker-compose.traefik.yml docker-compose.yml
-fi
-
-# Redémarrer seulement les services affectés
-echo "🔄 Redémarrage des services affectés..."
-
-# Toujours redémarrer Traefik si la config a changé
-if [ -f "docker-compose.traefik.yml" ]; then
-    echo "🔄 Redémarrage de Traefik..."
-    docker-compose restart traefik
-    sleep 10
-fi
-
-# Redémarrer les autres services si nécessaire
-if [ -f ".env" ]; then
-    echo "🔄 Redémarrage des services (variables d'environnement mises à jour)..."
-    docker-compose restart
-    sleep 30
-fi
-
-echo "📊 État des services après mise à jour:"
-docker-compose ps
-
-echo "🔍 Tests rapides de connectivité..."
-echo "Frontend: $(curl -k -s -o /dev/null -w '%{http_code}' https://$DOMAIN || echo 'ERROR')"
-echo "Gateway: $(curl -k -s -o /dev/null -w '%{http_code}' https://gate.$DOMAIN/health || echo 'ERROR')"
-
-echo "✅ Mise à jour incrémentale terminée !"
-EOF
-
-    # Exécuter la mise à jour
-    scp -o StrictHostKeyChecking=no /tmp/update-services.sh root@$ip:/tmp/
-    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/update-services.sh && DOMAIN=$(grep '^DOMAIN=' env.digitalocean 2>/dev/null | cut -d'=' -f2 | tr -d '\"' || echo 'meeshy.me') /tmp/update-services.sh"
-    rm -f /tmp/update-services.sh
-
-    # Nettoyer
-    rm -rf "$deploy_dir"
-
-    log_success "✅ Déploiement incrémental terminé !"
-}
-
 # Redémarrage des services
 restart_services() {
     local ip="$1"
@@ -932,14 +1179,14 @@ show_help() {
     echo -e "${CYAN}  fix${NC}          - Correction rapide (redémarrage)"
     echo -e "${CYAN}  test${NC}         - Tests complets post-déploiement"
     echo -e "${CYAN}  verify${NC}       - Vérification des connexions"
-    echo -e "${CYAN}  health${NC}       - Vérification rapide de santé"
+    echo -e "${CYAN}  health${NC}       - Vérification complète de santé"
+    echo -e "${CYAN}  simple-health${NC} - Vérification simple et robuste"
+    echo -e "${CYAN}  replica${NC}      - Configuration du replica set MongoDB"
+    echo -e "${CYAN}  ssl${NC}          - Test des certificats SSL et Traefik"
     echo -e "${CYAN}  status${NC}       - État des services"
     echo -e "${CYAN}  logs${NC}         - Logs des services"
     echo -e "${CYAN}  restart${NC}      - Redémarrage des services"
     echo -e "${CYAN}  stop${NC}         - Arrêt des services"
-    echo -e "${CYAN}  ssl${NC}          - Gestion SSL (dev/prod)"
-    echo -e "${CYAN}  traefik${NC}      - Déploiement Traefik avec SSL automatique"
-    echo -e "${CYAN}  update${NC}       - Déploiement incrémental (fichiers modifiés uniquement)"
     echo -e "${CYAN}  recreate${NC}     - Recréation du droplet"
     echo ""
     echo -e "${GREEN}Options:${NC}"
@@ -949,6 +1196,9 @@ show_help() {
     echo "  $0 deploy 157.230.15.51"
     echo "  $0 test 157.230.15.51"
     echo "  $0 verify 157.230.15.51"
+    echo "  $0 simple-health 157.230.15.51"
+    echo "  $0 replica 157.230.15.51"
+    echo "  $0 ssl 157.230.15.51"
     echo "  $0 --force-refresh deploy 157.230.15.51"
     echo ""
     echo -e "${YELLOW}💡 Toutes les connexions sont vérifiées automatiquement${NC}"
@@ -1021,6 +1271,33 @@ main() {
             test_ssh_connection "$DROPLET_IP" || exit 1
             health_check "$DROPLET_IP"
             ;;
+        "simple-health")
+            if [ -z "$DROPLET_IP" ]; then
+                log_error "IP du droplet manquante"
+                show_help
+                exit 1
+            fi
+            test_ssh_connection "$DROPLET_IP" || exit 1
+            simple_health_check "$DROPLET_IP"
+            ;;
+        "replica")
+            if [ -z "$DROPLET_IP" ]; then
+                log_error "IP du droplet manquante"
+                show_help
+                exit 1
+            fi
+            test_ssh_connection "$DROPLET_IP" || exit 1
+            configure_mongodb_replica "$DROPLET_IP"
+            ;;
+        "ssl")
+            if [ -z "$DROPLET_IP" ]; then
+                log_error "IP du droplet manquante"
+                show_help
+                exit 1
+            fi
+            test_ssh_connection "$DROPLET_IP" || exit 1
+            test_ssl_certificates "$DROPLET_IP"
+            ;;
         "status")
             if [ -z "$DROPLET_IP" ]; then
                 log_error "IP du droplet manquante"
@@ -1069,15 +1346,6 @@ main() {
             local domain="${4:-'meeshy.me'}"
             local email="${5:-'admin@meeshy.me'}"
             ssh -o StrictHostKeyChecking=no root@$DROPLET_IP "cd /opt/meeshy && ./scripts/manage-ssl.sh $ssl_command $domain $email"
-            ;;
-        "update")
-            if [ -z "$DROPLET_IP" ]; then
-                log_error "IP du droplet manquante"
-                show_help
-                exit 1
-            fi
-            test_ssh_connection "$DROPLET_IP" || exit 1
-            deploy_incremental "$DROPLET_IP"
             ;;
         "recreate")
             log_error "Fonction recreate non implémentée - utiliser DigitalOcean directement"

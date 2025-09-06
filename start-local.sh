@@ -11,8 +11,8 @@ export DATABASE_URL="mongodb://meeshy:MeeshyPassword123@database:27017/meeshy?au
 export PRISMA_SCHEMA_PATH="./shared/schema.prisma"
 
 # URLs pour le frontend
-export NEXT_PUBLIC_API_URL="http://meeshy.me/api"
-export NEXT_PUBLIC_TRANSLATION_URL="http://meeshy.me/translate"
+export NEXT_PUBLIC_API_URL="https://gate.meeshy.me"
+export NEXT_PUBLIC_TRANSLATION_URL="https://ml.meeshy.me"
 export NEXT_PUBLIC_WS_URL="ws://meeshy.me/api/ws"
 
 # Images Docker (utiliser les images locales)
