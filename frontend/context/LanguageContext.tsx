@@ -227,19 +227,19 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     saveInterfaceLanguage(interfaceLanguage);
     
     console.log('[LANGUAGE_CONTEXT] Language configuration initialized with browser detection');
-  }, [isInitialized, isClient]);
+  }, [isClient]); // Retirer isInitialized des dépendances pour éviter la boucle
 
-  // Save configuration when it changes
+  // Save configuration when it changes (but only after initialization)
   useEffect(() => {
     if (!isInitialized) return;
     saveLanguageConfig(userLanguageConfig);
-  }, [userLanguageConfig, isInitialized]);
+  }, [userLanguageConfig]); // Retirer isInitialized des dépendances
 
-  // Save interface language when it changes
+  // Save interface language when it changes (but only after initialization) 
   useEffect(() => {
     if (!isInitialized) return;
     saveInterfaceLanguage(currentInterfaceLanguage);
-  }, [currentInterfaceLanguage, isInitialized]);
+  }, [currentInterfaceLanguage]); // Retirer isInitialized des dépendances
 
   const setCustomDestinationLanguage = (language: string) => {
     if (!SUPPORTED_LANGUAGE_CODES.includes(language as any)) {
@@ -271,7 +271,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     
     setCurrentInterfaceLanguage(language);
     
-    // Update custom destination language to match
+    // Update custom destination language to match (but avoid immediate re-render)
     setUserLanguageConfig(prev => ({
       ...prev,
       customDestinationLanguage: language,
@@ -314,7 +314,7 @@ export function useLanguage() {
     if (typeof window === 'undefined') {
       return {
         userLanguageConfig: DEFAULT_LANGUAGE_CONFIG,
-        currentInterfaceLanguage: 'fr',
+        currentInterfaceLanguage: 'en',
         setCustomDestinationLanguage: () => {},
         setInterfaceLanguage: () => {},
         isLanguageSupported: () => true,
