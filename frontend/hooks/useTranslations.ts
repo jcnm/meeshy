@@ -59,19 +59,13 @@ export function useTranslations(namespace: string) {
       if (value && typeof value === 'object' && k in value) {
         value = value[k];
       } else {
-        // Réduire les warnings en production et limiter en développement
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`Translation key "${key}" not found in namespace "${namespace}" for locale "${currentInterfaceLanguage}"`);
-        }
+        // Pas de warning - retourner silencieusement la clé comme fallback
         return key; // Retourner la clé si la traduction n'est pas trouvée
       }
     }
     
     if (typeof value !== 'string') {
-      // Réduire les warnings en production
-      if (process.env.NODE_ENV === 'development') {
-        console.warn(`Translation key "${key}" does not resolve to a string in namespace "${namespace}"`);
-      }
+      // Pas de warning - retourner silencieusement la clé comme fallback
       return key;
     }
     
