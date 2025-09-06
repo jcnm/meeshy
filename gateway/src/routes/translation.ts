@@ -19,7 +19,7 @@ const TranslateRequestSchema = z.object({
 });
 
 interface TranslateRequest {
-  text: string;
+  text?: string;
   sourceLanguage?: string;
   targetLanguage: string;
   modelType?: 'basic' | 'medium' | 'premium';

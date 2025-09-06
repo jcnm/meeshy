@@ -139,7 +139,7 @@ export class ConversationsService {
     
     return {
       id: String(conv.id),
-      type: String(conv.type)?.toUpperCase() || 'DIRECT',
+      type: String(conv.type)?.toUpperCase() || 'direct',
       title: conv.title as string,
       name: (conv.name as string) || (conv.title as string),
       description: conv.description as string,

@@ -9,6 +9,7 @@ import { io, Socket } from 'socket.io-client';
 import { getWebSocketUrl } from '@/lib/config';
 import { toast } from 'sonner';
 import { logger } from '@/utils/logger';
+import { logConversationIdDebug, getConversationIdType, getConversationApiId } from '@/utils/conversation-id-utils';
 import type { 
   Message, 
   User,
@@ -96,7 +97,7 @@ class MeeshySocketIOService {
 
     // Vérifier si on est sur une page publique (pas besoin de WebSocket)
     const currentPath = window.location.pathname;
-    const publicPaths = ['/about', '/contact', '/privacy', '/terms', '/partners', '/'];
+    const publicPaths = ['/about', '/contact', '/privacy', '/terms', '/partners'];
     
     if (publicPaths.includes(currentPath)) {
       logger.socketio.debug('MeeshySocketIOService: Page publique détectée, connexion ignorée', { path: currentPath });
@@ -516,36 +517,62 @@ class MeeshySocketIOService {
   }
 
   /**
-   * Rejoint une conversation
+   * Rejoint une conversation (utilise l'objet conversation complet)
    */
-  public joinConversation(conversationId: string): void {
+  public joinConversation(conversation: any): void {
     if (!this.socket) {
       console.warn('⚠️ MeeshySocketIOService: Socket non connecté, impossible de rejoindre la conversation');
       return;
     }
 
-    console.log('🚪 MeeshySocketIOService: Rejoindre conversation', { conversationId });
-    this.socket.emit(CLIENT_EVENTS.CONVERSATION_JOIN, { conversationId });
+    try {
+      // Extraire l'ID (ObjectId) pour les communications backend
+      const conversationId = getConversationApiId(conversation);
+      
+      console.log('🚪 MeeshySocketIOService: Rejoindre conversation', { 
+        conversationObject: conversation,
+        conversationId,
+        socketId: this.socket.id,
+        isConnected: this.isConnected
+      });
+      
+      // Utiliser l'ObjectId pour les communications WebSocket
+      this.socket.emit(CLIENT_EVENTS.CONVERSATION_JOIN, { conversationId });
+    } catch (error) {
+      console.error('❌ MeeshySocketIOService: Erreur lors de l\'extraction de l\'ID conversation pour join:', error);
+    }
   }
 
   /**
-   * Quitte une conversation
+   * Quitte une conversation (utilise l'objet conversation complet)
    */
-  public leaveConversation(conversationId: string): void {
+  public leaveConversation(conversation: any): void {
     if (!this.socket) {
       console.warn('⚠️ MeeshySocketIOService: Socket non connecté, impossible de quitter la conversation');
       return;
     }
 
-    console.log('🚪 MeeshySocketIOService: Quitter conversation', { conversationId });
-    this.socket.emit(CLIENT_EVENTS.CONVERSATION_LEAVE, { conversationId });
+    try {
+      // Extraire l'ID (ObjectId) pour les communications backend
+      const conversationId = getConversationApiId(conversation);
+
+      console.log('🚪 MeeshySocketIOService: Quitter conversation', { 
+        conversationObject: conversation,
+        conversationId
+      });
+      
+      // Utiliser l'ObjectId pour les communications WebSocket
+      this.socket.emit(CLIENT_EVENTS.CONVERSATION_LEAVE, { conversationId });
+    } catch (error) {
+      console.error('❌ MeeshySocketIOService: Erreur lors de l\'extraction de l\'ID conversation pour leave:', error);
+    }
   }
 
   /**
-   * Envoie un message
+   * Envoie un message (utilise l'objet conversation complet)
    */
-  public async sendMessage(conversationId: string, content: string, originalLanguage?: string): Promise<boolean> {
-    return new Promise((resolve) => {
+  public async sendMessage(conversation: any, content: string, originalLanguage?: string): Promise<boolean> {
+    return new Promise(async (resolve) => {
       if (!this.socket) {
         console.error('❌ MeeshySocketIOService: Socket non connecté');
         resolve(false);
@@ -558,54 +585,66 @@ class MeeshySocketIOService {
         return;
       }
 
-      // Vérifier l'état d'authentification
-      const authToken = localStorage.getItem('auth_token');
-      const sessionToken = localStorage.getItem('anonymous_session_token');
-      
-      console.log('🔍 MeeshySocketIOService: État avant envoi message', {
-        socketId: this.socket.id,
-        isConnected: this.isConnected,
-        hasAuthToken: !!authToken,
-        hasSessionToken: !!sessionToken,
-        conversationId,
-        contentLength: content.length,
-        currentUser: this.currentUser?.id
-      });
+      try {
+        // Extraire l'ID (ObjectId) pour les communications backend
+        const conversationId = getConversationApiId(conversation);
 
-      console.log('📤 MeeshySocketIOService: Envoi message', {
-        conversationId,
-        contentLength: content.length,
-        originalLanguage
-      });
+        // Vérifier l'état d'authentification
+        const authToken = localStorage.getItem('auth_token');
+        const sessionToken = localStorage.getItem('anonymous_session_token');
+        
+        console.log('🔍 MeeshySocketIOService: État avant envoi message', {
+          socketId: this.socket.id,
+          isConnected: this.isConnected,
+          hasAuthToken: !!authToken,
+          hasSessionToken: !!sessionToken,
+          conversationObject: conversation,
+          conversationId,
+          contentLength: content.length,
+          currentUser: this.currentUser?.id
+        });
 
-      const messageData = { 
-        conversationId, 
-        content,
-        ...(originalLanguage && { originalLanguage })
-      };
+        console.log('📤 MeeshySocketIOService: Envoi message', {
+          conversationObject: conversation,
+          conversationId,
+          contentLength: content.length,
+          originalLanguage
+        });
 
-      this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response: any) => {
-        console.log('📨 MeeshySocketIOService: Réponse envoi message', {
-          response,
-          hasResponse: !!response,
-          responseType: typeof response,
-          responseKeys: response ? Object.keys(response) : [],
-          responseSuccess: response?.success,
+        // Utiliser l'ObjectId pour l'envoi au backend
+        const messageData = { 
+          conversationId, 
+          content,
+          ...(originalLanguage && { originalLanguage })
+        };
+
+        this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response: any) => {
+          console.log('📨 MeeshySocketIOService: Réponse envoi message', {
+            response,
+            conversationObject: conversation,
+            conversationId,
+            hasResponse: !!response,
+            responseType: typeof response,
+            responseKeys: response ? Object.keys(response) : [],
+            responseSuccess: response?.success,
           responseError: response?.error,
           responseMessage: response?.message,
           fullResponse: JSON.stringify(response, null, 2)
         });
         
         if (response?.success) {
-          console.log('✅ MeeshySocketIOService: Message envoyé avec succès', response);
+          console.log('✅ MeeshySocketIOService: Message envoyé avec succès', {
+            response,
+            conversationId
+          });
           resolve(true);
         } else {
           console.error('❌ MeeshySocketIOService: Erreur envoi message', {
             response,
+            conversationId,
             error: response?.error,
             hasError: !!response?.error,
             errorMessage: response?.message || response?.error || 'Erreur inconnue',
-            conversationId,
             messageData
           });
           
@@ -614,6 +653,7 @@ class MeeshySocketIOService {
           console.error('🔍 MeeshySocketIOService: Détails erreur complète:', {
             errorMsg,
             fullResponse: response,
+            conversationObject: conversation,
             conversationId,
             contentLength: content.length,
             authStatus: {
@@ -627,6 +667,12 @@ class MeeshySocketIOService {
           resolve(false);
         }
       });
+      
+      } catch (error) {
+        console.error('❌ MeeshySocketIOService: Erreur lors de l\'extraction de l\'ID conversation:', error);
+        toast.error('Erreur lors de l\'extraction de l\'ID de conversation');
+        resolve(false);
+      }
     });
   }
 
