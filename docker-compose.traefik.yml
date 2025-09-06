@@ -54,6 +54,7 @@ services:
       - database_data:/data/db
       - database_config:/data/configdb
       - ./shared/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh:ro
+      - ./shared/init-mongodb-replica.sh:/docker-entrypoint-initdb.d/init-mongodb-replica.sh:ro
       - ./shared/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./shared/init-postgresql.sql:/docker-entrypoint-initdb.d/init-postgresql.sql:ro
     networks:
@@ -91,7 +92,9 @@ services:
       - "traefik.http.routers.nosqlclient.entrypoints=websecure"
       - "traefik.http.routers.nosqlclient.tls.certresolver=letsencrypt"
       - "traefik.http.services.nosqlclient.loadbalancer.server.port=3000"
-      # Pas d'authentification pour MongoDB interface
+      - "traefik.http.routers.nosqlclient.middlewares=mongo-auth"
+      # Authentification pour MongoDB interface
+      - "traefik.http.middlewares.mongo-auth.basicauth.users=${MONGO_USERS:-admin:$$2y$$10$$K.KmJz8WCBxWciXuNGmg6OunyBw6qZY9.x5VJsQu0KaOd7L3EiGti}"
 
   # Redis Cache
   redis:
@@ -136,7 +139,9 @@ services:
       - "traefik.http.routers.p3x-redis.entrypoints=websecure"
       - "traefik.http.routers.p3x-redis.tls.certresolver=letsencrypt"
       - "traefik.http.services.p3x-redis.loadbalancer.server.port=7843"
-      # Pas d'authentification pour Redis interface
+      - "traefik.http.routers.p3x-redis.middlewares=redis-auth"
+      # Authentification pour Redis interface
+      - "traefik.http.middlewares.redis-auth.basicauth.users=${REDIS_USERS:-admin:$$2y$$10$$K.KmJz8WCBxWciXuNGmg6OunyBw6qZY9.x5VJsQu0KaOd7L3EiGti}"
 
   # Translator Service sur ml.${DOMAIN}
   translator:
@@ -195,8 +200,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      translator:
-        condition: service_healthy
     networks:
       - meeshy-network
     healthcheck:
@@ -220,7 +223,7 @@ services:
     restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=https://gate.${DOMAIN:-localhost}
-      - NEXT_PUBLIC_WS_URL=wss://gate.${DOMAIN:-localhost}/ws
+      - NEXT_PUBLIC_WS_URL=wss://gate.${DOMAIN:-localhost}
       - NEXT_PUBLIC_TRANSLATION_URL=https://ml.${DOMAIN:-localhost}/translate
       - NEXT_PUBLIC_BACKEND_URL=https://gate.${DOMAIN:-localhost}
       - NEXT_PUBLIC_FRONTEND_URL=https://${DOMAIN:-localhost}
