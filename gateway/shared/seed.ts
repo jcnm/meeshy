@@ -289,7 +289,7 @@ async function main() {
     update: {},
     create: {
       identifier: "meeshy",
-      type: 'GLOBAL',
+      type: 'global',
       title: 'Meeshy',
       description: 'Conversation globale pour tous les utilisateurs de Meeshy'
     }

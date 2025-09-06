@@ -387,7 +387,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/client",
+      "value": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/prisma/client",
       "fromEnvVar": null
     },
     "config": {
@@ -401,11 +401,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/schema.prisma",
+    "sourceFilePath": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
   "relativePath": "..",
   "clientVersion": "6.14.0",
@@ -433,8 +434,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "client",
-    "",
+    "shared/prisma/client",
+    "prisma/client",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -464,7 +465,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
-path.join(process.cwd(), "client/libquery_engine-darwin-arm64.dylib.node")
+path.join(process.cwd(), "shared/prisma/client/libquery_engine-darwin-arm64.dylib.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "client/schema.prisma")
+path.join(process.cwd(), "shared/prisma/client/schema.prisma")

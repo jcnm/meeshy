@@ -19,8 +19,7 @@ import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
 import { TranslationService } from './services/TranslationService';
-import { PrismaAuthService } from './services/prisma-auth.service';
-import { createAuthMiddleware } from './middleware/auth-prisma';
+import { AuthMiddleware, createUnifiedAuthMiddleware } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import { linksRoutes } from './routes/links';
@@ -31,6 +30,7 @@ import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import { translationRoutes } from './routes/translation';
 import { maintenanceRoutes } from './routes/maintenance';
+import { authTestRoutes } from './routes/auth-test';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -209,7 +209,7 @@ class MeeshyServer {
   private server: FastifyInstance;
   private prisma: PrismaClient;
   private translationService: TranslationService;
-  private authService: PrismaAuthService;
+  private authMiddleware: AuthMiddleware;
   private socketIOHandler: MeeshySocketIOHandler;
 
   constructor() {
@@ -222,8 +222,8 @@ class MeeshyServer {
       log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error']
     });
     
-    // Initialiser le service d'authentification
-    this.authService = new PrismaAuthService(this.prisma, config.jwtSecret);
+    // Initialiser le middleware d'authentification unifié
+    this.authMiddleware = new AuthMiddleware(this.prisma);
     
     // Initialiser le service de traduction
     this.translationService = new TranslationService(this.prisma);
@@ -322,7 +322,10 @@ class MeeshyServer {
   }
 
   private createAuthMiddleware() {
-    return createAuthMiddleware(this.authService);
+    return createUnifiedAuthMiddleware(this.prisma, {
+      requireAuth: false,
+      allowAnonymous: true
+    });
   }
 
   // --------------------------------------------------------------------------
@@ -436,6 +439,9 @@ class MeeshyServer {
     // Register authentication routes with /auth prefix
     await this.server.register(authRoutes, { prefix: '/auth' });
     
+    // Register authentication test routes for Phase 3.1.1
+    await this.server.register(authTestRoutes);
+    
     // Register conversation routes without prefix
     await this.server.register(conversationRoutes);
     // Register links management routes
@@ -484,7 +490,12 @@ class MeeshyServer {
       const shouldInit = await initService.shouldInitialize();
       
       if (shouldInit) {
-        logger.info('🔧 Database initialization required, starting...');
+        const forceReset = process.env.FORCE_DB_RESET === 'true';
+        if (forceReset) {
+          logger.info('🔄 FORCE_DB_RESET=true - Database will be completely reset and reinitialized');
+        } else {
+          logger.info('🔧 Database initialization required, starting...');
+        }
         await initService.initializeDatabase();
         logger.info('✅ Database initialization completed successfully');
       } else {
