@@ -8,10 +8,10 @@ import { ArrowLeft, Printer, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 export default function TermsPage() {
-  // SEO dynamique pour la page Terms
-  useDynamicSEO({ page: 'terms' });
+  // SEO temporairement désactivé pour debugging
+  // useDynamicSEO({ page: 'terms' });
 
-  const t = useTranslations('terms');
+  const { t, tArray } = useTranslations('terms');
 
   const handlePrint = () => {
     window.print();
@@ -69,12 +69,9 @@ export default function TermsPage() {
               <div className="text-gray-700 leading-relaxed">
                 <p className="mb-4">{t('account.intro')}</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  {Array.isArray(t('account.responsibilities')) ? 
-                    ((t('account.responsibilities') as unknown) as string[]).map((item: string, index: number) => (
-                      <li key={index}>{item}</li>
-                    )) : 
-                    <li>{t('account.responsibilities')}</li>
-                  }
+                  {tArray('account.responsibilities').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </div>
             </section>
@@ -85,12 +82,9 @@ export default function TermsPage() {
               <div className="text-gray-700 leading-relaxed">
                 <p className="mb-4">{t('usage.intro')}</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  {Array.isArray(t('usage.prohibited')) ? 
-                    ((t('usage.prohibited') as unknown) as string[]).map((item: string, index: number) => (
-                      <li key={index}>{item}</li>
-                    )) : 
-                    <li>{t('usage.prohibited')}</li>
-                  }
+                  {tArray('usage.prohibited').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </div>
             </section>

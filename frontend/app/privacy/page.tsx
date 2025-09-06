@@ -8,10 +8,10 @@ import { ArrowLeft, Printer, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PrivacyPage() {
-  // SEO dynamique pour la page Privacy
-  useDynamicSEO({ page: 'privacy' });
+  // SEO temporairement désactivé pour debugging
+  // useDynamicSEO({ page: 'privacy' });
 
-  const t = useTranslations('privacy');
+  const { t, tArray } = useTranslations('privacy');
 
   const handlePrint = () => {
     window.print();
@@ -59,32 +59,23 @@ export default function PrivacyPage() {
               <div className="text-gray-700 leading-relaxed">
                 <h3 className="text-lg font-medium mb-2">{t('dataCollection.personal.title')}</h3>
                 <ul className="list-disc pl-6 space-y-1 mb-4">
-                  {Array.isArray(t('dataCollection.personal.items')) ? 
-                    ((t('dataCollection.personal.items') as unknown) as string[]).map((item: string, index: number) => (
-                      <li key={index}>{item}</li>
-                    )) : 
-                    <li>{t('dataCollection.personal.items')}</li>
-                  }
+                  {tArray('dataCollection.personal.items').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
                 
                 <h3 className="text-lg font-medium mb-2">{t('dataCollection.translation.title')}</h3>
                 <ul className="list-disc pl-6 space-y-1 mb-4">
-                  {Array.isArray(t('dataCollection.translation.items')) ? 
-                    ((t('dataCollection.translation.items') as unknown) as string[]).map((item: string, index: number) => (
-                      <li key={index}>{item}</li>
-                    )) : 
-                    <li>{t('dataCollection.translation.items')}</li>
-                  }
+                  {tArray('dataCollection.translation.items').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
                 
                 <h3 className="text-lg font-medium mb-2">{t('dataCollection.technical.title')}</h3>
                 <ul className="list-disc pl-6 space-y-1">
-                  {Array.isArray(t('dataCollection.technical.items')) ? 
-                    ((t('dataCollection.technical.items') as unknown) as string[]).map((item: string, index: number) => (
-                      <li key={index}>{item}</li>
-                    )) : 
-                    <li>{t('dataCollection.technical.items')}</li>
-                  }
+                  {tArray('dataCollection.technical.items').map((item: string, index: number) => (
+                    <li key={index}>{item}</li>
+                  ))}
                 </ul>
               </div>
             </section>
@@ -93,12 +84,9 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('usage.title')}</h2>
               <div className="text-gray-700 leading-relaxed">
                 <ul className="list-disc pl-6 space-y-2">
-                  {Array.isArray(t('usage.items')) ? 
-                    ((t('usage.items') as unknown) as any[]).map((item: any, index: number) => (
-                      <li key={index}><strong>{item.title}</strong> {item.description}</li>
-                    )) : 
-                    <li>{t('usage.items')}</li>
-                  }
+                  {tArray('usage.items').map((item: any, index: number) => (
+                    <li key={index}><strong>{item.title}</strong> {item.description}</li>
+                  ))}
                 </ul>
               </div>
             </section>
@@ -129,12 +117,9 @@ export default function PrivacyPage() {
                 {t('sharing.intro')}
               </p>
               <ul className="list-disc pl-6 space-y-1 mt-4">
-                {Array.isArray(t('sharing.cases')) ? 
-                  ((t('sharing.cases') as unknown) as string[]).map((case_: string, index: number) => (
-                    <li key={index}>{case_}</li>
-                  )) : 
-                  <li>{t('sharing.cases')}</li>
-                }
+                {tArray('sharing.cases').map((case_: string, index: number) => (
+                  <li key={index}>{case_}</li>
+                ))}
               </ul>
             </section>
 
@@ -143,12 +128,9 @@ export default function PrivacyPage() {
               <div className="text-gray-700 leading-relaxed">
                 <p className="mb-4">{t('rights.intro')}</p>
                 <ul className="list-disc pl-6 space-y-1">
-                  {Array.isArray(t('rights.list')) ? 
-                    ((t('rights.list') as unknown) as string[]).map((right: string, index: number) => (
-                      <li key={index}>{right}</li>
-                    )) : 
-                    <li>{t('rights.list')}</li>
-                  }
+                  {tArray('rights.list').map((right: string, index: number) => (
+                    <li key={index}>{right}</li>
+                  ))}
                 </ul>
                 <p className="mt-4">
                   {t('rights.contact')}
