@@ -8,9 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, MapPin, Train, Bus, Car, Mail, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
 
-// Désactiver le pré-rendu statique pour cette page client
-export const dynamic = 'force-dynamic';
-
 export default function ContactPage() {
   // SEO dynamique pour la page Contact
   useDynamicSEO({ page: 'contact' });

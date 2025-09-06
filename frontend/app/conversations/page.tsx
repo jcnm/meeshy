@@ -4,7 +4,6 @@ import { ConversationLayoutWrapper } from '../../components/conversations/Conver
 import { Suspense } from 'react';
 
 // Désactiver le prerendering pour éviter les problèmes avec Sharp
-export const dynamic = 'force-dynamic';
 
 function ConversationsPageContent() {
   return <ConversationLayoutWrapper />;

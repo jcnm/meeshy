@@ -21,8 +21,6 @@ import { User, UserRoleEnum } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { toast } from 'sonner';
 
-// Désactiver le pré-rendu statique pour cette page client
-export const dynamic = 'force-dynamic';
 import { getDefaultPermissions } from '@/utils/user-adapter';
 
 interface AdminStats {

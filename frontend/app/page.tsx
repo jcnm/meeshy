@@ -48,10 +48,6 @@ import { toast } from 'sonner';
 import { isCurrentUserAnonymous } from '@/utils/auth';
 import { useTranslations } from '@/hooks/useTranslations';
 import Link from 'next/link';
-
-// Désactiver le pré-rendu statique pour cette page client
-export const dynamic = 'force-dynamic';
-
 export default function LandingPage() {
   // SEO dynamique pour la page d'accueil
   useDynamicSEO({ page: 'home' });
@@ -81,8 +77,6 @@ export default function LandingPage() {
       setAnonymousChatLink(null);
     }
   }, [user]);
-
-
   if (isAuthChecking) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">

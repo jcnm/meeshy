@@ -10,9 +10,6 @@ import { useLanguage } from '@/context/LanguageContext';
 import { detectBestInterfaceLanguage, getUserPreferredLanguage } from '@/utils/language-detection';
 import { logLanguageDetectionInfo, testLanguageDetection } from '@/utils/language-detection-logger';
 
-// Désactiver le pré-rendu statique pour cette page client
-export const dynamic = 'force-dynamic';
-
 export default function LanguageTestPage() {
   const { 
     detectedInterfaceLanguage, 

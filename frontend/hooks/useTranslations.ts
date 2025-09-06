@@ -1,5 +1,6 @@
 /**
  * Hook personnalisé pour les traductions utilisant notre LanguageContext
+ * Compatible SSR avec fallback français par défaut
  */
 
 import { useLanguage } from '@/context/LanguageContext';
@@ -12,11 +13,18 @@ interface TranslationMessages {
 export function useTranslations(namespace: string) {
   const { currentInterfaceLanguage } = useLanguage();
   const [messages, setMessages] = useState<TranslationMessages>({});
+  const [isClient, setIsClient] = useState(false);
+
+  // Détection côté client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const loadMessages = async () => {
       try {
-        const locale = currentInterfaceLanguage || 'en';
+        // Utiliser français par défaut pour le SSR, puis la langue détectée côté client
+        const locale = isClient ? (currentInterfaceLanguage || 'en') : 'en';
         const messagesModule = await import(`@/locales/${locale}.json`);
         const allMessages = messagesModule.default;
         
@@ -40,7 +48,7 @@ export function useTranslations(namespace: string) {
     };
 
     loadMessages();
-  }, [currentInterfaceLanguage, namespace]);
+  }, [currentInterfaceLanguage, namespace, isClient]);
 
   // Fonction pour obtenir une traduction par clé avec support pour les clés imbriquées
   const t = (key: string, params?: Record<string, string>): string => {

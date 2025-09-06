@@ -7,9 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Printer, FileText } from 'lucide-react';
 import Link from 'next/link';
 
-// Désactiver le pré-rendu statique pour cette page client
-export const dynamic = 'force-dynamic';
-
 export default function TermsPage() {
   // SEO dynamique pour la page Terms
   useDynamicSEO({ page: 'terms' });

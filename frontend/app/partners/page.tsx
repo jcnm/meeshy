@@ -7,9 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Handshake, Mail, ExternalLink, Building2, GraduationCap, Users, Shield, Zap, HeartHandshake, Globe, BookOpen, Briefcase } from 'lucide-react';
 import Link from 'next/link';
 
-// Désactiver le pré-rendu statique pour cette page client
-export const dynamic = 'force-dynamic';
-
 export default function PartnersPage() {
   // SEO dynamique pour la page Partners
   useDynamicSEO({ page: 'partners' });

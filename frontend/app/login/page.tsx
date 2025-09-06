@@ -10,10 +10,6 @@ import { MessageSquare, LogIn, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { authService } from '@/services/auth.service';
 import { useTranslations } from '@/hooks/useTranslations';
-
-// Désactiver le pré-rendu statique pour cette page client
-export const dynamic = 'force-dynamic';
-
 function QuickLoginPageContent() {
   const [formData, setFormData] = useState({
     username: '',
@@ -38,8 +34,6 @@ function QuickLoginPageContent() {
       router.replace(redirectUrl);
     }
   }, [isAuthenticated, isChecking, returnUrl, router]);
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -80,8 +74,6 @@ function QuickLoginPageContent() {
       setIsLoading(false);
     }
   };
-
-
   // Afficher un état de chargement pendant la vérification d'authentification
   if (isChecking) {
     return (
@@ -213,8 +205,6 @@ function QuickLoginPageContent() {
             </form>
           </CardContent>
         </Card>
-
-
       </div>
     </div>
   );
