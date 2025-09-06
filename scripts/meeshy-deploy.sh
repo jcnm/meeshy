@@ -291,7 +291,7 @@ done
 
 # Services d'administration (MongoDB UI, Redis UI)
 echo "🛠️  Démarrage des services d'administration..."
-docker-compose up -d nosqlclient p3x-redis
+docker-compose up -d nosqlclient p3x-redis-ui
 sleep 3
 
 # Vérifier les services d'administration
@@ -302,7 +302,7 @@ else
     echo "⚠️  MongoDB UI non disponible"
 fi
 
-if docker-compose ps p3x-redis | grep -q "Up"; then
+if docker-compose ps p3x-redis-ui | grep -q "Up"; then
     echo "✅ Redis UI (P3X Redis) prêt"
 else
     echo "⚠️  Redis UI non disponible"
