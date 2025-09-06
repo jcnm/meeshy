@@ -33,6 +33,7 @@ services:
     image: ${DATABASE_IMAGE:-mongo:8.0}
     container_name: meeshy-database
     restart: unless-stopped
+    command: mongod --replSet rs0 --bind_ip_all
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD:-password}
@@ -40,6 +41,8 @@ services:
     volumes:
       - database_data:/data/db
       - database_config:/data/configdb
+      - ./shared/init-mongodb-replica.sh:/docker-entrypoint-initdb.d/init-mongodb-replica.sh:ro
+      - ./shared/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - meeshy-network
     healthcheck:
@@ -68,7 +71,7 @@ services:
 
   # Translator Service
   translator:
-    image: ${TRANSLATOR_IMAGE:-isopen/meeshy-translator:1.0.37-alpha}
+    image: ${TRANSLATOR_IMAGE:-isopen/meeshy-translator:1.0.38-alpha
     container_name: meeshy-translator
     restart: unless-stopped
     environment:
@@ -101,7 +104,7 @@ services:
 
   # Gateway Service
   gateway:
-    image: ${GATEWAY_IMAGE:-isopen/meeshy-gateway:1.0.37-alpha}
+    image: ${GATEWAY_IMAGE:-isopen/meeshy-gateway:1.0.38-alpha
     container_name: meeshy-gateway
     restart: unless-stopped
     environment:
@@ -129,18 +132,14 @@ services:
       start_period: 30s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gateway-api.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.gateway-api.entrypoints=websecure"
-      - "traefik.http.routers.gateway-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.gateway-api.loadbalancer.server.port=3000"
-      - "traefik.http.routers.gateway-ws.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`/ws`)"
-      - "traefik.http.routers.gateway-ws.entrypoints=websecure"
-      - "traefik.http.routers.gateway-ws.tls.certresolver=letsencrypt"
-      - "traefik.http.services.gateway-ws.loadbalancer.server.port=3000"
+      - "traefik.http.routers.gateway.rule=Host(`gate.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.gateway.entrypoints=websecure"
+      - "traefik.http.routers.gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gateway.loadbalancer.server.port=3000"
 
   # Frontend Service
   frontend:
-    image: ${FRONTEND_IMAGE:-isopen/meeshy-frontend:1.0.37-alpha}
+    image: ${FRONTEND_IMAGE:-isopen/meeshy-frontend:1.0.38-alpha
     container_name: meeshy-frontend
     restart: unless-stopped
     environment:
