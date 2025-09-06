@@ -44,23 +44,6 @@ export function socketIOUserToUser(socketUser: SocketIOUser): User {
 }
 
 /**
- * Convertit un SocketIOMessage vers Message unifié
- */
-export function socketIOMessageToMessage(socketMessage: SocketIOMessage): Message {
-  return {
-    id: socketMessage.id,
-    conversationId: socketMessage.conversationId,
-    senderId: socketMessage.senderId,
-    content: socketMessage.content,
-    originalLanguage: socketMessage.originalLanguage,
-    messageType: socketMessage.messageType as any, // Type conversion
-    createdAt: socketMessage.createdAt,
-    updatedAt: socketMessage.updatedAt,
-    sender: socketMessage.sender ? socketIOUserToUser(socketMessage.sender as SocketIOUser) : undefined
-  };
-}
-
-/**
  * Vérifie si un ID est un ObjectId MongoDB valide
  */
 export function isValidObjectId(id: string): boolean {
@@ -160,6 +143,9 @@ export function normalizeMessage(rawMessage: any): Message {
     updatedAt: new Date(rawMessage.updatedAt || rawMessage.createdAt || rawMessage.timestamp),
     editedAt: rawMessage.editedAt ? new Date(rawMessage.editedAt) : undefined,
     deletedAt: rawMessage.deletedAt ? new Date(rawMessage.deletedAt) : undefined,
+    
+    // Synchroniser timestamp avec createdAt pour compatibilité
+    timestamp: new Date(rawMessage.createdAt || rawMessage.timestamp),
     
     sender: rawMessage.sender || rawMessage.anonymousSender,
     anonymousSender: rawMessage.anonymousSender,

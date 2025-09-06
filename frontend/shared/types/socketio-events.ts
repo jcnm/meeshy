@@ -101,18 +101,21 @@ export type MessageType = 'text' | 'image' | 'file' | 'audio' | 'video' | 'locat
 export interface SocketIOMessage {
   id: string;
   conversationId: string;
-  senderId?: string; // ID unique - sera résolu en User ou AnonymousParticipant en base de données
+  senderId?: string; // ID unique - sera résolu en User ou AnonymousParticipant via requête
+  anonymousSenderId?: string; // ID de l'expéditeur anonyme
   content: string;
   originalLanguage: string;
   messageType: MessageType;
+  isEdited?: boolean; // Indique si le message a été édité
+  isDeleted?: boolean; // Indique si le message a été supprimé
   editedAt?: Date; // Présent = message édité
   deletedAt?: Date; // Présent = message supprimé
   replyToId?: string; // Support des réponses
   createdAt: Date;
-  updatedAt: Date;
-  
+  updatedAt?: Date; // Date de dernière modification
   // Sender résolu (authentifié ou anonyme) - sera attaché via requête
   sender?: SocketIOUser | AnonymousParticipant;
+
 }
 
 export interface UserPermissions {

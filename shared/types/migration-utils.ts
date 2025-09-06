@@ -44,26 +44,6 @@ export function socketIOUserToUser(socketUser: SocketIOUser): User {
 }
 
 /**
- * Convertit un SocketIOMessage vers Message unifié
- */
-export function socketIOMessageToMessage(socketMessage: SocketIOMessage): Message {
-  return {
-    id: socketMessage.id,
-    conversationId: socketMessage.conversationId,
-    senderId: socketMessage.senderId,
-    content: socketMessage.content,
-    originalLanguage: socketMessage.originalLanguage,
-    messageType: socketMessage.messageType as any, // Type conversion
-    isEdited: socketMessage.isEdited,
-    isDeleted: socketMessage.isDeleted,
-    createdAt: socketMessage.createdAt,
-    updatedAt: socketMessage.updatedAt,
-    timestamp: socketMessage.createdAt, // Utilise createdAt comme timestamp
-    sender: socketMessage.sender ? socketIOUserToUser(socketMessage.sender) : undefined
-  };
-}
-
-/**
  * Vérifie si un ID est un ObjectId MongoDB valide
  */
 export function isValidObjectId(id: string): boolean {

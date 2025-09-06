@@ -59,6 +59,12 @@ distribute_to_service() {
                 echo "  ✅ Types compilés copiés depuis dist/ vers $service_name/shared/"
             fi
             
+            # Copier le dossier types/ source pour le frontend
+            if [ -d "types" ]; then
+                cp -pir types "$service_dir/shared/" 2>/dev/null || true
+                echo "  ✅ Dossier types/ source copié vers $service_name/shared/types/"
+            fi
+            
             # Copier le client Prisma généré
             if [ -d "prisma/client" ]; then
                 mkdir -p "$service_dir/shared/prisma"
@@ -98,6 +104,7 @@ distribute_to_service() {
                 # Modifier le générateur pour Python avec interface asyncio et corriger binaryTargets
                 sed 's/provider = "prisma-client-js"/provider = "prisma-client-py"\n  interface = "asyncio"\n  recursive_type_depth = 5/' schema.prisma | \
                 sed 's/output   = "\.\/client"//' | \
+                sed 's/engine_type = "library"//' | \
                 sed 's/binaryTargets = \["native", "linux-musl-arm64-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-1.1.x", "linux-musl-arm64-openssl-3.0.x"\]/binaryTargets = ["native"]/' > "$python_schema"
                 
                 echo "  ✅ Schema Prisma Python généré avec interface asyncio"

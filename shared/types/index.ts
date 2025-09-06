@@ -107,11 +107,12 @@ export interface PaginatedResponse<T> extends LegacyApiResponse<T[]> {
 // Ces types sont remplacés par ceux dans conversation.ts
 // Gardés pour rétrocompatibilité temporaire
 
-// Importation du nouveau type Message unifié
-import type { Message as UnifiedMessage, MessageWithTranslations as UnifiedMessageWithTranslations } from './conversation';
+// Importation du nouveau type SocketIOMessage unifié
+import type { SocketIOMessage } from './socketio-events';
+import type { MessageWithTranslations as UnifiedMessageWithTranslations } from './conversation';
 
 // Alias pour rétrocompatibilité
-export type Message = UnifiedMessage;
+export type Message = SocketIOMessage;
 export type MessageWithTranslations = UnifiedMessageWithTranslations;
 
 export interface BubbleTranslation {
@@ -122,7 +123,7 @@ export interface BubbleTranslation {
   confidence: number; // 0-1 pour la qualité de traduction
 }
 
-export interface TranslatedMessage extends Message {
+export interface TranslatedMessage extends SocketIOMessage {
   translation?: BubbleTranslation;
   originalContent?: string;
   translatedContent?: string;

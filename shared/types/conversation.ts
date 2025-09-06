@@ -3,8 +3,9 @@
  * Harmonisation Gateway ↔ Frontend
  */
 
-import type { SocketIOUser as User, MessageType } from './socketio-events';
+import type { SocketIOUser as User, MessageType, SocketIOMessage } from './socketio-events';
 import type { AnonymousParticipant } from './anonymous';
+import { UserRole } from '.';
 
 /**
  * Statistiques d'une conversation
@@ -48,24 +49,10 @@ export interface ConversationIdentifiers {
 /**
  * Message unifié entre Gateway et Frontend
  * Contient TOUS les champs des anciens types pour compatibilité
+ * Utilise maintenant SocketIOMessage comme base
  */
-export interface Message {
-  id: string;
-  conversationId: string;  // TOUJOURS ObjectId
-  senderId?: string;       // ObjectId si user connecté
-  anonymousSenderId?: string; // ObjectId si anonyme
-  content: string;
-  originalLanguage: string;
-  messageType: 'text' | 'image' | 'file' | 'system';
-  isEdited: boolean;
-  isDeleted: boolean;
-  replyToId?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  editedAt?: Date;
-  deletedAt?: Date;
-  
-  // Champs pour compatibilité frontend
+export interface Message extends SocketIOMessage {
+  // Champs additionnels pour compatibilité
   timestamp: Date;  // Alias pour createdAt
   
   // Union type pour sender (authentifié ou anonyme)
@@ -124,7 +111,7 @@ export interface ConversationParticipant {
   id: string;
   conversationId: string;
   userId: string;
-  role: 'admin' | 'moderator' | 'member';
+  role: UserRole;
   canSendMessage: boolean;
   canSendFiles: boolean;
   canSendImages: boolean;

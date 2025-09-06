@@ -3,8 +3,9 @@
  * Harmonisation Gateway ↔ Frontend
  */
 
-import type { SocketIOMessage, SocketIOUser as User, MessageType } from './socketio-events';
+import type { SocketIOUser as User, MessageType, SocketIOMessage } from './socketio-events';
 import type { AnonymousParticipant } from './anonymous';
+import { UserRole } from '.';
 
 /**
  * Statistiques d'une conversation
@@ -46,6 +47,32 @@ export interface ConversationIdentifiers {
 }
 
 /**
+ * Message unifié entre Gateway et Frontend
+ * Contient TOUS les champs des anciens types pour compatibilité
+ * Utilise maintenant SocketIOMessage comme base
+ */
+export interface Message extends SocketIOMessage {
+  // Champs additionnels pour compatibilité
+  timestamp: Date;  // Alias pour createdAt
+  
+  // Union type pour sender (authentifié ou anonyme)
+  sender?: User | AnonymousParticipant;
+  
+  // Champ pour compatibilité avec l'ancien système
+  anonymousSender?: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    language: string;
+    isMeeshyer: boolean; // false pour les anonymes
+  };
+  
+  // Référence au message de réponse
+  replyTo?: Message;
+}
+
+/**
  * Conversation unifiée
  * Contient TOUS les champs utilisés dans Gateway et Frontend pour compatibilité totale
  */
@@ -62,14 +89,14 @@ export interface Conversation extends ConversationIdentifiers {
   isGroup: boolean;
   isPrivate: boolean;
   lastMessageAt: Date;
-  lastMessage?: SocketIOMessage;
+  lastMessage?: Message;
   createdAt: Date;
   updatedAt: Date;
   participants: ConversationParticipant[];
   unreadCount?: number;
   
   // Champs additionnels pour compatibilité
-  messages?: SocketIOMessage[];  // Pour certains usages frontend
+  messages?: Message[];  // Pour certains usages frontend
   groupId?: string;      // Référence au groupe si c'est une conversation de groupe
   maxMembers?: number;   // Limite de participants
   
@@ -84,7 +111,7 @@ export interface ConversationParticipant {
   id: string;
   conversationId: string;
   userId: string;
-  role: 'admin' | 'moderator' | 'member';
+  role: UserRole;
   canSendMessage: boolean;
   canSendFiles: boolean;
   canSendImages: boolean;
@@ -116,35 +143,8 @@ export interface MessageTranslation {
 /**
  * Message avec traductions
  */
-export interface MessageWithTranslations extends SocketIOMessage {
+export interface MessageWithTranslations extends Message {
   translations: MessageTranslation[];
-}
-
-/**
- * Message avec attachements
- */
-export interface messagesWithAttachements extends SocketIOMessage {
-  
-  // Attachements multiples (tableau)
-  attachments?: {
-    id: string;
-    filename: string;
-    originalName: string;
-    mimeType: string;
-    size: number;
-    url: string;
-    thumbnailUrl?: string; // Pour images/vidéos
-    metadata?: {
-      width?: number; // Pour images/vidéos
-      height?: number; // Pour images/vidéos
-      duration?: number; // Pour audio/vidéo
-      latitude?: number; // Pour location
-      longitude?: number; // Pour location
-      address?: string; // Pour location
-    };
-    uploadedAt: Date;
-    uploadedBy: string; // ID de l'utilisateur qui a uploadé
-  }[];
 }
 
 /**

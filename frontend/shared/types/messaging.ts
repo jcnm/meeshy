@@ -5,7 +5,7 @@
  * Gateway WebSocket ↔ Frontend communication
  */
 
-import type { Message, ApiResponse, ConversationStats } from './index';
+import type { SocketIOMessage as Message, ApiResponse, ConversationStats } from './index';
 
 // ===== TYPES D'AUTHENTIFICATION =====
 
