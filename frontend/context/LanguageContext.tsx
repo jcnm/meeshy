@@ -1,9 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { UserLanguageConfig, INTERFACE_LANGUAGES } from '@/types';
-import { SUPPORTED_LANGUAGES } from '@/lib/constants/languages';
-import { logLanguageDetectionInfo } from '@/utils/language-detection-logger';
 
 interface LanguageContextType {
   userLanguageConfig: UserLanguageConfig;
@@ -16,14 +14,10 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
-// Utiliser les langues supportées depuis le fichier constants
-const SUPPORTED_LANGUAGE_CODES = SUPPORTED_LANGUAGES.map(lang => lang.code);
-const INTERFACE_LANGUAGE_CODES = INTERFACE_LANGUAGES.map(lang => lang.code);
-
-// Default configuration - Use English as default
+// Default configuration - RETOUR À LA VERSION STABLE
 const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
-  systemLanguage: 'en',
-  regionalLanguage: 'en',
+  systemLanguage: 'fr',
+  regionalLanguage: 'fr',
   customDestinationLanguage: undefined,
   autoTranslateEnabled: true,
   translateToSystemLanguage: true,
@@ -31,262 +25,58 @@ const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
   useCustomDestination: false,
 };
 
-// Language detection utilities
-function detectSystemLanguage(): string {
-  if (typeof window === 'undefined') return 'en'; // SSR fallback
-  
-  // Obtenir toutes les langues préférées du navigateur
-  const browserLanguages = navigator.languages || [navigator.language || 'en'];
-  
-  console.log('[LANGUAGE_CONTEXT] Detecting system language from:', browserLanguages);
-  
-  // Vérifier chaque langue du navigateur dans l'ordre de préférence
-  for (const lang of browserLanguages) {
-    const languageCode = lang.split('-')[0].toLowerCase();
-    
-    // Vérifier si la langue est supportée dans la liste complète des langues supportées
-    if (SUPPORTED_LANGUAGE_CODES.includes(languageCode as any)) {
-      console.log('[LANGUAGE_CONTEXT] Detected system language:', languageCode);
-      return languageCode;
-    }
-  }
-  
-  // Fallback vers l'anglais si aucune langue supportée n'est trouvée
-  console.log('[LANGUAGE_CONTEXT] No supported system language found, falling back to English');
-  return 'en';
-}
-
-function detectRegionalLanguage(): string {
-  if (typeof window === 'undefined') return 'en';
-  
-  // Pour la langue régionale, on peut utiliser la même logique que pour la langue système
-  // mais on pourrait aussi considérer des facteurs géographiques
-  const browserLanguages = navigator.languages || [navigator.language || 'en'];
-  
-  console.log('[LANGUAGE_CONTEXT] Detecting regional language from:', browserLanguages);
-  
-  // Prendre la deuxième langue préférée si disponible, sinon la première
-  const secondaryLang = browserLanguages[1] || browserLanguages[0] || 'en';
-  const languageCode = secondaryLang.split('-')[0].toLowerCase();
-  
-  if (SUPPORTED_LANGUAGE_CODES.includes(languageCode as any)) {
-    console.log('[LANGUAGE_CONTEXT] Detected regional language:', languageCode);
-    return languageCode;
-  }
-  
-  // Fallback vers la langue système détectée
-  return detectSystemLanguage();
-}
-
-// Storage utilities
-const LANGUAGE_CONFIG_KEY = 'meeshy_user_language_config';
-const INTERFACE_LANGUAGE_KEY = 'meeshy_interface_language';
-
-function loadLanguageConfig(): UserLanguageConfig {
-  if (typeof window === 'undefined') return DEFAULT_LANGUAGE_CONFIG; // SSR fallback
-  
-  try {
-    const stored = localStorage.getItem(LANGUAGE_CONFIG_KEY);
-    if (stored) {
-      const config = JSON.parse(stored);
-      return { ...DEFAULT_LANGUAGE_CONFIG, ...config };
-    }
-  } catch (error) {
-    console.error('[LANGUAGE_CONTEXT] Error loading language config:', error);
-  }
-  
-  return DEFAULT_LANGUAGE_CONFIG;
-}
-
-function saveLanguageConfig(config: UserLanguageConfig): void {
-  if (typeof window === 'undefined') return; // SSR safe
-  
-  try {
-    localStorage.setItem(LANGUAGE_CONFIG_KEY, JSON.stringify(config));
-  } catch (error) {
-    console.error('[LANGUAGE_CONTEXT] Error saving language config:', error);
-  }
-}
-
-function detectBrowserLanguage(): string {
-  if (typeof window === 'undefined') return 'en'; // SSR fallback vers anglais
-  
-  // Obtenir toutes les langues préférées du navigateur
-  const browserLanguages = navigator.languages || [navigator.language || 'en'];
-  
-  console.log('[LANGUAGE_CONTEXT] Detected browser languages:', browserLanguages);
-  
-  // Vérifier chaque langue du navigateur dans l'ordre de préférence
-  for (const lang of browserLanguages) {
-    const languageCode = lang.split('-')[0].toLowerCase();
-    
-    // Vérifier si la langue est supportée comme langue d'interface
-    if (INTERFACE_LANGUAGE_CODES.includes(languageCode as any)) {
-      console.log('[LANGUAGE_CONTEXT] Using detected browser language:', languageCode);
-      return languageCode;
-    }
-  }
-  
-  // Fallback vers l'anglais si aucune langue supportée n'est trouvée
-  console.log('[LANGUAGE_CONTEXT] No supported language found in browser preferences, falling back to English');
-  return 'en';
-}
-
-function loadInterfaceLanguage(): string {
-  if (typeof window === 'undefined') return 'en'; // SSR fallback
-  
-  try {
-    const stored = localStorage.getItem(INTERFACE_LANGUAGE_KEY);
-    if (stored && INTERFACE_LANGUAGE_CODES.includes(stored as any)) {
-      console.log('[LANGUAGE_CONTEXT] Using stored interface language:', stored);
-      return stored;
-    }
-  } catch (error) {
-    console.error('[LANGUAGE_CONTEXT] Error loading interface language:', error);
-  }
-  
-  // Si aucune langue sauvegardée n'est trouvée, détecter automatiquement la langue du navigateur
-  const detectedLanguage = detectBrowserLanguage();
-  console.log('[LANGUAGE_CONTEXT] Auto-detected interface language:', detectedLanguage);
-  return detectedLanguage;
-}
-
-function saveInterfaceLanguage(language: string): void {
-  if (typeof window === 'undefined') return; // SSR safe
-  
-  try {
-    localStorage.setItem(INTERFACE_LANGUAGE_KEY, language);
-  } catch (error) {
-    console.error('[LANGUAGE_CONTEXT] Error saving interface language:', error);
-  }
-}
-
 interface LanguageProviderProps {
   children: ReactNode;
 }
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
+  // État simple avec vrai changement de langue
   const [userLanguageConfig, setUserLanguageConfig] = useState<UserLanguageConfig>(DEFAULT_LANGUAGE_CONFIG);
-  const [currentInterfaceLanguage, setCurrentInterfaceLanguage] = useState<string>('en');
-  const [isClient, setIsClient] = useState(false);
+  const [currentInterfaceLanguage, setCurrentInterfaceLanguage] = useState<string>('fr');
 
-  // Détecter le côté client
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Initialize language configuration on first load
-  useEffect(() => {
-    if (!isClient || isInitialized) return; // Attendre le côté client
-
-    console.log('[LANGUAGE_CONTEXT] Initializing language configuration...');
-    
-    // Log detailed detection information in development
-    if (process.env.NODE_ENV === 'development') {
-      logLanguageDetectionInfo();
-    }
-    
-    // Load saved configuration
-    const savedConfig = loadLanguageConfig();
-    const savedInterfaceLanguage = loadInterfaceLanguage(); // This now includes auto-detection
-    
-    // Detect system and regional languages
-    const detectedSystemLanguage = detectSystemLanguage();
-    const detectedRegionalLanguage = detectRegionalLanguage();
-    
-    // Create initial configuration - prioritize saved config, then detected languages, then defaults
-    const initialConfig: UserLanguageConfig = {
-      ...DEFAULT_LANGUAGE_CONFIG,
-      ...savedConfig,
-      // Use detected languages if no saved configuration exists
-      systemLanguage: savedConfig.systemLanguage || detectedSystemLanguage,
-      regionalLanguage: savedConfig.regionalLanguage || detectedRegionalLanguage,
-      // Set custom destination to the detected system language if not already set
-      customDestinationLanguage: savedConfig.customDestinationLanguage || detectedSystemLanguage,
-    };
-    
-    // Interface language is automatically detected in loadInterfaceLanguage() if not saved
-    const interfaceLanguage = savedInterfaceLanguage;
-    
-    console.log('[LANGUAGE_CONTEXT] Initial config:', {
-      detectedSystemLanguage,
-      detectedRegionalLanguage,
-      interfaceLanguage,
-      savedConfig,
-      initialConfig,
-      browserLanguages: typeof window !== 'undefined' ? navigator.languages : 'server-side'
-    });
-    
-    setUserLanguageConfig(initialConfig);
-    setCurrentInterfaceLanguage(interfaceLanguage);
-    setIsInitialized(true);
-    
-    // Save the initial configuration
-    saveLanguageConfig(initialConfig);
-    saveInterfaceLanguage(interfaceLanguage);
-    
-    console.log('[LANGUAGE_CONTEXT] Language configuration initialized with browser detection');
-  }, [isClient]); // Retirer isInitialized des dépendances pour éviter la boucle
-
-  // Save configuration when it changes (but only after initialization)
-  useEffect(() => {
-    if (!isInitialized) return;
-    saveLanguageConfig(userLanguageConfig);
-  }, [userLanguageConfig]); // Retirer isInitialized des dépendances
-
-  // Save interface language when it changes (but only after initialization) 
-  useEffect(() => {
-    if (!isInitialized) return;
-    saveInterfaceLanguage(currentInterfaceLanguage);
-  }, [currentInterfaceLanguage]); // Retirer isInitialized des dépendances
-
-  const setCustomDestinationLanguage = (language: string) => {
-    if (!SUPPORTED_LANGUAGE_CODES.includes(language as any)) {
-      console.warn('[LANGUAGE_CONTEXT] Unsupported language:', language);
-      return;
-    }
-    
+  // Fonction pour changer la langue de destination personnalisée
+  const setCustomDestinationLanguage = useCallback((language: string) => {
+    console.log('[LANGUAGE_CONTEXT] setCustomDestinationLanguage:', language);
     setUserLanguageConfig(prev => ({
       ...prev,
-      customDestinationLanguage: language,
-      useCustomDestination: true,
+      customDestinationLanguage: language
     }));
-  };
+  }, []);
 
-  const setInterfaceLanguage = (language: string) => {
-    if (!INTERFACE_LANGUAGE_CODES.includes(language as any)) {
-      console.warn('[LANGUAGE_CONTEXT] Unsupported interface language:', language);
-      return;
-    }
-    
+  // Fonction pour changer la langue de l'interface
+  const setInterfaceLanguage = useCallback((language: string) => {
+    console.log('[LANGUAGE_CONTEXT] setInterfaceLanguage:', language);
     setCurrentInterfaceLanguage(language);
     
-    // Update custom destination language to match (but avoid immediate re-render)
-    setUserLanguageConfig(prev => ({
-      ...prev,
-      customDestinationLanguage: language,
-      useCustomDestination: true,
+    // Optionnel : sauvegarder dans localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('meeshy-interface-language', language);
+    }
+  }, []);
+
+  const isLanguageSupported = useCallback((language: string): boolean => {
+    return ['fr', 'en', 'es', 'de', 'pt'].includes(language);
+  }, []);
+
+  // Charger la langue sauvegardée au démarrage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedLanguage = localStorage.getItem('meeshy-interface-language');
+      if (savedLanguage && isLanguageSupported(savedLanguage)) {
+        setCurrentInterfaceLanguage(savedLanguage);
+      }
+    }
+  }, [isLanguageSupported]);
+
+  const getSupportedLanguages = useCallback(() => {
+    return INTERFACE_LANGUAGES.map(lang => ({
+      code: lang.code,
+      name: lang.name,
+      nativeName: lang.name
     }));
-  };
+  }, []);
 
-  const isLanguageSupported = (language: string): boolean => {
-    return INTERFACE_LANGUAGE_CODES.includes(language as any);
-  };
-
-  const getSupportedLanguages = () => {
-    return INTERFACE_LANGUAGES.map(lang => {
-      // Pour éviter une dépendance circulaire avec useTranslations, 
-      // nous retournons le nom natif et laissons les composants 
-      // utiliser leurs propres traductions
-      return {
-        code: lang.code,
-        name: lang.name, // Nom en anglais
-        nativeName: lang.name // Nom natif (sera traduit par le composant)
-      };
-    });
-  };
-
+  // Valeur statique du contexte - VERSION STABLE
   const contextValue: LanguageContextType = {
     userLanguageConfig,
     currentInterfaceLanguage,
@@ -306,18 +96,15 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (!context) {
-    // Au lieu de throw en SSR, retourner des valeurs par défaut
-    if (typeof window === 'undefined') {
-      return {
-        userLanguageConfig: DEFAULT_LANGUAGE_CONFIG,
-        currentInterfaceLanguage: 'en',
-        setCustomDestinationLanguage: () => {},
-        setInterfaceLanguage: () => {},
-        isLanguageSupported: () => true,
-        getSupportedLanguages: () => INTERFACE_LANGUAGES,
-      };
-    }
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    // Fallback statique pour SSR - VERSION STABLE
+    return {
+      userLanguageConfig: DEFAULT_LANGUAGE_CONFIG,
+      currentInterfaceLanguage: 'fr',
+      setCustomDestinationLanguage: () => {},
+      setInterfaceLanguage: () => {},
+      isLanguageSupported: (lang: string) => ['fr', 'en', 'es', 'de', 'pt'].includes(lang),
+      getSupportedLanguages: () => INTERFACE_LANGUAGES,
+    };
   }
   return context;
 }
