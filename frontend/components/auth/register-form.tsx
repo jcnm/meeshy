@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { User, SUPPORTED_LANGUAGES } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface RegisterFormProps {
   onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior

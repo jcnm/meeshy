@@ -22,7 +22,7 @@ import { User as UserType, SUPPORTED_LANGUAGES, INTERFACE_LANGUAGES, LanguageCod
 import { FontSelector } from '@/components/settings/font-selector';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface SettingsLayoutProps {
   currentUser: UserType;

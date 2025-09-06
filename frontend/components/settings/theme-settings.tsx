@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Palette, Monitor, Sun, Moon, Languages } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/context/LanguageContext';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface ThemeConfig {
   theme: 'light' | 'dark' | 'system';

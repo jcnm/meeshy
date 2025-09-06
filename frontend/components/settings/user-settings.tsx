@@ -11,7 +11,7 @@ import { User as UserType } from '@/types';
 import { getUserInitials } from '@/utils/user';
 import { toast } from 'sonner';
 import { Upload, Camera } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 import { buildApiUrl } from '@/lib/config';
 
 interface UserSettingsProps {

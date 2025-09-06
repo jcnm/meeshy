@@ -22,6 +22,7 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
     lastName: '',
     email: '',
     phoneNumber: '',
+    password: '',
     spokenLanguage: '',
     receiveLanguage: '',
   });
@@ -42,7 +43,7 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          password: 'password123', // Mot de passe temporaire pour les tests
+          password: formData.password,
           phoneNumber: formData.phoneNumber,
           systemLanguage: formData.spokenLanguage,
           regionalLanguage: formData.receiveLanguage,
@@ -126,6 +127,21 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="password">Mot de passe *</Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => updateFormData('password', e.target.value)}
+              required
+              placeholder="Choisissez un mot de passe sécurisé"
+            />
+            <p className="text-xs text-gray-500">
+              Le mot de passe doit contenir au moins 6 caractères
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="spokenLanguage">Langue parlée *</Label>
             <Select value={formData.spokenLanguage} onValueChange={(value) => updateFormData('spokenLanguage', value)}>
               <SelectTrigger>
@@ -160,7 +176,7 @@ export function CreateAccountForm({ linkId, onSuccess }: CreateAccountFormProps)
           <Button 
             type="submit" 
             className="w-full" 
-            disabled={loading || !formData.firstName || !formData.lastName || !formData.email || !formData.spokenLanguage || !formData.receiveLanguage}
+            disabled={loading || !formData.firstName || !formData.lastName || !formData.email || !formData.password || !formData.spokenLanguage || !formData.receiveLanguage}
           >
             {loading ? 'Création en cours...' : 'Créer le compte et rejoindre'}
           </Button>

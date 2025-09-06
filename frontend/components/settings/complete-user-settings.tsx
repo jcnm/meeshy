@@ -12,7 +12,7 @@ import {
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
 import { ThemeSettings } from './theme-settings';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface CompleteUserSettingsProps {
   user: User | null;

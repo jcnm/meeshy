@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { User as UserType, SUPPORTED_LANGUAGES, INTERFACE_LANGUAGES } from '@/types';
 import { toast } from 'sonner';
 import { Globe, Languages, Target } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations } from '@/hooks/useTranslations';
 import { buildApiUrl } from '@/lib/config';
 
 interface LanguageSettingsProps {
