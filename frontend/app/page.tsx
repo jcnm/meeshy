@@ -49,6 +49,9 @@ import { isCurrentUserAnonymous } from '@/utils/auth';
 import { useTranslations } from '@/hooks/useTranslations';
 import Link from 'next/link';
 
+// Désactiver le pré-rendu statique pour cette page client
+export const dynamic = 'force-dynamic';
+
 export default function LandingPage() {
   // SEO dynamique pour la page d'accueil
   useDynamicSEO({ page: 'home' });

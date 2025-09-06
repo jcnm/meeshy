@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, ArrowLeft, BarChart3 } from 'lucide-react';
 
+// Désactiver le pré-rendu statique pour cette page client
+export const dynamic = 'force-dynamic';
+
 export default function AdminAnalyticsPage() {
   const router = useRouter();
 

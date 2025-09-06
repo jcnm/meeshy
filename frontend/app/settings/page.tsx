@@ -9,6 +9,9 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { toast } from 'sonner';
 
+// Désactiver le pré-rendu statique pour cette page client
+export const dynamic = 'force-dynamic';
+
 export default function SettingsPage() {
   const router = useRouter();
   const t = useTranslations('settings');

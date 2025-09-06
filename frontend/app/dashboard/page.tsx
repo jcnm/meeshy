@@ -27,6 +27,9 @@ import type { User, Conversation } from '@/types';
 import { useUser } from '@/context/AppContext';
 import { dashboardService, type DashboardData } from '@/services/dashboard.service';
 
+// Désactiver le pré-rendu statique pour cette page client
+export const dynamic = 'force-dynamic';
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useUser();

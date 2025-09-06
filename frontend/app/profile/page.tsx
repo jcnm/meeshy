@@ -24,6 +24,9 @@ import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useUser } from '@/context/AppContext';
 import { getUserInitials } from '@/utils/user';
 
+// Désactiver le pré-rendu statique pour cette page client
+export const dynamic = 'force-dynamic';
+
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthChecking } = useUser();

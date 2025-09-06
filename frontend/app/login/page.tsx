@@ -11,6 +11,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { authService } from '@/services/auth.service';
 import { useTranslations } from '@/hooks/useTranslations';
 
+// Désactiver le pré-rendu statique pour cette page client
+export const dynamic = 'force-dynamic';
+
 function QuickLoginPageContent() {
   const [formData, setFormData] = useState({
     username: '',
