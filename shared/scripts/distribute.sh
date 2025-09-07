@@ -76,6 +76,7 @@ distribute_to_service() {
             mkdir -p "$service_dir/shared/prisma"
             if [ -f "schema.prisma" ]; then
                 cp schema.prisma "$service_dir/shared/prisma/"
+                cp seeds.ts "$service_dir/shared/" >/dev/null 2>&1 || true
                 echo "  ✅ Schema Prisma copié vers $service_name/shared/prisma/"
             fi
 

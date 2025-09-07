@@ -52,8 +52,17 @@ class ApiService {
     // Get token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     
+    // Pour les requêtes DELETE sans body, ne pas inclure Content-Type
+    const shouldExcludeContentType = options.method === 'DELETE' && !options.body;
+    let defaultHeaders = { ...this.config.headers };
+    
+    // Supprimer complètement le Content-Type pour les DELETE sans body
+    if (shouldExcludeContentType) {
+      delete defaultHeaders['Content-Type'];
+    }
+    
     const headers = {
-      ...this.config.headers,
+      ...defaultHeaders,
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     };
@@ -70,11 +79,22 @@ class ApiService {
 
       clearTimeout(timeoutId);
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        // Si la réponse n'est pas du JSON valide, utiliser le texte brut
+        const text = await response.text();
+        throw new ApiServiceError(
+          `Erreur serveur (${response.status}): ${text || 'Réponse invalide'}`,
+          response.status,
+          'PARSE_ERROR'
+        );
+      }
 
       if (!response.ok) {
         throw new ApiServiceError(
-          data.message || 'Une erreur est survenue',
+          data.message || data.error || `Erreur serveur (${response.status})`,
           response.status,
           data.code
         );

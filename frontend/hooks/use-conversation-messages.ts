@@ -58,17 +58,14 @@ export function useConversationMessages({
     
     // Optimisation: éviter les rechargements inutiles
     if (!isNewConversation && conversationId === targetConversationId && messages.length > 0) {
-      console.log('📬 Messages déjà chargés pour cette conversation, pas de rechargement');
       return;
     }
 
     try {
       setIsLoadingMessages(true);
-      console.log(`📬 Chargement des messages pour la conversation: ${targetConversationId} (isNew: ${isNewConversation})`);
 
       // Nettoyer les messages existants si changement de conversation
       if (conversationId !== targetConversationId && messages.length > 0) {
-        console.log('🧹 Nettoyage des messages avant chargement de la nouvelle conversation');
         setMessages([]);
         setTranslatedMessages([]);
       }
@@ -80,13 +77,9 @@ export function useConversationMessages({
         const sessionToken = localStorage.getItem('anonymous_session_token');
         
         if (!sessionToken) {
-          console.log('⚠️ Pas de session anonyme disponible');
           setIsLoadingMessages(false);
           return;
         }
-        
-        // Utiliser le linkId complet (l'endpoint gère maintenant les deux formats)
-        console.log('🔗 Utilisation du linkId complet:', linkId, 'pour l\'URL');
         
         response = await fetch(buildApiUrl(`/links/${linkId}/messages`), {
           headers: {
@@ -99,7 +92,6 @@ export function useConversationMessages({
         const token = localStorage.getItem('auth_token');
         
         if (!token) {
-          console.log('⚠️ Pas de token d\'authentification disponible');
           setIsLoadingMessages(false);
           return;
         }
@@ -114,7 +106,6 @@ export function useConversationMessages({
       
       if (response.ok) {
         const responseData = await response.json();
-        console.log('🔍 Debug: Structure complète de responseData:', responseData);
         
         // Gérer différents formats de réponse
         let existingMessages = [];
@@ -128,23 +119,13 @@ export function useConversationMessages({
           existingMessages = responseData;
         }
         
-        console.log('✅ Messages existants chargés:', existingMessages.length);
-        
-        // Debug: Afficher le contenu des premiers messages
-        if (existingMessages.length > 0) {
-          console.log('🔍 Debug: Premier message reçu:', existingMessages[0]);
-          console.log('🔍 Debug: Traductions du premier message:', existingMessages[0]?.translations);
-        }
-        
         // Vérifier que la conversation sélectionnée n'a pas changé
         if (conversationId !== targetConversationId) {
-          console.log('🚫 Conversation changée pendant le chargement, abandon');
           return;
         }
         
         // Vérifier que existingMessages est bien un tableau
         if (!Array.isArray(existingMessages)) {
-          console.error('❌ existingMessages n\'est pas un tableau:', typeof existingMessages, existingMessages);
           toast.error('Format de données invalide');
           setIsLoadingMessages(false);
           return;
@@ -157,25 +138,10 @@ export function useConversationMessages({
 
         // Mettre à jour les messages APRÈS avoir vérifié la cohérence
         setMessages(sortedMessages);
-        
-        // Debug: Vérifier les messages triés
-        console.log('🔍 Debug: Messages triés avant traitement:', sortedMessages.slice(0, 2).map(m => ({
-          id: m.id,
-          content: m.content,
-          senderId: m.senderId,
-          createdAt: m.createdAt,
-          translations: m.translations?.length || 0
-        })));
 
         // Utiliser le hook pour traiter les messages avec traductions
         const bubbleMessages: BubbleStreamMessage[] = sortedMessages
-          .map((msg: any, index: number) => {
-            const processed = processMessageWithTranslations(msg);
-            if (index < 3) {
-              console.log(`📬 Message ${index + 1} (${processed.id}): ${processed.translations.length} traductions`);
-            }
-            return processed;
-          });
+          .map((msg: any) => processMessageWithTranslations(msg));
 
         // Mettre à jour les messages traduits
         setTranslatedMessages(bubbleMessages);
@@ -183,46 +149,63 @@ export function useConversationMessages({
         // Compter les traductions disponibles et les traductions manquantes
         const totalTranslations = bubbleMessages.reduce((sum, msg) => sum + (msg.translations?.length ?? 0), 0);
         
-        // 🐛 DEBUG: Résumé simple du chargement
-        console.log(`📊 Chargement terminé: ${bubbleMessages.length} messages, ${totalTranslations} traductions au total`);
-        const translatedMessagesCount = bubbleMessages.filter(msg => msg.isTranslated).length;
-        
         // Identifier les messages nécessitant des traductions
         const messagesNeedingTranslation = bubbleMessages.filter(msg => {
           const required = getRequiredTranslations(msg);
           return required.length > 0;
         });
         
-        console.log(`📊 Statistiques traductions détaillées:`, {
-          totalMessages: bubbleMessages.length,
-          totalTranslations,
-          translatedMessages: translatedMessagesCount,
-          messagesNeedingTranslation: messagesNeedingTranslation.length,
-          userPreferredLanguage: resolveUserPreferredLanguage(),
-          userLanguagePreferences: getUserLanguagePreferences()
-        });
-        
         toast.success(`📨 ${existingMessages.length} messages chargés (${totalTranslations} traductions, ${messagesNeedingTranslation.length} nécessitent traduction)`);
         
-        // TODO: Déclencher la traduction automatique des messages manquants si activée
-        if (currentUser.autoTranslateEnabled && messagesNeedingTranslation.length > 0) {
-          console.log(`🔄 ${messagesNeedingTranslation.length} messages à traduire automatiquement`);
-          // Ici on pourrait déclencher les traductions en arrière-plan
+        // Déclencher la traduction automatique des messages manquants si activée OU si c'est le chargement initial
+        // Mais PAS en mode anonyme (permissions limitées)
+        const shouldTriggerTranslations = !isAnonymousMode && (currentUser.autoTranslateEnabled || isNewConversation);
+        
+        if (shouldTriggerTranslations && messagesNeedingTranslation.length > 0) {
+          const triggerReason = currentUser.autoTranslateEnabled ? 'auto-translate activé' : 'chargement initial';
+          console.log(`🔄 Traduction déclenchée (${triggerReason}): ${messagesNeedingTranslation.length} messages nécessitent une traduction`);
+          
+          // Déclencher les traductions en arrière-plan pour les messages manquants
+          const translationPromises = messagesNeedingTranslation.map(async (msg) => {
+            try {
+              const requiredLangs = getRequiredTranslations(msg);
+              if (requiredLangs.length > 0) {
+                console.log(`📝 Demande de traduction pour message ${msg.id} vers:`, requiredLangs);
+                
+                // Utiliser le service de traduction pour chaque langue requise
+                const translationPromises = requiredLangs.map(lang => 
+                  messageTranslationService.requestTranslation({
+                    messageId: msg.id,
+                    targetLanguage: lang,
+                    sourceLanguage: msg.originalLanguage
+                  })
+                );
+                
+                const translations = await Promise.all(translationPromises);
+                
+                // Mettre à jour les traductions du message
+                const validTranslations = translations.filter(t => t?.status === 'completed');
+                if (validTranslations.length > 0) {
+                  console.log(`✅ Traductions reçues pour message ${msg.id}:`, validTranslations.length);
+                  // Note: updateMessageTranslations sera appelé automatiquement via WebSocket
+                }
+              }
+            } catch (error) {
+              console.error(`❌ Erreur traduction message ${msg.id}:`, error);
+            }
+          });
+          
+          // Ne pas attendre les traductions pour ne pas bloquer l'interface
+          Promise.allSettled(translationPromises).then(() => {
+            console.log('🎯 Toutes les demandes de traduction automatique ont été traitées');
+          });
         }
         
       } else {
-        console.log('⚠️ Impossible de charger les messages existants. Status:', response.status);
-        try {
-          const errorData = await response.text();
-          console.log('🔍 Debug: Réponse d\'erreur:', errorData);
-        } catch (e) {
-          console.log('🔍 Debug: Impossible de lire la réponse d\'erreur');
-        }
         toast.error('Erreur lors du chargement des messages');
         
         // Vérifier si cette conversation est toujours celle demandée
         if (conversationId !== targetConversationId) {
-          console.log('🚫 Conversation changée pendant l\'erreur, abandon');
           return;
         }
 
@@ -236,7 +219,6 @@ export function useConversationMessages({
       
       // Vérifier si cette conversation est toujours celle demandée
       if (conversationId !== targetConversationId) {
-        console.log('🚫 Conversation changée pendant l\'erreur, abandon');
         return;
       }
 
@@ -246,7 +228,7 @@ export function useConversationMessages({
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [currentUser?.id, processMessageWithTranslations, getRequiredTranslations, resolveUserPreferredLanguage, getUserLanguagePreferences, conversationId]);
+  }, [currentUser?.id, conversationId, messages.length, getRequiredTranslations, isAnonymousMode]);
 
   // Fonction pour vider les messages
   const clearMessages = useCallback(() => {
@@ -256,11 +238,8 @@ export function useConversationMessages({
 
   // Fonction pour ajouter un nouveau message en temps réel
   const addMessage = useCallback((message: Message) => {
-    console.log('📬 Ajout nouveau message en temps réel:', message.id);
-    
     // Vérifier que le message appartient à la conversation actuelle
     if (conversationId && message.conversationId !== conversationId) {
-      console.log('📬 Message ignoré - appartient à une autre conversation');
       return;
     }
     
@@ -271,7 +250,6 @@ export function useConversationMessages({
     setMessages(prev => {
       // Éviter les doublons
       if (prev.some(m => m.id === message.id)) {
-        console.log('📬 Message déjà présent, pas de doublon');
         return prev;
       }
       // Ajouter le nouveau message à la fin (ordre chronologique)
@@ -281,7 +259,6 @@ export function useConversationMessages({
     setTranslatedMessages(prev => {
       // Éviter les doublons
       if (prev.some(m => m.id === message.id)) {
-        console.log('📬 Message traduit déjà présent, pas de doublon');
         return prev;
       }
       // Ajouter le nouveau message traduit à la fin (ordre chronologique)
@@ -291,7 +268,6 @@ export function useConversationMessages({
 
   // Fonction pour mettre à jour les traductions d'un message existant
   const updateMessageTranslations = useCallback((messageId: string, translations: TranslationData[]) => {
-    console.log('🌐 Mise à jour traductions pour message:', messageId, translations);
     
     // Mettre à jour les messages bruts - FUSION des traductions existantes avec les nouvelles
     setMessages(prev => prev.map(msg => {
@@ -310,26 +286,26 @@ export function useConversationMessages({
           if (existingIndex >= 0) {
             // Remplacer la traduction existante par la nouvelle
             mergedTranslations[existingIndex] = {
+              id: `${messageId}_${newTranslation.targetLanguage}`,
               messageId,
               sourceLanguage: newTranslation.sourceLanguage,
               targetLanguage: newTranslation.targetLanguage,
               translatedContent: newTranslation.translatedContent,
               translationModel: (newTranslation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
               cacheKey: newTranslation.cacheKey,
-              cached: Boolean(newTranslation.cached),
               createdAt: new Date(),
               confidenceScore: newTranslation.confidenceScore,
             };
           } else {
             // Ajouter la nouvelle traduction
             mergedTranslations.push({
+              id: `${messageId}_${newTranslation.targetLanguage}`,
               messageId,
               sourceLanguage: newTranslation.sourceLanguage,
               targetLanguage: newTranslation.targetLanguage,
               translatedContent: newTranslation.translatedContent,
               translationModel: (newTranslation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
               cacheKey: newTranslation.cacheKey,
-              cached: Boolean(newTranslation.cached),
               createdAt: new Date(),
               confidenceScore: newTranslation.confidenceScore,
             });
@@ -352,13 +328,13 @@ export function useConversationMessages({
 
         // Normaliser les traductions existantes (BubbleTranslation -> MessageTranslationCache)
         const normalizedExisting = existingBubbleTranslations.map((t: BubbleTranslation) => ({
+          id: `${messageId}_${t.language}`,
           messageId,
           sourceLanguage: (msg as any).originalLanguage || 'auto',
           targetLanguage: t.language,
           translatedContent: t.content,
           translationModel: 'basic' as 'basic' | 'medium' | 'premium',
           cacheKey: `${messageId}_${t.language}`,
-          cached: true,
           confidenceScore: t.confidence ?? 0.9,
           createdAt: new Date(),
         }));
@@ -371,24 +347,24 @@ export function useConversationMessages({
           if (idx >= 0) {
             mergedTranslations[idx] = {
               ...mergedTranslations[idx],
+              id: `${messageId}_${newTranslation.targetLanguage}`,
               messageId,
               sourceLanguage: newTranslation.sourceLanguage,
               targetLanguage: newTranslation.targetLanguage,
               translatedContent: newTranslation.translatedContent,
               translationModel: (newTranslation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
               cacheKey: newTranslation.cacheKey,
-              cached: Boolean(newTranslation.cached),
               confidenceScore: newTranslation.confidenceScore ?? 0.9,
             };
           } else {
             mergedTranslations.push({
+              id: `${messageId}_${newTranslation.targetLanguage}`,
               messageId,
               sourceLanguage: newTranslation.sourceLanguage,
               targetLanguage: newTranslation.targetLanguage,
               translatedContent: newTranslation.translatedContent,
               translationModel: (newTranslation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
               cacheKey: newTranslation.cacheKey,
-              cached: Boolean(newTranslation.cached),
               createdAt: new Date(),
               confidenceScore: newTranslation.confidenceScore ?? 0.9,
             });
@@ -402,13 +378,6 @@ export function useConversationMessages({
         };
         
         const reprocessedMessage = processMessageWithTranslations(updatedMessage) as BubbleStreamMessage;
-        console.log('🔄 Message retraité avec traductions fusionnées:', {
-          messageId,
-          originalContent: updatedMessage.content,
-          isTranslated: reprocessedMessage.isTranslated,
-          translationsCount: mergedTranslations.length,
-          newTranslationsAdded: translations.length
-        });
         
         return reprocessedMessage;
       }

@@ -10,6 +10,35 @@ export interface AuthState {
 }
 
 /**
+ * Valide le format d'un token JWT
+ */
+export function isValidJWTFormat(token: string): boolean {
+  if (!token || typeof token !== 'string') {
+    return false;
+  }
+  
+  // Un JWT valide doit avoir 3 parties séparées par des points
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    return false;
+  }
+  
+  // Chaque partie doit être une chaîne base64 valide
+  try {
+    parts.forEach(part => {
+      if (!part || part.length === 0) {
+        throw new Error('Empty part');
+      }
+      // Décoder pour vérifier que c'est du base64 valide
+      atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
  * Vérifie si un utilisateur est anonyme
  */
 export function isUserAnonymous(user: User | null): boolean {

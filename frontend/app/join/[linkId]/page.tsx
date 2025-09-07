@@ -30,7 +30,8 @@ import {
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { User } from '@shared/types';
-import { ConversationLink, AuthMode } from '@/types/frontend';
+import { ConversationLink } from '@/types/frontend';
+import { AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -162,6 +163,18 @@ export default function JoinConversationPage() {
       return;
     }
 
+    // Vérifier si l'username est requis
+    if (conversationLink?.requireNickname && !anonymousForm.username.trim()) {
+      toast.error('Le nom d\'utilisateur est obligatoire pour rejoindre cette conversation');
+      return;
+    }
+
+    // Vérifier si l'email est requis
+    if (conversationLink?.requireEmail && !anonymousForm.email.trim()) {
+      toast.error('L\'email est obligatoire pour rejoindre cette conversation');
+      return;
+    }
+
     setIsJoining(true);
     try {
       const response = await fetch(`${buildApiUrl('/anonymous/join')}/${linkId}`, {
@@ -214,14 +227,14 @@ export default function JoinConversationPage() {
     setIsJoining(true);
     
     try {
-      const conversationShareLinkId = params.linkId as string;
+      const linkId = params.linkId as string; // C'est le linkId (token d'invitation)
       
       // Déterminer le type d'authentification
       const authToken = localStorage.getItem('auth_token');
       const sessionToken = localStorage.getItem('anonymous_session_token');
       
       console.log('[JOIN_CONVERSATION] Debug auth:', {
-        conversationShareLinkId,
+        linkId,
         hasAuthToken: !!authToken,
         hasSessionToken: !!sessionToken,
         isAnonymous
@@ -239,13 +252,45 @@ export default function JoinConversationPage() {
       // Si l'utilisateur a un session token (participant anonyme), rediriger directement
       if (isAnonymous && sessionToken) {
         console.log('[JOIN_CONVERSATION] Utilisateur anonyme avec session token, redirection directe');
-        router.push(`/chat/${conversationShareLinkId}`);
+        // Pour les utilisateurs anonymes, utiliser le conversationShareLinkId stocké
+        const storedShareLinkId = localStorage.getItem('anonymous_current_share_link');
+        if (storedShareLinkId) {
+          router.push(`/chat/${storedShareLinkId}`);
+        } else {
+          // Fallback: essayer de récupérer le conversationShareLinkId via l'API
+          try {
+            const linkInfo = await LinkConversationService.getLinkInfo(linkId);
+            if (linkInfo.success) {
+              router.push(`/chat/${linkInfo.data.id}`);
+            } else {
+              toast.error('Impossible de rediriger vers la conversation');
+            }
+          } catch (error) {
+            console.error('[JOIN_CONVERSATION] Erreur récupération linkInfo:', error);
+            toast.error('Erreur lors de la redirection');
+          }
+        }
         return;
       }
 
       // Si l'utilisateur a un access token, vérifier s'il est déjà membre
       if (authToken) {
         console.log('[JOIN_CONVERSATION] Utilisateur avec access token, vérification membre');
+        
+        // D'abord, récupérer les informations du lien pour obtenir le conversationShareLinkId
+        let conversationShareLinkId: string;
+        try {
+          const linkInfo = await LinkConversationService.getLinkInfo(linkId);
+          if (!linkInfo.success) {
+            throw new Error('Impossible de récupérer les informations du lien');
+          }
+          conversationShareLinkId = linkInfo.data.id; // C'est le conversationShareLinkId
+          console.log('[JOIN_CONVERSATION] conversationShareLinkId récupéré:', conversationShareLinkId);
+        } catch (error) {
+          console.error('[JOIN_CONVERSATION] Erreur récupération linkInfo:', error);
+          toast.error('Impossible de récupérer les informations du lien');
+          return;
+        }
         
         // Vérifier le type d'utilisateur avec l'endpoint /links/:conversationShareLinkId
         const chatResponse = await fetch(`${buildApiUrl('/links')}/${conversationShareLinkId}`, {
@@ -260,7 +305,9 @@ export default function JoinConversationPage() {
             // Utilisateur membre authentifié - rediriger directement vers la conversation
             console.log('[JOIN_CONVERSATION] Utilisateur membre, redirection vers conversation');
             toast.success('Redirection vers votre conversation');
-            router.push(chatResult.data.redirectTo);
+            // Pour les utilisateurs authentifiés, rediriger vers la page de conversation normale
+            // Utiliser l'ID de la conversation depuis les données reçues
+            router.push(`/conversations/${chatResult.data.conversation.id}`);
             return;
           } else if (chatResult.success && chatResult.data.userType === 'authenticated_non_member') {
             // Utilisateur authentifié mais pas membre - continuer vers l'endpoint de jointure
@@ -274,7 +321,7 @@ export default function JoinConversationPage() {
 
         // Si ce n'est pas un membre, essayer de joindre via l'endpoint de jointure
         console.log('[JOIN_CONVERSATION] Tentative de jointure via POST /conversations/join');
-        const response = await fetch(`${buildApiUrl('/conversations/join')}/${conversationShareLinkId}`, {
+        const response = await fetch(`${buildApiUrl('/conversations/join')}/${linkId}`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${authToken}`
@@ -285,7 +332,8 @@ export default function JoinConversationPage() {
           const result = await response.json();
           console.log('[JOIN_CONVERSATION] Jointure réussie:', result);
           toast.success('Vous avez rejoint la conversation !');
-          // Rediriger vers la page de conversation
+          // Pour les utilisateurs authentifiés, rediriger vers la page de conversation normale
+          // Utiliser l'ID de la conversation retourné par l'API
           router.push(`/conversations/${result.data.conversationId}`);
         } else {
           const error = await response.json();
@@ -612,38 +660,63 @@ export default function JoinConversationPage() {
                         </div>
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="username">Nom d&apos;utilisateur</Label>
-                        <Input
-                          id="username"
-                          value={anonymousForm.username}
-                          onChange={(e) => updateAnonymousForm('username', e.target.value)}
-                          placeholder="Généré automatiquement"
-                        />
-                        <p className="text-xs text-gray-500">
-                          Laissez vide pour génération automatique : prénom_initiales
-                        </p>
-                      </div>
+                      {conversationLink.requireNickname && (
+                        <div className="space-y-2">
+                          <Label htmlFor="username">
+                            Nom d&apos;utilisateur <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="username"
+                            value={anonymousForm.username}
+                            onChange={(e) => updateAnonymousForm('username', e.target.value)}
+                            placeholder="Choisissez votre nom d'utilisateur"
+                            required={conversationLink.requireNickname}
+                          />
+                          <p className="text-xs text-red-500">
+                            Le nom d'utilisateur est obligatoire pour rejoindre cette conversation
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ⚠️ Ce nom ne peut pas être utilisé s'il existe déjà dans cette conversation ou par un membre de la plateforme
+                          </p>
+                        </div>
+                      )}
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="email">
-                          Email {conversationLink.requireEmail && <span className="text-red-500">*</span>}
-                          {!conversationLink.requireEmail && <span className="text-gray-500">(optionnel)</span>}
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={anonymousForm.email}
-                          onChange={(e) => updateAnonymousForm('email', e.target.value)}
-                          placeholder="john.doe@example.com"
-                          required={conversationLink.requireEmail}
-                        />
-                        {conversationLink.requireEmail && (
+                      {!conversationLink.requireNickname && (
+                        <div className="space-y-2">
+                          <Label htmlFor="username">Nom d&apos;utilisateur (optionnel)</Label>
+                          <Input
+                            id="username"
+                            value={anonymousForm.username}
+                            onChange={(e) => updateAnonymousForm('username', e.target.value)}
+                            placeholder="Généré automatiquement"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Laissez vide pour génération automatique : prénom_initiales
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ⚠️ Si vous choisissez un nom personnalisé, il ne peut pas être utilisé s'il existe déjà dans cette conversation ou par un membre de la plateforme
+                          </p>
+                        </div>
+                      )}
+                      
+                      {conversationLink.requireEmail && (
+                        <div className="space-y-2">
+                          <Label htmlFor="email">
+                            Email <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={anonymousForm.email}
+                            onChange={(e) => updateAnonymousForm('email', e.target.value)}
+                            placeholder="john.doe@example.com"
+                            required={conversationLink.requireEmail}
+                          />
                           <p className="text-xs text-red-500">
                             L'email est obligatoire pour rejoindre cette conversation
                           </p>
-                        )}
-                      </div>
+                        </div>
+                      )}
                       
                       <div className="space-y-2">
                         <Label htmlFor="language">Langue parlée</Label>
@@ -674,6 +747,7 @@ export default function JoinConversationPage() {
                             isJoining || 
                             !anonymousForm.firstName.trim() || 
                             !anonymousForm.lastName.trim() ||
+                            (conversationLink.requireNickname && !anonymousForm.username.trim()) ||
                             (conversationLink.requireEmail && !anonymousForm.email.trim())
                           }
                           size="lg"

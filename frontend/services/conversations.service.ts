@@ -368,29 +368,41 @@ export class ConversationsService {
    * Obtenir les participants d'une conversation
    */
   async getParticipants(conversationId: string, filters?: ParticipantsFilters): Promise<User[]> {
-    const params: Record<string, string> = {};
-    
-    if (filters?.onlineOnly) {
-      params.onlineOnly = 'true';
-    }
-    
-    if (filters?.role) {
-      params.role = filters.role;
-    }
-    
-    if (filters?.search) {
-      params.search = filters.search;
-    }
-    
-    if (filters?.limit) {
-      params.limit = filters.limit.toString();
-    }
+    try {
+      const params: Record<string, string> = {};
+      
+      if (filters?.onlineOnly) {
+        params.onlineOnly = 'true';
+      }
+      
+      if (filters?.role) {
+        params.role = filters.role;
+      }
+      
+      if (filters?.search) {
+        params.search = filters.search;
+      }
+      
+      if (filters?.limit) {
+        params.limit = filters.limit.toString();
+      }
 
-    const response = await apiService.get<{ success: boolean; data: User[] }>(
-      `/conversations/${conversationId}/participants`,
-      params
-    );
-    return response.data.data || [];
+      console.log('[ConversationsService] Récupération des participants pour conversation:', conversationId, 'avec filtres:', filters);
+      
+      const response = await apiService.get<{ success: boolean; data: User[] }>(
+        `/conversations/${conversationId}/participants`,
+        params
+      );
+      
+      console.log('[ConversationsService] Réponse reçue:', response);
+      return response.data.data || [];
+    } catch (error) {
+      console.error('[ConversationsService] Erreur lors de la récupération des participants:', error);
+      console.error('[ConversationsService] Conversation ID:', conversationId);
+      console.error('[ConversationsService] Filtres:', filters);
+      // Retourner un tableau vide en cas d'erreur pour éviter de casser l'interface
+      return [];
+    }
   }
 
   /**

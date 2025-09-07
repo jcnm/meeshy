@@ -12,8 +12,7 @@
   "scripts": {
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
-    "studio": "prisma studio",
-    "seed": "tsx prisma/seed.ts",
+    "studio": "prisma studio", 
     "build:types": "tsc --build",
     "build": "pnpm run generate && pnpm run build:types && pnpm run distribute",
     "distribute": "chmod +x scripts/distribute.sh && ./scripts/distribute.sh",

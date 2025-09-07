@@ -108,6 +108,31 @@ export const usersService = {
   },
 
   /**
+   * Récupère les statistiques du dashboard
+   */
+  async getDashboardStats(): Promise<ApiResponse<{
+    stats: {
+      totalConversations: number;
+      totalCommunities: number;
+      totalMessages: number;
+      activeConversations: number;
+      translationsToday: number;
+      totalLinks: number;
+      lastUpdated: Date;
+    };
+    recentConversations: any[];
+    recentCommunities: any[];
+  }>> {
+    try {
+      const response = await apiService.get('/users/me/dashboard-stats');
+      return response;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des statistiques du dashboard:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Récupère le profil d'un utilisateur
    */
   async getUserProfile(userId: string): Promise<ApiResponse<User>> {

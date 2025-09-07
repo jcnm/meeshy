@@ -16,6 +16,7 @@ import { z } from 'zod';
 // Schémas de validation
 const CreateCommunitySchema = z.object({
   name: z.string().min(1).max(100),
+  identifier: z.string().regex(/^[a-zA-Z0-9\-_@]*$/, 'Identifier can only contain letters, numbers, hyphens, underscores, and @').optional(),
   description: z.string().optional(),
   avatar: z.string().optional(),
   isPrivate: z.boolean().default(true)
@@ -23,10 +24,27 @@ const CreateCommunitySchema = z.object({
 
 const UpdateCommunitySchema = z.object({
   name: z.string().min(1).max(100).optional(),
+  identifier: z.string().regex(/^[a-zA-Z0-9\-_@]*$/, 'Identifier can only contain letters, numbers, hyphens, underscores, and @').optional(),
   description: z.string().optional(),
   avatar: z.string().optional(),
   isPrivate: z.boolean().optional()
 });
+
+// Fonction pour générer un identifier à partir du nom
+function generateIdentifier(name: string, customIdentifier?: string): string {
+  if (customIdentifier) {
+    return `mshy_${customIdentifier}`;
+  }
+  
+  // Convertir le nom en identifier valide
+  const baseIdentifier = name
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9\-_@]/g, '-') // Remplacer les caractères invalides par des tirets
+    .replace(/--+/g, '-') // Remplacer les tirets multiples par un seul
+    .replace(/^-|-$/g, ''); // Supprimer les tirets en début et fin
+  
+  return `mshy_${baseIdentifier}`;
+}
 
 const AddMemberSchema = z.object({
   userId: z.string()
@@ -41,15 +59,41 @@ export async function communityRoutes(fastify: FastifyInstance) {
   // Route pour obtenir toutes les communautés de l'utilisateur connecté
   fastify.get('/communities', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
-      const userId = (request as any).user.id;
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
+      const { search } = request.query as { search?: string };
+      
+      // Build where clause with optional search
+      const whereClause: any = {
+        OR: [
+          { createdBy: userId },
+          { members: { some: { userId: userId } } }
+        ]
+      };
+
+      // Add search filter if provided (search by name or identifier)
+      if (search && search.length >= 2) {
+        whereClause.AND = [
+          {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { identifier: { contains: search, mode: 'insensitive' } }
+            ]
+          }
+        ];
+      }
       
       const communities = await fastify.prisma.community.findMany({
-        where: {
-          OR: [
-            { createdBy: userId },
-            { members: { some: { userId: userId } } }
-          ]
-        },
+        where: whereClause,
         include: {
           creator: {
             select: {
@@ -97,13 +141,25 @@ export async function communityRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Route pour obtenir une communauté par ID
+  // Route pour obtenir une communauté par ID ou identifier
   fastify.get('/communities/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const userId = (request as any).user.id;
       
-      const community = await fastify.prisma.community.findFirst({
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
+      
+      // Chercher d'abord par ID, puis par identifier si pas trouvé
+      let community = await fastify.prisma.community.findFirst({
         where: { id },
         include: {
           creator: {
@@ -135,6 +191,42 @@ export async function communityRoutes(fastify: FastifyInstance) {
           }
         }
       });
+      
+      // Si pas trouvé par ID, essayer par identifier
+      if (!community) {
+        community = await fastify.prisma.community.findFirst({
+          where: { identifier: id },
+          include: {
+            creator: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true
+              }
+            },
+            members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                    isOnline: true
+                  }
+                }
+              }
+            },
+            _count: {
+              select: {
+                members: true,
+                Conversation: true
+              }
+            }
+          }
+        });
+      }
 
       if (!community) {
         return reply.status(404).send({
@@ -171,15 +263,50 @@ export async function communityRoutes(fastify: FastifyInstance) {
   fastify.post('/communities', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
       const validatedData = CreateCommunitySchema.parse(request.body);
-      const userId = (request as any).user.id;
       
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
+      
+      // Générer l'identifier
+      const identifier = generateIdentifier(validatedData.name, validatedData.identifier);
+      
+      // Vérifier que l'identifier est unique
+      const existingCommunity = await fastify.prisma.community.findUnique({
+        where: { identifier }
+      });
+      
+      if (existingCommunity) {
+        return reply.status(409).send({
+          success: false,
+          error: 'Community identifier already exists',
+          message: `A community with identifier "${identifier}" already exists`
+        });
+      }
+      
+      // Créer la communauté ET automatiquement ajouter le créateur comme membre
       const community = await fastify.prisma.community.create({
         data: {
           name: validatedData.name,
+          identifier: identifier,
           description: validatedData.description,
           avatar: validatedData.avatar,
           isPrivate: validatedData.isPrivate ?? true,
-          createdBy: userId
+          createdBy: userId,
+          // Automatiquement ajouter le créateur comme membre
+          members: {
+            create: {
+              userId: userId
+            }
+          }
         },
         include: {
           creator: {
@@ -188,6 +315,18 @@ export async function communityRoutes(fastify: FastifyInstance) {
               username: true,
               displayName: true,
               avatar: true
+            }
+          },
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  displayName: true,
+                  avatar: true
+                }
+              }
             }
           },
           _count: {
@@ -216,7 +355,18 @@ export async function communityRoutes(fastify: FastifyInstance) {
   fastify.get('/communities/:id/members', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const userId = (request as any).user.id;
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
       
       // Vérifier l'accès à la communauté
       const community = await fastify.prisma.community.findFirst({
@@ -282,7 +432,18 @@ export async function communityRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as { id: string };
       const validatedData = AddMemberSchema.parse(request.body);
-      const userId = (request as any).user.id;
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
       const community = await fastify.prisma.community.findFirst({
@@ -366,7 +527,18 @@ export async function communityRoutes(fastify: FastifyInstance) {
   fastify.delete('/communities/:id/members/:memberId', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { id, memberId } = request.params as { id: string; memberId: string };
-      const userId = (request as any).user.id;
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
       const community = await fastify.prisma.community.findFirst({
@@ -414,12 +586,23 @@ export async function communityRoutes(fastify: FastifyInstance) {
     try {
       const { id } = request.params as { id: string };
       const validatedData = UpdateCommunitySchema.parse(request.body);
-      const userId = (request as any).user.id;
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
       const community = await fastify.prisma.community.findFirst({
         where: { id },
-        select: { createdBy: true }
+        select: { createdBy: true, identifier: true }
       });
 
       if (!community) {
@@ -436,9 +619,39 @@ export async function communityRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Préparer les données de mise à jour
+      const updateData: any = {
+        name: validatedData.name,
+        description: validatedData.description,
+        avatar: validatedData.avatar,
+        isPrivate: validatedData.isPrivate
+      };
+
+      // Gérer l'identifier si fourni
+      if (validatedData.identifier !== undefined) {
+        const newIdentifier = generateIdentifier(validatedData.name || '', validatedData.identifier);
+        
+        // Vérifier que le nouvel identifier est unique (sauf si c'est le même)
+        if (newIdentifier !== community.identifier) {
+          const existingCommunity = await fastify.prisma.community.findUnique({
+            where: { identifier: newIdentifier }
+          });
+          
+          if (existingCommunity) {
+            return reply.status(409).send({
+              success: false,
+              error: 'Community identifier already exists',
+              message: `A community with identifier "${newIdentifier}" already exists`
+            });
+          }
+        }
+        
+        updateData.identifier = newIdentifier;
+      }
+
       const updatedCommunity = await fastify.prisma.community.update({
         where: { id },
-        data: validatedData,
+        data: updateData,
         include: {
           creator: {
             select: {
@@ -474,7 +687,18 @@ export async function communityRoutes(fastify: FastifyInstance) {
   fastify.delete('/communities/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const userId = (request as any).user.id;
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
       
       // Vérifier que l'utilisateur est le créateur de la communauté
       const community = await fastify.prisma.community.findFirst({
@@ -517,7 +741,18 @@ export async function communityRoutes(fastify: FastifyInstance) {
   fastify.get('/communities/:id/conversations', { onRequest: [fastify.authenticate] }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string };
-      const userId = (request as any).user.id;
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
       
       // Vérifier l'accès à la communauté
       const community = await fastify.prisma.community.findFirst({

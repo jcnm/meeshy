@@ -19,6 +19,12 @@ interface MessagesDisplayProps {
   emptyStateDescription?: string;
   reverseOrder?: boolean; // Pour stream mode (nouveaux messages en haut)
   className?: string;
+  onTranslation?: (messageId: string, translations: any[]) => void;
+  onEditMessage?: (messageId: string, newContent: string) => Promise<void>;
+  onDeleteMessage?: (messageId: string) => Promise<void>;
+  conversationType?: 'direct' | 'group' | 'public' | 'global';
+  userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
+  conversationId?: string;
 }
 
 /**
@@ -35,7 +41,13 @@ export function MessagesDisplay({
   emptyStateMessage = "Aucun message pour le moment",
   emptyStateDescription = "Soyez le premier à publier !",
   reverseOrder = false,
-  className = "space-y-4"
+  className = "space-y-4",
+  onTranslation,
+  onEditMessage,
+  onDeleteMessage,
+  conversationType = 'direct',
+  userRole = 'USER',
+  conversationId
 }: MessagesDisplayProps) {
 
   // Fonction pour forcer la traduction d'un message
@@ -64,11 +76,32 @@ export function MessagesDisplay({
       
       console.log('✅ Traduction forcée demandée:', result);
       toast.success(`Traduction en cours...`);
+      
+      // Simuler la réception d'une traduction pour déclencher l'indicateur
+      // Attendre un délai pour simuler le temps de traduction
+      setTimeout(() => {
+        if (onTranslation) {
+          const mockTranslation = {
+            id: `${messageId}_${targetLanguage}`,
+            messageId,
+            sourceLanguage,
+            targetLanguage,
+            translatedContent: `[Traduction en cours...]`, // Contenu temporaire
+            translationModel: 'basic',
+            cacheKey: `${messageId}_${targetLanguage}`,
+            confidenceScore: 0.9,
+            createdAt: new Date(),
+          };
+          
+          console.log('🔄 Simulation de réception de traduction:', mockTranslation);
+          onTranslation(messageId, [mockTranslation]);
+        }
+      }, 2000); // Délai de 2 secondes pour simuler la traduction
     } catch (error) {
       console.error('❌ Erreur traduction forcée:', error);
       toast.error('Erreur lors de la demande de traduction');
     }
-  }, [messages]);
+  }, [messages, onTranslation]);
 
   // État de chargement
   if (isLoadingMessages) {
@@ -113,6 +146,10 @@ export function MessagesDisplay({
             userLanguage={userLanguage}
             usedLanguages={usedLanguages}
             onForceTranslation={handleForceTranslation}
+            onEditMessage={onEditMessage}
+            onDeleteMessage={onDeleteMessage}
+            conversationType={conversationType}
+            userRole={userRole}
           />
         ))}
     </div>

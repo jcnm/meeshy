@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { UserLanguageConfig } from '@shared/types';
 import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
@@ -77,15 +77,15 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     }));
   }, []);
 
-  // Valeur statique du contexte - VERSION STABLE
-  const contextValue: LanguageContextType = {
+  // Valeur mémorisée du contexte pour éviter les re-rendus inutiles
+  const contextValue: LanguageContextType = useMemo(() => ({
     userLanguageConfig,
     currentInterfaceLanguage,
     setCustomDestinationLanguage,
     setInterfaceLanguage,
     isLanguageSupported,
     getSupportedLanguages,
-  };
+  }), [userLanguageConfig, currentInterfaceLanguage, setCustomDestinationLanguage, setInterfaceLanguage, isLanguageSupported, getSupportedLanguages]);
 
   return (
     <LanguageContext.Provider value={contextValue}>

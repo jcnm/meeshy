@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { LinkConversationService } from '@/services/link-conversation.service';
 import { BubbleStreamPage } from '@/components/common/bubble-stream-page';
 import { useAuth } from '@/hooks/use-auth';
@@ -64,12 +64,14 @@ interface ConversationData {
 export default function ChatPage() {
   const params = useParams();
   const router = useRouter();
-  const { user, isAnonymous, token } = useAuth();
+  const { user, isAnonymous, token, isChecking } = useAuth();
   const [conversationData, setConversationData] = useState<ConversationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<'welcome' | 'login' | 'register' | 'join'>('welcome');
-  const { t } = useTranslations('anonymousChat');
+  const [shouldRedirect, setShouldRedirect] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
+  const { t } = useTranslations('chatPage');
 
   const conversationShareLinkId = params.conversationShareLinkId as string;
 
@@ -86,190 +88,230 @@ export default function ChatPage() {
     }
   };
 
-  useEffect(() => {
-    async function loadConversationData() {
-      if (!conversationShareLinkId) {
-        setError(t('missingLinkId'));
-        setLoading(false);
-        return;
-      }
-
-      console.log('[CHAT_PAGE] Tentative de chargement avec identifiant:', conversationShareLinkId);
-      console.log('[CHAT_PAGE] Type d\'identifiant:', conversationShareLinkId.startsWith('mshy_') ? 'linkId' : 'conversationShareLinkId');
-      console.log('[CHAT_PAGE] Longueur de l\'identifiant:', conversationShareLinkId.length);
-      console.log('[CHAT_PAGE] Format de l\'identifiant:', {
-        startsWithMshy: conversationShareLinkId.startsWith('mshy_'),
-        containsHyphens: conversationShareLinkId.includes('-'),
-        isAlphanumeric: /^[a-zA-Z0-9_-]+$/.test(conversationShareLinkId)
-      });
-
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Debug: Afficher les informations d'authentification
-        console.log('[CHAT_PAGE] Debug auth:', {
-          user,
-          isAnonymous,
-          localStorage: {
-            auth_token: localStorage.getItem('auth_token'),
-            anonymous_session_token: localStorage.getItem('anonymous_session_token'),
-            anonymous_participant: localStorage.getItem('anonymous_participant')
-          }
-        });
-        
-        // Validation améliorée de l'authentification
-        const options: any = {};
-        let hasValidAuth = false;
-        
-        console.log('[CHAT_PAGE] User object:', user);
-        console.log('[CHAT_PAGE] Token from authState:', token);
-        console.log('[CHAT_PAGE] Is anonymous:', isAnonymous);
-        
-        if (isAnonymous && token) {
-          // Session anonyme - vérifier que le token est valide
-          const sessionToken = localStorage.getItem('anonymous_session_token');
-          const participant = localStorage.getItem('anonymous_participant');
-          
-          if (sessionToken && participant) {
-            try {
-              const participantData = JSON.parse(participant);
-              if (participantData.id && participantData.username) {
-                options.sessionToken = sessionToken;
-                hasValidAuth = true;
-                console.log('[CHAT_PAGE] Session anonyme valide détectée');
-              }
-            } catch (e) {
-              console.error('[CHAT_PAGE] Erreur parsing participant:', e);
-            }
-          }
-        } else if (user && typeof user === 'object' && user.id) {
-          // Utilisateur authentifié
-          const authToken = localStorage.getItem('auth_token');
-          if (authToken) {
-            options.authToken = authToken;
-            hasValidAuth = true;
-            console.log('[CHAT_PAGE] Utilisateur authentifié valide détecté');
-          }
-        }
-        
-        if (!hasValidAuth) {
-          console.log('[CHAT_PAGE] Aucune authentification valide détectée');
-          // Pour les utilisateurs anonymes, rediriger vers la page de jointure
-          if (conversationShareLinkId.startsWith('mshy_')) {
-            // C'est un linkId, rediriger vers /join
-            router.push(`/join/${conversationShareLinkId}`);
-            return;
-          } else {
-            // C'est un conversationShareLinkId, essayer de récupérer le linkId
-            const storedLinkId = localStorage.getItem('anonymous_current_link_id');
-            if (storedLinkId) {
-              router.push(`/join/${storedLinkId}`);
-              return;
-            } else {
-              setError('Session expirée. Veuillez rejoindre la conversation à nouveau.');
-              setLoading(false);
-              return;
-            }
-          }
-        }
-        
-        const data = await LinkConversationService.getConversationData(conversationShareLinkId, options);
-        console.log('[CHAT_PAGE] Données reçues:', {
-          hasData: !!data,
-          hasCurrentUser: !!data?.currentUser,
-          currentUser: data?.currentUser,
-          userType: data?.userType,
-          conversationId: data?.conversation?.id,
-          fullData: data // Log complet pour debug
-        });
-        setConversationData(data);
-      } catch (err) {
-        console.error('[CHAT_PAGE] Erreur chargement conversation:', err);
-        
-        // Gestion d'erreur améliorée
-        let errorMessage = 'Erreur lors du chargement de la conversation';
-        let shouldRedirect = false;
-        let redirectPath = '';
-        
-        if (err instanceof Error) {
-          if (err.message.includes('403') || err.message.includes('Forbidden')) {
-            errorMessage = 'Accès non autorisé à cette conversation';
-          } else if (err.message.includes('404') || err.message.includes('Not Found') || err.message.includes('Lien de partage non trouvé')) {
-            errorMessage = 'Conversation introuvable';
-            // Essayer avec un format différent
-            console.log('[CHAT_PAGE] Tentative de fallback avec format différent...');
-            
-            try {
-              // Préparer les options d'authentification pour le fallback
-              const fallbackOptions: any = {};
-              
-              if (isAnonymous && token) {
-                fallbackOptions.sessionToken = token;
-              } else if (user && typeof user === 'object' && user.id) {
-                const authToken = localStorage.getItem('auth_token');
-                if (authToken) {
-                  fallbackOptions.authToken = authToken;
-                }
-              }
-              
-              // Si l'identifiant ne commence pas par 'mshy_', essayer d'ajouter le préfixe
-              let fallbackIdentifier = conversationShareLinkId;
-              if (!conversationShareLinkId.startsWith('mshy_')) {
-                fallbackIdentifier = `mshy_${conversationShareLinkId}`;
-                console.log('[CHAT_PAGE] Essai avec préfixe mshy_:', fallbackIdentifier);
-              } else {
-                // Si l'identifiant commence par 'mshy_', essayer sans le préfixe
-                fallbackIdentifier = conversationShareLinkId.replace('mshy_', '');
-                console.log('[CHAT_PAGE] Essai sans préfixe mshy_:', fallbackIdentifier);
-              }
-              
-              const fallbackData = await LinkConversationService.getConversationData(fallbackIdentifier, fallbackOptions);
-              console.log('[CHAT_PAGE] Données reçues avec fallback:', {
-                hasData: !!fallbackData,
-                hasCurrentUser: !!fallbackData?.currentUser,
-                userType: fallbackData?.userType,
-                conversationId: fallbackData?.conversation?.id
-              });
-              setConversationData(fallbackData);
-              return; // Succès avec fallback
-            } catch (fallbackErr) {
-              console.error('Erreur lors du fallback:', fallbackErr);
-            }
-          } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-            errorMessage = 'Session expirée. Veuillez vous reconnecter.';
-            shouldRedirect = true;
-            // Rediriger vers la page de jointure pour les sessions anonymes
-            if (isAnonymous) {
-              const storedLinkId = localStorage.getItem('anonymous_current_link_id');
-              if (storedLinkId) {
-                redirectPath = `/join/${storedLinkId}`;
-              } else {
-                redirectPath = '/';
-              }
-            } else {
-              redirectPath = '/login';
-            }
-          } else {
-            errorMessage = err.message;
-          }
-        }
-        
-        setError(errorMessage);
-        
-        // Redirection si nécessaire
-        if (shouldRedirect && redirectPath) {
-          setTimeout(() => {
-            router.push(redirectPath);
-          }, 2000); // Attendre 2 secondes pour que l'utilisateur voie le message d'erreur
-        }
-      } finally {
-        setLoading(false);
-      }
+  // Fonction pour charger les données de conversation
+  const loadConversationData = useCallback(async () => {
+    if (!conversationShareLinkId) {
+      setError(t('missingLinkId'));
+      setLoading(false);
+      return;
     }
 
-    loadConversationData();
-  }, [conversationShareLinkId, user]);
+    console.log('[CHAT_PAGE] Tentative de chargement avec identifiant:', conversationShareLinkId);
+    console.log('[CHAT_PAGE] Type d\'identifiant:', conversationShareLinkId.startsWith('mshy_') ? 'linkId' : 'conversationShareLinkId');
+    console.log('[CHAT_PAGE] Longueur de l\'identifiant:', conversationShareLinkId.length);
+    console.log('[CHAT_PAGE] Format de l\'identifiant:', {
+      startsWithMshy: conversationShareLinkId.startsWith('mshy_'),
+      containsHyphens: conversationShareLinkId.includes('-'),
+      isAlphanumeric: /^[a-zA-Z0-9_-]+$/.test(conversationShareLinkId)
+    });
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Debug: Afficher les informations d'authentification
+      console.log('[CHAT_PAGE] Debug auth:', {
+        user,
+        isAnonymous,
+        token,
+        isChecking,
+        localStorage: {
+          auth_token: localStorage.getItem('auth_token'),
+          anonymous_session_token: localStorage.getItem('anonymous_session_token'),
+          anonymous_participant: localStorage.getItem('anonymous_participant')
+        }
+      });
+      
+      // Préparer les options d'authentification pour l'API
+      const options: any = {};
+      
+      console.log('[CHAT_PAGE] User object:', user);
+      console.log('[CHAT_PAGE] Token from authState:', token);
+      console.log('[CHAT_PAGE] Is anonymous:', isAnonymous);
+      
+      // Utiliser les données d'authentification du hook useAuth
+      console.log('[CHAT_PAGE] Évaluation des conditions d\'authentification:');
+      console.log('[CHAT_PAGE] - isAnonymous:', isAnonymous, 'token:', !!token, 'user:', !!user);
+      console.log('[CHAT_PAGE] - Condition 1 (isAnonymous && token):', isAnonymous && token);
+      console.log('[CHAT_PAGE] - Condition 2 (user && token && !isAnonymous):', user && token && !isAnonymous);
+      
+      if (isAnonymous && token) {
+        // Session anonyme - utiliser le token de la session
+        options.sessionToken = token;
+        console.log('[CHAT_PAGE] ✅ Utilisation du sessionToken pour l\'API');
+      } else if (user && token && !isAnonymous) {
+        // Utilisateur authentifié - utiliser le token JWT
+        options.authToken = token;
+        console.log('[CHAT_PAGE] ✅ Utilisation du authToken pour l\'API');
+      } else {
+        console.log('[CHAT_PAGE] ❌ Aucune authentification détectée - Conditions non remplies');
+        
+        // Vérifier si l'utilisateur vient de rejoindre (flag temporaire)
+        const justJoined = localStorage.getItem('anonymous_just_joined');
+        if (justJoined === 'true') {
+          console.log('[CHAT_PAGE] Utilisateur vient de rejoindre, nettoyer le flag et continuer');
+          // Nettoyer le flag pour éviter les boucles
+          localStorage.removeItem('anonymous_just_joined');
+          // Continuer le chargement normalement
+        }
+        
+        // Pour les utilisateurs anonymes, rediriger vers la page de jointure
+        if (conversationShareLinkId.startsWith('mshy_')) {
+          // C'est un linkId, rediriger vers /join
+          setShouldRedirect(`/join/${conversationShareLinkId}`);
+          return;
+        } else {
+          // C'est un conversationShareLinkId, essayer de récupérer le linkId
+          const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+          if (storedLinkId) {
+            setShouldRedirect(`/join/${storedLinkId}`);
+            return;
+          } else {
+            setError(t('sessionExpired'));
+            setLoading(false);
+            return;
+          }
+        }
+      }
+      
+      const data = await LinkConversationService.getConversationData(conversationShareLinkId, options);
+      console.log('[CHAT_PAGE] Données reçues:', {
+        hasData: !!data,
+        hasCurrentUser: !!data?.currentUser,
+        currentUser: data?.currentUser,
+        userType: data?.userType,
+        conversationId: data?.conversation?.id,
+        fullData: data // Log complet pour debug
+      });
+      setConversationData(data);
+    } catch (err) {
+      console.error('[CHAT_PAGE] Erreur chargement conversation:', err);
+      
+      // Gestion d'erreur améliorée
+      let errorMessage = t('errorLoading');
+      let shouldRedirect = false;
+      let redirectPath = '';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('403') || err.message.includes('Forbidden')) {
+          errorMessage = t('accessDenied');
+        } else if (err.message.includes('404') || err.message.includes('Not Found') || err.message.includes('Lien de partage non trouvé')) {
+          errorMessage = t('conversationNotFound');
+          // Essayer avec un format différent
+          console.log('[CHAT_PAGE] Tentative de fallback avec format différent...');
+          
+          try {
+            // Préparer les options d'authentification pour le fallback
+            const fallbackOptions: any = {};
+            
+            if (isAnonymous && token) {
+              fallbackOptions.sessionToken = token;
+            } else if (user && typeof user === 'object' && user.id) {
+              const authToken = localStorage.getItem('auth_token');
+              if (authToken) {
+                fallbackOptions.authToken = authToken;
+              }
+            }
+            
+            // Si l'identifiant ne commence pas par 'mshy_', essayer d'ajouter le préfixe
+            let fallbackIdentifier = conversationShareLinkId;
+            if (!conversationShareLinkId.startsWith('mshy_')) {
+              fallbackIdentifier = `mshy_${conversationShareLinkId}`;
+              console.log('[CHAT_PAGE] Essai avec préfixe mshy_:', fallbackIdentifier);
+            } else {
+              // Si l'identifiant commence par 'mshy_', essayer sans le préfixe
+              fallbackIdentifier = conversationShareLinkId.replace('mshy_', '');
+              console.log('[CHAT_PAGE] Essai sans préfixe mshy_:', fallbackIdentifier);
+            }
+            
+            const fallbackData = await LinkConversationService.getConversationData(fallbackIdentifier, fallbackOptions);
+            console.log('[CHAT_PAGE] Données reçues avec fallback:', {
+              hasData: !!fallbackData,
+              hasCurrentUser: !!fallbackData?.currentUser,
+              userType: fallbackData?.userType,
+              conversationId: fallbackData?.conversation?.id
+            });
+            setConversationData(fallbackData);
+            return; // Succès avec fallback
+          } catch (fallbackErr) {
+            console.error('Erreur lors du fallback:', fallbackErr);
+          }
+        } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+          errorMessage = t('sessionExpiredReconnect');
+          shouldRedirect = true;
+          // Rediriger vers la page de jointure pour les sessions anonymes
+          if (isAnonymous) {
+            const storedLinkId = localStorage.getItem('anonymous_current_link_id');
+            if (storedLinkId) {
+              redirectPath = `/join/${storedLinkId}`;
+            } else {
+              redirectPath = '/';
+            }
+          } else {
+            redirectPath = '/login';
+          }
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
+      setError(errorMessage);
+      
+      // Redirection si nécessaire
+      if (shouldRedirect && redirectPath) {
+        setShouldRedirect(redirectPath);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [conversationShareLinkId, user, isAnonymous, token, router, t]);
+
+  // useEffect pour charger les données au montage du composant
+  useEffect(() => {
+    // Ne charger que si l'authentification n'est plus en cours de vérification
+    if (!isChecking) {
+      console.log('[CHAT_PAGE] Authentification vérifiée, chargement des données');
+      loadConversationData();
+    } else {
+      console.log('[CHAT_PAGE] Authentification en cours, attente...');
+    }
+  }, [loadConversationData, isChecking]);
+
+  // useEffect de nettoyage au démontage du composant
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // useEffect séparé pour gérer les redirections de manière sûre
+  useEffect(() => {
+    if (shouldRedirect && isMountedRef.current) {
+      console.log('[CHAT_PAGE] Redirection vers:', shouldRedirect);
+      // Utiliser setTimeout pour éviter les conflits avec le cycle de vie React
+      const timer = setTimeout(() => {
+        if (isMountedRef.current) {
+          router.push(shouldRedirect);
+          // Nettoyer l'état de redirection après la navigation
+          setShouldRedirect(null);
+        }
+      }, 0);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [shouldRedirect, router]);
+
+  // Attendre que l'authentification soit vérifiée
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-blue-600 font-medium">{t('verifyingAuth')}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -291,8 +333,8 @@ export default function ChatPage() {
         onRetry={() => {
           setError(null);
           setLoading(true);
-          // Recharger les données
-          window.location.reload();
+          // Recharger les données sans recharger la page
+          loadConversationData();
         }}
         onRedirect={(path) => {
           router.push(path);
@@ -305,7 +347,7 @@ export default function ChatPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Aucune donnée de conversation disponible</p>
+          <p className="text-gray-600">{t('noConversationData')}</p>
         </div>
       </div>
     );
@@ -322,8 +364,8 @@ export default function ChatPage() {
     return (
       <AccessDenied
         variant="error"
-        title="Données incomplètes"
-        description="Les données de la conversation sont incomplètes. Veuillez réessayer."
+        title={t('incompleteData')}
+        description={t('incompleteDataDescription')}
         showBackButton={true}
         showHomeButton={true}
       />
@@ -336,12 +378,12 @@ export default function ChatPage() {
     
     // Créer un utilisateur par défaut basé sur l'état d'authentification
     const defaultUser = {
-      id: isAnonymous ? 'anonymous-user' : (user?.id || 'default-user'),
-      username: isAnonymous ? 'Utilisateur Anonyme' : (user?.username || 'Utilisateur'),
-      firstName: isAnonymous ? 'Utilisateur' : (user?.firstName || 'Utilisateur'),
-      lastName: isAnonymous ? 'Anonyme' : (user?.lastName || ''),
-      displayName: isAnonymous ? 'Utilisateur Anonyme' : (user?.displayName || 'Utilisateur'),
-      language: 'fr',
+      id: isAnonymous ? (user?.id || 'anonymous-user') : (user?.id || 'default-user'),
+      username: isAnonymous ? (user?.username || t('defaultAnonymous')) : (user?.username || t('defaultUser')),
+      firstName: isAnonymous ? (user?.firstName || t('defaultUser')) : (user?.firstName || t('defaultUser')),
+      lastName: isAnonymous ? (user?.lastName || t('defaultAnonymous')) : (user?.lastName || t('defaultAnonymous')),
+      displayName: isAnonymous ? (user?.displayName || `${user?.firstName || t('defaultUser')} ${user?.lastName || t('defaultAnonymous')}`.trim()) : (user?.displayName || `${user?.firstName || t('defaultUser')} ${user?.lastName || t('defaultAnonymous')}`.trim()),
+      language: isAnonymous ? ((user as any)?.language || 'fr') : ((user as any)?.language || 'fr'),
       isMeeshyer: !isAnonymous,
       permissions: {
         canSendMessages: true,
@@ -358,13 +400,13 @@ export default function ChatPage() {
   const bubbleUser = {
     id: conversationData.currentUser.id,
     username: conversationData.currentUser.username,
-    firstName: conversationData.currentUser.firstName,
-    lastName: conversationData.currentUser.lastName,
-    displayName: `${conversationData.currentUser.firstName} ${conversationData.currentUser.lastName}`,
+    firstName: conversationData.currentUser.firstName || 'Utilisateur',
+    lastName: conversationData.currentUser.lastName || 'Anonyme',
+    displayName: `${conversationData.currentUser.firstName || 'Utilisateur'} ${conversationData.currentUser.lastName || 'Anonyme'}`.trim(),
     email: '',
     role: 'MEMBER' as const,
-    systemLanguage: conversationData.currentUser.language,
-    regionalLanguage: conversationData.currentUser.language,
+    systemLanguage: conversationData.currentUser.language || 'fr',
+    regionalLanguage: conversationData.currentUser.language || 'fr',
     autoTranslateEnabled: true,
     translateToSystemLanguage: true,
     translateToRegionalLanguage: false,
@@ -398,9 +440,9 @@ export default function ChatPage() {
         user={conversationData.currentUser ? {
           id: conversationData.currentUser.id,
           username: conversationData.currentUser.username,
-          firstName: conversationData.currentUser.firstName,
-          lastName: conversationData.currentUser.lastName,
-          displayName: conversationData.currentUser.firstName + ' ' + conversationData.currentUser.lastName,
+          firstName: conversationData.currentUser.firstName || 'Utilisateur',
+          lastName: conversationData.currentUser.lastName || 'Anonyme',
+          displayName: `${conversationData.currentUser.firstName || 'Utilisateur'} ${conversationData.currentUser.lastName || 'Anonyme'}`.trim(),
           isAnonymous: isAnonymous
         } : null}
         authMode={authMode}
@@ -416,7 +458,7 @@ export default function ChatPage() {
           localStorage.removeItem('anonymous_participant');
           localStorage.removeItem('anonymous_current_link_id');
           localStorage.removeItem('anonymous_current_share_link');
-          toast.success('Session anonyme effacée');
+          toast.success(t('anonymousSessionCleared'));
           router.push('/');
         }}
       />
@@ -488,16 +530,16 @@ export default function ChatPage() {
       <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Créer un compte</DialogTitle>
+            <DialogTitle>{t('createAccount')}</DialogTitle>
             <DialogDescription>
-              Rejoignez Meeshy et communiquez sans barrières
+              {t('createAccountDescription')}
             </DialogDescription>
           </DialogHeader>
           <RegisterForm onSuccess={() => {
             // Fermer la modale après inscription réussie
             setAuthMode('welcome');
-            // Recharger la page pour mettre à jour l'état d'authentification
-            window.location.reload();
+            // Recharger les données de conversation
+            loadConversationData();
           }} />
         </DialogContent>
       </Dialog>
@@ -506,16 +548,16 @@ export default function ChatPage() {
       <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Se connecter</DialogTitle>
+            <DialogTitle>{t('login')}</DialogTitle>
             <DialogDescription>
-              Connectez-vous à votre compte Meeshy
+              {t('loginDescription')}
             </DialogDescription>
           </DialogHeader>
           <LoginForm onSuccess={() => {
             // Fermer la modale après connexion réussie
             setAuthMode('welcome');
-            // Recharger la page pour mettre à jour l'état d'authentification
-            window.location.reload();
+            // Recharger les données de conversation
+            loadConversationData();
           }} />
         </DialogContent>
       </Dialog>

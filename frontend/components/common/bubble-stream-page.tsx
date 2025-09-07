@@ -100,6 +100,7 @@ import { MessagesDisplay } from '@/components/common/messages-display';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
   const { t } = useTranslations('bubbleStream');
+  const { t: tSearch } = useTranslations('conversationSearch');
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -148,6 +149,30 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
 
+  // Fonction pour dédoublonner les utilisateurs actifs
+  const deduplicateUsers = useCallback((users: User[]): User[] => {
+    const uniqueUsers = users.reduce((acc: User[], current: User) => {
+      const existingUser = acc.find(user => user.id === current.id);
+      if (!existingUser) {
+        acc.push(current);
+      } else {
+        console.warn(`⚠️  Utilisateur dupliqué détecté et filtré: ${current.id} (${current.username})`);
+      }
+      return acc;
+    }, []);
+    
+    if (uniqueUsers.length !== users.length) {
+      console.log(`🔧 Déduplication: ${users.length} → ${uniqueUsers.length} utilisateurs`);
+    }
+    
+    return uniqueUsers;
+  }, []);
+
+  // Fonction pour mettre à jour les utilisateurs actifs avec déduplication
+  const setActiveUsersDeduped = useCallback((users: User[]) => {
+    setActiveUsers(deduplicateUsers(users));
+  }, [deduplicateUsers]);
+
   // Fonction pour charger les utilisateurs en ligne
   const loadActiveUsers = useCallback(async () => {
     try {
@@ -159,12 +184,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       }
       
       const onlineUsers = await conversationsService.getParticipants(conversationId, { onlineOnly: true });
-      setActiveUsers(onlineUsers);
+      setActiveUsersDeduped(onlineUsers);
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs actifs:', error);
       // En cas d'erreur, on garde les données WebSocket si disponibles
+      // Ne pas afficher d'erreur à l'utilisateur car ce n'est pas critique
     }
-  }, [conversationId, isAnonymousMode]);
+  }, [conversationId, isAnonymousMode, setActiveUsersDeduped]);
 
   // Fonction pour charger tous les participants (pour les statistiques)
   const loadAllParticipants = useCallback(async () => {
@@ -340,7 +366,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         // setParticipantsCount(stats.participantCount);
       }
       if (Array.isArray(stats.onlineUsers)) {
-        setActiveUsers(stats.onlineUsers.map((u: any) => ({
+        setActiveUsersDeduped(stats.onlineUsers.map((u: any) => ({
           id: u.id,
           username: u.username,
           firstName: u.firstName,
@@ -377,7 +403,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     onConversationOnlineStats: (data) => {
       if (!data || data.conversationId !== conversationId) return;
       if (Array.isArray(data.onlineUsers)) {
-        setActiveUsers(data.onlineUsers.map((u: any) => ({
+        setActiveUsersDeduped(data.onlineUsers.map((u: any) => ({
           id: u.id,
           username: u.username,
           firstName: u.firstName,
@@ -557,7 +583,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Charger immédiatement les messages existants via HTTP API
     loadMessages(conversationId, true);
     setHasLoadedMessages(true);
-  }, [loadMessages]);
+  }, [conversationId, loadMessages]);
 
   // Separately handle WebSocket connection for real-time updates
   useEffect(() => {
@@ -590,8 +616,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Calculer les statistiques de langues à partir des messages chargés
   useEffect(() => {
     if (translatedMessages.length > 0) {
-      console.log('📊 Calcul des statistiques de langues à partir des messages chargés...');
-      
       // Calculer les statistiques des langues des messages
       const languageCounts: { [key: string]: number } = {};
       const userLanguages: { [key: string]: Set<string> } = {}; // Pour les langues des utilisateurs
@@ -632,12 +656,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         .filter(stat => stat.count > 0)
         .sort((a, b) => b.count - a.count);
       
-      console.log('📊 Statistiques calculées:', {
-        messageStats: messageStats.length,
-        userStats: userStats.length,
-        totalMessages: translatedMessages.length
-      });
-      
       setMessageLanguageStats(messageStats);
       setActiveLanguageStats(userStats);
       
@@ -671,11 +689,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             .sort((a, b) => b.count - a.count);
           
           setActiveLanguageStats(realUserStats);
-          console.log('👥 Statistiques utilisateurs réelles calculées:', realUserStats);
         }
       });
     }
-  }, [translatedMessages, activeUsers, loadActiveUsers, loadAllParticipants]);
+  }, [translatedMessages.length, activeUsers.length, loadActiveUsers, loadAllParticipants]);
 
   // Afficher l'écran de chargement pendant l'initialisation
   if (isInitializing) {
@@ -745,12 +762,28 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           // Log pour le debug - La langue source sera utilisée côté serveur
           console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
         } else {
-          throw new Error('L\'envoi du message a échoué');
+          console.error('❌ Envoi échoué: sendResult est false');
+          throw new Error('L\'envoi du message a échoué - le serveur a retourné false');
         }
         
       } catch (wsError) {
         console.error('❌ Erreur envoi WebSocket:', wsError);
-        toast.error('Erreur lors de l\'envoi du message');
+        
+        // Message d'erreur plus spécifique
+        let errorMessage = 'Erreur lors de l\'envoi du message';
+        if (wsError instanceof Error) {
+          if (wsError.message.includes('Timeout')) {
+            errorMessage = 'Le serveur met trop de temps à répondre. Vérifiez votre connexion.';
+          } else if (wsError.message.includes('Socket non connecté')) {
+            errorMessage = 'Connexion perdue. Tentative de reconnexion...';
+            // Optionnel: déclencher une reconnexion
+            reconnect();
+          } else {
+            errorMessage = wsError.message;
+          }
+        }
+        
+        toast.error(errorMessage);
         // Restaurer le message en cas d'erreur
         setNewMessage(messageContent);
         return;
@@ -971,6 +1004,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   emptyStateDescription={t('emptyStateDescription')}
                   reverseOrder={true}
                   className="space-y-5"
+                  onTranslation={handleTranslation}
                 />
 
                 {/* Espace supplémentaire réduit pour éviter que le dernier message soit caché */}
@@ -997,7 +1031,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   value={newMessage}
                   onChange={(e) => handleTyping(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder={`Partagez quelque chose avec le monde...`}
+                  placeholder={tSearch('shareMessage')}
                   className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-28 pb-14 pt-3 pl-3 text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
                   maxLength={MAX_MESSAGE_LENGTH}
                   disabled={!isComposingEnabled}
@@ -1093,9 +1127,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             >
               <div className="space-y-3">
                 {/* Affichage des 6 premiers utilisateurs */}
-                {activeUsers.slice(0, 6).map((activeUser) => (
+                {activeUsers.slice(0, 6).map((activeUser, index) => (
                   <div
-                    key={activeUser.id}
+                    key={`${activeUser.id}-${index}`}
                     className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
                   >
                     <Avatar className="h-8 w-8">
@@ -1121,9 +1155,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   <div 
                     className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 pt-3 mt-3 scroll-hidden"
                   >
-                    {activeUsers.slice(6).map((activeUser) => (
+                    {activeUsers.slice(6).map((activeUser, index) => (
                       <div
-                        key={activeUser.id}
+                        key={`${activeUser.id}-${index + 6}`}
                         className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
                       >
                         <Avatar className="h-8 w-8">

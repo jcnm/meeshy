@@ -31,6 +31,27 @@
     "yes": "Sim",
     "no": "Não"
   },
+  "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
+  "writeMessage": "Escreva sua mensagem...",
+  "title": "Título",
+  "loading": "Carregando...",
+  "translationModel": "Modelo de Tradução",
+  "chooseModel": "Escolha um modelo",
+  "apiService": "Serviço de API",
+  "connected": "Conectado",
+  "debug": "Depuração",
+  "conversationDetails": "Detalhes da Conversa",
+  "noMessages": "Nenhuma mensagem nesta conversa",
+  "active": "Ativo",
+  "no": "Não",
+  "public": "Público",
+  "private": "Privado",
+  "createLink": "Criar Link",
+  "newConversation": "Nova Conversa",
+  "createConversation": "Criar Conversa",
+  "chooseConversation": "Escolha uma conversa!",
+  "chooseConversationDescription": "Clique em uma conversa à esquerda para começar a conversar",
+  "loading": "Carregando...",
   "navigation": {
     "home": "Início",
     "dashboard": "Painel",
@@ -713,6 +734,7 @@
     "actions": {
       "createLink": "Criar um link",
       "newConversation": "Nova conversa",
+      "createConversation": "Criar conversa",
       "createCommunity": "Criar uma comunidade",
       "createGroup": "Criar uma comunidade",
       "viewAll": "Ver tudo",
@@ -761,9 +783,15 @@
       "logout": "Logout"
     },
     "auth": {
-      "checking": "Checking authentication...",
-      "logoutSuccess": "Logout successful",
-      "logoutError": "Error during logout"
+      "checking": "Verificando autenticação...",
+      "logoutSuccess": "Logout realizado com sucesso",
+      "logoutError": "Erro durante o logout"
+    },
+    "communities": {
+      "private": "Privado",
+      "members": "membros",
+      "member": "membro",
+      "membersCount": "{count} membros"
     }
   },
   "communities": {
@@ -773,16 +801,16 @@
     "membersCount": "{count} members"
   },
   "conversations": {
-    "title": "Conversations",
-    "loading": "Loading conversations...",
-    "loadingConversations": "Loading...",
-    "loadingConversationsDescription": "Retrieving your conversations...",
-    "noConversations": "No conversations",
-    "noConversationsDescription": "Start a new conversation to chat with your friends!",
-    "chooseConversation": "Choose a conversation!",
-    "chooseConversationDescription": "Click on a conversation on the left to start chatting",
-    "welcome": "Welcome! 🎉",
-    "welcomeDescription": "You don't have any conversations yet. Start by creating one!",
+    "title": "Minhas Conversas",
+    "loading": "Carregando conversas...",
+    "loadingConversations": "Carregando...",
+    "loadingConversationsDescription": "Recuperando suas conversas...",
+    "noConversations": "Nenhuma conversa",
+    "noConversationsDescription": "Inicie uma nova conversa para conversar com seus amigos!",
+    "chooseConversation": "Escolha uma conversa!",
+    "chooseConversationDescription": "Clique em uma conversa à esquerda para começar a conversar",
+    "welcome": "Bem-vindo! 🎉",
+    "welcomeDescription": "Você ainda não tem conversas. Comece criando uma!",
     "newConversation": "Nova conversa",
     "createLink": "Criar link",
     "public": "Público",
@@ -796,18 +824,18 @@
     "notConnected": "não conectado",
     "yes": "sim",
     "no": "não",
-    "conversationDetails": "Conversation details",
-    "writeMessage": "Write your message...",
-    "noMessages": "No messages in this conversation",
-    "noMessagesDescription": "Start the conversation by sending a message!",
-    "errorLoadingConversation": "Error loading conversation. Reloading...",
-    "participantRemoved": "Participant removed: {userId}",
-    "participantAdded": "Participant added: {userId}",
-    "linkCreated": "Link created",
-    "conversationCreated": "Conversation created",
-    "errorLoadingNewConversation": "Error loading new conversation:",
-    "lastMessage": "Last message",
-    "noLastMessage": "No messages yet",
+    "conversationDetails": "Detalhes da conversa",
+    "writeMessage": "Escreva sua mensagem...",
+    "noMessages": "Nenhuma mensagem nesta conversa",
+    "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
+    "errorLoadingConversation": "Erro ao carregar conversa. Recarregando...",
+    "participantRemoved": "Participante removido: {userId}",
+    "participantAdded": "Participante adicionado: {userId}",
+    "linkCreated": "Link criado",
+    "conversationCreated": "Conversa criada",
+    "errorLoadingNewConversation": "Erro ao carregar nova conversa:",
+    "lastMessage": "Última mensagem",
+    "noLastMessage": "Nenhuma mensagem ainda",
     "authChecking": "Checking authentication..."
   },
   "settings": {
@@ -1061,46 +1089,55 @@
     "passwordsDoNotMatch": "Passwords do not match"
   },
   "bubbleStream": {
-    "loading": "Loading messages...",
-    "connecting": "Connecting to server...",
-    "initializing": "Initializing...",
-    "emptyStateMessage": "No messages yet",
-    "emptyStateDescription": "Be the first to post in the global stream!",
-    "languagePlaceholder": "Writing language",
-    "activeLanguages": "Active Languages",
+    "loading": "Carregando mensagens...",
+    "connecting": "Conectando ao servidor...",
+    "initializing": "Inicializando...",
+    "emptyStateMessage": "Nenhuma mensagem ainda",
+    "emptyStateDescription": "Seja o primeiro a publicar no stream global!",
+    "languagePlaceholder": "Idioma de escrita",
+    "activeLanguages": "Idiomas Ativos",
     "typing": {
-      "single": "{name} is typing...",
-      "double": "{name1} and {name2} are typing...",
-      "multiple": "{name} and {count} others are typing..."
+      "single": "{name} está digitando...",
+      "double": "{name1} e {name2} estão digitando...",
+      "multiple": "{name} e {count} outros estão digitando..."
     },
-    "realTimeMessages": "Real-time messages",
-    "connectionInProgress": "Connecting...",
-    "connected": "Connection established! Real-time messages enabled",
-    "websocketConnected": "WebSocket connected - Real-time messages",
-    "websocketEstablished": "WebSocket connection established - Real-time messages enabled",
-    "reconnecting": "Attempting to reconnect...",
-    "retry": "Retry",
-    "diagnostics": "Diagnostics",
-    "connectionError": "Connection error",
-    "tryAgain": "Try again",
-    "translating": "Translating...",
-    "originalLanguage": "Original language",
-    "clickToViewOriginal": "Click to view original",
-    "availableTranslations": "Available translations",
-    "reply": "Reply",
-    "addToFavorites": "Add to favorites",
-    "copy": "Copy",
-    "report": "Report",
-    "share": "Share",
-    "pin": "Pin",
-    "edit": "Edit",
-    "filterLanguages": "Filter languages...",
+    "realTimeMessages": "Mensagens em tempo real",
+    "connectionInProgress": "Conectando...",
+    "connected": "Conexão estabelecida! Mensagens em tempo real ativadas",
+    "websocketConnected": "WebSocket conectado - Mensagens em tempo real",
+    "websocketEstablished": "Conexão WebSocket estabelecida - Mensagens em tempo real ativadas",
+    "reconnecting": "Tentando reconectar...",
+    "retry": "Tentar novamente",
+    "diagnostics": "Diagnóstico",
+    "connectionError": "Erro de conexão",
+    "tryAgain": "Tentar novamente",
+    "translating": "Traduzindo...",
+    "originalLanguage": "Idioma original",
+    "clickToViewOriginal": "Clique para ver o original",
+    "availableTranslations": "Traduções disponíveis",
+    "reply": "Responder",
+    "addToFavorites": "Adicionar aos favoritos",
+    "copy": "Copiar",
+    "report": "Denunciar",
+    "share": "Compartilhar",
+    "pin": "Fixar",
+    "edit": "Editar",
+    "filterLanguages": "Filtrar idiomas...",
     "original": "Original",
-    "improveTranslationQuality": "Improve translation quality",
-    "noTranslationFound": "No translation found",
-    "noTranslationAvailable": "No translation available",
-    "translateToOtherLanguages": "Translate to other languages",
-    "translationsInProgress": "Translations in progress..."
+    "improveTranslationQuality": "Melhorar qualidade da tradução",
+    "noTranslationFound": "Nenhuma tradução encontrada",
+    "noTranslationAvailable": "Nenhuma tradução disponível",
+    "translateToOtherLanguages": "Traduzir para outros idiomas",
+    "translationsInProgress": "Traduções em andamento...",
+    "shareWithWorld": "Compartilhe algo com o mundo...",
+    "detected": "Detectado: {language}",
+    "reconnect": "Reconectar",
+    "debug": "Depuração",
+    "activeUsers": "Usuários Ativos ({count})",
+    "charactersRemaining": "{count} caracteres restantes",
+    "charactersOverLimit": "{count} caracteres excedidos",
+    "newMessageFrom": "📨 Nova mensagem de {name}",
+    "webSocketConnectionInProgress": "Conexão WebSocket em andamento..."
   },
   "anonymousChat": {
     "title": "Conversation",
@@ -1521,6 +1558,233 @@
       "partners": "Become a Partner"
     }
   },
+  "createLinkModal": {
+    "title": "Criar um link de compartilhamento",
+    "description": "Crie um link para permitir que outras pessoas se juntem a uma conversa",
+    "steps": {
+      "selectConversation": "Selecionar uma conversa",
+      "configureLink": "Configurar o link",
+      "linkOptions": "Opções do link",
+      "summaryAndGeneration": "Resumo e geração"
+    },
+    "stepDescriptions": {
+      "selectConversation": "Escolha uma conversa existente ou crie uma nova",
+      "configureLink": "Configure as configurações básicas do link",
+      "configureNewConversation": "Defina os detalhes da sua nova conversa",
+      "linkOptions": "Personalize permissões e restrições",
+      "summaryAndGeneration": "Revise suas configurações e gere o link"
+    },
+    "createNewConversation": {
+      "title": "Criar uma nova conversa",
+      "description": "Crie uma conversa dedicada para este link de compartilhamento",
+      "orSelectExisting": "Ou selecionar uma conversa existente"
+    },
+    "conversationForm": {
+      "title": "Título da conversa *",
+      "titleInfo": "Nome que identificará esta conversa e será usado para gerar o nome do link de compartilhamento",
+      "titlePlaceholder": "Ex: Discussão da equipe, Brainstorming do projeto...",
+      "description": "Descrição (opcional)",
+      "descriptionInfo": "Descrição que aparecerá na lista de conversas e ajudará os membros a entender o propósito",
+      "descriptionPlaceholder": "Descreva o propósito desta conversa...",
+      "baseMembers": "Membros base",
+      "memberCount": "{count} membro(s)",
+      "searchUsers": "Pesquisar usuários... (digite para pesquisar)",
+      "noUsersFound": "Nenhum usuário encontrado"
+    },
+    "linkConfiguration": {
+      "validityDuration": "Duração da validade",
+      "validityDurationInfo": "Duração durante a qual o link de compartilhamento permanecerá ativo. Após a expiração, o link não funcionará mais",
+      "usageLimit": "Limite de uso",
+      "usageLimitInfo": "Número máximo de vezes que o link pode ser usado. Uma vez que o limite seja atingido, o link será desabilitado"
+    },
+    "durationOptions": {
+      "1": { "label": "1 dia", "description": "Link temporário" },
+      "3": { "label": "3 dias", "description": "Curto prazo" },
+      "7": { "label": "1 semana", "description": "Curto prazo" },
+      "14": { "label": "2 semanas", "description": "Curto prazo" },
+      "30": { "label": "1 mês", "description": "Médio prazo" },
+      "60": { "label": "2 meses", "description": "Médio prazo" },
+      "90": { "label": "3 meses", "description": "Longo prazo" },
+      "180": { "label": "6 meses", "description": "Longo prazo" },
+      "365": { "label": "1 ano", "description": "Permanente" },
+      "730": { "label": "2 anos", "description": "Permanente" }
+    },
+    "limitOptions": {
+      "unlimited": { "label": "Ilimitado", "description": "Sem restrições" },
+      "5": { "label": "5 usos", "description": "Grupo muito pequeno" },
+      "10": { "label": "10 usos", "description": "Grupo pequeno" },
+      "25": { "label": "25 usos", "description": "Grupo pequeno" },
+      "50": { "label": "50 usos", "description": "Grupo médio" },
+      "100": { "label": "100 usos", "description": "Grupo grande" },
+      "250": { "label": "250 usos", "description": "Grupo grande" },
+      "500": { "label": "500 usos", "description": "Grupo muito grande" },
+      "1000": { "label": "1000 usos", "description": "Evento público" },
+      "5000": { "label": "5000 usos", "description": "Evento massivo" }
+    },
+    "permissions": {
+      "title": "Permissões dos convidados",
+      "description": "Defina o que os participantes anônimos podem fazer",
+      "sendMessages": {
+        "label": "Enviar mensagens",
+        "description": "Permitir envio de mensagens de texto"
+      },
+      "shareImages": {
+        "label": "Compartilhar imagens",
+        "description": "Permitir envio de imagens"
+      },
+      "shareFiles": {
+        "label": "Compartilhar arquivos",
+        "description": "Permitir envio de arquivos"
+      },
+      "viewHistory": {
+        "label": "Ver histórico",
+        "description": "Acesso a mensagens antigas"
+      },
+      "requireNickname": {
+        "label": "Apelido obrigatório",
+        "description": "Forçar entrada de apelido"
+      },
+      "requireEmail": {
+        "label": "E-mail obrigatório",
+        "description": "Forçar entrada de e-mail"
+      }
+    },
+    "allowedLanguages": {
+      "title": "Idiomas permitidos",
+      "description": "Selecione os idiomas permitidos para os participantes",
+      "allowAllLanguages": "Deixe vazio para permitir todos os idiomas",
+      "allowLanguage": "Permitir participantes em {language}"
+    },
+    "summary": {
+      "title": "Resumo da Configuração",
+      "description": "Revise as configurações antes de gerar o link",
+      "basicInfo": "Informações Básicas",
+      "conversation": "Conversa",
+      "validityDuration": "Duração de Validade",
+      "usageLimit": "Limite de Uso",
+      "welcomeMessage": "Mensagem de Boas-vindas",
+      "usageCount": "{count} usos",
+      "unlimited": "Ilimitado",
+      "linkDisabledAfter": "O link será desabilitado após {count} usos",
+      "noCustomMessage": "Nenhuma mensagem personalizada",
+      "welcomeMessageDescription": "Esta mensagem será exibida na página /join para dar as boas-vindas aos participantes",
+      "permissionsGranted": "Permissões dos Convidados",
+      "messages": "Mensagens",
+      "images": "Imagens",
+      "files": "Arquivos",
+      "history": "Histórico",
+      "allowed": "Permitido",
+      "forbidden": "Proibido",
+      "visible": "Visível",
+      "hidden": "Oculto",
+      "guestsCanSendMessages": "Convidados podem enviar mensagens",
+      "guestsCannotSendMessages": "Convidados não podem enviar mensagens",
+      "guestsCanShareImages": "Convidados podem compartilhar imagens",
+      "guestsCannotShareImages": "Convidados não podem compartilhar imagens",
+      "guestsCanShareFiles": "Convidados podem compartilhar arquivos",
+      "guestsCannotShareFiles": "Convidados não podem compartilhar arquivos",
+      "guestsCanViewHistory": "Convidados podem ver o histórico",
+      "guestsCannotViewHistory": "Convidados não podem ver o histórico",
+      "nicknameRequired": "Apelido Obrigatório",
+      "emailRequired": "Email Obrigatório",
+      "yes": "Sim",
+      "no": "Não",
+      "guestsMustEnterNickname": "Convidados devem inserir um apelido",
+      "guestsCanStayAnonymous": "Convidados podem permanecer anônimos",
+      "guestsMustEnterEmail": "Convidados devem inserir um email",
+      "allowedLanguages": "Idiomas Permitidos",
+      "selectedLanguages": "Idiomas Selecionados"
+    },
+    "linkDetails": {
+      "title": "Nome do link de compartilhamento",
+      "description": "O nome é gerado automaticamente, mas você pode modificá-lo",
+      "linkName": "Nome do link *",
+      "linkNameInfo": "Título que será exibido aos participantes quando receberem o link de compartilhamento",
+      "linkNamePlaceholder": "Ex: Junte-se à conversa: Reunião da equipe",
+      "linkIdentifier": "Identificador do link *",
+      "linkIdentifierInfo": "Identificador único usado na URL do link de compartilhamento. Os últimos 6 caracteres são gerados aleatoriamente para evitar conflitos",
+      "regenerateIdentifier": "Regenerar sufixo do identificador",
+      "welcomeMessage": "Mensagem de boas-vindas",
+      "welcomeMessageInfo": "Mensagem que será exibida aos seus convidados antes de se juntarem à conversa",
+      "welcomeMessagePlaceholder": "Ex: Bem-vindos à nossa discussão! Sintam-se à vontade para compartilhar suas ideias..."
+    },
+    "summary": {
+      "title": "Resumo da sua configuração",
+      "description": "Revise todas as configurações antes de gerar o link",
+      "basicInfo": "Informações básicas",
+      "conversation": "Conversa",
+      "validityDuration": "Duração da validade",
+      "usageLimit": "Limite de uso",
+      "welcomeMessage": "Mensagem de boas-vindas",
+      "expiresOn": "Expira em {date}",
+      "linkWillBeDisabled": "O link será desabilitado após {count} usos",
+      "displayedOnJoinPage": "Esta mensagem será exibida na página /join para dar as boas-vindas aos participantes",
+      "noCustomMessage": "Nenhuma mensagem personalizada",
+      "notSelected": "Não selecionado",
+      "unlimited": "Ilimitado",
+      "permissions": "Permissões dos convidados",
+      "messages": "Mensagens",
+      "images": "Imagens",
+      "files": "Arquivos",
+      "history": "Histórico",
+      "allowed": "Permitido",
+      "forbidden": "Proibido",
+      "visible": "Visível",
+      "hidden": "Oculto",
+      "required": "Sim",
+      "notRequired": "Não",
+      "guestsCanSendMessages": "Convidados podem enviar mensagens",
+      "guestsCannotSendMessages": "Convidados não podem enviar mensagens",
+      "guestsCanShareImages": "Convidados podem compartilhar imagens",
+      "guestsCannotShareImages": "Convidados não podem compartilhar imagens",
+      "guestsCanShareFiles": "Convidados podem compartilhar arquivos",
+      "guestsCannotShareFiles": "Convidados não podem compartilhar arquivos",
+      "guestsCanViewHistory": "Convidados podem ver o histórico",
+      "guestsCannotViewHistory": "Convidados não podem ver o histórico",
+      "guestsMustEnterNickname": "Convidados devem inserir um apelido",
+      "guestsCanStayAnonymous": "Convidados podem permanecer anônimos",
+      "guestsMustEnterEmail": "Convidados devem inserir um e-mail",
+      "selectedLanguages": "Idiomas selecionados"
+    },
+    "success": {
+      "title": "Link criado com sucesso!",
+      "description": "Seu link de compartilhamento está pronto para uso",
+      "summary": "Resumo do seu link",
+      "conversation": "Conversa",
+      "validityDuration": "Duração da validade",
+      "usageLimit": "Limite de uso",
+      "permissions": "Permissões",
+      "fullLink": "Link de compartilhamento completo",
+      "fullLinkDescription": "Compartilhe este link para permitir que outros se juntem à conversa",
+      "copy": "Copiar",
+      "copyLink": "Copiar link",
+      "close": "Fechar"
+    },
+    "navigation": {
+      "previous": "Anterior",
+      "next": "Próximo",
+      "createLink": "Criar link",
+      "generating": "Gerando..."
+    },
+    "search": {
+      "conversations": "Pesquisar uma conversa...",
+      "noConversationsFound": "Nenhuma conversa encontrada"
+    },
+    "errors": {
+      "selectConversation": "Por favor, selecione uma conversa ou crie uma nova",
+      "enterTitle": "Por favor, insira um título para a nova conversa",
+      "loadingConversations": "Erro ao carregar conversas",
+      "searchingUsers": "Erro ao pesquisar usuários",
+      "generatingLink": "Erro ao gerar link",
+      "missingToken": "Token do link ausente na resposta"
+    },
+    "successMessages": {
+      "linkGeneratedAndCopied": "Link gerado e copiado para a área de transferência!",
+      "linkGenerated": "Link gerado com sucesso!",
+      "linkCopied": "Link copiado para a área de transferência",
+      "tokenCopied": "Token copiado para a área de transferência"
+    }
+  },
   "terms": {
     "backHome": "Back to Home",
     "print": "Print",
@@ -1595,5 +1859,160 @@
       "partners": "Become a Partner",
       "privacy": "Privacy Policy"
     }
+  },
+  "createConversationModal": {
+    "title": "Nova conversa",
+    "description": "Crie uma conversa moderna com uma abordagem inteligente e dinâmica",
+    "steps": {
+      "members": "Membros",
+      "details": "Detalhes"
+    },
+    "community": {
+      "title": "Comunidade (opcional)",
+      "searchPlaceholder": "Pesquisar uma comunidade...",
+      "loading": "Carregando...",
+      "noCommunitiesFound": "Nenhuma comunidade encontrada.",
+      "membersCount": "{count} membros • {conversations} conversas",
+      "private": "Privada",
+      "public": "Pública"
+    },
+    "members": {
+      "title": "Adicionar membros",
+      "searchPlaceholder": "Pesquisar usuários por nome ou username...",
+      "loading": "Carregando...",
+      "noUsersFound": "Nenhum usuário encontrado.",
+      "selectedMembers": "Membros selecionados ({count})"
+    },
+    "conversationDetails": {
+      "title": "Detalhes da conversa",
+      "conversationTitle": "Título da conversa",
+      "titlePlaceholder": "O título será gerado automaticamente...",
+      "titleInfoDirect": "Título gerado automaticamente para conversas diretas",
+      "titleInfoGroup": "Modifique o título se necessário para conversas em grupo",
+      "identifier": "Identificador",
+      "identifierRequired": "*",
+      "identifierPrefix": "mshy_",
+      "identifierPlaceholder": "meu-identificador",
+      "identifierInfo": "Caracteres permitidos: letras, números, hífens, underscores, @",
+      "identifierError": "O identificador contém caracteres não autorizados",
+      "typeDirect": "Direta",
+      "typeGroup": "Grupo"
+    },
+    "autoGeneratedTitles": {
+      "directWithUser": "Conversa com {username}",
+      "betweenTwoUsers": "Conversa com {user1} e {user2}",
+      "groupWithMultiple": "Conversa com {user1}, {user2} e {count} outro{plural}",
+      "groupWithTwo": "Conversa com {user1} e {user2}"
+    },
+    "actions": {
+      "create": "Criar",
+      "creating": "Criando...",
+      "createDirectConversation": "Criar conversa direta",
+      "createGroupConversation": "Criar conversa em grupo",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "selectAtLeastOneUser": "Por favor, selecione pelo menos um usuário",
+      "identifierRequired": "O identificador é obrigatório",
+      "invalidIdentifier": "O identificador pode conter apenas letras, números, hífens, underscores e @",
+      "searchError": "Erro durante a pesquisa",
+      "creationError": "Erro ao criar a conversa",
+      "loadingCommunitiesError": "Erro ao carregar comunidades"
+    },
+    "success": {
+      "conversationCreated": "Conversa criada com sucesso"
+    }
+  },
+  "chatPage": {
+    "verifyingAuth": "Verificando autenticação...",
+    "loadingConversation": "Carregando conversa...",
+    "missingLinkId": "ID do link ausente",
+    "sessionExpired": "Sessão expirada. Por favor, rejoin a conversa.",
+    "noConversationData": "Nenhum dado de conversa disponível",
+    "incompleteData": "Dados incompletos",
+    "incompleteDataDescription": "Os dados da conversa estão incompletos. Por favor, tente novamente.",
+    "anonymousSessionCleared": "Sessão anônima limpa",
+    "createAccount": "Criar conta",
+    "createAccountDescription": "Junte-se ao Meeshy e comunique-se sem barreiras",
+    "login": "Entrar",
+    "loginDescription": "Entre na sua conta Meeshy",
+    "errorLoading": "Erro ao carregar conversa",
+    "accessDenied": "Acesso não autorizado a esta conversa",
+    "conversationNotFound": "Conversa não encontrada",
+    "sessionExpiredReconnect": "Sessão expirada. Por favor, reconecte.",
+    "defaultUser": "Usuário",
+    "defaultAnonymous": "Anônimo"
+  },
+  "anonymousChatErrorHandler": {
+    "forbidden": {
+      "title": "Acesso negado",
+      "description": "Você não tem permissão para acessar esta conversa.",
+      "actions": {
+        "backHome": "Voltar ao início"
+      }
+    },
+    "unauthorized": {
+      "title": "Sessão expirada",
+      "description": "Sua sessão expirou. Por favor, reconecte para continuar.",
+      "actions": {
+        "rejoin": "Rejoin novamente",
+        "login": "Entrar",
+        "backHome": "Voltar ao início"
+      }
+    },
+    "notFound": {
+      "title": "Conversa não encontrada",
+      "description": "Esta conversa não existe ou foi excluída.",
+      "actions": {
+        "backHome": "Voltar ao início"
+      }
+    },
+    "invalidIdentifier": {
+      "title": "Link inválido",
+      "description": "O link que você está tentando usar não é válido.",
+      "actions": {
+        "backHome": "Voltar ao início"
+      }
+    },
+    "generic": {
+      "title": "Erro de conexão",
+      "description": "Ocorreu um erro ao carregar a conversa.",
+      "actions": {
+        "retry": "Tentar novamente",
+        "backHome": "Voltar ao início"
+      }
+    },
+    "maxRetriesReached": "Número máximo de tentativas atingido",
+    "retryFailed": "Nova tentativa falhou",
+    "attempts": "Tentativas: {current}/{max}",
+    "debug": {
+      "title": "Debug:",
+      "identifier": "Identificador:",
+      "type": "Tipo:",
+      "attempts": "Tentativas:",
+      "anonymous": "Anônimo",
+      "authenticated": "Autenticado"
+    }
+  },
+  "conversationSearch": {
+    "placeholder": "Pesquisar por nome, descrição...",
+    "filterConversations": "Filtrar conversas",
+    "searchParticipants": "Pesquisar...",
+    "shareMessage": "Compartilhe algo com o mundo..."
+  },
+  "conversationUI": {
+    "participants": "Participantes",
+    "communities": "Comunidades",
+    "groups": "Grupos",
+    "online": "online",
+    "offline": "offline",
+    "participant": "participante",
+    "autoTranslation": "Tradução automática:",
+    "enabled": "Ativada",
+    "disabled": "Desativada",
+    "loading": "Carregando...",
+    "searchConversations": "Pesquisar conversas",
+    "searchCommunities": "Pesquisar comunidades",
+    "searchGroups": "Pesquisar grupos"
   }
 }

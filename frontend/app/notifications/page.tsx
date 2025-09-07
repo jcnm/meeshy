@@ -18,85 +18,43 @@ import {
   Users,
   UserPlus
 } from 'lucide-react';
-import { notificationsService, type Notification, type NotificationPreferences } from '@/services';
+import { useNotifications } from '@/hooks/use-notifications';
+import { notificationService } from '@/services/notification.service';
+import { NotificationTest } from '@/components/notifications/NotificationTest';
+import type { Notification } from '@/services/notification.service';
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [preferences, setPreferences] = useState<NotificationPreferences | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showPreferences, setShowPreferences] = useState(false);
+  const { 
+    notifications, 
+    unreadNotifications, 
+    unreadCount, 
+    totalCount,
+    markAsRead, 
+    markAllAsRead, 
+    removeNotification, 
+    clearAll,
+    isConnected 
+  } = useNotifications();
+  
+  // Les préférences seront gérées dans une version future
 
-  useEffect(() => {
-    loadNotifications();
-    loadPreferences();
-  }, []);
+  // Les notifications sont maintenant gérées par le hook useNotifications
+  // Plus besoin de charger manuellement
 
-  const loadNotifications = async () => {
-    try {
-      const response = await notificationsService.getNotifications();
-      setNotifications(response.data.notifications);
-    } catch (error) {
-      console.error('Erreur lors du chargement des notifications:', error);
-      console.log('Impossible de charger les notifications');
-    }
-  };
+  // Les actions sont maintenant gérées par le hook useNotifications
 
-  const loadPreferences = async () => {
-    try {
-      const response = await notificationsService.getPreferences();
-      setPreferences(response.data.preferences);
-    } catch (error) {
-      console.error('Erreur lors du chargement des préférences:', error);
-      console.log('Impossible de charger les préférences');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      await notificationsService.markAsRead(notificationId);
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-      console.log('Notification marquée comme lue');
-    } catch (error) {
-      console.error('Erreur lors du marquage:', error);
-      console.log('Impossible de marquer la notification');
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      await notificationsService.markAllAsRead();
-      setNotifications([]);
-      console.log('Toutes les notifications ont été marquées comme lues');
-    } catch (error) {
-      console.error('Erreur lors du marquage global:', error);
-      console.log('Impossible de marquer toutes les notifications');
-    }
-  };
-
-  const updatePreferences = async (newPreferences: Partial<NotificationPreferences>) => {
-    if (!preferences) return;
-
-    try {
-      const response = await notificationsService.updatePreferences(newPreferences);
-      setPreferences(response.data.preferences);
-      console.log('Préférences mises à jour');
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour des préférences:', error);
-      console.log('Impossible de mettre à jour les préférences');
-    }
-  };
+  // Les préférences seront gérées par le nouveau système
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'MESSAGE_RECEIVED':
+      case 'message':
         return <MessageSquare className="h-4 w-4" />;
-      case 'USER_JOINED':
-      case 'USER_LEFT':
+      case 'conversation':
         return <Users className="h-4 w-4" />;
-      case 'CONVERSATION_CREATED':
-        return <UserPlus className="h-4 w-4" />;
+      case 'system':
+        return <Settings className="h-4 w-4" />;
+      case 'translation':
+        return <Bell className="h-4 w-4" />;
       default:
         return <Bell className="h-4 w-4" />;
     }
@@ -117,8 +75,8 @@ export default function NotificationsPage() {
     }
   };
 
-  const formatNotificationTime = (createdAt: string) => {
-    const date = new Date(createdAt);
+  const formatNotificationTime = (timestamp: Date) => {
+    const date = timestamp;
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
@@ -132,7 +90,7 @@ export default function NotificationsPage() {
     return date.toLocaleDateString('fr-FR');
   };
 
-  if (loading) {
+  if (false) { // loading supprimé
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
@@ -158,9 +116,11 @@ export default function NotificationsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
             <p className="text-gray-600 mt-1">
-              {notifications.length > 0 
-                ? `${notifications.length} notification${notifications.length > 1 ? 's' : ''} non lue${notifications.length > 1 ? 's' : ''}`
-                : 'Aucune notification'
+              {unreadCount > 0 
+                ? `${unreadCount} notification${unreadCount > 1 ? 's' : ''} non lue${unreadCount > 1 ? 's' : ''} sur ${totalCount}`
+                : totalCount > 0 
+                  ? `${totalCount} notification${totalCount > 1 ? 's' : ''} (toutes lues)`
+                  : 'Aucune notification'
               }
             </p>
           </div>
@@ -169,14 +129,14 @@ export default function NotificationsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowPreferences(!showPreferences)}
+              onClick={() => console.log('Préférences - à implémenter')}
               className="hidden sm:flex"
             >
               <Settings className="h-4 w-4 mr-2" />
               Préférences
             </Button>
             
-            {notifications.length > 0 && (
+            {unreadCount > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -193,7 +153,7 @@ export default function NotificationsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Notifications List */}
           <div className="lg:col-span-2">
-            {notifications.length === 0 ? (
+            {totalCount === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -233,7 +193,7 @@ export default function NotificationsPage() {
                             </p>
                             
                             <p className="text-xs text-gray-400">
-                              {formatNotificationTime(notification.createdAt)}
+                              {formatNotificationTime(notification.timestamp)}
                             </p>
                           </div>
                         </div>
@@ -254,98 +214,38 @@ export default function NotificationsPage() {
             )}
           </div>
 
-          {/* Preferences Panel */}
-          <div className={`space-y-6 ${showPreferences ? 'block' : 'hidden lg:block'}`}>
-            {preferences && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Settings className="h-5 w-5" />
-                    <span>Préférences</span>
-                  </CardTitle>
-                  <CardDescription>
-                    Gérez vos préférences de notification
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* General Settings */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="push-enabled" className="text-sm font-medium">
-                        Notifications push
-                      </Label>
-                      <Switch
-                        id="push-enabled"
-                        checked={preferences.pushEnabled}
-                        onCheckedChange={(checked) => 
-                          updatePreferences({ pushEnabled: checked })
-                        }
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="email-enabled" className="text-sm font-medium">
-                        Notifications email
-                      </Label>
-                      <Switch
-                        id="email-enabled"
-                        checked={preferences.emailEnabled}
-                        onCheckedChange={(checked) => 
-                          updatePreferences({ emailEnabled: checked })
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Type-specific Settings */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium text-gray-900">Types de notifications</h4>
-                    
-                    {Object.entries(preferences.types).map(([type, enabled]) => (
-                      <div key={type} className="flex items-center justify-between">
-                        <Label className="text-sm">
-                          {type.replace('_', ' ').toLowerCase()}
-                        </Label>
-                        <Switch
-                          checked={enabled}
-                          onCheckedChange={(checked) => 
-                            updatePreferences({
-                              types: { ...preferences.types, [type]: checked }
-                            })
-                          }
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
+          {/* Sidebar */}
+          <div className="hidden lg:block space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Settings className="h-5 w-5" />
+                  <span>Statut du Système</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Service de notifications</span>
+                  <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Notifications totales</span>
+                  <Badge variant="secondary">{totalCount}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Non lues</span>
+                  <Badge variant={unreadCount > 0 ? "destructive" : "secondary"}>{unreadCount}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+            
             {/* Quick Actions */}
             <Card>
               <CardHeader>
                 <CardTitle>Actions rapides</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={async () => {
-                    try {
-                      await notificationsService.sendTestNotification();
-                      console.log('Notification test envoyée');
-                      loadNotifications();
-                    } catch {
-                      console.log('Erreur lors de l\'envoi');
-                    }
-                  }}
-                >
-                  <Bell className="h-4 w-4 mr-2" />
-                  Test de notification
-                </Button>
+                <NotificationTest />
               </CardContent>
             </Card>
           </div>

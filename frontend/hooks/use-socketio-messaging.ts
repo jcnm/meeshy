@@ -124,12 +124,19 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
     });
     
     if (currentUser) {
-      // Vérifier d'abord que le token est présent
-      const token = localStorage.getItem('auth_token');
-      logger.messaging.debug('useSocketIOMessaging: Vérification token avant configuration', {
-        hasToken: !!token,
-        tokenLength: token?.length,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
+      // Vérifier d'abord que le token est présent (auth_token ou anonymous_session_token)
+      const authToken = localStorage.getItem('auth_token');
+      const sessionToken = localStorage.getItem('anonymous_session_token');
+      const hasAnyToken = !!authToken || !!sessionToken;
+      
+      logger.messaging.debug('useSocketIOMessaging: Vérification tokens avant configuration', {
+        hasAuthToken: !!authToken,
+        hasSessionToken: !!sessionToken,
+        hasAnyToken,
+        authTokenLength: authToken?.length,
+        sessionTokenLength: sessionToken?.length,
+        authTokenPreview: authToken ? authToken.substring(0, 20) + '...' : 'none',
+        sessionTokenPreview: sessionToken ? sessionToken.substring(0, 20) + '...' : 'none'
       });
       
       meeshySocketIOService.setCurrentUser(currentUser);

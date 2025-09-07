@@ -130,10 +130,7 @@ export class MessagingService {
         
         const anonymousParticipant = await this.prisma.anonymousParticipant.findFirst({
           where: {
-            OR: [
-              { id: identifier },
-              { sessionToken: identifier }
-            ],
+            sessionToken: identifier,
             conversationId: conversationId,
             isActive: true
           },
@@ -313,12 +310,16 @@ export class MessagingService {
         // LOGIQUE ANONYME: Vérifier via AnonymousParticipant et ShareLink
         const identifier = authContext.sessionToken || authContext.userId || '';
         
+        console.log('[MessagingService] Checking anonymous permissions:', {
+          identifier,
+          conversationId,
+          authContextType: authContext.type,
+          sessionToken: authContext.sessionToken ? 'present' : 'missing'
+        });
+        
         const anonymousParticipant = await this.prisma.anonymousParticipant.findFirst({
           where: {
-            OR: [
-              { id: identifier },
-              { sessionToken: identifier }
-            ],
+            sessionToken: identifier,
             conversationId: conversationId,
             isActive: true
           },
@@ -338,6 +339,15 @@ export class MessagingService {
               }
             }
           }
+        });
+
+        console.log('[MessagingService] Anonymous participant found:', {
+          found: !!anonymousParticipant,
+          participantId: anonymousParticipant?.id,
+          hasShareLink: !!anonymousParticipant?.shareLink,
+          shareLinkId: anonymousParticipant?.shareLink?.id,
+          isActive: anonymousParticipant?.shareLink?.isActive,
+          allowMessages: anonymousParticipant?.shareLink?.allowAnonymousMessages
         });
 
         if (!anonymousParticipant || !anonymousParticipant.shareLink) {
@@ -453,9 +463,22 @@ export class MessagingService {
 
     } catch (error) {
       console.error('[MessagingService] Error checking permissions:', error);
+      console.error('[MessagingService] Auth context:', {
+        type: authContext.type,
+        isAnonymous: authContext.isAnonymous,
+        userId: authContext.userId,
+        sessionToken: authContext.sessionToken ? 'present' : 'missing'
+      });
+      console.error('[MessagingService] Conversation ID:', conversationId);
+      console.error('[MessagingService] Request:', {
+        conversationId: request.conversationId,
+        isAnonymous: request.isAnonymous,
+        contentLength: request.content?.length
+      });
+      
       return {
         canSend: false,
-        reason: 'Erreur lors de la vérification des permissions'
+        reason: `Erreur lors de la vérification des permissions: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
       };
     }
   }
@@ -464,14 +487,23 @@ export class MessagingService {
    * Résout l'ID de conversation réel à partir de différents formats
    */
   private async resolveConversationId(identifier: string): Promise<string | null> {
+    console.log('[MessagingService] Resolving conversation ID:', identifier);
+    
     // Si c'est déjà un ObjectId MongoDB, on le retourne
     if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
+      console.log('[MessagingService] Identifier is already an ObjectId');
       return identifier;
     }
 
     // Sinon, chercher par le champ identifier
     const conversation = await this.prisma.conversation.findFirst({
       where: { identifier: identifier }
+    });
+    
+    console.log('[MessagingService] Conversation found by identifier:', {
+      found: !!conversation,
+      conversationId: conversation?.id,
+      conversationType: conversation?.type
     });
     
     return conversation ? conversation.id : null;

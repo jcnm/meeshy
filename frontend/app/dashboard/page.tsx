@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CreateLinkModal } from '@/components/conversations/create-link-modal';
+import { CreateLinkButtonV2 } from '@/components/conversations/create-link-button-v2';
 import { useState, useEffect } from 'react';
 import type { User, Conversation } from '@/types';
 import { useUser } from '@/context/AppContext';
@@ -30,7 +30,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user } = useUser();
   const { t } = useTranslations('dashboard');
-  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -138,9 +137,9 @@ export default function DashboardPage() {
               onClick={() => router.push('/conversations?new=true')}
               className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{t('actions.newConversation')}</span>
-              <span className="sm:hidden">{t('newConversation')}</span>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">{t('actions.createConversation')}</span>
+              <span className="sm:hidden">{t('createConversation')}</span>
             </Button>
             <Button 
               variant="outline"
@@ -419,14 +418,17 @@ export default function DashboardPage() {
                     <span>{t('quickActions.newConversation')}</span>
                   </Button>
                   
-                  <Button 
-                    variant="outline" 
+                  <CreateLinkButtonV2
+                    variant="outline"
                     className="h-20 flex-col space-y-2"
-                    onClick={() => setIsCreateLinkModalOpen(true)}
+                    onLinkCreated={() => {
+                      toast.success(t('success.linkCreated'));
+                      loadDashboardData();
+                    }}
                   >
                     <Link2 className="h-6 w-6" />
                     <span>{t('quickActions.createLink')}</span>
-                  </Button>
+                  </CreateLinkButtonV2>
                   
                   <Button 
                     variant="outline" 
@@ -450,17 +452,6 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Modal de création de lien */}
-        <CreateLinkModal 
-          isOpen={isCreateLinkModalOpen} 
-          onClose={() => setIsCreateLinkModalOpen(false)} 
-                      onLinkCreated={() => {
-              setIsCreateLinkModalOpen(false);
-              toast.success(t('success.linkCreated'));
-              // Recharger les données du dashboard pour mettre à jour le compteur de liens
-              loadDashboardData();
-            }}
-        />
     </DashboardLayout>
   );
 }

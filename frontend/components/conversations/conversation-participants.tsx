@@ -15,7 +15,7 @@ import {
   Crown, 
   Loader2
 } from 'lucide-react';
-import { SocketIOUser as User, ThreadMember } from '@shared/types';
+import { SocketIOUser as User, ThreadMember, UserRoleEnum } from '@shared/types';
 // import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ interface ConversationParticipantsProps {
   participants: ThreadMember[];
   currentUser: User;
   isGroup: boolean;
+  conversationType?: string; // Ajouter le type de conversation
   className?: string;
   typingUsers?: Array<{ userId: string; conversationId: string }>;
 }
@@ -34,6 +35,7 @@ export function ConversationParticipants({
   participants,
   currentUser,
   isGroup,
+  conversationType = 'group', // Valeur par défaut
   className = "",
   typingUsers = []
 }: ConversationParticipantsProps) {
@@ -49,9 +51,9 @@ export function ConversationParticipants({
 
 
 
-  // Listes en ligne / hors-ligne
-  const onlineAll = participants.filter(p => p.user.isOnline);
-  const offlineAll = participants.filter(p => !p.user.isOnline);
+  // Listes en ligne / hors-ligne (exclure l'utilisateur actuel)
+  const onlineAll = participants.filter(p => p.user.isOnline && p.userId !== currentUser.id);
+  const offlineAll = participants.filter(p => !p.user.isOnline && p.userId !== currentUser.id);
   const recentActiveParticipants = onlineAll.slice(0, 3);
 
 
@@ -83,6 +85,14 @@ export function ConversationParticipants({
     return displayName.slice(0, 2).toUpperCase();
   };
 
+  const isCreator = (participant: ThreadMember): boolean => {
+    return participant.role === UserRoleEnum.CREATOR;
+  };
+
+  const shouldShowCrown = (participant: ThreadMember): boolean => {
+    return conversationType !== 'direct' && isCreator(participant);
+  };
+
   // Pour toutes les conversations, afficher la liste des participants
   // (même les conversations privées peuvent avoir des participants)
 
@@ -101,9 +111,12 @@ export function ConversationParticipants({
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   {onlineAll.slice(0, 4).map((participant, index) => (
-                    <span key={participant.id}>
-                      {getDisplayName(participant.user)}
-                      {index < Math.min(onlineAll.length, 4) - 1 && ', '}
+                    <span key={`${participant.userId}-${index}`} className="flex items-center gap-1">
+                      {shouldShowCrown(participant) && (
+                        <Crown className="h-3 w-3 text-yellow-500" />
+                      )}
+                      <span>{getDisplayName(participant.user)}</span>
+                      {index < Math.min(onlineAll.length, 4) - 1 && <span>, </span>}
                     </span>
                   ))}
                   {onlineAll.length > 4 && (

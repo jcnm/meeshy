@@ -13,7 +13,7 @@ import {
   MessageSquare,
   Users,
   Plus,
-  
+  Calendar,
   ArrowLeft,
   Link2,
   Info
@@ -29,7 +29,7 @@ import type {
 import { conversationsService } from '@/services/conversations.service';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { MessageComposer, MessageComposerRef } from '@/components/common/message-composer';
-import { CreateLinkModal } from './create-link-modal';
+import { CreateLinkButtonV2 } from './create-link-button-v2';
 import { CreateConversationModal } from './create-conversation-modal';
 import { ConversationDetailsSidebar } from './conversation-details-sidebar';
 import { cn } from '@/lib/utils';
@@ -49,6 +49,7 @@ import { getUserLanguageChoices } from '@/utils/user-language-preferences';
 import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
+import { messageService } from '@/services/message.service';
 
 
 // Alias pour la compatibilité avec le code existant
@@ -74,6 +75,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const searchParams = useSearchParams();
   const { user, isAuthChecking } = useUser(); // user est garanti d'exister grâce au wrapper
   const { t } = useTranslations(); // No namespace for mixed usage
+  const { t: tSearch } = useTranslations('conversationSearch');
 
   // Si on est en train de vérifier l'authentification, afficher un loader
   if (isAuthChecking) {
@@ -126,15 +128,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [isMobile, setIsMobile] = useState(false);
 
   // États modaux
-  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
   const [isDetailsSidebarOpen, setIsDetailsSidebarOpen] = useState(false);
 
   // Flag pour éviter de recharger les conversations juste après en avoir créé une
   const [justCreatedConversation, setJustCreatedConversation] = useState<string | null>(null);
 
-  // États de traduction
-  const [selectedTranslationModel, setSelectedTranslationModel] = useState<string>('api-service');
+  // États de filtrage
+  const [searchFilter, setSearchFilter] = useState<string>('');
   // États typing (centralisés)
   interface TypingUserState {
     userId: string;
@@ -143,6 +144,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     timestamp: number;
   }
   const [typingUsers, setTypingUsers] = useState<TypingUserState[]>([]);
+
+  // Helper pour obtenir le rôle de l'utilisateur dans la conversation actuelle
+  const getCurrentUserRole = useCallback((): UserRoleEnum => {
+    if (!selectedConversation || !user?.id || !conversationParticipants.length) {
+      return user?.role as UserRoleEnum || UserRoleEnum.USER;
+    }
+
+    const currentUserParticipant = conversationParticipants.find(p => p.userId === user.id);
+    return currentUserParticipant?.role as UserRoleEnum || user?.role as UserRoleEnum || UserRoleEnum.USER;
+  }, [selectedConversation, user?.id, user?.role, conversationParticipants]);
 
   // Helper: mise à jour idempotente des conversations pour éviter des re-renders inutiles
   const setConversationsIfChanged = useCallback((updater: Conversation[] | ((prev: Conversation[]) => Conversation[])) => {
@@ -174,6 +185,38 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messageComposerRef = useRef<MessageComposerRef>(null);
+
+  // Fonctions pour gérer l'édition et la suppression des messages
+  const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
+    if (!selectedConversation?.id) return;
+    
+    try {
+      await messageService.editMessage(selectedConversation.id, messageId, {
+        content: newContent,
+        originalLanguage: selectedLanguage
+      });
+      
+      // Recharger les messages pour afficher la modification
+      await loadMessages(selectedConversation.id, true);
+    } catch (error) {
+      console.error('Erreur lors de la modification du message:', error);
+      throw error;
+    }
+  }, [selectedConversation?.id, selectedLanguage, loadMessages]);
+
+  const handleDeleteMessage = useCallback(async (messageId: string) => {
+    if (!selectedConversation?.id) return;
+    
+    try {
+      await messageService.deleteMessage(selectedConversation.id, messageId);
+      
+      // Recharger les messages pour afficher la suppression
+      await loadMessages(selectedConversation.id, true);
+    } catch (error) {
+      console.error('Erreur lors de la suppression du message:', error);
+      throw error;
+    }
+  }, [selectedConversation?.id, loadMessages]);
 
   // Initialiser la langue sélectionnée avec la langue système de l'utilisateur
   useEffect(() => {
@@ -380,6 +423,21 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [user]);
 
+  // Fonction utilitaire pour obtenir l'icône d'une conversation par type
+  const getConversationIcon = useCallback((conversation: Conversation): React.ReactNode | null => {
+    // Pour les conversations publiques et globales, utiliser des icônes spécifiques
+    if (conversation.type === 'public') {
+      return <Users className="h-6 w-6" />;
+    }
+    if (conversation.type === 'global') {
+      return <Calendar className="h-6 w-6" />;
+    }
+    if (conversation.isGroup) {
+      return <Users className="h-6 w-6" />;
+    }
+    return null; // Pour les conversations privées, on utilisera l'avatar
+  }, []);
+
   // Détecter si on est sur mobile
   useEffect(() => {
     const checkIsMobile = () => {
@@ -508,7 +566,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           sourceLanguage: message.originalLanguage || 'fr',
           targetLanguage: targetLanguage,
           translatedContent: cleanTranslationOutput(translationResult.translatedText),
-          translationModel: selectedTranslationModel,
+          translationModel: 'basic', // Utiliser le modèle basique par défaut
           cacheKey: `${messageId}-${targetLanguage}`,
           cached: false
         }],
@@ -804,13 +862,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   }, [selectedConversation?.id, loadConversationParticipants]);
 
   return (
-    <DashboardLayout title={t('title')}>
+    <DashboardLayout title={t('conversations.title')}>
 
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{t('loading')}</p>
+            <p className="text-muted-foreground">{t('conversations.loading')}</p>
           </div>
         </div>
       ) : (
@@ -824,7 +882,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             <div className="flex-shrink-0 p-4 border-b border-border/30">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-foreground">{t('title')}</h2>
+                  <h2 className="text-xl font-bold text-foreground">{t('conversations.title')}</h2>
                 </div>
                 <div className="relative">
                   <MessageSquare className="h-6 w-6 text-primary" />
@@ -836,32 +894,22 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
               </div>
 
-              {/* Sélecteur de modèle de traduction */}
+              {/* Champ de filtrage des conversations */}
               <div className="mb-2">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  {t('translationModel')}
+                  Filtrer les conversations
                 </label>
-                <Select
-                  value={selectedTranslationModel}
-                  onValueChange={(value) => setSelectedTranslationModel(value)}
-                >
-                  <SelectTrigger className="w-full h-8 text-sm">
-                    <SelectValue placeholder={t('chooseModel')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="api-service">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-2 h-2 rounded-full bg-green-500"
-                        />
-                        <span className="text-sm">{t('apiService')}</span>
-                        <Badge variant="default" className="text-xs px-1 py-0 bg-green-500">
-                          {t('active')}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                    placeholder={tSearch('placeholder')}
+                    className="w-full h-8 text-sm px-3 py-2 border border-border/30 rounded-lg bg-background/50 
+                             placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 
+                             transition-all outline-none"
+                  />
+                </div>
               </div>
             </div>
 
@@ -893,12 +941,21 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
               ) : (
                 <div className="p-2">
-                  {/* Séparer les conversations en publiques et privées */}
+                  {/* Séparer les conversations en publiques et privées avec filtrage */}
                   {(() => {
-                    const publicConversations = conversations.filter(conv => 
+                    // Appliquer d'abord le filtre de recherche
+                    const filteredConversations = conversations.filter(conv => {
+                      if (!searchFilter) return true;
+                      const searchLower = searchFilter.toLowerCase();
+                      const name = getConversationDisplayName(conv).toLowerCase();
+                      const description = conv.description?.toLowerCase() || '';
+                      return name.includes(searchLower) || description.includes(searchLower);
+                    });
+                    
+                    const publicConversations = filteredConversations.filter(conv => 
                       conv.type === 'global' || conv.type === 'public'
                     );
-                    const privateConversations = conversations.filter(conv => 
+                    const privateConversations = filteredConversations.filter(conv => 
                       conv.type !== 'global' && conv.type !== 'public'
                     );
 
@@ -930,11 +987,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                     <Avatar className="h-12 w-12 ring-2 ring-primary/20">
                                       <AvatarImage />
                                       <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                        {conversation.isGroup ? (
-                                          <Users className="h-6 w-6" />
-                                        ) : (
-                                          getConversationAvatar(conversation)
-                                        )}
+                                        {getConversationIcon(conversation) || getConversationAvatar(conversation)}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
@@ -998,11 +1051,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                     <Avatar className="h-12 w-12 ring-2 ring-primary/20">
                                       <AvatarImage />
                                       <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                        {conversation.isGroup ? (
-                                          <Users className="h-6 w-6" />
-                                        ) : (
-                                          getConversationAvatar(conversation)
-                                        )}
+                                        {getConversationIcon(conversation) || getConversationAvatar(conversation)}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
@@ -1049,19 +1098,21 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             {/* Footer fixe avec boutons */}
             <div className="flex-shrink-0 p-4 border-t border-border/30 bg-background/50">
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button
+                <CreateLinkButtonV2
                   className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
-                  onClick={() => setIsCreateLinkModalOpen(true)}
+                  onLinkCreated={() => {
+                    loadData();
+                  }}
                 >
                   <Link2 className="h-5 w-5 mr-2" />
                   {t('createLink')}
-                </Button>
+                </CreateLinkButtonV2>
                 <Button
                   className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
                   onClick={() => setIsCreateConversationModalOpen(true)}
                 >
-                  <Plus className="h-5 w-5 mr-2" />
-                  {t('newConversation')}
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  {t('createConversation')}
                 </Button>
               </div>
             </div>
@@ -1091,11 +1142,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       <Avatar className="h-10 w-10 ring-2 ring-primary/20">
                         <AvatarImage />
                         <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                          {selectedConversation.isGroup ? (
-                            <Users className="h-5 w-5" />
-                          ) : (
-                            getConversationAvatar(selectedConversation)
-                          )}
+                          {getConversationIcon(selectedConversation) || getConversationAvatar(selectedConversation)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background"></div>
@@ -1110,6 +1157,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           participants={conversationParticipants}
                           currentUser={user}
                           isGroup={selectedConversation.isGroup || false}
+                          conversationType={selectedConversation.type}
                           typingUsers={typingUsers.map(u => ({ userId: u.userId, conversationId: u.conversationId }))}
                           className="mt-1"
                         />
@@ -1120,6 +1168,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     <CreateLinkButton
                       conversationId={selectedConversation.id}
                       conversationType={selectedConversation.type}
+                      userRole={getCurrentUserRole()}
                       onLinkCreated={(link) => {
                         // Lien créé
                       }}
@@ -1176,6 +1225,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     emptyStateDescription={t('noMessagesDescription')}
                     reverseOrder={false}
                     className="space-y-4"
+                    onEditMessage={handleEditMessage}
+                    onDeleteMessage={handleDeleteMessage}
+                    conversationType={selectedConversation?.type || 'direct'}
+                    userRole={(user.role as UserRoleEnum) || UserRoleEnum.USER}
+                    conversationId={selectedConversation?.id}
                   />
                   {/* Élément invisible pour le scroll automatique */}
                   <div ref={messagesEndRef} />
@@ -1242,17 +1296,19 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     onClick={() => setIsCreateConversationModalOpen(true)}
                     className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all"
                   >
-                    <Plus className="h-5 w-5 mr-2" />
-                    {t('newConversation')}
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    {t('createConversation')}
                   </Button>
-                  <Button
-                    onClick={() => setIsCreateLinkModalOpen(true)}
+                  <CreateLinkButtonV2
                     variant="outline"
                     className="rounded-2xl px-6 py-3 border-2 border-primary/20 hover:border-primary/40 font-semibold shadow-md hover:shadow-lg transition-all"
+                    onLinkCreated={() => {
+                      loadData();
+                    }}
                   >
                     <Link2 className="h-5 w-5 mr-2" />
                     {t('createLink')}
-                  </Button>
+                  </CreateLinkButtonV2>
                 </div>
               </div>
             )}
@@ -1261,14 +1317,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       )}
 
       {/* Modales */}
-      <CreateLinkModal
-        isOpen={isCreateLinkModalOpen}
-        onClose={() => setIsCreateLinkModalOpen(false)}
-        onLinkCreated={() => {
-          // Lien créé
-          loadData();
-        }}
-      />
 
       <CreateConversationModal
         isOpen={isCreateConversationModalOpen}

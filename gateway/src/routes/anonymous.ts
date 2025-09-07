@@ -181,8 +181,21 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // 5. Générer le username si non fourni
-      const username = body.username || generateNickname(body.firstName, body.lastName);
+      // 5. Vérifier si l'username est requis et générer le username
+      let username: string;
+      if (shareLink.requireNickname) {
+        // Si l'username est requis, il doit être fourni
+        if (!body.username || body.username.trim() === '') {
+          return reply.status(400).send({
+            success: false,
+            message: 'Le nom d\'utilisateur est obligatoire pour rejoindre cette conversation'
+          });
+        }
+        username = body.username.trim();
+      } else {
+        // Si l'username n'est pas requis, générer automatiquement
+        username = body.username?.trim() || generateNickname(body.firstName, body.lastName);
+      }
 
       // 6. Vérifier que le username n'est pas déjà pris par un utilisateur enregistré
       const existingUser = await fastify.prisma.user.findFirst({
@@ -193,10 +206,32 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
       });
 
       if (existingUser) {
+        // Générer un username alternatif qui ne soit pas pris par un utilisateur enregistré
+        let suggestedUsername = generateNickname(body.firstName, body.lastName);
+        let counter = 1;
+        
+        // Vérifier si le username suggéré est déjà pris par un utilisateur enregistré
+        while (true) {
+          const existingSuggestedUser = await fastify.prisma.user.findFirst({
+            where: {
+              username: suggestedUsername,
+              isActive: true
+            }
+          });
+          
+          if (!existingSuggestedUser) {
+            break; // Username disponible
+          }
+          
+          // Ajouter un suffixe numérique
+          suggestedUsername = `${generateNickname(body.firstName, body.lastName)}${counter}`;
+          counter++;
+        }
+
         return reply.status(409).send({
           success: false,
           message: 'Ce nom d\'utilisateur est déjà utilisé par un membre du site',
-          suggestedNickname: generateNickname(body.firstName, body.lastName)
+          suggestedNickname: suggestedUsername
         });
       }
 
@@ -210,10 +245,42 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
       });
 
       if (existingParticipant) {
+        // Générer un username alternatif unique pour cette conversation
+        let suggestedUsername = generateNickname(body.firstName, body.lastName);
+        let counter = 1;
+        
+        // Vérifier si le username suggéré est déjà pris et générer une alternative
+        while (true) {
+          // Vérifier d'abord contre les utilisateurs enregistrés
+          const existingSuggestedUser = await fastify.prisma.user.findFirst({
+            where: {
+              username: suggestedUsername,
+              isActive: true
+            }
+          });
+          
+          // Puis vérifier contre les participants anonymes de cette conversation
+          const existingSuggestedParticipant = await fastify.prisma.anonymousParticipant.findFirst({
+            where: {
+              conversationId: shareLink.conversationId,
+              username: suggestedUsername,
+              isActive: true
+            }
+          });
+          
+          if (!existingSuggestedUser && !existingSuggestedParticipant) {
+            break; // Username disponible
+          }
+          
+          // Ajouter un suffixe numérique
+          suggestedUsername = `${generateNickname(body.firstName, body.lastName)}${counter}`;
+          counter++;
+        }
+
         return reply.status(409).send({
           success: false,
           message: 'Ce nom d\'utilisateur est déjà utilisé dans cette conversation',
-          suggestedNickname: generateNickname(body.firstName, body.lastName)
+          suggestedNickname: suggestedUsername
         });
       }
 

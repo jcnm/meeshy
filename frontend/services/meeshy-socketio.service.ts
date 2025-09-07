@@ -607,12 +607,22 @@ class MeeshySocketIOService {
     return new Promise(async (resolve) => {
       if (!this.socket) {
         console.error('❌ MeeshySocketIOService: Socket non connecté');
+        toast.error('Connexion WebSocket non initialisée');
         resolve(false);
         return;
       }
 
       if (!this.isConnected) {
         console.error('❌ MeeshySocketIOService: Socket connecté mais pas prêt');
+        toast.error('Connexion WebSocket non établie');
+        resolve(false);
+        return;
+      }
+
+      // Vérifier l'état de la connexion
+      if (this.socket.disconnected) {
+        console.error('❌ MeeshySocketIOService: Socket déconnecté');
+        toast.error('Connexion WebSocket perdue');
         resolve(false);
         return;
       }
@@ -667,55 +677,32 @@ class MeeshySocketIOService {
           ...(originalLanguage && { originalLanguage })
         };
 
-        this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response: any) => {
-          console.log('📨 MeeshySocketIOService: Réponse envoi message', {
-            response,
-            conversationOrId,
-            conversationId,
-            hasResponse: !!response,
-            responseType: typeof response,
-            responseKeys: response ? Object.keys(response) : [],
-            responseSuccess: response?.success,
-          responseError: response?.error,
-          responseMessage: response?.message,
-          fullResponse: JSON.stringify(response, null, 2)
-        });
-        
-        if (response?.success) {
-          console.log('✅ MeeshySocketIOService: Message envoyé avec succès', {
-            response,
-            conversationId
-          });
-          resolve(true);
-        } else {
-          console.error('❌ MeeshySocketIOService: Erreur envoi message', {
-            response,
-            conversationId,
-            error: response?.error,
-            hasError: !!response?.error,
-            errorMessage: response?.message || response?.error || 'Erreur inconnue',
-            messageData
-          });
-          
-          // Message d'erreur plus détaillé
-          const errorMsg = response?.message || response?.error || 'Erreur lors de l\'envoi du message';
-          console.error('🔍 MeeshySocketIOService: Détails erreur complète:', {
-            errorMsg,
-            fullResponse: response,
-            conversationOrId,
-            conversationId,
-            contentLength: content.length,
-            authStatus: {
-              hasAuthToken: !!authToken,
-              hasSessionToken: !!sessionToken,
-              userId: this.currentUser?.id
-            }
-          });
-          
-          toast.error(`Erreur: ${errorMsg}`);
+        // Ajouter un timeout pour éviter que la promesse reste en attente
+        const timeout = setTimeout(() => {
+          console.error('❌ MeeshySocketIOService: Timeout envoi message (10s)');
+          toast.error('Timeout: Le serveur n\'a pas répondu à temps');
           resolve(false);
-        }
-      });
+        }, 10000); // 10 secondes de timeout
+
+        this.socket.emit(CLIENT_EVENTS.MESSAGE_SEND, messageData, (response: any) => {
+          clearTimeout(timeout); // Annuler le timeout si on reçoit une réponse
+          
+          if (response?.success) {
+            console.log('✅ MeeshySocketIOService: Message envoyé avec succès');
+            resolve(true);
+          } else {
+            console.error('❌ MeeshySocketIOService: Erreur envoi message', {
+              error: response?.error,
+              message: response?.message,
+              conversationId,
+              response
+            });
+            
+            const errorMsg = response?.message || response?.error || 'Erreur lors de l\'envoi du message';
+            toast.error(`Erreur: ${errorMsg}`);
+            resolve(false);
+          }
+        });
       
       } catch (error) {
         console.error('❌ MeeshySocketIOService: Erreur lors de l\'extraction de l\'ID conversation:', error);

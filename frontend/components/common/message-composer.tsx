@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { LanguageSelector } from '@/components/translation';
 import { MAX_MESSAGE_LENGTH } from '@/lib/constants/languages';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface MessageComposerProps {
   value: string;
@@ -39,12 +40,16 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   onLanguageChange,
   location,
   isComposingEnabled = true,
-  placeholder = "Partagez quelque chose avec le monde...",
+  placeholder,
   onKeyPress,
   className = "",
   choices
 }, ref) => {
+  const { t } = useTranslations('conversationSearch');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Utiliser le placeholder fourni ou la traduction par défaut
+  const finalPlaceholder = placeholder || t('shareMessage');
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -64,7 +69,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyPress={handleKeyPress}
-        placeholder={placeholder}
+        placeholder={finalPlaceholder}
         className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-28 pb-14 pt-3 pl-3 text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
         maxLength={MAX_MESSAGE_LENGTH}
         disabled={!isComposingEnabled}

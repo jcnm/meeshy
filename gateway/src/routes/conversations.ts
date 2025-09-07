@@ -176,6 +176,7 @@ interface CreateConversationBody {
   description?: string;
   participantIds?: string[];
   communityId?: string;
+  identifier?: string;
 }
 
 interface SendMessageBody {
@@ -447,7 +448,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     preValidation: [optionalAuth]
   }, async (request, reply) => {
     try {
-      const { type, title, description, participantIds = [], communityId } = request.body;
+      const { type, title, description, participantIds = [], communityId, identifier } = request.body;
       
       // Utiliser le nouveau système d'authentification unifié
       const authContext = (request as any).authContext;
@@ -475,18 +476,67 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Générer un identifiant unique pour la conversation
-      // Pour les conversations directes, utiliser un identifiant générique
-      const identifierTitle = type === 'direct' ? `direct-${userId}-${participantIds[0] || 'unknown'}` : title;
-      const baseIdentifier = generateConversationIdentifier(identifierTitle);
-      const uniqueIdentifier = await ensureUniqueConversationIdentifier(prisma, baseIdentifier);
+      // Validate custom identifier if provided
+      if (identifier) {
+        const identifierRegex = /^[a-zA-Z0-9\-_@]*$/;
+        if (!identifierRegex.test(identifier)) {
+          return reply.status(400).send({
+            success: false,
+            error: 'L\'identifiant ne peut contenir que des lettres, chiffres, tirets, underscores et @'
+          });
+        }
+      }
+
+      // Validate community access if communityId is provided
+      if (communityId) {
+        const community = await prisma.community.findFirst({
+          where: { id: communityId },
+          include: { members: true }
+        });
+
+        if (!community) {
+          return reply.status(404).send({
+            success: false,
+            error: 'Communauté non trouvée'
+          });
+        }
+
+        // Check if user is member of the community
+        const isMember = community.createdBy === userId || 
+                        community.members.some(member => member.userId === userId);
+        
+        if (!isMember) {
+          return reply.status(403).send({
+            success: false,
+            error: 'Vous devez être membre de cette communauté pour y créer une conversation'
+          });
+        }
+      }
+
+      // Generate identifier
+      let finalIdentifier: string;
+      if (identifier) {
+        // Use custom identifier with mshy_ prefix
+        finalIdentifier = `mshy_${identifier}`;
+        // Ensure uniqueness
+        finalIdentifier = await ensureUniqueConversationIdentifier(prisma, finalIdentifier);
+      } else {
+        // Generate automatic identifier
+        const identifierTitle = type === 'direct' ? `direct-${userId}-${participantIds[0] || 'unknown'}` : title;
+        const baseIdentifier = generateConversationIdentifier(identifierTitle);
+        finalIdentifier = await ensureUniqueConversationIdentifier(prisma, baseIdentifier);
+      }
+
+      // S'assurer que participantIds ne contient pas de doublons et n'inclut pas le créateur
+      const uniqueParticipantIds = [...new Set(participantIds)].filter(id => id !== userId);
 
       const conversation = await prisma.conversation.create({
         data: {
-          identifier: uniqueIdentifier,
+          identifier: finalIdentifier,
           type,
           title,
           description,
+          communityId: communityId || null,
           members: {
             create: [
               // Créateur de la conversation
@@ -494,8 +544,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                 userId,
                 role: type === 'direct' ? 'member' : 'admin'
               },
-              // Autres participants
-              ...participantIds.map((participantId: string) => ({
+              // Autres participants (sans doublons et sans le créateur)
+              ...uniqueParticipantIds.map((participantId: string) => ({
                 userId: participantId,
                 role: 'member'
               }))
@@ -517,6 +567,34 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // Si la conversation est créée dans une communauté, ajouter automatiquement 
+      // tous les participants à la communauté s'ils n'y sont pas déjà
+      if (communityId) {
+        const allUserIds = [userId, ...uniqueParticipantIds];
+        
+        // Récupérer les membres actuels de la communauté
+        const existingMembers = await prisma.communityMember.findMany({
+          where: {
+            communityId,
+            userId: { in: allUserIds }
+          },
+          select: { userId: true }
+        });
+        
+        const existingUserIds = existingMembers.map(member => member.userId);
+        const newUserIds = allUserIds.filter(id => !existingUserIds.includes(id));
+        
+        // Ajouter les nouveaux membres à la communauté
+        if (newUserIds.length > 0) {
+          await prisma.communityMember.createMany({
+            data: newUserIds.map(userId => ({
+              communityId,
+              userId
+            }))
+          });
+        }
+      }
 
       reply.status(201).send({
         success: true,
@@ -596,6 +674,21 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               role: true
             }
           },
+          anonymousSender: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              language: true
+            }
+          },
+          readStatus: {
+            select: {
+              userId: true,
+              readAt: true
+            }
+          },
           translations: {
             select: {
               id: true,
@@ -613,6 +706,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   username: true,
                   displayName: true,
                   avatar: true
+                }
+              },
+              readStatus: {
+                select: {
+                  userId: true,
+                  readAt: true
                 }
               },
               translations: {
@@ -1041,20 +1140,65 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const authRequest = request as UnifiedAuthRequest;
       const userId = authRequest.authContext.userId;
 
-      // Vérifier que le message existe et appartient à l'utilisateur
+      // Résoudre l'ID de conversation réel
+      const conversationId = await resolveConversationId(id);
+      if (!conversationId) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Conversation non trouvée'
+        });
+      }
+
+      // Vérifier que le message existe
       const existingMessage = await prisma.message.findFirst({
         where: {
           id: messageId,
-          conversationId: id,
-          senderId: userId,
+          conversationId: conversationId,
           isDeleted: false
+        },
+        include: {
+          sender: {
+            select: { id: true }
+          }
         }
       });
 
       if (!existingMessage) {
         return reply.status(404).send({
           success: false,
-          error: 'Message non trouvé ou vous n\'êtes pas autorisé à le modifier'
+          error: 'Message non trouvé'
+        });
+      }
+
+      // Vérifier les permissions : l'auteur peut modifier, ou les modérateurs/admins/créateurs
+      const isAuthor = existingMessage.senderId === userId;
+      let canModify = isAuthor;
+
+      if (!canModify) {
+        // Vérifier si l'utilisateur est modérateur/admin/créateur dans cette conversation
+        const membership = await prisma.conversationMember.findFirst({
+          where: {
+            conversationId: conversationId,
+            userId: userId,
+            isActive: true
+          },
+          include: {
+            user: {
+              select: { role: true }
+            }
+          }
+        });
+
+        if (membership) {
+          const userRole = membership.user.role;
+          canModify = userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
+        }
+      }
+
+      if (!canModify) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous n\'êtes pas autorisé à modifier ce message'
         });
       }
 
@@ -1083,6 +1227,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               displayName: true,
               avatar: true,
               role: true
+            }
+          },
+          anonymousSender: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              language: true
             }
           },
           replyTo: {
@@ -1135,20 +1288,65 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const authRequest = request as UnifiedAuthRequest;
       const userId = authRequest.authContext.userId;
 
-      // Vérifier que le message existe et appartient à l'utilisateur
+      // Résoudre l'ID de conversation réel
+      const conversationId = await resolveConversationId(id);
+      if (!conversationId) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Conversation non trouvée'
+        });
+      }
+
+      // Vérifier que le message existe
       const existingMessage = await prisma.message.findFirst({
         where: {
           id: messageId,
-          conversationId: id,
-          senderId: userId,
+          conversationId: conversationId,
           isDeleted: false
+        },
+        include: {
+          sender: {
+            select: { id: true }
+          }
         }
       });
 
       if (!existingMessage) {
         return reply.status(404).send({
           success: false,
-          error: 'Message non trouvé ou vous n\'êtes pas autorisé à le supprimer'
+          error: 'Message non trouvé'
+        });
+      }
+
+      // Vérifier les permissions : l'auteur peut supprimer, ou les modérateurs/admins/créateurs
+      const isAuthor = existingMessage.senderId === userId;
+      let canDelete = isAuthor;
+
+      if (!canDelete) {
+        // Vérifier si l'utilisateur est modérateur/admin/créateur dans cette conversation
+        const membership = await prisma.conversationMember.findFirst({
+          where: {
+            conversationId: conversationId,
+            userId: userId,
+            isActive: true
+          },
+          include: {
+            user: {
+              select: { role: true }
+            }
+          }
+        });
+
+        if (membership) {
+          const userRole = membership.user.role;
+          canDelete = userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
+        }
+      }
+
+      if (!canDelete) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous n\'êtes pas autorisé à supprimer ce message'
         });
       }
 
@@ -1164,7 +1362,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Invalider et recalculer les stats
       const stats = await conversationStatsService.getOrCompute(
         prisma,
-        id,
+        conversationId,
         () => []
       );
 
@@ -1884,14 +2082,27 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Vérifier que l'utilisateur a accès à cette conversation
-      const membership = await prisma.conversationMember.findFirst({
-        where: {
-          conversationId: conversationId,
-          userId: currentUserId,
-          isActive: true
-        }
-      });
+      // Récupérer les informations de la conversation et du membre
+      const [conversation, membership] = await Promise.all([
+        prisma.conversation.findUnique({
+          where: { id: conversationId },
+          select: { id: true, type: true, title: true }
+        }),
+        prisma.conversationMember.findFirst({
+          where: {
+            conversationId: conversationId,
+            userId: currentUserId,
+            isActive: true
+          }
+        })
+      ]);
+
+      if (!conversation) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Conversation non trouvée'
+        });
+      }
 
       if (!membership) {
         return reply.status(403).send({
@@ -1900,14 +2111,46 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-                      // Vérifier que l'utilisateur est membre de la conversation
-                      // Permettre à tous les membres de créer des liens pour les conversations partagées
-                      if (membership.role !== UserRoleEnum.ADMIN && membership.role !== UserRoleEnum.CREATOR && membership.role !== UserRoleEnum.MODERATOR && membership.role !== UserRoleEnum.MEMBER) {
-                        return reply.status(403).send({
-                          success: false,
-                          error: 'Vous devez être membre de cette conversation pour créer des liens'
-                        });
-                      }
+      // Récupérer le rôle de l'utilisateur
+      const user = await prisma.user.findUnique({
+        where: { id: currentUserId },
+        select: { role: true }
+      });
+
+      if (!user) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Utilisateur non trouvé'
+        });
+      }
+
+      // Vérifier les permissions pour créer des liens de partage
+      const isGlobalConversation = conversation.type === 'global';
+      const userRole = user.role as UserRoleEnum;
+      const membershipRole = membership.role as UserRoleEnum;
+
+      // Pour les conversations globales, seuls les BIGBOSS peuvent créer des liens
+      if (isGlobalConversation) {
+        if (userRole !== UserRoleEnum.BIGBOSS) {
+          return reply.status(403).send({
+            success: false,
+            error: 'You must have rights to create share links for global conversations'
+          });
+        }
+      } else {
+        // check the rights
+        const canCreateLink = userRole === UserRoleEnum.BIGBOSS || 
+                             membershipRole === UserRoleEnum.CREATOR || 
+                             membershipRole === UserRoleEnum.ADMIN || 
+                             membershipRole === UserRoleEnum.MODERATOR;
+
+        if (!canCreateLink) {
+          return reply.status(403).send({
+            success: false,
+            error: "You don't have rights to create share links for this conversation"
+          });
+        }
+      }
 
       // Générer le linkId initial
       const initialLinkId = generateInitialLinkId();

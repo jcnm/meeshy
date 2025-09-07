@@ -20,14 +20,24 @@ import {
 import { User, UserRoleEnum } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { toast } from 'sonner';
-
+import { adminService } from '@/services/admin.service';
 import { getDefaultPermissions } from '@/utils/user-adapter';
 
 interface AdminStats {
   totalUsers: number;
-  totalActiveUsers: number;
-  totalAdmins: number;
-  activePercentage: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  totalConversations: number;
+  totalCommunities: number;
+  totalMessages: number;
+  adminUsers: number;
+  totalAnonymousUsers: number;
+  activeAnonymousUsers: number;
+  inactiveAnonymousUsers: number;
+  totalShareLinks: number;
+  activeShareLinks: number;
+  usersByRole: Record<string, number>;
+  messagesByType: Record<string, number>;
 }
 
 interface UserCapabilities {
@@ -39,11 +49,13 @@ interface UserCapabilities {
 
 interface DashboardData {
   statistics: AdminStats;
-  userInfo: {
-    role: string;
-    capabilities: UserCapabilities;
-    assignableRoles: string[];
+  recentActivity: {
+    newUsers: number;
+    newConversations: number;
+    newMessages: number;
+    newAnonymousUsers: number;
   };
+  userPermissions: any;
   timestamp: string;
 }
 
@@ -52,6 +64,18 @@ const AdminDashboard: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const loadAdminStats = async () => {
+    try {
+      const response = await adminService.getDashboardStats();
+      if (response.data && response.data.data) {
+        setDashboardData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques admin:', error);
+      toast.error('Erreur lors du chargement des statistiques d\'administration');
+    }
+  };
 
   useEffect(() => {
     const loadUserAndData = async () => {
@@ -110,31 +134,8 @@ const AdminDashboard: React.FC = () => {
 
         console.log('[ADMIN] Accès autorisé - utilisateur:', userData.username, 'rôle:', userData.role);
 
-        // Mock des données admin pour l'instant
-        setDashboardData({
-          statistics: {
-            totalUsers: 42,
-            totalActiveUsers: 18,
-            totalAdmins: 3,
-            activePercentage: 75,
-          },
-          userInfo: {
-            role: userData.role,
-            capabilities: {
-              role: userData.role,
-              level: userData.role === UserRoleEnum.ADMIN ? 5 : 3,
-              permissions: userData.permissions?.canAccessAdmin ? [
-                'Gestion utilisateurs',
-                'Modération contenu',
-                'Accès analyses',
-                'Configuration système'
-              ] : [],
-              restrictions: []
-            },
-            assignableRoles: [UserRoleEnum.USER, UserRoleEnum.MODERATOR]
-          },
-          timestamp: new Date().toISOString()
-        });
+        // Charger les vraies données admin
+        await loadAdminStats();
 
       } catch (error) {
         console.error('Erreur lors du chargement des données admin:', error);
@@ -190,79 +191,255 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Statistiques principales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Statistiques principales - Les 10 métriques demandées */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          {/* 1. Utilisateurs */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Utilisateurs totaux</CardTitle>
+              <CardTitle className="text-sm font-medium">Utilisateurs</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Tous les utilisateurs enregistrés
+                {stats?.activeUsers || 0} actifs
               </p>
             </CardContent>
           </Card>
 
+          {/* 2. Utilisateurs anonymes */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Utilisateurs actifs</CardTitle>
+              <CardTitle className="text-sm font-medium">Anonymes</CardTitle>
               <UserCheck className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{stats?.totalActiveUsers || 0}</div>
+              <div className="text-2xl font-bold text-indigo-600">{stats?.totalAnonymousUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
-                En ligne actuellement
+                {stats?.activeAnonymousUsers || 0} actifs
               </p>
             </CardContent>
           </Card>
 
+          {/* 3. Messages */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Messages</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{stats?.totalMessages || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Messages envoyés
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 4. Communautés */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Communautés</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{stats?.totalCommunities || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Communautés créées
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 5. Traductions */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Traductions</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats?.totalTranslations || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Traductions effectuées
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Deuxième ligne de statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          {/* 6. Liens de conversation */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Liens créés</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">{stats?.totalShareLinks || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats?.activeShareLinks || 0} actifs
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 7. Signalements */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Signalements</CardTitle>
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{stats?.totalReports || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Messages signalés
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 8. Invitations */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Invitations</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">{stats?.totalInvitations || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Demandes en attente
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* 9. Administrateurs */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Administrateurs</CardTitle>
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">{stats?.totalAdmins || 0}</div>
+              <div className="text-2xl font-bold text-purple-600">{stats?.adminUsers || 0}</div>
               <p className="text-xs text-muted-foreground">
                 Admins et modérateurs
               </p>
             </CardContent>
           </Card>
 
+          {/* 10. Langues les plus utilisées */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Taux d&apos;activité</CardTitle>
+              <CardTitle className="text-sm font-medium">Langues</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.activePercentage || 0}%</div>
-              <Progress value={stats?.activePercentage || 0} className="mt-2" />
+              <div className="text-2xl font-bold text-cyan-600">
+                {stats?.topLanguages?.length || 0}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Langues détectées
+              </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Permissions et capacités */}
+        {/* Statistiques supplémentaires */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Communautés</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{stats?.totalCommunities || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Communautés créées
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Messages</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-indigo-600">{stats?.totalMessages || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Messages envoyés
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Utilisateurs inactifs</CardTitle>
+              <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{stats?.inactiveUsers || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Utilisateurs inactifs
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Langues les plus utilisées */}
+        {stats?.topLanguages && stats.topLanguages.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">Langues les plus utilisées</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stats.topLanguages.slice(0, 6).map((lang, index) => (
+                <Card key={lang.language}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-semibold">{lang.language.toUpperCase()}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {lang.count} messages
+                        </div>
+                      </div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        #{index + 1}
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Progress 
+                        value={(lang.count / stats.topLanguages[0].count) * 100} 
+                        className="h-2"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Activité récente */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Shield className="w-5 h-5" />
-                <span>Vos permissions</span>
+                <TrendingUp className="w-5 h-5" />
+                <span>Activité récente (7 derniers jours)</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {userInfo?.capabilities.permissions.map((permission, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm">{permission}</span>
-                  </div>
-                ))}
-                {(!userInfo?.capabilities.permissions || userInfo.capabilities.permissions.length === 0) && (
-                  <div className="text-sm text-gray-500">Aucune permission spéciale</div>
-                )}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Nouveaux utilisateurs</span>
+                  <Badge variant="secondary">{dashboardData?.recentActivity?.newUsers || 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Nouvelles conversations</span>
+                  <Badge variant="secondary">{dashboardData?.recentActivity?.newConversations || 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Nouveaux messages</span>
+                  <Badge variant="secondary">{dashboardData?.recentActivity?.newMessages || 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Nouveaux utilisateurs anonymes</span>
+                  <Badge variant="secondary">{dashboardData?.recentActivity?.newAnonymousUsers || 0}</Badge>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -270,55 +447,130 @@ const AdminDashboard: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <AlertCircle className="w-5 h-5" />
-                <span>Restrictions</span>
+                <Clock className="w-5 h-5" />
+                <span>Dernière mise à jour</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {userInfo?.capabilities.restrictions.map((restriction, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-sm text-gray-600">{restriction}</span>
-                  </div>
-                ))}
-                {(!userInfo?.capabilities.restrictions || userInfo.capabilities.restrictions.length === 0) && (
-                  <div className="text-sm text-gray-500">Aucune restriction</div>
-                )}
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {dashboardData?.timestamp ? 
+                    new Date(dashboardData.timestamp).toLocaleString('fr-FR') : 
+                    'Non disponible'
+                  }
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadAdminStats}
+                  className="w-full"
+                >
+                  Actualiser les données
+                </Button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Actions rapides */}
+        {/* Actions rapides - Navigation vers toutes les pages dédiées */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Activity className="w-5 h-5" />
-              <span>Actions rapides</span>
+              <span>Actions rapides - Pages dédiées</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Gestion utilisateurs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* 1. Utilisateurs */}
               <Button 
                 className="h-20 flex flex-col space-y-2" 
                 onClick={() => router.push('/admin/users')}
-                disabled={!userInfo?.capabilities.permissions.includes('Gestion utilisateurs')}
               >
                 <Users className="w-6 h-6" />
-                <span>Gérer les utilisateurs</span>
+                <span>Utilisateurs</span>
               </Button>
 
-              {/* Modération */}
+              {/* 2. Utilisateurs anonymes */}
               <Button 
                 variant="outline" 
                 className="h-20 flex flex-col space-y-2" 
-                onClick={() => router.push('/admin/moderation')}
-                disabled={!userInfo?.capabilities.permissions.includes('Modération contenu')}
+                onClick={() => router.push('/admin/anonymous-users')}
               >
-                <Shield className="w-6 h-6" />
-                <span>Modération</span>
+                <UserCheck className="w-6 h-6" />
+                <span>Anonymes</span>
+              </Button>
+
+              {/* 3. Messages */}
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col space-y-2" 
+                onClick={() => router.push('/admin/messages')}
+              >
+                <Activity className="w-6 h-6" />
+                <span>Messages</span>
+              </Button>
+
+              {/* 4. Communautés */}
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col space-y-2" 
+                onClick={() => router.push('/admin/communities')}
+              >
+                <Users className="w-6 h-6" />
+                <span>Communautés</span>
+              </Button>
+
+              {/* 5. Traductions */}
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col space-y-2" 
+                onClick={() => router.push('/admin/translations')}
+              >
+                <TrendingUp className="w-6 h-6" />
+                <span>Traductions</span>
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
+              {/* 6. Liens de conversation */}
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col space-y-2" 
+                onClick={() => router.push('/admin/share-links')}
+              >
+                <Activity className="w-6 h-6" />
+                <span>Liens créés</span>
+              </Button>
+
+              {/* 7. Signalements */}
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col space-y-2" 
+                onClick={() => router.push('/admin/reports')}
+              >
+                <AlertCircle className="w-6 h-6" />
+                <span>Signalements</span>
+              </Button>
+
+              {/* 8. Invitations */}
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col space-y-2" 
+                onClick={() => router.push('/admin/invitations')}
+              >
+                <Users className="w-6 h-6" />
+                <span>Invitations</span>
+              </Button>
+
+              {/* 9. Langues */}
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col space-y-2" 
+                onClick={() => router.push('/admin/languages')}
+              >
+                <TrendingUp className="w-6 h-6" />
+                <span>Langues</span>
               </Button>
 
               {/* Analytics */}
@@ -326,7 +578,6 @@ const AdminDashboard: React.FC = () => {
                 variant="outline" 
                 className="h-20 flex flex-col space-y-2" 
                 onClick={() => router.push('/admin/analytics')}
-                disabled={!userInfo?.capabilities.permissions.includes('Accès analyses')}
               >
                 <TrendingUp className="w-6 h-6" />
                 <span>Analyses</span>

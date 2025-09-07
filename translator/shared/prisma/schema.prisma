@@ -52,14 +52,12 @@ model User {
   typingIndicators            TypingIndicator[]
   preferences                 UserPreference[]
   stats                       UserStats?
-  communityAdmins             CommunityAdmin[]
-  communityModerators         CommunityModerator[]
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
 model Conversation {
   id                    String                   @id @default(auto()) @map("_id") @db.ObjectId
-  /// Identifiant lisible par l'homme (ex: "meeshy", "general", "support")
+  /// Identifiant lisible par l'homme (ex: "mee_meeshy", "general", "mee_support")
   identifier            String?                  @unique
   /// direct, group, public, global
   type                  String
@@ -109,7 +107,7 @@ model ConversationMember {
 model ConversationShareLink {
   id                     String                 @id @default(auto()) @map("_id") @db.ObjectId
   linkId                 String                 @unique
-  /// Identifiant lisible par l'homme (ex: "meeshy-public", "support-link")
+  /// Identifiant lisible par l'homme (ex: "mshy_meeshy-public", "mshy_support-link")
   identifier             String?                @unique
   conversationId         String                 @db.ObjectId
   createdBy              String                 @db.ObjectId
@@ -271,6 +269,8 @@ model Notification {
 /// Communauté (représente une communauté de conversation)
 model Community {
   id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  /// Identifiant lisible par l'homme (ex: "mshy_meeshy-paris", "mshy_support-lycee-njanda")
+  identifier             String?                @unique
   name        String
   description String?
   avatar      String?
@@ -281,18 +281,17 @@ model Community {
 
   members     CommunityMember[]
   creator     User          @relation("CommunityCreator", fields: [createdBy], references: [id])
-  admins      CommunityAdmin[]
-  moderators  CommunityModerator[]
-
   Conversation Conversation[]
 }
 
-/// Appartenance aux communautés (legacy)
+/// Appartenance aux communautés 
 model CommunityMember {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   communityId String   @db.ObjectId
   userId      String   @db.ObjectId
   joinedAt    DateTime @default(now())
+  /// admin, moderator, member
+  role             String       @default("member")
 
   user        User     @relation(fields: [userId], references: [id])
   community   Community @relation(fields: [communityId], references: [id])
@@ -351,26 +350,4 @@ model ConversationPreference {
   
   user           User         @relation(fields: [userId], references: [id])
   conversation   Conversation @relation(fields: [conversationId], references: [id])
-}
-
-/// Relation many-to-many pour les administrateurs de communauté
-model CommunityAdmin {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  communityId String    @db.ObjectId
-  userId      String    @db.ObjectId
-  assignedAt  DateTime  @default(now())
-  
-  user        User      @relation(fields: [userId], references: [id])
-  community   Community @relation(fields: [communityId], references: [id])
-}
-
-/// Relation many-to-many pour les modérateurs de communauté
-model CommunityModerator {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  communityId String    @db.ObjectId
-  userId      String    @db.ObjectId
-  assignedAt  DateTime  @default(now())
-  
-  user        User      @relation(fields: [userId], references: [id])
-  community   Community @relation(fields: [communityId], references: [id])
 }

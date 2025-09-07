@@ -34,6 +34,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setIsLoading(true);
     try {
       console.log('[LOGIN_FORM] Tentative de connexion pour:', formData.username);
+      console.log('[LOGIN_FORM] URL de connexion:', buildApiUrl(API_ENDPOINTS.AUTH.LOGIN));
       
       const response = await fetch(buildApiUrl(API_ENDPOINTS.AUTH.LOGIN), {
         method: 'POST',
@@ -45,6 +46,14 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           password: formData.password.trim(),
         }),
       });
+
+      console.log('[LOGIN_FORM] Status de la réponse:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[LOGIN_FORM] Erreur HTTP:', response.status, errorData);
+        throw new Error(errorData.error || `Erreur ${response.status}: ${response.statusText}`);
+      }
 
       const result = await response.json();
       console.log('[LOGIN_FORM] Réponse API:', result);
@@ -66,7 +75,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         token = result.token;
       } else {
         console.error('[LOGIN_FORM] Format de réponse inattendu:', result);
-        throw new Error('Format de réponse invalide');
+        console.error('[LOGIN_FORM] URL appelée:', buildApiUrl(API_ENDPOINTS.AUTH.LOGIN));
+        throw new Error('Format de réponse invalide - vérifiez la configuration du serveur');
       }
 
       if (userData && token) {

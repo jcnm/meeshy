@@ -18,6 +18,8 @@ import {
   LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from '@/hooks/useTranslations';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useUser } from '@/context/AppContext';
 import { useAuth } from '@/hooks/use-auth';
 import { Z_CLASSES } from '@/lib/z-index';
@@ -53,6 +55,7 @@ interface NavigationProps {
 }
 
 export function Navigation({ className }: NavigationProps) {
+  const { t } = useTranslations('conversationSearch');
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
@@ -177,7 +180,7 @@ export function Navigation({ className }: NavigationProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder={t('searchParticipants')}
               className="w-full pl-10 pr-4 py-2 text-sm border border-input rounded-md bg-background"
             />
           </div>
@@ -217,17 +220,10 @@ export function Navigation({ className }: NavigationProps) {
 
         {/* Notifications */}
         <div className="p-4 border-t border-border">
-          <Button
-            variant="ghost"
+          <NotificationBell 
             className="w-full justify-start"
             onClick={() => router.push('/notifications')}
-          >
-            <Bell className="mr-3 h-5 w-5" />
-            Notifications
-            <Badge variant="destructive" className="ml-auto text-xs">
-              3
-            </Badge>
-          </Button>
+          />
         </div>
       </nav>
 

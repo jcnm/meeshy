@@ -14,6 +14,7 @@ import {
   Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface AnonymousChatErrorHandlerProps {
   error: string;
@@ -30,6 +31,7 @@ export function AnonymousChatErrorHandler({
   onRetry,
   onRedirect
 }: AnonymousChatErrorHandlerProps) {
+  const { t } = useTranslations('anonymousChatErrorHandler');
   const router = useRouter();
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
@@ -40,12 +42,12 @@ export function AnonymousChatErrorHandler({
     if (error.includes('403') || error.includes('Forbidden') || error.includes('Accès non autorisé')) {
       return {
         type: 'forbidden',
-        title: 'Accès non autorisé',
-        description: 'Vous n\'avez pas l\'autorisation d\'accéder à cette conversation.',
+        title: t('forbidden.title'),
+        description: t('forbidden.description'),
         icon: AlertTriangle,
         actions: [
           {
-            label: 'Retourner à l\'accueil',
+            label: t('forbidden.actions.backHome'),
             action: () => router.push('/'),
             variant: 'default' as const
           }
@@ -56,12 +58,12 @@ export function AnonymousChatErrorHandler({
     if (error.includes('401') || error.includes('Unauthorized') || error.includes('Session expirée')) {
       return {
         type: 'unauthorized',
-        title: 'Session expirée',
-        description: 'Votre session a expiré. Veuillez vous reconnecter pour continuer.',
+        title: t('unauthorized.title'),
+        description: t('unauthorized.description'),
         icon: Clock,
         actions: [
           {
-            label: isAnonymous ? 'Rejoindre à nouveau' : 'Se connecter',
+            label: isAnonymous ? t('unauthorized.actions.rejoin') : t('unauthorized.actions.login'),
             action: () => {
               if (isAnonymous) {
                 const storedLinkId = localStorage.getItem('anonymous_current_link_id');
@@ -77,7 +79,7 @@ export function AnonymousChatErrorHandler({
             variant: 'default' as const
           },
           {
-            label: 'Retourner à l\'accueil',
+            label: t('unauthorized.actions.backHome'),
             action: () => router.push('/'),
             variant: 'outline' as const
           }
@@ -88,12 +90,12 @@ export function AnonymousChatErrorHandler({
     if (error.includes('404') || error.includes('Not Found') || error.includes('introuvable')) {
       return {
         type: 'not-found',
-        title: 'Conversation introuvable',
-        description: 'Cette conversation n\'existe pas ou a été supprimée.',
+        title: t('notFound.title'),
+        description: t('notFound.description'),
         icon: MessageSquare,
         actions: [
           {
-            label: 'Retourner à l\'accueil',
+            label: t('notFound.actions.backHome'),
             action: () => router.push('/'),
             variant: 'default' as const
           }
@@ -104,12 +106,12 @@ export function AnonymousChatErrorHandler({
     if (error.includes('Identifiant invalide')) {
       return {
         type: 'invalid-identifier',
-        title: 'Lien invalide',
-        description: 'Le lien que vous essayez d\'utiliser n\'est pas valide.',
+        title: t('invalidIdentifier.title'),
+        description: t('invalidIdentifier.description'),
         icon: AlertTriangle,
         actions: [
           {
-            label: 'Retourner à l\'accueil',
+            label: t('invalidIdentifier.actions.backHome'),
             action: () => router.push('/'),
             variant: 'default' as const
           }
@@ -120,18 +122,18 @@ export function AnonymousChatErrorHandler({
     // Erreur générique
     return {
       type: 'generic',
-      title: 'Erreur de connexion',
-      description: 'Une erreur est survenue lors du chargement de la conversation.',
+      title: t('generic.title'),
+      description: t('generic.description'),
       icon: AlertTriangle,
       actions: [
         {
-          label: 'Réessayer',
+          label: t('generic.actions.retry'),
           action: handleRetry,
           variant: 'default' as const,
           disabled: retryCount >= maxRetries
         },
         {
-          label: 'Retourner à l\'accueil',
+          label: t('generic.actions.backHome'),
           action: () => router.push('/'),
           variant: 'outline' as const
         }
@@ -141,7 +143,7 @@ export function AnonymousChatErrorHandler({
 
   const handleRetry = async () => {
     if (retryCount >= maxRetries) {
-      toast.error('Nombre maximum de tentatives atteint');
+      toast.error(t('maxRetriesReached'));
       return;
     }
 
@@ -160,7 +162,7 @@ export function AnonymousChatErrorHandler({
       }
     } catch (error) {
       console.error('Erreur lors de la nouvelle tentative:', error);
-      toast.error('Échec de la nouvelle tentative');
+      toast.error(t('retryFailed'));
     } finally {
       setIsRetrying(false);
     }
@@ -188,13 +190,13 @@ export function AnonymousChatErrorHandler({
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription className="text-xs">
-                <strong>Debug:</strong> {error}
+                <strong>{t('debug.title')}</strong> {error}
                 <br />
-                <strong>Identifiant:</strong> {identifier}
+                <strong>{t('debug.identifier')}</strong> {identifier}
                 <br />
-                <strong>Type:</strong> {isAnonymous ? 'Anonyme' : 'Authentifié'}
+                <strong>{t('debug.type')}</strong> {isAnonymous ? t('debug.anonymous') : t('debug.authenticated')}
                 <br />
-                <strong>Tentatives:</strong> {retryCount}/{maxRetries}
+                <strong>{t('debug.attempts')}</strong> {retryCount}/{maxRetries}
               </AlertDescription>
             </Alert>
           )}
@@ -209,16 +211,16 @@ export function AnonymousChatErrorHandler({
                 className="w-full"
                 disabled={action.disabled || isRetrying}
               >
-                {action.label === 'Réessayer' && isRetrying && (
+                {action.label === t('generic.actions.retry') && isRetrying && (
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                 )}
-                {action.label === 'Retourner à l\'accueil' && (
+                {action.label === t('forbidden.actions.backHome') && (
                   <Home className="h-4 w-4 mr-2" />
                 )}
-                {action.label === 'Se connecter' && (
+                {action.label === t('unauthorized.actions.login') && (
                   <LogIn className="h-4 w-4 mr-2" />
                 )}
-                {action.label === 'Rejoindre à nouveau' && (
+                {action.label === t('unauthorized.actions.rejoin') && (
                   <MessageSquare className="h-4 w-4 mr-2" />
                 )}
                 {action.label}
@@ -229,7 +231,7 @@ export function AnonymousChatErrorHandler({
           {/* Indicateur de tentatives */}
           {retryCount > 0 && (
             <div className="text-center text-sm text-gray-500">
-              Tentatives: {retryCount}/{maxRetries}
+              {t('attempts', { current: retryCount, max: maxRetries })}
             </div>
           )}
         </CardContent>

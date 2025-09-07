@@ -21,7 +21,17 @@ export default async function userPreferencesRoutes(fastify: FastifyInstance) {
     preValidation: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const userId = (request as any).user.id;
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
 
       const preferences = await fastify.prisma.userPreference.findMany({
         where: { userId },

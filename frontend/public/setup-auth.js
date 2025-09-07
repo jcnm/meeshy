@@ -1,44 +1,49 @@
-// Script pour configurer l'authentification automatiquement
-const setupAuth = () => {
-  const userData = {
-    "id": "alice_fr",
-    "username": "alice_fr",
-    "firstName": "Alice",
-    "lastName": "Dubois",
-    "email": "alice@meeshy.com",
-    "phoneNumber": null,
-    "displayName": null,
-    "avatar": null,
-    "isOnline": true,
-    "lastSeen": "2025-08-12T22:56:13.871Z",
-    "lastActiveAt": "2025-08-12T22:08:50.723Z",
-    "systemLanguage": "fr",
-    "regionalLanguage": "fr",
-    "customDestinationLanguage": null,
-    "autoTranslateEnabled": true,
-    "translateToSystemLanguage": true,
-    "translateToRegionalLanguage": false,
-    "useCustomDestination": false,
-    "role": "ADMIN",
-    "isActive": true,
-    "deactivatedAt": null,
-    "createdAt": "2025-08-12T22:56:13.871Z",
-    "updatedAt": "2025-08-12T22:08:50.724Z"
-  };
+// Script pour configurer l'authentification automatiquement avec un token valide
+const setupAuth = async () => {
+  console.log('🔐 Configuration de l\'authentification...');
   
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhbGljZV9mciIsImVtYWlsIjoiYWxpY2VAbWVlc2h5LmNvbSIsInVzZXJuYW1lIjoiYWxpY2VfZnIiLCJpYXQiOjE3NTQ2NTYzMTEsImV4cCI6MTc1NDY1OTkxMX0.EXAMPLE_TOKEN_FOR_ALICE";
-  
-  // Configurer localStorage
-  localStorage.setItem('auth_token', token);
-  localStorage.setItem('user', JSON.stringify(userData));
-  
-  console.log('✅ Authentification configurée');
-  console.log('🔄 Rechargement de la page...');
-  
-  // Recharger la page après un court délai
-  setTimeout(() => {
-    window.location.reload();
-  }, 500);
+  try {
+    // Login avec les credentials admin pour obtenir un token valide
+    const loginResponse = await fetch('http://localhost:3000/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: 'admin',
+        password: 'admin123'
+      })
+    });
+
+    if (!loginResponse.ok) {
+      throw new Error('Échec de la connexion');
+    }
+
+    const loginData = await loginResponse.json();
+    
+    if (!loginData.success) {
+      throw new Error('Connexion échouée: ' + (loginData.error || 'Erreur inconnue'));
+    }
+
+    const { user, token } = loginData.data;
+    
+    // Configurer localStorage avec les données reçues
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    
+    console.log('✅ Authentification configurée avec succès');
+    console.log('👤 Utilisateur connecté:', user.username, '(' + user.role + ')');
+    console.log('🔄 Rechargement de la page...');
+    
+    // Recharger la page après un court délai
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+    
+  } catch (error) {
+    console.error('❌ Erreur lors de l\'authentification:', error);
+    alert('Erreur lors de l\'authentification: ' + error.message);
+  }
 };
 
 // Exécuter automatiquement

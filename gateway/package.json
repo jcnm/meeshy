@@ -1,6 +1,6 @@
 {
   "name": "meeshy-gateway",
-  "version": "1.0.38-alpha",
+  "version": "1.0.39-alpha",
   "description": "Fastify Gateway service for Meeshy real-time messaging",
   "main": "dist/src/server.js",
   "scripts": {
@@ -8,9 +8,9 @@
     "prebuild": "pnpm run generate:prisma && npm run generate:seeds && mv ./shared/dev.db ./dev.db 2>/dev/null || true",
     "start": "node -r dotenv/config dist/src/server.js",
     "dev": "tsx watch -r dotenv/config src/server.ts dotenv_config_path=.env",
-    "generate:seeds": "npm run generate:prisma && npx prisma db push --schema=shared/schema.prisma && npx tsx shared/seed.ts",
+    "generate:seeds": "npm run generate:prisma && npx prisma db push --schema=shared/prisma/schema.prisma && npx tsx shared/seed.ts",
     "generate:prisma": "cd ../shared/ ; ./scripts/distribute.sh ; cd - && prisma generate --schema=./shared/prisma/schema.prisma",
-    "migrate": "prisma migrate dev --schema=shared/schema.prisma",
+    "migrate": "prisma migrate dev --schema=shared/prisma/schema.prisma",
     "test": "jest --config=jest.config.json",
     "test:watch": "jest --config=jest.config.json --watch",
     "test:coverage": "jest --config=jest.config.json --coverage",
@@ -51,7 +51,7 @@
     "glob": "^11.0.3",
     "grpc-tools": "^1.12.4",
     "jest": "^30.0.5",
-    "prisma": "^6.14.0",
+    "prisma": "^6.15.0",
     "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",

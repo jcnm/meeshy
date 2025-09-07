@@ -22,6 +22,7 @@ import {
 import { ThreadMember } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
+import { useTranslations } from '@/hooks/useTranslations';
 import { UserRoleEnum } from '@shared/types';
 
 interface ConversationParticipantsPopoverProps {
@@ -45,6 +46,8 @@ export function ConversationParticipantsPopover({
   onParticipantAdded,
   onLinkCreated
 }: ConversationParticipantsPopoverProps) {
+  const { t } = useTranslations('conversationSearch');
+  const { t: tUI } = useTranslations('conversationUI');
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -120,7 +123,7 @@ export function ConversationParticipantsPopover({
           variant="ghost"
           size="sm"
           className="rounded-full h-10 w-10 p-0 hover:bg-accent/50 relative"
-          title="Participants"
+          title={tUI('participants')}
         >
           <Users className="h-5 w-5" />
           {participants.length > 0 && (
@@ -170,7 +173,7 @@ export function ConversationParticipantsPopover({
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
               <Input
-                placeholder="Rechercher..."
+                placeholder={t('searchParticipants')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 border-gray-200/60 focus:bg-white focus:border-blue-300"
@@ -208,7 +211,9 @@ export function ConversationParticipantsPopover({
                             <span className="text-sm font-medium truncate">
                               {getDisplayName(user)}{isCurrentUser && ' (Vous)'}
                             </span>
-                            {participant.role === UserRoleEnum.ADMIN && <Crown className="h-3 w-3 text-yellow-500" />}
+                            {(participant.role === UserRoleEnum.ADMIN || 
+                              (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
+                              <Crown className="h-3 w-3 text-yellow-500" />}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>
@@ -264,7 +269,9 @@ export function ConversationParticipantsPopover({
                             <span className="text-sm font-medium truncate">
                               {getDisplayName(user)}{isCurrentUser && ' (Vous)'}
                             </span>
-                            {participant.role === UserRoleEnum.ADMIN && <Crown className="h-3 w-3 text-yellow-500" />}
+                            {(participant.role === UserRoleEnum.ADMIN || 
+                              (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
+                              <Crown className="h-3 w-3 text-yellow-500" />}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>

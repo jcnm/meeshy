@@ -26,7 +26,13 @@ const createLinkSchema = z.object({
   requireEmail: z.boolean().optional(),
   allowedCountries: z.array(z.string()).optional(),
   allowedLanguages: z.array(z.string()).optional(),
-  allowedIpRanges: z.array(z.string()).optional()
+  allowedIpRanges: z.array(z.string()).optional(),
+  // Nouveau: données pour créer une nouvelle conversation
+  newConversation: z.object({
+    title: z.string().min(1, 'Le titre de la conversation est requis'),
+    description: z.string().optional(),
+    memberIds: z.array(z.string()).optional()
+  }).optional()
 });
 
 const updateLinkSchema = z.object({
@@ -88,7 +94,13 @@ export async function linksRoutes(fastify: FastifyInstance) {
         anonymousParticipant: {
           id: authContext.anonymousUser.sessionToken,
           username: authContext.anonymousUser.username,
-          shareLinkId: authContext.anonymousUser.shareLinkId
+          firstName: authContext.anonymousUser.firstName,
+          lastName: authContext.anonymousUser.lastName,
+          language: authContext.anonymousUser.language,
+          shareLinkId: authContext.anonymousUser.shareLinkId,
+          canSendMessages: authContext.anonymousUser.permissions.canSendMessages,
+          canSendFiles: authContext.anonymousUser.permissions.canSendFiles,
+          canSendImages: authContext.anonymousUser.permissions.canSendImages
         }
       };
     } else {
@@ -207,9 +219,60 @@ export async function linksRoutes(fastify: FastifyInstance) {
           conversationId, 
           memberRole: member.role 
         });
+      } else if (body.newConversation) {
+        // Créer une nouvelle conversation avec les données fournies
+        console.log('[CREATE_LINK] Création nouvelle conversation avec données:', { 
+          userId, 
+          userRole,
+          newConversation: body.newConversation
+        });
+        
+        // Préparer les membres (créateur + membres ajoutés)
+        const membersToCreate = [
+          { userId, role: UserRoleEnum.CREATOR }
+        ];
+        
+        // Ajouter les membres spécifiés (sans doublons et sans le créateur)
+        if (body.newConversation.memberIds && body.newConversation.memberIds.length > 0) {
+          // Filtrer les doublons et exclure le créateur
+          const uniqueMemberIds = [...new Set(body.newConversation.memberIds)].filter(id => id !== userId);
+          
+          for (const memberId of uniqueMemberIds) {
+            // Vérifier que l'utilisateur existe
+            const userExists = await fastify.prisma.user.findUnique({
+              where: { id: memberId }
+            });
+            
+            if (userExists) {
+              membersToCreate.push({
+                userId: memberId,
+                role: UserRoleEnum.MEMBER
+              });
+            }
+          }
+        }
+        
+        const conversation = await fastify.prisma.conversation.create({
+          data: {
+            type: 'public',
+            title: body.newConversation.title,
+            description: body.newConversation.description || null,
+            members: { 
+              create: membersToCreate
+            }
+          }
+        });
+        conversationId = conversation.id;
+        
+        console.log('[CREATE_LINK] Nouvelle conversation créée:', { 
+          conversationId, 
+          title: conversation.title,
+          membersCount: membersToCreate.length,
+          creatorRole: UserRoleEnum.CREATOR 
+        });
       } else {
-        // Créer une nouvelle conversation de type public
-        console.log('[CREATE_LINK] Création nouvelle conversation pour utilisateur:', { userId, userRole });
+        // Créer une nouvelle conversation de type public (legacy)
+        console.log('[CREATE_LINK] Création nouvelle conversation legacy pour utilisateur:', { userId, userRole });
         
         const conversation = await fastify.prisma.conversation.create({
           data: {
@@ -310,8 +373,9 @@ export async function linksRoutes(fastify: FastifyInstance) {
       // Créer un objet compatible avec l'ancien système
       const hybridRequest = createLegacyHybridRequest(request);
 
-      // Détecter si c'est un linkId (commence par "mshy_") ou un conversationShareLinkId (ID de base de données)
+      // Détecter le type d'identifiant
       const isLinkId = identifier.startsWith('mshy_');
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier); // ObjectId MongoDB
       
       let shareLink;
       
@@ -374,7 +438,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
           }
         }
       });
-      } else {
+      } else if (isObjectId) {
         // Rechercher par conversationShareLinkId (ID de base de données)
         shareLink = await fastify.prisma.conversationShareLink.findUnique({
           where: { id: identifier },
@@ -383,6 +447,67 @@ export async function linksRoutes(fastify: FastifyInstance) {
               select: {
                 id: true,
                 identifier: true, // Ajouter l'identifiant pour la vérification Meeshy
+                title: true,
+                description: true,
+                type: true,
+                createdAt: true,
+                // Inclure les membres de la conversation
+                members: {
+                  where: { isActive: true },
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        username: true,
+                        firstName: true,
+                        lastName: true,
+                        displayName: true,
+                        avatar: true,
+                        systemLanguage: true
+                      }
+                    }
+                  }
+                },
+                // Inclure les participants anonymes
+                anonymousParticipants: {
+                  where: { isActive: true },
+                  select: {
+                    id: true,
+                    username: true,
+                    firstName: true,
+                    lastName: true,
+                    language: true,
+                    isOnline: true,
+                    canSendMessages: true,
+                    canSendFiles: true,
+                    canSendImages: true,
+                    joinedAt: true
+                  }
+                }
+              }
+            },
+            creator: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                displayName: true
+              }
+            }
+          }
+        });
+      } else {
+        // Rechercher par identifier du ConversationShareLink
+        shareLink = await fastify.prisma.conversationShareLink.findFirst({
+          where: {
+            identifier: identifier
+          },
+          include: {
+            conversation: {
+              select: {
+                id: true,
+                identifier: true,
                 title: true,
                 description: true,
                 type: true,
@@ -504,6 +629,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
               language: true
             }
           },
+          readStatus: {
+            select: {
+              userId: true,
+              readAt: true
+            }
+          },
           translations: {
             select: {
               id: true,
@@ -528,6 +659,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
         content: message.content,
         originalLanguage: message.originalLanguage,
         createdAt: message.createdAt,
+        readStatus: message.readStatus || [],
         sender: message.sender ? {
           id: message.sender.id,
           username: message.sender.username,
@@ -793,6 +925,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
               lastName: true,
               language: true
             }
+          },
+          readStatus: {
+            select: {
+              userId: true,
+              readAt: true
+            }
           }
         }
       });
@@ -818,6 +956,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
         replyToId: message.replyToId,
         createdAt: message.createdAt,
         updatedAt: message.updatedAt,
+        readStatus: message.readStatus || [],
         // Retourner sender et senderAnonymous distinctement
         sender: message.sender ? {
           id: message.sender.id,
@@ -828,7 +967,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
           avatar: message.sender.avatar,
           systemLanguage: message.sender.systemLanguage
         } : null,
-        senderAnonymous: message.anonymousSender ? {
+        anonymousSender: message.anonymousSender ? {
           id: message.anonymousSender.id,
           username: message.anonymousSender.username,
           firstName: message.anonymousSender.firstName,
@@ -991,7 +1130,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
             sender: null,
-            senderAnonymous: message.anonymousSender
+            anonymousSender: message.anonymousSender
           }
         });
       }
@@ -1013,7 +1152,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
             sender: null,
-            senderAnonymous: message.anonymousSender
+            anonymousSender: message.anonymousSender
           }
         }
       });
@@ -1175,7 +1314,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
             sender: message.sender,
-            senderAnonymous: null
+            anonymousSender: null
           }
         });
       }
@@ -1197,7 +1336,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
             sender: message.sender,
-            senderAnonymous: null
+            anonymousSender: null
           }
         }
       });

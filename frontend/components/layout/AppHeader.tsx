@@ -27,6 +27,7 @@ import { useUser } from '@/context/AppContext';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import type { User } from '@shared/types';
 
 interface AppHeaderProps {
@@ -143,9 +144,7 @@ export function AppHeader({
 
           {/* Notifications */}
           {showNotifications && (
-            <Button variant="ghost" size="sm" onClick={() => handleNavigation('/notifications')}>
-              <Bell className="h-4 w-4" />
-            </Button>
+            <NotificationBell />
           )}
 
           {/* Profil utilisateur */}

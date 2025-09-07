@@ -13,7 +13,10 @@ import {
   Loader2,
   ArrowUp,
   Search,
-  X
+  X,
+  Ghost,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +42,9 @@ import {
 } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Message, User, BubbleTranslation } from '@shared/types';
+import type { User, BubbleTranslation } from '@shared/types';
+import type { Message } from '@shared/types/conversation';
+import type { BubbleStreamMessage } from '@/types/bubble-stream';
 import { Z_CLASSES } from '@/lib/z-index';
 import { useTranslations } from '@/hooks/useTranslations';
 
@@ -49,11 +54,16 @@ interface BubbleMessageProps {
     originalLanguage: string;
     translations: BubbleTranslation[];
     originalContent: string; // Contenu original de l'auteur
+    readStatus?: Array<{ userId: string; readAt: Date }>; // Statut de lecture par utilisateur
   };
   currentUser: User;
   userLanguage: string;
   usedLanguages: string[];
   onForceTranslation?: (messageId: string, targetLanguage: string) => Promise<void>;
+  onEditMessage?: (messageId: string, newContent: string) => Promise<void>;
+  onDeleteMessage?: (messageId: string) => Promise<void>;
+  conversationType?: 'direct' | 'group' | 'public' | 'global';
+  userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -72,37 +82,99 @@ function BubbleMessageInner({
   currentUser, 
   userLanguage, 
   usedLanguages = [],
-  onForceTranslation
+  onForceTranslation,
+  onEditMessage,
+  onDeleteMessage,
+  conversationType = 'direct',
+  userRole = 'USER'
 }: BubbleMessageProps) {
   const { t } = useTranslations('bubbleStream');
   
-  // Debug: Afficher la structure du message reçu
-  if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line no-console
-    console.log('🔍 BubbleMessage reçu:', {
-      id: message.id,
-      content: message.content,
-      originalContent: message.originalContent,
-      sender: message.sender?.username,
-      hasTranslations: !!message.translations,
-      translationsCount: message.translations?.length || 0,
-      translations: message.translations?.map(t => ({
-        language: t.language,
-        status: t.status,
-        content: t.content?.substring(0, 30) + '...',
-        timestamp: t.timestamp
-      }))
-    });
-  }
+  // Debug: Afficher la structure du message reçu (réduit pour éviter le spam)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && Math.random() < 0.1) { // Seulement 10% des messages pour éviter le spam
+      // eslint-disable-next-line no-console
+      console.log('🔍 BubbleMessage reçu:', {
+        id: message.id,
+        content: message.content,
+        originalContent: message.originalContent,
+        sender: message.sender?.username,
+        hasTranslations: !!message.translations,
+        translationsCount: message.translations?.length || 0
+      });
+    }
+  }, [message.id]);
 
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
   const [translationFilter, setTranslationFilter] = useState('');
+  const [hasPendingForcedTranslation, setHasPendingForcedTranslation] = useState(false);
+  const [newTranslationsCount, setNewTranslationsCount] = useState(0);
+  const [lastTranslationCount, setLastTranslationCount] = useState(0);
+  const [showNewTranslationsIndicator, setShowNewTranslationsIndicator] = useState(false);
+
+  // Détecter les nouvelles traductions et mettre à jour le compteur
+  useEffect(() => {
+    const currentTranslationCount = message.translations?.length || 0;
+    
+    // Si c'est la première fois qu'on charge le message, initialiser le compteur
+    if (lastTranslationCount === 0) {
+      setLastTranslationCount(currentTranslationCount);
+      return;
+    }
+    
+    // Si le nombre de traductions a augmenté, c'est qu'il y a de nouvelles traductions
+    if (currentTranslationCount > lastTranslationCount) {
+      const newTranslations = currentTranslationCount - lastTranslationCount;
+      setNewTranslationsCount(prev => prev + newTranslations);
+      setLastTranslationCount(currentTranslationCount);
+      
+      // Afficher l'indicateur de nouvelles traductions
+      setShowNewTranslationsIndicator(true);
+      
+      // Programmer la disparition de l'indicateur après 10 secondes
+      const timer = setTimeout(() => {
+        setShowNewTranslationsIndicator(false);
+      }, 10000);
+      
+      // Debug: Afficher les nouvelles traductions
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🆕 Nouvelles traductions détectées pour le message ${message.id}:`, {
+          nouvelles: newTranslations,
+          total: currentTranslationCount,
+          nouvellesCumulées: newTranslationsCount + newTranslations,
+          indicateurAffiché: true,
+          disparitionDans: '10 secondes'
+        });
+      }
+      
+      // Nettoyer le timer si le composant se démonte
+      return () => clearTimeout(timer);
+    }
+  }, [message.translations?.length, message.id, lastTranslationCount, newTranslationsCount]);
   const contentRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
   const filterInputRef = useRef<HTMLInputElement>(null);
+
+  // Vérifier si le message a été lu par l'utilisateur actuel
+  const isMessageReadByCurrentUser = () => {
+    // TEMPORAIRE : considérer les propres messages comme lus
+    // et pour tester, considérer qu'un message est lu après 10 secondes
+    const isOwnMessage = message.senderId === currentUser.id || 
+                        message.anonymousSenderId === currentUser.id;
+    if (isOwnMessage) return true;
+    
+    // Vérifier via readStatus si disponible
+    if (message.readStatus && message.readStatus.length > 0 && currentUser.id) {
+      return message.readStatus.some(status => status.userId === currentUser.id);
+    }
+    
+    // Fallback temporaire : messages anciens (créés il y a plus de 10 secondes) sont considérés comme lus
+    const messageAge = Date.now() - new Date(message.createdAt).getTime();
+    return messageAge > 10000; // 10 secondes
+  };
 
   const getLanguageInfo = (langCode: string) => {
     // Validation stricte - les langues sont obligatoires dans Meeshy
@@ -133,6 +205,13 @@ function BubbleMessageInner({
       setCurrentDisplayLanguage(currentUser.systemLanguage);
     }
   }, [message.translations, currentUser.systemLanguage, message.originalLanguage]);
+
+  // Réinitialiser l'état de traduction forcée quand les traductions sont mises à jour
+  useEffect(() => {
+    if (hasPendingForcedTranslation && message.translations.some(t => t.status === 'completed')) {
+      setHasPendingForcedTranslation(false);
+    }
+  }, [message.translations, hasPendingForcedTranslation]);
 
   // Fermer le popover quand le message quitte l'écran
   useEffect(() => {
@@ -206,6 +285,7 @@ function BubbleMessageInner({
   const handleForceTranslation = async (targetLanguage: string) => {
     setIsTranslationPopoverOpen(false);
     setTranslationFilter(''); // Réinitialiser le filtre
+    setHasPendingForcedTranslation(true); // Marquer qu'une traduction forcée est en attente
     
     if (onForceTranslation) {
       try {
@@ -214,10 +294,13 @@ function BubbleMessageInner({
       } catch (error) {
         console.error('❌ Erreur lors de la traduction forcée:', error);
         toast.error(t('toasts.messages.translationError'));
+      } finally {
+        setHasPendingForcedTranslation(false); // Réinitialiser l'état
       }
     } else {
       // toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
       console.log('⚠️ Pas de callback onForceTranslation fourni');
+      setHasPendingForcedTranslation(false); // Réinitialiser l'état
     }
   };
 
@@ -253,8 +336,55 @@ function BubbleMessageInner({
     }
   };
 
-  const isOwnMessage = message.senderId === currentUser.id;
+  const isOwnMessage = message.senderId === currentUser.id || 
+                      message.anonymousSenderId === currentUser.id;
   const isUsedLanguage = usedLanguages?.includes(currentDisplayLanguage) || false;
+
+  // Vérifier si l'utilisateur peut modifier/supprimer le message
+  const canModifyMessage = () => {
+    // L'auteur du message peut toujours le modifier
+    if (isOwnMessage) return true;
+    
+    // Dans un groupe, seuls les modérateurs, admins et créateurs peuvent modifier les messages d'autres utilisateurs
+    if (conversationType === 'group' || conversationType === 'public' || conversationType === 'global') {
+      return userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
+    }
+    
+    return false;
+  };
+
+  const canShowOptionsMenu = canModifyMessage();
+
+  // Fonctions pour gérer l'édition et la suppression
+  const handleEditMessage = async () => {
+    if (!onEditMessage) return;
+    
+    const newContent = prompt('Modifier le message:', message.content);
+    if (newContent && newContent.trim() !== message.content) {
+      try {
+        await onEditMessage(message.id, newContent.trim());
+        toast.success('Message modifié avec succès');
+      } catch (error) {
+        console.error('Erreur lors de la modification du message:', error);
+        toast.error('Erreur lors de la modification du message');
+      }
+    }
+  };
+
+  const handleDeleteMessage = async () => {
+    if (!onDeleteMessage) return;
+    
+    const confirmed = confirm('Êtes-vous sûr de vouloir supprimer ce message ?');
+    if (confirmed) {
+      try {
+        await onDeleteMessage(message.id);
+        toast.success('Message supprimé avec succès');
+      } catch (error) {
+        console.error('Erreur lors de la suppression du message:', error);
+        toast.error('Erreur lors de la suppression du message');
+      }
+    }
+  };
 
   // Obtenir toutes les versions disponibles (original + traductions complètes)
   // CORRECTION: Déduplication des traductions pour éviter les doublons
@@ -289,27 +419,28 @@ function BubbleMessageInner({
 
   const isTranslated = currentDisplayLanguage !== message.originalLanguage;
   
-  // Debug: Afficher le résultat de la déduplication
-  if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line no-console
-    console.log('🔧 AvailableVersions après déduplication:', {
-      messageId: message.id,
-      totalVersions: availableVersions.length,
-      originalLanguage: message.originalLanguage,
-      versions: availableVersions.map(v => ({
-        language: v.language,
-        isOriginal: v.isOriginal,
-        content: v.content?.substring(0, 30) + '...',
-        timestamp: v.timestamp
-      }))
-    });
-  }
+  // Debug: Afficher le résultat de la déduplication (réduit pour éviter le spam)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && Math.random() < 0.05) { // Seulement 5% des messages pour éviter le spam
+      // eslint-disable-next-line no-console
+      console.log('🔧 AvailableVersions après déduplication:', {
+        messageId: message.id,
+        totalVersions: availableVersions.length,
+        originalLanguage: message.originalLanguage
+      });
+    }
+  }, [message.id, availableVersions.length, message.originalLanguage]);
   
   // Permettre à l'émetteur de voir les traductions de son propre message
   const canSeeTranslations = availableVersions.length > 1;
   
   // Améliorer la visibilité de l'icône globe avec un badge
   const translationCount = availableVersions.length - 1; // Exclure l'original
+  
+  // Calculer le nombre total de traductions à afficher dans le badge
+  // Afficher le badge si le message n'est pas lu OU s'il y a de nouvelles traductions avec indicateur actif
+  const shouldShowTranslationBadge = !isMessageReadByCurrentUser() || showNewTranslationsIndicator;
+  const totalTranslationBadgeCount = translationCount + (showNewTranslationsIndicator ? newTranslationsCount : 0);
 
   // Filtrer les versions disponibles selon le filtre de recherche
   const filteredVersions = availableVersions.filter(version => {
@@ -367,17 +498,31 @@ function BubbleMessageInner({
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={(message.sender as any)?.avatar} alt={message.sender?.firstName} />
+                <AvatarImage 
+                  src={(message.sender as any)?.avatar} 
+                  alt={message.sender?.firstName || message.anonymousSender?.firstName} 
+                />
                 <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
-                  {message.sender?.firstName?.charAt(0)?.toUpperCase()}{message.sender?.lastName?.charAt(0)?.toUpperCase()}
+                  {message.sender ? (
+                    <>
+                      {message.sender?.firstName?.charAt(0)?.toUpperCase()}{message.sender?.lastName?.charAt(0)?.toUpperCase()}
+                    </>
+                  ) : (
+                    <>
+                      {message.anonymousSender?.firstName?.charAt(0)?.toUpperCase()}{message.anonymousSender?.lastName?.charAt(0)?.toUpperCase()}
+                    </>
+                  )}
                 </AvatarFallback>
               </Avatar>
               
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
                   <span className="font-medium text-gray-900">
-                    @{message.sender?.username}
+                    @{message.sender?.username || message.anonymousSender?.username}
                   </span>
+                  {message.anonymousSender && (
+                    <Ghost className="h-4 w-4 text-gray-400" />
+                  )}
                   <span className="text-gray-400">•</span>
                   <span className="text-sm text-gray-500 flex items-center">
                     <Timer className="h-3 w-3 mr-1" />
@@ -442,7 +587,7 @@ function BubbleMessageInner({
                     {getCurrentContent()}
                   </p>
                   {/* Indicateur de traductions disponibles */}
-                  {hasAvailableTranslations && currentDisplayLanguage === message.originalLanguage && (
+                  {hasAvailableTranslations && currentDisplayLanguage === message.originalLanguage && (showNewTranslationsIndicator || !isMessageReadByCurrentUser()) && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="ml-2 mt-1 flex items-center space-x-1">
@@ -492,13 +637,13 @@ function BubbleMessageInner({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}
-                    className="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full"
+                    disabled
+                    className="text-gray-300 hover:text-gray-300 hover:bg-transparent p-2 rounded-full cursor-not-allowed"
                   >
                     <MessageCircle className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{t('reply')}</TooltipContent>
+                <TooltipContent>{t('reply')} (Non implémenté)</TooltipContent>
               </Tooltip>
 
               {/* Icône traduction - Interface complète */}
@@ -514,20 +659,31 @@ function BubbleMessageInner({
                       e.stopPropagation(); // Empêcher la propagation
                       console.log('🌐 Click sur globe, état actuel:', isTranslationPopoverOpen);
                       setIsTranslationPopoverOpen(!isTranslationPopoverOpen);
+                      
+                      // Réinitialiser le compteur de nouvelles traductions quand on ouvre le popover
+                      // Seulement si le message n'est pas lu ou s'il y a de nouvelles traductions
+                      if (!isTranslationPopoverOpen && (newTranslationsCount > 0 || !isMessageReadByCurrentUser())) {
+                        setNewTranslationsCount(0);
+                        setShowNewTranslationsIndicator(false);
+                      }
                     }}
                     className={`relative p-2 rounded-full transition-all duration-200 ${
-                      translationCount > 0 
+                      shouldShowTranslationBadge && totalTranslationBadgeCount > 0
                         ? 'text-green-600 hover:text-green-700 hover:bg-green-100' 
                         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <Languages className={`h-4 w-4 transition-transform duration-200 ${
-                      translationCount > 0 ? 'animate-pulse' : ''
+                      (hasPendingForcedTranslation || message.translations.some(t => t.status === 'translating')) ? 'animate-pulse' : ''
                     }`} />
                     {/* Badge pour indiquer le nombre de traductions */}
-                    {translationCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-bounce">
-                        {translationCount}
+                    {shouldShowTranslationBadge && totalTranslationBadgeCount > 0 && (
+                      <span className={`absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium ${
+                        showNewTranslationsIndicator 
+                          ? 'bg-orange-500 animate-bounce' // Orange pour les nouvelles traductions
+                          : 'bg-green-600' // Vert pour les traductions normales
+                      }`}>
+                        {totalTranslationBadgeCount}
                       </span>
                     )}
                   </Button>
@@ -755,39 +911,43 @@ function BubbleMessageInner({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}
-                    className="text-gray-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-full"
+                    disabled
+                    className="text-gray-300 hover:text-gray-300 hover:bg-transparent p-2 rounded-full cursor-not-allowed"
                   >
                     <AlertTriangle className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{t('report')}</TooltipContent>
+                <TooltipContent>{t('report')} (Non implémenté)</TooltipContent>
               </Tooltip>
             </div>
 
-            {/* Menu plus d'options */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-500 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-full"
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
-                  {t('share')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
-                  {t('pin')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {/* DEBUG: Toast réduit de 80% - Suppression des toasts de debug */}}>
-                  {t('edit')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Menu plus d'options - Affiché seulement si l'utilisateur a les permissions */}
+            {canShowOptionsMenu && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-full"
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={handleEditMessage} className="flex items-center space-x-2">
+                    <Edit className="h-4 w-4" />
+                    <span>{t('edit')}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={handleDeleteMessage} 
+                    className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Supprimer</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </CardContent>
       </Card>

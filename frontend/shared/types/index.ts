@@ -112,7 +112,7 @@ import type { SocketIOMessage } from './socketio-events';
 import type { MessageWithTranslations as UnifiedMessageWithTranslations } from './conversation';
 
 // Alias pour rétrocompatibilité
-export type Message = SocketIOMessage;
+export type Message = import('./conversation').Message;
 export type MessageWithTranslations = UnifiedMessageWithTranslations;
 
 export interface BubbleTranslation {

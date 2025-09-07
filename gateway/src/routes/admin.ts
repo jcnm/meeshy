@@ -149,15 +149,16 @@ const permissionsService = new PermissionsService();
 
 // Middleware d'autorisation admin
 const requireAdmin = async (request: FastifyRequest, reply: FastifyReply) => {
-  const { user } = request as any;
-  if (!user) {
+  // Utiliser le nouveau système d'authentification unifié
+  const authContext = (request as any).authContext;
+  if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
     return reply.status(401).send({
       success: false,
       message: 'Authentification requise'
     });
   }
 
-  const permissions = permissionsService.getUserPermissions(user.role);
+  const permissions = permissionsService.getUserPermissions(authContext.registeredUser.role);
   if (!permissions.canAccessAdmin) {
     return reply.status(403).send({
       success: false,
@@ -168,20 +169,29 @@ const requireAdmin = async (request: FastifyRequest, reply: FastifyReply) => {
 
 export async function adminRoutes(fastify: FastifyInstance) {
   // Tableau de bord administrateur
-  fastify.get('/admin/dashboard', {
+  fastify.get('/dashboard', {
     onRequest: [fastify.authenticate, requireAdmin]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { user } = request as any;
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
 
-      // Statistiques générales
+      // Statistiques générales - Toutes les métriques demandées
       const [
         totalUsers,
         activeUsers,
         totalConversations,
         totalCommunities,
         totalMessages,
-        adminUsers
+        adminUsers,
+        totalAnonymousUsers,
+        activeAnonymousUsers,
+        totalShareLinks,
+        activeShareLinks,
+        totalTranslations,
+        totalReports,
+        totalInvitations,
+        languagesStats
       ] = await Promise.all([
         fastify.prisma.user.count(),
         fastify.prisma.user.count({ where: { isActive: true } }),
@@ -192,6 +202,23 @@ export async function adminRoutes(fastify: FastifyInstance) {
           where: {
             role: { in: ['ADMIN', 'BIGBOSS', 'MODO'] }
           }
+        }),
+        fastify.prisma.anonymousParticipant.count(),
+        fastify.prisma.anonymousParticipant.count({ where: { isActive: true } }),
+        fastify.prisma.conversationShareLink.count(),
+        fastify.prisma.conversationShareLink.count({ where: { isActive: true } }),
+        fastify.prisma.messageTranslation.count(),
+        // Pour les signalements, on utilise les messages supprimés comme proxy
+        fastify.prisma.message.count({ where: { isDeleted: true } }),
+        // Pour les invitations, on utilise les demandes d'amitié comme proxy
+        fastify.prisma.friendRequest.count({ where: { status: 'pending' } }),
+        // Statistiques des langues les plus utilisées
+        fastify.prisma.message.groupBy({
+          by: ['originalLanguage'],
+          where: { isDeleted: false },
+          _count: { originalLanguage: true },
+          orderBy: { _count: { originalLanguage: 'desc' } },
+          take: 10
         })
       ]);
 
@@ -211,25 +238,75 @@ export async function adminRoutes(fastify: FastifyInstance) {
         }),
         fastify.prisma.message.count({
           where: { createdAt: { gte: sevenDaysAgo }, isDeleted: false }
+        }),
+        fastify.prisma.anonymousParticipant.count({
+          where: { joinedAt: { gte: sevenDaysAgo } }
         })
       ]);
+
+      // Statistiques par rôle
+      const usersByRole = await fastify.prisma.user.groupBy({
+        by: ['role'],
+        _count: {
+          role: true
+        }
+      });
+
+      // Statistiques des messages par type
+      const messagesByType = await fastify.prisma.message.groupBy({
+        by: ['messageType'],
+        where: { isDeleted: false },
+        _count: {
+          messageType: true
+        }
+      });
 
       return reply.send({
         success: true,
         data: {
           statistics: {
+            // 1. Utilisateurs
             totalUsers,
             activeUsers,
             inactiveUsers: totalUsers - activeUsers,
-            totalConversations,
-            totalCommunities,
+            adminUsers,
+            // 2. Utilisateurs anonymes
+            totalAnonymousUsers,
+            activeAnonymousUsers,
+            inactiveAnonymousUsers: totalAnonymousUsers - activeAnonymousUsers,
+            // 3. Messages
             totalMessages,
-            adminUsers
+            // 4. Communautés
+            totalCommunities,
+            // 5. Traductions
+            totalTranslations,
+            // 6. Liens créés pour conversations
+            totalShareLinks,
+            activeShareLinks,
+            // 7. Signalements (proxy avec messages supprimés)
+            totalReports,
+            // 8. Invitations à rejoindre communauté (proxy avec demandes d'amitié)
+            totalInvitations,
+            // 9. Langues les plus utilisées
+            topLanguages: languagesStats.map(lang => ({
+              language: lang.originalLanguage,
+              count: lang._count.originalLanguage
+            })),
+            // Métadonnées supplémentaires
+            usersByRole: usersByRole.reduce((acc, item) => {
+              acc[item.role] = item._count.role;
+              return acc;
+            }, {} as Record<string, number>),
+            messagesByType: messagesByType.reduce((acc, item) => {
+              acc[item.messageType] = item._count.messageType;
+              return acc;
+            }, {} as Record<string, number>)
           },
           recentActivity: {
             newUsers: recentActivity[0],
             newConversations: recentActivity[1],
-            newMessages: recentActivity[2]
+            newMessages: recentActivity[2],
+            newAnonymousUsers: recentActivity[3]
           },
           userPermissions,
           timestamp: new Date().toISOString()
@@ -246,11 +323,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
   });
 
   // Gestion des utilisateurs - Liste avec pagination
-  fastify.get('/admin/users', {
+  fastify.get('/users', {
     onRequest: [fastify.authenticate, requireAdmin]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { user } = request as any;
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
       const permissions = permissionsService.getUserPermissions(user.role);
 
       if (!permissions.canManageUsers) {
@@ -308,7 +386,9 @@ export async function adminRoutes(fastify: FastifyInstance) {
               select: {
                 sentMessages: true,
                 conversations: true,
-                communityMemberships: true
+                communityMemberships: true,
+                createdCommunities: true,
+                createdShareLinks: true
               }
             }
           },
@@ -341,12 +421,124 @@ export async function adminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Détails d'un utilisateur
-  fastify.get('/admin/users/:id', {
+  // Gestion des utilisateurs anonymes - Liste avec pagination
+  fastify.get('/anonymous-users', {
     onRequest: [fastify.authenticate, requireAdmin]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { user } = request as any;
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
+      const permissions = permissionsService.getUserPermissions(user.role);
+
+      if (!permissions.canManageUsers) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permission insuffisante pour gérer les utilisateurs'
+        });
+      }
+
+      const { page = '1', limit = '20', search, status } = request.query as any;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
+
+      // Construire les filtres
+      const where: any = {};
+      
+      if (search) {
+        where.OR = [
+          { username: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: 'insensitive' } }
+        ];
+      }
+
+      if (status === 'active') {
+        where.isActive = true;
+      } else if (status === 'inactive') {
+        where.isActive = false;
+      }
+
+      const [anonymousUsers, totalCount] = await Promise.all([
+        fastify.prisma.anonymousParticipant.findMany({
+          where,
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+            email: true,
+            sessionToken: true,
+            ipAddress: true,
+            country: true,
+            language: true,
+            isActive: true,
+            isOnline: true,
+            lastActiveAt: true,
+            joinedAt: true,
+            lastSeenAt: true,
+            leftAt: true,
+            canSendMessages: true,
+            canSendFiles: true,
+            canSendImages: true,
+            shareLink: {
+              select: {
+                id: true,
+                linkId: true,
+                identifier: true,
+                name: true,
+                conversation: {
+                  select: {
+                    id: true,
+                    identifier: true,
+                    title: true
+                  }
+                }
+              }
+            },
+            _count: {
+              select: {
+                sentMessages: true
+              }
+            }
+          },
+          orderBy: { joinedAt: 'desc' },
+          skip: offset,
+          take: limitNum
+        }),
+        fastify.prisma.anonymousParticipant.count({ where })
+      ]);
+
+      return reply.send({
+        success: true,
+        data: {
+          anonymousUsers,
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: totalCount,
+            hasMore: offset + anonymousUsers.length < totalCount
+          }
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get admin anonymous users error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Détails d'un utilisateur
+  fastify.get('/users/:id', {
+    onRequest: [fastify.authenticate, requireAdmin]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
       const { id } = request.params as { id: string };
       const permissions = permissionsService.getUserPermissions(user.role);
 
@@ -398,11 +590,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
   });
 
   // Modifier le rôle d'un utilisateur
-  fastify.patch('/admin/users/:id/role', {
+  fastify.patch('/users/:id/role', {
     onRequest: [fastify.authenticate, requireAdmin]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { user } = request as any;
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
       const { id } = request.params as { id: string };
       const body = updateUserRoleSchema.parse(request.body);
       const permissions = permissionsService.getUserPermissions(user.role);
@@ -479,11 +672,12 @@ export async function adminRoutes(fastify: FastifyInstance) {
   });
 
   // Activer/désactiver un utilisateur
-  fastify.patch('/admin/users/:id/status', {
+  fastify.patch('/users/:id/status', {
     onRequest: [fastify.authenticate, requireAdmin]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { user } = request as any;
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
       const { id } = request.params as { id: string };
       const body = updateUserStatusSchema.parse(request.body);
       const permissions = permissionsService.getUserPermissions(user.role);
@@ -556,12 +750,453 @@ export async function adminRoutes(fastify: FastifyInstance) {
     }
   });
 
-  // Statistiques avancées
-  fastify.get('/admin/analytics', {
+  // Gestion des messages - Liste avec pagination
+  fastify.get('/messages', {
     onRequest: [fastify.authenticate, requireAdmin]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { user } = request as any;
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
+      const permissions = permissionsService.getUserPermissions(user.role);
+
+      if (!permissions.canModerateContent) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permission insuffisante pour gérer les messages'
+        });
+      }
+
+      const { page = '1', limit = '20', search, type, period } = request.query as any;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
+
+      // Construire les filtres
+      const where: any = { isDeleted: false };
+      
+      if (search) {
+        where.content = { contains: search, mode: 'insensitive' };
+      }
+
+      if (type) {
+        where.messageType = type;
+      }
+
+      // Filtre par période
+      if (period) {
+        const now = new Date();
+        let startDate = new Date();
+        
+        switch (period) {
+          case 'today':
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          case 'week':
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+          case 'month':
+            startDate.setDate(startDate.getDate() - 30);
+            break;
+        }
+        
+        where.createdAt = { gte: startDate };
+      }
+
+      const [messages, totalCount] = await Promise.all([
+        fastify.prisma.message.findMany({
+          where,
+          select: {
+            id: true,
+            content: true,
+            messageType: true,
+            originalLanguage: true,
+            isEdited: true,
+            createdAt: true,
+            sender: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true
+              }
+            },
+            anonymousSender: {
+              select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true
+              }
+            },
+            conversation: {
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true
+              }
+            },
+            _count: {
+              select: {
+                translations: true,
+                replies: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: offset,
+          take: limitNum
+        }),
+        fastify.prisma.message.count({ where })
+      ]);
+
+      return reply.send({
+        success: true,
+        data: {
+          messages,
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: totalCount,
+            hasMore: offset + messages.length < totalCount
+          }
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get admin messages error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Gestion des communautés - Liste avec pagination
+  fastify.get('/communities', {
+    onRequest: [fastify.authenticate, requireAdmin]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
+      const permissions = permissionsService.getUserPermissions(user.role);
+
+      if (!permissions.canManageCommunities) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permission insuffisante pour gérer les communautés'
+        });
+      }
+
+      const { page = '1', limit = '20', search, isPrivate } = request.query as any;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
+
+      // Construire les filtres
+      const where: any = {};
+      
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { identifier: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } }
+        ];
+      }
+
+      if (isPrivate !== undefined) {
+        where.isPrivate = isPrivate === 'true';
+      }
+
+      const [communities, totalCount] = await Promise.all([
+        fastify.prisma.community.findMany({
+          where,
+          select: {
+            id: true,
+            identifier: true,
+            name: true,
+            description: true,
+            avatar: true,
+            isPrivate: true,
+            createdAt: true,
+            creator: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true
+              }
+            },
+            _count: {
+              select: {
+                members: true,
+                Conversation: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: offset,
+          take: limitNum
+        }),
+        fastify.prisma.community.count({ where })
+      ]);
+
+      return reply.send({
+        success: true,
+        data: {
+          communities,
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: totalCount,
+            hasMore: offset + communities.length < totalCount
+          }
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get admin communities error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Gestion des traductions - Liste avec pagination
+  fastify.get('/translations', {
+    onRequest: [fastify.authenticate, requireAdmin]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
+      const permissions = permissionsService.getUserPermissions(user.role);
+
+      if (!permissions.canManageTranslations) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permission insuffisante pour gérer les traductions'
+        });
+      }
+
+      const { page = '1', limit = '20', sourceLanguage, targetLanguage, period } = request.query as any;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
+
+      // Construire les filtres
+      const where: any = {};
+      
+      if (sourceLanguage) {
+        where.sourceLanguage = sourceLanguage;
+      }
+
+      if (targetLanguage) {
+        where.targetLanguage = targetLanguage;
+      }
+
+      // Filtre par période
+      if (period) {
+        const now = new Date();
+        let startDate = new Date();
+        
+        switch (period) {
+          case 'today':
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          case 'week':
+            startDate.setDate(startDate.getDate() - 7);
+            break;
+          case 'month':
+            startDate.setDate(startDate.getDate() - 30);
+            break;
+        }
+        
+        where.createdAt = { gte: startDate };
+      }
+
+      const [translations, totalCount] = await Promise.all([
+        fastify.prisma.messageTranslation.findMany({
+          where,
+          select: {
+            id: true,
+            sourceLanguage: true,
+            targetLanguage: true,
+            translatedContent: true,
+            translationModel: true,
+            confidenceScore: true,
+            createdAt: true,
+            message: {
+              select: {
+                id: true,
+                content: true,
+                originalLanguage: true,
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true
+                  }
+                },
+                conversation: {
+                  select: {
+                    id: true,
+                    identifier: true,
+                    title: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: offset,
+          take: limitNum
+        }),
+        fastify.prisma.messageTranslation.count({ where })
+      ]);
+
+      return reply.send({
+        success: true,
+        data: {
+          translations: translations.map(translation => ({
+            ...translation,
+            message: {
+              ...translation.message,
+              // S'assurer que le content est toujours le contenu original
+              originalContent: translation.message.content
+            }
+          })),
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: totalCount,
+            hasMore: offset + translations.length < totalCount
+          }
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get admin translations error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Gestion des liens de partage - Liste avec pagination
+  fastify.get('/share-links', {
+    onRequest: [fastify.authenticate, requireAdmin]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
+      const permissions = permissionsService.getUserPermissions(user.role);
+
+      if (!permissions.canManageConversations) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permission insuffisante pour gérer les liens de partage'
+        });
+      }
+
+      const { page = '1', limit = '20', search, isActive } = request.query as any;
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const offset = (pageNum - 1) * limitNum;
+
+      // Construire les filtres
+      const where: any = {};
+      
+      if (search) {
+        where.OR = [
+          { linkId: { contains: search, mode: 'insensitive' } },
+          { identifier: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: 'insensitive' } }
+        ];
+      }
+
+      if (isActive !== undefined) {
+        where.isActive = isActive === 'true';
+      }
+
+      const [shareLinks, totalCount] = await Promise.all([
+        fastify.prisma.conversationShareLink.findMany({
+          where,
+          select: {
+            id: true,
+            linkId: true,
+            identifier: true,
+            name: true,
+            description: true,
+            maxUses: true,
+            currentUses: true,
+            maxConcurrentUsers: true,
+            currentConcurrentUsers: true,
+            expiresAt: true,
+            isActive: true,
+            allowAnonymousMessages: true,
+            allowAnonymousFiles: true,
+            allowAnonymousImages: true,
+            createdAt: true,
+            creator: {
+              select: {
+                id: true,
+                username: true,
+                displayName: true,
+                avatar: true
+              }
+            },
+            conversation: {
+              select: {
+                id: true,
+                identifier: true,
+                title: true,
+                type: true
+              }
+            },
+            _count: {
+              select: {
+                anonymousParticipants: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: offset,
+          take: limitNum
+        }),
+        fastify.prisma.conversationShareLink.count({ where })
+      ]);
+
+      return reply.send({
+        success: true,
+        data: {
+          shareLinks,
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: totalCount,
+            hasMore: offset + shareLinks.length < totalCount
+          }
+        }
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get admin share links error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur interne du serveur'
+      });
+    }
+  });
+
+  // Statistiques avancées
+  fastify.get('/analytics', {
+    onRequest: [fastify.authenticate, requireAdmin]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      const user = authContext.registeredUser;
       const permissions = permissionsService.getUserPermissions(user.role);
 
       if (!permissions.canViewAnalytics) {

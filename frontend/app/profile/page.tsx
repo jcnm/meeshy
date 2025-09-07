@@ -23,6 +23,7 @@ import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useUser } from '@/context/AppContext';
 import { getUserInitials } from '@/utils/user';
+import { usersService } from '@/services/users.service';
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
@@ -37,19 +38,39 @@ export default function ProfilePage() {
   useEffect(() => {
     // Charger les stats une fois que l'utilisateur est disponible
     if (user && !isAuthChecking) {
-      // Mock stats - À remplacer par de vraies données
-      setStats({
-        totalConversations: 12,
-        totalGroups: 5,
-        totalMessages: 234,
-        translationsUsed: 45,
-      });
-      setIsLoading(false);
+      loadUserStats();
     } else if (!isAuthChecking && !user) {
       // Rediriger si pas d'utilisateur après vérification
       router.push('/');
     }
   }, [user, isAuthChecking, router]);
+
+  const loadUserStats = async () => {
+    try {
+      setIsLoading(true);
+      const response = await usersService.getDashboardStats();
+      if (response.data) {
+        setStats({
+          totalConversations: response.data.stats.totalConversations,
+          totalGroups: response.data.stats.totalCommunities,
+          totalMessages: response.data.stats.totalMessages,
+          translationsUsed: response.data.stats.translationsToday,
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error);
+      toast.error('Erreur lors du chargement des statistiques');
+      // Utiliser des valeurs par défaut en cas d'erreur
+      setStats({
+        totalConversations: 0,
+        totalGroups: 0,
+        totalMessages: 0,
+        translationsUsed: 0,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {

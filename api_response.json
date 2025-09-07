@@ -1,0 +1,95 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "68bd33a753ea730b7f449586",
+      "identifier": "mshy_the-conversation-title",
+      "type": "group",
+      "title": "The conversation title ",
+      "description": null,
+      "image": null,
+      "avatar": null,
+      "communityId": "68bd248e4510d93563f30f7d",
+      "isActive": true,
+      "isArchived": false,
+      "lastMessageAt": "2025-09-07T07:26:42.010Z",
+      "createdAt": "2025-09-07T07:26:31.277Z",
+      "updatedAt": "2025-09-07T07:26:42.011Z",
+      "members": [
+        {
+          "id": "68bd33a753ea730b7f449587",
+          "conversationId": "68bd33a753ea730b7f449586",
+          "userId": "68bc64071c7181d556cefce8",
+          "role": "admin",
+          "canSendMessage": true,
+          "canSendFiles": true,
+          "canSendImages": true,
+          "canSendVideos": true,
+          "canSendAudios": true,
+          "canSendLocations": true,
+          "canSendLinks": true,
+          "joinedAt": "2025-09-07T07:26:31.277Z",
+          "leftAt": null,
+          "isActive": true,
+          "user": {
+            "id": "68bc64071c7181d556cefce8",
+            "username": "admin",
+            "displayName": "Admin Manager",
+            "avatar": null,
+            "isOnline": false
+          }
+        },
+        {
+          "id": "68bd33a753ea730b7f449588",
+          "conversationId": "68bd33a753ea730b7f449586",
+          "userId": "68bc911907a534a6e5347b2d",
+          "role": "member",
+          "canSendMessage": true,
+          "canSendFiles": true,
+          "canSendImages": true,
+          "canSendVideos": true,
+          "canSendAudios": true,
+          "canSendLocations": true,
+          "canSendLinks": true,
+          "joinedAt": "2025-09-07T07:26:31.277Z",
+          "leftAt": null,
+          "isActive": true,
+          "user": {
+            "id": "68bc911907a534a6e5347b2d",
+            "username": "charles",
+            "displayName": "Charles Jacques",
+            "avatar": null,
+            "isOnline": false
+          }
+        },
+        {
+          "id": "68bd33a753ea730b7f449589",
+          "conversationId": "68bd33a753ea730b7f449586",
+          "userId": "68bc638a524f98e0cd359a75",
+          "role": "member",
+          "canSendMessage": true,
+          "canSendFiles": true,
+          "canSendImages": true,
+          "canSendVideos": true,
+          "canSendAudios": true,
+          "canSendLocations": true,
+          "canSendLinks": true,
+          "joinedAt": "2025-09-07T07:26:31.277Z",
+          "leftAt": null,
+          "isActive": true,
+          "user": {
+            "id": "68bc638a524f98e0cd359a75",
+            "username": "jcnm",
+            "displayName": "Jacques Charles",
+            "avatar": null,
+            "isOnline": false
+          }
+        }
+      ],
+      "_count": {
+        "messages": 1,
+        "members": 3
+      }
+    }
+  ]
+}

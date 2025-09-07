@@ -9,6 +9,8 @@ import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
 import { MessagingService } from '../services/MessagingService';
+import { MessageNotificationService } from '../services/MessageNotificationService';
+import { UnifiedNotificationService } from '../services/UnifiedNotificationService';
 import jwt from 'jsonwebtoken';
 import type { 
   ServerToClientEvents, 
@@ -29,6 +31,7 @@ export interface SocketUser {
   socketId: string;
   isAnonymous: boolean;
   language: string;
+  sessionToken?: string; // Pour les utilisateurs anonymes
 }
 
 export interface TranslationNotification {
@@ -44,6 +47,8 @@ export class MeeshySocketIOManager {
   private translationService: TranslationService;
   private maintenanceService: MaintenanceService;
   private messagingService: MessagingService;
+  private messageNotificationService: MessageNotificationService;
+  private unifiedNotificationService: UnifiedNotificationService;
   
   // Mapping des utilisateurs connectés
   private connectedUsers: Map<string, SocketUser> = new Map();
@@ -63,6 +68,8 @@ export class MeeshySocketIOManager {
     this.translationService = new TranslationService(prisma);
     this.maintenanceService = new MaintenanceService(prisma);
     this.messagingService = new MessagingService(prisma, this.translationService);
+    this.messageNotificationService = new MessageNotificationService(prisma, this);
+    this.unifiedNotificationService = new UnifiedNotificationService(prisma, this);
     
     // Initialiser Socket.IO avec les types shared
     this.io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
@@ -148,6 +155,39 @@ export class MeeshySocketIOManager {
             return;
           }
 
+          // Récupérer les informations de l'utilisateur pour déterminer s'il est anonyme
+          const user = this.connectedUsers.get(userId);
+          const isAnonymous = user?.isAnonymous || false;
+
+          // Pour les utilisateurs anonymes, récupérer le nom d'affichage depuis la base de données
+          let anonymousDisplayName: string | undefined;
+          if (isAnonymous) {
+            try {
+              // Utiliser le sessionToken stocké dans l'objet utilisateur
+              const userSessionToken = user?.sessionToken;
+              if (!userSessionToken) {
+                console.error('SessionToken manquant pour utilisateur anonyme:', userId);
+                anonymousDisplayName = 'Anonymous User';
+              } else {
+                const anonymousUser = await this.prisma.anonymousParticipant.findUnique({
+                  where: { sessionToken: userSessionToken },
+                  select: { username: true, firstName: true, lastName: true }
+                });
+              
+                if (anonymousUser) {
+                  // Construire le nom d'affichage à partir du prénom/nom ou username
+                  const fullName = `${anonymousUser.firstName || ''} ${anonymousUser.lastName || ''}`.trim();
+                  anonymousDisplayName = fullName || anonymousUser.username || 'Anonymous User';
+                } else {
+                  anonymousDisplayName = 'Anonymous User';
+                }
+              }
+            } catch (error) {
+              console.error('Erreur lors de la récupération du nom anonyme:', error);
+              anonymousDisplayName = 'Anonymous User';
+            }
+          }
+
           // Mapper les données vers le format MessageRequest
           const messageRequest: MessageRequest = {
             conversationId: data.conversationId,
@@ -155,6 +195,8 @@ export class MeeshySocketIOManager {
             originalLanguage: data.originalLanguage,
             messageType: data.messageType || 'text',
             replyToId: data.replyToId,
+            isAnonymous: isAnonymous,
+            anonymousDisplayName: anonymousDisplayName,
             metadata: {
               source: 'websocket',
               socketId: socket.id,
@@ -169,6 +211,17 @@ export class MeeshySocketIOManager {
           const sessionToken = this.extractSessionToken(socket);
 
           console.log(`🔐 [AUTH] Type détecté: ${jwtToken ? 'JWT' : sessionToken ? 'Session' : 'Unknown'}`);
+          console.log(`🔐 [AUTH] Token details:`, {
+            hasJWT: !!jwtToken,
+            hasSession: !!sessionToken,
+            jwtPreview: jwtToken ? jwtToken.substring(0, 20) + '...' : 'none',
+            sessionPreview: sessionToken ? sessionToken.substring(0, 20) + '...' : 'none',
+            socketAuth: socket.handshake?.auth,
+            socketHeaders: {
+              authorization: socket.handshake?.headers?.authorization ? 'present' : 'missing',
+              sessionToken: socket.handshake?.headers?.['x-session-token'] ? 'present' : 'missing'
+            }
+          });
 
           // PHASE 3.1: Utilisation du MessagingService unifié avec contexte d'auth
           const response: MessageResponse = await this.messagingService.handleMessage(
@@ -377,7 +430,8 @@ export class MeeshySocketIOManager {
               id: participant.id,
               socketId: socket.id,
               isAnonymous: true,
-              language: participant.language
+              language: participant.language,
+              sessionToken: participant.sessionToken
             };
 
             // Enregistrer l'utilisateur anonyme
@@ -667,13 +721,47 @@ export class MeeshySocketIOManager {
         }
       } as any;
 
+      // Support pour anonymousSender si présent
+      if (saved?.anonymousSenderId) {
+        (messagePayload as any).anonymousSenderId = saved.anonymousSenderId;
+        // Inclure l'objet anonymousSender complet si disponible
+        if ((saved as any).anonymousSender) {
+          (messagePayload as any).anonymousSender = {
+            id: (saved as any).anonymousSender.id,
+            username: (saved as any).anonymousSender.username,
+            firstName: (saved as any).anonymousSender.firstName,
+            lastName: (saved as any).anonymousSender.lastName,
+            language: (saved as any).anonymousSender.language
+          };
+        }
+      }
+
       this.io.to(`conversation_${data.conversationId}`).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
       // S'assurer que l'auteur reçoit aussi (au cas où il ne serait pas dans la room encore)
       socket.emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
       
       console.log(`✅ Message ${result.messageId} sauvegardé et diffusé à la conversation ${data.conversationId}`);
       
-      // 4. LES TRADUCTIONS SERONT TRAITÉES EN ASYNCHRONE PAR LE TRANSLATION SERVICE
+      // 4. ENVOYER LES NOTIFICATIONS DE MESSAGE
+      const senderId = saved?.senderId || saved?.anonymousSenderId;
+      const isAnonymousSender = !!saved?.anonymousSenderId;
+      if (senderId) {
+        // Envoyer les notifications en asynchrone pour ne pas bloquer
+        setImmediate(async () => {
+          try {
+            await this.messageNotificationService.sendMessageNotification(
+              result.messageId,
+              data.conversationId,
+              senderId,
+              isAnonymousSender
+            );
+          } catch (error) {
+            console.error(`❌ Erreur envoi notification message ${result.messageId}:`, error);
+          }
+        });
+      }
+      
+      // 5. LES TRADUCTIONS SERONT TRAITÉES EN ASYNCHRONE PAR LE TRANSLATION SERVICE
       // ET LES RÉSULTATS SERONT ENVOYÉS VIA LES ÉVÉNEMENTS 'translationReady'
       
       return { messageId: result.messageId };
@@ -793,6 +881,32 @@ export class MeeshySocketIOManager {
       }
       
       console.log(`✅ Traduction ${result.messageId} -> ${targetLanguage} envoyée à ${targetUsers.length} utilisateurs`);
+      
+      // Envoyer les notifications de traduction pour les utilisateurs non connectés
+      if (conversationIdForBroadcast) {
+        setImmediate(async () => {
+          try {
+            // Construire les traductions pour les trois langues de base
+            const translations: { fr?: string; en?: string; es?: string } = {};
+            if (targetLanguage === 'fr') {
+              translations.fr = result.translatedText;
+            } else if (targetLanguage === 'en') {
+              translations.en = result.translatedText;
+            } else if (targetLanguage === 'es') {
+              translations.es = result.translatedText;
+            }
+            
+            // Envoyer la notification de traduction
+            await this.messageNotificationService.sendTranslationNotification(
+              result.messageId,
+              conversationIdForBroadcast,
+              translations
+            );
+          } catch (error) {
+            console.error(`❌ Erreur envoi notification traduction ${result.messageId}:`, error);
+          }
+        });
+      }
       
     } catch (error) {
       console.error(`❌ Erreur envoi traduction: ${error}`);
@@ -940,15 +1054,43 @@ export class MeeshySocketIOManager {
         }
       };
 
-      // Support pour anonymousSenderId si présent
+      // Support pour anonymousSender si présent
       if (message.anonymousSenderId) {
         (messagePayload as any).anonymousSenderId = message.anonymousSenderId;
+        // Inclure l'objet anonymousSender complet si disponible
+        if ((message as any).anonymousSender) {
+          (messagePayload as any).anonymousSender = {
+            id: (message as any).anonymousSender.id,
+            username: (message as any).anonymousSender.username,
+            firstName: (message as any).anonymousSender.firstName,
+            lastName: (message as any).anonymousSender.lastName,
+            language: (message as any).anonymousSender.language
+          };
+        }
       }
 
       // Broadcast vers tous les clients de la conversation
       this.io.to(`conversation_${conversationId}`).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
       
       console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers conversation ${conversationId}`);
+      
+      // Envoyer les notifications de message pour les utilisateurs non connectés à la conversation
+      const senderId = message.anonymousSenderId || message.senderId;
+      const isAnonymousSender = !!message.anonymousSenderId;
+      if (senderId) {
+        setImmediate(async () => {
+          try {
+            await this.messageNotificationService.sendMessageNotification(
+              message.id,
+              conversationId,
+              senderId,
+              isAnonymousSender
+            );
+          } catch (error) {
+            console.error(`❌ Erreur envoi notification message ${message.id}:`, error);
+          }
+        });
+      }
       
     } catch (error) {
       console.error('[PHASE 3.1] Erreur broadcast message:', error);
@@ -980,6 +1122,28 @@ export class MeeshySocketIOManager {
       connected_users: this.connectedUsers.size,
       translation_service_stats: this.translationService.getStats()
     };
+  }
+
+  /**
+   * Vérifie si un utilisateur est connecté
+   */
+  isUserConnected(userId: string): boolean {
+    return this.connectedUsers.has(userId);
+  }
+
+
+  /**
+   * Vérifie si un utilisateur est dans une salle de conversation
+   */
+  isUserInConversationRoom(userId: string, conversationId: string): boolean {
+    const user = this.connectedUsers.get(userId);
+    if (user) {
+      const socket = this.io.sockets.sockets.get(user.socketId);
+      if (socket) {
+        return socket.rooms.has(`conversation:${conversationId}`);
+      }
+    }
+    return false;
   }
 
   /**

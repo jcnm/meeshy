@@ -284,7 +284,20 @@ generate_prisma_clients() {
     if [[ -f "shared/prisma/schema.prisma" ]]; then
         # Vérifier si Python et Prisma sont disponibles
         if command -v python3 >/dev/null 2>&1; then
+            python3 -m venv .venv
+            if [ ! -f ".venv/bin/activate" ]; then
+                echo -e "${RED}❌ Script d'activation .venv/bin/activate non trouvé"
+                exit 1
+            fi
+            echo -e "${GREEN}✅ Script d'activation .venv/bin/activate trouvé"
             source .venv/bin/activate 
+            echo -e "${GREEN}✅ Environnement virtuel trouvé"
+            if ! command -v prisma >/dev/null 2>&1; then
+                echo -e "${RED}❌ Installation de prisma non trouvé"
+                python3 -m pip install prisma
+            fi
+            echo -e "${GREEN}✅ Prisma installé"
+            echo -e "${BLUE}🔧 Génération du client Prisma pour Translator...${NC}"
             if prisma generate --schema=shared/prisma/schema.prisma; then
                 echo -e "${GREEN}✅ Client Prisma Translator généré avec succès${NC}"
             else
@@ -335,7 +348,7 @@ wait_for_service() {
             return 0
         fi
         echo -n "."
-        sleep 2
+        sleep 1
         attempt=$((attempt + 1))
     done
     
@@ -366,7 +379,7 @@ docker-compose -f docker-compose.dev.yml up -d
 DOCKER_COMPOSE_STARTED=true
 
 echo -e "${YELLOW}⏳ Attente du démarrage des services Docker...${NC}"
-sleep 10
+sleep 2
 
 # Vérification des services Docker
 echo -e "${BLUE}📊 Statut des services Docker:${NC}"
@@ -422,7 +435,7 @@ TRANSLATOR_PID=$!
 echo "PID Translator: $TRANSLATOR_PID"
 
 # Attendre que le translator soit prêt
-sleep 5
+sleep 2
 if ! wait_for_service "http://localhost:8000/health" "Translator"; then
     echo -e "${YELLOW}⚠️  Translator pas encore prêt, continuons...${NC}"
 fi
@@ -436,7 +449,7 @@ GATEWAY_PID=$!
 echo "PID Gateway: $GATEWAY_PID"
 
 # Attendre que le gateway soit prêt
-sleep 5
+sleep 2
 if ! wait_for_service "http://localhost:3000/health" "Gateway"; then
     echo -e "${YELLOW}⚠️  Gateway pas encore prêt, continuons...${NC}"
 fi
@@ -450,7 +463,7 @@ FRONTEND_PID=$!
 echo "PID Frontend: $FRONTEND_PID"
 
 # Attendre que le frontend soit prêt
-sleep 8
+sleep 2
 if ! wait_for_service "http://localhost:3100" "Frontend"; then
     echo -e "${YELLOW}⚠️  Frontend pas encore prêt, continuons...${NC}"
 fi
@@ -507,5 +520,5 @@ while true; do
         cleanup
     fi
     
-    sleep 5
+    sleep 2
 done

@@ -17,13 +17,34 @@ export interface CreateUserDto {
 }
 
 export interface ConversationLink {
-  id: string;
-  createdBy: string;
-  participants: string[];
-  isActive: boolean;
-  createdAt: Date;
+  id: string; // ID de la conversationShareLink
+  linkId: string; // Token d'invitation (format mshy_...)
+  name: string;
+  description: string;
   expiresAt?: Date;
-  url?: string;
+  maxUses?: number;
+  currentUses?: number;
+  maxConcurrentUsers?: number;
+  currentConcurrentUsers?: number;
+  requireNickname: boolean;
+  requireEmail: boolean;
+  allowedLanguages?: string[];
+  conversation: {
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    createdAt: Date;
+    participants?: any[]; // Pour compatibilité avec l'affichage
+  };
+  creator: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    displayName: string;
+    avatar?: string;
+  };
 }
 
 // Conversation est maintenant importé depuis @shared/types
@@ -76,14 +97,28 @@ export interface AppState {
 
 export interface Group {
   id: string;
+  identifier?: string;
   name: string;
   description?: string;
+  avatar?: string | null;
+  isPrivate: boolean;
+  maxMembers?: number;
   createdBy: string;
-  members: string[];
+  members: any[]; // Array of member objects
   conversations: string[];
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  creator?: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatar?: string | null;
+  };
+  _count?: {
+    members: number;
+    Conversation: number;
+  };
 }
 
 export interface Notification {

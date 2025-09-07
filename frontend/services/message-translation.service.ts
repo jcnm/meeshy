@@ -41,9 +41,12 @@ class MessageTranslationService {
    */
   async requestTranslation(request: ForceTranslationRequest): Promise<ForceTranslationResponse> {
     try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        throw new Error('Token d\'authentification manquant');
+      // Gérer l'authentification selon le mode (authentifié ou anonyme)
+      const authToken = localStorage.getItem('auth_token');
+      const sessionToken = localStorage.getItem('anonymous_session_token');
+      
+      if (!authToken && !sessionToken) {
+        throw new Error('Aucun token d\'authentification disponible (ni auth_token ni session_token)');
       }
 
       // Utiliser l'API /translate avec message_id pour traduire un message existant
@@ -58,12 +61,20 @@ class MessageTranslationService {
         requestBody.source_language = request.sourceLanguage;
       }
 
+      // Préparer les headers selon le type d'authentification
+      const headers: any = {
+        'Content-Type': 'application/json'
+      };
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      } else if (sessionToken) {
+        headers['X-Session-Token'] = sessionToken;
+      }
+
       const response = await axios.post(buildApiUrl('/translate'), requestBody, {
         timeout: TIMEOUT,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+        headers
       });
 
       return {

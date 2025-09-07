@@ -3,6 +3,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from '@/hooks/useTranslations';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { 
   MessageSquare, 
   Bell, 
@@ -159,17 +160,7 @@ export function DashboardLayout({
             {/* Menu utilisateur */}
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="relative"
-                onClick={() => router.push('/notifications')}
-              >
-                <Bell className="h-5 w-5" />
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs bg-red-500">
-                  3
-                </Badge>
-              </Button>
+              <NotificationBell />
 
               {/* Menu déroulant utilisateur */}
               <DropdownMenu>
