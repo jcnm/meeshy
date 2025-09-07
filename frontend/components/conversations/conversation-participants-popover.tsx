@@ -31,6 +31,7 @@ interface ConversationParticipantsPopoverProps {
   currentUser: any;
   isGroup: boolean;
   conversationType?: string;
+  userConversationRole?: UserRoleEnum; // Rôle de l'utilisateur dans cette conversation spécifique
   onParticipantRemoved?: (userId: string) => void;
   onParticipantAdded?: (userId: string) => void;
   onLinkCreated?: (link: string) => void;
@@ -42,6 +43,7 @@ export function ConversationParticipantsPopover({
   currentUser,
   isGroup,
   conversationType,
+  userConversationRole,
   onParticipantRemoved,
   onParticipantAdded,
   onLinkCreated
@@ -101,7 +103,42 @@ export function ConversationParticipantsPopover({
     }
   };
 
+  // Vérifier les permissions pour créer un lien
+  const canCreateLink = () => {
+    if (conversationType === 'direct') {
+      return false;
+    }
+
+    // Pour les conversations globales (type "global"), seuls les BIGBOSS peuvent créer des liens
+    if (conversationType === 'global') {
+      return currentUser?.role === UserRoleEnum.BIGBOSS;
+    }
+
+    // Vérifier d'abord le rôle global de l'utilisateur
+    const hasGlobalPermission = currentUser?.role === UserRoleEnum.BIGBOSS || 
+                               currentUser?.role === UserRoleEnum.CREATOR || 
+                               currentUser?.role === UserRoleEnum.ADMIN || 
+                               currentUser?.role === UserRoleEnum.MODERATOR;
+
+    // Vérifier ensuite le rôle de l'utilisateur dans cette conversation spécifique
+    const hasConversationPermission = userConversationRole === UserRoleEnum.CREATOR || 
+                                     userConversationRole === UserRoleEnum.ADMIN || 
+                                     userConversationRole === UserRoleEnum.MODERATOR;
+
+    // L'utilisateur peut créer un lien s'il a soit les permissions globales, soit les permissions dans la conversation
+    return hasGlobalPermission || hasConversationPermission;
+  };
+
   const handleCreateLink = async () => {
+    if (!canCreateLink()) {
+      if (conversationType === 'global') {
+        toast.error('Droits BIGBOSS requis pour créer des liens de partage pour les conversations globales');
+      } else {
+        toast.error('Vous n\'avez pas les droits pour créer des liens de partage pour cette conversation');
+      }
+      return;
+    }
+
     try {
       setIsLoading(true);
       // Appel au service pour créer un lien
@@ -145,7 +182,7 @@ export function ConversationParticipantsPopover({
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-sm">{tUI('participants')} ({participants.length})</h4>
             <div className="flex items-center gap-1">
-              {conversationType !== 'direct' && (
+              {canCreateLink() && (
                 <Button
                   variant="ghost"
                   size="sm"

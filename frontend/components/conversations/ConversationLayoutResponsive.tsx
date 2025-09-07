@@ -1182,6 +1182,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       currentUser={user}
                       isGroup={selectedConversation.isGroup || false}
                       conversationType={selectedConversation.type}
+                      userConversationRole={getCurrentUserRole()}
                       onParticipantRemoved={(userId) => {
                         console.log(t('participantRemoved', { userId }));
                         // Recharger les participants
