@@ -286,7 +286,7 @@ export function ConversationDetailsSidebar({
                         setIsEditingName(true);
                         setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
                       }}
-                      title="Cliquer pour modifier le nom"
+                      title={t('clickToEdit')}
                     >
                       {getConversationDisplayName(conversation)}
                     </h3>
@@ -298,14 +298,14 @@ export function ConversationDetailsSidebar({
                         setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
                       }}
                       className="h-6 w-6 p-0"
-                      title="Modifier le nom"
+                      title={t('editName')}
                     >
                       <Edit className="h-3 w-3" />
                     </Button>
                   </div>
                 )}
                 <p className="text-sm text-muted-foreground text-center">
-                  {conversation.isGroup ? 'Conversation de groupe' : 'Conversation privée'}
+                  {conversation.isGroup ? t('conversationGroup') : t('conversationPrivate')}
                 </p>
               </div>
             </div>
@@ -320,7 +320,7 @@ export function ConversationDetailsSidebar({
 
             {/* Section Langues Actives - Foldable */}
             <FoldableSection
-              title="Langues Actives"
+              title={t('activeLanguages')}
               icon={<Languages className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
@@ -329,7 +329,7 @@ export function ConversationDetailsSidebar({
 
             {/* Section Utilisateurs Actifs - Foldable */}
             <FoldableSection
-              title={`Utilisateurs Actifs (${activeUsers.length})`}
+              title={`${t('activeUsers')} (${activeUsers.length})`}
               icon={<Users className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
@@ -359,7 +359,7 @@ export function ConversationDetailsSidebar({
                 {activeUsers.length > 6 && (
                   <div className="text-center pt-2">
                     <p className="text-xs text-gray-500">
-                      +{activeUsers.length - 6} autres utilisateurs actifs
+                      {t('otherActiveUsers', { count: activeUsers.length - 6 })}
                     </p>
                   </div>
                 )}
@@ -367,7 +367,7 @@ export function ConversationDetailsSidebar({
                 {activeUsers.length === 0 && (
                   <div className="text-center py-4">
                     <Users className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-500">Aucun utilisateur actif</p>
+                    <p className="text-sm text-gray-500">{t('noActiveUsers')}</p>
                   </div>
                 )}
               </div>
@@ -375,7 +375,7 @@ export function ConversationDetailsSidebar({
 
             {/* Section Liens de partage */}
             <FoldableSection
-              title="Liens de partage"
+              title={t('shareLinks')}
               icon={<Link2 className="h-4 w-4 mr-2" />}
               defaultExpanded={false}
             >

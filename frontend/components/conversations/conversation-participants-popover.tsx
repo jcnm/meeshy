@@ -92,10 +92,10 @@ export function ConversationParticipantsPopover({
       setIsLoading(true);
       await conversationsService.removeParticipant(conversationId, userId);
       onParticipantRemoved?.(userId);
-      toast.success('Participant supprimé de la conversation');
+      toast.success(tUI('participantRemoved'));
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
-      toast.error('Erreur lors de la suppression du participant');
+      toast.error(tUI('removeParticipantError'));
     } finally {
       setIsLoading(false);
     }
@@ -107,10 +107,10 @@ export function ConversationParticipantsPopover({
       // Appel au service pour créer un lien
       const link = await conversationsService.createInviteLink(conversationId);
       onLinkCreated?.(link);
-      toast.success('Lien de conversation créé');
+      toast.success(tUI('linkCreated'));
     } catch (error) {
       console.error('Erreur lors de la création du lien:', error);
-      toast.error('Erreur lors de la création du lien');
+      toast.error(tUI('createLinkError'));
     } finally {
       setIsLoading(false);
     }
@@ -143,7 +143,7 @@ export function ConversationParticipantsPopover({
         <div className="p-3">
           {/* Header avec actions */}
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-sm">Participants ({participants.length})</h4>
+            <h4 className="font-semibold text-sm">{tUI('participants')} ({participants.length})</h4>
             <div className="flex items-center gap-1">
               {conversationType !== 'direct' && (
                 <Button
@@ -152,7 +152,7 @@ export function ConversationParticipantsPopover({
                   onClick={handleCreateLink}
                   disabled={isLoading}
                   className="h-7 w-7 p-0"
-                  title="Créer un lien"
+                  title={tUI('createLink')}
                 >
                   <Link2 className="h-3.5 w-3.5" />
                 </Button>
@@ -161,7 +161,7 @@ export function ConversationParticipantsPopover({
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0"
-                title="Ajouter un participant"
+                title={tUI('addParticipant')}
               >
                 <UserPlus className="h-3.5 w-3.5" />
               </Button>
@@ -173,7 +173,7 @@ export function ConversationParticipantsPopover({
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
               <Input
-                placeholder={t('searchParticipants')}
+                placeholder={tUI('searchParticipants')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 border-gray-200/60 focus:bg-white focus:border-blue-300"
@@ -185,11 +185,11 @@ export function ConversationParticipantsPopover({
             {/* Section En ligne */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-gray-600">En ligne</span>
+                <span className="text-xs font-semibold text-gray-600">{tUI('online')}</span>
                 <Badge variant="secondary" className="text-[10px]">{onlineParticipants.length}</Badge>
               </div>
               {onlineParticipants.length === 0 ? (
-                <div className="text-xs text-gray-400">Personne en ligne</div>
+                <div className="text-xs text-gray-400">{tUI('noOneOnline')}</div>
               ) : (
                 <div className="space-y-1">
                   {onlineParticipants.map((participant) => {
@@ -209,7 +209,7 @@ export function ConversationParticipantsPopover({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium truncate">
-                              {getDisplayName(user)}{isCurrentUser && ' (Vous)'}
+                              {getDisplayName(user)}{isCurrentUser && ` (${tUI('you')})`}
                             </span>
                             {(participant.role === UserRoleEnum.ADMIN || 
                               (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
@@ -218,7 +218,7 @@ export function ConversationParticipantsPopover({
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>
                             <span>•</span>
-                            <span className="text-green-600">En ligne</span>
+                            <span className="text-green-600">{tUI('online')}</span>
                           </div>
                         </div>
                         {isAdmin && !isCurrentUser && (
@@ -228,7 +228,7 @@ export function ConversationParticipantsPopover({
                             onClick={() => handleRemoveParticipant(user.id)}
                             disabled={isLoading}
                             className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            title="Supprimer du groupe"
+                            title={tUI('removeFromGroup')}
                           >
                             <UserX className="h-3 w-3" />
                           </Button>
@@ -243,11 +243,11 @@ export function ConversationParticipantsPopover({
             {/* Section Hors ligne */}
             <div>
               <div className="flex items-center justify-between mt-2 mb-1">
-                <span className="text-xs font-semibold text-gray-600">Hors ligne</span>
+                <span className="text-xs font-semibold text-gray-600">{tUI('offline')}</span>
                 <Badge variant="outline" className="text-[10px]">{offlineParticipants.length}</Badge>
               </div>
               {offlineParticipants.length === 0 ? (
-                <div className="text-xs text-gray-400">Aucun participant hors ligne</div>
+                <div className="text-xs text-gray-400">{tUI('noOfflineParticipants')}</div>
               ) : (
                 <div className="space-y-1">
                   {offlineParticipants.map((participant) => {
@@ -267,7 +267,7 @@ export function ConversationParticipantsPopover({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium truncate">
-                              {getDisplayName(user)}{isCurrentUser && ' (Vous)'}
+                              {getDisplayName(user)}{isCurrentUser && ` (${tUI('you')})`}
                             </span>
                             {(participant.role === UserRoleEnum.ADMIN || 
                               (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
@@ -276,7 +276,7 @@ export function ConversationParticipantsPopover({
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>
                             <span>•</span>
-                            <span className="text-muted-foreground">Hors ligne</span>
+                            <span className="text-muted-foreground">{tUI('offline')}</span>
                           </div>
                         </div>
                         {isAdmin && !isCurrentUser && (
@@ -286,7 +286,7 @@ export function ConversationParticipantsPopover({
                             onClick={() => handleRemoveParticipant(user.id)}
                             disabled={isLoading}
                             className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            title="Supprimer du groupe"
+                            title={tUI('removeFromGroup')}
                           >
                             <UserX className="h-3 w-3" />
                           </Button>

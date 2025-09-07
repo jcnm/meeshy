@@ -5,6 +5,7 @@ import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { User } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface TypingIndicatorProps {
   chatId: string;
@@ -21,6 +22,7 @@ export function TypingIndicator({
 }: TypingIndicatorProps) {
   const { typingUsers } = useTypingIndicator(chatId, currentUserId || '');
   const [dots, setDots] = useState('');
+  const { t } = useTranslations('typingIndicator');
 
   // Animation des points
   useEffect(() => {
@@ -52,11 +54,11 @@ export function TypingIndicator({
 
   const renderTypingMessage = () => {
     if (typingUserNames.length === 1) {
-      return `${typingUserNames[0]} est en train d'écrire${dots}`;
+      return `${typingUserNames[0]} ${t('isTyping')}${dots}`;
     } else if (typingUserNames.length === 2) {
-      return `${typingUserNames[0]} et ${typingUserNames[1]} sont en train d'écrire${dots}`;
+      return `${typingUserNames[0]} et ${typingUserNames[1]} ${t('areTyping')}${dots}`;
     } else {
-      return `${typingUserNames.length} personnes sont en train d'écrire${dots}`;
+      return `${typingUserNames.length} ${t('multipleTyping')}${dots}`;
     }
   };
 
@@ -81,6 +83,7 @@ export function TypingBadge({
   className?: string; 
 }) {
   const { typingUsers } = useTypingIndicator(chatId, userId);
+  const { t } = useTranslations('typingIndicator');
 
   const isUserTyping = typingUsers.some(user => user.userId === userId && user.conversationId === chatId);
 
@@ -91,7 +94,7 @@ export function TypingBadge({
   return (
     <Badge variant="secondary" className={`gap-1 ${className}`}>
       <Loader2 className="h-3 w-3 animate-spin" />
-      Écrit...
+      {t('typing')}
     </Badge>
   );
 }

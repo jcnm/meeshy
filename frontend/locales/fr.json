@@ -40,7 +40,6 @@
   "apiService": "Service API",
   "connected": "Connecté",
   "debug": "Debug",
-  "conversationDetails": "Détails de la conversation",
   "noMessages": "Aucun message dans cette conversation",
   "active": "Actif",
   "no": "Non",
@@ -1059,6 +1058,7 @@
   },
   "conversations": {
     "title": "Mes conversations",
+    "conversations": "Conversations",
     "loading": "Chargement des conversations...",
     "loadingConversations": "Chargement...",
     "loadingConversationsDescription": "Récupération de vos conversations...",
@@ -1081,7 +1081,6 @@
     "notConnected": "non connecté",
     "yes": "oui",
     "no": "non",
-    "conversationDetails": "Détails de la conversation",
     "writeMessage": "Écris ton message...",
     "noMessages": "Aucun message dans cette conversation",
     "noMessagesDescription": "Commencez la conversation en envoyant un message !",
@@ -1858,12 +1857,24 @@
       "missingToken": "Token de lien manquant dans la réponse"
     },
      "successMessages": {
-       "linkGeneratedAndCopied": "Lien généré et copié dans le presse-papiers !",
-       "linkGenerated": "Lien généré avec succès !",
-       "linkCopied": "Lien copié dans le presse-papiers",
-       "tokenCopied": "Token copié dans le presse-papiers"
-     }
-   },
+      "linkGeneratedAndCopied": "Lien généré et copié dans le presse-papiers !",
+      "linkGenerated": "Lien généré avec succès !",
+      "linkCopied": "Lien copié dans le presse-papiers",
+      "tokenCopied": "Token copié dans le presse-papiers"
+    },
+    "summary": {
+      "welcomeMessageDescription": "Description du message de bienvenue",
+      "permissionsGranted": "Permissions accordées",
+      "nicknameRequired": "Pseudonyme requis",
+      "yes": "Oui",
+      "no": "Non",
+      "emailRequired": "Email requis",
+      "allowedLanguages": "Langues autorisées",
+      "usageCount": "Nombre d'utilisations",
+      "linkDisabledAfter": "Lien désactivé après"
+    },
+    "createLinkModal": "Modal de création de lien"
+  },
    "createConversationModal": {
      "title": "Nouvelle conversation",
      "description": "Créez une conversation moderne avec une approche intelligente et dynamique",
@@ -1996,7 +2007,8 @@
       "attempts": "Tentatives:",
       "anonymous": "Anonyme",
       "authenticated": "Authentifié"
-    }
+    },
+    "createConversationModal": "Modal de création de conversation"
   },
   "conversationSearch": {
     "placeholder": "Rechercher par nom, description...",
@@ -2004,19 +2016,216 @@
     "searchParticipants": "Rechercher...",
     "shareMessage": "Partagez quelque chose avec le monde..."
   },
+  "conversationLayout": {
+    "authChecking": "Vérification de l'authentification...",
+    "loadingConversations": "Chargement des conversations...",
+    "loadingConversationsDescription": "Récupération de vos conversations...",
+    "noConversations": "Aucune conversation",
+    "noConversationsDescription": "Commencez par créer une nouvelle conversation ou rejoignez-en une existante.",
+    "chooseConversation": "Choisissez une conversation",
+    "chooseConversationDescription": "Sélectionnez une conversation dans la liste pour commencer à discuter.",
+    "welcome": "Bienvenue sur Meeshy",
+    "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
+    "createConversation": "Créer une conversation",
+    "filtreConversations": "Filtrer les conversations",
+    "notConnected": "Non connecté",
+    "participantRemoved": "Participant supprimé: {userId}",
+    "participantAdded": "Participant ajouté: {userId}",
+    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
+    "errorLoadingConversation": "Erreur lors du chargement de la conversation",
+    "writeMessage": "Écris ton message...",
+    "conversations": {
+      "title": "Conversations"
+    },
+    "no": "Non",
+    "connected": "Connecté",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "public": "Public",
+    "private": "Privé",
+    "createLink": "Créer un lien",
+    "conversationDetails": "Détails de la conversation",
+    "noMessages": "Aucun message dans cette conversation",
+    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
+    "yes": "Oui",
+    "conversationLayout": "Layout de conversation",
+    "conversationSearch": "Recherche de conversation",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Traduction en cours...",
+        "retranslationInProgress": "Retraduction en cours...",
+        "editSoon": "Modification bientôt disponible",
+        "translationSuccess": "Traduction réussie"
+      },
+      "conversations": {
+        "loadError": "Erreur lors du chargement de la conversation"
+      }
+    }
+  },
+  "conversationSearch": {
+    "authChecking": "Vérification de l'authentification...",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Traduction en cours...",
+        "retranslationInProgress": "Retraduction en cours...",
+        "editSoon": "Modification bientôt disponible",
+        "translationSuccess": "Traduction réussie"
+      },
+      "conversations": {
+        "loadError": "Erreur lors du chargement de la conversation"
+      }
+    },
+    "conversations": {
+      "title": "Conversations"
+    },
+    "loadingConversations": "Chargement des conversations...",
+    "filtreConversations": "Filtrer les conversations",
+    "yes": "Oui",
+    "no": "Non",
+    "connected": "Connecté",
+    "notConnected": "Non connecté",
+    "noConversations": "Aucune conversation",
+    "loadingConversationsDescription": "Récupération de vos conversations...",
+    "noConversationsDescription": "Commencez par créer une nouvelle conversation ou rejoignez-en une existante.",
+    "public": "Public",
+    "private": "Privé",
+    "createLink": "Créer un lien",
+    "createConversation": "Créer une conversation",
+    "conversationDetails": "Détails de la conversation",
+    "noMessages": "Aucun message dans cette conversation",
+    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
+    "writeMessage": "Écris ton message...",
+    "chooseConversation": "Choisissez une conversation",
+    "chooseConversationDescription": "Sélectionnez une conversation dans la liste pour commencer à discuter.",
+    "welcome": "Bienvenue sur Meeshy",
+    "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
+    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
+    "errorLoadingConversation": "Erreur lors du chargement de la conversation",
+    "conversationLayout": "Layout de conversation",
+    "conversationSearch": "Recherche de conversation",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "participantRemoved": "Participant supprimé: {userId}",
+    "participantAdded": "Participant ajouté: {userId}",
+    "conversationUI": "Interface de conversation"
+  },
+  "conversationWrapper": {
+    "authChecking": "Vérification de l'authentification...",
+    "conversationWrapper": "Wrapper de conversation"
+  },
+  "conversationDetails": {
+    "title": "Détails de la conversation",
+    "conversationGroup": "Conversation de groupe",
+    "conversationPrivate": "Conversation privée",
+    "conversationName": "Nom de la conversation",
+    "clickToEdit": "Cliquer pour modifier le nom",
+    "editName": "Modifier le nom",
+    "nameCannotBeEmpty": "Le nom de la conversation ne peut pas être vide",
+    "nameUpdated": "Nom de la conversation mis à jour",
+    "conversationExists": "Une conversation avec ce nom existe déjà",
+    "noPermissionToModify": "Vous n'avez pas les permissions pour modifier cette conversation",
+    "conversationNotFound": "Conversation non trouvée",
+    "invalidData": "Données invalides",
+    "updateError": "Erreur lors de la mise à jour du nom",
+    "participantRemoved": "Participant supprimé de la conversation",
+    "removeParticipantError": "Erreur lors de la suppression du participant",
+    "activeLanguages": "Langues Actives",
+    "activeUsers": "Utilisateurs Actifs",
+    "noActiveUsers": "Aucun utilisateur actif",
+    "otherActiveUsers": "+{count} autres utilisateurs actifs",
+    "shareLinks": "Liens de partage",
+    "conversationDetails": "Détails de la conversation"
+  },
+  "conversationParticipants": {
+    "noParticipantsOnline": "Aucun participant en ligne",
+    "online": "en ligne",
+    "typing": "écrit...",
+    "typingMultiple": "personnes écrivent...",
+    "conversationParticipants": "Participants de la conversation"
+  },
   "conversationUI": {
     "participants": "Participants",
-    "communities": "Communautés",
-    "groups": "Groupes",
-    "online": "en ligne",
-    "offline": "hors ligne",
-    "participant": "participant",
-    "autoTranslation": "Traduction auto:",
-    "enabled": "Activée",
-    "disabled": "Désactivée",
-    "loading": "Chargement...",
-    "searchConversations": "Recherche conversations",
-    "searchCommunities": "Recherche communautés",
-    "searchGroups": "Recherche groupes"
+    "createLink": "Créer un lien",
+    "addParticipant": "Ajouter un participant",
+    "searchParticipants": "Rechercher des participants",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "noOneOnline": "Personne en ligne",
+    "noOfflineParticipants": "Aucun participant hors ligne",
+    "you": "(Vous)",
+    "removeFromGroup": "Supprimer du groupe",
+    "participantRemoved": "Participant supprimé de la conversation",
+    "removeParticipantError": "Erreur lors de la suppression du participant",
+    "linkCreated": "Lien de conversation créé",
+    "createLinkError": "Erreur lors de la création du lien",
+    "conversationSearch": "Recherche de conversation",
+    "conversationUI": "Interface de conversation"
+  },
+  "conversationLinks": {
+    "title": "Liens de partage",
+    "loadingLinks": "Chargement des liens...",
+    "noShareLinks": "Aucun lien de partage",
+    "activeLinks": "Liens actifs",
+    "expiredLinks": "Liens expirés",
+    "copy": "Copier",
+    "linkCopied": "Lien copié dans le presse-papiers",
+    "linkDetails": "Détails du lien",
+    "noDescription": "Aucune description",
+    "createdBy": "Créé par:",
+    "createdOn": "Créé le:",
+    "permissions": "Permissions",
+    "messages": "Messages",
+    "images": "Images",
+    "files": "Fichiers",
+    "history": "Historique",
+    "restrictions": "Restrictions",
+    "languages": "Langues:",
+    "countries": "Pays:",
+    "status": {
+      "active": "Actif",
+      "disabled": "Désactivé",
+      "expired": "Expiré"
+    }
+  },
+  "conversationPreview": {
+    "title": "Aperçu de la conversation",
+    "conversationWith": "Conversation avec {username}",
+    "conversationWithMultiple": "Conversation avec {users}",
+    "direct": "Directe",
+    "group": "Groupe",
+    "members": "Membres",
+    "you": "Vous",
+    "autoTranslationEnabled": "Traduction automatique activée",
+    "endToEndEncrypted": "Messages chiffrés de bout en bout",
+    "historySaved": "Historique sauvegardé"
+  },
+  "identifierSuggestions": {
+    "title": "Suggestions d'identifiants"
+  },
+  "smartSearch": {
+    "recentSearches": "Recherches récentes",
+    "recentUsers": "Utilisateurs récents",
+    "suggestions": "Suggestions"
+  },
+  "typingIndicator": {
+    "isTyping": "est en train d'écrire",
+    "areTyping": "sont en train d'écrire",
+    "multipleTyping": "personnes sont en train d'écrire",
+    "typing": "Écrit...",
+    "typingIndicator": "Indicateur de frappe"
+  },
+  "createLinkButton": {
+    "createConversationLink": "Créer un lien de conversation",
+    "needBigbossRights": "Droits BIGBOSS requis pour créer des liens de partage pour les conversations globales",
+    "noRightsToCreate": "Vous n'avez pas les droits pour créer des liens de partage pour cette conversation",
+    "linkCreatedAndCopied": "Lien de conversation créé et copié",
+    "linkCreated": "Lien de conversation créé",
+    "copyManually": "Copier manuellement",
+    "copiedToClipboard": "Copié dans le presse-papiers",
+    "copyFailed": "Échec de la copie",
+    "errorCreatingLink": "Erreur lors de la création du lien",
+    "createLinkButton": "Bouton de création de lien"
+  },
+  "createLinkButtonV2": {
+    "createLink": "Créer un lien",
+    "linkCreatedSuccessfully": "Lien de partage créé avec succès !"
   }
 }

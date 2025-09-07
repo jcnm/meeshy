@@ -19,6 +19,7 @@ import { SocketIOUser as User, ThreadMember, UserRoleEnum } from '@shared/types'
 // import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface ConversationParticipantsProps {
   conversationId: string;
@@ -39,6 +40,7 @@ export function ConversationParticipants({
   className = "",
   typingUsers = []
 }: ConversationParticipantsProps) {
+  const { t } = useTranslations('conversationParticipants');
 
 
   // Les typing users sont désormais passés par props pour éviter des abonnements socket multiples
@@ -66,11 +68,11 @@ export function ConversationParticipants({
 
   const renderTypingMessage = () => {
     if (typingUserNames.length === 1) {
-      return `${typingUserNames[0]} écrit...`;
+      return `${typingUserNames[0]} ${t('typing')}`;
     } else if (typingUserNames.length === 2) {
-      return `${typingUserNames[0]} et ${typingUserNames[1]} écrivent...`;
+      return `${typingUserNames[0]} et ${typingUserNames[1]} ${t('typing')}`;
     } else {
-      return `${typingUserNames.length} personnes écrivent...`;
+      return `${typingUserNames.length} ${t('typingMultiple')}`;
     }
   };
 
@@ -106,7 +108,7 @@ export function ConversationParticipants({
         {usersTypingInChat.length === 0 ? (
           <div className="flex items-center gap-2">
             {onlineAll.length === 0 ? (
-              <span className="text-xs text-muted-foreground">Aucun participant en ligne</span>
+              <span className="text-xs text-muted-foreground">{t('noParticipantsOnline')}</span>
             ) : (
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -123,7 +125,7 @@ export function ConversationParticipants({
                     <>
                       <span>, </span>
                       <Users className="h-3 w-3 inline" />
-                      <span>{onlineAll.length} en ligne</span>
+                      <span>{onlineAll.length} {t('online')}</span>
                     </>
                   )}
                 </div>
@@ -140,7 +142,7 @@ export function ConversationParticipants({
 
         {/* Compteur de personnes en ligne */}
         <span className="text-xs text-muted-foreground">
-          {onlineAll.length} en ligne
+          {onlineAll.length} {t('online')}
         </span>
       </div>
 

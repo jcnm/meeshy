@@ -7,6 +7,7 @@ import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
 import { PermissionsService } from '@/services/permissions.service';
 import { UserRoleEnum } from '@shared/types';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface CreateLinkButtonProps {
   conversationId: string;
@@ -23,6 +24,7 @@ export function CreateLinkButton({
 }: CreateLinkButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslations('createLinkButton');
 
   // Vérifier les permissions pour créer un lien
   const canCreateLink = () => {
@@ -45,9 +47,9 @@ export function CreateLinkButton({
   const handleCreateLink = async () => {
     if (!canCreateLink()) {
       if (conversationType === 'global') {
-        toast.error('Need BIGBOSS rights to create share links for global conversations');
+        toast.error(t('needBigbossRights'));
       } else {
-        toast.error("You don't have rights to create share links for this conversation");
+        toast.error(t('noRightsToCreate'));
       }
       return;
     }
@@ -55,14 +57,44 @@ export function CreateLinkButton({
     try {
       setIsLoading(true);
       const link = await conversationsService.createInviteLink(conversationId);
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
+      
+      // Essayer de copier dans le presse-papiers avec gestion d'erreur
+      try {
+        await navigator.clipboard.writeText(link);
+        setCopied(true);
+        toast.success(t('linkCreatedAndCopied'));
+        setTimeout(() => setCopied(false), 2000);
+      } catch (clipboardError: any) {
+        console.warn('Clipboard access denied or not available:', clipboardError);
+        // Fallback: afficher le lien dans un toast ou modal
+        toast.success(t('linkCreated'), {
+          description: link,
+          duration: 10000,
+          action: {
+            label: t('copyManually'),
+            onClick: () => {
+              // Essayer une méthode alternative de copie
+              const textArea = document.createElement('textarea');
+              textArea.value = link;
+              document.body.appendChild(textArea);
+              textArea.select();
+              try {
+                document.execCommand('copy');
+                toast.success(t('copiedToClipboard'));
+              } catch (fallbackError) {
+                console.error('Fallback copy failed:', fallbackError);
+                toast.error(t('copyFailed'));
+              }
+              document.body.removeChild(textArea);
+            }
+          }
+        });
+      }
+      
       onLinkCreated?.(link);
-      toast.success("Conversation link created and copied");
-      setTimeout(() => setCopied(false), 2000);
     } catch (error: any) {
       console.error('Error creating link:', error);
-      toast.error(error?.message || 'Error creating link');
+      toast.error(error?.message || t('errorCreatingLink'));
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +111,7 @@ export function CreateLinkButton({
       onClick={handleCreateLink}
       disabled={isLoading}
       className="rounded-full h-10 w-10 p-0 hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
-      title="Create conversation link"
+        title={t('createConversationLink')}
     >
       {isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin" />

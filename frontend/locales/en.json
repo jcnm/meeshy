@@ -40,7 +40,6 @@
   "apiService": "API Service",
   "connected": "Connected",
   "debug": "Debug",
-  "conversationDetails": "Conversation Details",
   "noMessages": "No messages in this conversation",
   "active": "Active",
   "no": "No",
@@ -798,6 +797,7 @@
   },
   "conversations": {
     "title": "Conversations",
+    "conversations": "Conversations",
     "loading": "Loading conversations...",
     "loadingConversations": "Loading...",
     "loadingConversationsDescription": "Retrieving your conversations...",
@@ -820,7 +820,6 @@
     "notConnected": "not connected",
     "yes": "yes",
     "no": "no",
-    "conversationDetails": "Conversation details",
     "writeMessage": "Write your message...",
     "noMessages": "No messages in this conversation",
     "noMessagesDescription": "Start the conversation by sending a message!",
@@ -1848,11 +1847,23 @@
     },
      "successMessages": {
        "linkGeneratedAndCopied": "Link generated and copied to clipboard!",
-       "linkGenerated": "Link generated successfully!",
-       "linkCopied": "Link copied to clipboard",
-       "tokenCopied": "Token copied to clipboard"
-     }
-   },
+      "linkGenerated": "Link generated successfully!",
+      "linkCopied": "Link copied to clipboard",
+      "tokenCopied": "Token copied to clipboard"
+    },
+    "summary": {
+      "welcomeMessageDescription": "Welcome message description",
+      "permissionsGranted": "Permissions granted",
+      "nicknameRequired": "Nickname required",
+      "yes": "Yes",
+      "no": "No",
+      "emailRequired": "Email required",
+      "allowedLanguages": "Allowed languages",
+      "usageCount": "Usage count",
+      "linkDisabledAfter": "Link disabled after"
+    },
+    "createLinkModal": "Create link modal"
+  },
    "createConversationModal": {
      "title": "New conversation",
      "description": "Create a modern conversation with an intelligent and dynamic approach",
@@ -1985,7 +1996,8 @@
       "attempts": "Attempts:",
       "anonymous": "Anonymous",
       "authenticated": "Authenticated"
-    }
+    },
+    "createConversationModal": "Create conversation modal"
   },
   "conversationSearch": {
     "placeholder": "Search by name, description...",
@@ -1993,19 +2005,212 @@
     "searchParticipants": "Search...",
     "shareMessage": "Share something with the world..."
   },
+  "conversationLayout": {
+    "authChecking": "Checking authentication...",
+    "loadingConversations": "Loading conversations...",
+    "loadingConversationsDescription": "Retrieving your conversations...",
+    "noConversations": "No conversations",
+    "noConversationsDescription": "Start by creating a new conversation or joining an existing one.",
+    "chooseConversation": "Choose a conversation",
+    "chooseConversationDescription": "Select a conversation from the list to start chatting.",
+    "welcome": "Welcome to Meeshy",
+    "welcomeDescription": "Connect with your friends and colleagues in real-time with automatic translation.",
+    "createConversation": "Create conversation",
+    "filtreConversations": "Filter conversations",
+    "notConnected": "Not connected",
+    "participantRemoved": "Participant removed: {userId}",
+    "participantAdded": "Participant added: {userId}",
+    "errorLoadingNewConversation": "Error loading new conversation",
+    "errorLoadingConversation": "Error loading conversation",
+    "writeMessage": "Write your message...",
+    "conversations": {
+      "title": "Conversations"
+    },
+    "no": "No",
+    "connected": "Connected",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "public": "Public",
+    "private": "Private",
+    "createLink": "Create link",
+    "conversationDetails": "Conversation details",
+    "noMessages": "No messages in this conversation",
+    "noMessagesDescription": "Start the conversation by sending a message!",
+    "yes": "Yes",
+    "conversationLayout": "Conversation layout",
+    "conversationSearch": "Conversation search",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Translation in progress...",
+        "retranslationInProgress": "Retranslation in progress...",
+        "editSoon": "Edit available soon",
+        "translationSuccess": "Translation successful"
+      },
+      "conversations": {
+        "loadError": "Error loading conversation"
+      }
+    }
+  },
+  "conversationSearch": {
+    "authChecking": "Checking authentication...",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Translation in progress...",
+        "retranslationInProgress": "Retranslation in progress...",
+        "editSoon": "Edit available soon",
+        "translationSuccess": "Translation successful"
+      },
+      "conversations": {
+        "loadError": "Error loading conversation"
+      }
+    },
+    "conversations": {
+      "title": "Conversations"
+    },
+    "loadingConversations": "Loading conversations...",
+    "filtreConversations": "Filter conversations",
+    "yes": "Yes",
+    "no": "No",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "noConversations": "No conversations",
+    "loadingConversationsDescription": "Retrieving your conversations...",
+    "noConversationsDescription": "Start by creating a new conversation or joining an existing one.",
+    "public": "Public",
+    "private": "Private",
+    "createLink": "Create link",
+    "createConversation": "Create conversation",
+    "conversationDetails": "Conversation details",
+    "noMessages": "No messages in this conversation",
+    "noMessagesDescription": "Start the conversation by sending a message!",
+    "writeMessage": "Write your message...",
+    "chooseConversation": "Choose a conversation",
+    "chooseConversationDescription": "Select a conversation from the list to start chatting.",
+    "welcome": "Welcome to Meeshy",
+    "welcomeDescription": "Connect with your friends and colleagues in real-time with automatic translation.",
+    "errorLoadingNewConversation": "Error loading new conversation",
+    "errorLoadingConversation": "Error loading conversation",
+    "conversationLayout": "Conversation layout",
+    "conversationSearch": "Conversation search",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "participantRemoved": "Participant removed: {userId}",
+    "participantAdded": "Participant added: {userId}",
+    "conversationUI": "Conversation UI"
+  },
+  "conversationWrapper": {
+    "authChecking": "Checking authentication...",
+    "conversationWrapper": "Conversation wrapper"
+  },
+  "conversationDetails": {
+    "title": "Conversation details",
+    "conversationGroup": "Group conversation",
+    "conversationPrivate": "Private conversation",
+    "conversationName": "Conversation name",
+    "clickToEdit": "Click to edit name",
+    "editName": "Edit name",
+    "nameCannotBeEmpty": "Conversation name cannot be empty",
+    "nameUpdated": "Conversation name updated",
+    "conversationExists": "A conversation with this name already exists",
+    "noPermissionToModify": "You don't have permission to modify this conversation",
+    "conversationNotFound": "Conversation not found",
+    "invalidData": "Invalid data",
+    "updateError": "Error updating name",
+    "participantRemoved": "Participant removed from conversation",
+    "removeParticipantError": "Error removing participant",
+    "activeLanguages": "Active Languages",
+    "activeUsers": "Active Users",
+    "noActiveUsers": "No active users",
+    "otherActiveUsers": "+{count} other active users",
+    "shareLinks": "Share links",
+    "conversationDetails": "Conversation details"
+  },
+  "conversationParticipants": {
+    "noParticipantsOnline": "No participants online",
+    "online": "online",
+    "typing": "typing...",
+    "typingMultiple": "people typing...",
+    "conversationParticipants": "Conversation participants"
+  },
   "conversationUI": {
     "participants": "Participants",
-    "communities": "Communities",
-    "groups": "Groups",
-    "online": "online",
-    "offline": "offline",
-    "participant": "participant",
-    "autoTranslation": "Auto translation:",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "loading": "Loading...",
-    "searchConversations": "Search conversations",
-    "searchCommunities": "Search communities",
-    "searchGroups": "Search groups"
+    "createLink": "Create link",
+    "addParticipant": "Add participant",
+    "searchParticipants": "Search participants",
+    "online": "Online",
+    "offline": "Offline",
+    "noOneOnline": "No one online",
+    "noOfflineParticipants": "No offline participants",
+    "you": "(You)",
+    "removeFromGroup": "Remove from group",
+    "participantRemoved": "Participant removed from conversation",
+    "removeParticipantError": "Error removing participant",
+    "linkCreated": "Conversation link created",
+    "createLinkError": "Error creating link",
+    "conversationSearch": "Conversation search",
+    "conversationUI": "Conversation UI"
+  },
+  "conversationLinks": {
+    "title": "Share links",
+    "loadingLinks": "Loading links...",
+    "noShareLinks": "No share links",
+    "activeLinks": "Active links",
+    "expiredLinks": "Expired links",
+    "copy": "Copy",
+    "linkCopied": "Link copied to clipboard",
+    "linkDetails": "Link details",
+    "noDescription": "No description",
+    "createdBy": "Created by:",
+    "createdOn": "Created on:",
+    "permissions": "Permissions",
+    "messages": "Messages",
+    "images": "Images",
+    "files": "Files",
+    "history": "History",
+    "restrictions": "Restrictions",
+    "languages": "Languages:",
+    "countries": "Countries:",
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled",
+      "expired": "Expired"
+    }
+  },
+  "conversationPreview": {
+    "title": "Conversation preview",
+    "conversationWith": "Conversation with {username}",
+    "conversationWithMultiple": "Conversation with {users}",
+    "direct": "Direct",
+    "group": "Group",
+    "members": "Members",
+    "you": "You",
+    "autoTranslationEnabled": "Auto translation enabled",
+    "endToEndEncrypted": "End-to-end encrypted messages",
+    "historySaved": "History saved"
+  },
+  "identifierSuggestions": {
+    "title": "Identifier suggestions"
+  },
+  "smartSearch": {
+    "recentSearches": "Recent searches",
+    "recentUsers": "Recent users",
+    "suggestions": "Suggestions"
+  },
+  "typingIndicator": {
+    "isTyping": "is typing",
+    "areTyping": "are typing",
+    "multipleTyping": "people are typing",
+    "typing": "Typing...",
+    "typingIndicator": "Typing indicator"
+  },
+  "createLinkButton": {
+    "createConversationLink": "Create conversation link",
+    "needBigbossRights": "BIGBOSS rights required to create share links for global conversations",
+    "noRightsToCreate": "You don't have rights to create share links for this conversation",
+    "linkCreatedAndCopied": "Conversation link created and copied",
+    "errorCreatingLink": "Error creating link",
+    "createLinkButton": "Create link button"
+  },
+  "createLinkButtonV2": {
+    "createLink": "Create link",
+    "linkCreatedSuccessfully": "Share link created successfully!"
   }
 }

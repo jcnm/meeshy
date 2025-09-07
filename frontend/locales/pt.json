@@ -40,7 +40,6 @@
   "apiService": "Serviço de API",
   "connected": "Conectado",
   "debug": "Depuração",
-  "conversationDetails": "Detalhes da Conversa",
   "noMessages": "Nenhuma mensagem nesta conversa",
   "active": "Ativo",
   "no": "Não",
@@ -824,7 +823,6 @@
     "notConnected": "não conectado",
     "yes": "sim",
     "no": "não",
-    "conversationDetails": "Detalhes da conversa",
     "writeMessage": "Escreva sua mensagem...",
     "noMessages": "Nenhuma mensagem nesta conversa",
     "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
@@ -2000,19 +1998,145 @@
     "searchParticipants": "Pesquisar...",
     "shareMessage": "Compartilhe algo com o mundo..."
   },
+  "conversationLayout": {
+    "authChecking": "Verificando autenticação...",
+    "loadingConversations": "Carregando conversas...",
+    "loadingConversationsDescription": "Recuperando suas conversas...",
+    "noConversations": "Nenhuma conversa",
+    "noConversationsDescription": "Comece criando uma nova conversa ou juntando-se a uma existente.",
+    "chooseConversation": "Escolha uma conversa",
+    "chooseConversationDescription": "Selecione uma conversa da lista para começar a conversar.",
+    "welcome": "Bem-vindo ao Meeshy",
+    "welcomeDescription": "Conecte-se com seus amigos e colegas em tempo real com tradução automática.",
+    "createConversation": "Criar conversa",
+    "filtreConversations": "Filtrar conversas",
+    "notConnected": "Não conectado",
+    "participantRemoved": "Participante removido: {userId}",
+    "participantAdded": "Participante adicionado: {userId}",
+    "errorLoadingNewConversation": "Erro ao carregar nova conversa",
+    "errorLoadingConversation": "Erro ao carregar conversa",
+    "writeMessage": "Escreva sua mensagem...",
+    "conversations": {
+      "title": "Conversas"
+    },
+    "no": "Não",
+    "connected": "Conectado",
+    "debug": "Depuração: {count} conversas | Carregando: {loading} | Usuário: {user}",
+    "public": "Público",
+    "private": "Privado",
+    "createLink": "Criar link",
+    "conversationDetails": "Detalhes da conversa",
+    "noMessages": "Nenhuma mensagem nesta conversa",
+    "noMessagesDescription": "Inicie a conversa enviando uma mensagem!"
+  },
+  "conversationWrapper": {
+    "authChecking": "Verificando autenticação..."
+  },
+  "conversationDetails": {
+    "title": "Detalhes da conversa",
+    "conversationGroup": "Conversa em grupo",
+    "conversationPrivate": "Conversa privada",
+    "conversationName": "Nome da conversa",
+    "clickToEdit": "Clique para editar o nome",
+    "editName": "Editar nome",
+    "nameCannotBeEmpty": "O nome da conversa não pode estar vazio",
+    "nameUpdated": "Nome da conversa atualizado",
+    "conversationExists": "Já existe uma conversa com este nome",
+    "noPermissionToModify": "Você não tem permissão para modificar esta conversa",
+    "conversationNotFound": "Conversa não encontrada",
+    "invalidData": "Dados inválidos",
+    "updateError": "Erro ao atualizar nome",
+    "participantRemoved": "Participante removido da conversa",
+    "removeParticipantError": "Erro ao remover participante",
+    "activeLanguages": "Idiomas Ativos",
+    "activeUsers": "Usuários Ativos",
+    "noActiveUsers": "Nenhum usuário ativo",
+    "otherActiveUsers": "+{count} outros usuários ativos",
+    "shareLinks": "Links de compartilhamento"
+  },
+  "conversationParticipants": {
+    "noParticipantsOnline": "Nenhum participante online",
+    "online": "online",
+    "typing": "digitando...",
+    "typingMultiple": "pessoas digitando..."
+  },
   "conversationUI": {
     "participants": "Participantes",
-    "communities": "Comunidades",
-    "groups": "Grupos",
-    "online": "online",
-    "offline": "offline",
-    "participant": "participante",
-    "autoTranslation": "Tradução automática:",
-    "enabled": "Ativada",
-    "disabled": "Desativada",
-    "loading": "Carregando...",
-    "searchConversations": "Pesquisar conversas",
-    "searchCommunities": "Pesquisar comunidades",
-    "searchGroups": "Pesquisar grupos"
+    "createLink": "Criar link",
+    "addParticipant": "Adicionar participante",
+    "searchParticipants": "Pesquisar participantes",
+    "online": "Online",
+    "offline": "Offline",
+    "noOneOnline": "Ninguém online",
+    "noOfflineParticipants": "Nenhum participante offline",
+    "you": "(Você)",
+    "removeFromGroup": "Remover do grupo",
+    "participantRemoved": "Participante removido da conversa",
+    "removeParticipantError": "Erro ao remover participante",
+    "linkCreated": "Link da conversa criado",
+    "createLinkError": "Erro ao criar link"
+  },
+  "conversationLinks": {
+    "title": "Links de compartilhamento",
+    "loadingLinks": "Carregando links...",
+    "noShareLinks": "Nenhum link de compartilhamento",
+    "activeLinks": "Links ativos",
+    "expiredLinks": "Links expirados",
+    "copy": "Copiar",
+    "linkCopied": "Link copiado para a área de transferência",
+    "linkDetails": "Detalhes do link",
+    "noDescription": "Nenhuma descrição",
+    "createdBy": "Criado por:",
+    "createdOn": "Criado em:",
+    "permissions": "Permissões",
+    "messages": "Mensagens",
+    "images": "Imagens",
+    "files": "Arquivos",
+    "history": "Histórico",
+    "restrictions": "Restrições",
+    "languages": "Idiomas:",
+    "countries": "Países:",
+    "status": {
+      "active": "Ativo",
+      "disabled": "Desabilitado",
+      "expired": "Expirado"
+    }
+  },
+  "conversationPreview": {
+    "title": "Visualização da conversa",
+    "conversationWith": "Conversa com {username}",
+    "conversationWithMultiple": "Conversa com {users}",
+    "direct": "Direta",
+    "group": "Grupo",
+    "members": "Membros",
+    "you": "Você",
+    "autoTranslationEnabled": "Tradução automática ativada",
+    "endToEndEncrypted": "Mensagens criptografadas ponta a ponta",
+    "historySaved": "Histórico salvo"
+  },
+  "identifierSuggestions": {
+    "title": "Sugestões de identificadores"
+  },
+  "smartSearch": {
+    "recentSearches": "Pesquisas recentes",
+    "recentUsers": "Usuários recentes",
+    "suggestions": "Sugestões"
+  },
+  "typingIndicator": {
+    "isTyping": "está digitando",
+    "areTyping": "estão digitando",
+    "multipleTyping": "pessoas estão digitando",
+    "typing": "Digitando..."
+  },
+  "createLinkButton": {
+    "createConversationLink": "Criar link da conversa",
+    "needBigbossRights": "Direitos BIGBOSS necessários para criar links de compartilhamento para conversas globais",
+    "noRightsToCreate": "Você não tem direitos para criar links de compartilhamento para esta conversa",
+    "linkCreatedAndCopied": "Link da conversa criado e copiado",
+    "errorCreatingLink": "Erro ao criar link"
+  },
+  "createLinkButtonV2": {
+    "createLink": "Criar link",
+    "linkCreatedSuccessfully": "Link de compartilhamento criado com sucesso!"
   }
 }
