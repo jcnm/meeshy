@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "Inglês",
-    "fr": "Francês", 
+    "fr": "Francês",
     "pt": "Português",
     "es": "Espanhol",
     "de": "Alemão",
@@ -50,7 +50,6 @@
   "createConversation": "Criar Conversa",
   "chooseConversation": "Escolha uma conversa!",
   "chooseConversationDescription": "Clique em uma conversa à esquerda para começar a conversar",
-  "loading": "Carregando...",
   "navigation": {
     "home": "Início",
     "dashboard": "Painel",
@@ -723,11 +722,8 @@
     "newConversation": "Nova Conv.",
     "createCommunity": "Criar Com.",
     "refresh": "Atualizar",
-    "retry": "Tentar novamente",
     "loadingError": "Erro de carregamento",
     "noData": "Nenhum dado disponível",
-    "loading": "Carregando painel de controle...",
-    "errorLoading": "❌ Erro de carregamento: {message}",
     "errorUnknown": "Erro desconhecido",
     "dataLoadingError": "Erro ao carregar dados",
     "actions": {
@@ -844,7 +840,6 @@
     "settingsError": "Error loading settings",
     "settingsSaved": "Settings saved successfully",
     "settingsSaveError": "Error saving settings",
-    
     "tabs": {
       "profile": "Profile",
       "translation": "Translation",
@@ -852,7 +847,6 @@
       "fonts": "Fonts",
       "stats": "Stats"
     },
-    
     "profile": {
       "title": "Profile",
       "description": "Personal information",
@@ -888,7 +882,6 @@
         "updateError": "Error updating profile"
       }
     },
-    
     "translation": {
       "title": "Language and Translation Configuration",
       "description": "Define your languages and translation settings",
@@ -945,7 +938,6 @@
       "useCustomDestination": "Use custom destination",
       "customDestinationPlaceholder": "Select a language"
     },
-    
     "theme": {
       "title": "Theme and interface",
       "description": "Customize the appearance, language and fonts of the application",
@@ -1011,7 +1003,6 @@
       "settingsUpdated": "Theme updated",
       "interfaceLanguageUpdated": "Interface language updated"
     },
-    
     "fonts": {
       "title": "Font selection",
       "description": "Customize the appearance of text in the application",
@@ -1028,7 +1019,6 @@
         "description": "Spacing between text lines"
       }
     },
-    
     "stats": {
       "title": "Translation statistics",
       "description": "View your translation usage statistics",
@@ -1038,7 +1028,6 @@
       "mostTranslatedLanguage": "Most translated language",
       "translationHistory": "Translation history"
     },
-    
     "notifications": {
       "title": "Notifications",
       "description": "Configure your notification preferences",
@@ -1048,7 +1037,6 @@
       "groupNotifications": "Group notifications",
       "translationNotifications": "Translation notifications"
     },
-    
     "privacy": {
       "title": "Privacy",
       "description": "Manage your privacy settings",
@@ -1057,7 +1045,6 @@
       "analytics": "Analytics",
       "cookies": "Cookies"
     },
-    
     "security": {
       "title": "Security",
       "description": "Your account security settings",
@@ -1066,7 +1053,6 @@
       "loginHistory": "Login history",
       "activeSessions": "Active sessions"
     },
-    
     "noUserConnected": "No user connected"
   },
   "notFound": {
@@ -1597,28 +1583,88 @@
       "usageLimitInfo": "Número máximo de vezes que o link pode ser usado. Uma vez que o limite seja atingido, o link será desabilitado"
     },
     "durationOptions": {
-      "1": { "label": "1 dia", "description": "Link temporário" },
-      "3": { "label": "3 dias", "description": "Curto prazo" },
-      "7": { "label": "1 semana", "description": "Curto prazo" },
-      "14": { "label": "2 semanas", "description": "Curto prazo" },
-      "30": { "label": "1 mês", "description": "Médio prazo" },
-      "60": { "label": "2 meses", "description": "Médio prazo" },
-      "90": { "label": "3 meses", "description": "Longo prazo" },
-      "180": { "label": "6 meses", "description": "Longo prazo" },
-      "365": { "label": "1 ano", "description": "Permanente" },
-      "730": { "label": "2 anos", "description": "Permanente" }
+      "1": {
+        "label": "1 dia",
+        "description": "Link temporário"
+      },
+      "3": {
+        "label": "3 dias",
+        "description": "Curto prazo"
+      },
+      "7": {
+        "label": "1 semana",
+        "description": "Curto prazo"
+      },
+      "14": {
+        "label": "2 semanas",
+        "description": "Curto prazo"
+      },
+      "30": {
+        "label": "1 mês",
+        "description": "Médio prazo"
+      },
+      "60": {
+        "label": "2 meses",
+        "description": "Médio prazo"
+      },
+      "90": {
+        "label": "3 meses",
+        "description": "Longo prazo"
+      },
+      "180": {
+        "label": "6 meses",
+        "description": "Longo prazo"
+      },
+      "365": {
+        "label": "1 ano",
+        "description": "Permanente"
+      },
+      "730": {
+        "label": "2 anos",
+        "description": "Permanente"
+      }
     },
     "limitOptions": {
-      "unlimited": { "label": "Ilimitado", "description": "Sem restrições" },
-      "5": { "label": "5 usos", "description": "Grupo muito pequeno" },
-      "10": { "label": "10 usos", "description": "Grupo pequeno" },
-      "25": { "label": "25 usos", "description": "Grupo pequeno" },
-      "50": { "label": "50 usos", "description": "Grupo médio" },
-      "100": { "label": "100 usos", "description": "Grupo grande" },
-      "250": { "label": "250 usos", "description": "Grupo grande" },
-      "500": { "label": "500 usos", "description": "Grupo muito grande" },
-      "1000": { "label": "1000 usos", "description": "Evento público" },
-      "5000": { "label": "5000 usos", "description": "Evento massivo" }
+      "5": {
+        "label": "5 usos",
+        "description": "Grupo muito pequeno"
+      },
+      "10": {
+        "label": "10 usos",
+        "description": "Grupo pequeno"
+      },
+      "25": {
+        "label": "25 usos",
+        "description": "Grupo pequeno"
+      },
+      "50": {
+        "label": "50 usos",
+        "description": "Grupo médio"
+      },
+      "100": {
+        "label": "100 usos",
+        "description": "Grupo grande"
+      },
+      "250": {
+        "label": "250 usos",
+        "description": "Grupo grande"
+      },
+      "500": {
+        "label": "500 usos",
+        "description": "Grupo muito grande"
+      },
+      "1000": {
+        "label": "1000 usos",
+        "description": "Evento público"
+      },
+      "5000": {
+        "label": "5000 usos",
+        "description": "Evento massivo"
+      },
+      "unlimited": {
+        "label": "Ilimitado",
+        "description": "Sem restrições"
+      }
     },
     "permissions": {
       "title": "Permissões dos convidados",
@@ -1655,44 +1701,44 @@
       "allowLanguage": "Permitir participantes em {language}"
     },
     "summary": {
-      "title": "Resumo da Configuração",
-      "description": "Revise as configurações antes de gerar o link",
-      "basicInfo": "Informações Básicas",
+      "title": "Resumo da configuração",
+      "description": "Verifique as configurações antes de gerar o link",
+      "basicInfo": "Informações básicas",
       "conversation": "Conversa",
-      "validityDuration": "Duração de Validade",
-      "usageLimit": "Limite de Uso",
-      "welcomeMessage": "Mensagem de Boas-vindas",
-      "usageCount": "{count} usos",
+      "validityDuration": "Duração da validade",
+      "usageLimit": "Limite de uso",
       "unlimited": "Ilimitado",
-      "linkDisabledAfter": "O link será desabilitado após {count} usos",
+      "welcomeMessage": "Mensagem de boas-vindas",
       "noCustomMessage": "Nenhuma mensagem personalizada",
-      "welcomeMessageDescription": "Esta mensagem será exibida na página /join para dar as boas-vindas aos participantes",
-      "permissionsGranted": "Permissões dos Convidados",
       "messages": "Mensagens",
-      "images": "Imagens",
-      "files": "Arquivos",
-      "history": "Histórico",
       "allowed": "Permitido",
       "forbidden": "Proibido",
-      "visible": "Visível",
-      "hidden": "Oculto",
       "guestsCanSendMessages": "Convidados podem enviar mensagens",
       "guestsCannotSendMessages": "Convidados não podem enviar mensagens",
+      "images": "Imagens",
       "guestsCanShareImages": "Convidados podem compartilhar imagens",
       "guestsCannotShareImages": "Convidados não podem compartilhar imagens",
+      "files": "Arquivos",
       "guestsCanShareFiles": "Convidados podem compartilhar arquivos",
       "guestsCannotShareFiles": "Convidados não podem compartilhar arquivos",
+      "history": "Histórico",
+      "visible": "Visível",
+      "hidden": "Oculto",
       "guestsCanViewHistory": "Convidados podem ver o histórico",
       "guestsCannotViewHistory": "Convidados não podem ver o histórico",
-      "nicknameRequired": "Apelido Obrigatório",
-      "emailRequired": "Email Obrigatório",
+      "guestsMustEnterNickname": "Convidados devem inserir apelido",
+      "guestsCanStayAnonymous": "Convidados podem permanecer anônimos",
+      "guestsMustEnterEmail": "Convidados devem inserir email",
+      "selectedLanguages": "Idiomas selecionados",
+      "welcomeMessageDescription": "Descrição da mensagem de boas-vindas",
+      "permissionsGranted": "Permissões concedidas",
+      "nicknameRequired": "Apelido obrigatório",
       "yes": "Sim",
       "no": "Não",
-      "guestsMustEnterNickname": "Convidados devem inserir um apelido",
-      "guestsCanStayAnonymous": "Convidados podem permanecer anônimos",
-      "guestsMustEnterEmail": "Convidados devem inserir um email",
-      "allowedLanguages": "Idiomas Permitidos",
-      "selectedLanguages": "Idiomas Selecionados"
+      "emailRequired": "Email obrigatório",
+      "allowedLanguages": "Idiomas permitidos",
+      "usageCount": "Contagem de uso",
+      "linkDisabledAfter": "Link desabilitado após"
     },
     "linkDetails": {
       "title": "Nome do link de compartilhamento",
@@ -1706,44 +1752,6 @@
       "welcomeMessage": "Mensagem de boas-vindas",
       "welcomeMessageInfo": "Mensagem que será exibida aos seus convidados antes de se juntarem à conversa",
       "welcomeMessagePlaceholder": "Ex: Bem-vindos à nossa discussão! Sintam-se à vontade para compartilhar suas ideias..."
-    },
-    "summary": {
-      "title": "Resumo da sua configuração",
-      "description": "Revise todas as configurações antes de gerar o link",
-      "basicInfo": "Informações básicas",
-      "conversation": "Conversa",
-      "validityDuration": "Duração da validade",
-      "usageLimit": "Limite de uso",
-      "welcomeMessage": "Mensagem de boas-vindas",
-      "expiresOn": "Expira em {date}",
-      "linkWillBeDisabled": "O link será desabilitado após {count} usos",
-      "displayedOnJoinPage": "Esta mensagem será exibida na página /join para dar as boas-vindas aos participantes",
-      "noCustomMessage": "Nenhuma mensagem personalizada",
-      "notSelected": "Não selecionado",
-      "unlimited": "Ilimitado",
-      "permissions": "Permissões dos convidados",
-      "messages": "Mensagens",
-      "images": "Imagens",
-      "files": "Arquivos",
-      "history": "Histórico",
-      "allowed": "Permitido",
-      "forbidden": "Proibido",
-      "visible": "Visível",
-      "hidden": "Oculto",
-      "required": "Sim",
-      "notRequired": "Não",
-      "guestsCanSendMessages": "Convidados podem enviar mensagens",
-      "guestsCannotSendMessages": "Convidados não podem enviar mensagens",
-      "guestsCanShareImages": "Convidados podem compartilhar imagens",
-      "guestsCannotShareImages": "Convidados não podem compartilhar imagens",
-      "guestsCanShareFiles": "Convidados podem compartilhar arquivos",
-      "guestsCannotShareFiles": "Convidados não podem compartilhar arquivos",
-      "guestsCanViewHistory": "Convidados podem ver o histórico",
-      "guestsCannotViewHistory": "Convidados não podem ver o histórico",
-      "guestsMustEnterNickname": "Convidados devem inserir um apelido",
-      "guestsCanStayAnonymous": "Convidados podem permanecer anônimos",
-      "guestsMustEnterEmail": "Convidados devem inserir um e-mail",
-      "selectedLanguages": "Idiomas selecionados"
     },
     "success": {
       "title": "Link criado com sucesso!",
@@ -1782,17 +1790,6 @@
       "linkGenerated": "Link gerado com sucesso!",
       "linkCopied": "Link copiado para a área de transferência",
       "tokenCopied": "Token copiado para a área de transferência"
-    },
-    "summary": {
-      "welcomeMessageDescription": "Descrição da mensagem de boas-vindas",
-      "permissionsGranted": "Permissões concedidas",
-      "nicknameRequired": "Apelido obrigatório",
-      "yes": "Sim",
-      "no": "Não",
-      "emailRequired": "Email obrigatório",
-      "allowedLanguages": "Idiomas permitidos",
-      "usageCount": "Contagem de uso",
-      "linkDisabledAfter": "Link desabilitado após"
     },
     "createLinkModal": "Modal de criação de link"
   },
@@ -2006,11 +2003,51 @@
     },
     "createConversationModal": "Modal de criação de conversa"
   },
-  "conversationSearch": {
-    "placeholder": "Pesquisar por nome, descrição...",
-    "filterConversations": "Filtrar conversas",
-    "searchParticipants": "Pesquisar...",
-    "shareMessage": "Compartilhe algo com o mundo..."
+  "conversationSearchLayout": {
+    "authChecking": "Verificando autenticação...",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Tradução em andamento...",
+        "retranslationInProgress": "Retradução em andamento...",
+        "editSoon": "Edição disponível em breve",
+        "translationSuccess": "Tradução bem-sucedida"
+      },
+      "conversations": {
+        "loadError": "Erro ao carregar conversa"
+      }
+    },
+    "conversations": {
+      "title": "Conversas"
+    },
+    "loadingConversations": "Carregando conversas...",
+    "filtreConversations": "Filtrar conversas",
+    "yes": "Sim",
+    "no": "Não",
+    "connected": "Conectado",
+    "notConnected": "Não conectado",
+    "noConversations": "Nenhuma conversa",
+    "loadingConversationsDescription": "Recuperando suas conversas...",
+    "noConversationsDescription": "Comece criando uma nova conversa ou juntando-se a uma existente.",
+    "public": "Público",
+    "private": "Privado",
+    "createLink": "Criar link",
+    "createConversation": "Criar conversa",
+    "conversationDetails": "Detalhes da conversa",
+    "noMessages": "Nenhuma mensagem nesta conversa",
+    "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
+    "writeMessage": "Escreva sua mensagem...",
+    "chooseConversation": "Escolha uma conversa",
+    "chooseConversationDescription": "Selecione uma conversa da lista para começar a conversar.",
+    "welcome": "Bem-vindo ao Meeshy",
+    "welcomeDescription": "Conecte-se com seus amigos e colegas em tempo real com tradução automática.",
+    "errorLoadingNewConversation": "Erro ao carregar nova conversa",
+    "errorLoadingConversation": "Erro ao carregar conversa",
+    "conversationLayout": "Layout da conversa",
+    "conversationSearch": "Pesquisa de conversa",
+    "debug": "Depuração: {count} conversas | Carregando: {loading} | Usuário: {user}",
+    "participantRemoved": "Participante removido: {userId}",
+    "participantAdded": "Participante adicionado: {userId}",
+    "conversationUI": "Interface da conversa"
   },
   "conversationLayout": {
     "authChecking": "Verificando autenticação...",
@@ -2056,52 +2093,6 @@
         "loadError": "Erro ao carregar conversa"
       }
     }
-  },
-  "conversationSearch": {
-    "authChecking": "Verificando autenticação...",
-    "toasts": {
-      "messages": {
-        "translationInProgress": "Tradução em andamento...",
-        "retranslationInProgress": "Retradução em andamento...",
-        "editSoon": "Edição disponível em breve",
-        "translationSuccess": "Tradução bem-sucedida"
-      },
-      "conversations": {
-        "loadError": "Erro ao carregar conversa"
-      }
-    },
-    "conversations": {
-      "title": "Conversas"
-    },
-    "loadingConversations": "Carregando conversas...",
-    "filtreConversations": "Filtrar conversas",
-    "yes": "Sim",
-    "no": "Não",
-    "connected": "Conectado",
-    "notConnected": "Não conectado",
-    "noConversations": "Nenhuma conversa",
-    "loadingConversationsDescription": "Recuperando suas conversas...",
-    "noConversationsDescription": "Comece criando uma nova conversa ou juntando-se a uma existente.",
-    "public": "Público",
-    "private": "Privado",
-    "createLink": "Criar link",
-    "createConversation": "Criar conversa",
-    "conversationDetails": "Detalhes da conversa",
-    "noMessages": "Nenhuma mensagem nesta conversa",
-    "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
-    "writeMessage": "Escreva sua mensagem...",
-    "chooseConversation": "Escolha uma conversa",
-    "chooseConversationDescription": "Selecione uma conversa da lista para começar a conversar.",
-    "welcome": "Bem-vindo ao Meeshy",
-    "welcomeDescription": "Conecte-se com seus amigos e colegas em tempo real com tradução automática.",
-    "errorLoadingNewConversation": "Erro ao carregar nova conversa",
-    "errorLoadingConversation": "Erro ao carregar conversa",
-    "conversationLayout": "Layout da conversa",
-    "conversationSearch": "Pesquisa de conversa",
-    "debug": "Depuração: {count} conversas | Carregando: {loading} | Usuário: {user}",
-    "participantRemoved": "Participante removido: {userId}",
-    "participantAdded": "Participante adicionado: {userId}",
-    "conversationUI": "Interface da conversa"
   },
   "conversationWrapper": {
     "authChecking": "Verificando autenticação...",
