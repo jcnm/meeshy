@@ -1273,11 +1273,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Déclencher la retraduction automatique du message modifié
       try {
-        // Utiliser le service de traduction déjà importé
-        const translationService = new TranslationService(prisma);
-        
-        // Initialiser le service
-        await translationService.initialize();
+        // Utiliser les instances déjà disponibles dans le contexte Fastify
+        const translationService: TranslationService = (fastify as any).translationService;
         
         // Invalider les traductions existantes en base de données
         const deletedCount = await prisma.messageTranslation.deleteMany({
