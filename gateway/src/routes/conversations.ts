@@ -543,12 +543,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               // Créateur de la conversation
               {
                 userId,
-                role: type === 'direct' ? 'member' : 'admin'
+                role: UserRoleEnum.CREATOR
               },
               // Autres participants (sans doublons et sans le créateur)
               ...uniqueParticipantIds.map((participantId: string) => ({
                 userId: participantId,
-                role: 'member'
+                role: UserRoleEnum.MEMBER
               }))
             ]
           }
@@ -1446,7 +1446,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         where: {
           conversationId: id,
           userId: userId,
-          role: { in: ['admin', 'moderator'] },
+          role: { in: ['CREATOR', 'ADMIN', 'MODERATOR'] },
           isActive: true
         }
       });
@@ -1533,7 +1533,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         where: {
           conversationId: conversationId,
           userId: userId,
-          role: 'admin',
+          role: { in: ['CREATOR', 'ADMIN'] },
           isActive: true
         }
       });
@@ -1801,13 +1801,15 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       // Transformer les données pour correspondre au format attendu
       const formattedParticipants = participants.map(participant => ({
         id: participant.user.id,
+        userId: participant.userId, // Ajouter l'ID utilisateur pour la correspondance
         username: participant.user.username,
         firstName: participant.user.firstName,
         lastName: participant.user.lastName,
         displayName: participant.user.displayName,
         avatar: participant.user.avatar,
         email: participant.user.email,
-        role: participant.user.role,
+        role: participant.user.role, // Rôle global de l'utilisateur
+        conversationRole: participant.role, // Rôle dans cette conversation spécifique
         isOnline: participant.user.isOnline,
         lastSeen: participant.user.lastSeen,
         lastActiveAt: participant.user.lastActiveAt,
@@ -2445,7 +2447,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         where: {
           conversationId,
           userId,
-          role: { in: ['admin', 'moderator'] },
+          role: { in: ['CREATOR', 'ADMIN', 'MODERATOR'] },
           isActive: true
         }
       });

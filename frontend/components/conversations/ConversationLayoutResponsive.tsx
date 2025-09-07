@@ -152,7 +152,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
 
     const currentUserParticipant = conversationParticipants.find(p => p.userId === user.id);
-    return currentUserParticipant?.role as UserRoleEnum || user?.role as UserRoleEnum || UserRoleEnum.USER;
+    return currentUserParticipant?.conversationRole as UserRoleEnum || user?.role as UserRoleEnum || UserRoleEnum.USER;
   }, [selectedConversation, user?.id, user?.role, conversationParticipants]);
 
   // Helper: mise à jour idempotente des conversations pour éviter des re-renders inutiles

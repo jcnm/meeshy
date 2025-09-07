@@ -56,7 +56,7 @@ export function ConversationParticipantsPopover({
 
   // Vérifier si l'utilisateur actuel est admin
   const currentUserParticipant = participants.find(p => p.userId === currentUser.id);
-  const isAdmin = currentUserParticipant?.role === UserRoleEnum.ADMIN;
+  const isAdmin = currentUserParticipant?.conversationRole === UserRoleEnum.ADMIN || currentUserParticipant?.conversationRole === UserRoleEnum.CREATOR;
 
   // Filtrer les participants selon la recherche
   const filteredParticipants = participants.filter(participant => {

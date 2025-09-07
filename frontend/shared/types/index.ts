@@ -276,7 +276,8 @@ export interface ThreadMember {
   conversationId: string;
   userId: string;
   joinedAt: Date;
-  role: UserRoleEnum;
+  role: UserRoleEnum; // Rôle global de l'utilisateur
+  conversationRole?: UserRoleEnum; // Rôle dans cette conversation spécifique
   user: SocketIOUser;
 }
 
