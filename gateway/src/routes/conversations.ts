@@ -1273,8 +1273,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Déclencher la retraduction automatique du message modifié
       try {
-        // Utiliser le service de traduction existant pour la retraduction
-        const { TranslationService } = require('../services/TranslationService');
+        // Utiliser le service de traduction déjà importé
         const translationService = new TranslationService(prisma);
         
         // Initialiser le service si nécessaire
