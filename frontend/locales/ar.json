@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "الإنجليزية",
-    "fr": "الفرنسية", 
+    "fr": "الفرنسية",
     "pt": "البرتغالية",
     "es": "الإسبانية",
     "de": "الألمانية",
@@ -134,5 +134,17 @@
     "time": {
       "format": "ar-SA"
     }
+  },
+  "createLinkButton": {
+    "createConversationLink": "إنشاء رابط المحادثة",
+    "needBigbossRights": "مطلوب صلاحيات BIGBOSS لإنشاء روابط مشاركة للمحادثات العامة",
+    "noRightsToCreate": "ليس لديك صلاحيات لإنشاء روابط مشاركة لهذه المحادثة",
+    "linkCreatedAndCopied": "تم إنشاء رابط المحادثة ونسخه",
+    "linkCreated": "تم إنشاء رابط المحادثة",
+    "copyManually": "نسخ يدوياً",
+    "copiedToClipboard": "تم النسخ إلى الحافظة",
+    "copyFailed": "فشل النسخ",
+    "errorCreatingLink": "خطأ في إنشاء الرابط",
+    "createLinkButton": "زر إنشاء الرابط"
   }
 }

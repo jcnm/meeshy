@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "Английский",
-    "fr": "Французский", 
+    "fr": "Французский",
     "pt": "Португальский",
     "es": "Испанский",
     "de": "Немецкий",
@@ -134,5 +134,17 @@
     "time": {
       "format": "ru-RU"
     }
+  },
+  "createLinkButton": {
+    "createConversationLink": "Создать ссылку на разговор",
+    "needBigbossRights": "Требуются права BIGBOSS для создания ссылок для общих разговоров",
+    "noRightsToCreate": "У вас нет прав для создания ссылок для этого разговора",
+    "linkCreatedAndCopied": "Ссылка на разговор создана и скопирована",
+    "linkCreated": "Ссылка на разговор создана",
+    "copyManually": "Копировать вручную",
+    "copiedToClipboard": "Скопировано в буфер обмена",
+    "copyFailed": "Ошибка копирования",
+    "errorCreatingLink": "Ошибка создания ссылки",
+    "createLinkButton": "Кнопка создания ссылки"
   }
 }

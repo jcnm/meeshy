@@ -207,5 +207,17 @@
     "members": "miembros",
     "member": "miembro",
     "membersCount": "{count} miembros"
+  },
+  "createLinkButton": {
+    "createConversationLink": "Crear enlace de conversación",
+    "needBigbossRights": "Se requieren derechos BIGBOSS para crear enlaces de compartir para conversaciones globales",
+    "noRightsToCreate": "No tienes derechos para crear enlaces de compartir para esta conversación",
+    "linkCreatedAndCopied": "Enlace de conversación creado y copiado",
+    "linkCreated": "Enlace de conversación creado",
+    "copyManually": "Copiar manualmente",
+    "copiedToClipboard": "Copiado al portapapeles",
+    "copyFailed": "Error al copiar",
+    "errorCreatingLink": "Error al crear enlace",
+    "createLinkButton": "Botón de crear enlace"
   }
 }

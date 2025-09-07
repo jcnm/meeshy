@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "Inglese",
-    "fr": "Francese", 
+    "fr": "Francese",
     "pt": "Portoghese",
     "es": "Spagnolo",
     "de": "Tedesco",
@@ -134,5 +134,17 @@
     "time": {
       "format": "it-IT"
     }
+  },
+  "createLinkButton": {
+    "createConversationLink": "Crea link conversazione",
+    "needBigbossRights": "Diritti BIGBOSS richiesti per creare link di condivisione per conversazioni globali",
+    "noRightsToCreate": "Non hai i diritti per creare link di condivisione per questa conversazione",
+    "linkCreatedAndCopied": "Link conversazione creato e copiato",
+    "linkCreated": "Link conversazione creato",
+    "copyManually": "Copia manualmente",
+    "copiedToClipboard": "Copiato negli appunti",
+    "copyFailed": "Copia fallita",
+    "errorCreatingLink": "Errore nella creazione del link",
+    "createLinkButton": "Pulsante crea link"
   }
 }

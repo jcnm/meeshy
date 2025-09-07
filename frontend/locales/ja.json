@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "英語",
-    "fr": "フランス語", 
+    "fr": "フランス語",
     "pt": "ポルトガル語",
     "es": "スペイン語",
     "de": "ドイツ語",
@@ -134,5 +134,17 @@
     "time": {
       "format": "ja-JP"
     }
+  },
+  "createLinkButton": {
+    "createConversationLink": "会話リンクを作成",
+    "needBigbossRights": "グローバル会話の共有リンクを作成するにはBIGBOSS権限が必要です",
+    "noRightsToCreate": "この会話の共有リンクを作成する権限がありません",
+    "linkCreatedAndCopied": "会話リンクが作成され、コピーされました",
+    "linkCreated": "会話リンクが作成されました",
+    "copyManually": "手動でコピー",
+    "copiedToClipboard": "クリップボードにコピーされました",
+    "copyFailed": "コピーに失敗しました",
+    "errorCreatingLink": "リンク作成エラー",
+    "createLinkButton": "リンク作成ボタン"
   }
 }

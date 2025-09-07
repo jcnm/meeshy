@@ -2206,6 +2206,10 @@
     "needBigbossRights": "BIGBOSS rights required to create share links for global conversations",
     "noRightsToCreate": "You don't have rights to create share links for this conversation",
     "linkCreatedAndCopied": "Conversation link created and copied",
+    "linkCreated": "Conversation link created",
+    "copyManually": "Copy manually",
+    "copiedToClipboard": "Copied to clipboard",
+    "copyFailed": "Copy failed",
     "errorCreatingLink": "Error creating link",
     "createLinkButton": "Create link button"
   },

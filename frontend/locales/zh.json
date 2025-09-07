@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "英语",
-    "fr": "法语", 
+    "fr": "法语",
     "pt": "葡萄牙语",
     "es": "西班牙语",
     "de": "德语",
@@ -134,5 +134,17 @@
     "time": {
       "format": "zh-CN"
     }
+  },
+  "createLinkButton": {
+    "createConversationLink": "创建对话链接",
+    "needBigbossRights": "创建全局对话的分享链接需要BIGBOSS权限",
+    "noRightsToCreate": "您没有为此对话创建分享链接的权限",
+    "linkCreatedAndCopied": "对话链接已创建并复制",
+    "linkCreated": "对话链接已创建",
+    "copyManually": "手动复制",
+    "copiedToClipboard": "已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "errorCreatingLink": "创建链接错误",
+    "createLinkButton": "创建链接按钮"
   }
 }

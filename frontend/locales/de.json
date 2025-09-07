@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "Englisch",
-    "fr": "Französisch", 
+    "fr": "Französisch",
     "pt": "Portugiesisch",
     "es": "Spanisch",
     "de": "Deutsch",
@@ -134,5 +134,17 @@
     "time": {
       "format": "de-DE"
     }
+  },
+  "createLinkButton": {
+    "createConversationLink": "Gesprächslink erstellen",
+    "needBigbossRights": "BIGBOSS-Rechte erforderlich, um Freigabelinks für globale Gespräche zu erstellen",
+    "noRightsToCreate": "Sie haben keine Rechte, Freigabelinks für dieses Gespräch zu erstellen",
+    "linkCreatedAndCopied": "Gesprächslink erstellt und kopiert",
+    "linkCreated": "Gesprächslink erstellt",
+    "copyManually": "Manuell kopieren",
+    "copiedToClipboard": "In die Zwischenablage kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen",
+    "errorCreatingLink": "Fehler beim Erstellen des Links",
+    "createLinkButton": "Link-Erstellungsbutton"
   }
 }
