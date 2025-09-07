@@ -188,6 +188,35 @@ class DatabaseService:
             logger.error(f"❌ [TRANSLATOR-DB] Erreur récupération traduction: {e}")
             return None
     
+    async def invalidate_message_translations(self, message_id: str) -> bool:
+        """
+        Invalide toutes les traductions d'un message (pour forcer la retraduction)
+        
+        Args:
+            message_id: ID du message
+        
+        Returns:
+            bool: True si succès, False sinon
+        """
+        if not self.is_connected:
+            logger.warning("⚠️ [TRANSLATOR-DB] Base de données non connectée")
+            return False
+        
+        try:
+            # Supprimer toutes les traductions existantes pour ce message
+            deleted_count = await self.prisma.messagetranslation.delete_many(
+                where={
+                    "messageId": message_id
+                }
+            )
+            
+            logger.info(f"🗑️ [TRANSLATOR-DB] {deleted_count} traductions supprimées pour le message {message_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ [TRANSLATOR-DB] Erreur invalidation traductions: {e}")
+            return False
+    
     async def health_check(self) -> bool:
         """Vérifie la santé de la connexion à la base de données"""
         try:

@@ -4,6 +4,7 @@ import { conversationStatsService } from '../services/ConversationStatsService';
 import { z } from 'zod';
 import { UserRoleEnum } from '../../shared/types';
 import { createUnifiedAuthMiddleware, UnifiedAuthRequest } from '../middleware/auth';
+import * as path from 'path';
 
 /**
  * Vérifie si un utilisateur peut accéder à une conversation
@@ -1158,7 +1159,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         },
         include: {
           sender: {
-            select: { id: true }
+            select: { id: true, role: true }
           }
         }
       });
@@ -1170,8 +1171,25 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Vérifier les permissions : l'auteur peut modifier, ou les modérateurs/admins/créateurs
+      // Vérifier la restriction temporelle (1 heure max pour les utilisateurs normaux)
       const isAuthor = existingMessage.senderId === userId;
+      const messageAge = Date.now() - new Date(existingMessage.createdAt).getTime();
+      const oneHourInMs = 60 * 60 * 1000; // 1 heure en millisecondes
+      
+      if (isAuthor && messageAge > oneHourInMs) {
+        // Vérifier si l'utilisateur a des privilèges spéciaux
+        const userRole = existingMessage.sender.role;
+        const hasSpecialPrivileges = userRole === 'MODERATOR' || userRole === 'ADMIN' || userRole === 'CREATOR' || userRole === 'BIGBOSS';
+        
+        if (!hasSpecialPrivileges) {
+          return reply.status(403).send({
+            success: false,
+            error: 'Vous ne pouvez plus modifier ce message (délai de 1 heure dépassé)'
+          });
+        }
+      }
+
+      // Vérifier les permissions : l'auteur peut modifier, ou les modérateurs/admins/créateurs
       let canModify = isAuthor;
 
       if (!canModify) {
@@ -1253,8 +1271,39 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       });
 
-      // Note: Les traductions ne sont PAS modifiées ici - elles restent dans l'état du service Translator
-      // Selon les instructions Copilot, seul le service Translator peut modifier les traductions
+      // Déclencher la retraduction automatique du message modifié
+      try {
+        // Envoyer une requête de retraduction au service Translator via ZMQ
+        const zmq = require('zeromq');
+        const publisher = new zmq.Publisher();
+        
+        // Se connecter au service de traduction
+        await publisher.bind('tcp://*:5556');
+        
+        // Préparer la tâche de retraduction
+        const retranslationTask = {
+          task_id: `retranslate_${messageId}_${Date.now()}`,
+          message_id: messageId,
+          text: content.trim(),
+          source_language: originalLanguage,
+          target_languages: ['en', 'es', 'de', 'it', 'pt', 'ru', 'ar', 'ja', 'zh'], // Langues supportées
+          conversation_id: conversationId,
+          model_type: 'basic',
+          created_at: Date.now(),
+          is_retranslation: true // Flag pour identifier les retraductions
+        };
+
+        // Envoyer la tâche de retraduction
+        await publisher.send(['translation_request', JSON.stringify(retranslationTask)]);
+        console.log('[GATEWAY] Tâche de retraduction envoyée pour le message:', messageId);
+        
+        // Fermer la connexion
+        publisher.close();
+
+      } catch (zmqError) {
+        console.error('[GATEWAY] Erreur ZMQ pour la retraduction:', zmqError);
+        // Ne pas faire échouer l'édition si la retraduction échoue
+      }
 
       // Invalider et recalculer les stats pour refléter l'édition
       const stats = await conversationStatsService.getOrCompute(
