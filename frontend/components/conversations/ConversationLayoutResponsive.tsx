@@ -1168,7 +1168,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     <CreateLinkButton
                       conversationId={selectedConversation.id}
                       conversationType={selectedConversation.type}
-                      userRole={getCurrentUserRole()}
+                      userRole={user?.role as UserRoleEnum}
+                      userConversationRole={getCurrentUserRole()}
                       onLinkCreated={(link) => {
                         // Lien créé
                       }}

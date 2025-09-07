@@ -13,6 +13,7 @@ interface CreateLinkButtonProps {
   conversationId: string;
   conversationType?: string;
   userRole?: UserRoleEnum;
+  userConversationRole?: UserRoleEnum; // Rôle de l'utilisateur dans cette conversation spécifique
   onLinkCreated?: (link: string) => void;
 }
 
@@ -20,6 +21,7 @@ export function CreateLinkButton({
   conversationId,
   conversationType,
   userRole,
+  userConversationRole,
   onLinkCreated
 }: CreateLinkButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,11 +39,55 @@ export function CreateLinkButton({
       return userRole === UserRoleEnum.BIGBOSS;
     }
 
-    // Pour les autres conversations, BIGBOSS, CREATOR ou ADMIN peuvent créer des liens
-    return userRole === UserRoleEnum.BIGBOSS || 
-           userRole === UserRoleEnum.CREATOR || 
-           userRole === UserRoleEnum.ADMIN || 
-           userRole === UserRoleEnum.MODERATOR;
+    // Vérifier d'abord le rôle global de l'utilisateur
+    const hasGlobalPermission = userRole === UserRoleEnum.BIGBOSS || 
+                               userRole === UserRoleEnum.CREATOR || 
+                               userRole === UserRoleEnum.ADMIN || 
+                               userRole === UserRoleEnum.MODERATOR;
+
+    // Vérifier ensuite le rôle de l'utilisateur dans cette conversation spécifique
+    const hasConversationPermission = userConversationRole === UserRoleEnum.CREATOR || 
+                                     userConversationRole === UserRoleEnum.ADMIN || 
+                                     userConversationRole === UserRoleEnum.MODERATOR;
+
+    // L'utilisateur peut créer un lien s'il a soit les permissions globales, soit les permissions dans la conversation
+    return hasGlobalPermission || hasConversationPermission;
+  };
+
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    // Méthode moderne avec navigator.clipboard
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        console.warn('Modern clipboard API failed:', error);
+      }
+    }
+
+    // Fallback avec document.execCommand
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        return true;
+      } else {
+        throw new Error('execCommand copy failed');
+      }
+    } catch (error) {
+      console.error('Fallback copy method failed:', error);
+      return false;
+    }
   };
 
   const handleCreateLink = async () => {
@@ -58,34 +104,27 @@ export function CreateLinkButton({
       setIsLoading(true);
       const link = await conversationsService.createInviteLink(conversationId);
       
-      // Essayer de copier dans le presse-papiers avec gestion d'erreur
-      try {
-        await navigator.clipboard.writeText(link);
+      // Essayer de copier dans le presse-papiers
+      const copySuccess = await copyToClipboard(link);
+      
+      if (copySuccess) {
         setCopied(true);
         toast.success(t('linkCreatedAndCopied'));
         setTimeout(() => setCopied(false), 2000);
-      } catch (clipboardError: any) {
-        console.warn('Clipboard access denied or not available:', clipboardError);
-        // Fallback: afficher le lien dans un toast ou modal
+      } else {
+        // Si la copie échoue, afficher le lien avec un bouton de copie manuelle
         toast.success(t('linkCreated'), {
           description: link,
-          duration: 10000,
+          duration: 15000,
           action: {
             label: t('copyManually'),
-            onClick: () => {
-              // Essayer une méthode alternative de copie
-              const textArea = document.createElement('textarea');
-              textArea.value = link;
-              document.body.appendChild(textArea);
-              textArea.select();
-              try {
-                document.execCommand('copy');
+            onClick: async () => {
+              const retrySuccess = await copyToClipboard(link);
+              if (retrySuccess) {
                 toast.success(t('copiedToClipboard'));
-              } catch (fallbackError) {
-                console.error('Fallback copy failed:', fallbackError);
+              } else {
                 toast.error(t('copyFailed'));
               }
-              document.body.removeChild(textArea);
             }
           }
         });
