@@ -1,0 +1,119 @@
+{
+  "languageNames": {
+    "en": "英语",
+    "fr": "法语", 
+    "pt": "葡萄牙语",
+    "es": "西班牙语",
+    "de": "德语",
+    "it": "意大利语",
+    "zh": "中文",
+    "ja": "日语",
+    "ar": "阿拉伯语",
+    "ru": "俄语",
+    "ko": "韩语",
+    "hi": "印地语",
+    "tr": "土耳其语"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一个",
+    "previous": "上一个",
+    "submit": "提交",
+    "confirm": "确认",
+    "yes": "是",
+    "no": "否"
+  },
+  "navigation": {
+    "home": "首页",
+    "dashboard": "仪表板",
+    "conversations": "对话",
+    "contacts": "联系人",
+    "settings": "设置",
+    "profile": "个人资料",
+    "logout": "登出",
+    "login": "登录",
+    "register": "注册"
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "welcome": "欢迎回来",
+    "greeting": "你好，{name}！👋",
+    "greetingFallback": "你好，用户！👋",
+    "overview": "这是您今天消息活动的概览。",
+    "loading": "正在加载仪表板...",
+    "errorLoading": "❌ 加载错误：{message}",
+    "retry": "重试",
+    "stats": {
+      "totalConversations": "总对话数",
+      "totalCommunities": "总社区数",
+      "totalGroups": "总社区数",
+      "totalMessages": "总消息数",
+      "activeConversations": "活跃对话",
+      "translationsToday": "今日翻译",
+      "totalLinks": "总链接数",
+      "conversations": "对话",
+      "communities": "社区",
+      "groups": "社区",
+      "messages": "消息",
+      "activeConversationsTitle": "活跃对话",
+      "translations": "翻译",
+      "links": "链接",
+      "total": "总计",
+      "active": "活跃",
+      "thisWeek": "本周",
+      "inProgress": "进行中",
+      "today": "今天",
+      "created": "已创建"
+    },
+    "recentConversations": "最近对话",
+    "recentCommunities": "最近社区",
+    "recentGroups": "最近社区",
+    "createLink": "创建链接",
+    "newConversation": "新对话",
+    "createCommunity": "创建社区",
+    "refresh": "刷新",
+    "loadingError": "加载错误",
+    "noData": "无可用数据",
+    "errorUnknown": "未知错误",
+    "dataLoadingError": "数据加载错误",
+    "actions": {
+      "createLink": "创建链接",
+      "newConversation": "新对话",
+      "createCommunity": "创建社区",
+      "createGroup": "创建社区",
+      "viewAll": "查看全部",
+      "startConversation": "开始对话",
+      "createCommunityButton": "创建社区",
+      "createGroupButton": "创建社区",
+      "settings": "设置"
+    },
+    "quickActions": {
+      "title": "快速操作",
+      "description": "快速访问主要功能",
+      "newConversation": "新对话",
+      "createLink": "创建链接",
+      "createCommunity": "创建社区",
+      "createGroup": "创建社区",
+      "settings": "设置"
+    },
+    "emptyStates": {
+      "noRecentConversations": "没有最近的对话",
+      "noRecentCommunities": "没有最近的社区",
+      "noRecentGroups": "没有最近的社区"
+    },
+    "success": {
+      "linkCreated": "对话链接创建成功！"
+    },
+    "time": {
+      "format": "zh-CN"
+    }
+  }
+}

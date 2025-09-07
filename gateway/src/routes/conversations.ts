@@ -205,6 +205,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     requireAuth: false, 
     allowAnonymous: true 
   });
+  
+  // Middleware d'authentification requis pour les conversations
+  const requiredAuth = createUnifiedAuthMiddleware(prisma, { 
+    requireAuth: true, 
+    allowAnonymous: false 
+  });
 
   /**
    * Résout l'ID de conversation réel à partir d'un identifiant (peut être un ObjectID ou un identifier)
@@ -442,7 +448,17 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   }, async (request, reply) => {
     try {
       const { type, title, description, participantIds = [], communityId } = request.body;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Authentication required to create conversation'
+        });
+      }
+      
+      const userId = authContext.userId;
 
       // Validation des données
       if (!['direct', 'group', 'public', 'global'].includes(type)) {
@@ -892,11 +908,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
   // Marquer une conversation comme lue (tous les messages non lus)
   fastify.post<{ Params: ConversationParams }>('/conversations/:id/read', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
@@ -948,11 +965,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
   // Recherche de conversations accessibles par l'utilisateur courant
   fastify.get<{ Querystring: SearchQuery }>('/conversations/search', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { q } = request.query;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       if (!q || q.trim().length === 0) {
         return reply.send({ success: true, data: [] });
@@ -1015,12 +1033,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: ConversationParams & { messageId: string };
     Body: EditMessageBody;
   }>('/conversations/:id/messages/:messageId', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id, messageId } = request.params;
       const { content, originalLanguage = 'fr' } = request.body;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Vérifier que le message existe et appartient à l'utilisateur
       const existingMessage = await prisma.message.findFirst({
@@ -1109,11 +1128,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   fastify.delete<{
     Params: ConversationParams & { messageId: string };
   }>('/conversations/:id/messages/:messageId', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id, messageId } = request.params;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Vérifier que le message existe et appartient à l'utilisateur
       const existingMessage = await prisma.message.findFirst({
@@ -1169,12 +1189,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: ConversationParams;
     Body: Partial<CreateConversationBody>;
   }>('/conversations/:id', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
       const { title, description } = request.body;
-      const userId = (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Vérifier les permissions d'administration
       const membership = await prisma.conversationMember.findFirst({
@@ -1239,11 +1260,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
   // Route pour supprimer une conversation
   fastify.delete<{ Params: ConversationParams }>('/conversations/:id', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
-      const userId = (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Interdire la suppression de la conversation globale
       if (id === "meeshy") {
@@ -1304,12 +1326,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: { messageId: string };
     Body: { content: string };
   }>('/messages/:messageId', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { messageId } = request.params;
       const { content } = request.body;
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Vérifier que le message existe et appartient à l'utilisateur
       const message = await prisma.message.findFirst({
@@ -1653,12 +1676,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     Params: { id: string };
     Body: { userId: string };
   }>('/conversations/:id/participants', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
       const { userId } = request.body;
-      const currentUserId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const currentUserId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
@@ -1741,11 +1765,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   fastify.delete<{
     Params: { id: string; userId: string };
   }>('/conversations/:id/participants/:userId', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id, userId } = request.params;
-      const currentUserId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const currentUserId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
@@ -1842,12 +1867,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       allowedIpRanges?: string[];
     };
   }>('/conversations/:id/new-link', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request, reply) => {
     try {
       const { id } = request.params;
       const body = request.body || {};
-      const currentUserId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const currentUserId = authRequest.authContext.userId;
 
       // Résoudre l'ID de conversation réel
       const conversationId = await resolveConversationId(id);
@@ -1959,12 +1985,22 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       type?: 'direct' | 'group' | 'public' | 'global';
     };
   }>('/conversations/:id', {
-    preValidation: [fastify.authenticate]
+    preValidation: [optionalAuth]
   }, async (request, reply) => {
+    const { id } = request.params;
+    const { title, description, type } = request.body;
+    const authRequest = request as UnifiedAuthRequest;
+    
     try {
-      const { id } = request.params;
-      const { title, description, type } = request.body;
-      const currentUserId = (request as any).user.userId || (request as any).user.id;
+      // Vérifier que l'utilisateur est authentifié
+      if (!authRequest.authContext.isAuthenticated) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Authentification requise'
+        });
+      }
+      
+      const currentUserId = authRequest.authContext.userId;
 
       console.log('[GATEWAY] Update conversation request:', {
         conversationId: id,
@@ -2068,18 +2104,52 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
     } catch (error) {
       console.error('[GATEWAY] Error updating conversation:', error);
-      reply.status(500).send({
+      
+      // Gestion d'erreur améliorée avec détails spécifiques
+      let errorMessage = 'Erreur lors de la mise à jour de la conversation';
+      let statusCode = 500;
+      
+      if (error.code === 'P2002') {
+        errorMessage = 'Une conversation avec ce nom existe déjà';
+        statusCode = 409;
+      } else if (error.code === 'P2025') {
+        errorMessage = 'Conversation non trouvée';
+        statusCode = 404;
+      } else if (error.code === 'P2003') {
+        errorMessage = 'Erreur de référence - conversation invalide';
+        statusCode = 400;
+      } else if (error.name === 'ValidationError') {
+        errorMessage = 'Données de mise à jour invalides';
+        statusCode = 400;
+      }
+      
+      console.error('[GATEWAY] Detailed error info:', {
+        code: error.code,
+        message: error.message,
+        meta: error.meta,
+        conversationId: id,
+        currentUserId: authRequest.authContext.userId,
+        updateData: { title, description, type }
+      });
+      
+      reply.status(statusCode).send({
         success: false,
-        error: 'Erreur lors de la mise à jour de la conversation'
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? {
+          code: error.code,
+          message: error.message,
+          meta: error.meta
+        } : undefined
       });
     }
   });
 
   // Récupérer les liens de partage d'une conversation (pour les admins)
-  fastify.get('/conversations/:conversationId/links', { onRequest: [fastify.authenticate] }, async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.get('/conversations/:conversationId/links', { preValidation: [requiredAuth] }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { conversationId } = request.params as { conversationId: string };
-      const userId = (request as any).user.userId || (request as any).user.id;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
 
       // Vérifier que l'utilisateur est admin ou modérateur de la conversation
       const membership = await prisma.conversationMember.findFirst({
@@ -2139,11 +2209,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
   // Route pour rejoindre une conversation via un lien partagé (utilisateurs authentifiés)
   fastify.post('/conversations/join/:linkId', {
-    preValidation: [fastify.authenticate]
+    preValidation: [requiredAuth]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { linkId } = request.params as { linkId: string };
-      const userToken = (request as any).user;
+      const authRequest = request as UnifiedAuthRequest;
+      const userToken = authRequest.authContext;
 
       if (!userToken) {
         return reply.status(401).send({
@@ -2185,7 +2256,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       const existingMember = await prisma.conversationMember.findFirst({
         where: {
           conversationId: shareLink.conversationId,
-          userId: userToken.userId || userToken.id
+          userId: userToken.userId
         }
       });
 
@@ -2201,7 +2272,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       await prisma.conversationMember.create({
         data: {
           conversationId: shareLink.conversationId,
-          userId: userToken.userId || userToken.id,
+          userId: userToken.userId,
           role: UserRoleEnum.MEMBER,
           joinedAt: new Date()
         }

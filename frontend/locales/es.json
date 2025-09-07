@@ -1,0 +1,192 @@
+{
+  "languageNames": {
+    "en": "Inglés",
+    "fr": "Francés", 
+    "pt": "Portugués",
+    "es": "Español",
+    "de": "Alemán",
+    "it": "Italiano",
+    "zh": "Chino",
+    "ja": "Japonés",
+    "ar": "Árabe",
+    "ru": "Ruso",
+    "ko": "Coreano",
+    "hi": "Hindi",
+    "tr": "Turco"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "dashboard": "Panel de control",
+    "conversations": "Conversaciones",
+    "contacts": "Contactos",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  },
+  "dashboard": {
+    "title": "Panel de control",
+    "welcome": "Bienvenido de nuevo",
+    "greeting": "¡Hola, {name}! 👋",
+    "greetingFallback": "¡Hola, Usuario! 👋",
+    "overview": "Aquí tienes un resumen de tu actividad de mensajería de hoy.",
+    "loading": "Cargando panel de control...",
+    "errorLoading": "❌ Error de carga: {message}",
+    "retry": "Reintentar",
+    "stats": {
+      "totalConversations": "Conversaciones totales",
+      "totalCommunities": "Comunidades totales",
+      "totalGroups": "Comunidades totales",
+      "totalMessages": "Mensajes totales",
+      "activeConversations": "Conversaciones activas",
+      "translationsToday": "Traducciones hoy",
+      "totalLinks": "Enlaces totales",
+      "conversations": "Conversaciones",
+      "communities": "Comunidades",
+      "groups": "Comunidades",
+      "messages": "Mensajes",
+      "activeConversationsTitle": "Conversaciones activas",
+      "translations": "Traducciones",
+      "links": "Enlaces",
+      "total": "Total",
+      "active": "Activo",
+      "thisWeek": "Esta semana",
+      "inProgress": "En progreso",
+      "today": "Hoy",
+      "created": "Creado"
+    },
+    "recentConversations": "Conversaciones recientes",
+    "recentCommunities": "Comunidades recientes",
+    "recentGroups": "Comunidades recientes",
+    "createLink": "Crear enlace",
+    "newConversation": "Nueva conv.",
+    "createCommunity": "Crear com.",
+    "refresh": "Actualizar",
+    "retry": "Reintentar",
+    "loadingError": "Error de carga",
+    "noData": "No hay datos disponibles",
+    "loading": "Cargando panel de control...",
+    "errorLoading": "❌ Error de carga: {message}",
+    "errorUnknown": "Error desconocido",
+    "dataLoadingError": "Error al cargar los datos",
+    "actions": {
+      "createLink": "Crear un enlace",
+      "newConversation": "Nueva conversación",
+      "createCommunity": "Crear una comunidad",
+      "createGroup": "Crear una comunidad",
+      "viewAll": "Ver todo",
+      "startConversation": "Iniciar una conversación",
+      "createCommunityButton": "Crear una comunidad",
+      "createGroupButton": "Crear una comunidad",
+      "settings": "Configuración"
+    },
+    "quickActions": {
+      "title": "Acciones rápidas",
+      "description": "Accede rápidamente a las funciones principales",
+      "newConversation": "Nueva conversación",
+      "createLink": "Crear un enlace",
+      "createCommunity": "Crear una comunidad",
+      "createGroup": "Crear una comunidad",
+      "settings": "Configuración"
+    },
+    "emptyStates": {
+      "noRecentConversations": "No hay conversaciones recientes",
+      "noRecentCommunities": "No hay comunidades recientes",
+      "noRecentGroups": "No hay comunidades recientes"
+    },
+    "success": {
+      "linkCreated": "¡Enlace de conversación creado con éxito!"
+    },
+    "time": {
+      "format": "es-ES"
+    }
+  },
+  "layout": {
+    "header": {
+      "searchPlaceholder": "Buscar conversaciones, comunidades, contactos...",
+      "notifications": "Notificaciones",
+      "unreadCount": "{count} no leídos",
+      "userMenu": "Menú de usuario"
+    },
+    "navigation": {
+      "dashboard": "Panel de control",
+      "conversations": "Conversaciones",
+      "communities": "Comunidades",
+      "contacts": "Contactos",
+      "links": "Enlaces",
+      "profile": "Perfil",
+      "settings": "Configuración",
+      "admin": "Administración",
+      "logout": "Cerrar sesión"
+    },
+    "auth": {
+      "checking": "Verificando autenticación...",
+      "logoutSuccess": "Cierre de sesión exitoso",
+      "logoutError": "Error durante el cierre de sesión"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Iniciar sesión",
+      "description": "Bienvenido de nuevo a Meeshy",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "loginButton": "Iniciar sesión",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes una cuenta?",
+      "registerLink": "Regístrate aquí"
+    },
+    "register": {
+      "title": "Crear una cuenta",
+      "description": "Únete a Meeshy y comunícate sin barreras",
+      "firstName": "Nombre",
+      "lastName": "Apellido",
+      "username": "Nombre de usuario",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "registerButton": "Crear cuenta",
+      "hasAccount": "¿Ya tienes una cuenta?",
+      "loginLink": "Inicia sesión aquí"
+    }
+  },
+  "errors": {
+    "loginFailed": "Error al iniciar sesión",
+    "registrationFailed": "Error en el registro",
+    "invalidCredentials": "Credenciales inválidas",
+    "networkError": "Error de red",
+    "unknownError": "Ocurrió un error desconocido",
+    "validationError": "Error de validación"
+  },
+  "success": {
+    "loginSuccess": "Inicio de sesión exitoso",
+    "registrationSuccess": "Cuenta creada con éxito",
+    "settingsSaved": "Configuración guardada con éxito",
+    "profileUpdated": "Perfil actualizado con éxito",
+    "welcome": "Bienvenido"
+  },
+  "communities": {
+    "private": "Privado",
+    "members": "miembros",
+    "member": "miembro",
+    "membersCount": "{count} miembros"
+  }
+}

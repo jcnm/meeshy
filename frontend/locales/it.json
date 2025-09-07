@@ -1,0 +1,119 @@
+{
+  "languageNames": {
+    "en": "Inglese",
+    "fr": "Francese", 
+    "pt": "Portoghese",
+    "es": "Spagnolo",
+    "de": "Tedesco",
+    "it": "Italiano",
+    "zh": "Cinese",
+    "ja": "Giapponese",
+    "ar": "Arabo",
+    "ru": "Russo",
+    "ko": "Coreano",
+    "hi": "Hindi",
+    "tr": "Turco"
+  },
+  "common": {
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo",
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "next": "Avanti",
+    "previous": "Precedente",
+    "submit": "Invia",
+    "confirm": "Conferma",
+    "yes": "Sì",
+    "no": "No"
+  },
+  "navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "conversations": "Conversazioni",
+    "contacts": "Contatti",
+    "settings": "Impostazioni",
+    "profile": "Profilo",
+    "logout": "Esci",
+    "login": "Accedi",
+    "register": "Registrati"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bentornato",
+    "greeting": "Ciao, {name}! 👋",
+    "greetingFallback": "Ciao, Utente! 👋",
+    "overview": "Ecco una panoramica della tua attività di messaggi oggi.",
+    "loading": "Caricamento dashboard...",
+    "errorLoading": "❌ Errore di caricamento: {message}",
+    "retry": "Riprova",
+    "stats": {
+      "totalConversations": "Conversazioni Totali",
+      "totalCommunities": "Comunità Totali",
+      "totalGroups": "Comunità Totali",
+      "totalMessages": "Messaggi Totali",
+      "activeConversations": "Conversazioni Attive",
+      "translationsToday": "Traduzioni Oggi",
+      "totalLinks": "Link Totali",
+      "conversations": "Conversazioni",
+      "communities": "Comunità",
+      "groups": "Comunità",
+      "messages": "Messaggi",
+      "activeConversationsTitle": "Conversazioni Attive",
+      "translations": "Traduzioni",
+      "links": "Link",
+      "total": "Totale",
+      "active": "Attivo",
+      "thisWeek": "Questa settimana",
+      "inProgress": "In corso",
+      "today": "Oggi",
+      "created": "Creato"
+    },
+    "recentConversations": "Conversazioni Recenti",
+    "recentCommunities": "Comunità Recenti",
+    "recentGroups": "Comunità Recenti",
+    "createLink": "Crea Link",
+    "newConversation": "Nuova Conv.",
+    "createCommunity": "Crea Comunità",
+    "refresh": "Aggiorna",
+    "loadingError": "Errore di caricamento",
+    "noData": "Nessun dato disponibile",
+    "errorUnknown": "Errore sconosciuto",
+    "dataLoadingError": "Errore nel caricamento dei dati",
+    "actions": {
+      "createLink": "Crea un link",
+      "newConversation": "Nuova conversazione",
+      "createCommunity": "Crea una comunità",
+      "createGroup": "Crea una comunità",
+      "viewAll": "Vedi tutto",
+      "startConversation": "Inizia una conversazione",
+      "createCommunityButton": "Crea una comunità",
+      "createGroupButton": "Crea una comunità",
+      "settings": "Impostazioni"
+    },
+    "quickActions": {
+      "title": "Azioni Rapide",
+      "description": "Accedi rapidamente alle funzioni principali",
+      "newConversation": "Nuova conversazione",
+      "createLink": "Crea un link",
+      "createCommunity": "Crea una comunità",
+      "createGroup": "Crea una comunità",
+      "settings": "Impostazioni"
+    },
+    "emptyStates": {
+      "noRecentConversations": "Nessuna conversazione recente",
+      "noRecentCommunities": "Nessuna comunità recente",
+      "noRecentGroups": "Nessuna comunità recente"
+    },
+    "success": {
+      "linkCreated": "Link di conversazione creato con successo!"
+    },
+    "time": {
+      "format": "it-IT"
+    }
+  }
+}

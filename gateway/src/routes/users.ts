@@ -19,12 +19,59 @@ const updateUserSchema = z.object({
 });
 
 export async function userRoutes(fastify: FastifyInstance) {
+  // Route de test simple
+  fastify.get('/users/me/test', {
+    onRequest: [fastify.authenticate]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated'
+        });
+      }
+      
+      const userId = authContext.userId;
+      fastify.log.info(`[TEST] Getting test data for user ${userId}`);
+      
+      return reply.send({
+        success: true,
+        data: {
+          userId,
+          message: "Test endpoint working",
+          timestamp: new Date()
+        }
+      });
+    } catch (error) {
+      fastify.log.error(`[TEST] Error: ${error instanceof Error ? error.message : String(error)}`);
+      return reply.status(500).send({
+        success: false,
+        message: 'Test error',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Route pour obtenir les statistiques du tableau de bord de l'utilisateur connecté
   fastify.get('/users/me/dashboard-stats', {
     onRequest: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { userId } = request.user as any;
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated to access dashboard stats'
+        });
+      }
+      
+      const userId = authContext.userId;
+      fastify.log.info(`[DASHBOARD] Getting stats for user ${userId}`);
 
       // Récupérer les statistiques en parallèle
       const [
@@ -236,10 +283,12 @@ export async function userRoutes(fastify: FastifyInstance) {
       });
 
     } catch (error) {
+      fastify.log.error(`[DASHBOARD] Error getting stats: ${error instanceof Error ? error.message : String(error)}`);
       logError(fastify.log, 'Get user dashboard stats error:', error);
       return reply.status(500).send({
         success: false,
-        message: 'Erreur interne du serveur'
+        message: 'Erreur interne du serveur',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -249,7 +298,17 @@ export async function userRoutes(fastify: FastifyInstance) {
     onRequest: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const { userId } = request.user as any;
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated to update profile'
+        });
+      }
+      
+      const userId = authContext.userId;
       const body = updateUserSchema.parse(request.body);
       
       // Construire l'objet de mise à jour avec uniquement les champs fournis
@@ -380,6 +439,16 @@ export async function userRoutes(fastify: FastifyInstance) {
     onRequest: [fastify.authenticate]
   }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      // Utiliser le nouveau système d'authentification unifié
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          message: 'Authentication required',
+          error: 'User must be authenticated to search users'
+        });
+      }
+      
       const { q } = request.query as { q?: string };
       
       if (!q || q.trim().length < 2) {

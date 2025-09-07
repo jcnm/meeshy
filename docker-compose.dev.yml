@@ -9,18 +9,19 @@ services:
     image: mongo:8.0
     container_name: meeshy-dev-database
     restart: unless-stopped
-    command: mongod --replSet rs0 --bind_ip_all
+    command: mongod --bind_ip_all --replSet rs0 --keyFile /data/configdb/mongodb-keyfile
     environment:
       MONGO_INITDB_ROOT_USERNAME: meeshy
       MONGO_INITDB_ROOT_PASSWORD: MeeshyPassword123
       MONGO_INITDB_DATABASE: meeshy
+      MONGO_REPLICA_SET: rs0
     ports:
       - "27017:27017"
     volumes:
       - dev_database_data:/data/db
       - dev_database_config:/data/configdb
-      - ./shared/init-mongodb-replica.sh:/docker-entrypoint-initdb.d/init-mongodb-replica.sh:ro
       - ./shared/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./shared/mongodb-keyfile:/data/configdb/mongodb-keyfile
     networks:
       - meeshy-dev-network
     healthcheck:

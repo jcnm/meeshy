@@ -75,10 +75,12 @@ export default function RootLayout({
           </TranslationProvider>
         </LanguageProvider>
         <Toaster 
-          position="top-right"
-          expand={true}
+          position="bottom-right"
+          expand={false}
           richColors
+          visibleToasts={3}
           toastOptions={{
+            duration: 3000,
             style: {
               background: 'white',
               border: '1px solid #e5e7eb',

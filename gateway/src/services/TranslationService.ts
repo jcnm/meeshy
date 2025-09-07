@@ -641,8 +641,7 @@ export class TranslationService extends EventEmitter {
             translatedContent: result.translatedText,
             translationModel: modelInfo,
             confidenceScore: confidenceScore,
-            cacheKey: cacheKey,
-            updatedAt: new Date()
+            cacheKey: cacheKey
           }
         });
         

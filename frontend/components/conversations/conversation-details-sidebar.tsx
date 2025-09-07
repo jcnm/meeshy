@@ -149,14 +149,45 @@ export function ConversationDetailsSidebar({
   const handleSaveName = async () => {
     try {
       setIsLoading(true);
+      
+      // Validation du nom
+      if (!conversationName.trim()) {
+        toast.error('Le nom de la conversation ne peut pas être vide');
+        return;
+      }
+      
+      if (conversationName.trim() === (conversation.title || conversation.name || '')) {
+        // Pas de changement, juste fermer l'édition
+        setIsEditingName(false);
+        return;
+      }
+      
       await conversationsService.updateConversation(conversation.id, {
-        title: conversationName
+        title: conversationName.trim()
       });
+      
       setIsEditingName(false);
       toast.success('Nom de la conversation mis à jour');
     } catch (error) {
       console.error('Erreur lors de la mise à jour du nom:', error);
-      toast.error('Erreur lors de la mise à jour du nom');
+      
+      // Gestion d'erreur améliorée
+      let errorMessage = 'Erreur lors de la mise à jour du nom';
+      
+      if (error.status === 409) {
+        errorMessage = 'Une conversation avec ce nom existe déjà';
+      } else if (error.status === 403) {
+        errorMessage = 'Vous n\'avez pas les permissions pour modifier cette conversation';
+      } else if (error.status === 404) {
+        errorMessage = 'Conversation non trouvée';
+      } else if (error.status === 400) {
+        errorMessage = 'Données invalides';
+      }
+      
+      toast.error(errorMessage);
+      
+      // Restaurer le nom original en cas d'erreur
+      setConversationName(conversation.title || conversation.name || '');
     } finally {
       setIsLoading(false);
     }

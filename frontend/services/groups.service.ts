@@ -40,7 +40,7 @@ export interface GroupsResponse {
 }
 
 class GroupsService {
-  private readonly baseEndpoint = '/groups';
+  private readonly baseEndpoint = '/communities';
 
   /**
    * Récupère la liste des groupes avec filtres optionnels

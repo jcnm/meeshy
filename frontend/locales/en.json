@@ -671,6 +671,9 @@
     "greeting": "Hello, {name}! 👋",
     "greetingFallback": "Hello, User! 👋",
     "overview": "Here's an overview of your messaging activity today.",
+    "loading": "Loading dashboard...",
+    "errorLoading": "❌ Loading error: {message}",
+    "retry": "Retry",
     "stats": {
       "totalConversations": "Total Conversations",
       "totalCommunities": "Total Communities",

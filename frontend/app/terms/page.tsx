@@ -101,9 +101,9 @@ export default function TermsPage() {
 
             {/* 6. Privacy */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('privacy.title')}</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('title')}</h2>
               <p className="text-gray-700 leading-relaxed">
-                {t('privacy.content')}
+                {t('content')}
               </p>
             </section>
 
@@ -141,16 +141,16 @@ export default function TermsPage() {
 
             {/* 11. Contact */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('contact.title')}</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('title')}</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                {t('contact.intro')}
+                {t('intro')}
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="text-gray-700 mb-2">
-                  <strong>{t('contact.email')}</strong>
+                  <strong>{t('email')}</strong>
                 </p>
                 <p className="text-gray-700">
-                  <strong>{t('contact.address')}</strong>
+                  <strong>{t('address')}</strong>
                 </p>
               </div>
             </section>

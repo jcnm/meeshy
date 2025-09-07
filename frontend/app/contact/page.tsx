@@ -62,21 +62,21 @@ export default function ContactPage() {
               {/* Contact */}
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle>{t('contact.title')}</CardTitle>
+                  <CardTitle>{t('title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <Mail className="h-5 w-5 text-blue-600" />
                     <div>
-                      <p className="font-medium">{t('contact.email.label')}</p>
-                      <p className="text-gray-600">{t('contact.email.value')}</p>
+                      <p className="font-medium">{t('email.label')}</p>
+                      <p className="text-gray-600">{t('email.value')}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Phone className="h-5 w-5 text-blue-600" />
                     <div>
-                      <p className="font-medium">{t('contact.phone.label')}</p>
-                      <p className="text-gray-600">{t('contact.phone.value')}</p>
+                      <p className="font-medium">{t('phone.label')}</p>
+                      <p className="text-gray-600">{t('phone.value')}</p>
                     </div>
                   </div>
                 </CardContent>

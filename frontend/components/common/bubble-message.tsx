@@ -216,7 +216,7 @@ function BubbleMessageInner({
         toast.error(t('toasts.messages.translationError'));
       }
     } else {
-      toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
+      // toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
       console.log('⚠️ Pas de callback onForceTranslation fourni');
     }
   };
@@ -232,7 +232,7 @@ function BubbleMessageInner({
   const handleUpgradeTier = async (targetLanguage: string, currentTier: string) => {
     const nextTier = getNextTier(currentTier);
     if (!nextTier) {
-      toast.info(t('toasts.messages.translationMaxTier'));
+      // toast.info(t('toasts.messages.translationMaxTier'));
       return;
     }
 
@@ -243,13 +243,13 @@ function BubbleMessageInner({
       try {
         // On peut étendre onForceTranslation pour accepter un tier optionnel
         await onForceTranslation(message.id, targetLanguage);
-        toast.success(`Re-traduction en cours vers ${getLanguageInfo(targetLanguage).name} (tier ${nextTier})`);
+        // toast.success(`Re-traduction en cours vers ${getLanguageInfo(targetLanguage).name} (tier ${nextTier})`);
       } catch (error) {
         console.error('❌ Erreur lors de l\'upgrade de traduction:', error);
         toast.error('Erreur lors de la demande d\'upgrade');
       }
     } else {
-      toast.info(`Upgrade vers tier ${nextTier} pour ${getLanguageInfo(targetLanguage).name}`);
+      // toast.info(`Upgrade vers tier ${nextTier} pour ${getLanguageInfo(targetLanguage).name}`);
     }
   };
 

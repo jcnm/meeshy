@@ -53,7 +53,7 @@ export interface TranslationModel {
 
 // SUPPORTED_LANGUAGES is now imported from @shared/types to avoid conflicts
 
-// Langues d'interface limitées (EN, FR, PT uniquement)
+// Langues d'interface supportées (focus on FR, EN, PT for now)
 export const INTERFACE_LANGUAGES: LanguageCode[] = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
   { code: 'fr', name: 'Français', flag: '🇫🇷' },

@@ -691,6 +691,9 @@
     "greeting": "Bonjour, {name} ! 👋",
     "greetingFallback": "Bonjour, Utilisateur ! 👋",
     "overview": "Voici un aperçu de votre activité de messagerie aujourd'hui.",
+    "loading": "Chargement du tableau de bord...",
+    "errorLoading": "❌ Erreur de chargement : {message}",
+    "retry": "Réessayer",
     "stats": {
       "totalConversations": "Conversations totales",
       "totalCommunities": "Communautés totales",

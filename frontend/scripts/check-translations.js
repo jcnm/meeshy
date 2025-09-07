@@ -98,7 +98,7 @@ function findAllComponentFiles(dir) {
 // Trouver tous les composants à vérifier
 const componentsToCheck = findAllComponentFiles(path.join(__dirname, '..'));
 
-// Fichiers de traduction
+// Fichiers de traduction (focus on FR, EN, PT for now)
 const translationFiles = [
   'locales/fr.json',
   'locales/en.json',

@@ -73,7 +73,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthChecking } = useUser(); // user est garanti d'exister grâce au wrapper
-  const { t } = useTranslations('conversations');
+  const { t } = useTranslations(); // No namespace for mixed usage
 
   // Si on est en train de vérifier l'authentification, afficher un loader
   if (isAuthChecking) {
@@ -517,8 +517,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
 
 
-              // Message traduit avec succès
-      toast.success(t('toasts.messages.translationSuccess', { model: selectedTranslationModel }), { id: `translate-${messageId}` });
+              // Message traduit avec succès - Toast silencieux pour éviter le spam
+      // toast.success(t('toasts.messages.translationSuccess', { model: selectedTranslationModel }), { id: `translate-${messageId}` });
 
     } catch (error) {
       console.error('❌ Erreur lors de la traduction:', error);
@@ -528,8 +528,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   };
 
   const handleEdit = async (messageId: string, newContent: string) => {
-    // Édition de message
-    toast.info(t('toasts.messages.editSoon'));
+    // Édition de message - Toast silencieux
+    // toast.info(t('toasts.messages.editSoon'));
   };
 
   // Utilitaires
@@ -1048,7 +1048,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
             {/* Footer fixe avec boutons */}
             <div className="flex-shrink-0 p-4 border-t border-border/30 bg-background/50">
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
                   onClick={() => setIsCreateLinkModalOpen(true)}

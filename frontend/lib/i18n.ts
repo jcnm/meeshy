@@ -1,12 +1,12 @@
 // Configuration i18n simplifiée sans redirections d'URL
 // L'internationalisation est gérée côté client via le LanguageContext
 
-// Define the locales that your app supports
+// Define the locales that your app supports (focus on FR, EN, PT for now)
 export const locales = ['en', 'fr', 'pt'] as const;
 export type Locale = (typeof locales)[number];
 
 // Default locale
-export const defaultLocale: Locale = 'en';
+export const defaultLocale: Locale = 'fr';
 
 // Configuration de requête supprimée car l'internationalisation est gérée côté client
 

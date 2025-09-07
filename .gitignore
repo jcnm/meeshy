@@ -131,4 +131,4 @@ htmlcov/
 ./shared/prisma/**/*
 ./shared/*d.ts
 ./shared/**/*.d.ts
- */
+ */translator/.venv/

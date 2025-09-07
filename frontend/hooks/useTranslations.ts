@@ -13,11 +13,11 @@ interface TranslationMessages {
   [key: string]: any;
 }
 
-// Vraies traductions importées statiquement
+// Vraies traductions importées statiquement (focus on FR, EN, PT)
 const REAL_TRANSLATIONS = {
   fr: frTranslations,
   en: enTranslations,
-  pt: ptTranslations
+  pt: ptTranslations,
 };
 
 export function useTranslations(namespace?: string) {

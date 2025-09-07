@@ -46,11 +46,11 @@ export default function DashboardPage() {
       if (response.data) {
         setDashboardData(response.data);
       } else {
-        throw new Error(t('dashboard.dataLoadingError'));
+        throw new Error(t('dataLoadingError'));
       }
     } catch (err) {
       console.error('Erreur lors du chargement du dashboard:', err);
-      setError(err instanceof Error ? err : new Error(t('dashboard.errorUnknown')));
+      setError(err instanceof Error ? err : new Error(t('errorUnknown')));
     } finally {
       setIsLoading(false);
     }
@@ -87,11 +87,11 @@ export default function DashboardPage() {
       <DashboardLayout>
                     <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
               <div className="text-red-500">
-                {t('dashboard.errorLoading', { message: error.message })}
+                {t('errorLoading', { message: error.message })}
               </div>
               <Button onClick={refresh} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t('dashboard.retry')}
+                {t('retry')}
               </Button>
             </div>
       </DashboardLayout>
@@ -104,7 +104,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center space-y-2">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-muted-foreground">{t('dashboard.loading')}</p>
+            <p className="text-muted-foreground">{t('loading')}</p>
           </div>
         </div>
       </DashboardLayout>
@@ -116,12 +116,12 @@ export default function DashboardPage() {
       {/* Greeting et actions rapides */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-                      <div>
+                    <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                {t('dashboard.greeting', { name: user?.firstName || user?.username || t('dashboard.greetingFallback') })}
+                {t('greeting', { name: user?.firstName || user?.username || t('greetingFallback') })}
               </h2>
               <p className="text-gray-600">
-                {t('dashboard.overview')}
+                {t('overview')}
               </p>
             </div>
           
@@ -131,16 +131,16 @@ export default function DashboardPage() {
               onClick={() => setIsCreateLinkModalOpen(true)}
             >
               <Link2 className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{t('dashboard.actions.createLink')}</span>
-              <span className="sm:hidden">{t('dashboard.createLink')}</span>
+              <span className="hidden sm:inline">{t('actions.createLink')}</span>
+              <span className="sm:hidden">{t('createLink')}</span>
             </Button>
             <Button 
               onClick={() => router.push('/conversations?new=true')}
               className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-none"
             >
               <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{t('dashboard.actions.newConversation')}</span>
-              <span className="sm:hidden">{t('dashboard.newConversation')}</span>
+              <span className="hidden sm:inline">{t('actions.newConversation')}</span>
+              <span className="sm:hidden">{t('newConversation')}</span>
             </Button>
             <Button 
               variant="outline"
@@ -148,8 +148,8 @@ export default function DashboardPage() {
               className="flex-1 sm:flex-none"
             >
               <Users className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">{t('dashboard.actions.createCommunity')}</span>
-              <span className="sm:hidden">{t('dashboard.createCommunity')}</span>
+              <span className="hidden sm:inline">{t('actions.createCommunity')}</span>
+              <span className="sm:hidden">{t('createCommunity')}</span>
             </Button>
           </div>
         </div>
@@ -159,13 +159,13 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('dashboard.stats.conversations')}</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('stats.conversations')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold">{stats.totalConversations}</p>
-                  <p className="text-blue-100 text-sm">{t('dashboard.stats.total')}</p>
+                  <p className="text-blue-100 text-sm">{t('stats.total')}</p>
                 </div>
                 <MessageSquare className="h-8 w-8 text-blue-200" />
               </div>
@@ -174,13 +174,13 @@ export default function DashboardPage() {
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('dashboard.stats.communities')}</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('stats.communities')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold">{stats.totalCommunities}</p>
-                  <p className="text-green-100 text-sm">{t('dashboard.stats.active')}</p>
+                  <p className="text-green-100 text-sm">{t('stats.active')}</p>
                 </div>
                 <Users className="h-8 w-8 text-green-200" />
               </div>
@@ -189,13 +189,13 @@ export default function DashboardPage() {
 
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('dashboard.stats.messages')}</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('stats.messages')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold">{stats.totalMessages}</p>
-                  <p className="text-purple-100 text-sm">{t('dashboard.stats.thisWeek')}</p>
+                  <p className="text-purple-100 text-sm">{t('stats.thisWeek')}</p>
                 </div>
                 <Activity className="h-8 w-8 text-purple-200" />
               </div>
@@ -204,13 +204,13 @@ export default function DashboardPage() {
 
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('dashboard.stats.activeConversationsTitle')}</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('stats.activeConversationsTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold">{stats.activeConversations}</p>
-                  <p className="text-orange-100 text-sm">{t('dashboard.stats.inProgress')}</p>
+                  <p className="text-orange-100 text-sm">{t('stats.inProgress')}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-orange-200" />
               </div>
@@ -219,13 +219,13 @@ export default function DashboardPage() {
 
           <Card className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('dashboard.stats.translations')}</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('stats.translations')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold">{stats.translationsToday}</p>
-                  <p className="text-indigo-100 text-sm">{t('dashboard.stats.today')}</p>
+                  <p className="text-indigo-100 text-sm">{t('stats.today')}</p>
                 </div>
                 <Globe2 className="h-8 w-8 text-indigo-200" />
               </div>
@@ -234,13 +234,13 @@ export default function DashboardPage() {
 
           <Card className="bg-gradient-to-r from-pink-500 to-pink-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-medium">{t('dashboard.stats.links')}</CardTitle>
+              <CardTitle className="text-lg font-medium">{t('stats.links')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-3xl font-bold">{stats.totalLinks}</p>
-                  <p className="text-pink-100 text-sm">{t('dashboard.stats.created')}</p>
+                  <p className="text-pink-100 text-sm">{t('stats.created')}</p>
                 </div>
                 <Link2 className="h-8 w-8 text-pink-200" />
               </div>
@@ -256,14 +256,14 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2">
                   <MessageSquare className="h-5 w-5 text-blue-600" />
-                  <span>{t('dashboard.recentConversations')}</span>
+                  <span>{t('recentConversations')}</span>
                 </CardTitle>
                                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => router.push('/conversations')}
                   >
-                    {t('dashboard.actions.viewAll')}
+                    {t('actions.viewAll')}
                   </Button>
               </div>
             </CardHeader>
@@ -307,14 +307,14 @@ export default function DashboardPage() {
                 {recentConversations.length === 0 && (
                   <div className="text-center py-8">
                     <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-sm">{t('dashboard.emptyStates.noRecentConversations')}</p>
+                    <p className="text-gray-500 text-sm">{t('emptyStates.noRecentConversations')}</p>
                                           <Button 
                         variant="outline" 
                         size="sm" 
                         className="mt-2"
                         onClick={() => router.push('/conversations?new=true')}
                       >
-                        {t('dashboard.actions.startConversation')}
+                        {t('actions.startConversation')}
                       </Button>
                   </div>
                 )}
@@ -328,14 +328,14 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                                   <CardTitle className="flex items-center space-x-2">
                     <Users className="h-5 w-5 text-green-600" />
-                    <span>{t('dashboard.recentCommunities')}</span>
+                    <span>{t('recentCommunities')}</span>
                   </CardTitle>
                                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => router.push('/groups')}
                   >
-                    {t('dashboard.actions.viewAll')}
+                    {t('actions.viewAll')}
                   </Button>
               </div>
             </CardHeader>
@@ -380,14 +380,14 @@ export default function DashboardPage() {
                 {recentCommunities.length === 0 && (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-sm">{t('dashboard.emptyStates.noRecentCommunities')}</p>
+                    <p className="text-gray-500 text-sm">{t('emptyStates.noRecentCommunities')}</p>
                                           <Button 
                         variant="outline" 
                         size="sm" 
                         className="mt-2"
                         onClick={() => router.push('/groups?new=true')}
                       >
-                        {t('dashboard.actions.createCommunityButton')}
+                        {t('actions.createCommunityButton')}
                       </Button>
                   </div>
                 )}
@@ -402,10 +402,10 @@ export default function DashboardPage() {
             <CardHeader>
                               <CardTitle className="flex items-center space-x-2">
                   <Zap className="h-5 w-5 text-yellow-600" />
-                  <span>{t('dashboard.quickActions.title')}</span>
+                  <span>{t('quickActions.title')}</span>
                 </CardTitle>
                 <CardDescription>
-                  {t('dashboard.quickActions.description')}
+                  {t('quickActions.description')}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -416,7 +416,7 @@ export default function DashboardPage() {
                     onClick={() => router.push('/conversations?new=true')}
                   >
                     <MessageSquare className="h-6 w-6" />
-                    <span>{t('dashboard.quickActions.newConversation')}</span>
+                    <span>{t('quickActions.newConversation')}</span>
                   </Button>
                   
                   <Button 
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                     onClick={() => setIsCreateLinkModalOpen(true)}
                   >
                     <Link2 className="h-6 w-6" />
-                    <span>{t('dashboard.quickActions.createLink')}</span>
+                    <span>{t('quickActions.createLink')}</span>
                   </Button>
                   
                   <Button 
@@ -434,7 +434,7 @@ export default function DashboardPage() {
                     onClick={() => router.push('/groups?new=true')}
                   >
                     <Users className="h-6 w-6" />
-                    <span>{t('dashboard.quickActions.createCommunity')}</span>
+                    <span>{t('quickActions.createCommunity')}</span>
                   </Button>
                   
                   <Button 
@@ -443,7 +443,7 @@ export default function DashboardPage() {
                     onClick={() => router.push('/settings')}
                   >
                     <Settings className="h-6 w-6" />
-                    <span>{t('dashboard.quickActions.settings')}</span>
+                    <span>{t('quickActions.settings')}</span>
                   </Button>
               </div>
             </CardContent>
@@ -456,7 +456,7 @@ export default function DashboardPage() {
           onClose={() => setIsCreateLinkModalOpen(false)} 
                       onLinkCreated={() => {
               setIsCreateLinkModalOpen(false);
-              toast.success(t('dashboard.success.linkCreated'));
+              toast.success(t('success.linkCreated'));
               // Recharger les données du dashboard pour mettre à jour le compteur de liens
               loadDashboardData();
             }}

@@ -4,7 +4,49 @@
 # Ce script démarre l'environnement complet Meeshy en mode développement
 # - Services Docker: MongoDB, Redis
 # - Services Node: Gateway, Frontend, Translator (via scripts .sh)
+# - Gestion propre de l'arrêt avec Ctrl+C
 set -e
+
+# Variables globales pour le nettoyage
+TRANSLATOR_PID=""
+GATEWAY_PID=""
+FRONTEND_PID=""
+DOCKER_COMPOSE_STARTED=false
+
+# Fonction de nettoyage appelée lors de l'arrêt
+cleanup() {
+    echo ""
+    echo -e "${YELLOW}🛑 Arrêt en cours... (Ctrl+C détecté)${NC}"
+    
+    # Arrêter les services Node.js
+    if [ -n "$TRANSLATOR_PID" ] && kill -0 "$TRANSLATOR_PID" 2>/dev/null; then
+        echo -e "${YELLOW}🛑 Arrêt du Translator (PID: $TRANSLATOR_PID)${NC}"
+        kill -TERM "$TRANSLATOR_PID" 2>/dev/null || true
+    fi
+    
+    if [ -n "$GATEWAY_PID" ] && kill -0 "$GATEWAY_PID" 2>/dev/null; then
+        echo -e "${YELLOW}🛑 Arrêt du Gateway (PID: $GATEWAY_PID)${NC}"
+        kill -TERM "$GATEWAY_PID" 2>/dev/null || true
+    fi
+    
+    if [ -n "$FRONTEND_PID" ] && kill -0 "$FRONTEND_PID" 2>/dev/null; then
+        echo -e "${YELLOW}🛑 Arrêt du Frontend (PID: $FRONTEND_PID)${NC}"
+        kill -TERM "$FRONTEND_PID" 2>/dev/null || true
+    fi
+    
+    # Arrêter les services Docker
+    if [ "$DOCKER_COMPOSE_STARTED" = true ]; then
+        echo -e "${YELLOW}🐳 Arrêt des services Docker...${NC}"
+        cd /Users/smpceo/Downloads/Meeshy/meeshy
+        docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
+    fi
+    
+    echo -e "${GREEN}✅ Arrêt terminé proprement${NC}"
+    exit 0
+}
+
+# Capturer les signaux pour un arrêt propre
+trap cleanup SIGINT SIGTERM
 
 # Couleurs pour l'affichage
 RED='\033[0;31m'
@@ -17,33 +59,138 @@ NC='\033[0m' # No Color
 
 echo -e "${CYAN}🚀 Démarrage de l'environnement Meeshy LOCAL (DEV)${NC}"
 echo -e "${YELLOW}   Architecture: Services Node natifs + Services Docker${NC}"
+echo -e "${PURPLE}   Utilisez Ctrl+C pour arrêter proprement tous les services${NC}"
 echo ""
+
+# Export et configuration des variables d'environnement pour localhost
+echo -e "${BLUE}🔧 Configuration des variables d'environnement...${NC}"
 
 # Variables d'environnement pour le développement LOCAL
 export NODE_ENV="development"
 export ENVIRONMENT="local"
 
-# Base de données et cache (Docker)
+# Base de données et cache (Docker sur localhost)
 export DATABASE_TYPE="MONGODB"
-export DATABASE_URL="mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin"
+export DATABASE_URL="mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0"
 export REDIS_URL="redis://localhost:6379"
 
-# URLs des services (natifs)
+# URLs des services (natifs sur localhost)
 export TRANSLATOR_URL="http://localhost:8000"
 export GATEWAY_URL="http://localhost:3000"
 export FRONTEND_URL="http://localhost:3100"
 
-# Configuration WebSocket et API
+# Configuration WebSocket et API pour localhost
 export NEXT_PUBLIC_API_URL="http://localhost:3000"
 export NEXT_PUBLIC_TRANSLATION_URL="http://localhost:8000"
 export NEXT_PUBLIC_WS_URL="ws://localhost:3000/api/ws"
 
-# Configuration ZMQ (communication inter-services)
+# Configuration ZMQ (communication inter-services sur localhost)
 export ZMQ_PUSH_URL="tcp://localhost:5555"
 export ZMQ_SUB_URL="tcp://localhost:5558"
 
 # Configuration Prisma
 export PRISMA_SCHEMA_PATH="../shared/prisma/schema.prisma"
+
+# Configuration ML/Translator pour dev
+export ML_BATCH_SIZE="16"
+export TRANSLATION_CACHE_TTL="3600"
+export SUPPORTED_LANGUAGES="fr,en,es,de,pt,zh,ja,ar"
+export DEFAULT_LANGUAGE="fr"
+export AUTO_DETECT_LANGUAGE="true"
+
+# Configuration sécurité (dev uniquement)
+export JWT_SECRET="dev-jwt-secret-key-change-in-production"
+export CORS_ORIGIN="http://localhost:3100"
+
+# Configuration logging
+export LOG_LEVEL="debug"
+export LOG_FORMAT="pretty"
+
+# Écrire les variables dans les fichiers .env.local pour chaque service
+echo -e "${YELLOW}📝 Création des fichiers .env.local...${NC}"
+
+# Fichier .env.local global
+cat > /Users/smpceo/Downloads/Meeshy/meeshy/.env.local << EOF
+NODE_ENV=development
+ENVIRONMENT=local
+DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+REDIS_URL=redis://localhost:6379
+TRANSLATOR_URL=http://localhost:8000
+GATEWAY_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3100
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
+NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
+ZMQ_PUSH_URL=tcp://localhost:5555
+ZMQ_SUB_URL=tcp://localhost:5558
+PRISMA_SCHEMA_PATH=../shared/prisma/schema.prisma
+JWT_SECRET=dev-jwt-secret-key-change-in-production
+CORS_ORIGIN=http://localhost:3100
+
+# Chemins locaux pour le développement (pas Docker)
+MODELS_PATH=./models
+TORCH_HOME=./models
+HF_HOME=./models
+MODEL_CACHE_DIR=./models
+CACHE_DIR=./cache
+LOG_DIR=./logs
+PRISMA_CLIENT_OUTPUT_DIRECTORY=./client
+EOF
+
+# Frontend .env.local
+cat > /Users/smpceo/Downloads/Meeshy/meeshy/frontend/.env.local << EOF
+NODE_ENV=development
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
+NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
+EOF
+
+# Gateway .env.local  
+cat > /Users/smpceo/Downloads/Meeshy/meeshy/gateway/.env.local << EOF
+NODE_ENV=development
+DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+REDIS_URL=redis://localhost:6379
+TRANSLATOR_URL=http://localhost:8000
+ZMQ_PUSH_URL=tcp://localhost:5555
+ZMQ_SUB_URL=tcp://localhost:5558
+PRISMA_SCHEMA_PATH=../shared/prisma/schema.prisma
+PORT=3000
+CORS_ORIGIN=http://localhost:3100
+JWT_SECRET=dev-jwt-secret-key-change-in-production
+
+# Chemins locaux pour le développement
+MODELS_PATH=./models
+TORCH_HOME=./models
+HF_HOME=./models
+MODEL_CACHE_DIR=./models
+CACHE_DIR=./cache
+LOG_DIR=./logs
+PRISMA_CLIENT_OUTPUT_DIRECTORY=./client
+EOF
+
+# Translator .env.local
+cat > /Users/smpceo/Downloads/Meeshy/meeshy/translator/.env.local << EOF
+NODE_ENV=development
+DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+REDIS_URL=redis://localhost:6379
+ZMQ_PUSH_URL=tcp://localhost:5555
+ZMQ_SUB_URL=tcp://localhost:5558
+PRISMA_SCHEMA_PATH=../shared/prisma/schema.prisma
+ML_BATCH_SIZE=16
+TRANSLATION_CACHE_TTL=3600
+SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
+DEFAULT_LANGUAGE=fr
+PORT=8000
+
+# Chemins locaux pour le développement
+MODELS_PATH=./models
+TORCH_HOME=./models
+HF_HOME=./models
+MODEL_CACHE_DIR=./models
+CACHE_DIR=./cache
+LOG_DIR=./logs
+PRISMA_CLIENT_OUTPUT_DIRECTORY=./client
+EOF
 
 echo -e "${BLUE}📋 Configuration de l'environnement LOCAL:${NC}"
 echo -e "  ${GREEN}NODE_ENV:${NC} $NODE_ENV"
@@ -52,6 +199,115 @@ echo -e "  ${GREEN}Frontend:${NC} $FRONTEND_URL"
 echo -e "  ${GREEN}Gateway:${NC} $GATEWAY_URL"
 echo -e "  ${GREEN}Translator:${NC} $TRANSLATOR_URL"
 echo ""
+
+# Fonction pour vérifier si shared a été modifié et doit être redistribué
+check_and_distribute_shared() {
+    echo -e "${BLUE}🔍 Vérification de la distribution de /shared...${NC}"
+    
+    local shared_dir="/Users/smpceo/Downloads/Meeshy/meeshy/shared"
+    local gateway_version="/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/version.txt"
+    local translator_version="/Users/smpceo/Downloads/Meeshy/meeshy/translator/shared/version.txt"
+    
+    local needs_distribution=false
+    
+    # Vérifier si les fichiers de version existent
+    if [[ ! -f "$gateway_version" ]] || [[ ! -f "$translator_version" ]]; then
+        echo -e "${YELLOW}📦 Première distribution ou fichiers manquants détectés${NC}"
+        needs_distribution=true
+    else
+        # Comparer les timestamps des fichiers dans shared/ avec la dernière distribution
+        local gateway_version_timestamp=$(stat -f %m "$gateway_version" 2>/dev/null || echo "0")
+        local translator_version_timestamp=$(stat -f %m "$translator_version" 2>/dev/null || echo "0")
+        local min_version_timestamp=$((gateway_version_timestamp < translator_version_timestamp ? gateway_version_timestamp : translator_version_timestamp))
+        
+        # Vérifier si des fichiers dans shared/ sont plus récents
+        local shared_files_newer=$(find "$shared_dir" -type f \( -name "*.prisma" -o -name "*.proto" -o -name "*.ts" -o -name "*.js" \) -newer "$gateway_version" 2>/dev/null | wc -l)
+        
+        if [[ $shared_files_newer -gt 0 ]]; then
+            echo -e "${YELLOW}📦 Modifications détectées dans /shared depuis la dernière distribution${NC}"
+            needs_distribution=true
+        else
+            echo -e "${GREEN}✅ /shared est à jour, pas de redistribution nécessaire${NC}"
+        fi
+    fi
+    
+    if [[ "$needs_distribution" == "true" ]]; then
+        echo -e "${BLUE}🚀 Distribution de /shared en cours...${NC}"
+        
+        cd "$shared_dir"
+        
+        # Vérifier si le script distribute existe
+        if [[ ! -f "scripts/distribute.sh" ]]; then
+            echo -e "${RED}❌ Script distribute.sh non trouvé dans /shared/scripts/${NC}"
+            return 1
+        fi
+        
+        # Exécuter la distribution
+        chmod +x scripts/distribute.sh
+        if ./scripts/distribute.sh; then
+            echo -e "${GREEN}✅ Distribution de /shared terminée avec succès${NC}"
+        else
+            echo -e "${RED}❌ Erreur lors de la distribution de /shared${NC}"
+            return 1
+        fi
+        
+        # Retourner au répertoire principal
+        cd /Users/smpceo/Downloads/Meeshy/meeshy
+        
+        return 0
+    fi
+    
+    return 0
+}
+
+# Fonction pour générer les clients Prisma si nécessaire
+generate_prisma_clients() {
+    echo -e "${BLUE}🔧 Génération des clients Prisma...${NC}"
+    
+    # Gateway - Client TypeScript
+    echo -e "${PURPLE}📦 Génération du client Prisma pour Gateway...${NC}"
+    cd /Users/smpceo/Downloads/Meeshy/meeshy/gateway
+    if [[ -f "./shared/prisma/schema.prisma" ]]; then
+        if pnpm prisma generate --schema=./shared/prisma/schema.prisma; then
+            echo -e "${GREEN}✅ Client Prisma Gateway généré avec succès${NC}"
+        else
+            echo -e "${RED}❌ Erreur lors de la génération du client Prisma Gateway${NC}"
+            return 1
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Schema Prisma non trouvé pour Gateway${NC}"
+    fi
+    
+    # Translator - Client Python
+    echo -e "${PURPLE}🐍 Génération du client Prisma pour Translator...${NC}"
+    cd /Users/smpceo/Downloads/Meeshy/meeshy/translator
+    if [[ -f "shared/prisma/schema.prisma" ]]; then
+        # Vérifier si Python et Prisma sont disponibles
+        if command -v python3 >/dev/null 2>&1; then
+            source .venv/bin/activate 
+            if prisma generate --schema=shared/prisma/schema.prisma; then
+                echo -e "${GREEN}✅ Client Prisma Translator généré avec succès${NC}"
+            else
+                echo -e "${YELLOW}⚠️  Génération du client Prisma Python échouée, continuons...${NC}"
+            fi
+        else
+            echo -e "${YELLOW}⚠️  Python3 non disponible, génération Prisma Python ignorée${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Schema Prisma non trouvé pour Translator${NC}"
+    fi
+    
+    # Retourner au répertoire principal
+    cd /Users/smpceo/Downloads/Meeshy/meeshy
+    
+    return 0
+}
+
+# Exécuter la vérification et distribution de shared
+check_and_distribute_shared
+
+# Générer les clients Prisma après la distribution
+generate_prisma_clients
 
 # Fonction pour vérifier si un port est occupé
 check_port() {
@@ -74,7 +330,7 @@ wait_for_service() {
     echo -e "${YELLOW}⏳ Attente du service $service_name...${NC}"
     
     while [ $attempt -le $max_attempts ]; do
-        if curl -s "$url" >/dev/null 2>&1; then
+        if mongosh --eval "db.adminCommand('ping')" 2>&1; then
             echo -e "${GREEN}✅ $service_name est prêt !${NC}"
             return 0
         fi
@@ -107,6 +363,7 @@ cd /Users/smpceo/Downloads/Meeshy/meeshy
 
 # Démarrer seulement les services d'infrastructure avec le docker-compose de dev
 docker-compose -f docker-compose.dev.yml up -d
+DOCKER_COMPOSE_STARTED=true
 
 echo -e "${YELLOW}⏳ Attente du démarrage des services Docker...${NC}"
 sleep 10
@@ -125,6 +382,19 @@ if ! wait_for_service "mongodb://localhost:27017" "MongoDB"; then
         echo -e "${RED}❌ MongoDB n'est pas accessible${NC}"
         exit 1
     fi
+fi
+
+# Initialiser le replica set MongoDB si nécessaire
+echo -e "${BLUE}🔧 Vérification du replica set MongoDB...${NC}"
+if [[ -f "scripts/development/init-mongodb-replica.sh" ]]; then
+    echo -e "${YELLOW}🚀 Initialisation du replica set MongoDB...${NC}"
+    if ./scripts/development/init-mongodb-replica.sh; then
+        echo -e "${GREEN}✅ Replica set MongoDB configuré${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Replica set MongoDB déjà configuré ou erreur mineure${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠️  Script d'initialisation du replica set non trouvé${NC}"
 fi
 
 # Vérifier la connectivité Redis
@@ -205,7 +475,37 @@ echo -e "  ${GREEN}Translator:${NC} tail -f /Users/smpceo/Downloads/Meeshy/meesh
 echo -e "  ${GREEN}Gateway:${NC}    tail -f /Users/smpceo/Downloads/Meeshy/meeshy/gateway/gateway.log"
 echo -e "  ${GREEN}Frontend:${NC}   tail -f /Users/smpceo/Downloads/Meeshy/meeshy/frontend/frontend.log"
 echo ""
-echo -e "${CYAN}🛑 Pour arrêter les services:${NC}"
-echo -e "  ${YELLOW}./scripts/development/stop-local.sh${NC}"
-echo ""
+echo -e "${PURPLE}🛑 Pour arrêter tous les services: Appuyez sur Ctrl+C${NC}"
 echo -e "${PURPLE}🚀 Environnement de développement LOCAL prêt !${NC}"
+
+# Boucle infinie pour maintenir le script actif et permettre l'arrêt avec Ctrl+C
+echo -e "${YELLOW}⏳ Services en cours d'exécution... (Ctrl+C pour arrêter)${NC}"
+while true; do
+    # Vérifier que les services sont toujours en cours
+    services_running=0
+    
+    if [ -n "$TRANSLATOR_PID" ] && kill -0 "$TRANSLATOR_PID" 2>/dev/null; then
+        services_running=$((services_running + 1))
+    else
+        echo -e "${RED}⚠️  Translator arrêté inattendu${NC}"
+    fi
+    
+    if [ -n "$GATEWAY_PID" ] && kill -0 "$GATEWAY_PID" 2>/dev/null; then
+        services_running=$((services_running + 1))
+    else
+        echo -e "${RED}⚠️  Gateway arrêté inattendu${NC}"
+    fi
+    
+    if [ -n "$FRONTEND_PID" ] && kill -0 "$FRONTEND_PID" 2>/dev/null; then
+        services_running=$((services_running + 1))
+    else
+        echo -e "${RED}⚠️  Frontend arrêté inattendu${NC}"
+    fi
+    
+    if [ $services_running -eq 0 ]; then
+        echo -e "${RED}❌ Tous les services sont arrêtés${NC}"
+        cleanup
+    fi
+    
+    sleep 5
+done

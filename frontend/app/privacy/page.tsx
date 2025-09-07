@@ -153,13 +153,13 @@ export default function PrivacyPage() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('contact.title')}</h2>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('title')}</h2>
               <p className="text-gray-700 leading-relaxed">
-                {t('contact.intro')}
+                {t('intro')}
               </p>
               <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                <p><strong>{t('contact.email')}</strong></p>
-                <p><strong>{t('contact.address')}</strong></p>
+                <p><strong>{t('email')}</strong></p>
+                <p><strong>{t('address')}</strong></p>
               </div>
             </section>
           </CardContent>

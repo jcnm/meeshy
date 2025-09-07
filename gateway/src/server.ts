@@ -323,8 +323,8 @@ class MeeshyServer {
 
   private createAuthMiddleware() {
     return createUnifiedAuthMiddleware(this.prisma, {
-      requireAuth: false,
-      allowAnonymous: true
+      requireAuth: true,
+      allowAnonymous: false
     });
   }
 

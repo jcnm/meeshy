@@ -1,0 +1,119 @@
+{
+  "languageNames": {
+    "en": "Englisch",
+    "fr": "Französisch", 
+    "pt": "Portugiesisch",
+    "es": "Spanisch",
+    "de": "Deutsch",
+    "it": "Italienisch",
+    "zh": "Chinesisch",
+    "ja": "Japanisch",
+    "ar": "Arabisch",
+    "ru": "Russisch",
+    "ko": "Koreanisch",
+    "hi": "Hindi",
+    "tr": "Türkisch"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "submit": "Absenden",
+    "confirm": "Bestätigen",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "dashboard": "Dashboard",
+    "conversations": "Unterhaltungen",
+    "contacts": "Kontakte",
+    "settings": "Einstellungen",
+    "profile": "Profil",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "register": "Registrieren"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Willkommen zurück",
+    "greeting": "Hallo, {name}! 👋",
+    "greetingFallback": "Hallo, Benutzer! 👋",
+    "overview": "Hier ist eine Übersicht Ihrer heutigen Messaging-Aktivität.",
+    "loading": "Dashboard wird geladen...",
+    "errorLoading": "❌ Ladefehler: {message}",
+    "retry": "Wiederholen",
+    "stats": {
+      "totalConversations": "Gesamte Unterhaltungen",
+      "totalCommunities": "Gesamte Communities",
+      "totalGroups": "Gesamte Communities",
+      "totalMessages": "Gesamte Nachrichten",
+      "activeConversations": "Aktive Unterhaltungen",
+      "translationsToday": "Übersetzungen heute",
+      "totalLinks": "Gesamte Links",
+      "conversations": "Unterhaltungen",
+      "communities": "Communities",
+      "groups": "Communities",
+      "messages": "Nachrichten",
+      "activeConversationsTitle": "Aktive Unterhaltungen",
+      "translations": "Übersetzungen",
+      "links": "Links",
+      "total": "Gesamt",
+      "active": "Aktiv",
+      "thisWeek": "Diese Woche",
+      "inProgress": "In Bearbeitung",
+      "today": "Heute",
+      "created": "Erstellt"
+    },
+    "recentConversations": "Kürzliche Unterhaltungen",
+    "recentCommunities": "Kürzliche Communities",
+    "recentGroups": "Kürzliche Communities",
+    "createLink": "Link erstellen",
+    "newConversation": "Neue Unterh.",
+    "createCommunity": "Community erstellen",
+    "refresh": "Aktualisieren",
+    "loadingError": "Ladefehler",
+    "noData": "Keine Daten verfügbar",
+    "errorUnknown": "Unbekannter Fehler",
+    "dataLoadingError": "Fehler beim Laden der Daten",
+    "actions": {
+      "createLink": "Einen Link erstellen",
+      "newConversation": "Neue Unterhaltung",
+      "createCommunity": "Eine Community erstellen",
+      "createGroup": "Eine Community erstellen",
+      "viewAll": "Alle anzeigen",
+      "startConversation": "Eine Unterhaltung beginnen",
+      "createCommunityButton": "Eine Community erstellen",
+      "createGroupButton": "Eine Community erstellen",
+      "settings": "Einstellungen"
+    },
+    "quickActions": {
+      "title": "Schnellaktionen",
+      "description": "Schneller Zugriff auf Hauptfunktionen",
+      "newConversation": "Neue Unterhaltung",
+      "createLink": "Einen Link erstellen",
+      "createCommunity": "Eine Community erstellen",
+      "createGroup": "Eine Community erstellen",
+      "settings": "Einstellungen"
+    },
+    "emptyStates": {
+      "noRecentConversations": "Keine kürzlichen Unterhaltungen",
+      "noRecentCommunities": "Keine kürzlichen Communities",
+      "noRecentGroups": "Keine kürzlichen Communities"
+    },
+    "success": {
+      "linkCreated": "Unterhaltungslink erfolgreich erstellt!"
+    },
+    "time": {
+      "format": "de-DE"
+    }
+  }
+}
