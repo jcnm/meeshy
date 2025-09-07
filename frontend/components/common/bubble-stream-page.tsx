@@ -150,6 +150,52 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [trendingHashtags, setTrendingHashtags] = useState<string[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>(initialParticipants || []);
 
+  // Handlers pour la modération des messages
+  const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
+    try {
+      await messageService.editMessage(conversationId, messageId, {
+        content: newContent,
+        originalLanguage: selectedInputLanguage
+      });
+      
+      // Recharger les messages pour afficher la modification
+      await loadMessages(conversationId, true);
+      toast.success('Message modifié avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la modification du message:', error);
+      toast.error('Erreur lors de la modification du message');
+      throw error;
+    }
+  }, [conversationId, selectedInputLanguage, loadMessages]);
+
+  const handleDeleteMessage = useCallback(async (messageId: string) => {
+    try {
+      await messageService.deleteMessage(conversationId, messageId);
+      
+      // Recharger les messages pour afficher la suppression
+      await loadMessages(conversationId, true);
+      toast.success('Message supprimé avec succès');
+    } catch (error) {
+      console.error('Erreur lors de la suppression du message:', error);
+      toast.error('Erreur lors de la suppression du message');
+      throw error;
+    }
+  }, [conversationId, loadMessages]);
+
+  // Logique de permissions pour la modération
+  const getUserModerationRole = useCallback(() => {
+    // Pour BubbleStreamPage, nous considérons que c'est une conversation publique
+    // Les utilisateurs avec des rôles élevés peuvent modérer
+    if (user.role === 'ADMIN' || user.role === 'BIGBOSS' || user.role === 'MODERATOR') {
+      return user.role;
+    }
+    
+    // Pour les conversations publiques, les créateurs peuvent aussi modérer
+    // Nous devrions vérifier si l'utilisateur est le créateur de la conversation
+    // Pour l'instant, nous utilisons le rôle utilisateur par défaut
+    return user.role || 'USER';
+  }, [user.role]);
+
   // Fonction pour dédoublonner les utilisateurs actifs
   const deduplicateUsers = useCallback((users: User[]): User[] => {
     const uniqueUsers = users.reduce((acc: User[], current: User) => {
@@ -1006,6 +1052,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   reverseOrder={true}
                   className="space-y-5"
                   onTranslation={handleTranslation}
+                  onEditMessage={handleEditMessage}
+                  onDeleteMessage={handleDeleteMessage}
+                  conversationType="public"
+                  userRole={getUserModerationRole() as any}
+                  conversationId={conversationId}
                 />
 
                 {/* Espace supplémentaire réduit pour éviter que le dernier message soit caché */}

@@ -1273,35 +1273,30 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Déclencher la retraduction automatique du message modifié
       try {
-        // Envoyer une requête de retraduction au service Translator via ZMQ
-        const zmq = require('zeromq');
-        const publisher = new zmq.Publisher();
+        // Utiliser le service de traduction existant pour la retraduction
+        const { TranslationService } = require('../services/TranslationService');
+        const translationService = new TranslationService(prisma);
         
-        // Se connecter au service de traduction
-        await publisher.bind('tcp://*:5556');
+        // Initialiser le service si nécessaire
+        if (!translationService.isInitialized()) {
+          await translationService.initialize();
+        }
         
-        // Préparer la tâche de retraduction
-        const retranslationTask = {
-          task_id: `retranslate_${messageId}_${Date.now()}`,
-          message_id: messageId,
-          text: content.trim(),
-          source_language: originalLanguage,
-          target_languages: ['en', 'es', 'de', 'it', 'pt', 'ru', 'ar', 'ja', 'zh'], // Langues supportées
-          conversation_id: conversationId,
-          model_type: 'basic',
-          created_at: Date.now(),
-          is_retranslation: true // Flag pour identifier les retraductions
+        // Créer un objet message pour la retraduction
+        const messageForRetranslation = {
+          id: messageId,
+          content: content.trim(),
+          originalLanguage: originalLanguage,
+          conversationId: conversationId,
+          senderId: userId
         };
-
-        // Envoyer la tâche de retraduction
-        await publisher.send(['translation_request', JSON.stringify(retranslationTask)]);
-        console.log('[GATEWAY] Tâche de retraduction envoyée pour le message:', messageId);
         
-        // Fermer la connexion
-        publisher.close();
+        // Déclencher la retraduction via le service existant
+        await translationService.processMessageRetranslation(messageForRetranslation);
+        console.log('[GATEWAY] Retraduction initiée pour le message:', messageId);
 
-      } catch (zmqError) {
-        console.error('[GATEWAY] Erreur ZMQ pour la retraduction:', zmqError);
+      } catch (translationError) {
+        console.error('[GATEWAY] Erreur lors de la retraduction:', translationError);
         // Ne pas faire échouer l'édition si la retraduction échoue
       }
 
