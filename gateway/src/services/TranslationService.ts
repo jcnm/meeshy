@@ -289,44 +289,6 @@ export class TranslationService extends EventEmitter {
     }
   }
 
-  /**
-   * Méthode publique pour traiter la retraduction d'un message modifié
-   */
-  async processMessageRetranslation(messageData: MessageData): Promise<void> {
-    try {
-      console.log(`🔄 [TranslationService] Retraduction publique pour le message ${messageData.id}`);
-      
-      // Invalider les traductions existantes en base de données
-      await this._invalidateExistingTranslations(messageData.id!);
-      
-      // Traiter la retraduction
-      await this._processRetranslationAsync(messageData.id!, messageData);
-      
-    } catch (error) {
-      console.error(`❌ [TranslationService] Erreur retraduction publique: ${error}`);
-      throw error;
-    }
-  }
-
-  /**
-   * Invalide les traductions existantes d'un message
-   */
-  private async _invalidateExistingTranslations(messageId: string): Promise<void> {
-    try {
-      // Supprimer toutes les traductions existantes pour ce message
-      const deletedCount = await this.prisma.messageTranslation.deleteMany({
-        where: {
-          messageId: messageId
-        }
-      });
-      
-      console.log(`🗑️ [TranslationService] ${deletedCount} traductions supprimées pour le message ${messageId}`);
-      
-    } catch (error) {
-      console.error(`❌ [TranslationService] Erreur invalidation traductions: ${error}`);
-      // Ne pas faire échouer la retraduction si l'invalidation échoue
-    }
-  }
 
   /**
    * Traite une retraduction d'un message existant

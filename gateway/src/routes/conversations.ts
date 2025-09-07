@@ -1276,10 +1276,16 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         // Utiliser le service de traduction déjà importé
         const translationService = new TranslationService(prisma);
         
-        // Initialiser le service si nécessaire
-        if (!translationService.isInitialized()) {
-          await translationService.initialize();
-        }
+        // Initialiser le service
+        await translationService.initialize();
+        
+        // Invalider les traductions existantes en base de données
+        const deletedCount = await prisma.messageTranslation.deleteMany({
+          where: {
+            messageId: messageId
+          }
+        });
+        console.log(`🗑️ [GATEWAY] ${deletedCount} traductions supprimées pour le message ${messageId}`);
         
         // Créer un objet message pour la retraduction
         const messageForRetranslation = {
@@ -1290,8 +1296,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           senderId: userId
         };
         
-        // Déclencher la retraduction via le service existant
-        await translationService.processMessageRetranslation(messageForRetranslation);
+        // Déclencher la retraduction via la méthode privée existante
+        await (translationService as any)._processRetranslationAsync(messageId, messageForRetranslation);
         console.log('[GATEWAY] Retraduction initiée pour le message:', messageId);
 
       } catch (translationError) {

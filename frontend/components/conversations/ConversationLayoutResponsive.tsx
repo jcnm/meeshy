@@ -74,7 +74,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthChecking } = useUser(); // user est garanti d'exister grâce au wrapper
-  const { t } = useTranslations(); // No namespace for mixed usage
+  const { t } = useTranslations('conversationLayout'); // Use conversationLayout namespace
   const { t: tSearch } = useTranslations('conversationSearch');
 
   // Si on est en train de vérifier l'authentification, afficher un loader
@@ -868,7 +868,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{t('conversations.loading')}</p>
+            <p className="text-muted-foreground">{t('loadingConversations')}</p>
           </div>
         </div>
       ) : (
@@ -897,7 +897,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               {/* Champ de filtrage des conversations */}
               <div className="mb-2">
                 <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  Filtrer les conversations
+                  {t('filtreConversations')}
                 </label>
                 <div className="relative">
                   <input

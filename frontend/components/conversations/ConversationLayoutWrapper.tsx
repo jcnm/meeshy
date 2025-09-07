@@ -3,6 +3,7 @@
 import { useUser } from '@/context/AppContext';
 import { ConversationLayoutResponsive } from './ConversationLayoutResponsive';
 import { useEffect } from 'react';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface ConversationLayoutWrapperProps {
   selectedConversationId?: string;
@@ -10,6 +11,7 @@ interface ConversationLayoutWrapperProps {
 
 export function ConversationLayoutWrapper({ selectedConversationId }: ConversationLayoutWrapperProps) {
   const { user, isAuthChecking } = useUser();
+  const { t } = useTranslations('conversationWrapper');
 
   // Logs de débogage
   useEffect(() => {
@@ -27,7 +29,7 @@ export function ConversationLayoutWrapper({ selectedConversationId }: Conversati
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Vérification de l'authentification...</p>
+          <p className="text-muted-foreground">{t('authChecking')}</p>
         </div>
       </div>
     );

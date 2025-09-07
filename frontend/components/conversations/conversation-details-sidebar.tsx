@@ -29,6 +29,7 @@ import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils'
 import { toast } from 'sonner';
 import { ConversationLinksSection } from './conversation-links-section';
 import { UserRoleEnum } from '@shared/types';
+import { useTranslations } from '@/hooks/useTranslations';
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {
@@ -55,6 +56,7 @@ export function ConversationDetailsSidebar({
   isOpen,
   onClose
 }: ConversationDetailsSidebarProps) {
+  const { t } = useTranslations('conversationDetails');
   
   // États pour la gestion des conversations
   const [isEditingName, setIsEditingName] = useState(false);
@@ -152,7 +154,7 @@ export function ConversationDetailsSidebar({
       
       // Validation du nom
       if (!conversationName.trim()) {
-        toast.error('Le nom de la conversation ne peut pas être vide');
+        toast.error(t('nameCannotBeEmpty'));
         return;
       }
       
@@ -167,21 +169,21 @@ export function ConversationDetailsSidebar({
       });
       
       setIsEditingName(false);
-      toast.success('Nom de la conversation mis à jour');
+      toast.success(t('nameUpdated'));
     } catch (error) {
       console.error('Erreur lors de la mise à jour du nom:', error);
       
       // Gestion d'erreur améliorée
-      let errorMessage = 'Erreur lors de la mise à jour du nom';
+      let errorMessage = t('updateError');
       
       if (error.status === 409) {
-        errorMessage = 'Une conversation avec ce nom existe déjà';
+        errorMessage = t('conversationExists');
       } else if (error.status === 403) {
-        errorMessage = 'Vous n\'avez pas les permissions pour modifier cette conversation';
+        errorMessage = t('noPermissionToModify');
       } else if (error.status === 404) {
-        errorMessage = 'Conversation non trouvée';
+        errorMessage = t('conversationNotFound');
       } else if (error.status === 400) {
-        errorMessage = 'Données invalides';
+        errorMessage = t('invalidData');
       }
       
       toast.error(errorMessage);
@@ -199,10 +201,10 @@ export function ConversationDetailsSidebar({
     try {
       setIsLoading(true);
       await conversationsService.removeParticipant(conversation.id, userId);
-      toast.success('Participant supprimé de la conversation');
+      toast.success(t('participantRemoved'));
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
-      toast.error('Erreur lors de la suppression du participant');
+      toast.error(t('removeParticipantError'));
     } finally {
       setIsLoading(false);
     }
@@ -215,7 +217,7 @@ export function ConversationDetailsSidebar({
       <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/30">
-          <h2 className="text-lg font-semibold">Détails de la conversation</h2>
+          <h2 className="text-lg font-semibold">{t('title')}</h2>
           <Button
             size="sm"
             variant="ghost"
@@ -244,7 +246,7 @@ export function ConversationDetailsSidebar({
                       value={conversationName}
                       onChange={(e) => setConversationName(e.target.value)}
                       className="h-8 text-sm"
-                      placeholder="Nom de la conversation"
+                      placeholder={t('conversationName')}
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
