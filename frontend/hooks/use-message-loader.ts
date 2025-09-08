@@ -160,7 +160,7 @@ export function useMessageLoader({
           return required.length > 0;
         });
         
-        console.log(`📊 Statistiques traductions détaillées:`, {
+        console.log(`Statistiques traductions détaillées:`, {
           totalMessages: bubbleMessages.length,
           totalTranslations,
           translatedMessages,
@@ -169,27 +169,27 @@ export function useMessageLoader({
           userLanguagePreferences: getUserLanguagePreferences()
         });
         
-        toast.success(`📨 ${existingMessages.length} messages chargés (${totalTranslations} traductions, ${messagesNeedingTranslation.length} nécessitent traduction)`);
+        console.log(`Messages chargés: ${existingMessages.length} (${totalTranslations} traductions, ${messagesNeedingTranslation.length} nécessitent traduction)`);
         
         // TODO: Déclencher la traduction automatique des messages manquants si activée
         if (currentUser.autoTranslateEnabled && messagesNeedingTranslation.length > 0) {
-          console.log(`🔄 ${messagesNeedingTranslation.length} messages à traduire automatiquement`);
+          console.log(`${messagesNeedingTranslation.length} messages à traduire automatiquement`);
           // Ici on pourrait déclencher les traductions en arrière-plan
         }
         
       } else {
-        console.log('⚠️ Impossible de charger les messages existants. Status:', response.status);
+        console.log('Impossible de charger les messages existants. Status:', response.status);
         try {
           const errorData = await response.text();
-          console.log('🔍 Debug: Réponse d\'erreur:', errorData);
+          console.log('Debug: Réponse d\'erreur:', errorData);
         } catch (e) {
-          console.log('🔍 Debug: Impossible de lire la réponse d\'erreur');
+          console.log('Debug: Impossible de lire la réponse d\'erreur');
         }
-        toast.error('Erreur lors du chargement des messages');
+        console.error('Erreur lors du chargement des messages');
         
         // Vérifier si cette conversation est toujours celle demandée
         if (conversationId !== targetConversationId) {
-          console.log('🚫 Conversation changée pendant l\'erreur, abandon');
+          console.log('Conversation changée pendant l\'erreur, abandon');
           return;
         }
 
@@ -198,12 +198,12 @@ export function useMessageLoader({
         setTranslatedMessages([]);
       }
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des messages:', error);
-      toast.error('Erreur de connexion lors du chargement des messages');
+      console.error('Erreur lors du chargement des messages:', error);
+      console.error('Erreur de connexion lors du chargement des messages');
       
       // Vérifier si cette conversation est toujours celle demandée
       if (conversationId !== targetConversationId) {
-        console.log('🚫 Conversation changée pendant l\'erreur, abandon');
+        console.log('Conversation changée pendant l\'erreur, abandon');
         return;
       }
 

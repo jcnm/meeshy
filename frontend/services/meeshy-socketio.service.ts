@@ -199,7 +199,7 @@ class MeeshySocketIOService {
       this.setupEventListeners();
       this.isConnecting = false;
     } catch (error) {
-      console.error('❌ MeeshySocketIOService: Erreur création Socket.IO', error);
+      console.error('Erreur création Socket.IO', error);
       this.isConnecting = false;
       this.scheduleReconnect();
     }
@@ -216,17 +216,17 @@ class MeeshySocketIOService {
       this.isConnected = true;
       this.isConnecting = false;
       this.reconnectAttempts = 0;
-      console.log('✅ MeeshySocketIOService: Socket.IO connecté', {
+      console.log('Socket.IO connecté', {
         socketId: this.socket?.id,
         transport: this.socket?.io.engine?.transport.name
       });
       
       // L'authentification est maintenant gérée automatiquement via les headers
       // Pas besoin d'envoyer d'événement 'authenticate'
-      console.log('🔐 MeeshySocketIOService: Authentification gérée automatiquement via headers');
+      console.log('Authentification gérée automatiquement via headers');
       
-      // Toast de connexion uniquement, pas pour chaque message
-      toast.success('Connexion établie', { duration: 2000 });
+      // Log de connexion
+      console.log('Connexion établie');
     });
 
     this.socket.on('disconnect', (reason) => {

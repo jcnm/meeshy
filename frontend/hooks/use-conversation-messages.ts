@@ -197,12 +197,12 @@ export function useConversationMessages({
           
           // Ne pas attendre les traductions pour ne pas bloquer l'interface
           Promise.allSettled(translationPromises).then(() => {
-            console.log('🎯 Toutes les demandes de traduction automatique ont été traitées');
+            console.log('Toutes les demandes de traduction automatique ont été traitées');
           });
         }
         
       } else {
-        toast.error('Erreur lors du chargement des messages');
+        console.error('Erreur lors du chargement des messages');
         
         // Vérifier si cette conversation est toujours celle demandée
         if (conversationId !== targetConversationId) {
@@ -214,8 +214,8 @@ export function useConversationMessages({
         setTranslatedMessages([]);
       }
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des messages:', error);
-      toast.error('Erreur de connexion lors du chargement des messages');
+      console.error('Erreur lors du chargement des messages:', error);
+      console.error('Erreur de connexion lors du chargement des messages');
       
       // Vérifier si cette conversation est toujours celle demandée
       if (conversationId !== targetConversationId) {

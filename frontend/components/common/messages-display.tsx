@@ -53,13 +53,13 @@ export function MessagesDisplay({
   // Fonction pour forcer la traduction d'un message
   const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string) => {
     try {
-      console.log('🔄 Forcer la traduction:', { messageId, targetLanguage });
+      console.log('Forcer la traduction:', { messageId, targetLanguage });
       
       // Récupérer la langue source du message
       const message = messages.find(m => m.id === messageId);
       const sourceLanguage = message?.originalLanguage || 'fr';
       
-      console.log('🔤 Détails de la traduction forcée:', {
+      console.log('Détails de la traduction forcée:', {
         messageId,
         targetLanguage,
         sourceLanguage,
@@ -74,8 +74,8 @@ export function MessagesDisplay({
         model: 'basic'
       });
       
-      console.log('✅ Traduction forcée demandée:', result);
-      toast.success(`Traduction en cours...`);
+      console.log('Traduction forcée demandée:', result);
+      console.log('Traduction en cours...');
       
       // Simuler la réception d'une traduction pour déclencher l'indicateur
       // Attendre un délai pour simuler le temps de traduction

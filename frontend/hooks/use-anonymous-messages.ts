@@ -98,12 +98,12 @@ export function useAnonymousMessages(linkId: string) {
       
       setMessages(prev => [...prev, newMessage]);
       
-      toast.success('Message envoyé');
+      console.log('Message envoyé');
       return true;
     } catch (error) {
       console.error('Erreur envoi message anonyme:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors de l\'envoi du message';
-      toast.error(errorMessage);
+      console.error(errorMessage);
       return false;
     }
   }, []);

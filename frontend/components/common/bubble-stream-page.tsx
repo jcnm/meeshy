@@ -493,24 +493,24 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Initialisation de la connexion WebSocket en temps réel
   useEffect(() => {
-    console.log('🚀 Initialisation de la connexion WebSocket...');
+    console.log('Initialisation de la connexion WebSocket...');
     
     // Diagnostic initial
     const diagnostics = getDiagnostics();
-    console.log('🔍 Diagnostic initial:', diagnostics);
+    console.log('Diagnostic initial:', diagnostics);
     
     // Délai pour vérifier la connexion établie
     const initTimeout = setTimeout(() => {
       const newDiagnostics = getDiagnostics();
-      console.log('🔍 Diagnostic après délai:', newDiagnostics);
+      console.log('Diagnostic après délai:', newDiagnostics);
       
       if (connectionStatus.isConnected && connectionStatus.hasSocket && !hasShownConnectionToast) {
         console.log(`✅ ${t('websocketConnected')}`);
-        toast.success(`🎉 ${t('connected')}`);
+        console.log(`${t('connected')}`);
         setHasShownConnectionToast(true);
       } else if (!connectionStatus.isConnected || !connectionStatus.hasSocket) {
-        console.log('⚠️ WebSocket non connecté après délai');
-        console.log('🔍 Diagnostic de connexion:', {
+        console.log('WebSocket non connecté après délai');
+        console.log('Diagnostic de connexion:', {
           hasSocket: connectionStatus.hasSocket,
           isConnected: connectionStatus.isConnected,
           hasToken: !!localStorage.getItem('auth_token'),
@@ -529,12 +529,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       const isReallyConnected = connectionStatus.isConnected && connectionStatus.hasSocket;
       
       if (isReallyConnected) {
-        console.log('🌐 Connexion WebSocket active');
+        console.log('Connexion WebSocket active');
       } else {
-        console.log('📡 WebSocket déconnecté');
+        console.log('WebSocket déconnecté');
       }
       
-      console.log('🔌 Statut connexion vérifié:', { 
+      console.log('Statut connexion vérifié:', { 
         isConnected: connectionStatus.isConnected,
         hasSocket: connectionStatus.hasSocket,
         connectionStatus 
@@ -573,7 +573,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     if (newMessage.trim().length > 15) { // Seuil plus élevé pour une meilleure détection
       const detectedLang = detectLanguage(newMessage);
       setDetectedLanguage(detectedLang);
-      console.log('🔍 Langue détectée:', detectedLang, '(affichage informatif uniquement)');
+      console.log('Langue détectée:', detectedLang, '(affichage informatif uniquement)');
     }
   }, [newMessage]);
 
@@ -586,7 +586,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     const availableLanguageCodes = languageChoices.map(choice => choice.code);
     if (!availableLanguageCodes.includes(selectedInputLanguage)) {
       // Si la langue sélectionnée n'est plus dans les choix, revenir à la langue système
-      console.log('🔄 Langue sélectionnée non disponible, retour à la langue système:', user.systemLanguage);
+      console.log('Langue sélectionnée non disponible, retour à la langue système:', user.systemLanguage);
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
   }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, languageChoices, selectedInputLanguage]);
@@ -626,7 +626,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Charger les messages existants dès que possible, sans attendre la connexion WebSocket
   useEffect(() => {
-    console.log('🚀 Chargement initial des messages depuis la base de données...');
+    console.log('Chargement initial des messages depuis la base de données...');
     // Charger immédiatement les messages existants via HTTP API
     loadMessages(conversationId, true);
     setHasLoadedMessages(true);
@@ -636,14 +636,14 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
-      console.log(`🌐 ${t('websocketEstablished')}`);
+      console.log(`${t('websocketEstablished')}`);
       
       if (!hasShownConnectionToast) {
-        toast.success(`🎉 ${t('connected')}`);
+        console.log(`${t('connected')}`);
         setHasShownConnectionToast(true);
       }
     } else {
-      console.log('⏳ WebSocket en attente de connexion...');
+      console.log('WebSocket en attente de connexion...');
     }
   }, [connectionStatus.isConnected, hasShownConnectionToast]);
 
@@ -981,22 +981,22 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          console.log('🔄 Tentative de reconnexion manuelle...');
+                          console.log('Tentative de reconnexion manuelle...');
                           const diagnostics = getDiagnostics();
-                          console.log('🔍 Diagnostic avant reconnexion:', diagnostics);
+                          console.log('Diagnostic avant reconnexion:', diagnostics);
                           
-                          toast.info(`🔄 ${t('reconnecting')}`);
+                          console.log(`${t('reconnecting')}`);
                           reconnect();
                           
                           // Vérifier après un délai
                           setTimeout(() => {
                             const newDiagnostics = getDiagnostics();
-                            console.log('🔍 Diagnostic après reconnexion:', newDiagnostics);
+                            console.log('Diagnostic après reconnexion:', newDiagnostics);
                             
                             if (newDiagnostics.isConnected) {
-                              toast.success('✅ Reconnexion réussie !');
+                              console.log('Reconnexion réussie !');
                             } else {
-                              toast.error('❌ Reconnexion échouée - Vérifiez le serveur');
+                              console.error('Reconnexion échouée - Vérifiez le serveur');
                             }
                           }, 2000);
                         }}
@@ -1009,7 +1009,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                         variant="ghost"
                         onClick={() => {
                           const diagnostics = getDiagnostics();
-                          console.log('🔍 Diagnostic complet:', diagnostics);
+                          console.log('Diagnostic complet:', diagnostics);
                           
                           const message = `Diagnostic WebSocket:
 • Socket créé: ${diagnostics.hasSocket ? '✅' : '❌'}
@@ -1108,7 +1108,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   {/* Indicateur de langue détectée */}
                   {detectedLanguage && detectedLanguage !== selectedInputLanguage && newMessage.trim().length > 15 && (
                     <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
-                      <span>🔍</span>
+                      <span>Rechercher</span>
                       <span>Détecté: {getLanguageName(detectedLanguage)}</span>
                     </div>
                   )}
