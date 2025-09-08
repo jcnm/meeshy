@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# 🚀 MEESHY - SCRIPT UNIFIÉ DE DÉPLOIEMENT
+# 🚀 MEESHY - SCRIPT UNIFIÉ DE DÉPLOIEMENT OPTIMISÉ
 # Usage: ./scripts/meeshy-deploy.sh [COMMAND] [DROPLET_IP]
 # Commands: deploy, test, verify, status, logs, restart, stop, recreate
+# 
+# OPTIMISATION: Ne transmet que les fichiers essentiels pour l'infrastructure
+# et la configuration, pas les sources qui sont déjà buildées dans les images
 
 set -e
 
@@ -39,25 +42,48 @@ test_ssh_connection() {
     fi
 }
 
-# Déploiement complet
+# Déploiement optimisé (infrastructure et configuration uniquement)
 deploy_complete() {
     local ip="$1"
     local domain="${2:-localhost}"
-    log_info "🚀 Déploiement complet sur $ip (domaine: $domain)"
+    log_info "🚀 Déploiement optimisé sur $ip (domaine: $domain) - infrastructure et configuration uniquement"
 
-    # Créer répertoire temporaire
-    local deploy_dir="/tmp/meeshy-deploy-$(date +%Y%m%d-%H%M%S)"
+    # Créer répertoire temporaire pour les fichiers essentiels uniquement
+    local deploy_dir="/tmp/meeshy-deploy-optimized-$(date +%Y%m%d-%H%M%S)"
     mkdir -p "$deploy_dir"
 
-    # Préparer fichiers
-    log_info "📁 Préparation des fichiers..."
+    # Préparer fichiers essentiels uniquement
+    log_info "📁 Préparation des fichiers essentiels (infrastructure et configuration)..."
     cp "$PROJECT_ROOT/$DOCKER_COMPOSE_FILE" "$deploy_dir/docker-compose.yml"
     cp "$PROJECT_ROOT/env.digitalocean" "$deploy_dir/.env"
-    cp -r "$PROJECT_ROOT/docker" "$deploy_dir/"
-    cp -r "$PROJECT_ROOT/shared" "$deploy_dir/"
+    
+    # Configuration Docker essentielle uniquement
+    mkdir -p "$deploy_dir/docker"
+    cp -r "$PROJECT_ROOT/docker/nginx" "$deploy_dir/docker/"
+    cp -r "$PROJECT_ROOT/docker/supervisor" "$deploy_dir/docker/"
+    
+    # Fichiers shared essentiels pour la configuration (pas les sources)
+    mkdir -p "$deploy_dir/shared"
+    
+    # Schémas de base de données
+    cp "$PROJECT_ROOT/shared/schema.prisma" "$deploy_dir/shared/"
+    cp "$PROJECT_ROOT/shared/schema.postgresql.prisma" "$deploy_dir/shared/"
+    
+    # Scripts d'initialisation de base de données
+    cp "$PROJECT_ROOT/shared/init-postgresql.sql" "$deploy_dir/shared/"
+    cp "$PROJECT_ROOT/shared/init-database.sh" "$deploy_dir/shared/"
+    cp "$PROJECT_ROOT/shared/init-mongodb-replica.sh" "$deploy_dir/shared/"
+    cp "$PROJECT_ROOT/shared/mongodb-keyfile" "$deploy_dir/shared/"
+    
+    # Fichiers Proto pour la communication inter-services
+    mkdir -p "$deploy_dir/shared/proto"
+    cp "$PROJECT_ROOT/shared/proto/messaging.proto" "$deploy_dir/shared/proto/"
+    
+    # Version pour le suivi
+    cp "$PROJECT_ROOT/shared/version.txt" "$deploy_dir/shared/" 2>/dev/null || echo "1.0.0" > "$deploy_dir/shared/version.txt"
     
     # Envoyer sur serveur
-    log_info "📤 Envoi des fichiers..."
+    log_info "📤 Envoi des fichiers optimisés..."
     ssh -o StrictHostKeyChecking=no root@$ip "mkdir -p /opt/meeshy"
     scp -o StrictHostKeyChecking=no "$deploy_dir/docker-compose.yml" root@$ip:/opt/meeshy/
     scp -o StrictHostKeyChecking=no "$deploy_dir/.env" root@$ip:/opt/meeshy/
@@ -509,13 +535,13 @@ fi
 # 3. Vérifier Translator
 echo ""
 echo "🌐 TEST TRANSLATOR:"
-# Test via le réseau Docker interne (plus fiable en production)
+# Test via Traefik (architecture reverse proxy)
 for i in {1..10}; do
-    if docker-compose exec -T translator curl -f -s http://localhost:8000/health >/dev/null 2>&1; then
-        echo "✅ Translator: Endpoint /health accessible"
+    if curl -f -s -H "Host: ml.meeshy.me" http://localhost/health >/dev/null 2>&1; then
+        echo "✅ Translator: Endpoint /health accessible via Traefik"
 
         # Test de réponse de santé
-        health_response=$(docker-compose exec -T translator curl -s http://localhost:8000/health 2>/dev/null)
+        health_response=$(curl -s -H "Host: ml.meeshy.me" http://localhost/health 2>/dev/null)
         if echo "$health_response" | grep -q "status\|ok\|healthy\|database"; then
             echo "✅ Translator: Réponse de santé valide"
         else
@@ -523,35 +549,35 @@ for i in {1..10}; do
         fi
         break
     fi
-    echo "⏳ Tentative $i/10 pour Translator..."
+    echo "⏳ Tentative $i/10 pour Translator via Traefik..."
     sleep 5
 done
 
 if [ $i -eq 10 ]; then
-    echo "❌ Translator: Endpoint /health inaccessible après 10 tentatives"
+    echo "❌ Translator: Endpoint /health inaccessible via Traefik après 10 tentatives"
     # Essayer de vérifier via les logs Docker
     echo "📋 Vérification des logs Translator:"
     docker-compose logs --tail 20 translator | grep -i "error\|failed\|exception" || echo "Aucune erreur critique détectée"
     exit 1
 fi
 
-# Test des modèles ML
-if docker-compose exec -T translator curl -f -s http://localhost:8000/models >/dev/null 2>&1; then
-    echo "✅ Translator: Endpoint /models accessible"
+# Test des modèles ML via Traefik
+if curl -f -s -H "Host: ml.meeshy.me" http://localhost/models >/dev/null 2>&1; then
+    echo "✅ Translator: Endpoint /models accessible via Traefik"
 else
-    echo "⚠️  Translator: Endpoint /models inaccessible"
+    echo "⚠️  Translator: Endpoint /models inaccessible via Traefik"
 fi
 
 # 4. Vérifier Gateway
 echo ""
 echo "🚪 TEST GATEWAY:"
-# Test via le réseau Docker interne (plus fiable en production)
+# Test via Traefik (architecture reverse proxy)
 for i in {1..10}; do
-    if docker-compose exec -T gateway curl -f -s http://localhost:3000/health >/dev/null 2>&1; then
-        echo "✅ Gateway: Endpoint /health accessible"
+    if curl -f -s -H "Host: gate.meeshy.me" http://localhost/health >/dev/null 2>&1; then
+        echo "✅ Gateway: Endpoint /health accessible via Traefik"
 
         # Test de réponse de santé
-        health_response=$(docker-compose exec -T gateway curl -s http://localhost:3000/health 2>/dev/null)
+        health_response=$(curl -s -H "Host: gate.meeshy.me" http://localhost/health 2>/dev/null)
         if echo "$health_response" | grep -q "status\|ok\|healthy\|database"; then
             echo "✅ Gateway: Réponse de santé valide"
         else
@@ -559,12 +585,12 @@ for i in {1..10}; do
         fi
         break
     fi
-    echo "⏳ Tentative $i/10 pour Gateway..."
+    echo "⏳ Tentative $i/10 pour Gateway via Traefik..."
     sleep 5
 done
 
 if [ $i -eq 10 ]; then
-    echo "❌ Gateway: Endpoint /health inaccessible après 10 tentatives"
+    echo "❌ Gateway: Endpoint /health inaccessible via Traefik après 10 tentatives"
     # Essayer de vérifier via les logs Docker
     echo "📋 Vérification des logs Gateway:"
     docker-compose logs --tail 20 gateway | grep -i "error\|failed\|exception" || echo "Aucune erreur critique détectée"
@@ -581,13 +607,13 @@ fi
 # 5. Vérifier Frontend
 echo ""
 echo "🎨 TEST FRONTEND:"
-# Test via le réseau Docker interne (plus fiable en production)
+# Test via Traefik (architecture reverse proxy)
 for i in {1..10}; do
-    if docker-compose exec -T frontend curl -f -s http://localhost:3100 >/dev/null 2>&1; then
-        echo "✅ Frontend: Accessible"
+    if curl -f -s -H "Host: meeshy.me" http://localhost >/dev/null 2>&1; then
+        echo "✅ Frontend: Accessible via Traefik"
 
         # Vérifier que c'est bien Next.js
-        response=$(docker-compose exec -T frontend curl -s http://localhost:3100 2>/dev/null | head -c 200)
+        response=$(curl -s -H "Host: meeshy.me" http://localhost 2>/dev/null | head -c 200)
         if echo "$response" | grep -q "Next\|React\|meeshy\|Meeshy"; then
             echo "✅ Frontend: Réponse Next.js détectée"
         else
@@ -595,12 +621,12 @@ for i in {1..10}; do
         fi
         break
     fi
-    echo "⏳ Tentative $i/10 pour Frontend..."
+    echo "⏳ Tentative $i/10 pour Frontend via Traefik..."
     sleep 5
 done
 
 if [ $i -eq 10 ]; then
-    echo "❌ Frontend: Inaccessible après 10 tentatives"
+    echo "❌ Frontend: Inaccessible via Traefik après 10 tentatives"
     # Essayer de vérifier via les logs Docker
     echo "📋 Vérification des logs Frontend:"
     docker-compose logs --tail 20 frontend | grep -i "error\|failed\|exception" || echo "Aucune erreur critique détectée"
@@ -805,25 +831,28 @@ else
     echo "❌ Redis: Non connecté"
 fi
 
-# Test Gateway (via réseau interne)
-if docker-compose exec -T gateway curl -f -s http://localhost:3000/health >/dev/null 2>&1; then
-    echo "✅ Gateway: Health check OK"
+# Test des services via Traefik (architecture reverse proxy)
+echo ""
+echo "🌐 TEST SERVICES VIA TRAEFIK:"
+# Test Gateway via Traefik
+if curl -f -s -H "Host: gate.meeshy.me" http://localhost/health >/dev/null 2>&1; then
+    echo "✅ Gateway: Accessible via Traefik (gate.meeshy.me)"
 else
-    echo "❌ Gateway: Health check échoué"
+    echo "❌ Gateway: Non accessible via Traefik"
 fi
 
-# Test Translator (via réseau interne)
-if docker-compose exec -T translator curl -f -s http://localhost:8000/health >/dev/null 2>&1; then
-    echo "✅ Translator: Health check OK"
+# Test Translator via Traefik
+if curl -f -s -H "Host: ml.meeshy.me" http://localhost/health >/dev/null 2>&1; then
+    echo "✅ Translator: Accessible via Traefik (ml.meeshy.me)"
 else
-    echo "❌ Translator: Health check échoué"
+    echo "❌ Translator: Non accessible via Traefik"
 fi
 
-# Test Frontend (via réseau interne)
-if docker-compose exec -T frontend curl -f -s http://localhost:3100 >/dev/null 2>&1; then
-    echo "✅ Frontend: Accessible"
+# Test Frontend via Traefik
+if curl -f -s -H "Host: meeshy.me" http://localhost >/dev/null 2>&1; then
+    echo "✅ Frontend: Accessible via Traefik (meeshy.me)"
 else
-    echo "❌ Frontend: Non accessible"
+    echo "❌ Frontend: Non accessible via Traefik"
 fi
 
 # 4. Test d'accès externe (Traefik)
