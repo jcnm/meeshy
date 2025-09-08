@@ -82,7 +82,23 @@ deploy_complete() {
     # Version pour le suivi
     cp "$PROJECT_ROOT/shared/version.txt" "$deploy_dir/shared/" 2>/dev/null || echo "1.0.0" > "$deploy_dir/shared/version.txt"
     
-    # Envoyer sur serveur
+    # Gestion des secrets de production
+    log_info "🔐 Gestion des secrets de production..."
+    if [ -f "$PROJECT_ROOT/secrets/production-secrets.env" ]; then
+        log_info "📋 Fichier de secrets de production trouvé"
+        # Créer le répertoire secrets sur le serveur
+        ssh -o StrictHostKeyChecking=no root@$ip "mkdir -p /opt/meeshy/secrets"
+        # Transférer le fichier de secrets
+        scp -o StrictHostKeyChecking=no "$PROJECT_ROOT/secrets/production-secrets.env" root@$ip:/opt/meeshy/secrets/
+        # Sécuriser le fichier sur le serveur
+        ssh -o StrictHostKeyChecking=no root@$ip "chmod 600 /opt/meeshy/secrets/production-secrets.env"
+        log_success "✅ Fichier de secrets transféré et sécurisé"
+    else
+        log_warning "⚠️  Fichier de secrets de production non trouvé: $PROJECT_ROOT/secrets/production-secrets.env"
+        log_info "💡 Créez le fichier avec: ./scripts/production/generate-production-config.sh"
+    fi
+
+# Envoyer sur serveur
     log_info "📤 Envoi des fichiers optimisés..."
     ssh -o StrictHostKeyChecking=no root@$ip "mkdir -p /opt/meeshy"
     scp -o StrictHostKeyChecking=no "$deploy_dir/docker-compose.yml" root@$ip:/opt/meeshy/
@@ -125,6 +141,24 @@ if ! command -v openssl &> /dev/null; then
     elif command -v apk &> /dev/null; then
         apk add --no-cache openssl bind-tools
     fi
+fi
+
+# Charger les secrets de production si disponibles
+if [ -f "/opt/meeshy/secrets/production-secrets.env" ]; then
+    echo "🔐 Chargement des secrets de production..."
+    set -a
+    source /opt/meeshy/secrets/production-secrets.env
+    set +a
+    echo "✅ Secrets de production chargés"
+    
+    # Ajouter les secrets au fichier .env pour docker-compose
+    echo "" >> .env
+    echo "# ===== SECRETS DE PRODUCTION ======" >> .env
+    echo "# Générés automatiquement le $(date)" >> .env
+    cat /opt/meeshy/secrets/production-secrets.env >> .env
+    echo "✅ Secrets ajoutés au fichier .env"
+else
+    echo "⚠️  Fichier de secrets de production non trouvé, utilisation de la configuration par défaut"
 fi
 
 echo "🧹 Nettoyage..."
@@ -334,39 +368,75 @@ else
     echo "⚠️  Redis UI non disponible"
 fi
 
-# Préparation du volume des modèles ML
-echo "🔧 Configuration des permissions du volume des modèles ML..."
-if docker volume ls | grep -q "meeshy_models_data"; then
-    echo "📁 Volume des modèles ML existant détecté"
-    # Créer un container temporaire pour corriger les permissions
-    docker run --rm -v meeshy_models_data:/workspace/models alpine:latest sh -c "
-        echo '🔧 Correction des permissions du volume des modèles...'
-        chown -R 1000:1000 /workspace/models 2>/dev/null || true
-        chmod -R 755 /workspace/models 2>/dev/null || true
-        echo '✅ Permissions corrigées pour le volume des modèles'
-    "
-else
-    echo "📁 Création du volume des modèles ML avec permissions correctes..."
-    docker volume create meeshy_models_data
-    # Créer un container temporaire pour initialiser les permissions
-    docker run --rm -v meeshy_models_data:/workspace/models alpine:latest sh -c "
-        echo '🔧 Initialisation des permissions du volume des modèles...'
-        mkdir -p /workspace/models
-        chown -R 1000:1000 /workspace/models
-        chmod -R 755 /workspace/models
-        echo '✅ Volume des modèles ML initialisé avec permissions correctes'
-    "
-fi
+# Gestion avancée des volumes et permissions
+echo "🔧 Configuration avancée des volumes et permissions..."
 
-# Nettoyage des fichiers de verrouillage des modèles ML
-echo "🧹 Nettoyage des fichiers de verrouillage des modèles ML..."
-docker run --rm -v meeshy_models_data:/workspace/models alpine:latest sh -c "
-    echo '🧹 Recherche et suppression des fichiers de verrouillage...'
-    find /workspace/models -name '*.lock' -type f -delete 2>/dev/null || true
-    find /workspace/models -name '*.tmp' -type f -delete 2>/dev/null || true
-    find /workspace/models -name '.incomplete' -type d -exec rm -rf {} + 2>/dev/null || true
-    echo '✅ Fichiers de verrouillage nettoyés'
-"
+# Fonction pour corriger les permissions d'un volume
+fix_volume_permissions() {
+    local volume_name="$1"
+    local mount_path="$2"
+    local user_id="${3:-1000}"
+    local group_id="${4:-1000}"
+    
+    if docker volume ls | grep -q "$volume_name"; then
+        echo "📁 Volume $volume_name existant détecté"
+        # Corriger les permissions
+        docker run --rm -v "$volume_name:$mount_path" alpine:latest sh -c "
+            echo '🔧 Correction des permissions du volume $volume_name...'
+            chown -R $user_id:$group_id $mount_path 2>/dev/null || true
+            chmod -R 755 $mount_path 2>/dev/null || true
+            echo '✅ Permissions corrigées pour le volume $volume_name'
+        "
+    else
+        echo "📁 Création du volume $volume_name avec permissions correctes..."
+        docker volume create "$volume_name"
+        # Initialiser les permissions
+        docker run --rm -v "$volume_name:$mount_path" alpine:latest sh -c "
+            echo '🔧 Initialisation des permissions du volume $volume_name...'
+            mkdir -p $mount_path
+            chown -R $user_id:$group_id $mount_path
+            chmod -R 755 $mount_path
+            echo '✅ Volume $volume_name initialisé avec permissions correctes'
+        "
+    fi
+}
+
+# Corriger les permissions de tous les volumes translator
+fix_volume_permissions "meeshy_models_data" "/workspace/models" "1000" "1000"
+fix_volume_permissions "meeshy_translator_cache" "/workspace/cache" "1000" "1000"
+fix_volume_permissions "meeshy_translator_generated" "/workspace/generated" "1000" "1000"
+
+# Nettoyage avancé des fichiers de verrouillage
+echo "🧹 Nettoyage avancé des fichiers de verrouillage..."
+for volume in "meeshy_models_data" "meeshy_translator_cache" "meeshy_translator_generated"; do
+    if docker volume ls | grep -q "$volume"; then
+        echo "🧹 Nettoyage du volume $volume..."
+        case $volume in
+            *models*)
+                mount_path="/workspace/models"
+                ;;
+            *cache*)
+                mount_path="/workspace/cache"
+                ;;
+            *generated*)
+                mount_path="/workspace/generated"
+                ;;
+            *)
+                mount_path="/workspace"
+                ;;
+        esac
+        
+        docker run --rm -v "$volume:$mount_path" alpine:latest sh -c "
+            echo '🧹 Recherche et suppression des fichiers de verrouillage dans $volume...'
+            find $mount_path -name '*.lock' -type f -delete 2>/dev/null || true
+            find $mount_path -name '*.tmp' -type f -delete 2>/dev/null || true
+            find $mount_path -name '.incomplete' -type d -exec rm -rf {} + 2>/dev/null || true
+            find $mount_path -name '*.pid' -type f -delete 2>/dev/null || true
+            find $mount_path -name '.DS_Store' -type f -delete 2>/dev/null || true
+            echo '✅ Fichiers de verrouillage nettoyés dans $volume'
+        "
+    fi
+done
 
 # Translator
 echo "🌐 Démarrage Translator..."
@@ -976,6 +1046,112 @@ EOF
     rm -f /tmp/configure-replica.sh
 }
 
+# Correction des permissions du translator
+fix_translator_permissions() {
+    local ip="$1"
+    log_info "🔧 Correction des permissions du container meeshy-translator..."
+    
+    # Script de correction des permissions
+    cat << 'EOF' > /tmp/fix-translator-permissions.sh
+#!/bin/bash
+cd /opt/meeshy
+
+echo "🔧 CORRECTION DES PERMISSIONS DU CONTAINER MEESHY-TRANSLATOR"
+echo "=========================================================="
+
+# Vérifier que les volumes existent
+echo "🔍 Vérification des volumes translator..."
+VOLUMES=$(docker volume ls | grep translator | awk '{print $2}')
+if [ -z "$VOLUMES" ]; then
+    echo "❌ Aucun volume translator trouvé"
+    exit 1
+fi
+
+echo "✅ Volumes translator trouvés:"
+echo "$VOLUMES" | while read volume; do
+    echo "  • $volume"
+done
+
+echo ""
+echo "🔧 Correction des permissions des volumes..."
+
+# Fonction pour corriger les permissions d'un volume
+fix_volume_permissions() {
+    local volume_name="$1"
+    local mount_path="$2"
+    local user_id="${3:-1000}"
+    local group_id="${4:-1000}"
+    
+    echo "  • Correction des permissions du volume $volume_name..."
+    
+    # Déterminer le chemin selon le type de volume
+    case $volume_name in
+        *models*)
+            path="/workspace/models"
+            ;;
+        *cache*)
+            path="/workspace/cache"
+            ;;
+        *generated*)
+            path="/workspace/generated"
+            ;;
+        *)
+            path="/workspace"
+            ;;
+    esac
+    
+    # Corriger les permissions
+    docker run --rm -v "$volume_name:$path" alpine:latest sh -c "
+        echo '🔧 Correction des permissions du volume $volume_name...'
+        chown -R $user_id:$group_id $path 2>/dev/null || true
+        chmod -R 755 $path 2>/dev/null || true
+        echo '✅ Permissions corrigées pour $volume_name'
+    "
+    
+    echo "    ✅ Permissions corrigées pour $volume_name"
+}
+
+# Corriger les permissions de chaque volume
+for volume in $VOLUMES; do
+    fix_volume_permissions "$volume" "/workspace" "1000" "1000"
+done
+
+echo ""
+echo "🔄 Redémarrage du service translator..."
+
+# Redémarrer le translator
+docker-compose restart translator
+
+echo ""
+echo "⏳ Attente du redémarrage du translator..."
+sleep 20
+
+echo ""
+echo "🔍 Vérification du statut du translator..."
+
+# Vérifier le statut
+STATUS=$(docker-compose ps translator | grep translator)
+echo "$STATUS"
+
+# Vérifier les logs récents pour voir si les modèles se chargent
+echo ""
+echo "📋 Vérification des logs récents du translator..."
+docker logs meeshy-translator --tail 20
+
+echo ""
+echo "🎉 Correction des permissions terminée !"
+echo ""
+echo "💡 Si le translator a encore des problèmes:"
+echo "  • Vérifiez les logs: docker logs meeshy-translator"
+echo "  • Redémarrez manuellement: docker-compose restart translator"
+echo "  • Vérifiez l'espace disque: df -h"
+EOF
+
+    scp -o StrictHostKeyChecking=no /tmp/fix-translator-permissions.sh root@$ip:/tmp/
+    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/fix-translator-permissions.sh && /tmp/fix-translator-permissions.sh"
+    rm -f /tmp/fix-translator-permissions.sh
+}
+
 # Test des certificats SSL et configuration Traefik
 test_ssl_certificates() {
     local ip="$1"
@@ -1212,6 +1388,7 @@ show_help() {
     echo -e "${CYAN}  simple-health${NC} - Vérification simple et robuste"
     echo -e "${CYAN}  replica${NC}      - Configuration du replica set MongoDB"
     echo -e "${CYAN}  ssl${NC}          - Test des certificats SSL et Traefik"
+    echo -e "${CYAN}  fix-translator${NC} - Correction des permissions du container translator"
     echo -e "${CYAN}  status${NC}       - État des services"
     echo -e "${CYAN}  logs${NC}         - Logs des services"
     echo -e "${CYAN}  restart${NC}      - Redémarrage des services"
@@ -1228,6 +1405,7 @@ show_help() {
     echo "  $0 simple-health 157.230.15.51"
     echo "  $0 replica 157.230.15.51"
     echo "  $0 ssl 157.230.15.51"
+    echo "  $0 fix-translator 157.230.15.51"
     echo "  $0 --force-refresh deploy 157.230.15.51"
     echo ""
     echo -e "${YELLOW}💡 Toutes les connexions sont vérifiées automatiquement${NC}"
@@ -1326,6 +1504,15 @@ main() {
             fi
             test_ssh_connection "$DROPLET_IP" || exit 1
             test_ssl_certificates "$DROPLET_IP"
+            ;;
+        "fix-translator")
+            if [ -z "$DROPLET_IP" ]; then
+                log_error "IP du droplet manquante"
+                show_help
+                exit 1
+            fi
+            test_ssh_connection "$DROPLET_IP" || exit 1
+            fix_translator_permissions "$DROPLET_IP"
             ;;
         "status")
             if [ -z "$DROPLET_IP" ]; then

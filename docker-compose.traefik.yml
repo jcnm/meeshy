@@ -145,7 +145,7 @@ services:
 
   # Translator Service sur ml.${DOMAIN}
   translator:
-    image: ${TRANSLATOR_IMAGE:-isopen/meeshy-translator:1.0.37-alpha}
+    image: ${TRANSLATOR_IMAGE:-isopen/meeshy-translator:latest}
     container_name: meeshy-translator
     restart: unless-stopped
     environment:
@@ -181,7 +181,7 @@ services:
 
   # Gateway Service sur gate.${DOMAIN}
   gateway:
-    image: ${GATEWAY_IMAGE:-isopen/meeshy-gateway:1.0.37-alpha}
+    image: ${GATEWAY_IMAGE:-isopen/meeshy-gateway:latest}
     container_name: meeshy-gateway
     restart: unless-stopped
     environment:
@@ -191,10 +191,15 @@ services:
       - TRANSLATOR_URL=http://translator:8000
       - ZMQ_PUSH_URL=tcp://translator:5555
       - ZMQ_SUB_URL=tcp://translator:5558
+      - ZMQ_TRANSLATOR_HOST=translator
+      - ZMQ_TRANSLATOR_PUSH_PORT=5555
+      - ZMQ_TRANSLATOR_SUB_PORT=5558
       - NODE_ENV=production
       - CORS_ORIGINS=${CORS_ORIGINS}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - FRONTEND_URL=${FRONTEND_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
     depends_on:
       database:
         condition: service_healthy
@@ -218,7 +223,7 @@ services:
 
   # Frontend Service sur ${DOMAIN}
   frontend:
-    image: ${FRONTEND_IMAGE:-isopen/meeshy-frontend:1.0.37-alpha}
+    image: ${FRONTEND_IMAGE:-isopen/meeshy-frontend:latest}
     container_name: meeshy-frontend
     restart: unless-stopped
     environment:
