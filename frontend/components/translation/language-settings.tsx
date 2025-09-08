@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { User as UserType, SUPPORTED_LANGUAGES, INTERFACE_LANGUAGES } from '@/types';
+import { User as UserType, SUPPORTED_LANGUAGES } from '@/types';
 import { toast } from 'sonner';
 import { Globe, Languages, Target } from 'lucide-react';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -148,7 +148,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {INTERFACE_LANGUAGES.map((lang) => (
+                  {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
                         <span>{lang.flag}</span>
@@ -173,7 +173,7 @@ export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {INTERFACE_LANGUAGES.map((lang) => (
+                  {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
                       <span className="flex items-center gap-2">
                         <span>{lang.flag}</span>
