@@ -1446,6 +1446,9 @@
     "print": "Imprimer",
     "title": "Politique de Confidentialité",
     "lastUpdated": "Dernière mise à jour : 6 septembre 2025",
+    "intro": "Pour toute question concernant cette politique de confidentialité ou le traitement de vos données personnelles, veuillez nous contacter :",
+    "email": "privacy@meeshy.com",
+    "address": "Tour First, 1 Place des Saisons, 92400 Courbevoie, France",
     "introduction": {
       "title": "1. Introduction",
       "content": "Chez Meeshy, nous nous engageons à protéger votre vie privée et vos données personnelles. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre service de messagerie multilingue."
@@ -1566,6 +1569,9 @@
     "print": "Imprimer",
     "title": "Conditions d'Utilisation",
     "lastUpdated": "Dernière mise à jour : 1er janvier 2026",
+    "intro": "Pour toute question concernant ces conditions d'utilisation, contactez-nous :",
+    "email": "legal@meeshy.com",
+    "address": "Tour First, 1 Place des Saisons, 92400 Courbevoie, France",
     "acceptance": {
       "title": "1. Acceptation des Conditions",
       "content": "En accédant et en utilisant Meeshy, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service."
@@ -2043,7 +2049,51 @@
     "placeholder": "Rechercher par nom, description...",
     "filterConversations": "Filtrer les conversations",
     "searchParticipants": "Rechercher...",
-    "shareMessage": "Partagez quelque chose avec le monde..."
+    "shareMessage": "Partagez quelque chose avec le monde...",
+    "authChecking": "Vérification de l'authentification...",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Traduction en cours...",
+        "retranslationInProgress": "Retraduction en cours...",
+        "editSoon": "Modification bientôt disponible",
+        "translationSuccess": "Traduction réussie"
+      },
+      "conversations": {
+        "loadError": "Erreur lors du chargement de la conversation"
+      }
+    },
+    "conversations": {
+      "title": "Conversations"
+    },
+    "loadingConversations": "Chargement des conversations...",
+    "loadingConversationsDescription": "Récupération de vos conversations...",
+    "noConversations": "Aucune conversation",
+    "noConversationsDescription": "Commencez par créer une nouvelle conversation ou rejoignez-en une existante.",
+    "chooseConversation": "Choisissez une conversation",
+    "chooseConversationDescription": "Sélectionnez une conversation dans la liste pour commencer à discuter.",
+    "welcome": "Bienvenue sur Meeshy",
+    "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
+    "createConversation": "Créer une conversation",
+    "filtreConversations": "Filtrer les conversations",
+    "notConnected": "Non connecté",
+    "participantRemoved": "Participant supprimé: {userId}",
+    "participantAdded": "Participant ajouté: {userId}",
+    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
+    "errorLoadingConversation": "Erreur lors du chargement de la conversation",
+    "writeMessage": "Écris ton message...",
+    "no": "Non",
+    "connected": "Connecté",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "public": "Public",
+    "private": "Privé",
+    "createLink": "Créer un lien",
+    "conversationDetails": "Détails de la conversation",
+    "noMessages": "Aucun message dans cette conversation",
+    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
+    "yes": "Oui",
+    "conversationLayout": "Layout de conversation",
+    "conversationSearch": "Recherche de conversation",
+    "conversationUI": "Interface de conversation"
   },
   "conversationLayout": {
     "authChecking": "Vérification de l'authentification...",
@@ -2089,52 +2139,6 @@
         "loadError": "Erreur lors du chargement de la conversation"
       }
     }
-  },
-  "conversationSearch": {
-    "authChecking": "Vérification de l'authentification...",
-    "toasts": {
-      "messages": {
-        "translationInProgress": "Traduction en cours...",
-        "retranslationInProgress": "Retraduction en cours...",
-        "editSoon": "Modification bientôt disponible",
-        "translationSuccess": "Traduction réussie"
-      },
-      "conversations": {
-        "loadError": "Erreur lors du chargement de la conversation"
-      }
-    },
-    "conversations": {
-      "title": "Conversations"
-    },
-    "loadingConversations": "Chargement des conversations...",
-    "filtreConversations": "Filtrer les conversations",
-    "yes": "Oui",
-    "no": "Non",
-    "connected": "Connecté",
-    "notConnected": "Non connecté",
-    "noConversations": "Aucune conversation",
-    "loadingConversationsDescription": "Récupération de vos conversations...",
-    "noConversationsDescription": "Commencez par créer une nouvelle conversation ou rejoignez-en une existante.",
-    "public": "Public",
-    "private": "Privé",
-    "createLink": "Créer un lien",
-    "createConversation": "Créer une conversation",
-    "conversationDetails": "Détails de la conversation",
-    "noMessages": "Aucun message dans cette conversation",
-    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
-    "writeMessage": "Écris ton message...",
-    "chooseConversation": "Choisissez une conversation",
-    "chooseConversationDescription": "Sélectionnez une conversation dans la liste pour commencer à discuter.",
-    "welcome": "Bienvenue sur Meeshy",
-    "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
-    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
-    "errorLoadingConversation": "Erreur lors du chargement de la conversation",
-    "conversationLayout": "Layout de conversation",
-    "conversationSearch": "Recherche de conversation",
-    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
-    "participantRemoved": "Participant supprimé: {userId}",
-    "participantAdded": "Participant ajouté: {userId}",
-    "conversationUI": "Interface de conversation"
   },
   "conversationWrapper": {
     "authChecking": "Vérification de l'authentification...",
