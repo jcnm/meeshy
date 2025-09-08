@@ -65,7 +65,7 @@ export function UserSettingsContent({ user, localSettings, onSettingUpdate, chil
                     value={localSettings.systemLanguage || ''}
                     onValueChange={(value) => onSettingUpdate('systemLanguage', value)}
                     placeholder="Sélectionnez votre langue système"
-                    interfaceOnly={true}
+                    interfaceOnly={false}
                   />
                 </div>
 
@@ -75,7 +75,7 @@ export function UserSettingsContent({ user, localSettings, onSettingUpdate, chil
                     value={localSettings.regionalLanguage || ''}
                     onValueChange={(value) => onSettingUpdate('regionalLanguage', value)}
                     placeholder="Sélectionnez votre langue régionale"
-                    interfaceOnly={true}
+                    interfaceOnly={false}
                   />
                 </div>
               </div>
