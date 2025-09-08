@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
+secrets
+**/*/secrets
 /node_modules
 /.pnp
 .pnp.*
@@ -132,3 +134,4 @@ htmlcov/
 ./shared/*d.ts
 ./shared/**/*.d.ts
  */translator/.venv/
+translator/.venv/
