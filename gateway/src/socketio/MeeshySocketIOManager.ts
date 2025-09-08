@@ -9,8 +9,6 @@ import { PrismaClient } from '../../shared/prisma/client';
 import { TranslationService, MessageData } from '../services/TranslationService';
 import { MaintenanceService } from '../services/maintenance.service';
 import { MessagingService } from '../services/MessagingService';
-import { MessageNotificationService } from '../services/MessageNotificationService';
-import { UnifiedNotificationService } from '../services/UnifiedNotificationService';
 import jwt from 'jsonwebtoken';
 import type { 
   ServerToClientEvents, 
@@ -47,8 +45,6 @@ export class MeeshySocketIOManager {
   private translationService: TranslationService;
   private maintenanceService: MaintenanceService;
   private messagingService: MessagingService;
-  private messageNotificationService: MessageNotificationService;
-  private unifiedNotificationService: UnifiedNotificationService;
   
   // Mapping des utilisateurs connectés
   private connectedUsers: Map<string, SocketUser> = new Map();
@@ -68,8 +64,6 @@ export class MeeshySocketIOManager {
     this.translationService = new TranslationService(prisma);
     this.maintenanceService = new MaintenanceService(prisma);
     this.messagingService = new MessagingService(prisma, this.translationService);
-    this.messageNotificationService = new MessageNotificationService(prisma, this);
-    this.unifiedNotificationService = new UnifiedNotificationService(prisma, this);
     
     // Initialiser Socket.IO avec les types shared
     this.io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(httpServer, {
@@ -250,8 +244,40 @@ export class MeeshySocketIOManager {
           }
 
           // Broadcast temps réel vers tous les clients de la conversation (y compris l'auteur)
-          if (response.success && response.data) {
-            await this._broadcastNewMessage(response.data, data.conversationId);
+          const messageResponse = response as unknown as { messageId: string; status: string };
+          if (messageResponse.messageId) {
+            // Récupérer le message depuis la base de données pour le broadcast
+            const message = await this.prisma.message.findUnique({
+              where: { id: messageResponse.messageId },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    firstName: true,
+                    lastName: true
+                  }
+                },
+                anonymousSender: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    username: true
+                  }
+                }
+              }
+            });
+            
+            if (message) {
+              // Ajouter le champ timestamp requis par le type Message
+              const messageWithTimestamp = {
+                ...message,
+                timestamp: message.createdAt
+              } as any; // Cast temporaire pour éviter les conflits de types
+              await this._broadcastNewMessage(messageWithTimestamp, data.conversationId);
+            }
           }
 
           this.stats.messages_processed++;
@@ -747,18 +773,7 @@ export class MeeshySocketIOManager {
       const isAnonymousSender = !!saved?.anonymousSenderId;
       if (senderId) {
         // Envoyer les notifications en asynchrone pour ne pas bloquer
-        setImmediate(async () => {
-          try {
-            await this.messageNotificationService.sendMessageNotification(
-              result.messageId,
-              data.conversationId,
-              senderId,
-              isAnonymousSender
-            );
-          } catch (error) {
-            console.error(`❌ Erreur envoi notification message ${result.messageId}:`, error);
-          }
-        });
+        // Note: Les notifications sont gérées directement dans routes/notifications.ts
       }
       
       // 5. LES TRADUCTIONS SERONT TRAITÉES EN ASYNCHRONE PAR LE TRANSLATION SERVICE
@@ -896,12 +911,7 @@ export class MeeshySocketIOManager {
               translations.es = result.translatedText;
             }
             
-            // Envoyer la notification de traduction
-            await this.messageNotificationService.sendTranslationNotification(
-              result.messageId,
-              conversationIdForBroadcast,
-              translations
-            );
+            // Note: Les notifications de traduction sont gérées directement dans routes/notifications.ts
           } catch (error) {
             console.error(`❌ Erreur envoi notification traduction ${result.messageId}:`, error);
           }
@@ -1078,18 +1088,7 @@ export class MeeshySocketIOManager {
       const senderId = message.anonymousSenderId || message.senderId;
       const isAnonymousSender = !!message.anonymousSenderId;
       if (senderId) {
-        setImmediate(async () => {
-          try {
-            await this.messageNotificationService.sendMessageNotification(
-              message.id,
-              conversationId,
-              senderId,
-              isAnonymousSender
-            );
-          } catch (error) {
-            console.error(`❌ Erreur envoi notification message ${message.id}:`, error);
-          }
-        });
+        // Note: Les notifications sont gérées directement dans routes/notifications.ts
       }
       
     } catch (error) {

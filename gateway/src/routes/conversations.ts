@@ -25,6 +25,25 @@ async function canAccessConversation(
     return false;
   }
   
+  // Cas spécial : conversation globale "meeshy" - vérifier l'appartenance
+  if (conversationIdentifier === "meeshy" || conversationId === "meeshy") {
+    // Pour la conversation meeshy, vérifier que l'utilisateur est membre
+    if (authContext.isAnonymous) {
+      // Les utilisateurs anonymes n'ont pas accès à la conversation globale meeshy
+      return false;
+    } else {
+      // Vérifier l'appartenance à la conversation meeshy
+      const membership = await prisma.conversationMember.findFirst({
+        where: {
+          conversationId: conversationId,
+          userId: authContext.userId,
+          isActive: true
+        }
+      });
+      return !!membership;
+    }
+  }
+  
   if (authContext.isAnonymous) {
     // Utilisateurs anonymes authentifiés : vérifier l'accès via liens d'invitation
     // Le userId pour les anonymes est l'ID du participant anonyme

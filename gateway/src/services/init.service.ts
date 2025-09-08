@@ -40,6 +40,9 @@ export class InitService {
       // 4. Créer les conversations supplémentaires
       await this.createAdditionalConversations();
 
+      // 5. S'assurer que tous les utilisateurs sont membres de la conversation meeshy
+      await this.ensureAllUsersInMeeshyConversation();
+
       console.log('[INIT] ✅ Initialisation de la base de données terminée avec succès');
     } catch (error) {
       console.error('[INIT] ❌ Erreur lors de l\'initialisation:', error);
@@ -250,41 +253,9 @@ export class InitService {
         });
       }
 
-      // Récupérer l'ID de la conversation globale
-      const globalConversation = await this.prisma.conversation.findFirst({
-        where: { identifier: 'meeshy' }
-      });
-
-      if (!globalConversation) {
-        console.log(`[INIT] ⚠️ Conversation globale "meeshy" non trouvée, impossible d'ajouter l'utilisateur`);
-        return;
-      }
-
-      // Vérifier si l'utilisateur admin est déjà membre de la conversation
+      // Ajouter l'utilisateur à la conversation globale meeshy
       const userId = existingUser ? existingUser.id : (await this.prisma.user.findFirst({ where: { username } }))!.id;
-      const existingMember = await this.prisma.conversationMember.findFirst({
-        where: {
-          conversationId: globalConversation.id,
-          userId: userId
-        }
-      });
-
-      if (!existingMember) {
-        // Ajouter l'utilisateur comme ADMIN de la conversation meeshy
-        await this.prisma.conversationMember.create({
-          data: {
-            conversationId: globalConversation.id,
-            userId: existingUser ? existingUser.id : (await this.prisma.user.findFirst({ where: { username } }))!.id,
-            role: 'ADMIN',
-            joinedAt: new Date(),
-            isActive: true
-          }
-        });
-        
-        console.log(`[INIT] ✅ Utilisateur Admin "${username}" ajouté à la conversation meeshy`);
-      } else {
-        console.log(`[INIT] ✅ Utilisateur Admin "${username}" est déjà membre de la conversation meeshy`);
-      }
+      await this.addUserToMeeshyConversation(userId, username);
 
       console.log(`[INIT] ✅ Utilisateur Admin "${username}" configuré avec succès`);
     } catch (error) {
@@ -367,9 +338,84 @@ export class InitService {
         data: { role: role as any }
       });
 
+      // Ajouter l'utilisateur à la conversation globale meeshy
+      await this.addUserToMeeshyConversation(user.id, username);
+
       console.log(`[INIT] ✅ Utilisateur André Tabeth "${username}" (${firstName} ${lastName}) créé avec succès - Rôle: ${role}`);
     } catch (error) {
       console.error(`[INIT] ❌ Erreur lors de la création de l'utilisateur André Tabeth "${username}":`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Ajoute un utilisateur à la conversation globale meeshy
+   */
+  private async addUserToMeeshyConversation(userId: string, username: string): Promise<void> {
+    try {
+      // Récupérer l'ID de la conversation globale
+      const globalConversation = await this.prisma.conversation.findFirst({
+        where: { identifier: 'meeshy' }
+      });
+
+      if (!globalConversation) {
+        console.log(`[INIT] ⚠️ Conversation globale "meeshy" non trouvée, impossible d'ajouter l'utilisateur "${username}"`);
+        return;
+      }
+
+      // Vérifier si l'utilisateur est déjà membre de la conversation
+      const existingMember = await this.prisma.conversationMember.findFirst({
+        where: {
+          conversationId: globalConversation.id,
+          userId: userId
+        }
+      });
+
+      if (!existingMember) {
+        // Déterminer le rôle selon l'utilisateur
+        const role = username === 'meeshy' ? 'CREATOR' : 
+                    username === 'admin' ? 'ADMIN' : 'MEMBER';
+        
+        // Ajouter l'utilisateur comme membre de la conversation meeshy
+        await this.prisma.conversationMember.create({
+          data: {
+            conversationId: globalConversation.id,
+            userId: userId,
+            role: role,
+            joinedAt: new Date(),
+            isActive: true
+          }
+        });
+        
+        console.log(`[INIT] ✅ Utilisateur "${username}" ajouté à la conversation meeshy avec le rôle ${role}`);
+      } else {
+        console.log(`[INIT] ✅ Utilisateur "${username}" est déjà membre de la conversation meeshy`);
+      }
+    } catch (error) {
+      console.error(`[INIT] ❌ Erreur lors de l'ajout de l'utilisateur "${username}" à la conversation meeshy:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * S'assure que tous les utilisateurs existants sont membres de la conversation meeshy
+   */
+  private async ensureAllUsersInMeeshyConversation(): Promise<void> {
+    console.log('[INIT] 🔍 Vérification que tous les utilisateurs sont membres de la conversation meeshy...');
+
+    try {
+      // Récupérer tous les utilisateurs actifs
+      const users = await this.prisma.user.findMany({
+        where: { isActive: true }
+      });
+
+      for (const user of users) {
+        await this.addUserToMeeshyConversation(user.id, user.username);
+      }
+
+      console.log(`[INIT] ✅ Vérification terminée pour ${users.length} utilisateurs`);
+    } catch (error) {
+      console.error('[INIT] ❌ Erreur lors de la vérification des membres de la conversation meeshy:', error);
       throw error;
     }
   }
