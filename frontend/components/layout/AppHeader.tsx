@@ -28,6 +28,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { useNotifications } from '@/hooks/use-notifications';
 import type { User } from '@shared/types';
 
 interface AppHeaderProps {
@@ -47,6 +48,7 @@ export function AppHeader({
   const { user, isAuthChecking } = useUser();
   const { logout } = useAuth();
   const { t } = useTranslations('toasts');
+  const { unreadCount } = useNotifications();
 
   const handleLogout = () => {
     logout();
@@ -135,16 +137,23 @@ export function AppHeader({
 
         {/* Actions utilisateur */}
         <div className="flex items-center space-x-3">
-          {/* Recherche */}
+          {/* Recherche - masquée en responsive */}
           {showSearch && (
-            <Button variant="ghost" size="sm" onClick={() => handleNavigation('/search')}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => handleNavigation('/search')}
+              className="hidden md:flex"
+            >
               <Search className="h-4 w-4" />
             </Button>
           )}
 
-          {/* Notifications */}
+          {/* Notifications - masquées en responsive */}
           {showNotifications && (
-            <NotificationBell />
+            <div className="hidden md:block">
+              <NotificationBell />
+            </div>
           )}
 
           {/* Profil utilisateur */}
@@ -206,6 +215,36 @@ export function AppHeader({
 
               {/* Actions */}
               <div className="p-1">
+                {/* Recherche - visible uniquement en responsive */}
+                {showSearch && (
+                  <DropdownMenuItem 
+                    onClick={() => handleNavigation('/search')}
+                    className="md:hidden"
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Recherche
+                  </DropdownMenuItem>
+                )}
+                
+                {/* Notifications - visible uniquement en responsive */}
+                {showNotifications && (
+                  <DropdownMenuItem 
+                    onClick={() => handleNavigation('/notifications')}
+                    className="md:hidden"
+                  >
+                    <Bell className="h-4 w-4 mr-2" />
+                    Notifications
+                    {unreadCount > 0 && (
+                      <Badge 
+                        variant="destructive" 
+                        className="ml-auto h-5 w-5 p-0 text-xs flex items-center justify-center"
+                      >
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Badge>
+                    )}
+                  </DropdownMenuItem>
+                )}
+
                 <DropdownMenuItem onClick={() => handleNavigation('/settings')}>
                   <Settings className="h-4 w-4 mr-2" />
                   Paramètres

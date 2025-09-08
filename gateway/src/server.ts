@@ -19,6 +19,7 @@ import sensible from '@fastify/sensible'; // Ajout pour httpErrors
 import { PrismaClient } from '../shared/prisma/client';
 import winston from 'winston';
 import { TranslationService } from './services/TranslationService';
+import { MessagingService } from './services/MessagingService';
 import { AuthMiddleware, createUnifiedAuthMiddleware } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
@@ -28,7 +29,7 @@ import { communityRoutes } from './routes/communities';
 import { adminRoutes } from './routes/admin';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
-import { translationRoutes } from './routes/translation';
+import { translationRoutes } from './routes/translation-non-blocking';
 import { maintenanceRoutes } from './routes/maintenance';
 import { authTestRoutes } from './routes/auth-test';
 import { InitService } from './services/init.service';
@@ -209,6 +210,7 @@ class MeeshyServer {
   private server: FastifyInstance;
   private prisma: PrismaClient;
   private translationService: TranslationService;
+  private messagingService: MessagingService;
   private authMiddleware: AuthMiddleware;
   private socketIOHandler: MeeshySocketIOHandler;
 
@@ -227,6 +229,10 @@ class MeeshyServer {
     
     // Initialiser le service de traduction
     this.translationService = new TranslationService(this.prisma);
+    
+    // Initialiser le service de messaging
+    this.messagingService = new MessagingService(this.prisma, this.translationService);
+    
     this.socketIOHandler = new MeeshySocketIOHandler(this.prisma, config.jwtSecret);
   }
 
@@ -431,6 +437,9 @@ class MeeshyServer {
     await this.server.register(async (fastify) => {
       // Attacher le service de traduction à l'instance fastify
       (fastify as any).translationService = this.translationService;
+      
+      // Attacher le service de messaging à l'instance fastify
+      (fastify as any).messagingService = this.messagingService;
       
       // Enregistrer les routes de traduction
       await fastify.register(translationRoutes);

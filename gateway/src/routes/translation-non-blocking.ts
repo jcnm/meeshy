@@ -30,9 +30,14 @@ interface TranslateRequest {
 // ===== ROUTE NON-BLOQUANTE =====
 export async function translationRoutes(fastify: FastifyInstance, options: any) {
   const translationService = options?.translationService;
+  const messagingService = options?.messagingService;
   
   if (!translationService) {
     throw new Error('TranslationService not provided to translation routes');
+  }
+  
+  if (!messagingService) {
+    throw new Error('MessagingService not provided to translation routes');
   }
 
   console.log('🚀 [GATEWAY] Initialisation des routes de traduction NON-BLOQUANTES...');
@@ -117,25 +122,53 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
           });
         }
 
-        const messageData = {
-          conversationId: validatedData.conversation_id,
+        // Résoudre l'ID de conversation réel
+        let resolvedConversationId = validatedData.conversation_id;
+        
+        // Si ce n'est pas un ObjectId MongoDB, chercher par identifier
+        if (!/^[0-9a-fA-F]{24}$/.test(validatedData.conversation_id)) {
+          const conversation = await fastify.prisma.conversation.findFirst({
+            where: { identifier: validatedData.conversation_id }
+          });
+          
+          if (!conversation) {
+            return reply.status(404).send({
+              success: false,
+              error: `Conversation with identifier '${validatedData.conversation_id}' not found`
+            });
+          }
+          
+          resolvedConversationId = conversation.id;
+          console.log(`🔍 [GATEWAY] Conversation ID résolu: ${validatedData.conversation_id} -> ${resolvedConversationId}`);
+        }
+
+        // Utiliser le MessagingService pour sauvegarder le message (même pipeline que WebSocket)
+        const messageRequest = {
+          conversationId: resolvedConversationId,
           content: validatedData.text,
           originalLanguage: validatedData.source_language || 'auto',
-          targetLanguage: validatedData.target_language,
-          modelType: validatedData.model_type || 'basic'
+          messageType: 'text',
+          isAnonymous: false, // TODO: Détecter depuis l'auth
+          anonymousDisplayName: undefined
         };
 
-        console.log(`📤 [GATEWAY] Transmission vers Translator (nouveau message):`, messageData);
+        console.log(`📤 [GATEWAY] Utilisation du MessagingService pour nouveau message:`, messageRequest);
 
         // DÉCLENCHEMENT NON-BLOQUANT - pas d'await !
-        translationService.handleNewMessage(messageData).catch((error: any) => {
+        messagingService.handleMessage(
+          messageRequest,
+          'system', // TODO: Récupérer l'ID utilisateur depuis l'auth
+          true,
+          undefined, // JWT token
+          undefined  // Session token
+        ).catch((error: any) => {
           console.error(`❌ [GATEWAY] Erreur lors du traitement asynchrone:`, error);
         });
 
         // RÉPONSE IMMÉDIATE - pas d'attente
         return reply.send({
           success: true,
-          message: 'New message submitted for translation',
+          message: 'New message submitted for processing',
           conversationId: validatedData.conversation_id,
           targetLanguage: validatedData.target_language,
           status: 'processing'
