@@ -20,7 +20,7 @@ export function CreateConversationPage() {
   }, [user]);
 
   const handleConversationCreated = (conversationId: string) => {
-    toast.success(t('conversationCreated'));
+    console.log(t('conversationCreated'));
     router.push(`/conversations/${conversationId}`);
   };
 

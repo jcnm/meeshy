@@ -131,9 +131,9 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
     const result = await copyToClipboard(linkUrl);
     
     if (result.success) {
-      toast.success('Lien copié dans le presse-papiers');
+      console.log('Lien copié dans le presse-papiers');
     } else {
-      toast.info(result.message);
+      console.log(result.message);
     }
   };
 

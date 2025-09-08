@@ -364,7 +364,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   }, []);
 
   const handleMessageFailed = useCallback((content: string, error: Error) => {
-    console.error('❌ Échec d\'envoi du message:', { content: content.substring(0, 50) + '...', error });
+    console.error('Échec d\'envoi du message:', { content: content.substring(0, 50) + '...', error });
     // Restaurer le message en cas d'erreur
     setNewMessage(content);
   }, []);
@@ -524,7 +524,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Traduction avec modèle sélectionné
 
       // Afficher un indicateur de traduction en cours
-      toast.loading(t('toasts.messages.translationInProgress'), { id: `translate-${messageId}` });
+      console.log(t('toasts.messages.translationInProgress'));
 
       // Détecter la langue source si non fournie ou 'unknown'
       let sourceLanguage = forcedSourceLanguage || message.originalLanguage;
@@ -539,7 +539,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // Si forceRetranslate est true, afficher un message spécifique
       if (forceRetranslate) {
         // Forcer la retraduction du message
-        toast.loading(t('toasts.messages.retranslationInProgress'), { id: `retranslate-${messageId}` });
+        console.log(t('toasts.messages.retranslationInProgress'));
       }
 
       const translationResult = await translationService.translateText({
@@ -579,9 +579,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       // toast.success(t('toasts.messages.translationSuccess', { model: selectedTranslationModel }), { id: `translate-${messageId}` });
 
     } catch (error) {
-      console.error('❌ Erreur lors de la traduction:', error);
+      console.error('Erreur lors de la traduction:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la traduction du message';
-      toast.error(errorMessage, { id: `translate-${messageId}` });
+      console.error(errorMessage);
     }
   };
 
@@ -635,17 +635,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setIsLoading(false);
 
     } catch (error) {
-      console.error('❌ Erreur lors du chargement des conversations:', error);
+      console.error('Erreur lors du chargement des conversations:', error);
       
       // Si c'est une erreur d'authentification, on peut essayer de rediriger
       if (error instanceof Error && (error.message.includes('401') || error.message.includes('Token invalide'))) {
-        console.log('🔄 Erreur d\'authentification, redirection vers login...');
+        console.log('Erreur d\'authentification, redirection vers login...');
         router.push('/login');
         return;
       }
 
       // Afficher l'erreur à l'utilisateur
-      toast.error(t('toasts.conversations.loadError'));
+      console.error(t('toasts.conversations.loadError'));
       
       // Laisser la liste de conversations vide pour utiliser les seeds de la DB
       setConversations([]);
@@ -690,7 +690,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // Debug: vérifier l'état de l'utilisateur (optionnel)
   useEffect(() => {
     if (user) {
-      console.log('🔍 ConversationLayoutResponsive: Utilisateur chargé:', user.username);
+      console.log('ConversationLayoutResponsive: Utilisateur chargé:', user.username);
     }
   }, [user?.id]);
 
@@ -1375,7 +1375,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               }
             }).catch((error) => {
               console.error(t('errorLoadingNewConversation'), error);
-              toast.error(t('errorLoadingConversation'));
+              console.error(t('errorLoadingConversation'));
               setTimeout(() => {
                 loadData();
               }, 1000);

@@ -89,7 +89,7 @@ export function CreateLinkModal({
 
   const generateLink = async () => {
     if (!linkTitle.trim()) {
-      toast.error('Veuillez saisir un titre pour le lien');
+      console.error('Veuillez saisir un titre pour le lien');
       return;
     }
 
@@ -140,20 +140,20 @@ export function CreateLinkModal({
         // Copier automatiquement dans le presse-papiers
         const copyResult = await copyToClipboard(linkUrl);
         if (copyResult.success) {
-          toast.success('Lien généré et copié dans le presse-papiers !');
+          console.log('Lien généré et copié dans le presse-papiers !');
         } else {
-          toast.success('Lien généré avec succès !');
+          console.log('Lien généré avec succès !');
         }
         
         onLinkCreated();
       } else {
         const error = await response.json();
         console.error('[CREATE_LINK] Erreur API:', error);
-        toast.error(error.message || `Erreur lors de la génération du lien (${response.status})`);
+        console.error(error.message || `Erreur lors de la génération du lien (${response.status})`);
       }
     } catch (error) {
       console.error('[CREATE_LINK] Erreur génération lien:', error);
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la génération du lien');
+      console.error(error instanceof Error ? error.message : 'Erreur lors de la génération du lien');
     } finally {
       setIsCreating(false);
     }
@@ -163,9 +163,9 @@ export function CreateLinkModal({
     if (generatedLink) {
       const copyResult = await copyToClipboard(generatedLink, 'input[readonly]');
       if (copyResult.success) {
-        toast.success('Lien copié dans le presse-papiers');
+        console.log('Lien copié dans le presse-papiers');
       } else {
-        toast.info(copyResult.message);
+        console.log(copyResult.message);
       }
     }
   };
@@ -549,7 +549,7 @@ export function CreateLinkModal({
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg text-green-700 flex items-center">
-                  ✅ Lien créé avec succès !
+                  Lien créé avec succès !
                 </CardTitle>
                 <CardDescription>
                   Votre lien de partage est prêt à être utilisé
@@ -594,12 +594,12 @@ export function CreateLinkModal({
                       <p className="text-xs font-medium text-blue-800 mb-1">Restrictions actives:</p>
                       {allowedLanguages.length > 0 && (
                         <p className="text-xs text-blue-700">
-                          🌐 Langues: {allowedLanguages.map(code => SUPPORTED_LANGUAGES.find(l => l.code === code)?.name).join(', ')}
+                          Langues: {allowedLanguages.map(code => SUPPORTED_LANGUAGES.find(l => l.code === code)?.name).join(', ')}
                         </p>
                       )}
                       {allowedCountries.length > 0 && (
                         <p className="text-xs text-blue-700">
-                          🌍 Pays: {allowedCountries.map(code => SUPPORTED_COUNTRIES.find(c => c.code === code)?.name).join(', ')}
+                          Pays: {allowedCountries.map(code => SUPPORTED_COUNTRIES.find(c => c.code === code)?.name).join(', ')}
                         </p>
                       )}
                     </div>

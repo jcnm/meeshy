@@ -93,9 +93,9 @@ export function CreateLinkButton({
   const handleCreateLink = async () => {
     if (!canCreateLink()) {
       if (conversationType === 'global') {
-        toast.error(t('needBigbossRights'));
+        console.error(t('needBigbossRights'));
       } else {
-        toast.error(t('noRightsToCreate'));
+        console.error(t('noRightsToCreate'));
       }
       return;
     }
@@ -109,31 +109,17 @@ export function CreateLinkButton({
       
       if (copySuccess) {
         setCopied(true);
-        toast.success(t('linkCreatedAndCopied'));
+        console.log(t('linkCreatedAndCopied'));
         setTimeout(() => setCopied(false), 2000);
       } else {
         // Si la copie échoue, afficher le lien avec un bouton de copie manuelle
-        toast.success(t('linkCreated'), {
-          description: link,
-          duration: 15000,
-          action: {
-            label: t('copyManually'),
-            onClick: async () => {
-              const retrySuccess = await copyToClipboard(link);
-              if (retrySuccess) {
-                toast.success(t('copiedToClipboard'));
-              } else {
-                toast.error(t('copyFailed'));
-              }
-            }
-          }
-        });
+        console.log(t('linkCreated'), { description: link });
       }
       
       onLinkCreated?.(link);
     } catch (error: any) {
       console.error('Error creating link:', error);
-      toast.error(error?.message || t('errorCreatingLink'));
+      console.error(error?.message || t('errorCreatingLink'));
     } finally {
       setIsLoading(false);
     }

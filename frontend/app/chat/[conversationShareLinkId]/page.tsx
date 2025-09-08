@@ -138,13 +138,13 @@ export default function ChatPage() {
       if (isAnonymous && token) {
         // Session anonyme - utiliser le token de la session
         options.sessionToken = token;
-        console.log('[CHAT_PAGE] ✅ Utilisation du sessionToken pour l\'API');
+        console.log('[CHAT_PAGE] Utilisation du sessionToken pour l\'API');
       } else if (user && token && !isAnonymous) {
         // Utilisateur authentifié - utiliser le token JWT
         options.authToken = token;
-        console.log('[CHAT_PAGE] ✅ Utilisation du authToken pour l\'API');
+        console.log('[CHAT_PAGE] Utilisation du authToken pour l\'API');
       } else {
-        console.log('[CHAT_PAGE] ❌ Aucune authentification détectée - Conditions non remplies');
+        console.log('[CHAT_PAGE] Aucune authentification détectée - Conditions non remplies');
         
         // Vérifier si l'utilisateur vient de rejoindre (flag temporaire)
         const justJoined = localStorage.getItem('anonymous_just_joined');
