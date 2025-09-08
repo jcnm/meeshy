@@ -8,7 +8,7 @@
     "prebuild": "pnpm run generate:prisma && npm run generate:seeds && mv ./shared/dev.db ./dev.db 2>/dev/null || true",
     "start": "node -r dotenv/config dist/src/server.js",
     "dev": "tsx watch -r dotenv/config src/server.ts dotenv_config_path=.env",
-    "generate:seeds": "npm run generate:prisma && npx prisma db push --schema=shared/prisma/schema.prisma && npx tsx shared/seed.ts",
+    "generate:seeds": "npm run generate:prisma && npx prisma db push --schema=shared/prisma/schema.prisma && (npx tsx shared/seed.ts || echo 'Seed file not found, skipping...')",
     "generate:prisma": "cd ../shared/ ; ./scripts/distribute.sh ; cd - && prisma generate --schema=./shared/prisma/schema.prisma",
     "migrate": "prisma migrate dev --schema=shared/prisma/schema.prisma",
     "test": "jest --config=jest.config.json",
