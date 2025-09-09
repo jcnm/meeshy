@@ -34,6 +34,7 @@ export function CreateLinkButton({
 
   // Vérifier les permissions pour créer un lien
   const canCreateLink = () => {
+    // Interdire la création de liens pour les conversations directes
     if (conversationType === 'direct') {
       return false;
     }
@@ -43,19 +44,10 @@ export function CreateLinkButton({
       return userRole === UserRoleEnum.BIGBOSS;
     }
 
-    // Vérifier d'abord le rôle global de l'utilisateur
-    const hasGlobalPermission = userRole === UserRoleEnum.BIGBOSS || 
-                               userRole === UserRoleEnum.CREATOR || 
-                               userRole === UserRoleEnum.ADMIN || 
-                               userRole === UserRoleEnum.MODERATOR;
-
-    // Vérifier ensuite le rôle de l'utilisateur dans cette conversation spécifique
-    const hasConversationPermission = userConversationRole === UserRoleEnum.CREATOR || 
-                                     userConversationRole === UserRoleEnum.ADMIN || 
-                                     userConversationRole === UserRoleEnum.MODERATOR;
-
-    // L'utilisateur peut créer un lien s'il a soit les permissions globales, soit les permissions dans la conversation
-    return hasGlobalPermission || hasConversationPermission;
+    // Pour tous les autres types de conversations (group, public, etc.),
+    // n'importe qui ayant accès à la conversation peut créer des liens
+    // L'utilisateur doit juste être membre de la conversation
+    return true;
   };
 
   const copyToClipboard = async (text: string): Promise<boolean> => {

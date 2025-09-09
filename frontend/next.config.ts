@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
   
   poweredByHeader: false,
   
+  
   // Configuration des images
   images: {
     domains: ['localhost', 'meeshy.me', 'gate.meeshy.me', 'ml.meeshy.me'],
@@ -39,9 +40,9 @@ const nextConfig: NextConfig = {
   
   // Variables d'environnement publiques
   env: {
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'https://gate.meeshy.me',
-    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'wss://gate.meeshy.me',
-    NEXT_PUBLIC_TRANSLATION_URL: process.env.NEXT_PUBLIC_TRANSLATION_URL || 'https://ml.meeshy.me',
+    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3000',
+    NEXT_PUBLIC_TRANSLATION_URL: process.env.NEXT_PUBLIC_TRANSLATION_URL || 'http://localhost:8000',
   },
   
   // Configuration WebPack pour Docker

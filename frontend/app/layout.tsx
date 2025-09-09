@@ -11,7 +11,6 @@ import { ClientOnly } from "@/components/common/client-only";
 // import { LanguageDetectionNotification } from "@/components/LanguageDetectionNotification";
 import { getAllFontVariables } from "@/lib/fonts";
 import { AuthProvider } from "@/components/auth/auth-provider";
-2
 // import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
 
 export const metadata: Metadata = {

@@ -2192,32 +2192,30 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Vérifier les permissions pour créer des liens de partage
-      const isGlobalConversation = conversation.type === 'global';
+      const conversationType = conversation.type;
       const userRole = user.role as UserRoleEnum;
-      const membershipRole = membership.role as UserRoleEnum;
+
+      // Interdire la création de liens pour les conversations directes
+      if (conversationType === 'direct') {
+        return reply.status(403).send({
+          success: false,
+          error: 'Cannot create share links for direct conversations'
+        });
+      }
 
       // Pour les conversations globales, seuls les BIGBOSS peuvent créer des liens
-      if (isGlobalConversation) {
+      if (conversationType === 'global') {
         if (userRole !== UserRoleEnum.BIGBOSS) {
           return reply.status(403).send({
             success: false,
-            error: 'You must have rights to create share links for global conversations'
-          });
-        }
-      } else {
-        // check the rights
-        const canCreateLink = userRole === UserRoleEnum.BIGBOSS || 
-                             membershipRole === UserRoleEnum.CREATOR || 
-                             membershipRole === UserRoleEnum.ADMIN || 
-                             membershipRole === UserRoleEnum.MODERATOR;
-
-        if (!canCreateLink) {
-          return reply.status(403).send({
-            success: false,
-            error: "You don't have rights to create share links for this conversation"
+            error: 'You must have BIGBOSS rights to create share links for global conversations'
           });
         }
       }
+
+      // Pour tous les autres types de conversations (group, public, etc.),
+      // n'importe qui ayant accès à la conversation peut créer des liens
+      // L'utilisateur doit juste être membre de la conversation (déjà vérifié plus haut)
 
       // Générer le linkId initial
       const initialLinkId = generateInitialLinkId();

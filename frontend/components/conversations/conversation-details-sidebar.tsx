@@ -28,6 +28,7 @@ import { conversationsService } from '@/services/conversations.service';
 import { getLanguageDisplayName, getLanguageFlag } from '@/utils/language-utils';
 import { toast } from 'sonner';
 import { ConversationLinksSection } from './conversation-links-section';
+import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
 import { useTranslations } from '@/hooks/useTranslations';
 
@@ -379,9 +380,24 @@ export function ConversationDetailsSidebar({
               icon={<Link2 className="h-4 w-4 mr-2" />}
               defaultExpanded={false}
             >
-              <ConversationLinksSection 
-                conversationId={conversation.id}
-              />
+              <div className="space-y-4">
+                {/* Bouton pour créer un nouveau lien */}
+                <CreateLinkButton
+                  conversationId={conversation.id}
+                  conversationType={conversation.type}
+                  userRole={currentUser.role}
+                  userConversationRole={conversation.participants?.find(p => p.userId === currentUser.id)?.role}
+                  onLinkCreated={() => {
+                    // Recharger la liste des liens
+                    window.location.reload();
+                  }}
+                />
+                
+                {/* Liste des liens existants */}
+                <ConversationLinksSection 
+                  conversationId={conversation.id}
+                />
+              </div>
             </FoldableSection>
           </div>
         </ScrollArea>

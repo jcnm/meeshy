@@ -24,6 +24,7 @@ import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';
 import { UserRoleEnum } from '@shared/types';
+import { CreateLinkButton } from './create-link-button';
 
 interface ConversationParticipantsPopoverProps {
   conversationId: string;
@@ -103,55 +104,6 @@ export function ConversationParticipantsPopover({
     }
   };
 
-  // Vérifier les permissions pour créer un lien
-  const canCreateLink = () => {
-    if (conversationType === 'direct') {
-      return false;
-    }
-
-    // Pour les conversations globales (type "global"), seuls les BIGBOSS peuvent créer des liens
-    if (conversationType === 'global') {
-      return currentUser?.role === UserRoleEnum.BIGBOSS;
-    }
-
-    // Vérifier d'abord le rôle global de l'utilisateur
-    const hasGlobalPermission = currentUser?.role === UserRoleEnum.BIGBOSS || 
-                               currentUser?.role === UserRoleEnum.CREATOR || 
-                               currentUser?.role === UserRoleEnum.ADMIN || 
-                               currentUser?.role === UserRoleEnum.MODERATOR;
-
-    // Vérifier ensuite le rôle de l'utilisateur dans cette conversation spécifique
-    const hasConversationPermission = userConversationRole === UserRoleEnum.CREATOR || 
-                                     userConversationRole === UserRoleEnum.ADMIN || 
-                                     userConversationRole === UserRoleEnum.MODERATOR;
-
-    // L'utilisateur peut créer un lien s'il a soit les permissions globales, soit les permissions dans la conversation
-    return hasGlobalPermission || hasConversationPermission;
-  };
-
-  const handleCreateLink = async () => {
-    if (!canCreateLink()) {
-      if (conversationType === 'global') {
-        toast.error('Droits BIGBOSS requis pour créer des liens de partage pour les conversations globales');
-      } else {
-        toast.error('Vous n\'avez pas les droits pour créer des liens de partage pour cette conversation');
-      }
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      // Appel au service pour créer un lien
-      const link = await conversationsService.createInviteLink(conversationId);
-      onLinkCreated?.(link);
-      toast.success(tUI('linkCreated'));
-    } catch (error) {
-      console.error('Erreur lors de la création du lien:', error);
-      toast.error(tUI('createLinkError'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -182,18 +134,15 @@ export function ConversationParticipantsPopover({
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-sm">{tUI('participants')} ({participants.length})</h4>
             <div className="flex items-center gap-1">
-              {canCreateLink() && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCreateLink}
-                  disabled={isLoading}
-                  className="h-7 w-7 p-0"
-                  title={tUI('createLink')}
-                >
-                  <Link2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
+              <CreateLinkButton
+                conversationId={conversationId}
+                conversationType={conversationType}
+                userRole={currentUser.role}
+                userConversationRole={userConversationRole}
+                onLinkCreated={(link) => {
+                  onLinkCreated?.(link);
+                }}
+              />
               <Button
                 variant="ghost"
                 size="sm"

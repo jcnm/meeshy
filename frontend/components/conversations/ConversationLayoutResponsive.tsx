@@ -1118,15 +1118,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             {/* Footer fixe avec boutons */}
             <div className="flex-shrink-0 p-4 border-t border-border/30 bg-background/50">
               <div className="flex flex-col sm:flex-row gap-3">
-                <CreateLinkButtonV2
-                  className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
-                  onLinkCreated={() => {
-                    loadData();
-                  }}
-                >
-                  <Link2 className="h-5 w-5 mr-2" />
-                  {t('createLink')}
-                </CreateLinkButtonV2>
+                {selectedConversation && (
+                  <CreateLinkButton
+                    conversationId={selectedConversation.id}
+                    conversationType={selectedConversation.type}
+                    userRole={user?.role as UserRoleEnum}
+                    userConversationRole={selectedConversation.participants?.find(p => p.userId === user?.id)?.role}
+                    onLinkCreated={() => {
+                      loadData();
+                    }}
+                  />
+                )}
                 <Button
                   className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
                   onClick={() => setIsCreateConversationModalOpen(true)}

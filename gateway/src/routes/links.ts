@@ -245,10 +245,46 @@ export async function linksRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // Permettre à tous les membres de créer des liens pour leurs conversations
+        // Récupérer les informations de la conversation pour vérifier le type
+        const conversation = await fastify.prisma.conversation.findUnique({
+          where: { id: conversationId },
+          select: { id: true, type: true, title: true }
+        });
+
+        if (!conversation) {
+          return reply.status(404).send({
+            success: false,
+            message: 'Conversation non trouvée'
+          });
+        }
+
+        // Vérifier les permissions selon le type de conversation
+        const conversationType = conversation.type;
+
+        // Interdire la création de liens pour les conversations directes
+        if (conversationType === 'direct') {
+          return reply.status(403).send({
+            success: false,
+            message: 'Cannot create share links for direct conversations'
+          });
+        }
+
+        // Pour les conversations globales, seuls les BIGBOSS peuvent créer des liens
+        if (conversationType === 'global') {
+          if (userRole !== UserRoleEnum.BIGBOSS) {
+            return reply.status(403).send({
+              success: false,
+              message: 'You must have BIGBOSS rights to create share links for global conversations'
+            });
+          }
+        }
+
+        // Pour tous les autres types de conversations (group, public, etc.),
+        // n'importe qui ayant accès à la conversation peut créer des liens
         console.log('[CREATE_LINK] Utilisateur autorisé à créer un lien:', { 
           userId, 
           conversationId, 
+          conversationType,
           memberRole: member.role 
         });
       } else if (body.newConversation) {
