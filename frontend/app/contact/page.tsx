@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, MapPin, Train, Bus, Car, Mail, Phone, Clock } from 'lucide-react';
+import { ArrowLeft, MapPin, Train, Bus, Car, Mail, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from '@/hooks/useTranslations';
 
@@ -66,39 +66,19 @@ export default function ContactPage() {
                       <p className="text-gray-600">{t('email.value')}</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <p className="font-medium">{t('phone.label')}</p>
-                      <p className="text-gray-600">{t('phone.value')}</p>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
 
-              {/* Horaires */}
+              {/* Disponibilité */}
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Clock className="h-6 w-6 text-blue-600" />
-                    <span>{t('hours.title')}</span>
+                    <span>{t('availability.title')}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>{t('hours.weekdays')}</span>
-                      <span className="font-medium">{t('hours.weekdaysTime')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>{t('hours.saturday')}</span>
-                      <span className="font-medium">{t('hours.saturdayTime')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>{t('hours.sunday')}</span>
-                      <span className="font-medium">{t('hours.sundayTime')}</span>
-                    </div>
-                  </div>
+                  <p className="text-gray-700">{t('availability.description')}</p>
                 </CardContent>
               </Card>
             </div>

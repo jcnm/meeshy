@@ -312,29 +312,20 @@
       "address": {
         "title": "Our Address",
         "company": "Meeshy",
-        "building": "Tour First",
-        "street": "1 Place des Saisons",
-        "city": "92400 Courbevoie, France"
+        "building": "9-11 Avenue de l'Arche",
+        "street": "92400 Courbevoie",
+        "city": "France"
       },
       "contact": {
         "title": "Contact",
         "email": {
           "label": "Email",
           "value": "contact@meeshy.com"
-        },
-        "phone": {
-          "label": "Phone",
-          "value": "+33 1 23 45 67 89"
         }
       },
-      "hours": {
-        "title": "Opening Hours",
-        "weekdays": "Monday - Friday",
-        "weekdaysTime": "9:00 AM - 6:00 PM",
-        "saturday": "Saturday",
-        "saturdayTime": "10:00 AM - 4:00 PM",
-        "sunday": "Sunday",
-        "sundayTime": "Closed"
+      "availability": {
+        "title": "Availability",
+        "description": "We are available 24/7 to support you"
       },
       "transport": {
         "title": "How to reach us",
