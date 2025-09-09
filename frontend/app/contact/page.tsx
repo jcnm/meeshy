@@ -1,15 +1,10 @@
 'use client';
-import { Metadata } from 'next';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, MapPin, Train, Bus, Car, Mail, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from '@/hooks/useTranslations';
-
-export const metadata: Metadata = {
-  title: 'Contact - Meeshy',
-  description: 'Contactez l\'équipe Meeshy',
-};
 
 export default function ContactPage() {
   const { t } = useTranslations('contact');

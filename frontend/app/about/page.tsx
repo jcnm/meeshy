@@ -1,15 +1,10 @@
 'use client';
-import { Metadata } from 'next';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Users, Globe, Heart, Target, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from '@/hooks/useTranslations';
-
-export const metadata: Metadata = {
-  title: 'À Propos - Meeshy',
-  description: 'Découvrez l\'équipe et la mission de Meeshy',
-};
 
 export default function AboutPage() {
   const { t } = useTranslations('about');
