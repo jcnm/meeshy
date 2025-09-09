@@ -88,11 +88,7 @@ export function CreateLinkButton({
 
   const handleCreateLink = async () => {
     if (!canCreateLink()) {
-      if (conversationType === 'global') {
-        console.error(t('needBigbossRights'));
-      } else {
-        console.error(t('noRightsToCreate'));
-      }
+      toast.error(getPermissionMessage());
       return;
     }
 
@@ -146,9 +142,19 @@ export function CreateLinkButton({
     }
   };
 
-  if (!canCreateLink()) {
-    return null;
-  }
+  // Ne pas masquer le bouton, mais le désactiver si pas de permissions
+  const hasPermission = canCreateLink();
+
+  // Fonction pour obtenir le message d'explication des permissions
+  const getPermissionMessage = () => {
+    if (conversationType === 'direct') {
+      return 'Cannot create links for direct conversations';
+    }
+    if (conversationType === 'global') {
+      return 'Only BIGBOSS users can create links for global conversations';
+    }
+    return 'You need to be a member of this conversation to create links';
+  };
 
   return (
     <>
@@ -156,9 +162,9 @@ export function CreateLinkButton({
         variant="ghost"
         size="sm"
         onClick={handleCreateLink}
-        disabled={isLoading}
+        disabled={isLoading || !hasPermission}
         className="rounded-full h-10 w-10 p-0 hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
-        title={t('createConversationLink')}
+        title={hasPermission ? t('createConversationLink') : getPermissionMessage()}
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin" />

@@ -904,13 +904,36 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 <div className="flex items-center gap-3">
                   <h2 className="text-xl font-bold text-foreground">{t('conversations.title')}</h2>
                 </div>
-                <div className="relative">
-                  <MessageSquare className="h-6 w-6 text-primary" />
-                  {conversations.filter(c => (c.unreadCount || 0) > 0).length > 0 && (
-                    <div className="absolute -top-2 -right-2 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                      {conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)}
-                    </div>
-                  )}
+                <div className="flex items-center gap-2">
+                  {/* Bouton pour créer une nouvelle conversation */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsCreateConversationModalOpen(true)}
+                    className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                    title={t('createNewConversation')}
+                  >
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                  </Button>
+                  
+                  {/* Bouton pour créer un lien de partage */}
+                  <CreateLinkButtonV2
+                    className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                    onLinkCreated={() => {
+                      loadData();
+                    }}
+                  >
+                    <Link2 className="h-5 w-5 text-primary" />
+                  </CreateLinkButtonV2>
+                  
+                  {/* Indicateur de messages non lus */}
+                  <div className="relative">
+                    {conversations.filter(c => (c.unreadCount || 0) > 0).length > 0 && (
+                      <div className="h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                        {conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1115,29 +1138,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               )}
             </div>
 
-            {/* Footer fixe avec boutons */}
-            <div className="flex-shrink-0 p-4 border-t border-border/30 bg-background/50">
-              <div className="flex flex-col sm:flex-row gap-3">
-                {selectedConversation && (
-                  <CreateLinkButton
-                    conversationId={selectedConversation.id}
-                    conversationType={selectedConversation.type}
-                    userRole={user?.role as UserRoleEnum}
-                    userConversationRole={selectedConversation.participants?.find(p => p.userId === user?.id)?.role}
-                    onLinkCreated={() => {
-                      loadData();
-                    }}
-                  />
-                )}
-                <Button
-                  className="flex-1 rounded-2xl h-12 bg-primary/10 hover:bg-primary/20 border-0 text-primary font-semibold"
-                  onClick={() => setIsCreateConversationModalOpen(true)}
-                >
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  {t('createConversation')}
-                </Button>
-              </div>
-            </div>
           </div>
 
           {/* Zone de messages */}
@@ -1169,6 +1169,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       </Avatar>
                       <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background"></div>
                     </div>
+                    
                     <div className="flex-1">
                       <h2 className="font-bold text-lg text-foreground">
                         {getConversationDisplayName(selectedConversation)}
@@ -1186,17 +1187,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       </div>
                     </div>
                     
-                    {/* Bouton pour créer un lien */}
-                    <CreateLinkButton
-                      conversationId={selectedConversation.id}
-                      conversationType={selectedConversation.type}
-                      userRole={user?.role as UserRoleEnum}
-                      userConversationRole={getCurrentUserRole()}
-                      onLinkCreated={(link) => {
-                        // Lien créé
-                      }}
-                    />
-
                     {/* Bouton pour afficher les participants */}
                     <ConversationParticipantsPopover
                       conversationId={selectedConversation.id}
