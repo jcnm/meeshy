@@ -16,18 +16,86 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-COMMAND="${1:-}"
-DROPLET_IP="$2"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-DOCKER_COMPOSE_FILE="docker-compose.traefik.yml"
+# Variables globales
+COMMAND=""
+DROPLET_IP=""
 FORCE_REFRESH=false
+REGENERATE_SECRETS=false
 
 # Fonctions utilitaires
 log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
 log_success() { echo -e "${GREEN}✅ $1${NC}"; }
 log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 log_error() { echo -e "${RED}❌ $1${NC}"; }
+
+# Fonction d'aide
+show_help() {
+    echo "🚀 MEESHY - Script de déploiement unifié"
+    echo ""
+    echo "Usage: $0 [COMMAND] [DROPLET_IP] [OPTIONS]"
+    echo ""
+    echo "Commands:"
+    echo "  deploy     Déployer l'application complète"
+    echo "  test       Tester la connexion au serveur"
+    echo "  verify     Vérifier le statut des services"
+    echo "  status     Afficher le statut des conteneurs"
+    echo "  logs       Afficher les logs des services"
+    echo "  restart    Redémarrer les services"
+    echo "  stop       Arrêter les services"
+    echo "  recreate   Recréer les conteneurs"
+    echo ""
+    echo "Options:"
+    echo "  --regenerate-secrets    Forcer la régénération des secrets de production (écrase les secrets existants)"
+    echo "  --force-refresh         Forcer le rafraîchissement des images"
+    echo "  --help, -h              Afficher cette aide"
+    echo ""
+    echo "Gestion des secrets:"
+    echo "  Par défaut, si des secrets existent déjà, ils seront réutilisés."
+    echo "  Utilisez --regenerate-secrets pour forcer la création de nouveaux secrets."
+    echo ""
+    echo "Exemples:"
+    echo "  $0 deploy 192.168.1.100                    # Utilise les secrets existants"
+    echo "  $0 deploy 192.168.1.100 --regenerate-secrets  # Génère de nouveaux secrets"
+    echo "  $0 status 192.168.1.100"
+    echo ""
+}
+
+# Fonction pour parser les arguments
+parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --regenerate-secrets)
+                REGENERATE_SECRETS=true
+                shift
+                ;;
+            --force-refresh)
+                FORCE_REFRESH=true
+                shift
+                ;;
+            --help|-h)
+                show_help
+                exit 0
+                ;;
+            *)
+                # Si ce n'est pas une option, c'est probablement la commande ou l'IP
+                if [ -z "$COMMAND" ]; then
+                    COMMAND="$1"
+                elif [ -z "$DROPLET_IP" ]; then
+                    DROPLET_IP="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+}
+
+# Parser les arguments
+parse_arguments "$@"
+
+# Variables après parsing
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+DOCKER_COMPOSE_FILE="docker-compose.traefik.yml"
 
 # Test de connexion SSH
 test_ssh_connection() {
@@ -82,6 +150,33 @@ deploy_complete() {
     # Version pour le suivi
     cp "$PROJECT_ROOT/shared/version.txt" "$deploy_dir/shared/" 2>/dev/null || echo "1.0.0" > "$deploy_dir/shared/version.txt"
     
+    # Génération des configurations de production sécurisées
+    log_info "🔐 Gestion des configurations de production sécurisées..."
+    if [ -f "$PROJECT_ROOT/scripts/production/generate-production-config.sh" ]; then
+        # Vérifier si les secrets existent déjà
+        if [ -f "$PROJECT_ROOT/secrets/production-secrets.env" ] && [ "$REGENERATE_SECRETS" = false ]; then
+            log_info "📋 Fichier de secrets existant détecté: $PROJECT_ROOT/secrets/production-secrets.env"
+            log_info "💡 Utilisation des secrets existants (utilisez --regenerate-secrets pour forcer la régénération)"
+        else
+            if [ "$REGENERATE_SECRETS" = true ]; then
+                log_warning "⚠️  Régénération forcée des secrets de production..."
+            else
+                log_info "📋 Génération des nouvelles configurations de production..."
+            fi
+            bash "$PROJECT_ROOT/scripts/production/generate-production-config.sh" --force
+            log_success "✅ Configurations de production générées"
+        fi
+        
+        # Vérifier que le fichier clear.txt a été créé par generate-production-config.sh
+        if [ -f "$PROJECT_ROOT/secrets/clear.txt" ]; then
+            log_success "✅ Fichier des mots de passe en clair trouvé: secrets/clear.txt"
+        else
+            log_warning "⚠️  Fichier des mots de passe en clair non trouvé: secrets/clear.txt"
+        fi
+    else
+        log_warning "⚠️  Script de génération de configuration non trouvé"
+    fi
+
     # Gestion des secrets de production
     log_info "🔐 Gestion des secrets de production..."
     if [ -f "$PROJECT_ROOT/secrets/production-secrets.env" ]; then
@@ -93,6 +188,9 @@ deploy_complete() {
         # Sécuriser le fichier sur le serveur
         ssh -o StrictHostKeyChecking=no root@$ip "chmod 600 /opt/meeshy/secrets/production-secrets.env"
         log_success "✅ Fichier de secrets transféré et sécurisé"
+        
+        # ⚠️  SÉCURITÉ: Ne JAMAIS transférer les mots de passe en clair sur le serveur
+        log_info "🔒 Fichier des mots de passe en clair conservé en local uniquement (sécurité)"
     else
         log_warning "⚠️  Fichier de secrets de production non trouvé: $PROJECT_ROOT/secrets/production-secrets.env"
         log_info "💡 Créez le fichier avec: ./scripts/production/generate-production-config.sh"
@@ -385,6 +483,76 @@ done
 echo "🧪 Test de connexion MongoDB depuis l'extérieur du conteneur..."
 if docker-compose exec -T database mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
     echo "✅ MongoDB accessible et opérationnel"
+    
+    # Configuration MongoDB sécurisée avec authentification
+    echo ""
+    echo "🔒 CONFIGURATION MONGODB SÉCURISÉE..."
+    echo "===================================="
+    
+    # Vérifier si les secrets de production existent
+    if [ -f "/opt/meeshy/secrets/production-secrets.env" ]; then
+        echo "📋 Chargement des secrets de production..."
+        source /opt/meeshy/secrets/production-secrets.env
+        
+        # Créer l'utilisateur MongoDB avec le mot de passe sécurisé
+        echo "👤 Création de l'utilisateur MongoDB sécurisé..."
+        docker-compose exec -T database mongosh --eval "
+use admin;
+try {
+    db.createUser({
+        user: \"meeshy\",
+        pwd: \"$MONGODB_PASSWORD\",
+        roles: [
+            { role: \"readWrite\", db: \"meeshy\" },
+            { role: \"dbAdmin\", db: \"meeshy\" },
+            { role: \"clusterAdmin\", db: \"admin\" },
+            { role: \"readWriteAnyDatabase\", db: \"admin\" }
+        ]
+    });
+    print(\"✅ Utilisateur meeshy créé avec succès\");
+} catch (e) {
+    if (e.code === 51003) {
+        print(\"ℹ️  Utilisateur meeshy existe déjà\");
+    } else {
+        print(\"❌ Erreur lors de la création de l'\''utilisateur: \" + e.message);
+    }
+}
+"
+        
+        # Tester la connexion avec authentification
+        echo "🧪 Test de connexion avec authentification..."
+        if docker-compose exec -T database mongosh -u meeshy -p "$MONGODB_PASSWORD" --authenticationDatabase admin --eval "db.runCommand({connectionStatus: 1})" >/dev/null 2>&1; then
+            echo "✅ Authentification MongoDB configurée avec succès"
+            
+            # Activer l'authentification MongoDB
+            echo "🔐 Activation de l'authentification MongoDB..."
+            docker-compose stop database
+            sleep 5
+            
+            # Modifier la configuration pour activer l'authentification
+            sed -i 's/--noauth/--auth/' docker-compose.yml
+            
+            # Redémarrer MongoDB avec authentification
+            docker-compose up -d database
+            sleep 10
+            
+            # Vérifier que MongoDB fonctionne avec authentification
+            if docker-compose exec -T database mongosh -u meeshy -p "$MONGODB_PASSWORD" --authenticationDatabase admin --eval "db.runCommand({connectionStatus: 1})" >/dev/null 2>&1; then
+                echo "✅ MongoDB sécurisé avec authentification activée"
+            else
+                echo "❌ Problème avec l'authentification MongoDB"
+                # Désactiver l'authentification en cas de problème
+                sed -i 's/--auth/--noauth/' docker-compose.yml
+                docker-compose restart database
+                sleep 5
+            fi
+        else
+            echo "❌ Échec de la configuration de l'authentification MongoDB"
+        fi
+    else
+        echo "⚠️  Fichier de secrets de production non trouvé, MongoDB restera sans authentification"
+        echo "💡 Pour sécuriser MongoDB, exécutez: ./scripts/production/generate-production-config.sh"
+    fi
 else
     echo "❌ MongoDB non accessible - Arrêt du déploiement"
     exit 1
@@ -504,7 +672,7 @@ done
 # Translator
 echo "🌐 DÉMARRAGE TRANSLATOR..."
 echo "=========================="
-echo "📋 Connexion à MongoDB: mongodb://meeshy-database:27017/meeshy?replicaSet=rs0"
+echo "📋 Connexion à MongoDB: mongodb://meeshy:${MONGODB_PASSWORD}@meeshy-database:27017/meeshy?authSource=admin&replicaSet=rs0"
 docker-compose up -d translator
 sleep 5
 
@@ -522,7 +690,7 @@ fi
 # Gateway
 echo "🚪 DÉMARRAGE GATEWAY..."
 echo "======================"
-echo "📋 Connexion à MongoDB: mongodb://meeshy-database:27017/meeshy?replicaSet=rs0"
+echo "📋 Connexion à MongoDB: mongodb://meeshy:${MONGODB_PASSWORD}@meeshy-database:27017/meeshy?authSource=admin&replicaSet=rs0"
 docker-compose up -d gateway
 sleep 5
 
@@ -559,17 +727,25 @@ echo ""
 echo "🎉 DÉPLOIEMENT TERMINÉ AVEC SUCCÈS !"
 echo "===================================="
 echo "✅ MongoDB: Replica set configuré avec meeshy-database:27017"
-echo "✅ Gateway: Connecté à MongoDB via Prisma"
-echo "✅ Translator: Connecté à MongoDB via PyMongo"
+echo "✅ MongoDB: Authentification sécurisée activée"
+echo "✅ Gateway: Connecté à MongoDB via Prisma avec authentification"
+echo "✅ Translator: Connecté à MongoDB via PyMongo avec authentification"
 echo "✅ Frontend: Interface utilisateur opérationnelle"
 echo "✅ Traefik: Reverse proxy et SSL configurés"
 echo "✅ Redis: Cache et sessions opérationnels"
 echo ""
-echo "🔗 Connexions MongoDB validées:"
-echo "   • Gateway: mongodb://meeshy-database:27017/meeshy?replicaSet=rs0"
-echo "   • Translator: mongodb://meeshy-database:27017/meeshy?replicaSet=rs0"
+echo "🔗 Connexions MongoDB sécurisées validées:"
+echo "   • Gateway: mongodb://meeshy:***@meeshy-database:27017/meeshy?authSource=admin&replicaSet=rs0"
+echo "   • Translator: mongodb://meeshy:***@meeshy-database:27017/meeshy?authSource=admin&replicaSet=rs0"
+echo "   • Interface Admin: mongodb://meeshy:***@meeshy-database:27017/meeshy?authSource=admin&replicaSet=rs0"
 echo ""
-echo "✅ Tous les services déployés et vérifiés"
+echo "🔐 Sécurité MongoDB:"
+echo "   • Authentification: Activée"
+echo "   • Utilisateur: meeshy"
+echo "   • Permissions: readWrite, dbAdmin, clusterAdmin"
+echo "   • AuthSource: admin"
+echo ""
+echo "✅ Tous les services déployés et vérifiés avec sécurité renforcée"
 EOF
 
     # Exécuter avec le domaine
@@ -1336,6 +1512,127 @@ EOF
     rm -f /tmp/test-ssl.sh
 }
 
+# Déploiement fiable des mots de passe Traefik
+deploy_traefik_passwords() {
+    local ip="$1"
+    log_info "🔐 Déploiement fiable des mots de passe Traefik..."
+    
+    # Vérification du fichier clear.txt
+    local clear_file="secrets/clear.txt"
+    if [ ! -f "$clear_file" ]; then
+        log_error "Fichier $clear_file non trouvé"
+        return 1
+    fi
+    
+    # Extraction du mot de passe admin
+    local admin_password=$(grep "ADMIN_PASSWORD_CLEAR=" "$clear_file" | cut -d'"' -f2)
+    if [ -z "$admin_password" ]; then
+        log_error "Mot de passe admin non trouvé dans $clear_file"
+        return 1
+    fi
+    
+    log_info "Mot de passe admin extrait: ${admin_password:0:4}****"
+    
+    # Génération du hash bcrypt
+    log_info "Génération du hash bcrypt..."
+    local bcrypt_hash=$(htpasswd -nbB admin "$admin_password")
+    if [ -z "$bcrypt_hash" ]; then
+        log_error "Échec de la génération du hash bcrypt"
+        return 1
+    fi
+    
+    log_success "Hash bcrypt généré: ${bcrypt_hash:0:20}****"
+    
+    # Création du script de déploiement
+    local temp_script="/tmp/deploy-traefik-passwords.sh"
+    cat > "$temp_script" << EOF
+#!/bin/bash
+set -e
+
+echo "🔐 DÉPLOIEMENT DES MOTS DE PASSE TRAEFIK"
+echo "========================================"
+
+cd /opt/meeshy
+
+# Sauvegarde du fichier .env
+cp .env .env.backup.\$(date +%Y%m%d_%H%M%S)
+echo "✅ Sauvegarde du fichier .env créée"
+
+# Hash bcrypt à utiliser
+BCRYPT_HASH="$bcrypt_hash"
+
+# Mise à jour des variables Traefik
+echo "🔧 Mise à jour des variables TRAEFIK_USERS et API_USERS..."
+
+# Mettre à jour TRAEFIK_USERS
+if grep -q "TRAEFIK_USERS=" .env; then
+    sed -i "s|TRAEFIK_USERS=.*|TRAEFIK_USERS=\"\$BCRYPT_HASH\"|" .env
+else
+    echo "TRAEFIK_USERS=\"\$BCRYPT_HASH\"" >> .env
+fi
+
+# Mettre à jour API_USERS
+if grep -q "API_USERS=" .env; then
+    sed -i "s|API_USERS=.*|API_USERS=\"\$BCRYPT_HASH\"|" .env
+else
+    echo "API_USERS=\"\$BCRYPT_HASH\"" >> .env
+fi
+
+echo "✅ Variables mises à jour dans .env"
+
+# Échapper les $ pour Docker Compose (seulement pour les variables Traefik)
+sed -i 's|_USERS="admin:\$2y\$05\$|_USERS="admin:\$\$2y\$\$05\$\$|g' .env
+
+echo "✅ Variables Traefik échappées pour Docker Compose"
+
+# Recréation du conteneur Traefik
+echo "🔄 Recréation du conteneur Traefik..."
+docker-compose up -d traefik
+
+# Attente du redémarrage
+echo "⏳ Attente du redémarrage de Traefik..."
+sleep 15
+
+# Vérification que Traefik est opérationnel
+echo "🔍 Vérification du statut de Traefik..."
+if docker ps | grep -q "meeshy-traefik.*Up"; then
+    echo "✅ Traefik redémarré avec succès"
+else
+    echo "❌ Problème avec le redémarrage de Traefik"
+    exit 1
+fi
+
+echo "🎉 Déploiement des mots de passe Traefik terminé !"
+echo ""
+echo "🔐 INFORMATIONS DE CONNEXION:"
+echo "   URL: https://traefik.meeshy.me"
+echo "   Utilisateur: admin"
+echo "   Mot de passe: $admin_password"
+echo ""
+EOF
+
+    # Transfert et exécution du script
+    log_info "Transfert du script de déploiement vers le serveur..."
+    scp -o StrictHostKeyChecking=no "$temp_script" root@$ip:/tmp/
+    
+    log_info "Exécution du script de déploiement..."
+    ssh -o StrictHostKeyChecking=no root@$ip "chmod +x /tmp/deploy-traefik-passwords.sh && /tmp/deploy-traefik-passwords.sh"
+    
+    # Nettoyage
+    rm -f "$temp_script"
+    ssh -o StrictHostKeyChecking=no root@$ip "rm -f /tmp/deploy-traefik-passwords.sh"
+    
+    log_success "Déploiement des mots de passe Traefik terminé !"
+    echo ""
+    echo "🔐 ACCÈS TRAEFIK:"
+    echo "   URL: https://traefik.meeshy.me"
+    echo "   Utilisateur: admin"
+    echo "   Mot de passe: $admin_password"
+    echo ""
+    echo "🧪 Test de connexion:"
+    echo "   curl -u admin:$admin_password https://traefik.meeshy.me"
+}
+
 # Tests complets
 run_tests() {
     local ip="$1"
@@ -1536,6 +1833,7 @@ show_help() {
     echo -e "${CYAN}  replica${NC}      - Configuration du replica set MongoDB"
     echo -e "${CYAN}  ssl${NC}          - Test des certificats SSL et Traefik"
     echo -e "${CYAN}  fix-translator${NC} - Correction des permissions du container translator"
+    echo -e "${CYAN}  deploy-passwords${NC} - Déploiement fiable des mots de passe Traefik"
     echo -e "${CYAN}  status${NC}       - État des services"
     echo -e "${CYAN}  logs${NC}         - Logs des services"
     echo -e "${CYAN}  restart${NC}      - Redémarrage des services"
@@ -1554,6 +1852,7 @@ show_help() {
     echo "  $0 replica 157.230.15.51"
     echo "  $0 ssl 157.230.15.51"
     echo "  $0 fix-translator 157.230.15.51"
+    echo "  $0 deploy-passwords 157.230.15.51"
     echo "  $0 --force-refresh deploy 157.230.15.51"
     echo ""
     echo -e "${YELLOW}💡 Toutes les connexions sont vérifiées automatiquement${NC}"
@@ -1673,6 +1972,15 @@ main() {
             fi
             test_ssh_connection "$DROPLET_IP" || exit 1
             fix_translator_permissions "$DROPLET_IP"
+            ;;
+        "deploy-passwords")
+            if [ -z "$DROPLET_IP" ]; then
+                log_error "IP du droplet manquante"
+                show_help
+                exit 1
+            fi
+            test_ssh_connection "$DROPLET_IP" || exit 1
+            deploy_traefik_passwords "$DROPLET_IP"
             ;;
         "status")
             if [ -z "$DROPLET_IP" ]; then

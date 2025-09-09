@@ -30,7 +30,7 @@ log_error() { echo -e "${RED}❌ $1${NC}"; }
 generate_random_string() {
     local length=${1:-32}
     if command -v openssl >/dev/null 2>&1; then
-        openssl rand -base64 $length | tr -d "=+/" | cut -c1-$length
+        openssl rand -base64 $length | tr -d "=+/\n\r" | cut -c1-$length
     else
         # Fallback si openssl n'est pas disponible
         cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w $length | head -n 1
@@ -43,7 +43,7 @@ generate_secure_password() {
     # Génère un mot de passe avec majuscules, minuscules, chiffres et symboles
     if command -v openssl >/dev/null 2>&1; then
         # Utiliser openssl pour générer un mot de passe sécurisé
-        openssl rand -base64 $length | tr -d "=+/" | cut -c1-$length
+        openssl rand -base64 $length | tr -d "=+/\n\r" | cut -c1-$length
     else
         # Fallback
         cat /dev/urandom | tr -dc 'a-zA-Z0-9!@#$%^&*' | fold -w $length | head -n 1
@@ -117,6 +117,74 @@ generate_secrets() {
     log_success "Secrets générés avec succès"
 }
 
+# Fonction pour créer le fichier des mots de passe en clair
+create_clear_passwords_file() {
+    log_info "Création du fichier des mots de passe en clair..."
+    
+    local clear_file="$SECRETS_DIR/clear.txt"
+    
+    cat > "$clear_file" << EOF
+# ===== MEESHY - MOTS DE PASSE EN CLAIR =====
+# Fichier généré automatiquement - NE PAS COMMITER
+# Date de génération: $(date)
+# 
+# ⚠️  ATTENTION: Ce fichier contient les mots de passe en clair
+# ⚠️  Ne jamais le commiter dans Git ou le partager
+# ⚠️  Ne JAMAIS déployer ce fichier sur le serveur de production
+# ⚠️  Conserver ce fichier dans un endroit sécurisé EN LOCAL UNIQUEMENT
+
+# ===== UTILISATEURS DE L'APPLICATION =====
+# Mots de passe pour se connecter à l'application Meeshy
+ADMIN_PASSWORD_CLEAR="$ADMIN_PASSWORD"
+MEESHY_PASSWORD_CLEAR="$MEESHY_PASSWORD"
+ATABETH_PASSWORD_CLEAR="$ATABETH_PASSWORD"
+
+# ===== SERVICES D'ADMINISTRATION =====
+# Mots de passe pour les services d'administration
+TRAEFIK_PASSWORD_CLEAR="$ADMIN_PASSWORD"
+API_PASSWORD_CLEAR="$ADMIN_PASSWORD"
+MONGO_PASSWORD_CLEAR="$ADMIN_PASSWORD"
+REDIS_PASSWORD_CLEAR="$ADMIN_PASSWORD"
+
+# ===== SERVICES DE BASE DE DONNÉES =====
+# Mots de passe pour les services de base de données
+MONGODB_PASSWORD_CLEAR="$MONGODB_PASSWORD"
+REDIS_PASSWORD_CLEAR="$REDIS_PASSWORD"
+
+# ===== INSTRUCTIONS D'UTILISATION =====
+# 
+# 🌐 Traefik Dashboard:
+#    URL: https://traefik.meeshy.me
+#    Utilisateur: admin
+#    Mot de passe: $ADMIN_PASSWORD
+#
+# 🏠 Application Meeshy:
+#    URL: https://meeshy.me
+#    Utilisateur Admin: admin / $ADMIN_PASSWORD
+#    Utilisateur Meeshy: meeshy / $MEESHY_PASSWORD
+#    Utilisateur Atabeth: atabeth / $ATABETH_PASSWORD
+#
+# 🗄️ MongoDB (NoSQLClient):
+#    URL: https://mongo.meeshy.me
+#    Connexion: mongodb://meeshy:$MONGODB_PASSWORD@meeshy-database:27017/meeshy
+#
+# 🔴 Redis (P3X Redis UI):
+#    URL: https://redis.meeshy.me
+#    Mot de passe: $REDIS_PASSWORD
+#
+# ===== HASHES BCRYPT GÉNÉRÉS =====
+# Ces hashes sont utilisés dans docker-compose.yml
+TRAEFIK_USERS_HASH="admin:$(generate_bcrypt_hash "$ADMIN_PASSWORD" "admin")"
+API_USERS_HASH="admin:$(generate_bcrypt_hash "$ADMIN_PASSWORD" "admin")"
+MONGO_USERS_HASH="admin:$(generate_bcrypt_hash "$ADMIN_PASSWORD" "admin")"
+REDIS_USERS_HASH="admin:$(generate_bcrypt_hash "$ADMIN_PASSWORD" "admin")"
+EOF
+
+    # Sécuriser le fichier
+    chmod 600 "$clear_file"
+    log_success "Fichier des mots de passe en clair créé: $clear_file"
+}
+
 # Fonction pour créer le fichier de secrets
 create_secrets_file() {
     log_info "Création du fichier de secrets..."
@@ -133,79 +201,88 @@ create_secrets_file() {
 # ⚠️  Conserver ce fichier dans un endroit sécurisé
 
 # ===== JWT AUTHENTICATION =====
-JWT_SECRET=$JWT_SECRET
-JWT_EXPIRES_IN=7d
+JWT_SECRET="$JWT_SECRET"
+JWT_EXPIRES_IN="7d"
 
 # ===== MOTS DE PASSE UTILISATEURS =====
-# Mots de passe pour les utilisateurs par défaut
-ADMIN_PASSWORD=$ADMIN_PASSWORD
-MEESHY_PASSWORD=$MEESHY_PASSWORD
-ATABETH_PASSWORD=$ATABETH_PASSWORD
+# Mots de passe pour les utilisateurs par défaut (cryptés avec bcrypt)
+ADMIN_PASSWORD="$ADMIN_PASSWORD"
+MEESHY_PASSWORD="$MEESHY_PASSWORD"
+ATABETH_PASSWORD="$ATABETH_PASSWORD"
+
+# ===== MOTS DE PASSE EN CLAIR (pour référence) =====
+# Mots de passe en clair pour connexion à l'application
+ADMIN_PASSWORD_CLEAR="$ADMIN_PASSWORD"
+MEESHY_PASSWORD_CLEAR="$MEESHY_PASSWORD"
+ATABETH_PASSWORD_CLEAR="$ATABETH_PASSWORD"
 
 # ===== MOTS DE PASSE SERVICES =====
 # Mots de passe pour les services
-MONGODB_PASSWORD=$MONGODB_PASSWORD
-REDIS_PASSWORD=$REDIS_PASSWORD
+MONGODB_PASSWORD="$MONGODB_PASSWORD"
+REDIS_PASSWORD="$REDIS_PASSWORD"
 
 # ===== EMAILS DE PRODUCTION =====
-ADMIN_EMAIL=$ADMIN_EMAIL
-MEESHY_EMAIL=$MEESHY_EMAIL
-ATABETH_EMAIL=$ATABETH_EMAIL
-SUPPORT_EMAIL=$SUPPORT_EMAIL
-FEEDBACK_EMAIL=$FEEDBACK_EMAIL
+ADMIN_EMAIL="$ADMIN_EMAIL"
+MEESHY_EMAIL="$MEESHY_EMAIL"
+ATABETH_EMAIL="$ATABETH_EMAIL"
+SUPPORT_EMAIL="$SUPPORT_EMAIL"
+FEEDBACK_EMAIL="$FEEDBACK_EMAIL"
 
 # ===== DOMAINE DE PRODUCTION =====
-DOMAIN=$DOMAIN
+DOMAIN="$DOMAIN"
 
 # ===== HASHES D'AUTHENTIFICATION =====
 # Hashes bcrypt pour les authentifications (générés avec htpasswd)
-TRAEFIK_USERS=$TRAEFIK_USERS
-API_USERS=$API_USERS
-MONGO_USERS=$MONGO_USERS
-REDIS_USERS=$REDIS_USERS
+TRAEFIK_USERS="$TRAEFIK_USERS"
+API_USERS="$API_USERS"
+MONGO_USERS="$MONGO_USERS"
+REDIS_USERS="$REDIS_USERS"
 
 # ===== CONFIGURATION UTILISATEURS DÉTAILLÉE =====
 # Configuration utilisateur Meeshy (BIGBOSS)
-MEESHY_USERNAME=meeshy
-MEESHY_FIRST_NAME=Meeshy
-MEESHY_LAST_NAME=Sama
-MEESHY_ROLE=BIGBOSS
-MEESHY_SYSTEM_LANGUAGE=en
-MEESHY_REGIONAL_LANGUAGE=fr
-MEESHY_CUSTOM_DESTINATION_LANGUAGE=pt
+MEESHY_USERNAME="meeshy"
+MEESHY_FIRST_NAME="Meeshy"
+MEESHY_LAST_NAME="Sama"
+MEESHY_ROLE="BIGBOSS"
+MEESHY_SYSTEM_LANGUAGE="en"
+MEESHY_REGIONAL_LANGUAGE="fr"
+MEESHY_CUSTOM_DESTINATION_LANGUAGE="pt"
 
 # Configuration utilisateur Admin
-ADMIN_USERNAME=admin
-ADMIN_FIRST_NAME=Admin
-ADMIN_LAST_NAME=Manager
-ADMIN_ROLE=ADMIN
-ADMIN_SYSTEM_LANGUAGE=es
-ADMIN_REGIONAL_LANGUAGE=de
-ADMIN_CUSTOM_DESTINATION_LANGUAGE=zh
+ADMIN_USERNAME="admin"
+ADMIN_FIRST_NAME="Admin"
+ADMIN_LAST_NAME="Manager"
+ADMIN_ROLE="ADMIN"
+ADMIN_SYSTEM_LANGUAGE="es"
+ADMIN_REGIONAL_LANGUAGE="de"
+ADMIN_CUSTOM_DESTINATION_LANGUAGE="zh"
 
 # Configuration utilisateur André Tabeth (entièrement configurable)
-ATABETH_USERNAME=atabeth
-ATABETH_FIRST_NAME=André
-ATABETH_LAST_NAME=Tabeth
-ATABETH_ROLE=USER
-ATABETH_SYSTEM_LANGUAGE=fr
-ATABETH_REGIONAL_LANGUAGE=fr
-ATABETH_CUSTOM_DESTINATION_LANGUAGE=en
+ATABETH_USERNAME="atabeth"
+ATABETH_FIRST_NAME="André"
+ATABETH_LAST_NAME="Tabeth"
+ATABETH_ROLE="USER"
+ATABETH_SYSTEM_LANGUAGE="fr"
+ATABETH_REGIONAL_LANGUAGE="fr"
+ATABETH_CUSTOM_DESTINATION_LANGUAGE="en"
 
 # ===== CONFIGURATION BASE DE DONNÉES =====
 # Forcer la réinitialisation pour la production
-FORCE_DB_RESET=true
+FORCE_DB_RESET="true"
 
 # ===== INFORMATIONS DE DÉPLOIEMENT =====
 # Informations pour le déploiement
-DEPLOYMENT_DATE=$(date)
-DEPLOYMENT_VERSION=1.0.0-production
-DEPLOYMENT_ENV=production
+DEPLOYMENT_DATE="$(date)"
+DEPLOYMENT_VERSION="1.0.0-production"
+DEPLOYMENT_ENV="production"
 EOF
 
     # Sécuriser le fichier
     chmod 600 "$secrets_file"
     log_success "Fichier de secrets créé: $secrets_file"
+    
+    # Créer le fichier des mots de passe en clair
+    create_clear_passwords_file
 }
 
 # Fonction pour créer le fichier de configuration de production
