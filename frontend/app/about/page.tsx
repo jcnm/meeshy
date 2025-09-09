@@ -1,22 +1,19 @@
 import { Metadata } from 'next';
-import { generateSEOMetadata } from '@/lib/seo-metadata';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Users, Globe, Heart, Target, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
 
-// Métadonnées SEO pour la page About
-export const metadata: Metadata = generateSEOMetadata('about', 'fr');
+export const metadata: Metadata = {
+  title: 'À Propos - Meeshy',
+  description: 'Découvrez l\'équipe et la mission de Meeshy',
+};
 
 export default function AboutPage() {
-  // SEO temporairement désactivé pour debugging
-  // useDynamicSEO({ page: 'about' });
-
   const { t } = useTranslations('about');
 
   return (
     <>
-      <RichSnippets type="aboutPage" />
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b">

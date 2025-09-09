@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useDynamicSEO } from '@/hooks/useDynamicSEO';
-import RichSnippets from '@/components/RichSnippets';
 import { 
   Dialog, 
   DialogContent, 
@@ -49,9 +47,6 @@ import { isCurrentUserAnonymous } from '@/utils/auth';
 import { useTranslations } from '@/hooks/useTranslations';
 import Link from 'next/link';
 export default function LandingPage() {
-  // SEO dynamique pour la page d'accueil
-  useDynamicSEO({ page: 'home' });
-
   const { user, isAuthChecking } = useUser();
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
@@ -122,8 +117,6 @@ export default function LandingPage() {
 
   return (
     <>
-      <RichSnippets type="website" />
-      <RichSnippets type="service" />
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header */}
       <Header 

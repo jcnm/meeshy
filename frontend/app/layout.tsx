@@ -11,37 +11,18 @@ import { ClientOnly } from "@/components/common/client-only";
 // import { LanguageDetectionNotification } from "@/components/LanguageDetectionNotification";
 import { getAllFontVariables } from "@/lib/fonts";
 import { AuthProvider } from "@/components/auth/auth-provider";
-import { generateSEOMetadata, generateViewport } from "@/lib/seo-metadata";
-import StructuredDataSSR from "@/components/StructuredDataSSR";
-import StructuredData from "@/components/StructuredData";
+2
 // import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
 
-// Métadonnées SEO par défaut (page d'accueil en français)
 export const metadata: Metadata = {
-  ...generateSEOMetadata('home', 'fr'),
+  title: 'Meeshy',
+  description: 'Messagerie multilingue en temps réel',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NODE_ENV === 'production' ? 'https://meeshy.me' : 'http://localhost:3100'),
-  icons: {
-    icon: [
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon.ico', sizes: 'any' },
-    ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-    other: [
-      { rel: 'mask-icon', url: '/favicon.svg', color: '#2563eb' },
-    ],
-  },
-  manifest: '/site.webmanifest',
 };
-
-export const viewport: Viewport = generateViewport();
 
 export default function RootLayout({
   children,
@@ -50,10 +31,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <head>
-        {/* Version SSR pour le SEO optimal (dans le head) */}
-        <StructuredDataSSR page="home" language="fr" />
-      </head>
       <body
         className={`${getAllFontVariables()} antialiased font-nunito`}
       >
@@ -65,8 +42,6 @@ export default function RootLayout({
                   <ClientOnly>
                     <FontInitializer />
                     {/* <LanguageDetectionNotification /> */}
-                    {/* Version dynamique pour les changements de langue */}
-                    <StructuredData />
                   </ClientOnly>
                   {children}
                 </ErrorBoundary>

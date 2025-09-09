@@ -1,22 +1,20 @@
 import { Metadata } from 'next';
-import { generateSEOMetadata } from '@/lib/seo-metadata';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, MapPin, Train, Bus, Car, Mail, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslations } from '@/hooks/useTranslations';
 
-// Métadonnées SEO pour la page Contact
-export const metadata: Metadata = generateSEOMetadata('contact', 'fr');
+export const metadata: Metadata = {
+  title: 'Contact - Meeshy',
+  description: 'Contactez l\'équipe Meeshy',
+};
 
 export default function ContactPage() {
-  // SEO temporairement désactivé pour debugging
-  // useDynamicSEO({ page: 'contact' });
-
   const { t } = useTranslations('contact');
 
   return (
     <>
-      <RichSnippets type="contactPage" />
       <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b">

@@ -1,22 +1,14 @@
 'use client';
-import { Metadata } from 'next';
-import { generateSEOMetadata } from '@/lib/seo-metadata';
 
 
 import { useTranslations } from '@/hooks/useTranslations';
-import { useDynamicSEO } from '@/hooks/useDynamicSEO';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Printer, Shield } from 'lucide-react';
 import Link from 'next/link';
 
-// Métadonnées SEO pour la page privacy
-export const metadata: Metadata = generateSEOMetadata('privacy', 'fr');
 
 export default function PrivacyPage() {
-  // SEO temporairement désactivé pour debugging
-  // useDynamicSEO({ page: 'privacy' });
-
   const { t, tArray } = useTranslations('privacy');
 
   const handlePrint = () => {
