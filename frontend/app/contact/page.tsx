@@ -1,12 +1,12 @@
-'use client';
-
-import { useTranslations } from '@/hooks/useTranslations';
-import { useDynamicSEO } from '@/hooks/useDynamicSEO';
-import RichSnippets from '@/components/RichSnippets';
+import { Metadata } from 'next';
+import { generateSEOMetadata } from '@/lib/seo-metadata';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, MapPin, Train, Bus, Car, Mail, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
+
+// Métadonnées SEO pour la page Contact
+export const metadata: Metadata = generateSEOMetadata('contact', 'fr');
 
 export default function ContactPage() {
   // SEO temporairement désactivé pour debugging

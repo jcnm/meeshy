@@ -1,424 +1,378 @@
 #!/bin/bash
 
-# ===== MEESHY - SCRIPT UNIFIÉ DE GESTION DES SERVICES =====
-# Script pour démarrer, arrêter et gérer tous les services Meeshy
-# Usage: ./meeshy.sh [COMMAND] [OPTIONS]
+# ===== MEESHY - SCRIPT PRINCIPAL DE GESTION =====
+# Script principal pour gérer la production, le développement et le déploiement
+# Usage: ./meeshy.sh [ENVIRONMENT] [COMMAND] [OPTIONS]
 
 set -e
 
 # Couleurs pour les logs
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[1;33m'
+export BLUE='\033[0;34m'
+export CYAN='\033[0;36m'
+export NC='\033[0m' # No Color
 
 # Configuration
-PROJECT_DIR="/opt/meeshy"
-COMPOSE_FILE="docker-compose.traefik.yml"
-ENV_FILE="secrets/production-secrets.env"
-DOMAIN="meeshy.me"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-# Fonction d'aide
-show_help() {
-    echo -e "${CYAN}🚀 MEESHY - SCRIPT UNIFIÉ DE GESTION DES SERVICES${NC}"
-    echo "=================================================="
-    echo ""
-    echo "Usage:"
-    echo "  ./meeshy.sh [COMMAND] [OPTIONS]"
-    echo ""
-    echo "Commands:"
-    echo "  start       - Démarrer tous les services"
-    echo "  stop        - Arrêter tous les services"
-    echo "  restart     - Redémarrer tous les services"
-    echo "  status      - Afficher le statut des services"
-    echo "  logs        - Afficher les logs des services"
-    echo "  pull        - Télécharger les dernières images"
-    echo "  update      - Mettre à jour et redémarrer"
-    echo "  health      - Vérifier la santé des services"
-    echo "  clean       - Nettoyer les conteneurs et images inutilisés"
-    echo "  backup      - Sauvegarder les données"
-    echo "  restore     - Restaurer les données"
-    echo ""
-    echo "Options:"
-    echo "  --force     - Forcer l'arrêt/redémarrage"
-    echo "  --no-pull   - Ne pas télécharger les images"
-    echo "  --logs      - Afficher les logs après démarrage"
-    echo ""
-    echo "Exemples:"
-    echo "  ./meeshy.sh start"
-    echo "  ./meeshy.sh update --logs"
-    echo "  ./meeshy.sh status"
-    echo "  ./meeshy.sh logs gateway"
-    echo ""
-}
+# Variables globales
+ENVIRONMENT=""
+COMMAND=""
+OPTIONS=()
 
-# Fonction de logging
+# Fonctions de logging
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    echo -e "${BLUE}ℹ️  $1${NC}"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}✅ $1${NC}"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}⚠️  $1${NC}"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}❌ $1${NC}"
 }
 
-# Vérifier si Docker est installé et en cours d'exécution
-check_docker() {
-    if ! command -v docker &> /dev/null; then
-        log_error "Docker n'est pas installé"
-        exit 1
-    fi
-    
-    if ! docker info &> /dev/null; then
-        log_error "Docker n'est pas en cours d'exécution"
-        exit 1
-    fi
-    
-    log_success "Docker est disponible"
-}
-
-# Vérifier si Docker Compose est disponible
-check_docker_compose() {
-    if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-        log_error "Docker Compose n'est pas installé"
-        exit 1
-    fi
-    
-    # Utiliser docker compose si disponible, sinon docker-compose
-    if docker compose version &> /dev/null; then
-        COMPOSE_CMD="docker compose"
-    else
-        COMPOSE_CMD="docker-compose"
-    fi
-    
-    log_success "Docker Compose est disponible"
-}
-
-# Vérifier les fichiers nécessaires
-check_files() {
-    if [ ! -f "$PROJECT_DIR/$COMPOSE_FILE" ]; then
-        log_error "Fichier $COMPOSE_FILE non trouvé dans $PROJECT_DIR"
-        exit 1
-    fi
-    
-    if [ ! -f "$PROJECT_DIR/$ENV_FILE" ]; then
-        log_error "Fichier $ENV_FILE non trouvé dans $PROJECT_DIR"
-        exit 1
-    fi
-    
-    log_success "Fichiers de configuration trouvés"
-}
-
-# Télécharger les dernières images
-pull_images() {
-    log_info "Téléchargement des dernières images..."
-    
-    cd "$PROJECT_DIR"
-    
-    # Télécharger les images spécifiées dans le compose file
-    $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull
-    
-    log_success "Images téléchargées avec succès"
-}
-
-# Démarrer les services
-start_services() {
-    log_info "Démarrage des services Meeshy..."
-    
-    cd "$PROJECT_DIR"
-    
-    # Créer le réseau s'il n'existe pas
-    docker network create meeshy-network 2>/dev/null || true
-    
-    # Démarrer les services
-    $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
-    
-    log_success "Services démarrés avec succès"
-    
-    # Attendre que les services soient prêts
-    log_info "Attente du démarrage des services..."
-    sleep 10
-    
-    # Vérifier le statut
-    show_status
-}
-
-# Arrêter les services
-stop_services() {
-    log_info "Arrêt des services Meeshy..."
-    
-    cd "$PROJECT_DIR"
-    
-    $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down
-    
-    log_success "Services arrêtés avec succès"
-}
-
-# Redémarrer les services
-restart_services() {
-    log_info "Redémarrage des services Meeshy..."
-    
-    stop_services
-    sleep 5
-    start_services
-}
-
-# Afficher le statut des services
-show_status() {
-    log_info "Statut des services Meeshy:"
+# Fonction d'aide principale
+show_help() {
+    echo -e "${CYAN}🚀 MEESHY - SCRIPT PRINCIPAL DE GESTION${NC}"
+    echo "============================================="
     echo ""
-    
-    cd "$PROJECT_DIR"
-    
-    $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps
-    
+    echo "Usage:"
+    echo "  ./meeshy.sh [ENVIRONMENT] [COMMAND] [OPTIONS]"
     echo ""
-    log_info "Vérification de la santé des services..."
-    
-    # Vérifier les ports
-    local ports=("80" "443" "3000" "8000" "3100")
-    for port in "${ports[@]}"; do
-        if netstat -tuln | grep -q ":$port "; then
-            log_success "Port $port: Ouvert"
-        else
-            log_warning "Port $port: Fermé"
-        fi
-    done
+    echo "Environnements:"
+    echo -e "${GREEN}  prod (production)${NC}     - Gestion des services en production"
+    echo -e "${GREEN}  dev (development)${NC}     - Gestion des services de développement"
+    echo -e "${GREEN}  deploy${NC}                - Déploiement sur serveur distant"
+    echo ""
+    echo "Commandes par environnement:"
+    echo ""
+    echo -e "${YELLOW}📦 PRODUCTION (prod):${NC}"
+    echo "  start       - Démarrer les services de production"
+    echo "  stop        - Arrêter les services de production"
+    echo "  restart     - Redémarrer les services de production"
+    echo "  status      - Afficher le statut des services"
+    echo "  logs        - Afficher les logs des services"
+    echo "  maintenance - Opérations de maintenance"
+    echo "  health      - Vérification de santé des services"
+    echo "  info        - Informations sur l'environnement"
+    echo "  version     - Version des services"
+    echo ""
+    echo -e "${YELLOW}🛠️  DÉVELOPPEMENT (dev):${NC}"
+    echo "  start       - Démarrer l'environnement de développement"
+    echo "  stop        - Arrêter l'environnement de développement"
+    echo "  restart     - Redémarrer l'environnement de développement"
+    echo "  test        - Exécuter les tests de développement"
+    echo "  configure   - Configurer l'environnement de développement"
+    echo "  init-mongo  - Initialiser MongoDB pour le développement"
+    echo "  test-access - Tests d'accès aux services"
+    echo ""
+    echo -e "${YELLOW}🚀 DÉPLOIEMENT (deploy):${NC}"
+    echo "  deploy      - Déployer l'application complète"
+    echo "  deploy-reset - Déploiement avec reset complet"
+    echo "  test        - Tester la connexion au serveur"
+    echo "  health      - Vérification de santé sur le serveur"
+    echo "  status      - Statut des services sur le serveur"
+    echo "  logs        - Logs des services sur le serveur"
+    echo "  restart     - Redémarrer les services sur le serveur"
+    echo "  stop        - Arrêter les services sur le serveur"
+    echo "  passwords   - Déployer les mots de passe Traefik"
+    echo "  replica     - Configuration du replica set MongoDB"
+    echo ""
+    echo "Options globales:"
+    echo "  --help, -h  - Afficher cette aide"
+    echo "  --version   - Afficher la version"
+    echo ""
+    echo "Options de déploiement:"
+    echo "  --regenerate-secrets - Forcer la régénération des secrets"
+    echo "  --force-refresh      - Forcer le rafraîchissement des images"
+    echo ""
+    echo "Exemples:"
+    echo "  # Production"
+    echo "  ./meeshy.sh prod start"
+    echo "  ./meeshy.sh prod status"
+    echo "  ./meeshy.sh prod logs"
+    echo ""
+    echo "  # Développement"
+    echo "  ./meeshy.sh dev start"
+    echo "  ./meeshy.sh dev test"
+    echo "  ./meeshy.sh dev configure"
+    echo ""
+    echo "  # Déploiement"
+    echo "  ./meeshy.sh deploy deploy 192.168.1.100"
+    echo "  ./meeshy.sh deploy test 192.168.1.100"
+    echo "  ./meeshy.sh deploy health 192.168.1.100"
+    echo ""
+    echo -e "${YELLOW}💡 Architecture modulaire:${NC}"
+    echo "  • scripts/production/     - Scripts de gestion de production"
+    echo "  • scripts/development/    - Scripts de développement"
+    echo "  • scripts/deployment/     - Scripts de déploiement"
+    echo ""
 }
 
-# Afficher les logs
-show_logs() {
-    local service="$1"
-    
-    cd "$PROJECT_DIR"
-    
-    if [ -n "$service" ]; then
-        log_info "Logs du service $service:"
-        $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f --tail=100 "$service"
-    else
-        log_info "Logs de tous les services:"
-        $COMPOSE_CMD -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f --tail=50
-    fi
+# Fonction pour afficher la version
+show_version() {
+    echo -e "${CYAN}🚀 MEESHY - SCRIPT PRINCIPAL DE GESTION${NC}"
+    echo "============================================="
+    echo ""
+    echo "Version: 2.0.0-modular"
+    echo "Date: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    echo "Architecture: Modulaire"
+    echo ""
+    echo "Environnements supportés:"
+    echo "  • Production (prod)"
+    echo "  • Développement (dev)"
+    echo "  • Déploiement (deploy)"
+    echo ""
+    echo "Modules disponibles:"
+    echo "  • Production: $(ls -1 "$SCRIPT_DIR/production"/*.sh 2>/dev/null | wc -l) scripts"
+    echo "  • Développement: $(ls -1 "$SCRIPT_DIR/development"/*.sh 2>/dev/null | wc -l) scripts"
+    echo "  • Déploiement: $(ls -1 "$SCRIPT_DIR/deployment"/*.sh 2>/dev/null | wc -l) scripts"
+    echo ""
 }
 
-# Vérifier la santé des services
-check_health() {
-    log_info "Vérification de la santé des services..."
+# Gestion de la production
+handle_production() {
+    local cmd="$1"
+    shift
+    local args="$@"
     
-    cd "$PROJECT_DIR"
+    log_info "Gestion de la production - Commande: $cmd"
     
-    # Vérifier les conteneurs
-    local containers=("meeshy-traefik" "meeshy-database" "meeshy-redis" "meeshy-translator" "meeshy-gateway" "meeshy-frontend")
-    
-    for container in "${containers[@]}"; do
-        if docker ps | grep -q "$container"; then
-            local status=$(docker inspect --format='{{.State.Status}}' "$container" 2>/dev/null || echo "unknown")
-            if [ "$status" = "running" ]; then
-                log_success "$container: En cours d'exécution"
-            else
-                log_warning "$container: Statut $status"
-            fi
-        else
-            log_error "$container: Non trouvé"
-        fi
-    done
-    
-    # Vérifier les endpoints
-    log_info "Vérification des endpoints..."
-    
-    # Traefik
-    if curl -s -o /dev/null -w "%{http_code}" "http://localhost" | grep -q "200\|301\|302"; then
-        log_success "Traefik: Accessible"
-    else
-        log_warning "Traefik: Non accessible"
-    fi
-    
-    # Gateway
-    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000/health" | grep -q "200"; then
-        log_success "Gateway: Accessible"
-    else
-        log_warning "Gateway: Non accessible"
-    fi
-    
-    # Translator
-    if curl -s -o /dev/null -w "%{http_code}" "http://localhost:8000/health" | grep -q "200"; then
-        log_success "Translator: Accessible"
-    else
-        log_warning "Translator: Non accessible"
-    fi
-}
-
-# Nettoyer les conteneurs et images inutilisés
-clean_system() {
-    log_info "Nettoyage du système..."
-    
-    # Arrêter tous les conteneurs
-    docker stop $(docker ps -aq) 2>/dev/null || true
-    
-    # Supprimer tous les conteneurs
-    docker rm $(docker ps -aq) 2>/dev/null || true
-    
-    # Supprimer les images inutilisées
-    docker image prune -f
-    
-    # Supprimer les volumes inutilisés
-    docker volume prune -f
-    
-    # Supprimer les réseaux inutilisés
-    docker network prune -f
-    
-    log_success "Nettoyage terminé"
-}
-
-# Sauvegarder les données
-backup_data() {
-    local backup_dir="/opt/backups/meeshy"
-    local timestamp=$(date +"%Y%m%d_%H%M%S")
-    
-    log_info "Sauvegarde des données..."
-    
-    mkdir -p "$backup_dir"
-    
-    # Sauvegarder la base de données
-    docker exec meeshy-database mongodump --out /tmp/backup
-    docker cp meeshy-database:/tmp/backup "$backup_dir/mongodb_$timestamp"
-    
-    # Sauvegarder Redis
-    docker exec meeshy-redis redis-cli BGSAVE
-    docker cp meeshy-redis:/data/dump.rdb "$backup_dir/redis_$timestamp.rdb"
-    
-    # Sauvegarder les volumes
-    docker run --rm -v meeshy_database_data:/data -v "$backup_dir":/backup alpine tar czf /backup/database_data_$timestamp.tar.gz -C /data .
-    docker run --rm -v meeshy_redis_data:/data -v "$backup_dir":/backup alpine tar czf /backup/redis_data_$timestamp.tar.gz -C /data .
-    
-    log_success "Sauvegarde terminée dans $backup_dir"
-}
-
-# Restaurer les données
-restore_data() {
-    local backup_dir="/opt/backups/meeshy"
-    
-    log_warning "Cette opération va restaurer les données depuis la dernière sauvegarde"
-    read -p "Êtes-vous sûr ? (y/N): " -n 1 -r
-    echo
-    
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log_info "Restauration annulée"
-        return
-    fi
-    
-    log_info "Restauration des données..."
-    
-    # Trouver la dernière sauvegarde
-    local latest_backup=$(ls -t "$backup_dir" | head -1)
-    
-    if [ -z "$latest_backup" ]; then
-        log_error "Aucune sauvegarde trouvée"
-        return
-    fi
-    
-    log_info "Restauration depuis $latest_backup"
-    
-    # Restaurer la base de données
-    docker cp "$backup_dir/$latest_backup" meeshy-database:/tmp/restore
-    docker exec meeshy-database mongorestore /tmp/restore
-    
-    log_success "Restauration terminée"
-}
-
-# Mettre à jour et redémarrer
-update_services() {
-    local no_pull="$1"
-    
-    log_info "Mise à jour des services Meeshy..."
-    
-    if [ "$no_pull" != "--no-pull" ]; then
-        pull_images
-    fi
-    
-    restart_services
-    
-    log_success "Mise à jour terminée"
-}
-
-# Fonction principale
-main() {
-    local command="$1"
-    local option="$2"
-    
-    # Vérifications préliminaires
-    check_docker
-    check_docker_compose
-    check_files
-    
-    case "$command" in
+    case "$cmd" in
         "start")
-            start_services
-            if [ "$option" = "--logs" ]; then
-                sleep 5
-                show_logs
-            fi
+            "$SCRIPT_DIR/production/meeshy-start.sh" $args
             ;;
         "stop")
-            if [ "$option" = "--force" ]; then
-                log_warning "Arrêt forcé des services..."
-                docker stop $(docker ps -q) 2>/dev/null || true
-            else
-                stop_services
-            fi
+            "$SCRIPT_DIR/production/meeshy-stop.sh" $args
             ;;
         "restart")
-            if [ "$option" = "--force" ]; then
-                log_warning "Redémarrage forcé des services..."
-                docker restart $(docker ps -q) 2>/dev/null || true
-            else
-                restart_services
-            fi
+            "$SCRIPT_DIR/production/meeshy-maintenance.sh" "restart" $args
             ;;
         "status")
-            show_status
+            "$SCRIPT_DIR/production/meeshy-status.sh" $args
             ;;
         "logs")
-            show_logs "$option"
+            "$SCRIPT_DIR/production/meeshy-logs.sh" $args
             ;;
-        "pull")
-            pull_images
-            ;;
-        "update")
-            update_services "$option"
+        "maintenance")
+            "$SCRIPT_DIR/production/meeshy-maintenance.sh" $args
             ;;
         "health")
-            check_health
+            "$SCRIPT_DIR/production/meeshy-maintenance.sh" "health" $args
             ;;
-        "clean")
-            clean_system
+        "info")
+            "$SCRIPT_DIR/production/meeshy-orchestrator.sh" "info" $args
             ;;
-        "backup")
-            backup_data
-            ;;
-        "restore")
-            restore_data
-            ;;
-        "help"|"-h"|"--help")
-            show_help
+        "version")
+            "$SCRIPT_DIR/production/meeshy-orchestrator.sh" "version" $args
             ;;
         *)
-            log_error "Commande inconnue: $command"
+            log_error "Commande de production inconnue: $cmd"
             echo ""
-            show_help
+            echo "Commandes de production disponibles:"
+            echo "  start, stop, restart, status, logs, maintenance, health, info, version"
             exit 1
             ;;
     esac
 }
 
-# Exécuter la fonction principale
-main "$@"
+# Gestion du développement
+handle_development() {
+    local cmd="$1"
+    shift
+    local args="$@"
+    
+    log_info "Gestion du développement - Commande: $cmd"
+    
+    case "$cmd" in
+        "start")
+            "$SCRIPT_DIR/development/development-start-local.sh" $args
+            ;;
+        "stop")
+            "$SCRIPT_DIR/development/development-stop-local.sh" $args
+            ;;
+        "restart")
+            "$SCRIPT_DIR/development/development-stop-local.sh" $args
+            "$SCRIPT_DIR/development/development-start-local.sh" $args
+            ;;
+        "test")
+            "$SCRIPT_DIR/development/development-test-local.sh" $args
+            ;;
+        "configure")
+            "$SCRIPT_DIR/development/development-configure-dev.sh" $args
+            ;;
+        "init-mongo")
+            "$SCRIPT_DIR/development/development-init-mongodb-replica.sh" $args
+            ;;
+        "test-access")
+            "$SCRIPT_DIR/development/development-test-simple-access.sh" $args
+            ;;
+        *)
+            log_error "Commande de développement inconnue: $cmd"
+            echo ""
+            echo "Commandes de développement disponibles:"
+            echo "  start, stop, restart, test, configure, init-mongo, test-access"
+            exit 1
+            ;;
+    esac
+}
+
+# Gestion du déploiement
+handle_deployment() {
+    local cmd="$1"
+    shift
+    local args="$@"
+    
+    log_info "Gestion du déploiement - Commande: $cmd"
+    log_info "DEBUG: Arguments reçus: '$args'"
+    
+    case "$cmd" in
+        "deploy")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "deploy" "$args"
+            ;;
+        "deploy-reset")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "deploy-reset" $args
+            ;;
+        "test")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "test" $args
+            ;;
+        "health")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "health" $args
+            ;;
+        "status")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "status" $args
+            ;;
+        "logs")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "logs" $args
+            ;;
+        "restart")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "restart" $args
+            ;;
+        "stop")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "stop" $args
+            ;;
+        "passwords")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "deploy-passwords" $args
+            ;;
+        "replica")
+            "$SCRIPT_DIR/deployment/deploy-orchestrator.sh" "replica" $args
+            ;;
+        *)
+            log_error "Commande de déploiement inconnue: $cmd"
+            echo ""
+            echo "Commandes de déploiement disponibles:"
+            echo "  deploy, deploy-reset, test, health, status, logs, restart, stop, passwords, replica"
+            exit 1
+            ;;
+    esac
+}
+
+# Parser les arguments
+parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --help|-h)
+                show_help
+                exit 0
+                ;;
+            --version)
+                show_version
+                exit 0
+                ;;
+            prod|production)
+                ENVIRONMENT="prod"
+                shift
+                ;;
+            dev|development)
+                ENVIRONMENT="dev"
+                shift
+                ;;
+            deploy|deployment)
+                ENVIRONMENT="deploy"
+                shift
+                ;;
+            *)
+                if [ -z "$ENVIRONMENT" ]; then
+                    log_error "Environnement manquant. Utilisez: prod, dev, ou deploy"
+                    show_help
+                    exit 1
+                fi
+                
+                if [ -z "$COMMAND" ]; then
+                    COMMAND="$1"
+                else
+                    OPTIONS+=("$1")
+                fi
+                shift
+                ;;
+        esac
+    done
+}
+
+# Valider les arguments
+validate_arguments() {
+    if [ -z "$ENVIRONMENT" ]; then
+        log_error "Environnement manquant"
+        show_help
+        exit 1
+    fi
+    
+    if [ -z "$COMMAND" ]; then
+        log_error "Commande manquante"
+        show_help
+        exit 1
+    fi
+}
+
+# Fonction principale
+main() {
+    # Parser les arguments
+    parse_arguments "$@"
+    
+    # Valider les arguments
+    validate_arguments
+    
+    # Afficher les informations de démarrage
+    log_info "🚀 Meeshy - Gestion des services"
+    log_info "Environnement: $ENVIRONMENT"
+    log_info "Commande: $COMMAND"
+    if [ ${#OPTIONS[@]} -gt 0 ]; then
+        log_info "Options: ${OPTIONS[*]}"
+    fi
+    log_info "DEBUG: Nombre d'options: ${#OPTIONS[@]}"
+    echo ""
+    
+    # Exécuter la commande appropriée selon l'environnement
+    case "$ENVIRONMENT" in
+        "prod")
+            handle_production "$COMMAND" "${OPTIONS[@]}"
+            ;;
+        "dev")
+            handle_development "$COMMAND" "${OPTIONS[@]}"
+            ;;
+        "deploy")
+            handle_deployment "$COMMAND" "${OPTIONS[@]}"
+            ;;
+        *)
+            log_error "Environnement inconnu: $ENVIRONMENT"
+            show_help
+            exit 1
+            ;;
+    esac
+    
+    log_success "Commande exécutée avec succès"
+}
+
+# Exécuter la fonction principale si le script est appelé directement
+if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
+    main "$@"
+fi

@@ -1,12 +1,12 @@
-'use client';
-
-import { useTranslations } from '@/hooks/useTranslations';
-import { useDynamicSEO } from '@/hooks/useDynamicSEO';
-import RichSnippets from '@/components/RichSnippets';
+import { Metadata } from 'next';
+import { generateSEOMetadata } from '@/lib/seo-metadata';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Users, Globe, Heart, Target, Lightbulb } from 'lucide-react';
 import Link from 'next/link';
+
+// Métadonnées SEO pour la page About
+export const metadata: Metadata = generateSEOMetadata('about', 'fr');
 
 export default function AboutPage() {
   // SEO temporairement désactivé pour debugging

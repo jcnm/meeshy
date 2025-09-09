@@ -640,7 +640,18 @@
     "loggingIn": "Logging in...",
     "verifyingAuth": "Verifying authentication...",
     "redirecting": "Redirecting...",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "validation": {
+      "required": "All fields are required"
+    },
+    "noAccount": "Don't have an account?",
+    "registerLink": "Sign up here",
+    "success": {
+      "loginSuccess": "Login successful!"
+    },
+    "errors": {
+      "loginFailed": "Login failed. Please check your credentials."
+    }
   },
   "register": {
     "title": "Create an account",
@@ -651,17 +662,33 @@
     "lastNamePlaceholder": "Your last name",
     "usernameLabel": "Username *",
     "usernamePlaceholder": "Choose a username",
+    "usernameHelp": "This name will be visible to other users",
     "emailLabel": "Email *",
     "emailPlaceholder": "your@email.com",
     "phoneLabel": "Phone",
     "phonePlaceholder": "+33123456789",
     "passwordLabel": "Password *",
     "passwordPlaceholder": "Choose a password",
+    "passwordHelp": "Minimum 6 characters",
+    "confirmPasswordLabel": "Confirm password *",
+    "confirmPasswordPlaceholder": "Confirm your password",
     "systemLanguageLabel": "System language",
     "regionalLanguageLabel": "Regional language",
     "registerButton": "Create account",
     "creating": "Creating...",
     "fillRequiredFields": "Please fill in all required fields",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters long",
+    "registrationError": "Error creating account",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Sign in here",
+    "acceptTerms": "I accept the",
+    "termsOfService": "terms of service",
+    "and": "and",
+    "privacyPolicy": "privacy policy",
+    "contactUs": "contact us",
+    "mustAcceptTerms": "You must accept the terms of service and privacy policy",
+    "formDescription": "Fill out the form below to create your account",
     "accountCreationError": "Error creating account"
   },
   "joinConversation": {
@@ -1117,6 +1144,7 @@
     "share": "Share",
     "pin": "Pin",
     "edit": "Edit",
+    "delete": "Delete",
     "filterLanguages": "Filter languages...",
     "original": "Original",
     "improveTranslationQuality": "Improve translation quality",
@@ -1132,7 +1160,12 @@
     "charactersRemaining": "{count} characters remaining",
     "charactersOverLimit": "{count} characters over limit",
     "newMessageFrom": "📨 New message from {name}",
-    "webSocketConnectionInProgress": "WebSocket connection in progress..."
+    "webSocketConnectionInProgress": "WebSocket connection in progress...",
+    "deliveryStatus": {
+      "sent": "Sent",
+      "delivered": "Delivered",
+      "read": "Read"
+    }
   },
   "anonymousChat": {
     "title": "Conversation",
@@ -1178,7 +1211,12 @@
       "translationInProgress": "Translation in progress...",
       "retranslationInProgress": "Forced retranslation in progress...",
       "translationSuccess": "Message translated with {model}",
-      "textCopied": "Text copied"
+      "textCopied": "Text copied",
+      "deliveryStatus": {
+        "sent": "Sent",
+        "delivered": "Delivered",
+        "read": "Read"
+      }
     },
     "conversations": {
       "loadError": "Unable to load conversations",
@@ -1852,14 +1890,43 @@
       "tokenCopied": "Token copied to clipboard"
     },
     "summary": {
+      "title": "Configuration Summary",
+      "description": "Review settings before generating the link",
+      "basicInfo": "Basic Information",
+      "conversation": "Conversation",
+      "validityDuration": "Validity Duration",
+      "usageLimit": "Usage Limit",
+      "usageCount": "Usage count",
+      "unlimited": "Unlimited",
+      "welcomeMessage": "Welcome Message",
+      "noCustomMessage": "No custom message",
       "welcomeMessageDescription": "Welcome message description",
       "permissionsGranted": "Permissions granted",
+      "messages": "Messages",
+      "allowed": "Allowed",
+      "forbidden": "Forbidden",
+      "guestsCanSendMessages": "Guests can send messages",
+      "guestsCannotSendMessages": "Guests cannot send messages",
+      "images": "Images",
+      "guestsCanShareImages": "Guests can share images",
+      "guestsCannotShareImages": "Guests cannot share images",
+      "files": "Files",
+      "guestsCanShareFiles": "Guests can share files",
+      "guestsCannotShareFiles": "Guests cannot share files",
+      "history": "History",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "guestsCanViewHistory": "Guests can view history",
+      "guestsCannotViewHistory": "Guests cannot view history",
       "nicknameRequired": "Nickname required",
       "yes": "Yes",
       "no": "No",
+      "guestsMustEnterNickname": "Guests must enter nickname",
+      "guestsCanStayAnonymous": "Guests can stay anonymous",
       "emailRequired": "Email required",
+      "guestsMustEnterEmail": "Guests must enter email",
       "allowedLanguages": "Allowed languages",
-      "usageCount": "Usage count",
+      "selectedLanguages": "Selected languages",
       "linkDisabledAfter": "Link disabled after"
     },
     "createLinkModal": "Create link modal"
@@ -2128,6 +2195,7 @@
     "online": "online",
     "typing": "typing...",
     "typingMultiple": "people typing...",
+    "you": "You",
     "conversationParticipants": "Conversation participants"
   },
   "conversationUI": {
@@ -2139,7 +2207,7 @@
     "offline": "Offline",
     "noOneOnline": "No one online",
     "noOfflineParticipants": "No offline participants",
-    "you": "(You)",
+    "you": "You",
     "removeFromGroup": "Remove from group",
     "participantRemoved": "Participant removed from conversation",
     "removeParticipantError": "Error removing participant",
@@ -2211,7 +2279,41 @@
     "copiedToClipboard": "Copied to clipboard",
     "copyFailed": "Copy failed",
     "errorCreatingLink": "Error creating link",
-    "createLinkButton": "Create link button"
+    "createLinkButton": "Create link button",
+    "generatedLink": "Generated link",
+    "linkDetails": "Link details",
+    "name": "Name",
+    "description": "Description",
+    "maxUses": "Max uses",
+    "expiresAt": "Expires at",
+    "allowAnonymousMessages": "Anonymous messages",
+    "allowAnonymousFiles": "Anonymous files",
+    "allowAnonymousImages": "Anonymous images",
+    "allowViewHistory": "View history",
+    "requireNickname": "Nickname required",
+    "requireEmail": "Email required",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "noExpiration": "No expiration",
+    "advancedSettings": "Advanced settings",
+    "advancedSettingsInfo": "Use the link creation button to set finer configurations (expiration, permissions, etc.)",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied",
+    "active": "Active",
+    "participants": "Participants",
+    "uses": "Uses",
+    "unlimited": "Unlimited",
+    "permissions": "Permissions",
+    "messages": "Messages",
+    "files": "Files",
+    "images": "Images",
+    "history": "History",
+    "nickname": "Nickname",
+    "email": "Email",
+    "createdAt": "Created at",
+    "defaultLinkName": "Invitation link",
+    "defaultLinkDescription": "Join this conversation"
   },
   "createLinkButtonV2": {
     "createLink": "Create link",
@@ -2279,5 +2381,38 @@
     "success": {
       "conversationCreated": "Conversation created successfully"
     }
+  },
+  "joinPage": {
+    "title": "Join conversation",
+    "invitedTo": "You are invited to join",
+    "conversationWithoutName": "Unnamed conversation",
+    "type": "Type",
+    "group": "Group",
+    "direct": "Direct conversation",
+    "public": "Public conversation",
+    "global": "Global conversation",
+    "privateConversation": "Private conversation",
+    "participants": "Participants",
+    "members": "member(s)",
+    "includingAnonymous": "including {count} anonymous",
+    "spokenLanguages": "Spoken languages",
+    "languages": "language(s)",
+    "createdOn": "Created on",
+    "expiresOn": "Expires on",
+    "noExpiration": "No expiration",
+    "joinButton": "Join",
+    "joinAnonymously": "Join anonymously",
+    "loginRequired": "Login required",
+    "registerRequired": "Registration required",
+    "sessionAnonymous": "Anonymous session",
+    "connected": "Connected",
+    "leaveSession": "Leave session",
+    "disconnect": "Disconnect",
+    "sessionClosed": "Session closed",
+    "linkNotFound": "Invalid or not found conversation link",
+    "linkExpired": "This link has expired",
+    "linkInactive": "This link is no longer active",
+    "linkLimitReached": "This link has reached its usage limit",
+    "loadingError": "Error loading link"
   }
 }

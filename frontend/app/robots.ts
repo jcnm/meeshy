@@ -1,8 +1,8 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://meeshy.com' : 'http://localhost:3100';
-
+  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://meeshy.me' : 'http://localhost:3100'
+  
   return {
     rules: [
       {
@@ -14,74 +14,58 @@ export default function robots(): MetadataRoute.Robots {
           '/partners',
           '/privacy',
           '/terms',
-          '/en/',
-          '/en/about',
-          '/en/contact',
-          '/en/partners',
-          '/en/privacy',
-          '/en/terms',
-          '/pt/',
-          '/pt/about',
-          '/pt/contact',
-          '/pt/partners',
-          '/pt/privacy',
-          '/pt/terms'
+          '/en/*',
+          '/pt/*',
+          '/api/health',
+          '/_next/static/*',
+          '/images/*',
+          '/favicon.ico',
+          '/sitemap.xml',
+          '/robots.txt',
         ],
         disallow: [
-          '/api/',
-          '/chat/',
-          '/dashboard/',
-          '/profile/',
-          '/settings/',
-          '/admin/',
-          '/_next/',
-          '/images/private/',
-          '/temp/',
-          '/*.json$',
-          '/node_modules/'
+          '/dashboard',
+          '/conversations',
+          '/chat/*',
+          '/api/*',
+          '/admin',
+          '/_next/*',
+          '/private/*',
+          '/temp/*',
+          '/logs/*',
+          '/.env*',
+          '/node_modules/*',
+          '/.git/*',
+          '/.next/*',
+          '/coverage/*',
+          '/test/*',
+          '/__tests__/*',
+          '/dist/*',
+          '/build/*',
         ],
       },
-      // Règles spécifiques pour les crawlers de recherche majeurs
       {
-        userAgent: 'Googlebot',
-        allow: [
-          '/',
-          '/about',
-          '/contact',
-          '/partners',
-          '/privacy',
-          '/terms'
-        ],
-        disallow: [
-          '/api/',
-          '/chat/',
-          '/dashboard/',
-          '/profile/',
-          '/settings/'
-        ],
-        crawlDelay: 1
+        userAgent: 'GPTBot',
+        disallow: '/',
       },
       {
-        userAgent: 'Bingbot',
-        allow: [
-          '/',
-          '/about',
-          '/contact',
-          '/partners',
-          '/privacy',
-          '/terms'
-        ],
-        disallow: [
-          '/api/',
-          '/chat/',
-          '/dashboard/',
-          '/profile/',
-          '/settings/'
-        ],
-        crawlDelay: 2
-      }
+        userAgent: 'ChatGPT-User',
+        disallow: '/',
+      },
+      {
+        userAgent: 'CCBot',
+        disallow: '/',
+      },
+      {
+        userAgent: 'anthropic-ai',
+        disallow: '/',
+      },
+      {
+        userAgent: 'Claude-Web',
+        disallow: '/',
+      },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl
-  };
+    host: baseUrl,
+  }
 }

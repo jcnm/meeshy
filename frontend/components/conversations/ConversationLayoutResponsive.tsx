@@ -48,6 +48,7 @@ import { CreateLinkButton } from '@/components/conversations/create-link-button'
 import { getUserLanguageChoices } from '@/utils/user-language-preferences';
 import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
+import { useTranslationStats } from '@/hooks/use-translation-stats';
 import { MessagesDisplay } from '@/components/common/messages-display';
 import { messageService } from '@/services/message.service';
 
@@ -175,11 +176,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     loadMessages,
     clearMessages,
     addMessage,
-    updateMessageTranslations
+    updateMessageTranslations,
+    addTranslatingState,
+    removeTranslatingState,
+    isTranslating
   } = useConversationMessages({
     currentUser: user!, // user est garanti d'exister après les checks
     conversationId: selectedConversation?.id
   });
+
+  // Hook pour les statistiques de traduction
+  const { stats: translationStats, incrementTranslationCount } = useTranslationStats();
 
   // Ref pour le scroll automatique vers le dernier message
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -356,7 +363,20 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const handleTranslation = useCallback((messageId: string, translations: TranslationData[]) => {
     // Appliquer les traductions au message concerné via le loader commun
     updateMessageTranslations(messageId, translations);
-  }, [updateMessageTranslations]);
+    
+    // Incrémenter le compteur de traduction pour les traductions pertinentes
+    const userLanguages = [
+      user?.systemLanguage,
+      user?.regionalLanguage,
+      user?.customDestinationLanguage
+    ].filter(Boolean);
+
+    translations.forEach(translation => {
+      if (userLanguages.includes(translation.targetLanguage)) {
+        incrementTranslationCount(translation.targetLanguage);
+      }
+    });
+  }, [updateMessageTranslations, user?.systemLanguage, user?.regionalLanguage, user?.customDestinationLanguage, incrementTranslationCount]);
 
   const handleMessageSent = useCallback((content: string, language: string) => {
     // Scroller vers le bas après l'envoi
@@ -1232,6 +1252,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     conversationType={selectedConversation?.type || 'direct'}
                     userRole={(user.role as UserRoleEnum) || UserRoleEnum.USER}
                     conversationId={selectedConversation?.id}
+                    addTranslatingState={addTranslatingState}
+                    isTranslating={isTranslating}
                   />
                   {/* Élément invisible pour le scroll automatique */}
                   <div ref={messagesEndRef} />

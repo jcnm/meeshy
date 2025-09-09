@@ -218,6 +218,7 @@ export class MeeshySocketIOManager {
           });
 
           // PHASE 3.1: Utilisation du MessagingService unifié avec contexte d'auth
+          console.log(`🔍 [DEBUG] Appel MessagingService.handleMessage pour userId ${userId}`);
           const response: MessageResponse = await this.messagingService.handleMessage(
             messageRequest, 
             userId, 
@@ -225,6 +226,7 @@ export class MeeshySocketIOManager {
             jwtToken,
             sessionToken
           );
+          console.log(`🔍 [DEBUG] Réponse MessagingService:`, { success: response.success, messageId: response.data?.id });
 
           // Réponse via callback - typage strict SocketIOResponse
           if (callback) {
@@ -244,11 +246,10 @@ export class MeeshySocketIOManager {
           }
 
           // Broadcast temps réel vers tous les clients de la conversation (y compris l'auteur)
-          const messageResponse = response as unknown as { messageId: string; status: string };
-          if (messageResponse.messageId) {
+          if (response.success && response.data?.id) {
             // Récupérer le message depuis la base de données pour le broadcast
             const message = await this.prisma.message.findUnique({
-              where: { id: messageResponse.messageId },
+              where: { id: response.data.id },
               include: {
                 sender: {
                   select: {
@@ -270,13 +271,27 @@ export class MeeshySocketIOManager {
               }
             });
             
+            console.log(`🔍 [DEBUG] Message trouvé en base:`, {
+              messageId: response.data.id,
+              hasMessage: !!message,
+              messageDetails: message ? {
+                id: message.id,
+                content: message.content?.substring(0, 50) + '...',
+                senderId: message.senderId,
+                conversationId: message.conversationId
+              } : null
+            });
+            
             if (message) {
               // Ajouter le champ timestamp requis par le type Message
               const messageWithTimestamp = {
                 ...message,
                 timestamp: message.createdAt
               } as any; // Cast temporaire pour éviter les conflits de types
-              await this._broadcastNewMessage(messageWithTimestamp, data.conversationId);
+              console.log(`🔍 [DEBUG] Appel _broadcastNewMessage pour message ${message.id}`);
+              await this._broadcastNewMessage(messageWithTimestamp, data.conversationId, socket);
+            } else {
+              console.log(`⚠️ [DEBUG] Message ${response.data.id} non trouvé en base de données`);
             }
           }
 
@@ -1014,8 +1029,9 @@ export class MeeshySocketIOManager {
   /**
    * PHASE 3.1: Broadcast d'un nouveau message via MessagingService
    * Remplace l'ancienne logique de broadcast dans _handleNewMessage
+   * Utilise le comportement simple et fiable de l'ancienne méthode
    */
-  private async _broadcastNewMessage(message: Message, conversationId: string): Promise<void> {
+  private async _broadcastNewMessage(message: Message, conversationId: string, senderSocket?: any): Promise<void> {
     try {
       // Récupérer les stats de conversation mises à jour
       const updatedStats = await conversationStatsService.updateOnNewMessage(
@@ -1079,15 +1095,37 @@ export class MeeshySocketIOManager {
         }
       }
 
-      // Broadcast vers tous les clients de la conversation
-      this.io.to(`conversation_${conversationId}`).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
+      // Debug: Vérifier les clients connectés à la room
+      const room = `conversation_${conversationId}`;
+      const roomClients = this.io.sockets.adapter.rooms.get(room);
+      console.log(`🔍 [DEBUG] Room ${room} a ${roomClients?.size || 0} clients connectés`);
       
-      console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers conversation ${conversationId}`);
+      // Debug: Vérifier le payload
+      console.log(`🔍 [DEBUG] Payload à broadcaster:`, {
+        id: messagePayload.id,
+        conversationId: messagePayload.conversationId,
+        content: messagePayload.content?.substring(0, 50) + '...',
+        senderId: messagePayload.senderId,
+        hasSender: !!messagePayload.sender
+      });
+      
+      // COMPORTEMENT SIMPLE ET FIABLE DE L'ANCIENNE MÉTHODE
+      // 1. Broadcast vers tous les clients de la conversation
+      this.io.to(room).emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
+      
+      // 2. S'assurer que l'auteur reçoit aussi (au cas où il ne serait pas dans la room encore)
+      if (senderSocket) {
+        senderSocket.emit(SERVER_EVENTS.MESSAGE_NEW, messagePayload);
+        console.log(`📤 [PHASE 3.1] Message ${message.id} envoyé directement à l'auteur via socket`);
+      } else {
+        console.log(`⚠️ [PHASE 3.1] Socket de l'auteur non fourni, broadcast room seulement`);
+      }
+      
+      console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers conversation ${conversationId} (${roomClients?.size || 0} clients)`);
       
       // Envoyer les notifications de message pour les utilisateurs non connectés à la conversation
-      const senderId = message.anonymousSenderId || message.senderId;
       const isAnonymousSender = !!message.anonymousSenderId;
-      if (senderId) {
+      if (message.senderId) {
         // Note: Les notifications sont gérées directement dans routes/notifications.ts
       }
       

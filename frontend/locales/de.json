@@ -129,10 +129,67 @@
       "noRecentGroups": "Keine kürzlichen Communities"
     },
     "success": {
+      "loginSuccess": "Erfolgreich angemeldet",
+      "registrationSuccess": "Konto erfolgreich erstellt",
+      "settingsSaved": "Einstellungen erfolgreich gespeichert",
+      "profileUpdated": "Profil erfolgreich aktualisiert",
+      "welcome": "Willkommen",
       "linkCreated": "Unterhaltungslink erfolgreich erstellt!"
+    },
+    "summary": {
+      "title": "Konfigurationsübersicht",
+      "description": "Überprüfen Sie die Einstellungen vor der Link-Generierung",
+      "basicInfo": "Grundinformationen",
+      "conversation": "Unterhaltung",
+      "validityDuration": "Gültigkeitsdauer",
+      "usageLimit": "Nutzungslimit",
+      "usageCount": "{count} Nutzungen",
+      "unlimited": "Unbegrenzt",
+      "welcomeMessage": "Willkommensnachricht",
+      "noCustomMessage": "Keine benutzerdefinierte Nachricht",
+      "welcomeMessageDescription": "Beschreibung der Willkommensnachricht",
+      "permissionsGranted": "Gewährte Berechtigungen",
+      "messages": "Nachrichten",
+      "allowed": "Erlaubt",
+      "forbidden": "Verboten",
+      "guestsCanSendMessages": "Gäste können Nachrichten senden",
+      "guestsCannotSendMessages": "Gäste können keine Nachrichten senden",
+      "images": "Bilder",
+      "guestsCanShareImages": "Gäste können Bilder teilen",
+      "guestsCannotShareImages": "Gäste können keine Bilder teilen",
+      "files": "Dateien",
+      "guestsCanShareFiles": "Gäste können Dateien teilen",
+      "guestsCannotShareFiles": "Gäste können keine Dateien teilen",
+      "history": "Verlauf",
+      "visible": "Sichtbar",
+      "hidden": "Versteckt",
+      "guestsCanViewHistory": "Gäste können den Verlauf anzeigen",
+      "guestsCannotViewHistory": "Gäste können den Verlauf nicht anzeigen",
+      "nicknameRequired": "Spitzname erforderlich",
+      "yes": "Ja",
+      "no": "Nein",
+      "guestsMustEnterNickname": "Gäste müssen einen Spitznamen eingeben",
+      "guestsCanStayAnonymous": "Gäste können anonym bleiben",
+      "emailRequired": "E-Mail erforderlich",
+      "guestsMustEnterEmail": "Gäste müssen eine E-Mail eingeben",
+      "allowedLanguages": "Erlaubte Sprachen",
+      "selectedLanguages": "Ausgewählte Sprachen"
     },
     "time": {
       "format": "de-DE"
+    },
+    "steps": {
+      "selectConversation": "Unterhaltung auswählen",
+      "configureLink": "Link konfigurieren",
+      "linkOptions": "Link-Optionen",
+      "summaryAndGeneration": "Zusammenfassung und Generierung"
+    },
+    "stepDescriptions": {
+      "selectConversation": "Wählen Sie eine bestehende Unterhaltung oder erstellen Sie eine neue",
+      "configureLink": "Konfigurieren Sie die grundlegenden Link-Parameter",
+      "configureNewConversation": "Definieren Sie die Details Ihrer neuen Unterhaltung",
+      "linkOptions": "Passen Sie Berechtigungen und Einschränkungen an",
+      "summaryAndGeneration": "Überprüfen und generieren Sie Ihren Unterhaltungslink"
     }
   },
   "createLinkButton": {
@@ -146,5 +203,86 @@
     "copyFailed": "Kopieren fehlgeschlagen",
     "errorCreatingLink": "Fehler beim Erstellen des Links",
     "createLinkButton": "Link-Erstellungsbutton"
+  },
+  "bubbleStream": {
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "deliveryStatus": {
+      "sent": "Gesendet",
+      "delivered": "Zugestellt",
+      "read": "Gelesen"
+    }
+  },
+  "register": {
+    "title": "Konto erstellen",
+    "description": "Trete Meeshy bei und kommuniziere ohne Barrieren",
+    "formDescription": "Fülle das untenstehende Formular aus, um dein Konto zu erstellen",
+    "firstNameLabel": "Vorname *",
+    "firstNamePlaceholder": "Dein Vorname",
+    "lastNameLabel": "Nachname *",
+    "lastNamePlaceholder": "Dein Nachname",
+    "usernameLabel": "Benutzername *",
+    "usernamePlaceholder": "Wähle einen Benutzernamen",
+    "usernameHelp": "Dieser Name wird für andere Benutzer sichtbar sein",
+    "emailLabel": "E-Mail *",
+    "emailPlaceholder": "deine@email.com",
+    "phoneLabel": "Telefon",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "Passwort *",
+    "passwordPlaceholder": "Wähle ein Passwort",
+    "passwordHelp": "Mindestens 6 Zeichen",
+    "confirmPasswordLabel": "Passwort bestätigen *",
+    "confirmPasswordPlaceholder": "Bestätige dein Passwort",
+    "systemLanguageLabel": "Systemsprache",
+    "regionalLanguageLabel": "Regionale Sprache",
+    "registerButton": "Konto erstellen",
+    "creating": "Erstelle...",
+    "fillRequiredFields": "Bitte fülle alle Pflichtfelder aus",
+    "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+    "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
+    "registrationError": "Fehler beim Erstellen des Kontos",
+    "hasAccount": "Hast du bereits ein Konto?",
+    "loginLink": "Hier anmelden",
+    "acceptTerms": "Ich akzeptiere die",
+    "termsOfService": "Nutzungsbedingungen",
+    "and": "und die",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "contactUs": "kontaktiere uns",
+    "mustAcceptTerms": "Sie müssen den Nutzungsbedingungen und der Datenschutzrichtlinie zustimmen"
+  },
+  "messages": {
+    "sent": "Nachricht gesendet!",
+    "sendError": "Fehler beim Senden der Nachricht",
+    "editSoon": "Nachrichtenbearbeitung kommt bald",
+    "translationError": "Fehler beim Anfordern der Übersetzung",
+    "translationMaxTier": "Diese Übersetzung verwendet bereits die höchste Stufe",
+    "translationInProgress": "Übersetzung läuft...",
+    "retranslationInProgress": "Erzwungene Neuübersetzung läuft...",
+    "translationSuccess": "Nachricht mit {model} übersetzt",
+    "textCopied": "Text kopiert",
+    "deliveryStatus": {
+      "sent": "Gesendet",
+      "delivered": "Zugestellt",
+      "read": "Gelesen"
+    }
+  },
+  "login": {
+    "title": "Anmeldung",
+    "description": "Willkommen zurück bei Meeshy",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "loginButton": "Anmelden",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Haben Sie noch kein Konto?",
+    "registerLink": "Hier registrieren",
+    "validation": {
+      "required": "Alle Felder sind erforderlich"
+    },
+    "success": {
+      "loginSuccess": "Anmeldung erfolgreich!"
+    },
+    "errors": {
+      "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
+    }
   }
 }

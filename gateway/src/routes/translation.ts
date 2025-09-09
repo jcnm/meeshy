@@ -136,6 +136,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
               target_language: validatedData.target_language,
               confidence: 1.0,
               processing_time: 0,
+              model: 'none', // Pas de traduction nécessaire
               timestamp: new Date().toISOString()
             }
           });
@@ -268,6 +269,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
           target_language: result.targetLanguage,
           confidence: result.confidenceScore,
           processing_time: processingTime,
+          model: result.modelType || 'basic', // CORRECTION: Inclure le modèle utilisé
           timestamp: new Date().toISOString()
         }
       };
@@ -291,7 +293,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
           source_language: requestBody.source_language || 'auto',
           target_language: requestBody.target_language || 'en',
           original_text: requestBody.text || '',
-          model_used: 'fallback',
+          model: 'fallback', // CORRECTION: Utiliser 'model' au lieu de 'model_used'
           confidence: 0.1,
           processing_time: 0.001,
           from_cache: false,
@@ -402,7 +404,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
           translated_text: testResult.translatedText,
           source_language: testResult.sourceLanguage,
           target_language: testResult.targetLanguage,
-          model_used: testResult.modelType,
+          model: testResult.modelType, // CORRECTION: Utiliser 'model' au lieu de 'model_used'
           confidence: testResult.confidenceScore
         }
       };

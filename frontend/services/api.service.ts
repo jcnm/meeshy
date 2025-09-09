@@ -191,7 +191,7 @@ class ApiService {
   setAuthToken(token: string | null) {
     if (typeof window !== 'undefined') {
       if (token) {
-        localStorage.setItem('token', token);
+        localStorage.setItem('auth_token', token);
       } else {
         localStorage.removeItem('auth_token');
       }

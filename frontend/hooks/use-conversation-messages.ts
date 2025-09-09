@@ -28,6 +28,10 @@ interface UseConversationMessagesReturn {
   addMessage: (message: Message) => void;
   updateMessageTranslations: (messageId: string, translations: TranslationData[]) => void;
   refreshMessages: () => Promise<void>;
+  // Nouvelles fonctions pour gérer l'état des traductions en cours
+  addTranslatingState: (messageId: string, targetLanguage: string) => void;
+  removeTranslatingState: (messageId: string, targetLanguage: string) => void;
+  isTranslating: (messageId: string, targetLanguage: string) => boolean;
 }
 
 /**
@@ -43,6 +47,9 @@ export function useConversationMessages({
   const [messages, setMessages] = useState<MessageWithTranslations[]>([]);
   const [translatedMessages, setTranslatedMessages] = useState<BubbleStreamMessage[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  
+  // État pour les traductions en cours
+  const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
 
   // Hook pour la gestion des traductions
   const {
@@ -228,7 +235,7 @@ export function useConversationMessages({
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [currentUser?.id, conversationId, messages.length, getRequiredTranslations, isAnonymousMode]);
+  }, [currentUser?.id, conversationId, getRequiredTranslations, isAnonymousMode]);
 
   // Fonction pour vider les messages
   const clearMessages = useCallback(() => {
@@ -267,6 +274,37 @@ export function useConversationMessages({
   }, [processMessageWithTranslations, conversationId]);
 
   // Fonction pour mettre à jour les traductions d'un message existant
+  // Fonctions pour gérer l'état des traductions en cours
+  const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
+    setTranslatingMessages(prev => {
+      const newMap = new Map(prev);
+      const languages = newMap.get(messageId) || new Set();
+      languages.add(targetLanguage);
+      newMap.set(messageId, languages);
+      return newMap;
+    });
+  }, []);
+
+  const removeTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
+    setTranslatingMessages(prev => {
+      const newMap = new Map(prev);
+      const languages = newMap.get(messageId);
+      if (languages) {
+        languages.delete(targetLanguage);
+        if (languages.size === 0) {
+          newMap.delete(messageId);
+        } else {
+          newMap.set(messageId, languages);
+        }
+      }
+      return newMap;
+    });
+  }, []);
+
+  const isTranslating = useCallback((messageId: string, targetLanguage: string) => {
+    return translatingMessages.get(messageId)?.has(targetLanguage) || false;
+  }, [translatingMessages]);
+
   const updateMessageTranslations = useCallback((messageId: string, translations: TranslationData[]) => {
     
     // Mettre à jour les messages bruts - FUSION des traductions existantes avec les nouvelles
@@ -310,6 +348,17 @@ export function useConversationMessages({
               confidenceScore: newTranslation.confidenceScore,
             });
           }
+        });
+        
+        console.log(`🔄 Mise à jour traductions message ${messageId}:`, {
+          existingCount: existingTranslations.length,
+          newCount: translations.length,
+          mergedCount: mergedTranslations.length
+        });
+        
+        // Retirer l'état de traduction en cours pour les langues qui ont été traduites
+        translations.forEach((newTranslation: TranslationData) => {
+          removeTranslatingState(messageId, newTranslation.targetLanguage);
         });
         
         return {
@@ -400,6 +449,10 @@ export function useConversationMessages({
     clearMessages,
     addMessage,
     updateMessageTranslations,
-    refreshMessages
+    refreshMessages,
+    // Nouvelles fonctions pour gérer l'état des traductions en cours
+    addTranslatingState,
+    removeTranslatingState,
+    isTranslating
   };
 }

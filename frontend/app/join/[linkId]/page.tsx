@@ -30,12 +30,13 @@ import {
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { User } from '@shared/types';
-import { ConversationLink } from '@/types/frontend';
+import { ConversationLink } from '@shared/types';
 import { AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslations } from '@/hooks/useTranslations';
 import { LinkConversationService } from '@/services/link-conversation.service';
 
 // Langues supportées pour les participants anonymes
@@ -64,6 +65,39 @@ export default function JoinConversationPage() {
   const router = useRouter();
   const linkId = params?.linkId as string;
   const { user: currentUser, login, joinAnonymously, isChecking, isAnonymous, token, logout, leaveAnonymousSession } = useAuth();
+  const { t } = useTranslations('joinPage');
+
+  // Fonction pour obtenir le type de conversation traduit
+  const getConversationTypeLabel = (type: string | undefined) => {
+    switch (type) {
+      case 'group':
+        return t('group');
+      case 'direct':
+        return t('direct');
+      case 'public':
+        return t('public');
+      case 'global':
+        return t('global');
+      default:
+        return t('privateConversation');
+    }
+  };
+
+  // Fonction pour obtenir la variante du badge selon le type
+  const getBadgeVariant = (type: string | undefined) => {
+    switch (type) {
+      case 'group':
+        return "default";
+      case 'global':
+        return "default";
+      case 'public':
+        return "secondary";
+      case 'direct':
+        return "outline";
+      default:
+        return "secondary";
+    }
+  };
   
   const [conversationLink, setConversationLink] = useState<ConversationLink | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -495,32 +529,83 @@ export default function JoinConversationPage() {
               </div>
               
               <CardTitle className="text-2xl">
-                Rejoindre la conversation
+                {t('title')}
               </CardTitle>
               <CardDescription className="text-lg">
-                Vous êtes invité(e) à rejoindre &quot;{conversationLink.conversation?.title || 'Conversation sans nom'}&quot;
+                {t('invitedTo')} &quot;{conversationLink.conversation?.title || t('conversationWithoutName')}&quot;
               </CardDescription>
             </CardHeader>
             
             <CardContent className="space-y-6">
+              {/* Message du créateur */}
+              {conversationLink.description && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center shrink-0">
+                      <MessageSquare className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-blue-800 leading-relaxed">
+                        {conversationLink.description}
+                      </p>
+                      {conversationLink.creator && (
+                        <p className="text-xs text-blue-600 mt-2">
+                          — {conversationLink.creator.displayName || `${conversationLink.creator.firstName} ${conversationLink.creator.lastName}`.trim() || conversationLink.creator.username}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Informations sur la conversation */}
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Type:</span>
-                  <Badge variant={conversationLink.conversation?.type === 'group' ? "default" : "secondary"}>
-                    {conversationLink.conversation?.type === 'group' ? 'Groupe' : 'Conversation privée'}
+                  <span className="text-sm font-medium text-gray-700">{t('type')}:</span>
+                  <Badge variant={getBadgeVariant(conversationLink.conversation?.type) as any}>
+                    {getConversationTypeLabel(conversationLink.conversation?.type)}
                   </Badge>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Participants:</span>
+                  <span className="text-sm font-medium text-gray-700">{t('participants')}:</span>
                   <span className="text-sm text-gray-600">
-                    {conversationLink.conversation?.participants?.length || 0} membre(s)
+                    {conversationLink.stats?.totalParticipants || 0} {t('members')}
+                    {conversationLink.stats && conversationLink.stats.anonymousCount > 0 && (
+                      <span className="text-xs text-gray-500 ml-1">
+                        {t('includingAnonymous', { count: conversationLink.stats.anonymousCount })}
+                      </span>
+                    )}
                   </span>
                 </div>
                 
+                {conversationLink.stats && conversationLink.stats.languageCount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">{t('spokenLanguages')}:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">
+                        {conversationLink.stats.languageCount} {t('languages')}
+                      </span>
+                      <div className="flex gap-1">
+                        {conversationLink.stats.spokenLanguages.slice(0, 3).map((lang: string, index: number) => (
+                          <span
+                            key={lang}
+                            className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                          >
+                            {lang.toUpperCase()}
+                          </span>
+                        ))}
+                        {conversationLink.stats.languageCount > 3 && (
+                          <span className="text-xs text-gray-500">
+                            +{conversationLink.stats.languageCount - 3}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Créée le:</span>
+                  <span className="text-sm font-medium text-gray-700">{t('createdOn')}:</span>
                   <span className="text-sm text-gray-600">
                     {conversationLink.conversation?.createdAt ? new Date(conversationLink.conversation.createdAt).toLocaleDateString() : 'N/A'}
                   </span>
@@ -528,7 +613,7 @@ export default function JoinConversationPage() {
 
                 {conversationLink.expiresAt && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Expire le:</span>
+                    <span className="text-sm font-medium text-gray-700">{t('expiresOn')}:</span>
                     <span className="text-sm text-gray-600 flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
                       {new Date(conversationLink.expiresAt).toLocaleDateString()}
@@ -558,7 +643,7 @@ export default function JoinConversationPage() {
                     size="lg"
                     className="w-full"
                   >
-                    {isJoining ? 'Connexion...' : 'Rejoindre la conversation'}
+                    {isJoining ? `${t('joinButton')}...` : t('joinButton')}
                     <ExternalLink className="h-4 w-4 ml-2" />
                   </Button>
                 </div>
@@ -578,7 +663,7 @@ export default function JoinConversationPage() {
                           onClick={() => setShowAnonymousForm(true)}
                         >
                           <UserMinus className="h-4 w-4 mr-2" />
-                          Rejoindre anonymement
+                          {t('joinAnonymously')}
                         </Button>
                       </div>
                       

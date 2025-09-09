@@ -129,10 +129,67 @@
       "noRecentGroups": "Nessuna comunità recente"
     },
     "success": {
+      "loginSuccess": "Accesso effettuato con successo",
+      "registrationSuccess": "Account creato con successo",
+      "settingsSaved": "Impostazioni salvate con successo",
+      "profileUpdated": "Profilo aggiornato con successo",
+      "welcome": "Benvenuto",
       "linkCreated": "Link di conversazione creato con successo!"
+    },
+    "summary": {
+      "title": "Riepilogo configurazione",
+      "description": "Rivedi le impostazioni prima di generare il link",
+      "basicInfo": "Informazioni di base",
+      "conversation": "Conversazione",
+      "validityDuration": "Durata validità",
+      "usageLimit": "Limite utilizzo",
+      "usageCount": "{count} utilizzi",
+      "unlimited": "Illimitato",
+      "welcomeMessage": "Messaggio di benvenuto",
+      "noCustomMessage": "Nessun messaggio personalizzato",
+      "welcomeMessageDescription": "Descrizione messaggio di benvenuto",
+      "permissionsGranted": "Permessi concessi",
+      "messages": "Messaggi",
+      "allowed": "Consentito",
+      "forbidden": "Vietato",
+      "guestsCanSendMessages": "Gli ospiti possono inviare messaggi",
+      "guestsCannotSendMessages": "Gli ospiti non possono inviare messaggi",
+      "images": "Immagini",
+      "guestsCanShareImages": "Gli ospiti possono condividere immagini",
+      "guestsCannotShareImages": "Gli ospiti non possono condividere immagini",
+      "files": "File",
+      "guestsCanShareFiles": "Gli ospiti possono condividere file",
+      "guestsCannotShareFiles": "Gli ospiti non possono condividere file",
+      "history": "Cronologia",
+      "visible": "Visibile",
+      "hidden": "Nascosto",
+      "guestsCanViewHistory": "Gli ospiti possono visualizzare la cronologia",
+      "guestsCannotViewHistory": "Gli ospiti non possono visualizzare la cronologia",
+      "nicknameRequired": "Nickname richiesto",
+      "yes": "Sì",
+      "no": "No",
+      "guestsMustEnterNickname": "Gli ospiti devono inserire un nickname",
+      "guestsCanStayAnonymous": "Gli ospiti possono rimanere anonimi",
+      "emailRequired": "Email richiesta",
+      "guestsMustEnterEmail": "Gli ospiti devono inserire un'email",
+      "allowedLanguages": "Lingue consentite",
+      "selectedLanguages": "Lingue selezionate"
     },
     "time": {
       "format": "it-IT"
+    },
+    "steps": {
+      "selectConversation": "Seleziona conversazione",
+      "configureLink": "Configura link",
+      "linkOptions": "Opzioni link",
+      "summaryAndGeneration": "Riepilogo e generazione"
+    },
+    "stepDescriptions": {
+      "selectConversation": "Scegli una conversazione esistente o creane una nuova",
+      "configureLink": "Configura i parametri di base del link",
+      "configureNewConversation": "Definisci i dettagli della tua nuova conversazione",
+      "linkOptions": "Personalizza permessi e restrizioni",
+      "summaryAndGeneration": "Rivedi e genera il link della conversazione"
     }
   },
   "createLinkButton": {
@@ -146,5 +203,86 @@
     "copyFailed": "Copia fallita",
     "errorCreatingLink": "Errore nella creazione del link",
     "createLinkButton": "Pulsante crea link"
+  },
+  "bubbleStream": {
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "deliveryStatus": {
+      "sent": "Inviato",
+      "delivered": "Consegnato",
+      "read": "Letto"
+    }
+  },
+  "register": {
+    "title": "Crea un account",
+    "description": "Unisciti a Meeshy e comunica senza barriere",
+    "formDescription": "Compila il modulo qui sotto per creare il tuo account",
+    "firstNameLabel": "Nome *",
+    "firstNamePlaceholder": "Il tuo nome",
+    "lastNameLabel": "Cognome *",
+    "lastNamePlaceholder": "Il tuo cognome",
+    "usernameLabel": "Nome utente *",
+    "usernamePlaceholder": "Scegli un nome utente",
+    "usernameHelp": "Questo nome sarà visibile agli altri utenti",
+    "emailLabel": "Email *",
+    "emailPlaceholder": "tua@email.com",
+    "phoneLabel": "Telefono",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "Password *",
+    "passwordPlaceholder": "Scegli una password",
+    "passwordHelp": "Minimo 6 caratteri",
+    "confirmPasswordLabel": "Conferma password *",
+    "confirmPasswordPlaceholder": "Conferma la tua password",
+    "systemLanguageLabel": "Lingua di sistema",
+    "regionalLanguageLabel": "Lingua regionale",
+    "registerButton": "Crea account",
+    "creating": "Creazione...",
+    "fillRequiredFields": "Per favore compila tutti i campi obbligatori",
+    "passwordsDoNotMatch": "Le password non corrispondono",
+    "passwordTooShort": "La password deve essere di almeno 6 caratteri",
+    "registrationError": "Errore nella creazione dell'account",
+    "hasAccount": "Hai già un account?",
+    "loginLink": "Accedi qui",
+    "acceptTerms": "Accetto i",
+    "termsOfService": "termini di servizio",
+    "and": "e la",
+    "privacyPolicy": "politica sulla privacy",
+    "contactUs": "contattaci",
+    "mustAcceptTerms": "Devi accettare i termini di servizio e la politica sulla privacy"
+  },
+  "messages": {
+    "sent": "Messaggio inviato!",
+    "sendError": "Errore nell'invio del messaggio",
+    "editSoon": "Modifica messaggi in arrivo",
+    "translationError": "Errore nella richiesta di traduzione",
+    "translationMaxTier": "Questa traduzione usa già il livello più alto",
+    "translationInProgress": "Traduzione in corso...",
+    "retranslationInProgress": "Ritraduzione forzata in corso...",
+    "translationSuccess": "Messaggio tradotto con {model}",
+    "textCopied": "Testo copiato",
+    "deliveryStatus": {
+      "sent": "Inviato",
+      "delivered": "Consegnato",
+      "read": "Letto"
+    }
+  },
+  "login": {
+    "title": "Accesso",
+    "description": "Bentornato su Meeshy",
+    "email": "Email",
+    "password": "Password",
+    "loginButton": "Accedi",
+    "forgotPassword": "Password dimenticata?",
+    "noAccount": "Non hai ancora un account?",
+    "registerLink": "Registrati qui",
+    "validation": {
+      "required": "Tutti i campi sono obbligatori"
+    },
+    "success": {
+      "loginSuccess": "Accesso riuscito!"
+    },
+    "errors": {
+      "loginFailed": "Accesso fallito. Controlla le tue credenziali."
+    }
   }
 }

@@ -25,6 +25,9 @@ interface MessagesDisplayProps {
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
   conversationId?: string;
+  // Nouvelles props pour gérer l'état des traductions en cours
+  addTranslatingState?: (messageId: string, targetLanguage: string) => void;
+  isTranslating?: (messageId: string, targetLanguage: string) => boolean;
 }
 
 /**
@@ -47,7 +50,9 @@ export function MessagesDisplay({
   onDeleteMessage,
   conversationType = 'direct',
   userRole = 'USER',
-  conversationId
+  conversationId,
+  addTranslatingState,
+  isTranslating
 }: MessagesDisplayProps) {
 
   // Fonction pour forcer la traduction d'un message
@@ -67,36 +72,49 @@ export function MessagesDisplay({
         messageContent: message?.content?.substring(0, 50) + '...'
       });
 
+      // CORRECTION: Utiliser la logique de progression des modèles
+      // Trouver la traduction existante pour déterminer le modèle actuel
+      const existingTranslation = (message as any)?.translations?.find((t: any) => 
+        t.language === targetLanguage && t.status === 'completed'
+      );
+      
+      const currentModel = existingTranslation?.model || 'basic';
+      const tiers = ['basic', 'medium', 'premium'];
+      const currentIndex = tiers.indexOf(currentModel);
+      const nextModel = currentIndex < tiers.length - 1 ? tiers[currentIndex + 1] : 'premium';
+      
+      console.log(`🔄 Progression modèle: ${currentModel} → ${nextModel}`);
+      
       const result = await messageTranslationService.requestTranslation({
         messageId,
         targetLanguage,
         sourceLanguage,
-        model: 'basic'
+        model: nextModel as 'basic' | 'medium' | 'premium'
       });
       
-      console.log('Traduction forcée demandée:', result);
-      console.log('Traduction en cours...');
+      console.log('✅ Traduction forcée demandée:', result);
+      console.log(`🔄 Retraduction en cours avec modèle ${nextModel}...`);
       
-      // Simuler la réception d'une traduction pour déclencher l'indicateur
-      // Attendre un délai pour simuler le temps de traduction
-      setTimeout(() => {
-        if (onTranslation) {
-          const mockTranslation = {
-            id: `${messageId}_${targetLanguage}`,
-            messageId,
-            sourceLanguage,
-            targetLanguage,
-            translatedContent: `[Traduction en cours...]`, // Contenu temporaire
-            translationModel: 'basic',
-            cacheKey: `${messageId}_${targetLanguage}`,
-            confidenceScore: 0.9,
-            createdAt: new Date(),
-          };
-          
-          console.log('🔄 Simulation de réception de traduction:', mockTranslation);
-          onTranslation(messageId, [mockTranslation]);
-        }
-      }, 2000); // Délai de 2 secondes pour simuler la traduction
+      // CORRECTION: Utiliser l'état persistant pour les traductions en cours
+      if (addTranslatingState) {
+        addTranslatingState(messageId, targetLanguage);
+        console.log(`🔄 État de traduction ajouté pour ${messageId} → ${targetLanguage}`);
+      }
+      
+      // Créer une traduction avec le statut 'translating' pour déclencher l'icône qui scintille
+      if (onTranslation) {
+        const translatingState = {
+          language: targetLanguage,
+          content: '', // Contenu vide pendant la traduction
+          status: 'translating' as const,
+          timestamp: new Date(),
+          confidence: 0.0, // Pas de confiance car pas encore traduit
+          model: nextModel as 'basic' | 'medium' | 'premium'
+        };
+        
+        console.log('🔄 Création état de traduction en cours:', translatingState);
+        onTranslation(messageId, [translatingState]);
+      }
     } catch (error) {
       console.error('❌ Erreur traduction forcée:', error);
       toast.error('Erreur lors de la demande de traduction');
@@ -150,6 +168,7 @@ export function MessagesDisplay({
             onDeleteMessage={onDeleteMessage}
             conversationType={conversationType}
             userRole={userRole}
+            isTranslating={isTranslating}
           />
         ))}
     </div>

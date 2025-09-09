@@ -128,7 +128,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     loadMessages,
     clearMessages,
     addMessage,
-    updateMessageTranslations
+    updateMessageTranslations,
+    addTranslatingState,
+    removeTranslatingState,
+    isTranslating
   } = useConversationMessages({
     currentUser: user,
     conversationId: conversationId,
@@ -1057,6 +1060,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   conversationType="public"
                   userRole={getUserModerationRole() as any}
                   conversationId={conversationId}
+                  addTranslatingState={addTranslatingState}
+                  isTranslating={isTranslating}
                 />
 
                 {/* Espace supplémentaire réduit pour éviter que le dernier message soit caché */}

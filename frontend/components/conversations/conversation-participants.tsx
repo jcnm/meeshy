@@ -53,9 +53,9 @@ export function ConversationParticipants({
 
 
 
-  // Listes en ligne / hors-ligne (exclure l'utilisateur actuel)
-  const onlineAll = participants.filter(p => p.user.isOnline && p.userId !== currentUser.id);
-  const offlineAll = participants.filter(p => !p.user.isOnline && p.userId !== currentUser.id);
+  // Listes en ligne / hors-ligne (inclure l'utilisateur actuel)
+  const onlineAll = participants.filter(p => p.user.isOnline);
+  const offlineAll = participants.filter(p => !p.user.isOnline);
   const recentActiveParticipants = onlineAll.slice(0, 3);
 
 
@@ -112,15 +112,18 @@ export function ConversationParticipants({
             ) : (
               <>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  {onlineAll.slice(0, 4).map((participant, index) => (
-                    <span key={`${participant.userId}-${index}`} className="flex items-center gap-1">
-                      {shouldShowCrown(participant) && (
-                        <Crown className="h-3 w-3 text-yellow-500" />
-                      )}
-                      <span>{getDisplayName(participant.user)}</span>
-                      {index < Math.min(onlineAll.length, 4) - 1 && <span>, </span>}
-                    </span>
-                  ))}
+                  {onlineAll.slice(0, 4).map((participant, index) => {
+                    const isCurrentUser = participant.userId === currentUser.id;
+                    return (
+                      <span key={`${participant.userId}-${index}`} className="flex items-center gap-1">
+                        {shouldShowCrown(participant) && (
+                          <Crown className="h-3 w-3 text-yellow-500" />
+                        )}
+                        <span>{getDisplayName(participant.user)}{isCurrentUser && ` (${t('you')})`}</span>
+                        {index < Math.min(onlineAll.length, 4) - 1 && <span>, </span>}
+                      </span>
+                    );
+                  })}
                   {onlineAll.length > 4 && (
                     <>
                       <span>, </span>

@@ -152,7 +152,7 @@ deploy_complete() {
     
     # Génération des configurations de production sécurisées
     log_info "🔐 Gestion des configurations de production sécurisées..."
-    if [ -f "$PROJECT_ROOT/scripts/production/generate-production-config.sh" ]; then
+    if [ -f "$PROJECT_ROOT/scripts/production/meeshy-generate-production-variables.sh" ]; then
         # Vérifier si les secrets existent déjà
         if [ -f "$PROJECT_ROOT/secrets/production-secrets.env" ] && [ "$REGENERATE_SECRETS" = false ]; then
             log_info "📋 Fichier de secrets existant détecté: $PROJECT_ROOT/secrets/production-secrets.env"
@@ -163,11 +163,11 @@ deploy_complete() {
             else
                 log_info "📋 Génération des nouvelles configurations de production..."
             fi
-            bash "$PROJECT_ROOT/scripts/production/generate-production-config.sh" --force
+            bash "$PROJECT_ROOT/scripts/production/meeshy-generate-production-variables.sh" --force
             log_success "✅ Configurations de production générées"
         fi
         
-        # Vérifier que le fichier clear.txt a été créé par generate-production-config.sh
+        # Vérifier que le fichier clear.txt a été créé par meeshy-generate-production-variables.sh
         if [ -f "$PROJECT_ROOT/secrets/clear.txt" ]; then
             log_success "✅ Fichier des mots de passe en clair trouvé: secrets/clear.txt"
         else
@@ -193,7 +193,7 @@ deploy_complete() {
         log_info "🔒 Fichier des mots de passe en clair conservé en local uniquement (sécurité)"
     else
         log_warning "⚠️  Fichier de secrets de production non trouvé: $PROJECT_ROOT/secrets/production-secrets.env"
-        log_info "💡 Créez le fichier avec: ./scripts/production/generate-production-config.sh"
+        log_info "💡 Créez le fichier avec: ./scripts/production/meeshy-generate-production-variables.sh"
     fi
 
 # Envoyer sur serveur
@@ -352,7 +352,7 @@ sleep 5
 # Vérifier MongoDB avec authentification correcte
 # Attendre que MongoDB soit prêt (optimisé)
 echo "⏳ Attente de MongoDB..."
-sleep 10
+sleep 3
 if docker-compose exec -T database mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
     echo "✅ MongoDB prêt"
 else
@@ -534,7 +534,7 @@ try {
             
             # Redémarrer MongoDB avec authentification
             docker-compose up -d database
-            sleep 10
+            sleep 3
             
             # Vérifier que MongoDB fonctionne avec authentification
             if docker-compose exec -T database mongosh -u meeshy -p "$MONGODB_PASSWORD" --authenticationDatabase admin --eval "db.runCommand({connectionStatus: 1})" >/dev/null 2>&1; then
@@ -551,7 +551,7 @@ try {
         fi
     else
         echo "⚠️  Fichier de secrets de production non trouvé, MongoDB restera sans authentification"
-        echo "💡 Pour sécuriser MongoDB, exécutez: ./scripts/production/generate-production-config.sh"
+        echo "💡 Pour sécuriser MongoDB, exécutez: ./scripts/production/meeshy-generate-production-variables.sh"
     fi
 else
     echo "❌ MongoDB non accessible - Arrêt du déploiement"
@@ -784,7 +784,7 @@ deploy_fix() {
 
     # Vérifier la santé des services
     log_info "🔍 Vérification post-correction..."
-    sleep 10
+    sleep 3
     health_check "$ip"
 
     # Nettoyer
@@ -1246,7 +1246,7 @@ docker-compose ps database
 echo "⏳ Attente que MongoDB soit prêt..."
 # Attendre que MongoDB soit prêt (optimisé)
 echo "⏳ Attente de MongoDB..."
-sleep 10
+sleep 3
 if docker-compose exec -T database mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; then
     echo "✅ MongoDB prêt"
 else

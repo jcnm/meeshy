@@ -129,10 +129,67 @@
       "noRecentGroups": "Нет недавних сообществ"
     },
     "success": {
+      "loginSuccess": "Успешный вход в систему",
+      "registrationSuccess": "Аккаунт успешно создан",
+      "settingsSaved": "Настройки успешно сохранены",
+      "profileUpdated": "Профиль успешно обновлен",
+      "welcome": "Добро пожаловать",
       "linkCreated": "Ссылка на беседу успешно создана!"
+    },
+    "summary": {
+      "title": "Сводка конфигурации",
+      "description": "Проверьте настройки перед созданием ссылки",
+      "basicInfo": "Основная информация",
+      "conversation": "Беседа",
+      "validityDuration": "Срок действия",
+      "usageLimit": "Лимит использования",
+      "usageCount": "{count} использований",
+      "unlimited": "Без ограничений",
+      "welcomeMessage": "Приветственное сообщение",
+      "noCustomMessage": "Без пользовательского сообщения",
+      "welcomeMessageDescription": "Описание приветственного сообщения",
+      "permissionsGranted": "Предоставленные разрешения",
+      "messages": "Сообщения",
+      "allowed": "Разрешено",
+      "forbidden": "Запрещено",
+      "guestsCanSendMessages": "Гости могут отправлять сообщения",
+      "guestsCannotSendMessages": "Гости не могут отправлять сообщения",
+      "images": "Изображения",
+      "guestsCanShareImages": "Гости могут делиться изображениями",
+      "guestsCannotShareImages": "Гости не могут делиться изображениями",
+      "files": "Файлы",
+      "guestsCanShareFiles": "Гости могут делиться файлами",
+      "guestsCannotShareFiles": "Гости не могут делиться файлами",
+      "history": "История",
+      "visible": "Видимо",
+      "hidden": "Скрыто",
+      "guestsCanViewHistory": "Гости могут просматривать историю",
+      "guestsCannotViewHistory": "Гости не могут просматривать историю",
+      "nicknameRequired": "Требуется псевдоним",
+      "yes": "Да",
+      "no": "Нет",
+      "guestsMustEnterNickname": "Гости должны ввести псевдоним",
+      "guestsCanStayAnonymous": "Гости могут оставаться анонимными",
+      "emailRequired": "Требуется email",
+      "guestsMustEnterEmail": "Гости должны ввести email",
+      "allowedLanguages": "Разрешенные языки",
+      "selectedLanguages": "Выбранные языки"
     },
     "time": {
       "format": "ru-RU"
+    },
+    "steps": {
+      "selectConversation": "Выбрать беседу",
+      "configureLink": "Настроить ссылку",
+      "linkOptions": "Параметры ссылки",
+      "summaryAndGeneration": "Сводка и генерация"
+    },
+    "stepDescriptions": {
+      "selectConversation": "Выберите существующую беседу или создайте новую",
+      "configureLink": "Настройте основные параметры ссылки",
+      "configureNewConversation": "Определите детали вашей новой беседы",
+      "linkOptions": "Настройте разрешения и ограничения",
+      "summaryAndGeneration": "Проверьте и создайте ссылку на беседу"
     }
   },
   "createLinkButton": {
@@ -146,5 +203,86 @@
     "copyFailed": "Ошибка копирования",
     "errorCreatingLink": "Ошибка создания ссылки",
     "createLinkButton": "Кнопка создания ссылки"
+  },
+  "bubbleStream": {
+    "edit": "Изменить",
+    "delete": "Удалить",
+    "deliveryStatus": {
+      "sent": "Отправлено",
+      "delivered": "Доставлено",
+      "read": "Прочитано"
+    }
+  },
+  "register": {
+    "title": "Создать аккаунт",
+    "description": "Присоединяйтесь к Meeshy и общайтесь без барьеров",
+    "formDescription": "Заполните форму ниже, чтобы создать свой аккаунт",
+    "firstNameLabel": "Имя *",
+    "firstNamePlaceholder": "Ваше имя",
+    "lastNameLabel": "Фамилия *",
+    "lastNamePlaceholder": "Ваша фамилия",
+    "usernameLabel": "Имя пользователя *",
+    "usernamePlaceholder": "Выберите имя пользователя",
+    "usernameHelp": "Это имя будет видно другим пользователям",
+    "emailLabel": "Email *",
+    "emailPlaceholder": "ваш@email.com",
+    "phoneLabel": "Телефон",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "Пароль *",
+    "passwordPlaceholder": "Выберите пароль",
+    "passwordHelp": "Минимум 6 символов",
+    "confirmPasswordLabel": "Подтвердите пароль *",
+    "confirmPasswordPlaceholder": "Подтвердите ваш пароль",
+    "systemLanguageLabel": "Язык системы",
+    "regionalLanguageLabel": "Региональный язык",
+    "registerButton": "Создать аккаунт",
+    "creating": "Создание...",
+    "fillRequiredFields": "Пожалуйста, заполните все обязательные поля",
+    "passwordsDoNotMatch": "Пароли не совпадают",
+    "passwordTooShort": "Пароль должен содержать минимум 6 символов",
+    "registrationError": "Ошибка создания аккаунта",
+    "hasAccount": "Уже есть аккаунт?",
+    "loginLink": "Войти здесь",
+    "acceptTerms": "Я принимаю",
+    "termsOfService": "условия использования",
+    "and": "и",
+    "privacyPolicy": "политику конфиденциальности",
+    "contactUs": "связаться с нами",
+    "mustAcceptTerms": "Вы должны принять условия использования и политику конфиденциальности"
+  },
+  "messages": {
+    "sent": "Сообщение отправлено!",
+    "sendError": "Ошибка отправки сообщения",
+    "editSoon": "Редактирование сообщений скоро будет доступно",
+    "translationError": "Ошибка запроса перевода",
+    "translationMaxTier": "Этот перевод уже использует самый высокий уровень",
+    "translationInProgress": "Перевод в процессе...",
+    "retranslationInProgress": "Принудительный повторный перевод в процессе...",
+    "translationSuccess": "Сообщение переведено с {model}",
+    "textCopied": "Текст скопирован",
+    "deliveryStatus": {
+      "sent": "Отправлено",
+      "delivered": "Доставлено",
+      "read": "Прочитано"
+    }
+  },
+  "login": {
+    "title": "Вход",
+    "description": "Добро пожаловать обратно в Meeshy",
+    "email": "Email",
+    "password": "Пароль",
+    "loginButton": "Войти",
+    "forgotPassword": "Забыли пароль?",
+    "noAccount": "У вас еще нет аккаунта?",
+    "registerLink": "Зарегистрируйтесь здесь",
+    "validation": {
+      "required": "Все поля обязательны"
+    },
+    "success": {
+      "loginSuccess": "Вход выполнен успешно!"
+    },
+    "errors": {
+      "loginFailed": "Ошибка входа. Проверьте ваши учетные данные."
+    }
   }
 }

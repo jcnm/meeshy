@@ -25,6 +25,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - TRAEFIK_USERS=${TRAEFIK_USERS}
+      - API_USERS=${API_USERS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_certs:/letsencrypt
@@ -40,7 +43,7 @@ services:
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.middlewares=traefik-auth"
       # Authentification pour Traefik dashboard
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_USERS:-admin:$$2y$$10$$K.KmJz8WCBxWciXuNGmg6OunyBw6qZY9.x5VJsQu0KaOd7L3EiGti}"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_USERS:-''}"
 
   # Database Service
   database:
@@ -94,7 +97,7 @@ services:
       - "traefik.http.services.nosqlclient.loadbalancer.server.port=3000"
       - "traefik.http.routers.nosqlclient.middlewares=mongo-auth"
       # Authentification pour MongoDB interface
-      - "traefik.http.middlewares.mongo-auth.basicauth.users=${MONGO_USERS:-admin:$$2y$$10$$K.KmJz8WCBxWciXuNGmg6OunyBw6qZY9.x5VJsQu0KaOd7L3EiGti}"
+      - "traefik.http.middlewares.mongo-auth.basicauth.users=${MONGO_USERS:-''}"
 
   # Redis Cache
   redis:
@@ -141,7 +144,7 @@ services:
       - "traefik.http.services.p3x-redis.loadbalancer.server.port=7843"
       - "traefik.http.routers.p3x-redis.middlewares=redis-auth"
       # Authentification pour Redis interface
-      - "traefik.http.middlewares.redis-auth.basicauth.users=${REDIS_USERS:-admin:$$2y$$10$$K.KmJz8WCBxWciXuNGmg6OunyBw6qZY9.x5VJsQu0KaOd7L3EiGti}"
+      - "traefik.http.middlewares.redis-auth.basicauth.users=${REDIS_USERS:-''}"
 
   # Translator Service sur ml.${DOMAIN}
   translator:
@@ -155,6 +158,9 @@ services:
       - PYTHONPATH=/workspace:/workspace/generated
       - PYTHONUNBUFFERED=1
       - NODE_ENV=production
+      - HF_HOME=/workspace/models
+      - TRANSFORMERS_CACHE=/workspace/models
+      - HUGGINGFACE_HUB_CACHE=/workspace/models
     volumes:
       - models_data:/workspace/models
     depends_on:
@@ -200,6 +206,27 @@ services:
       - FRONTEND_URL=${FRONTEND_URL}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      # Variables d'initialisation des utilisateurs
+      - FORCE_DB_RESET=${FORCE_DB_RESET:-false}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MEESHY_PASSWORD=${MEESHY_PASSWORD}
+      - ATABETH_PASSWORD=${ATABETH_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - MEESHY_EMAIL=${MEESHY_EMAIL}
+      - ATABETH_EMAIL=${ATABETH_EMAIL}
+      - ADMIN_SYSTEM_LANGUAGE=${ADMIN_SYSTEM_LANGUAGE}
+      - ADMIN_REGIONAL_LANGUAGE=${ADMIN_REGIONAL_LANGUAGE}
+      - ADMIN_CUSTOM_DESTINATION_LANGUAGE=${ADMIN_CUSTOM_DESTINATION_LANGUAGE}
+      - MEESHY_SYSTEM_LANGUAGE=${MEESHY_SYSTEM_LANGUAGE}
+      - MEESHY_REGIONAL_LANGUAGE=${MEESHY_REGIONAL_LANGUAGE}
+      - MEESHY_CUSTOM_DESTINATION_LANGUAGE=${MEESHY_CUSTOM_DESTINATION_LANGUAGE}
+      - ATABETH_USERNAME=${ATABETH_USERNAME}
+      - ATABETH_FIRST_NAME=${ATABETH_FIRST_NAME}
+      - ATABETH_LAST_NAME=${ATABETH_LAST_NAME}
+      - ATABETH_ROLE=${ATABETH_ROLE}
+      - ATABETH_SYSTEM_LANGUAGE=${ATABETH_SYSTEM_LANGUAGE}
+      - ATABETH_REGIONAL_LANGUAGE=${ATABETH_REGIONAL_LANGUAGE}
+      - ATABETH_CUSTOM_DESTINATION_LANGUAGE=${ATABETH_CUSTOM_DESTINATION_LANGUAGE}
     depends_on:
       database:
         condition: service_healthy

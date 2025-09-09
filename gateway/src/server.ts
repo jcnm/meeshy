@@ -261,9 +261,14 @@ class MeeshyServer {
         
         logger.info(`CORS check: origin="${origin}", allowed="${allowedOrigins.join(',')}"`);
         
+        // Allow requests without origin (e.g., mobile apps, Postman, curl)
+        // Allow requests from allowed origins
         if (!origin || allowedOrigins.includes(origin)) {
           return cb(null, true);
         }
+        
+        // Log the rejection for debugging
+        logger.warn(`CORS rejected origin: "${origin}"`);
         return cb(new Error('Not allowed by CORS'), false);
       },
       credentials: true

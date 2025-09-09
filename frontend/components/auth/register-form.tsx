@@ -217,7 +217,7 @@ export function RegisterForm({
               <SelectValue placeholder={t('systemLanguageLabel')} />
             </SelectTrigger>
             <SelectContent>
-              {SUPPORTED_LANGUAGES.map((lang) => (
+              {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
                 <SelectItem key={lang.code} value={lang.code}>
                   {lang.flag} {lang.name}
                 </SelectItem>
@@ -236,7 +236,7 @@ export function RegisterForm({
               <SelectValue placeholder={t('regionalLanguageLabel')} />
             </SelectTrigger>
             <SelectContent>
-              {SUPPORTED_LANGUAGES.map((lang) => (
+              {SUPPORTED_LANGUAGES.filter(lang => lang.code !== 'auto').map((lang) => (
                 <SelectItem key={lang.code} value={lang.code}>
                   {lang.flag} {lang.name}
                 </SelectItem>

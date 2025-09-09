@@ -644,6 +644,8 @@
     "validation": {
       "required": "Tous les champs sont requis"
     },
+    "noAccount": "Vous n'avez pas de compte ?",
+    "registerLink": "Inscrivez-vous ici",
     "success": {
       "loginSuccess": "Connexion réussie !"
     },
@@ -654,31 +656,47 @@
   "register": {
     "title": "Créer un compte",
     "description": "Rejoignez Meeshy et communiquez sans barrières",
+    "formDescription": "Remplissez le formulaire ci-dessous pour créer votre compte",
     "firstNameLabel": "Prénom *",
     "firstNamePlaceholder": "Votre prénom",
     "lastNameLabel": "Nom *",
     "lastNamePlaceholder": "Votre nom",
     "usernameLabel": "Nom d'utilisateur *",
     "usernamePlaceholder": "Choisissez un nom d'utilisateur",
+    "usernameHelp": "Ce nom sera visible par les autres utilisateurs",
     "emailLabel": "Email *",
     "emailPlaceholder": "votre@email.com",
     "phoneLabel": "Téléphone",
     "phonePlaceholder": "+33123456789",
     "passwordLabel": "Mot de passe *",
     "passwordPlaceholder": "Choisissez un mot de passe",
+    "passwordHelp": "Minimum 6 caractères",
+    "confirmPasswordLabel": "Confirmer le mot de passe *",
+    "confirmPasswordPlaceholder": "Confirmez votre mot de passe",
     "systemLanguageLabel": "Langue système",
     "regionalLanguageLabel": "Langue régionale",
     "registerButton": "Créer un compte",
     "creating": "Création...",
     "fillRequiredFields": "Veuillez remplir tous les champs obligatoires",
-    "accountCreationError": "Erreur lors de la création du compte",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+    "registrationError": "Erreur lors de la création du compte",
+    "hasAccount": "Vous avez déjà un compte ?",
+    "loginLink": "Connectez-vous ici",
+    "acceptTerms": "J'accepte les",
+    "termsOfService": "conditions d'utilisation",
+    "and": "et la",
+    "privacyPolicy": "politique de confidentialité",
+    "contactUs": "nous contacter",
+    "mustAcceptTerms": "Vous devez accepter les conditions d'utilisation et la politique de confidentialité",
     "validation": {
       "required": "Tous les champs sont requis",
       "passwordMismatch": "Les mots de passe ne correspondent pas",
       "passwordLength": "Le mot de passe doit contenir au moins 6 caractères"
     },
     "success": {
-      "registerSuccess": "Compte créé avec succès !"
+      "registerSuccess": "Compte créé avec succès !",
+      "welcome": "Bienvenue"
     },
     "errors": {
       "registerFailed": "Échec de l'inscription. Veuillez réessayer."
@@ -1128,6 +1146,7 @@
     "share": "Partager",
     "pin": "Épingler",
     "edit": "Modifier",
+    "delete": "Supprimer",
     "filterLanguages": "Filtrer les langues...",
     "original": "Original",
     "improveTranslationQuality": "Améliorer la qualité de traduction",
@@ -1143,7 +1162,12 @@
     "charactersRemaining": "{count} caractères restants",
     "charactersOverLimit": "{count} caractères en trop",
     "newMessageFrom": "📨 Nouveau message de {name}",
-    "webSocketConnectionInProgress": "Connexion WebSocket en cours..."
+    "webSocketConnectionInProgress": "Connexion WebSocket en cours...",
+    "deliveryStatus": {
+      "sent": "Envoyé",
+      "delivered": "Livré",
+      "read": "Lu"
+    }
   },
   "anonymousChat": {
     "title": "Conversation",
@@ -1189,7 +1213,12 @@
       "translationInProgress": "Traduction en cours...",
       "retranslationInProgress": "Retraduction forcée en cours...",
       "translationSuccess": "Message traduit avec {model}",
-      "textCopied": "Texte copié"
+      "textCopied": "Texte copié",
+      "deliveryStatus": {
+        "sent": "Envoyé",
+        "delivered": "Livré",
+        "read": "Lu"
+      }
     },
     "conversations": {
       "loadError": "Impossible de charger les conversations",
@@ -2172,6 +2201,7 @@
     "online": "en ligne",
     "typing": "écrit...",
     "typingMultiple": "personnes écrivent...",
+    "you": "Vous",
     "conversationParticipants": "Participants de la conversation"
   },
   "conversationUI": {
@@ -2183,7 +2213,7 @@
     "offline": "Hors ligne",
     "noOneOnline": "Personne en ligne",
     "noOfflineParticipants": "Aucun participant hors ligne",
-    "you": "(Vous)",
+    "you": "Vous",
     "removeFromGroup": "Supprimer du groupe",
     "participantRemoved": "Participant supprimé de la conversation",
     "removeParticipantError": "Erreur lors de la suppression du participant",
@@ -2255,7 +2285,41 @@
     "copiedToClipboard": "Copié dans le presse-papiers",
     "copyFailed": "Échec de la copie",
     "errorCreatingLink": "Erreur lors de la création du lien",
-    "createLinkButton": "Bouton de création de lien"
+    "createLinkButton": "Bouton de création de lien",
+    "generatedLink": "Lien généré",
+    "linkDetails": "Détails du lien",
+    "name": "Nom",
+    "description": "Description",
+    "maxUses": "Utilisations max",
+    "expiresAt": "Expire le",
+    "allowAnonymousMessages": "Messages anonymes",
+    "allowAnonymousFiles": "Fichiers anonymes",
+    "allowAnonymousImages": "Images anonymes",
+    "allowViewHistory": "Voir l'historique",
+    "requireNickname": "Pseudo requis",
+    "requireEmail": "Email requis",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "noExpiration": "Aucune expiration",
+    "advancedSettings": "Paramètres avancés",
+    "advancedSettingsInfo": "Utilisez le bouton de création de liens pour définir des configurations plus fines (expiration, permissions, etc.)",
+    "close": "Fermer",
+    "copy": "Copier",
+    "copied": "Copié",
+    "active": "Actif",
+    "participants": "Participants",
+    "uses": "Utilisations",
+    "unlimited": "Illimité",
+    "permissions": "Permissions",
+    "messages": "Messages",
+    "files": "Fichiers",
+    "images": "Images",
+    "history": "Historique",
+    "nickname": "Pseudo",
+    "email": "Email",
+    "createdAt": "Créé le",
+    "defaultLinkName": "Lien d'invitation",
+    "defaultLinkDescription": "Rejoignez cette conversation"
   },
   "createLinkButtonV2": {
     "createLink": "Créer un lien",
@@ -2323,5 +2387,38 @@
     "success": {
       "conversationCreated": "Conversation créée avec succès"
     }
+  },
+  "joinPage": {
+    "title": "Rejoindre la conversation",
+    "invitedTo": "Vous êtes invité(e) à rejoindre",
+    "conversationWithoutName": "Conversation sans nom",
+    "type": "Type",
+    "group": "Groupe",
+    "direct": "Conversation directe",
+    "public": "Conversation publique",
+    "global": "Conversation globale",
+    "privateConversation": "Conversation privée",
+    "participants": "Participants",
+    "members": "membre(s)",
+    "includingAnonymous": "dont {count} anonyme(s)",
+    "spokenLanguages": "Langues parlées",
+    "languages": "langue(s)",
+    "createdOn": "Créée le",
+    "expiresOn": "Expire le",
+    "noExpiration": "Aucune expiration",
+    "joinButton": "Rejoindre",
+    "joinAnonymously": "Rejoindre anonymement",
+    "loginRequired": "Connexion requise",
+    "registerRequired": "Inscription requise",
+    "sessionAnonymous": "Session anonyme",
+    "connected": "Connecté",
+    "leaveSession": "Quitter la session",
+    "disconnect": "Se déconnecter",
+    "sessionClosed": "Session fermée",
+    "linkNotFound": "Lien de conversation invalide ou introuvable",
+    "linkExpired": "Ce lien a expiré",
+    "linkInactive": "Ce lien n'est plus actif",
+    "linkLimitReached": "Ce lien a atteint sa limite d'utilisation",
+    "loadingError": "Erreur lors du chargement du lien"
   }
 }

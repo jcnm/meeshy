@@ -1,22 +1,79 @@
 {
-  "name": "Meeshy - Messagerie avec traduction automatique",
+  "name": "Meeshy - Messagerie Multilingue",
   "short_name": "Meeshy",
-  "description": "Communiquez sans barrières linguistiques avec Meeshy",
+  "description": "Communiquez sans barrières linguistiques avec Meeshy. Messagerie en temps réel avec traduction automatique IA.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr",
+  "categories": ["communication", "productivity", "social"],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable any"
     },
     {
       "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
       "type": "image/png"
     }
   ],
-  "theme_color": "#2563eb",
-  "background_color": "#ffffff",
-  "display": "standalone",
-  "start_url": "/",
-  "scope": "/"
+  "screenshots": [
+    {
+      "src": "/images/seo/og-home-fr.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Page d'accueil Meeshy"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nouvelle conversation",
+      "short_name": "Nouveau chat",
+      "description": "Créer une nouvelle conversation multilingue",
+      "url": "/conversations/new",
+      "icons": [
+        {
+          "src": "/favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
+    },
+    {
+      "name": "Tableau de bord",
+      "short_name": "Dashboard",
+      "description": "Accéder au tableau de bord",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

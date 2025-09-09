@@ -1,88 +1,116 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://meeshy.com' : 'http://localhost:3100';
+  const baseUrl = process.env.NODE_ENV === 'production' ? 'https://meeshy.me' : 'http://localhost:3100'
   
-  // Pages principales
-  const mainPages = [
-    '',
-    '/about',
-    '/contact',
-    '/partners',
-    '/privacy',
-    '/terms'
-  ];
+  // Pages statiques principales
+  const staticPages = [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 1,
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/partners`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.5,
+    },
+  ]
 
-  // Langues supportées
-  const languages = ['fr', 'en', 'pt'];
+  // Pages multilingues
+  const languages = ['fr', 'en', 'pt']
+  const multilingualPages = []
 
-  const sitemap: MetadataRoute.Sitemap = [];
-
-  // Générer toutes les combinaisons page/langue
-  mainPages.forEach(page => {
-    languages.forEach(lang => {
-      const url = lang === 'fr' 
-        ? `${baseUrl}${page}` // Français = langue par défaut, pas de préfixe
-        : `${baseUrl}/${lang}${page}`;
-
-      sitemap.push({
-        url,
+  for (const lang of languages) {
+    const langPrefix = lang === 'fr' ? '' : `/${lang}`
+    
+    multilingualPages.push(
+      {
+        url: `${baseUrl}${langPrefix}`,
         lastModified: new Date(),
-        changeFrequency: page === '' ? 'daily' : 'weekly',
-        priority: getPriority(page, lang),
-        alternates: {
-          languages: getAlternateLanguages(page, baseUrl)
-        }
-      });
-    });
-  });
-
-  return sitemap;
-}
-
-function getPriority(page: string, lang: string): number {
-  // Page d'accueil française = priorité maximale
-  if (page === '' && lang === 'fr') return 1.0;
-  
-  // Page d'accueil autres langues
-  if (page === '') return 0.9;
-  
-  // Pages importantes en français
-  if (lang === 'fr') {
-    switch (page) {
-      case '/about':
-      case '/contact':
-        return 0.8;
-      case '/partners':
-        return 0.7;
-      case '/privacy':
-      case '/terms':
-        return 0.6;
-      default:
-        return 0.5;
-    }
+        changeFrequency: 'daily' as const,
+        priority: lang === 'fr' ? 1 : 0.9,
+      },
+      {
+        url: `${baseUrl}${langPrefix}/about`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.8,
+      },
+      {
+        url: `${baseUrl}${langPrefix}/contact`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+      },
+      {
+        url: `${baseUrl}${langPrefix}/partners`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      },
+      {
+        url: `${baseUrl}${langPrefix}/privacy`,
+        lastModified: new Date(),
+        changeFrequency: 'yearly' as const,
+        priority: 0.5,
+      },
+      {
+        url: `${baseUrl}${langPrefix}/terms`,
+        lastModified: new Date(),
+        changeFrequency: 'yearly' as const,
+        priority: 0.5,
+      }
+    )
   }
-  
-  // Pages en autres langues
-  switch (page) {
-    case '/about':
-    case '/contact':
-      return 0.7;
-    case '/partners':
-      return 0.6;
-    case '/privacy':
-    case '/terms':
-      return 0.5;
-    default:
-      return 0.4;
-  }
-}
 
-function getAlternateLanguages(page: string, baseUrl: string): Record<string, string> {
-  return {
-    'fr': `${baseUrl}${page}`,
-    'en': `${baseUrl}/en${page}`,
-    'pt': `${baseUrl}/pt${page}`,
-    'x-default': `${baseUrl}${page}` // Version française par défaut
-  };
+  // Pages d'application (authentifiées)
+  const appPages = [
+    {
+      url: `${baseUrl}/dashboard`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/conversations`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/search`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    },
+  ]
+
+  return [...staticPages, ...multilingualPages, ...appPages]
 }

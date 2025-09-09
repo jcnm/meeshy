@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { PermissionsService } from '@/services/permissions.service';
 import { UserRoleEnum } from '@shared/types';
 import { useTranslations } from '@/hooks/useTranslations';
+import { LinkCopyModal } from './link-copy-modal';
 
 interface CreateLinkButtonProps {
   conversationId: string;
@@ -26,6 +27,9 @@ export function CreateLinkButton({
 }: CreateLinkButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState<string>('');
+  const [linkDetails, setLinkDetails] = useState<any>(null);
   const { t } = useTranslations('createLinkButton');
 
   // Vérifier les permissions pour créer un lien
@@ -112,8 +116,33 @@ export function CreateLinkButton({
         console.log(t('linkCreatedAndCopied'));
         setTimeout(() => setCopied(false), 2000);
       } else {
-        // Si la copie échoue, afficher le lien avec un bouton de copie manuelle
-        console.log(t('linkCreated'), { description: link });
+        // Si la copie échoue, afficher la modale avec le lien
+        setGeneratedLink(link);
+        setLinkDetails({
+          name: t('defaultLinkName'),
+          description: t('defaultLinkDescription'),
+          allowAnonymousMessages: true,
+          allowAnonymousFiles: true,
+          allowAnonymousImages: true,
+          allowViewHistory: true,
+          requireNickname: false,
+          requireEmail: false,
+          participantCount: 0,
+          maxParticipants: 50,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          createdBy: 'Utilisateur actuel',
+          maxUses: undefined, // Illimité par défaut
+          permissions: {
+            canSendMessages: true,
+            canSendFiles: true,
+            canSendImages: true,
+            canViewHistory: true,
+            canInviteOthers: false
+          }
+        });
+        setShowCopyModal(true);
+        console.log(t('linkCreated'));
       }
       
       onLinkCreated?.(link);
@@ -130,21 +159,30 @@ export function CreateLinkButton({
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleCreateLink}
-      disabled={isLoading}
-      className="rounded-full h-10 w-10 p-0 hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleCreateLink}
+        disabled={isLoading}
+        className="rounded-full h-10 w-10 p-0 hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
         title={t('createConversationLink')}
-    >
-      {isLoading ? (
-        <Loader2 className="h-5 w-5 animate-spin" />
-      ) : copied ? (
-        <Check className="h-5 w-5 text-green-600" />
-      ) : (
-        <Link2 className="h-5 w-5" />
-      )}
-    </Button>
+      >
+        {isLoading ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : copied ? (
+          <Check className="h-5 w-5 text-green-600" />
+        ) : (
+          <Link2 className="h-5 w-5" />
+        )}
+      </Button>
+
+      <LinkCopyModal
+        isOpen={showCopyModal}
+        onClose={() => setShowCopyModal(false)}
+        linkUrl={generatedLink}
+        linkDetails={linkDetails}
+      />
+    </>
   );
 }

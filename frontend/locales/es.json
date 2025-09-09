@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "Inglés",
-    "fr": "Francés", 
+    "fr": "Francés",
     "pt": "Portugués",
     "es": "Español",
     "de": "Alemán",
@@ -99,11 +99,8 @@
     "newConversation": "Nueva conv.",
     "createCommunity": "Crear com.",
     "refresh": "Actualizar",
-    "retry": "Reintentar",
     "loadingError": "Error de carga",
     "noData": "No hay datos disponibles",
-    "loading": "Cargando panel de control...",
-    "errorLoading": "❌ Error de carga: {message}",
     "errorUnknown": "Error desconocido",
     "dataLoadingError": "Error al cargar los datos",
     "actions": {
@@ -134,8 +131,60 @@
     "success": {
       "linkCreated": "¡Enlace de conversación creado con éxito!"
     },
+    "summary": {
+      "title": "Resumen de la configuración",
+      "description": "Revisa la configuración antes de generar el enlace",
+      "basicInfo": "Información básica",
+      "conversation": "Conversación",
+      "validityDuration": "Duración de validez",
+      "usageLimit": "Límite de uso",
+      "usageCount": "{count} usos",
+      "unlimited": "Ilimitado",
+      "welcomeMessage": "Mensaje de bienvenida",
+      "noCustomMessage": "Sin mensaje personalizado",
+      "welcomeMessageDescription": "Descripción del mensaje de bienvenida",
+      "permissionsGranted": "Permisos otorgados",
+      "messages": "Mensajes",
+      "allowed": "Permitido",
+      "forbidden": "Prohibido",
+      "guestsCanSendMessages": "Los invitados pueden enviar mensajes",
+      "guestsCannotSendMessages": "Los invitados no pueden enviar mensajes",
+      "images": "Imágenes",
+      "guestsCanShareImages": "Los invitados pueden compartir imágenes",
+      "guestsCannotShareImages": "Los invitados no pueden compartir imágenes",
+      "files": "Archivos",
+      "guestsCanShareFiles": "Los invitados pueden compartir archivos",
+      "guestsCannotShareFiles": "Los invitados no pueden compartir archivos",
+      "history": "Historial",
+      "visible": "Visible",
+      "hidden": "Oculto",
+      "guestsCanViewHistory": "Los invitados pueden ver el historial",
+      "guestsCannotViewHistory": "Los invitados no pueden ver el historial",
+      "nicknameRequired": "Apodo requerido",
+      "yes": "Sí",
+      "no": "No",
+      "guestsMustEnterNickname": "Los invitados deben ingresar un apodo",
+      "guestsCanStayAnonymous": "Los invitados pueden permanecer anónimos",
+      "emailRequired": "Email requerido",
+      "guestsMustEnterEmail": "Los invitados deben ingresar un email",
+      "allowedLanguages": "Idiomas permitidos",
+      "selectedLanguages": "Idiomas seleccionados"
+    },
     "time": {
       "format": "es-ES"
+    },
+    "steps": {
+      "selectConversation": "Seleccionar conversación",
+      "configureLink": "Configurar enlace",
+      "linkOptions": "Opciones del enlace",
+      "summaryAndGeneration": "Resumen y generación"
+    },
+    "stepDescriptions": {
+      "selectConversation": "Elige una conversación existente o crea una nueva",
+      "configureLink": "Configura los parámetros básicos del enlace",
+      "configureNewConversation": "Define los detalles de tu nueva conversación",
+      "linkOptions": "Personaliza los permisos y restricciones",
+      "summaryAndGeneration": "Revisa y genera tu enlace de conversación"
     }
   },
   "layout": {
@@ -218,7 +267,41 @@
     "copiedToClipboard": "Copiado al portapapeles",
     "copyFailed": "Error al copiar",
     "errorCreatingLink": "Error al crear enlace",
-    "createLinkButton": "Botón de crear enlace"
+    "createLinkButton": "Botón de crear enlace",
+    "generatedLink": "Enlace generado",
+    "linkDetails": "Detalles del enlace",
+    "name": "Nombre",
+    "description": "Descripción",
+    "maxUses": "Máximo de usos",
+    "expiresAt": "Expira en",
+    "allowAnonymousMessages": "Mensajes anónimos",
+    "allowAnonymousFiles": "Archivos anónimos",
+    "allowAnonymousImages": "Imágenes anónimas",
+    "allowViewHistory": "Ver historial",
+    "requireNickname": "Apodo requerido",
+    "requireEmail": "Email requerido",
+    "enabled": "Habilitado",
+    "disabled": "Deshabilitado",
+    "noExpiration": "Sin expiración",
+    "advancedSettings": "Configuraciones avanzadas",
+    "advancedSettingsInfo": "Use el botón de creación de enlaces para definir configuraciones más finas (expiración, permisos, etc.)",
+    "close": "Cerrar",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "active": "Activo",
+    "participants": "Participantes",
+    "uses": "Usos",
+    "unlimited": "Ilimitado",
+    "permissions": "Permisos",
+    "messages": "Mensajes",
+    "files": "Archivos",
+    "images": "Imágenes",
+    "history": "Historial",
+    "nickname": "Apodo",
+    "email": "Email",
+    "createdAt": "Creado en",
+    "defaultLinkName": "Enlace de invitación",
+    "defaultLinkDescription": "Únete a esta conversación"
   },
   "createLinkButtonV2": {
     "createLink": "Crear enlace",
@@ -285,6 +368,81 @@
     },
     "success": {
       "conversationCreated": "Conversación creada con éxito"
+    }
+  },
+  "bubbleStream": {
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "deliveryStatus": {
+      "sent": "Enviado",
+      "delivered": "Entregado",
+      "read": "Leído"
+    }
+  },
+  "register": {
+    "title": "Crear una cuenta",
+    "description": "Únete a Meeshy y comunícate sin barreras",
+    "formDescription": "Completa el formulario a continuación para crear tu cuenta",
+    "firstNameLabel": "Nombre *",
+    "firstNamePlaceholder": "Tu nombre",
+    "lastNameLabel": "Apellido *",
+    "lastNamePlaceholder": "Tu apellido",
+    "usernameLabel": "Nombre de usuario *",
+    "usernamePlaceholder": "Elige un nombre de usuario",
+    "usernameHelp": "Este nombre será visible para otros usuarios",
+    "emailLabel": "Email *",
+    "emailPlaceholder": "tu@email.com",
+    "phoneLabel": "Teléfono",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "Contraseña *",
+    "passwordPlaceholder": "Elige una contraseña",
+    "passwordHelp": "Mínimo 6 caracteres",
+    "confirmPasswordLabel": "Confirmar contraseña *",
+    "confirmPasswordPlaceholder": "Confirma tu contraseña",
+    "systemLanguageLabel": "Idioma del sistema",
+    "regionalLanguageLabel": "Idioma regional",
+    "registerButton": "Crear cuenta",
+    "creating": "Creando...",
+    "fillRequiredFields": "Por favor completa todos los campos obligatorios",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+    "registrationError": "Error al crear la cuenta",
+    "hasAccount": "¿Ya tienes una cuenta?",
+    "loginLink": "Inicia sesión aquí",
+    "acceptTerms": "Acepto los",
+    "termsOfService": "términos de servicio",
+    "and": "y la",
+    "privacyPolicy": "política de privacidad",
+    "contactUs": "contáctanos",
+    "mustAcceptTerms": "Debes aceptar los términos de servicio y la política de privacidad"
+  },
+  "messages": {
+    "sent": "¡Mensaje enviado!",
+    "sendError": "Error al enviar mensaje",
+    "editSoon": "Edición de mensajes próximamente",
+    "translationError": "Error al solicitar traducción",
+    "translationMaxTier": "Esta traducción ya usa el nivel más alto",
+    "translationInProgress": "Traducción en progreso...",
+    "retranslationInProgress": "Retraducción forzada en progreso...",
+    "translationSuccess": "Mensaje traducido con {model}",
+    "textCopied": "Texto copiado",
+    "deliveryStatus": {
+      "sent": "Enviado",
+      "delivered": "Entregado",
+      "read": "Leído"
+    }
+  },
+  "login": {
+    "noAccount": "¿No tienes una cuenta?",
+    "registerLink": "Regístrate aquí",
+    "validation": {
+      "required": "Todos los campos son obligatorios"
+    },
+    "success": {
+      "loginSuccess": "¡Inicio de sesión exitoso!"
+    },
+    "errors": {
+      "loginFailed": "Error al iniciar sesión. Verifica tus credenciales."
     }
   }
 }

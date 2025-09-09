@@ -29,8 +29,9 @@ interface TranslateRequest {
 
 // ===== ROUTE NON-BLOQUANTE =====
 export async function translationRoutes(fastify: FastifyInstance, options: any) {
-  const translationService = options?.translationService;
-  const messagingService = options?.messagingService;
+  // Récupérer les services depuis l'instance fastify (comme dans translation.ts)
+  const translationService = (fastify as any).translationService;
+  const messagingService = (fastify as any).messagingService;
   
   if (!translationService) {
     throw new Error('TranslationService not provided to translation routes');
@@ -217,6 +218,65 @@ export async function translationRoutes(fastify: FastifyInstance, options: any) 
       return reply.status(500).send({
         success: false,
         error: 'Failed to get translation status'
+      });
+    }
+  });
+
+  // ===== ROUTE POUR RÉCUPÉRER UNE CONVERSATION PAR IDENTIFIANT =====
+  fastify.get<{ Params: { identifier: string } }>('/conversation/:identifier', async (request: FastifyRequest<{ Params: { identifier: string } }>, reply: FastifyReply) => {
+    try {
+      const { identifier } = request.params;
+      
+      console.log(`🔍 [GATEWAY] Recherche conversation avec identifiant: ${identifier}`);
+      
+      // Chercher la conversation par identifiant
+      const conversation = await fastify.prisma.conversation.findFirst({
+        where: { identifier: identifier },
+        select: {
+          id: true,
+          identifier: true,
+          title: true,
+          type: true,
+          createdAt: true,
+          lastMessageAt: true,
+          _count: {
+            select: {
+              messages: true,
+              members: true
+            }
+          }
+        }
+      });
+      
+      if (!conversation) {
+        return reply.status(404).send({
+          success: false,
+          error: `Conversation avec l'identifiant '${identifier}' non trouvée`
+        });
+      }
+      
+      console.log(`✅ [GATEWAY] Conversation trouvée: ${conversation.id}`);
+      
+      return reply.send({
+        success: true,
+        data: {
+          id: conversation.id, // ObjectId MongoDB
+          identifier: conversation.identifier,
+          title: conversation.title,
+          type: conversation.type,
+          createdAt: conversation.createdAt,
+          lastMessageAt: conversation.lastMessageAt,
+          messageCount: conversation._count.messages,
+          memberCount: conversation._count.members
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ [GATEWAY] Erreur lors de la récupération de la conversation:', error);
+      
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur interne du serveur'
       });
     }
   });

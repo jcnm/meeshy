@@ -48,15 +48,7 @@ export interface CreateUserDto {
   conversationLinkId: string;
 }
 
-export interface ConversationLink {
-  id: string;
-  createdBy: string;
-  participants: string[];
-  isActive: boolean;
-  createdAt: Date;
-  expiresAt?: Date;
-  url?: string;
-}
+// ConversationLink est maintenant importé depuis @shared/types
 
 export interface TranslatedMessage extends Message {
   originalContent?: string;

@@ -129,10 +129,67 @@
       "noRecentGroups": "لا توجد مجتمعات حديثة"
     },
     "success": {
+      "loginSuccess": "تم تسجيل الدخول بنجاح",
+      "registrationSuccess": "تم إنشاء الحساب بنجاح",
+      "settingsSaved": "تم حفظ الإعدادات بنجاح",
+      "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+      "welcome": "مرحباً",
       "linkCreated": "تم إنشاء رابط المحادثة بنجاح!"
+    },
+    "summary": {
+      "title": "ملخص الإعدادات",
+      "description": "راجع الإعدادات قبل إنشاء الرابط",
+      "basicInfo": "المعلومات الأساسية",
+      "conversation": "المحادثة",
+      "validityDuration": "مدة الصلاحية",
+      "usageLimit": "حد الاستخدام",
+      "usageCount": "{count} استخدام",
+      "unlimited": "غير محدود",
+      "welcomeMessage": "رسالة الترحيب",
+      "noCustomMessage": "لا توجد رسالة مخصصة",
+      "welcomeMessageDescription": "وصف رسالة الترحيب",
+      "permissionsGranted": "الأذونات الممنوحة",
+      "messages": "الرسائل",
+      "allowed": "مسموح",
+      "forbidden": "ممنوع",
+      "guestsCanSendMessages": "يمكن للضيوف إرسال الرسائل",
+      "guestsCannotSendMessages": "لا يمكن للضيوف إرسال الرسائل",
+      "images": "الصور",
+      "guestsCanShareImages": "يمكن للضيوف مشاركة الصور",
+      "guestsCannotShareImages": "لا يمكن للضيوف مشاركة الصور",
+      "files": "الملفات",
+      "guestsCanShareFiles": "يمكن للضيوف مشاركة الملفات",
+      "guestsCannotShareFiles": "لا يمكن للضيوف مشاركة الملفات",
+      "history": "السجل",
+      "visible": "مرئي",
+      "hidden": "مخفي",
+      "guestsCanViewHistory": "يمكن للضيوف عرض السجل",
+      "guestsCannotViewHistory": "لا يمكن للضيوف عرض السجل",
+      "nicknameRequired": "الاسم المستعار مطلوب",
+      "yes": "نعم",
+      "no": "لا",
+      "guestsMustEnterNickname": "يجب على الضيوف إدخال اسم مستعار",
+      "guestsCanStayAnonymous": "يمكن للضيوف البقاء مجهولين",
+      "emailRequired": "البريد الإلكتروني مطلوب",
+      "guestsMustEnterEmail": "يجب على الضيوف إدخال بريد إلكتروني",
+      "allowedLanguages": "اللغات المسموحة",
+      "selectedLanguages": "اللغات المحددة"
     },
     "time": {
       "format": "ar-SA"
+    },
+    "steps": {
+      "selectConversation": "اختيار محادثة",
+      "configureLink": "تكوين الرابط",
+      "linkOptions": "خيارات الرابط",
+      "summaryAndGeneration": "الملخص والإنشاء"
+    },
+    "stepDescriptions": {
+      "selectConversation": "اختر محادثة موجودة أو أنشئ محادثة جديدة",
+      "configureLink": "قم بتكوين المعاملات الأساسية للرابط",
+      "configureNewConversation": "حدد تفاصيل محادثتك الجديدة",
+      "linkOptions": "خصص الأذونات والقيود",
+      "summaryAndGeneration": "راجع وأنشئ رابط المحادثة"
     }
   },
   "createLinkButton": {
@@ -146,5 +203,86 @@
     "copyFailed": "فشل النسخ",
     "errorCreatingLink": "خطأ في إنشاء الرابط",
     "createLinkButton": "زر إنشاء الرابط"
+  },
+  "bubbleStream": {
+    "edit": "تعديل",
+    "delete": "حذف",
+    "deliveryStatus": {
+      "sent": "مرسل",
+      "delivered": "تم التسليم",
+      "read": "مقروء"
+    }
+  },
+  "messages": {
+    "sent": "تم إرسال الرسالة!",
+    "sendError": "خطأ في إرسال الرسالة",
+    "editSoon": "تعديل الرسائل قريباً",
+    "translationError": "خطأ في طلب الترجمة",
+    "translationMaxTier": "هذه الترجمة تستخدم بالفعل أعلى مستوى",
+    "translationInProgress": "الترجمة قيد التقدم...",
+    "retranslationInProgress": "إعادة الترجمة القسرية قيد التقدم...",
+    "translationSuccess": "تم ترجمة الرسالة بـ {model}",
+    "textCopied": "تم نسخ النص",
+    "deliveryStatus": {
+      "sent": "مرسل",
+      "delivered": "تم التسليم",
+      "read": "مقروء"
+    }
+  },
+  "register": {
+    "title": "إنشاء حساب",
+    "description": "انضم إلى Meeshy وتواصل بدون حواجز",
+    "formDescription": "املأ النموذج أدناه لإنشاء حسابك",
+    "firstNameLabel": "الاسم الأول *",
+    "firstNamePlaceholder": "اسمك الأول",
+    "lastNameLabel": "اسم العائلة *",
+    "lastNamePlaceholder": "اسم عائلتك",
+    "usernameLabel": "اسم المستخدم *",
+    "usernamePlaceholder": "اختر اسم مستخدم",
+    "usernameHelp": "هذا الاسم سيكون مرئياً للمستخدمين الآخرين",
+    "emailLabel": "البريد الإلكتروني *",
+    "emailPlaceholder": "your@email.com",
+    "phoneLabel": "الهاتف",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "كلمة المرور *",
+    "passwordPlaceholder": "اختر كلمة مرور",
+    "passwordHelp": "6 أحرف على الأقل",
+    "confirmPasswordLabel": "تأكيد كلمة المرور *",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور",
+    "systemLanguageLabel": "لغة النظام",
+    "regionalLanguageLabel": "اللغة الإقليمية",
+    "registerButton": "إنشاء حساب",
+    "creating": "جاري الإنشاء...",
+    "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
+    "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+    "passwordTooShort": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    "registrationError": "خطأ في إنشاء الحساب",
+    "hasAccount": "هل لديك حساب بالفعل؟",
+    "loginLink": "تسجيل الدخول هنا",
+    "acceptTerms": "أوافق على",
+    "termsOfService": "شروط الخدمة",
+    "and": "و",
+    "privacyPolicy": "سياسة الخصوصية",
+    "contactUs": "اتصل بنا",
+    "mustAcceptTerms": "يجب عليك قبول شروط الخدمة وسياسة الخصوصية"
+  },
+  "login": {
+    "title": "تسجيل الدخول",
+    "description": "مرحباً بعودتك إلى Meeshy",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "loginButton": "تسجيل الدخول",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "noAccount": "ليس لديك حساب بعد؟",
+    "registerLink": "سجل هنا",
+    "validation": {
+      "required": "جميع الحقول مطلوبة"
+    },
+    "success": {
+      "loginSuccess": "تم تسجيل الدخول بنجاح!"
+    },
+    "errors": {
+      "loginFailed": "فشل تسجيل الدخول. تحقق من بيانات الاعتماد الخاصة بك."
+    }
   }
 }

@@ -334,6 +334,21 @@ export interface ConversationLink {
   createdAt: Date;
   updatedAt: Date;
   conversation: Conversation;
+  creator?: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    displayName: string;
+    avatar?: string;
+  };
+  stats?: {
+    totalParticipants: number;
+    memberCount: number;
+    anonymousCount: number;
+    languageCount: number;
+    spokenLanguages: string[];
+  };
 }
 
 // ===== TYPES POUR L'AUTHENTIFICATION =====

@@ -640,7 +640,18 @@
     "loggingIn": "Logging in...",
     "verifyingAuth": "Verifying authentication...",
     "redirecting": "Redirecting...",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "noAccount": "Não tem uma conta?",
+    "registerLink": "Registe-se aqui",
+    "validation": {
+      "required": "Todos os campos são obrigatórios"
+    },
+    "success": {
+      "loginSuccess": "Login bem-sucedido!"
+    },
+    "errors": {
+      "loginFailed": "Falha no login. Verifique suas credenciais."
+    }
   },
   "register": {
     "title": "Create an account",
@@ -662,7 +673,8 @@
     "registerButton": "Create account",
     "creating": "Creating...",
     "fillRequiredFields": "Please fill in all required fields",
-    "accountCreationError": "Error creating account"
+    "accountCreationError": "Error creating account",
+    "mustAcceptTerms": "Você deve aceitar os termos de serviço e a política de privacidade"
   },
   "joinConversation": {
     "title": "Join a conversation",
@@ -1107,6 +1119,7 @@
     "share": "Compartilhar",
     "pin": "Fixar",
     "edit": "Editar",
+    "delete": "Excluir",
     "filterLanguages": "Filtrar idiomas...",
     "original": "Original",
     "improveTranslationQuality": "Melhorar qualidade da tradução",
@@ -1122,7 +1135,12 @@
     "charactersRemaining": "{count} caracteres restantes",
     "charactersOverLimit": "{count} caracteres excedidos",
     "newMessageFrom": "📨 Nova mensagem de {name}",
-    "webSocketConnectionInProgress": "Conexão WebSocket em andamento..."
+    "webSocketConnectionInProgress": "Conexão WebSocket em andamento...",
+    "deliveryStatus": {
+      "sent": "Enviado",
+      "delivered": "Entregue",
+      "read": "Lido"
+    }
   },
   "anonymousChat": {
     "title": "Conversation",
@@ -1159,16 +1177,57 @@
       "reconnectFailed": "Reconnection failed - Check server",
       "cannotReconnect": "Unable to reconnect. Please reload the page."
     },
+    "register": {
+      "title": "Criar uma conta",
+      "description": "Junte-se ao Meeshy e comunique sem barreiras",
+      "formDescription": "Preencha o formulário abaixo para criar sua conta",
+      "firstNameLabel": "Nome *",
+      "firstNamePlaceholder": "Seu nome",
+      "lastNameLabel": "Sobrenome *",
+      "lastNamePlaceholder": "Seu sobrenome",
+      "usernameLabel": "Nome de usuário *",
+      "usernamePlaceholder": "Escolha um nome de usuário",
+      "usernameHelp": "Este nome será visível para outros usuários",
+      "emailLabel": "Email *",
+      "emailPlaceholder": "seu@email.com",
+      "phoneLabel": "Telefone",
+      "phonePlaceholder": "+33123456789",
+      "passwordLabel": "Senha *",
+      "passwordPlaceholder": "Escolha uma senha",
+      "passwordHelp": "Mínimo 6 caracteres",
+      "confirmPasswordLabel": "Confirmar senha *",
+      "confirmPasswordPlaceholder": "Confirme sua senha",
+      "systemLanguageLabel": "Idioma do sistema",
+      "regionalLanguageLabel": "Idioma regional",
+      "registerButton": "Criar conta",
+      "creating": "Criando...",
+      "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios",
+      "passwordsDoNotMatch": "As senhas não coincidem",
+      "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
+      "registrationError": "Erro ao criar a conta",
+      "hasAccount": "Já tem uma conta?",
+      "loginLink": "Faça login aqui",
+      "acceptTerms": "Aceito os",
+      "termsOfService": "termos de serviço",
+      "and": "e a",
+      "privacyPolicy": "política de privacidade",
+      "contactUs": "entre em contato"
+    },
     "messages": {
-      "sent": "Message sent!",
-      "sendError": "Error sending message",
-      "editSoon": "Message editing coming soon",
-      "translationError": "Error requesting translation",
-      "translationMaxTier": "This translation already uses the highest tier",
-      "translationInProgress": "Translation in progress...",
-      "retranslationInProgress": "Forced retranslation in progress...",
-      "translationSuccess": "Message translated with {model}",
-      "textCopied": "Text copied"
+      "sent": "Mensagem enviada!",
+      "sendError": "Erro ao enviar mensagem",
+      "editSoon": "Edição de mensagem em breve",
+      "translationError": "Erro ao solicitar tradução",
+      "translationMaxTier": "Esta tradução já usa o nível mais alto",
+      "translationInProgress": "Tradução em andamento...",
+      "retranslationInProgress": "Retradução forçada em andamento...",
+      "translationSuccess": "Mensagem traduzida com {model}",
+      "textCopied": "Texto copiado",
+      "deliveryStatus": {
+        "sent": "Enviado",
+        "delivered": "Entregue",
+        "read": "Lido"
+      }
     },
     "conversations": {
       "loadError": "Unable to load conversations",
@@ -2003,6 +2062,12 @@
     },
     "createConversationModal": "Modal de criação de conversa"
   },
+  "conversationSearch": {
+    "placeholder": "Pesquisar por nome, descrição...",
+    "filterConversations": "Filtrar conversas",
+    "searchParticipants": "Pesquisar...",
+    "shareMessage": "Compartilhe algo com o mundo..."
+  },
   "conversationSearchLayout": {
     "authChecking": "Verificando autenticação...",
     "toasts": {
@@ -2126,6 +2191,7 @@
     "online": "online",
     "typing": "digitando...",
     "typingMultiple": "pessoas digitando...",
+    "you": "Você",
     "conversationParticipants": "Participantes da conversa"
   },
   "conversationUI": {
@@ -2137,7 +2203,7 @@
     "offline": "Offline",
     "noOneOnline": "Ninguém online",
     "noOfflineParticipants": "Nenhum participante offline",
-    "you": "(Você)",
+    "you": "Você",
     "removeFromGroup": "Remover do grupo",
     "participantRemoved": "Participante removido da conversa",
     "removeParticipantError": "Erro ao remover participante",
@@ -2209,10 +2275,77 @@
     "copiedToClipboard": "Copiado para a área de transferência",
     "copyFailed": "Falha na cópia",
     "errorCreatingLink": "Erro ao criar link",
-    "createLinkButton": "Botão de criação de link"
+    "createLinkButton": "Botão de criação de link",
+    "generatedLink": "Link gerado",
+    "linkDetails": "Detalhes do link",
+    "name": "Nome",
+    "description": "Descrição",
+    "maxUses": "Máximo de usos",
+    "expiresAt": "Expira em",
+    "allowAnonymousMessages": "Mensagens anônimas",
+    "allowAnonymousFiles": "Arquivos anônimos",
+    "allowAnonymousImages": "Imagens anônimas",
+    "allowViewHistory": "Ver histórico",
+    "requireNickname": "Apelido obrigatório",
+    "requireEmail": "Email obrigatório",
+    "enabled": "Habilitado",
+    "disabled": "Desabilitado",
+    "noExpiration": "Sem expiração",
+    "advancedSettings": "Configurações avançadas",
+    "advancedSettingsInfo": "Use o botão de criação de links para definir configurações mais refinadas (expiração, permissões, etc.)",
+    "close": "Fechar",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "active": "Ativo",
+    "participants": "Participantes",
+    "uses": "Usos",
+    "unlimited": "Ilimitado",
+    "permissions": "Permissões",
+    "messages": "Mensagens",
+    "files": "Arquivos",
+    "images": "Imagens",
+    "history": "Histórico",
+    "nickname": "Apelido",
+    "email": "Email",
+    "createdAt": "Criado em",
+    "defaultLinkName": "Link de convite",
+    "defaultLinkDescription": "Junte-se a esta conversa"
   },
   "createLinkButtonV2": {
     "createLink": "Criar link",
     "linkCreatedSuccessfully": "Link de compartilhamento criado com sucesso!"
+  },
+  "joinPage": {
+    "title": "Entrar na conversa",
+    "invitedTo": "Você foi convidado(a) para entrar",
+    "conversationWithoutName": "Conversa sem nome",
+    "type": "Tipo",
+    "group": "Grupo",
+    "direct": "Conversa direta",
+    "public": "Conversa pública",
+    "global": "Conversa global",
+    "privateConversation": "Conversa privada",
+    "participants": "Participantes",
+    "members": "membro(s)",
+    "includingAnonymous": "incluindo {count} anônimo(s)",
+    "spokenLanguages": "Idiomas falados",
+    "languages": "idioma(s)",
+    "createdOn": "Criada em",
+    "expiresOn": "Expira em",
+    "noExpiration": "Sem expiração",
+    "joinButton": "Entrar",
+    "joinAnonymously": "Entrar anonimamente",
+    "loginRequired": "Login necessário",
+    "registerRequired": "Registro necessário",
+    "sessionAnonymous": "Sessão anônima",
+    "connected": "Conectado",
+    "leaveSession": "Sair da sessão",
+    "disconnect": "Desconectar",
+    "sessionClosed": "Sessão fechada",
+    "linkNotFound": "Link de conversa inválido ou não encontrado",
+    "linkExpired": "Este link expirou",
+    "linkInactive": "Este link não está mais ativo",
+    "linkLimitReached": "Este link atingiu seu limite de uso",
+    "loadingError": "Erro ao carregar o link"
   }
 }

@@ -16,36 +16,7 @@ export interface CreateUserDto {
   conversationLinkId: string;
 }
 
-export interface ConversationLink {
-  id: string; // ID de la conversationShareLink
-  linkId: string; // Token d'invitation (format mshy_...)
-  name: string;
-  description: string;
-  expiresAt?: Date;
-  maxUses?: number;
-  currentUses?: number;
-  maxConcurrentUsers?: number;
-  currentConcurrentUsers?: number;
-  requireNickname: boolean;
-  requireEmail: boolean;
-  allowedLanguages?: string[];
-  conversation: {
-    id: string;
-    title: string;
-    description: string;
-    type: string;
-    createdAt: Date;
-    participants?: any[]; // Pour compatibilité avec l'affichage
-  };
-  creator: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    displayName: string;
-    avatar?: string;
-  };
-}
+// ConversationLink est maintenant importé depuis @shared/types
 
 // Conversation est maintenant importé depuis @shared/types
 

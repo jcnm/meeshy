@@ -129,10 +129,67 @@
       "noRecentGroups": "最近のコミュニティがありません"
     },
     "success": {
+      "loginSuccess": "ログインに成功しました",
+      "registrationSuccess": "アカウントが正常に作成されました",
+      "settingsSaved": "設定が正常に保存されました",
+      "profileUpdated": "プロフィールが正常に更新されました",
+      "welcome": "ようこそ",
       "linkCreated": "会話リンクが正常に作成されました！"
+    },
+    "summary": {
+      "title": "設定の概要",
+      "description": "リンクを生成する前に設定を確認してください",
+      "basicInfo": "基本情報",
+      "conversation": "会話",
+      "validityDuration": "有効期間",
+      "usageLimit": "使用制限",
+      "usageCount": "{count} 回の使用",
+      "unlimited": "無制限",
+      "welcomeMessage": "ウェルカムメッセージ",
+      "noCustomMessage": "カスタムメッセージなし",
+      "welcomeMessageDescription": "ウェルカムメッセージの説明",
+      "permissionsGranted": "付与された権限",
+      "messages": "メッセージ",
+      "allowed": "許可",
+      "forbidden": "禁止",
+      "guestsCanSendMessages": "ゲストはメッセージを送信できます",
+      "guestsCannotSendMessages": "ゲストはメッセージを送信できません",
+      "images": "画像",
+      "guestsCanShareImages": "ゲストは画像を共有できます",
+      "guestsCannotShareImages": "ゲストは画像を共有できません",
+      "files": "ファイル",
+      "guestsCanShareFiles": "ゲストはファイルを共有できます",
+      "guestsCannotShareFiles": "ゲストはファイルを共有できません",
+      "history": "履歴",
+      "visible": "表示",
+      "hidden": "非表示",
+      "guestsCanViewHistory": "ゲストは履歴を表示できます",
+      "guestsCannotViewHistory": "ゲストは履歴を表示できません",
+      "nicknameRequired": "ニックネーム必須",
+      "yes": "はい",
+      "no": "いいえ",
+      "guestsMustEnterNickname": "ゲストはニックネームを入力する必要があります",
+      "guestsCanStayAnonymous": "ゲストは匿名のままでいられます",
+      "emailRequired": "メールアドレス必須",
+      "guestsMustEnterEmail": "ゲストはメールアドレスを入力する必要があります",
+      "allowedLanguages": "許可された言語",
+      "selectedLanguages": "選択された言語"
     },
     "time": {
       "format": "ja-JP"
+    },
+    "steps": {
+      "selectConversation": "会話を選択",
+      "configureLink": "リンクを設定",
+      "linkOptions": "リンクオプション",
+      "summaryAndGeneration": "概要と生成"
+    },
+    "stepDescriptions": {
+      "selectConversation": "既存の会話を選択するか、新しい会話を作成してください",
+      "configureLink": "リンクの基本パラメータを設定してください",
+      "configureNewConversation": "新しい会話の詳細を定義してください",
+      "linkOptions": "権限と制限をカスタマイズしてください",
+      "summaryAndGeneration": "会話リンクを確認して生成してください"
     }
   },
   "createLinkButton": {
@@ -146,5 +203,86 @@
     "copyFailed": "コピーに失敗しました",
     "errorCreatingLink": "リンク作成エラー",
     "createLinkButton": "リンク作成ボタン"
+  },
+  "bubbleStream": {
+    "edit": "編集",
+    "delete": "削除",
+    "deliveryStatus": {
+      "sent": "送信済み",
+      "delivered": "配信済み",
+      "read": "既読"
+    }
+  },
+  "messages": {
+    "sent": "メッセージを送信しました！",
+    "sendError": "メッセージの送信エラー",
+    "editSoon": "メッセージ編集機能は近日公開",
+    "translationError": "翻訳リクエストエラー",
+    "translationMaxTier": "この翻訳は既に最高レベルを使用しています",
+    "translationInProgress": "翻訳中...",
+    "retranslationInProgress": "強制再翻訳中...",
+    "translationSuccess": "{model}でメッセージを翻訳しました",
+    "textCopied": "テキストをコピーしました",
+    "deliveryStatus": {
+      "sent": "送信済み",
+      "delivered": "配信済み",
+      "read": "既読"
+    }
+  },
+  "register": {
+    "title": "アカウント作成",
+    "description": "Meeshyに参加して、障壁なくコミュニケーション",
+    "formDescription": "下のフォームに記入してアカウントを作成してください",
+    "firstNameLabel": "名 *",
+    "firstNamePlaceholder": "あなたの名",
+    "lastNameLabel": "姓 *",
+    "lastNamePlaceholder": "あなたの姓",
+    "usernameLabel": "ユーザー名 *",
+    "usernamePlaceholder": "ユーザー名を選択",
+    "usernameHelp": "この名前は他のユーザーに表示されます",
+    "emailLabel": "メール *",
+    "emailPlaceholder": "your@email.com",
+    "phoneLabel": "電話",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "パスワード *",
+    "passwordPlaceholder": "パスワードを選択",
+    "passwordHelp": "最低6文字",
+    "confirmPasswordLabel": "パスワード確認 *",
+    "confirmPasswordPlaceholder": "パスワードを確認",
+    "systemLanguageLabel": "システム言語",
+    "regionalLanguageLabel": "地域言語",
+    "registerButton": "アカウント作成",
+    "creating": "作成中...",
+    "fillRequiredFields": "すべての必須フィールドを入力してください",
+    "passwordsDoNotMatch": "パスワードが一致しません",
+    "passwordTooShort": "パスワードは最低6文字である必要があります",
+    "registrationError": "アカウント作成エラー",
+    "hasAccount": "すでにアカウントをお持ちですか？",
+    "loginLink": "ここでログイン",
+    "acceptTerms": "私は",
+    "termsOfService": "利用規約",
+    "and": "と",
+    "privacyPolicy": "プライバシーポリシー",
+    "contactUs": "お問い合わせ",
+    "mustAcceptTerms": "利用規約とプライバシーポリシーに同意する必要があります"
+  },
+  "login": {
+    "title": "ログイン",
+    "description": "Meeshyへようこそ",
+    "email": "メール",
+    "password": "パスワード",
+    "loginButton": "ログイン",
+    "forgotPassword": "パスワードを忘れましたか？",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "registerLink": "ここで登録",
+    "validation": {
+      "required": "すべてのフィールドが必要です"
+    },
+    "success": {
+      "loginSuccess": "ログイン成功！"
+    },
+    "errors": {
+      "loginFailed": "ログインに失敗しました。認証情報を確認してください。"
+    }
   }
 }

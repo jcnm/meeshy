@@ -145,6 +145,38 @@ export async function linksRoutes(fastify: FastifyInstance) {
     return `${timestamp}_${randomSuffix}`;
   }
 
+  /**
+   * Génère un identifiant unique pour une conversation
+   * Format: mshy_<titre_sanitisé>-YYYYMMDDHHMMSS ou mshy_<unique_id>-YYYYMMDDHHMMSS si pas de titre
+   */
+  function generateConversationIdentifier(title?: string): string {
+    const now = new Date();
+    const timestamp = now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0') +
+      now.getHours().toString().padStart(2, '0') +
+      now.getMinutes().toString().padStart(2, '0') +
+      now.getSeconds().toString().padStart(2, '0');
+    
+    if (title) {
+      // Sanitiser le titre : enlever les caractères spéciaux, remplacer les espaces par des tirets
+      const sanitizedTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Garder seulement lettres, chiffres, espaces et tirets
+        .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
+        .replace(/-+/g, '-') // Remplacer les tirets multiples par un seul
+        .replace(/^-|-$/g, ''); // Enlever les tirets en début/fin
+      
+      if (sanitizedTitle.length > 0) {
+        return `mshy_${sanitizedTitle}-${timestamp}`;
+      }
+    }
+    
+    // Si pas de titre ou titre vide après sanitisation, utiliser un ID unique
+    const uniqueId = Math.random().toString(36).slice(2, 10);
+    return `mshy_${uniqueId}-${timestamp}`;
+  }
+
   function generateFinalLinkId(conversationShareLinkId: string, initialId: string): string {
     return `mshy_${conversationShareLinkId}.${initialId}`;
   }
@@ -252,8 +284,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
           }
         }
         
+        // Générer un identifiant unique pour la conversation
+        const conversationIdentifier = generateConversationIdentifier(body.newConversation.title);
+        
         const conversation = await fastify.prisma.conversation.create({
           data: {
+            identifier: conversationIdentifier,
             type: 'public',
             title: body.newConversation.title,
             description: body.newConversation.description || null,
@@ -274,8 +310,12 @@ export async function linksRoutes(fastify: FastifyInstance) {
         // Créer une nouvelle conversation de type public (legacy)
         console.log('[CREATE_LINK] Création nouvelle conversation legacy pour utilisateur:', { userId, userRole });
         
+        // Générer un identifiant unique pour la conversation
+        const conversationIdentifier = generateConversationIdentifier(body.name || 'Shared Conversation');
+        
         const conversation = await fastify.prisma.conversation.create({
           data: {
+            identifier: conversationIdentifier,
             type: 'public',
             title: body.name || 'Conversation partagée',
             description: body.description,

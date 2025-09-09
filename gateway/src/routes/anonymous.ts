@@ -603,6 +603,72 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
         });
       }
 
+      // Récupérer les statistiques de la conversation
+      const [memberCount, anonymousCount, activeMembers, activeAnonymous] = await Promise.all([
+        // Nombre de membres actifs
+        fastify.prisma.conversationMember.count({
+          where: {
+            conversationId: shareLink.conversation.id,
+            isActive: true
+          }
+        }),
+        // Nombre de participants anonymes actifs
+        fastify.prisma.anonymousParticipant.count({
+          where: {
+            conversationId: shareLink.conversation.id,
+            isActive: true
+          }
+        }),
+        // Membres actifs avec leurs langues
+        fastify.prisma.conversationMember.findMany({
+          where: {
+            conversationId: shareLink.conversation.id,
+            isActive: true
+          },
+          select: {
+            user: {
+              select: {
+                systemLanguage: true,
+                regionalLanguage: true,
+                customDestinationLanguage: true
+              }
+            }
+          }
+        }),
+        // Participants anonymes actifs avec leurs langues
+        fastify.prisma.anonymousParticipant.findMany({
+          where: {
+            conversationId: shareLink.conversation.id,
+            isActive: true
+          },
+          select: {
+            language: true
+          }
+        })
+      ]);
+
+      // Calculer le total des participants
+      const totalParticipants = memberCount + anonymousCount;
+      
+      // Collecter toutes les langues uniques des participants
+      const languageSet = new Set<string>();
+      
+      // Langues des membres (système, régionale, custom)
+      activeMembers.forEach(member => {
+        if (member.user.systemLanguage) languageSet.add(member.user.systemLanguage);
+        if (member.user.regionalLanguage) languageSet.add(member.user.regionalLanguage);
+        if (member.user.customDestinationLanguage) languageSet.add(member.user.customDestinationLanguage);
+      });
+      
+      // Langues des participants anonymes
+      activeAnonymous.forEach(participant => {
+        if (participant.language) languageSet.add(participant.language);
+      });
+      
+      // Convertir en tableau et trier
+      const spokenLanguages = Array.from(languageSet).sort();
+      const languageCount = spokenLanguages.length;
+
       return reply.send({
         success: true,
         data: {
@@ -619,7 +685,15 @@ export async function anonymousRoutes(fastify: FastifyInstance) {
           requireEmail: shareLink.requireEmail,
           allowedLanguages: shareLink.allowedLanguages,
           conversation: shareLink.conversation,
-          creator: shareLink.creator
+          creator: shareLink.creator,
+          // Nouvelles statistiques
+          stats: {
+            totalParticipants,
+            memberCount,
+            anonymousCount,
+            languageCount,
+            spokenLanguages
+          }
         }
       });
 

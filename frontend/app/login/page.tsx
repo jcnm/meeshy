@@ -202,6 +202,20 @@ function QuickLoginPageContent() {
                   t('loginButton')
                 )}
               </Button>
+
+              {/* Lien vers l'inscription */}
+              <div className="text-center pt-4">
+                <p className="text-gray-600">
+                  {t('noAccount')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => router.push('/signin' + (returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''))}
+                    className="text-blue-600 hover:text-blue-700 font-medium underline transition-colors"
+                  >
+                    {t('registerLink')}
+                  </button>
+                </p>
+              </div>
             </form>
           </CardContent>
         </Card>

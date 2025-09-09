@@ -91,26 +91,43 @@ export function useMessageTranslations({
     });
 
     // Convertir les traductions backend vers le format BubbleTranslation
-    const translations: BubbleTranslation[] = (message.translations || [])
+    // CORRECTION: Déduplication des traductions par langue pour éviter les doublons
+    const translationsMap = new Map<string, BubbleTranslation>();
+    
+    (message.translations || [])
       .filter((t: any) => t && t.targetLanguage && t.translatedContent) // Filtrer les traductions valides
-      .map((t: any) => {
-        const translation: BubbleTranslation = {
-          language: t.targetLanguage, // BubbleTranslation utilise 'language' pour la langue cible
-          content: t.translatedContent, // BubbleTranslation utilise 'content' pour le contenu traduit
-          status: 'completed' as const,
-          timestamp: new Date(t.createdAt || message.createdAt),
-          confidence: t.confidenceScore || 0.9
-        };
+      .forEach((t: any) => {
+        const language = t.targetLanguage;
+        const currentTimestamp = new Date(t.createdAt || message.createdAt);
         
-        console.log(`  📝 Traduction ${translation.language}:`, {
-          language: translation.language,
-          content: translation.content.substring(0, 50) + '...',
-          status: translation.status,
-          confidence: translation.confidence
-        });
-        
-        return translation;
+        // Garder la traduction la plus récente pour chaque langue
+        if (!translationsMap.has(language) || 
+            currentTimestamp > new Date(translationsMap.get(language)!.timestamp)) {
+          
+          const translation: BubbleTranslation = {
+            language: language,
+            content: t.translatedContent,
+            status: 'completed' as const,
+            timestamp: currentTimestamp,
+            confidence: t.confidenceScore || 0.9,
+            model: (t.translationModel as 'basic' | 'medium' | 'premium') || 'basic'
+          };
+          
+          translationsMap.set(language, translation);
+        }
       });
+    
+    const translations: BubbleTranslation[] = Array.from(translationsMap.values());
+    
+    // Log des traductions dédupliquées
+    translations.forEach(translation => {
+      console.log(`  📝 Traduction ${translation.language}:`, {
+        language: translation.language,
+        content: translation.content.substring(0, 50) + '...',
+        status: translation.status,
+        confidence: translation.confidence
+      });
+    });
 
     const originalLanguage = message.originalLanguage || 'fr';
     const preferredLanguage = resolveUserPreferredLanguage();
@@ -151,7 +168,7 @@ export function useMessageTranslations({
     const result: BubbleStreamMessage = {
       ...message,
       content: displayContent, // Contenu d'affichage (peut être traduit)
-      originalContent: message.content, // Contenu original de l'auteur (jamais modifié)
+      originalContent: message.originalContent || message.content, // CORRECTION: Préserver le contenu original de l'auteur
       originalLanguage,
       isTranslated,
       translatedFrom,

@@ -16,7 +16,9 @@ import {
   X,
   Ghost,
   Edit,
-  Trash2
+  Trash2,
+  Check,
+  CheckCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -64,6 +66,8 @@ interface BubbleMessageProps {
   onDeleteMessage?: (messageId: string) => Promise<void>;
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
+  // Nouvelles props pour gérer l'état des traductions en cours
+  isTranslating?: (messageId: string, targetLanguage: string) => boolean;
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -86,7 +90,8 @@ function BubbleMessageInner({
   onEditMessage,
   onDeleteMessage,
   conversationType = 'direct',
-  userRole = 'USER'
+  userRole = 'USER',
+  isTranslating
 }: BubbleMessageProps) {
   const { t } = useTranslations('bubbleStream');
   
@@ -161,7 +166,6 @@ function BubbleMessageInner({
   // Vérifier si le message a été lu par l'utilisateur actuel
   const isMessageReadByCurrentUser = () => {
     // TEMPORAIRE : considérer les propres messages comme lus
-    // et pour tester, considérer qu'un message est lu après 10 secondes
     const isOwnMessage = message.senderId === currentUser.id || 
                         message.anonymousSenderId === currentUser.id;
     if (isOwnMessage) return true;
@@ -171,9 +175,32 @@ function BubbleMessageInner({
       return message.readStatus.some(status => status.userId === currentUser.id);
     }
     
-    // Fallback temporaire : messages anciens (créés il y a plus de 10 secondes) sont considérés comme lus
+    // Fallback temporaire : messages anciens (créés il y a plus de 30 secondes) sont considérés comme lus
     const messageAge = Date.now() - new Date(message.createdAt).getTime();
-    return messageAge > 10000; // 10 secondes
+    return messageAge > 30000; // 30 secondes au lieu de 10
+  };
+
+  // Fonction pour déterminer le statut de réception d'un message
+  const getMessageDeliveryStatus = () => {
+    const isOwnMessage = message.senderId === currentUser.id || 
+                        message.anonymousSenderId === currentUser.id;
+    
+    if (!isOwnMessage) return null; // Seuls nos propres messages ont des indicateurs de réception
+    
+    // Si le message a un readStatus, compter les lecteurs
+    if (message.readStatus && message.readStatus.length > 0) {
+      const readCount = message.readStatus.length;
+      const totalParticipants = conversationType === 'direct' ? 2 : 10; // Estimation pour les groupes
+      
+      if (readCount >= totalParticipants - 1) { // Tous les autres participants ont lu
+        return { status: 'read', count: readCount };
+      } else if (readCount > 0) { // Certains ont lu
+        return { status: 'delivered', count: readCount };
+      }
+    }
+    
+    // Par défaut, considérer comme envoyé
+    return { status: 'sent', count: 0 };
   };
 
   const getLanguageInfo = (langCode: string) => {
@@ -315,7 +342,7 @@ function BubbleMessageInner({
   const handleUpgradeTier = async (targetLanguage: string, currentTier: string) => {
     const nextTier = getNextTier(currentTier);
     if (!nextTier) {
-      // toast.info(t('toasts.messages.translationMaxTier'));
+      toast.info(t('toasts.messages.translationMaxTier'));
       return;
     }
 
@@ -324,15 +351,31 @@ function BubbleMessageInner({
     
     if (onForceTranslation) {
       try {
-        // On peut étendre onForceTranslation pour accepter un tier optionnel
+        // CORRECTION: Passer le modèle supérieur pour la retraduction
+        console.log(`🔄 Retraduction avec modèle ${nextTier} pour ${targetLanguage}`);
+        
+        // Appeler le service de traduction directement avec le bon modèle
+        const { messageTranslationService } = await import('@/services/message-translation.service');
+        
+        const result = await messageTranslationService.requestTranslation({
+          messageId: message.id,
+          targetLanguage,
+          sourceLanguage: message.originalLanguage,
+          model: nextTier as 'basic' | 'medium' | 'premium'
+        });
+        
+        console.log('✅ Retraduction demandée avec succès:', result);
+        toast.success(`Retraduction en cours vers ${getLanguageInfo(targetLanguage).name} (modèle ${nextTier})`);
+        
+        // Déclencher le callback pour mettre à jour l'interface
         await onForceTranslation(message.id, targetLanguage);
-        // toast.success(`Re-traduction en cours vers ${getLanguageInfo(targetLanguage).name} (tier ${nextTier})`);
+        
       } catch (error) {
         console.error('❌ Erreur lors de l\'upgrade de traduction:', error);
         toast.error('Erreur lors de la demande d\'upgrade');
       }
     } else {
-      // toast.info(`Upgrade vers tier ${nextTier} pour ${getLanguageInfo(targetLanguage).name}`);
+      console.warn('⚠️ Pas de callback onForceTranslation fourni pour l\'upgrade');
     }
   };
 
@@ -409,7 +452,8 @@ function BubbleMessageInner({
           if (!acc[t.language] || currentTimestamp > existingTimestamp) {
             acc[t.language] = {
               ...t,
-              isOriginal: false
+              isOriginal: false,
+              model: (t as any).model || 'basic' // Inclure le modèle de traduction
             };
           }
           return acc;
@@ -439,8 +483,31 @@ function BubbleMessageInner({
   
   // Calculer le nombre total de traductions à afficher dans le badge
   // Afficher le badge si le message n'est pas lu OU s'il y a de nouvelles traductions avec indicateur actif
-  const shouldShowTranslationBadge = !isMessageReadByCurrentUser() || showNewTranslationsIndicator;
-  const totalTranslationBadgeCount = translationCount + (showNewTranslationsIndicator ? newTranslationsCount : 0);
+  const isRead = isMessageReadByCurrentUser();
+  const shouldShowTranslationBadge = !isRead || showNewTranslationsIndicator || translationCount > 0;
+  const totalTranslationBadgeCount = !isRead ? 1 : Math.max(translationCount, (showNewTranslationsIndicator ? newTranslationsCount : 0));
+
+  // FORCE l'affichage du badge pour les messages non lus (temporaire pour debug)
+  const forceShowBadge = !isRead;
+  const finalShouldShowBadge = shouldShowTranslationBadge || forceShowBadge;
+  const finalBadgeCount = forceShowBadge ? 1 : totalTranslationBadgeCount;
+
+  // Debug pour comprendre pourquoi le badge ne s'affiche pas
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 Badge Debug:', {
+      messageId: message.id,
+      isRead,
+      shouldShowTranslationBadge,
+      totalTranslationBadgeCount,
+      translationCount,
+      showNewTranslationsIndicator,
+      newTranslationsCount,
+      messageAge: Date.now() - new Date(message.createdAt).getTime(),
+      isOwnMessage: message.senderId === currentUser.id || message.anonymousSenderId === currentUser.id,
+      readStatus: message.readStatus,
+      currentUserId: currentUser.id
+    });
+  }
 
   // Filtrer les versions disponibles selon le filtre de recherche
   const filteredVersions = availableVersions.filter(version => {
@@ -544,7 +611,7 @@ function BubbleMessageInner({
 
             {/* Indicateur de langue originale seulement */}
             <div className="flex items-center space-x-2">
-              {message.translations.some(t => t.status === 'translating') && (
+              {(message.translations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
                 <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full">
                   <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
                   <span className="text-xs text-blue-600 font-medium">{t('translating')}</span>
@@ -674,16 +741,18 @@ function BubbleMessageInner({
                     }`}
                   >
                     <Languages className={`h-4 w-4 transition-transform duration-200 ${
-                      (hasPendingForcedTranslation || message.translations.some(t => t.status === 'translating')) ? 'animate-pulse' : ''
+                      (hasPendingForcedTranslation || message.translations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) ? 'animate-pulse text-blue-600' : ''
                     }`} />
                     {/* Badge pour indiquer le nombre de traductions */}
-                    {shouldShowTranslationBadge && totalTranslationBadgeCount > 0 && (
+                    {finalShouldShowBadge && finalBadgeCount > 0 && (
                       <span className={`absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium ${
                         showNewTranslationsIndicator 
                           ? 'bg-orange-500 animate-bounce' // Orange pour les nouvelles traductions
-                          : 'bg-green-600' // Vert pour les traductions normales
+                          : forceShowBadge 
+                            ? 'bg-blue-600' // Bleu pour les messages non lus
+                            : 'bg-green-600' // Vert pour les traductions normales
                       }`}>
-                        {totalTranslationBadgeCount}
+                        {finalBadgeCount}
                       </span>
                     )}
                   </Button>
@@ -768,13 +837,13 @@ function BubbleMessageInner({
                                 {!version.isOriginal && (
                                   <div className="flex items-center space-x-1">
                                     {/* Icône d'upgrade vers tier supérieur */}
-                                    {getNextTier('basic') && (
+                                    {getNextTier(version.model || 'basic') && (
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <div
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              handleUpgradeTier(version.language, 'basic');
+                                              handleUpgradeTier(version.language, version.model || 'basic');
                                             }}
                                             className="p-1 rounded hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors cursor-pointer"
                                           >
@@ -782,13 +851,18 @@ function BubbleMessageInner({
                                           </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                          {t('improveTranslationQuality')}
+                                          {t('improveTranslationQuality')} (modèle {version.model || 'basic'} → {getNextTier(version.model || 'basic')})
                                         </TooltipContent>
                                       </Tooltip>
                                     )}
                                     <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
                                       {Math.round(version.confidence * 100)}%
                                     </span>
+                                    {version.model && (
+                                      <span className="text-xs text-blue-600 bg-blue-100/60 px-1.5 py-0.5 rounded">
+                                        {version.model}
+                                      </span>
+                                    )}
                                   </div>
                                 )}
                               </div>
@@ -859,7 +933,7 @@ function BubbleMessageInner({
                       </>
                     )}
                   
-                    {message.translations.some(t => t.status === 'translating') && (
+                    {(message.translations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center space-x-2 text-sm text-blue-700 bg-blue-50 p-2 rounded">
                           <Loader2 className="h-3 w-3 animate-spin" />
@@ -921,33 +995,64 @@ function BubbleMessageInner({
               </Tooltip>
             </div>
 
-            {/* Menu plus d'options - Affiché seulement si l'utilisateur a les permissions */}
-            {canShowOptionsMenu && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-500 hover:text-gray-700 hover:bg-gray-50 p-2 rounded-full"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={handleEditMessage} className="flex items-center space-x-2">
-                    <Edit className="h-4 w-4" />
-                    <span>{t('edit')}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={handleDeleteMessage} 
-                    className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span>Supprimer</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            {/* Indicateurs de réception pour les messages de l'utilisateur actuel */}
+            {(() => {
+              const deliveryStatus = getMessageDeliveryStatus();
+              if (!deliveryStatus) return null;
+
+              const { status, count } = deliveryStatus;
+              
+              return (
+                <div className="flex items-center space-x-2">
+                  {status === 'sent' && (
+                    <div className="flex items-center space-x-1 text-gray-400">
+                      <Check className="h-3 w-3" />
+                      <span className="text-xs">{t('deliveryStatus.sent')}</span>
+                    </div>
+                  )}
+                  {status === 'delivered' && (
+                    <div className="flex items-center space-x-1 text-blue-500">
+                      <CheckCheck className="h-3 w-3" />
+                      <span className="text-xs">{t('deliveryStatus.delivered')} ({count})</span>
+                    </div>
+                  )}
+                  {status === 'read' && (
+                    <div className="flex items-center space-x-1 text-green-500">
+                      <CheckCheck className="h-3 w-3" />
+                      <span className="text-xs">{t('deliveryStatus.read')} ({count})</span>
+                    </div>
+                  )}
+                  
+                  {/* Menu plus d'options - Affiché à droite des indicateurs d'état */}
+                  {canShowOptionsMenu && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-500 hover:text-gray-700 hover:bg-gray-50 p-1 rounded-full"
+                        >
+                          <MoreHorizontal className="h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={handleEditMessage} className="flex items-center space-x-2">
+                          <Edit className="h-4 w-4" />
+                          <span>{t('edit')}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={handleDeleteMessage} 
+                          className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span>{t('delete')}</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </CardContent>
       </Card>

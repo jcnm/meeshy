@@ -97,7 +97,7 @@ export function useAuth() {
     });
 
     // Routes publiques (pas de vérification nécessaire)
-    const publicRoutes = ['/', '/login', '/register', '/partners', '/privacy', '/contact', '/about', '/terms'];
+    const publicRoutes = ['/', '/login', '/signin', '/register', '/partners', '/privacy', '/contact', '/about', '/terms'];
     const isPublicRoute = publicRoutes.includes(pathname);
     
     // Routes de jointure (accessibles sans authentification)

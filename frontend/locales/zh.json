@@ -129,10 +129,67 @@
       "noRecentGroups": "没有最近的社区"
     },
     "success": {
+      "loginSuccess": "登录成功",
+      "registrationSuccess": "账户创建成功",
+      "settingsSaved": "设置保存成功",
+      "profileUpdated": "个人资料更新成功",
+      "welcome": "欢迎",
       "linkCreated": "对话链接创建成功！"
+    },
+    "summary": {
+      "title": "配置摘要",
+      "description": "在生成链接之前检查设置",
+      "basicInfo": "基本信息",
+      "conversation": "对话",
+      "validityDuration": "有效期",
+      "usageLimit": "使用限制",
+      "usageCount": "{count} 次使用",
+      "unlimited": "无限制",
+      "welcomeMessage": "欢迎消息",
+      "noCustomMessage": "无自定义消息",
+      "welcomeMessageDescription": "欢迎消息描述",
+      "permissionsGranted": "已授予的权限",
+      "messages": "消息",
+      "allowed": "允许",
+      "forbidden": "禁止",
+      "guestsCanSendMessages": "访客可以发送消息",
+      "guestsCannotSendMessages": "访客不能发送消息",
+      "images": "图片",
+      "guestsCanShareImages": "访客可以分享图片",
+      "guestsCannotShareImages": "访客不能分享图片",
+      "files": "文件",
+      "guestsCanShareFiles": "访客可以分享文件",
+      "guestsCannotShareFiles": "访客不能分享文件",
+      "history": "历史记录",
+      "visible": "可见",
+      "hidden": "隐藏",
+      "guestsCanViewHistory": "访客可以查看历史记录",
+      "guestsCannotViewHistory": "访客不能查看历史记录",
+      "nicknameRequired": "需要昵称",
+      "yes": "是",
+      "no": "否",
+      "guestsMustEnterNickname": "访客必须输入昵称",
+      "guestsCanStayAnonymous": "访客可以保持匿名",
+      "emailRequired": "需要邮箱",
+      "guestsMustEnterEmail": "访客必须输入邮箱",
+      "allowedLanguages": "允许的语言",
+      "selectedLanguages": "选定的语言"
     },
     "time": {
       "format": "zh-CN"
+    },
+    "steps": {
+      "selectConversation": "选择对话",
+      "configureLink": "配置链接",
+      "linkOptions": "链接选项",
+      "summaryAndGeneration": "摘要和生成"
+    },
+    "stepDescriptions": {
+      "selectConversation": "选择现有对话或创建新对话",
+      "configureLink": "配置链接的基本参数",
+      "configureNewConversation": "定义新对话的详细信息",
+      "linkOptions": "自定义权限和限制",
+      "summaryAndGeneration": "检查并生成对话链接"
     }
   },
   "createLinkButton": {
@@ -146,5 +203,86 @@
     "copyFailed": "复制失败",
     "errorCreatingLink": "创建链接错误",
     "createLinkButton": "创建链接按钮"
+  },
+  "bubbleStream": {
+    "edit": "编辑",
+    "delete": "删除",
+    "deliveryStatus": {
+      "sent": "已发送",
+      "delivered": "已送达",
+      "read": "已读"
+    }
+  },
+  "messages": {
+    "sent": "消息已发送！",
+    "sendError": "发送消息时出错",
+    "editSoon": "消息编辑功能即将推出",
+    "translationError": "请求翻译时出错",
+    "translationMaxTier": "此翻译已使用最高级别",
+    "translationInProgress": "翻译进行中...",
+    "retranslationInProgress": "强制重新翻译进行中...",
+    "translationSuccess": "消息已用{model}翻译",
+    "textCopied": "文本已复制",
+    "deliveryStatus": {
+      "sent": "已发送",
+      "delivered": "已送达",
+      "read": "已读"
+    }
+  },
+  "register": {
+    "title": "创建账户",
+    "description": "加入Meeshy，无障碍沟通",
+    "formDescription": "填写下面的表单来创建您的账户",
+    "firstNameLabel": "名字 *",
+    "firstNamePlaceholder": "您的名字",
+    "lastNameLabel": "姓氏 *",
+    "lastNamePlaceholder": "您的姓氏",
+    "usernameLabel": "用户名 *",
+    "usernamePlaceholder": "选择一个用户名",
+    "usernameHelp": "此名称对其他用户可见",
+    "emailLabel": "邮箱 *",
+    "emailPlaceholder": "your@email.com",
+    "phoneLabel": "电话",
+    "phonePlaceholder": "+33123456789",
+    "passwordLabel": "密码 *",
+    "passwordPlaceholder": "选择一个密码",
+    "passwordHelp": "最少6个字符",
+    "confirmPasswordLabel": "确认密码 *",
+    "confirmPasswordPlaceholder": "确认您的密码",
+    "systemLanguageLabel": "系统语言",
+    "regionalLanguageLabel": "地区语言",
+    "registerButton": "创建账户",
+    "creating": "创建中...",
+    "fillRequiredFields": "请填写所有必填字段",
+    "passwordsDoNotMatch": "密码不匹配",
+    "passwordTooShort": "密码必须至少6个字符",
+    "registrationError": "创建账户时出错",
+    "hasAccount": "已有账户？",
+    "loginLink": "在此登录",
+    "acceptTerms": "我接受",
+    "termsOfService": "服务条款",
+    "and": "和",
+    "privacyPolicy": "隐私政策",
+    "contactUs": "联系我们",
+    "mustAcceptTerms": "您必须接受服务条款和隐私政策"
+  },
+  "login": {
+    "title": "登录",
+    "description": "欢迎回到Meeshy",
+    "email": "邮箱",
+    "password": "密码",
+    "loginButton": "登录",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "还没有账户？",
+    "registerLink": "在这里注册",
+    "validation": {
+      "required": "所有字段都是必需的"
+    },
+    "success": {
+      "loginSuccess": "登录成功！"
+    },
+    "errors": {
+      "loginFailed": "登录失败。请检查您的凭据。"
+    }
   }
 }

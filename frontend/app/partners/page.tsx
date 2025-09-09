@@ -1,4 +1,7 @@
 'use client';
+import { Metadata } from 'next';
+import { generateSEOMetadata } from '@/lib/seo-metadata';
+
 
 import { useTranslations } from '@/hooks/useTranslations';
 import { useDynamicSEO } from '@/hooks/useDynamicSEO';
@@ -6,6 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Handshake, Mail, ExternalLink, Building2, GraduationCap, Users, Shield, Zap, HeartHandshake, Globe, BookOpen, Briefcase } from 'lucide-react';
 import Link from 'next/link';
+
+// Métadonnées SEO pour la page partners
+export const metadata: Metadata = generateSEOMetadata('partners', 'fr');
 
 export default function PartnersPage() {
   // SEO temporairement désactivé pour debugging
