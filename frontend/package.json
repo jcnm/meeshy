@@ -1,6 +1,6 @@
 {
   "name": "meeshy-frontend",
-  "version": "1.0.39-alpha",
+  "version": "1.0.40-alpha",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3100",
