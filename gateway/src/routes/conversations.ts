@@ -921,6 +921,86 @@ export async function conversationRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // Route pour marquer tous les messages d'une conversation comme lus
+  fastify.post<{ 
+    Params: ConversationParams;
+  }>('/conversations/:id/mark-read', {
+    preValidation: [requiredAuth]
+  }, async (request, reply) => {
+    try {
+      const { id } = request.params;
+      const authRequest = request as UnifiedAuthRequest;
+      const userId = authRequest.authContext.userId;
+
+      // Résoudre l'ID de conversation réel
+      const conversationId = await resolveConversationId(id);
+      if (!conversationId) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Vérifier les permissions d'accès
+      const canAccess = await canAccessConversation(prisma, authRequest.authContext, conversationId, id);
+      if (!canAccess) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Accès non autorisé à cette conversation'
+        });
+      }
+
+      // Récupérer tous les messages non lus de cette conversation pour cet utilisateur
+      const unreadMessages = await prisma.message.findMany({
+        where: {
+          conversationId: conversationId,
+          isDeleted: false,
+          senderId: { not: userId }, // Ne pas marquer ses propres messages
+          readStatus: {
+            none: {
+              userId: userId
+            }
+          }
+        },
+        select: {
+          id: true
+        }
+      });
+
+      if (unreadMessages.length === 0) {
+        return reply.send({
+          success: true,
+          message: 'Aucun message non lu à marquer',
+          markedCount: 0
+        });
+      }
+
+      // Marquer tous les messages comme lus
+      const readStatusData = unreadMessages.map(message => ({
+        messageId: message.id,
+        userId: userId,
+        readAt: new Date()
+      }));
+
+      await prisma.messageReadStatus.createMany({
+        data: readStatusData
+      });
+
+      return reply.send({
+        success: true,
+        message: `${unreadMessages.length} message(s) marqué(s) comme lu(s)`,
+        markedCount: unreadMessages.length
+      });
+
+    } catch (error) {
+      console.error('[GATEWAY] Error marking conversation as read:', error);
+      reply.status(500).send({
+        success: false,
+        error: 'Erreur lors du marquage des messages comme lus'
+      });
+    }
+  });
+
   // Route pour envoyer un message dans une conversation
   fastify.post<{ 
     Params: ConversationParams;

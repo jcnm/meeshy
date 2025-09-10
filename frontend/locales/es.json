@@ -110,13 +110,15 @@
     "actions": {
       "createLink": "Crear un enlace",
       "newConversation": "Nueva conversación",
+      "createConversation": "Crear conversación",
       "createCommunity": "Crear una comunidad",
       "createGroup": "Crear una comunidad",
       "viewAll": "Ver todo",
       "startConversation": "Iniciar una conversación",
       "createCommunityButton": "Crear una comunidad",
       "createGroupButton": "Crear una comunidad",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "shareApp": "Compartir app"
     },
     "quickActions": {
       "title": "Acciones rápidas",
@@ -388,6 +390,11 @@
       "sent": "Enviado",
       "delivered": "Entregado",
       "read": "Leído"
+    },
+    "toasts": {
+      "messages": {
+        "textCopied": "Texto copiado al portapapeles"
+      }
     }
   },
   "register": {
@@ -473,10 +480,169 @@
     "createLinkError": "Error al crear enlace",
     "conversationSearch": "Búsqueda de conversación",
     "communities": "Comunidades",
-    "conversationUI": "Interfaz de conversación"
+    "conversationUI": "Interfaz de conversación",
+    "loading": "Cargando..."
+  },
+  "settings": {
+    "title": "Configuración",
+    "pageTitle": "Configuración de {username}",
+    "loadingSettings": "Cargando configuración...",
+    "settingsError": "Error al cargar la configuración",
+    "settingsSaved": "Configuración guardada exitosamente",
+    "settingsSaveError": "Error al guardar la configuración",
+    "tabs": {
+      "profile": "Perfil",
+      "translation": "Traducción",
+      "theme": "Tema",
+      "fonts": "Fuentes",
+      "stats": "Estadísticas"
+    },
+    "profile": {
+      "title": "Perfil",
+      "description": "Información personal",
+      "settingsTitle": "Configuración del perfil",
+      "settingsDescription": "Configuración para {username}",
+      "photo": {
+        "title": "Foto de perfil",
+        "description": "Personaliza tu foto de perfil visible para otros usuarios",
+        "uploadImage": "Subir imagen",
+        "takePhoto": "Tomar foto",
+        "removePhoto": "Eliminar foto",
+        "photoUpdated": "Foto de perfil actualizada",
+        "previewTitle": "Vista previa de la foto"
+      },
+      "personalInfo": {
+        "title": "Información personal",
+        "description": "Modifica tu información de perfil",
+        "firstName": "Nombre",
+        "lastName": "Apellido",
+        "displayName": "Nombre para mostrar",
+        "displayNamePlaceholder": "Cómo quieres aparecer en las conversaciones",
+        "email": "Correo electrónico",
+        "emailPlaceholder": "tu.email@ejemplo.com",
+        "phoneNumber": "Número de teléfono",
+        "phoneNumberPlaceholder": "+33 1 23 45 67 89",
+        "username": "Nombre de usuario",
+        "usernameCannotChange": "El nombre de usuario no se puede modificar",
+        "bio": "Biografía",
+        "bioPlaceholder": "Cuéntanos sobre ti..."
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "profileUpdated": "Perfil actualizado exitosamente",
+        "updateError": "Error al actualizar el perfil",
+        "confirm": "Confirmar",
+        "uploading": "Subiendo..."
+      }
+    },
+    "noUserConnected": "Ningún usuario conectado"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "subtitle": "Estamos ubicados en el corazón de La Défense, París",
+    "backHome": "Volver al inicio",
+    "address": {
+      "title": "Nuestra Dirección",
+      "company": "Meeshy",
+      "building": "9 - 11 Avenue de l'Arche",
+      "street": "Courbevoie 92400",
+      "city": "Francia"
+    },
+    "contact": {
+      "title": "Contacto",
+      "email": {
+        "label": "Correo electrónico",
+        "value": "contact@meeshy.me"
+      }
+    },
+    "availability": {
+      "title": "Disponibilidad",
+      "description": "Estamos disponibles 24/7 para apoyarte"
+    },
+    "transport": {
+      "title": "Cómo llegar",
+      "train": {
+        "title": "En tren",
+        "rer": "RER A: Estación \"La Défense - Grande Arche\"",
+        "transilien": "Transilien L: Estación \"La Défense\"",
+        "time": "Desde París: 10-15 minutos desde Châtelet-Les Halles"
+      },
+      "metro": {
+        "title": "En metro",
+        "line1": "Línea 1: Estación \"La Défense\"",
+        "time": "Desde París: 15-20 minutos desde Châtelet-Les Halles"
+      },
+      "bus": {
+        "title": "En autobús",
+        "lines": "Líneas de autobús 73, 141, 144, 159, 174, 175, 176, 178, 258, 262, 272, 276, 278, 360, 378",
+        "time": "Desde París: 20-30 minutos"
+      },
+      "car": {
+        "title": "En coche",
+        "parking": "Aparcamiento disponible",
+        "time": "Desde París: 15-25 minutos según el tráfico"
+      }
+    }
+  },
+  "toasts": {
+    "connection": {
+      "established": "Conexión establecida",
+      "disconnected": "Desconectado por el servidor",
+      "lost": "Conexión perdida, reconectando...",
+      "reconnecting": "Conectando - Por favor espere...",
+      "websocketConnecting": "Conexión WebSocket en progreso...",
+      "reconnectSuccess": "¡Reconexión exitosa!",
+      "reconnectFailed": "Reconexión fallida - Verificar servidor",
+      "cannotReconnect": "No se puede reconectar. Por favor recargue la página."
+    },
+    "messages": {
+      "translationInProgress": "Traducción en progreso...",
+      "retranslationInProgress": "Retraducción en progreso...",
+      "editSoon": "Edición disponible pronto",
+      "translationSuccess": "Traducción exitosa",
+      "textCopied": "Texto copiado al portapapeles"
+    },
+    "conversations": {
+      "loadError": "Error al cargar la conversación"
+    }
   },
   "bubbleStream": {
     "user": "Usuario",
     "users": "Usuarios"
+  },
+  "linkSummaryModal": {
+    "title": "Enlace de compartir creado",
+    "description": "Su enlace de compartir ha sido creado exitosamente. Aquí está un resumen de la configuración establecida.",
+    "shareLink": "Enlace de compartir",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "expires": "Expira el",
+    "userLimits": "Límites de usuarios",
+    "maxUses": "Máx. usos",
+    "maxConcurrent": "Máx. usuarios simultáneos",
+    "maxSessions": "Máx. sesiones únicas",
+    "noLimits": "Sin límites",
+    "limitedTo": "Limitado a",
+    "usage": "uso",
+    "usages": "usos",
+    "unlimitedUsage": "Sin límite de uso",
+    "languages": "Idiomas permitidos",
+    "sendPermissions": "Permisos de envío",
+    "messages": "Mensajes",
+    "files": "Archivos",
+    "images": "Imágenes",
+    "videos": "Videos",
+    "audio": "Audio",
+    "documents": "Documentos",
+    "links": "Enlaces",
+    "location": "Ubicación",
+    "contacts": "Contactos",
+    "authRequirements": "Requisitos de autenticación",
+    "nickname": "Apodo",
+    "email": "Correo",
+    "close": "Cerrar",
+    "copyLink": "Copiar enlace"
   }
 }

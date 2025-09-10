@@ -40,7 +40,6 @@
   "apiService": "API-Service",
   "connected": "Verbunden",
   "debug": "Debug",
-  "conversationDetails": "Gesprächsdetails",
   "noMessages": "Keine Nachrichten in diesem Gespräch",
   "active": "Aktiv",
   "no": "Nein",
@@ -110,13 +109,15 @@
     "actions": {
       "createLink": "Einen Link erstellen",
       "newConversation": "Neue Unterhaltung",
+      "createConversation": "Unterhaltung erstellen",
       "createCommunity": "Eine Community erstellen",
       "createGroup": "Eine Community erstellen",
       "viewAll": "Alle anzeigen",
       "startConversation": "Eine Unterhaltung beginnen",
       "createCommunityButton": "Eine Community erstellen",
       "createGroupButton": "Eine Community erstellen",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "shareApp": "App teilen"
     },
     "quickActions": {
       "title": "Schnellaktionen",
@@ -222,6 +223,11 @@
       "sent": "Gesendet",
       "delivered": "Zugestellt",
       "read": "Gelesen"
+    },
+    "toasts": {
+      "messages": {
+        "textCopied": "Text in die Zwischenablage kopiert"
+      }
     }
   },
   "register": {
@@ -296,6 +302,308 @@
       "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
     }
   },
+  "settings": {
+    "title": "Einstellungen",
+    "pageTitle": "Einstellungen für {username}",
+    "loadingSettings": "Einstellungen werden geladen...",
+    "settingsError": "Fehler beim Laden der Einstellungen",
+    "settingsSaved": "Einstellungen erfolgreich gespeichert",
+    "settingsSaveError": "Fehler beim Speichern der Einstellungen",
+    "tabs": {
+      "profile": "Profil",
+      "translation": "Übersetzung",
+      "theme": "Design",
+      "fonts": "Schriftarten",
+      "stats": "Statistiken"
+    },
+    "profile": {
+      "title": "Profil",
+      "description": "Persönliche Informationen",
+      "settingsTitle": "Profil-Einstellungen",
+      "settingsDescription": "Einstellungen für {username}",
+      "photo": {
+        "title": "Profilfoto",
+        "description": "Passen Sie Ihr Profilfoto an, das anderen Benutzern sichtbar ist",
+        "uploadImage": "Bild hochladen",
+        "takePhoto": "Foto aufnehmen",
+        "removePhoto": "Foto entfernen",
+        "photoUpdated": "Profilfoto aktualisiert",
+        "previewTitle": "Foto-Vorschau"
+      },
+      "personalInfo": {
+        "title": "Persönliche Informationen",
+        "description": "Ändern Sie Ihre Profilinformationen",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "displayName": "Anzeigename",
+        "displayNamePlaceholder": "Wie Sie in Unterhaltungen erscheinen möchten",
+        "email": "E-Mail",
+        "emailPlaceholder": "ihre.email@beispiel.com",
+        "phoneNumber": "Telefonnummer",
+        "phoneNumberPlaceholder": "+33 1 23 45 67 89",
+        "username": "Benutzername",
+        "usernameCannotChange": "Benutzername kann nicht geändert werden",
+        "bio": "Biografie",
+        "bioPlaceholder": "Erzählen Sie uns von sich..."
+      },
+      "actions": {
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "saving": "Speichern...",
+        "profileUpdated": "Profil erfolgreich aktualisiert",
+        "updateError": "Fehler beim Aktualisieren des Profils",
+        "confirm": "Bestätigen",
+        "uploading": "Hochladen..."
+      }
+    },
+    "noUserConnected": "Kein Benutzer verbunden"
+  },
+  "contact": {
+    "title": "Kontaktieren Sie uns",
+    "subtitle": "Wir befinden uns im Herzen von La Défense, Paris",
+    "backHome": "Zurück zur Startseite",
+    "address": {
+      "title": "Unsere Adresse",
+      "company": "Meeshy",
+      "building": "9 - 11 Avenue de l'Arche",
+      "street": "Courbevoie 92400",
+      "city": "Frankreich"
+    },
+    "contact": {
+      "title": "Kontakt",
+      "email": {
+        "label": "E-Mail",
+        "value": "contact@meeshy.me"
+      }
+    },
+    "availability": {
+      "title": "Verfügbarkeit",
+      "description": "Wir sind 24/7 verfügbar, um Sie zu unterstützen"
+    },
+    "transport": {
+      "title": "Wie Sie uns erreichen",
+      "train": {
+        "title": "Mit dem Zug",
+        "rer": "RER A: Station \"La Défense - Grande Arche\"",
+        "transilien": "Transilien L: Station \"La Défense\"",
+        "time": "Von Paris: 10-15 Minuten von Châtelet-Les Halles"
+      },
+      "metro": {
+        "title": "Mit der U-Bahn",
+        "line1": "Linie 1: Station \"La Défense\"",
+        "time": "Von Paris: 15-20 Minuten von Châtelet-Les Halles"
+      },
+      "bus": {
+        "title": "Mit dem Bus",
+        "lines": "Buslinien 73, 141, 144, 159, 174, 175, 176, 178, 258, 262, 272, 276, 278, 360, 378",
+        "time": "Von Paris: 20-30 Minuten"
+      },
+      "car": {
+        "title": "Mit dem Auto",
+        "parking": "Parkhaus verfügbar",
+        "time": "Von Paris: 15-25 Minuten je nach Verkehr"
+      }
+    }
+  },
+  "toasts": {
+    "connection": {
+      "established": "Verbindung hergestellt",
+      "disconnected": "Vom Server getrennt",
+      "lost": "Verbindung verloren, Verbindung wird wiederhergestellt...",
+      "reconnecting": "Verbindung wird hergestellt - Bitte warten...",
+      "websocketConnecting": "WebSocket-Verbindung wird hergestellt...",
+      "reconnectSuccess": "Wiederverbindung erfolgreich!",
+      "reconnectFailed": "Wiederverbindung fehlgeschlagen - Server überprüfen",
+      "cannotReconnect": "Wiederverbindung nicht möglich. Bitte Seite neu laden."
+    },
+    "messages": {
+      "translationInProgress": "Übersetzung läuft...",
+      "retranslationInProgress": "Neuübersetzung läuft...",
+      "editSoon": "Bearbeitung bald verfügbar",
+      "translationSuccess": "Übersetzung erfolgreich",
+      "textCopied": "Text in die Zwischenablage kopiert"
+    },
+    "conversations": {
+      "loadError": "Fehler beim Laden der Unterhaltung"
+    }
+  },
+  "linkSummaryModal": {
+    "title": "Freigabe-Link erstellt",
+    "description": "Ihr Freigabe-Link wurde erfolgreich erstellt. Hier ist eine Zusammenfassung der konfigurierten Einstellungen.",
+    "shareLink": "Freigabe-Link",
+    "copied": "Kopiert",
+    "copy": "Kopieren",
+    "expires": "Läuft ab am",
+    "userLimits": "Benutzerlimits",
+    "maxUses": "Max. Verwendungen",
+    "maxConcurrent": "Max. gleichzeitige Benutzer",
+    "maxSessions": "Max. eindeutige Sitzungen",
+    "noLimits": "Keine Limits",
+    "limitedTo": "Begrenzt auf",
+    "usage": "Verwendung",
+    "usages": "Verwendungen",
+    "unlimitedUsage": "Unbegrenzte Verwendung",
+    "languages": "Erlaubte Sprachen",
+    "sendPermissions": "Sendeberechtigungen",
+    "messages": "Nachrichten",
+    "files": "Dateien",
+    "images": "Bilder",
+    "videos": "Videos",
+    "audio": "Audio",
+    "documents": "Dokumente",
+    "links": "Links",
+    "location": "Standort",
+    "contacts": "Kontakte",
+    "authRequirements": "Authentifizierungsanforderungen",
+    "nickname": "Spitzname",
+    "email": "E-Mail",
+    "close": "Schließen",
+    "copyLink": "Link kopieren"
+  },
+  "conversations": {
+    "loading": "Lädt...",
+    "conversationCreated": "Gespräch erfolgreich erstellt",
+    "conversationDetails": "Gesprächsdetails"
+  },
+  "conversationWrapper": {
+    "authChecking": "Authentifizierung wird überprüft...",
+    "conversationWrapper": "Gesprächsumhüllung"
+  },
+  "conversationLayout": {
+    "authChecking": "Authentifizierung wird überprüft...",
+    "loadingConversations": "Gespräche werden geladen...",
+    "loadingConversationsDescription": "Ihre Gespräche werden abgerufen...",
+    "noConversations": "Keine Gespräche",
+    "noConversationsDescription": "Erstellen Sie ein neues Gespräch oder treten Sie einem bestehenden bei.",
+    "chooseConversation": "Wählen Sie ein Gespräch",
+    "chooseConversationDescription": "Wählen Sie ein Gespräch aus der Liste, um zu chatten.",
+    "welcome": "Willkommen bei Meeshy",
+    "welcomeDescription": "Verbinden Sie sich mit Freunden und Kollegen in Echtzeit mit automatischer Übersetzung.",
+    "createConversation": "Gespräch erstellen",
+    "filtreConversations": "Gespräche filtern",
+    "notConnected": "Nicht verbunden",
+    "participantRemoved": "Teilnehmer entfernt: {userId}",
+    "participantAdded": "Teilnehmer hinzugefügt: {userId}",
+    "errorLoadingNewConversation": "Fehler beim Laden des neuen Gesprächs",
+    "errorLoadingConversation": "Fehler beim Laden des Gesprächs",
+    "writeMessage": "Schreiben Sie Ihre Nachricht...",
+    "addParticipant": "Teilnehmer hinzufügen",
+    "conversations": {
+      "title": "Gespräche"
+    },
+    "no": "Nein",
+    "connected": "Verbunden",
+    "debug": "Debug: {count} Gespräche | Laden: {loading} | Benutzer: {user}",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "createLink": "Link erstellen",
+    "createNewConversation": "Neues Gespräch erstellen",
+    "createNewLink": "Neuen Link erstellen",
+    "noPublicConversations": "Keine öffentlichen Gespräche",
+    "noPublicConversationsFound": "Keine öffentlichen Gespräche gefunden",
+    "noPrivateConversations": "Keine privaten Gespräche",
+    "noPrivateConversationsFound": "Keine privaten Gespräche gefunden",
+    "conversationDetails": "Gesprächsdetails",
+    "noMessages": "Keine Nachrichten in diesem Gespräch",
+    "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
+    "yes": "Ja",
+    "conversationLayout": "Gesprächslayout",
+    "conversationSearch": "Gesprächssuche",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Übersetzung läuft...",
+        "retranslationInProgress": "Neuübersetzung läuft...",
+        "editSoon": "Bearbeitung bald verfügbar",
+        "translationSuccess": "Übersetzung erfolgreich",
+        "textCopied": "Text in die Zwischenablage kopiert"
+      },
+      "conversations": {
+        "loadError": "Fehler beim Laden des Gesprächs"
+      }
+    }
+  },
+  "conversationSearch": {
+    "placeholder": "Nach Name, Beschreibung suchen...",
+    "filterConversations": "Gespräche filtern",
+    "searchParticipants": "Suchen...",
+    "shareMessage": "Teilen Sie etwas mit der Welt...",
+    "authChecking": "Authentifizierung wird überprüft...",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Übersetzung läuft...",
+        "retranslationInProgress": "Neuübersetzung läuft...",
+        "editSoon": "Bearbeitung bald verfügbar",
+        "translationSuccess": "Übersetzung erfolgreich",
+        "textCopied": "Text in die Zwischenablage kopiert"
+      },
+      "conversations": {
+        "loadError": "Fehler beim Laden des Gesprächs"
+      }
+    },
+    "conversations": {
+      "title": "Gespräche"
+    },
+    "loadingConversations": "Gespräche werden geladen...",
+    "loadingConversationsDescription": "Ihre Gespräche werden abgerufen...",
+    "noConversations": "Keine Gespräche",
+    "noConversationsDescription": "Erstellen Sie ein neues Gespräch oder treten Sie einem bestehenden bei.",
+    "chooseConversation": "Wählen Sie ein Gespräch",
+    "chooseConversationDescription": "Wählen Sie ein Gespräch aus der Liste, um zu chatten.",
+    "welcome": "Willkommen bei Meeshy",
+    "welcomeDescription": "Verbinden Sie sich mit Freunden und Kollegen in Echtzeit mit automatischer Übersetzung.",
+    "createConversation": "Gespräch erstellen",
+    "filtreConversations": "Gespräche filtern",
+    "notConnected": "Nicht verbunden",
+    "participantRemoved": "Teilnehmer entfernt: {userId}",
+    "participantAdded": "Teilnehmer hinzugefügt: {userId}",
+    "errorLoadingNewConversation": "Fehler beim Laden des neuen Gesprächs",
+    "errorLoadingConversation": "Fehler beim Laden des Gesprächs",
+    "writeMessage": "Schreiben Sie Ihre Nachricht...",
+    "no": "Nein",
+    "connected": "Verbunden",
+    "debug": "Debug: {count} Gespräche | Laden: {loading} | Benutzer: {user}",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "createLink": "Link erstellen",
+    "conversationDetails": "Gesprächsdetails",
+    "noMessages": "Keine Nachrichten in diesem Gespräch",
+    "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
+    "yes": "Ja",
+    "conversationLayout": "Gesprächslayout",
+    "conversationSearch": "Gesprächssuche",
+    "conversationUI": "Gesprächsoberfläche"
+  },
+  "conversationDetails": {
+    "title": "Gesprächsdetails",
+    "conversationGroup": "Gruppengespräch",
+    "conversationPrivate": "Privates Gespräch",
+    "conversationName": "Gesprächsname",
+    "clickToEdit": "Klicken Sie, um den Namen zu bearbeiten",
+    "editName": "Name bearbeiten",
+    "nameCannotBeEmpty": "Der Gesprächsname darf nicht leer sein",
+    "nameUpdated": "Gesprächsname aktualisiert",
+    "conversationExists": "Ein Gespräch mit diesem Namen existiert bereits",
+    "noPermissionToModify": "Sie haben keine Berechtigung, dieses Gespräch zu ändern",
+    "conversationNotFound": "Gespräch nicht gefunden",
+    "invalidData": "Ungültige Daten",
+    "updateError": "Fehler beim Aktualisieren des Namens",
+    "participantRemoved": "Teilnehmer aus dem Gespräch entfernt",
+    "removeParticipantError": "Fehler beim Entfernen des Teilnehmers",
+    "activeLanguages": "Aktive Sprachen",
+    "activeUsers": "Aktive Benutzer",
+    "noActiveUsers": "Keine aktiven Benutzer",
+    "otherActiveUsers": "+{count} weitere aktive Benutzer",
+    "shareLinks": "Freigabelinks",
+    "conversationDetails": "Gesprächsdetails"
+  },
+  "conversationParticipants": {
+    "noParticipantsOnline": "Keine Teilnehmer online",
+    "online": "online",
+    "typing": "schreibt...",
+    "typingMultiple": "Personen schreiben...",
+    "you": "Sie",
+    "conversationParticipants": "Gesprächsteilnehmer"
+  },
   "conversationUI": {
     "participants": "Teilnehmer",
     "createLink": "Link erstellen",
@@ -304,19 +612,337 @@
     "online": "Online",
     "offline": "Offline",
     "noOneOnline": "Niemand online",
-    "noOfflineParticipants": "Keine offline Teilnehmer",
+    "noOfflineParticipants": "Keine Offline-Teilnehmer",
     "you": "Sie",
-    "removeFromGroup": "Aus Gruppe entfernen",
-    "participantRemoved": "Teilnehmer aus Unterhaltung entfernt",
+    "removeFromGroup": "Aus der Gruppe entfernen",
+    "participantRemoved": "Teilnehmer aus dem Gespräch entfernt",
     "removeParticipantError": "Fehler beim Entfernen des Teilnehmers",
-    "linkCreated": "Unterhaltungslink erstellt",
+    "linkCreated": "Gesprächslink erstellt",
     "createLinkError": "Fehler beim Erstellen des Links",
-    "conversationSearch": "Unterhaltungssuche",
+    "conversationSearch": "Gesprächssuche",
     "communities": "Gemeinschaften",
-    "conversationUI": "Unterhaltungs-UI"
+    "conversationUI": "Gesprächsoberfläche",
+    "loading": "Lädt..."
   },
-  "bubbleStream": {
-    "user": "Benutzer",
-    "users": "Benutzer"
+  "typingIndicator": {
+    "isTyping": "schreibt",
+    "areTyping": "schreiben",
+    "multipleTyping": "Personen schreiben",
+    "typing": "Schreibt...",
+    "typingIndicator": "Schreibanzeige"
+  },
+  "createConversationModal": {
+    "title": "Neues Gespräch",
+    "description": "Erstellen Sie ein modernes Gespräch mit einem intelligenten und dynamischen Ansatz",
+    "steps": {
+      "members": "Mitglieder",
+      "details": "Details"
+    },
+    "community": {
+      "title": "Gemeinschaft (optional)",
+      "searchPlaceholder": "Nach einer Gemeinschaft suchen...",
+      "loading": "Lädt...",
+      "noCommunitiesFound": "Keine Gemeinschaften gefunden.",
+      "membersCount": "{count} Mitglieder • {conversations} Gespräche",
+      "private": "Privat",
+      "public": "Öffentlich"
+    },
+    "members": {
+      "title": "Mitglieder hinzufügen",
+      "searchPlaceholder": "Benutzer nach Name oder Benutzername suchen...",
+      "loading": "Lädt...",
+      "noUsersFound": "Keine Benutzer gefunden.",
+      "selectedMembers": "Ausgewählte Mitglieder ({count})"
+    },
+    "conversationDetails": {
+      "title": "Gesprächsdetails",
+      "conversationTitle": "Gesprächstitel",
+      "titlePlaceholder": "Der Titel wird automatisch generiert...",
+      "titleInfoDirect": "Automatisch generierter Titel für direkte Gespräche",
+      "titleInfoGroup": "Bearbeiten Sie den Titel bei Bedarf für Gruppengespräche",
+      "identifier": "Bezeichner",
+      "identifierRequired": "*",
+      "identifierPrefix": "mshy_",
+      "identifierPlaceholder": "mein-bezeichner",
+      "identifierInfo": "Erlaubte Zeichen: Buchstaben, Zahlen, Bindestriche, Unterstriche, @",
+      "identifierError": "Der Bezeichner enthält nicht erlaubte Zeichen",
+      "typeDirect": "Direkt",
+      "typeGroup": "Gruppe"
+    },
+    "autoGeneratedTitles": {
+      "directWithUser": "Gespräch mit {username}",
+      "betweenTwoUsers": "Gespräch mit {user1} und {user2}",
+      "groupWithMultiple": "Gespräch mit {user1}, {user2} und {count} andere{plural}",
+      "groupWithTwo": "Gespräch mit {user1} und {user2}"
+    },
+    "actions": {
+      "create": "Erstellen",
+      "creating": "Erstelle...",
+      "createDirectConversation": "Direktes Gespräch erstellen",
+      "createGroupConversation": "Gruppengespräch erstellen",
+      "cancel": "Abbrechen"
+    },
+    "errors": {
+      "selectAtLeastOneUser": "Bitte wählen Sie mindestens einen Benutzer aus",
+      "identifierRequired": "Der Bezeichner ist erforderlich",
+      "invalidIdentifier": "Der Bezeichner darf nur Buchstaben, Zahlen, Bindestriche, Unterstriche und @ enthalten",
+      "searchError": "Fehler bei der Suche",
+      "creationError": "Fehler beim Erstellen des Gesprächs",
+      "loadingCommunitiesError": "Fehler beim Laden der Gemeinschaften"
+    },
+    "success": {
+      "conversationCreated": "Gespräch erfolgreich erstellt"
+    },
+    "createConversationModal": "Dialog zum Erstellen eines Gesprächs"
+  },
+  "createLinkModal": {
+    "title": "Freigabelink erstellen",
+    "description": "Erstellen Sie einen Link, damit andere Personen einem Gespräch beitreten können",
+    "steps": {
+      "selectConversation": "Gespräch auswählen",
+      "configureLink": "Link konfigurieren",
+      "linkOptions": "Link-Optionen",
+      "summaryAndGeneration": "Zusammenfassung und Generierung"
+    },
+    "stepDescriptions": {
+      "selectConversation": "Wählen Sie ein bestehendes Gespräch oder erstellen Sie ein neues",
+      "configureLink": "Konfigurieren Sie die grundlegenden Link-Einstellungen",
+      "configureNewConversation": "Definieren Sie die Details Ihres neuen Gesprächs",
+      "linkOptions": "Passen Sie Berechtigungen und Einschränkungen an",
+      "summaryAndGeneration": "Überprüfen Sie Ihre Einstellungen und generieren Sie den Link"
+    },
+    "createNewConversation": {
+      "title": "Neues Gespräch erstellen",
+      "description": "Erstellen Sie ein dediziertes Gespräch für diesen Freigabelink",
+      "orSelectExisting": "Oder wählen Sie ein bestehendes Gespräch"
+    },
+    "conversationForm": {
+      "title": "Gesprächstitel *",
+      "titleInfo": "Name, der dieses Gespräch identifiziert und zur Generierung des Link-Namens verwendet wird",
+      "titlePlaceholder": "Z.B.: Team-Diskussion, Projekt-Brainstorming...",
+      "description": "Beschreibung (optional)",
+      "descriptionInfo": "Beschreibung, die in der Gesprächsliste erscheint und Mitgliedern hilft, den Zweck zu verstehen",
+      "descriptionPlaceholder": "Beschreiben Sie den Zweck dieses Gesprächs...",
+      "baseMembers": "Basismitglieder",
+      "memberCount": "{count} Mitglied(er)",
+      "searchUsers": "Benutzer suchen... (tippen zum Suchen)",
+      "noUsersFound": "Keine Benutzer gefunden"
+    },
+    "linkConfiguration": {
+      "validityDuration": "Gültigkeitsdauer",
+      "validityDurationInfo": "Dauer, für die der Freigabelink aktiv bleibt. Nach Ablauf funktioniert der Link nicht mehr",
+      "usageLimit": "Nutzungslimit",
+      "usageLimitInfo": "Maximale Anzahl der Nutzungen des Links. Nach Erreichen des Limits wird der Link deaktiviert"
+    },
+    "durationOptions": {
+      "1": {
+        "label": "1 Tag",
+        "description": "Temporärer Link"
+      },
+      "3": {
+        "label": "3 Tage",
+        "description": "Kurzfristig"
+      },
+      "7": {
+        "label": "1 Woche",
+        "description": "Kurzfristig"
+      },
+      "14": {
+        "label": "2 Wochen",
+        "description": "Kurzfristig"
+      },
+      "30": {
+        "label": "1 Monat",
+        "description": "Mittelfristig"
+      },
+      "60": {
+        "label": "2 Monate",
+        "description": "Mittelfristig"
+      },
+      "90": {
+        "label": "3 Monate",
+        "description": "Langfristig"
+      },
+      "180": {
+        "label": "6 Monate",
+        "description": "Langfristig"
+      },
+      "365": {
+        "label": "1 Jahr",
+        "description": "Permanent"
+      },
+      "730": {
+        "label": "2 Jahre",
+        "description": "Permanent"
+      }
+    },
+    "limitOptions": {
+      "5": {
+        "label": "5 Nutzungen",
+        "description": "Sehr kleine Gruppe"
+      },
+      "10": {
+        "label": "10 Nutzungen",
+        "description": "Kleine Gruppe"
+      },
+      "25": {
+        "label": "25 Nutzungen",
+        "description": "Kleine Gruppe"
+      },
+      "50": {
+        "label": "50 Nutzungen",
+        "description": "Mittlere Gruppe"
+      },
+      "100": {
+        "label": "100 Nutzungen",
+        "description": "Große Gruppe"
+      },
+      "250": {
+        "label": "250 Nutzungen",
+        "description": "Große Gruppe"
+      },
+      "500": {
+        "label": "500 Nutzungen",
+        "description": "Sehr große Gruppe"
+      },
+      "1000": {
+        "label": "1000 Nutzungen",
+        "description": "Öffentliche Veranstaltung"
+      },
+      "5000": {
+        "label": "5000 Nutzungen",
+        "description": "Massive Veranstaltung"
+      },
+      "unlimited": {
+        "label": "Unbegrenzt",
+        "description": "Keine Einschränkung"
+      }
+    },
+    "permissions": {
+      "title": "Gastberechtigungen",
+      "description": "Definieren Sie, was anonyme Teilnehmer tun können",
+      "sendMessages": {
+        "label": "Nachrichten senden",
+        "description": "Erlaube das Senden von Textnachrichten"
+      },
+      "shareImages": {
+        "label": "Bilder teilen",
+        "description": "Erlaube das Senden von Bildern"
+      },
+      "shareFiles": {
+        "label": "Dateien teilen",
+        "description": "Erlaube das Senden von Dateien"
+      },
+      "viewHistory": {
+        "label": "Verlauf anzeigen",
+        "description": "Zugriff auf alte Nachrichten"
+      },
+      "requireNickname": {
+        "label": "Spitzname erforderlich",
+        "description": "Eingabe eines Spitznamens erzwingen"
+      },
+      "requireEmail": {
+        "label": "E-Mail erforderlich",
+        "description": "Eingabe einer E-Mail erzwingen"
+      }
+    },
+    "allowedLanguages": {
+      "title": "Erlaubte Sprachen",
+      "description": "Wählen Sie die erlaubten Sprachen für Teilnehmer",
+      "allowAllLanguages": "Leer lassen, um alle Sprachen zu erlauben",
+      "allowLanguage": "Teilnehmer in {language} erlauben"
+    },
+    "summary": {
+      "title": "Konfigurationsübersicht",
+      "description": "Überprüfen Sie die Einstellungen vor der Link-Generierung",
+      "basicInfo": "Grundinformationen",
+      "conversation": "Gespräch",
+      "validityDuration": "Gültigkeitsdauer",
+      "usageLimit": "Nutzungslimit",
+      "unlimited": "Unbegrenzt",
+      "welcomeMessage": "Willkommensnachricht",
+      "noCustomMessage": "Keine benutzerdefinierte Nachricht",
+      "messages": "Nachrichten",
+      "allowed": "Erlaubt",
+      "forbidden": "Verboten",
+      "guestsCanSendMessages": "Gäste können Nachrichten senden",
+      "guestsCannotSendMessages": "Gäste können keine Nachrichten senden",
+      "images": "Bilder",
+      "guestsCanShareImages": "Gäste können Bilder teilen",
+      "guestsCannotShareImages": "Gäste können keine Bilder teilen",
+      "files": "Dateien",
+      "guestsCanShareFiles": "Gäste können Dateien teilen",
+      "guestsCannotShareFiles": "Gäste können keine Dateien teilen",
+      "history": "Verlauf",
+      "visible": "Sichtbar",
+      "hidden": "Versteckt",
+      "guestsCanViewHistory": "Gäste können den Verlauf anzeigen",
+      "guestsCannotViewHistory": "Gäste können den Verlauf nicht anzeigen",
+      "guestsMustEnterNickname": "Gäste müssen einen Spitznamen eingeben",
+      "guestsCanStayAnonymous": "Gäste können anonym bleiben",
+      "guestsMustEnterEmail": "Gäste müssen eine E-Mail eingeben",
+      "selectedLanguages": "Ausgewählte Sprachen",
+      "welcomeMessageDescription": "Beschreibung der Willkommensnachricht",
+      "permissionsGranted": "Gewährte Berechtigungen",
+      "nicknameRequired": "Spitzname erforderlich",
+      "yes": "Ja",
+      "no": "Nein",
+      "emailRequired": "E-Mail erforderlich",
+      "allowedLanguages": "Erlaubte Sprachen",
+      "usageCount": "Anzahl der Nutzungen",
+      "linkDisabledAfter": "Link deaktiviert nach"
+    },
+    "linkDetails": {
+      "title": "Name des Freigabelinks",
+      "description": "Der Name wird automatisch generiert, aber Sie können ihn ändern",
+      "linkName": "Link-Name *",
+      "linkNameInfo": "Titel, der den Teilnehmern angezeigt wird, wenn sie den Freigabelink erhalten",
+      "linkNamePlaceholder": "Z.B.: Dem Gespräch beitreten: Team-Meeting",
+      "linkIdentifier": "Link-Bezeichner *",
+      "linkIdentifierInfo": "Eindeutiger Bezeichner, der in der URL des Freigabelinks verwendet wird. Die letzten 6 Zeichen werden zufällig generiert, um Konflikte zu vermeiden",
+      "regenerateIdentifier": "Suffix des Bezeichners regenerieren",
+      "welcomeMessage": "Willkommensnachricht",
+      "welcomeMessageInfo": "Nachricht, die Ihren Gästen angezeigt wird, bevor sie dem Gespräch beitreten",
+      "welcomeMessagePlaceholder": "Z.B.: Willkommen in unserer Diskussion! Zögern Sie nicht, Ihre Ideen zu teilen..."
+    },
+    "success": {
+      "title": "Link erfolgreich erstellt!",
+      "description": "Ihr Freigabelink ist bereit zur Verwendung",
+      "summary": "Zusammenfassung Ihres Links",
+      "conversation": "Gespräch",
+      "validityDuration": "Gültigkeitsdauer",
+      "usageLimit": "Nutzungslimit",
+      "permissions": "Berechtigungen",
+      "fullLink": "Vollständiger Freigabelink",
+      "fullLinkDescription": "Teilen Sie diesen Link, damit andere dem Gespräch beitreten können",
+      "copy": "Kopieren",
+      "copyLink": "Link kopieren",
+      "close": "Schließen"
+    },
+    "navigation": {
+      "previous": "Zurück",
+      "next": "Weiter",
+      "createLink": "Link erstellen",
+      "generating": "Generiere..."
+    },
+    "search": {
+      "conversations": "Nach einem Gespräch suchen...",
+      "noConversationsFound": "Keine Gespräche gefunden"
+    },
+    "errors": {
+      "selectConversation": "Bitte wählen Sie ein Gespräch oder erstellen Sie ein neues",
+      "enterTitle": "Bitte geben Sie einen Titel für das neue Gespräch ein",
+      "loadingConversations": "Fehler beim Laden der Gespräche",
+      "searchingUsers": "Fehler bei der Benutzersuche",
+      "generatingLink": "Fehler beim Generieren des Links",
+      "missingToken": "Link-Token fehlt in der Antwort"
+    },
+    "successMessages": {
+      "linkGeneratedAndCopied": "Link generiert und in die Zwischenablage kopiert!",
+      "linkGenerated": "Link erfolgreich generiert!",
+      "linkCopied": "Link in die Zwischenablage kopiert",
+      "tokenCopied": "Token in die Zwischenablage kopiert"
+    },
+    "createLinkModal": "Dialog zum Erstellen eines Links"
   }
 }

@@ -924,7 +924,25 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversation?.id, loadMessages, clearMessages]); // Supprimé messages.length qui change constamment
 
-  // Effet 2: chargement des participants uniquement quand l'ID de conversation change
+  // Effet 2: marquer les messages comme lus quand une conversation est ouverte
+  useEffect(() => {
+    if (selectedConversation?.id && user?.id) {
+      // Marquer tous les messages de cette conversation comme lus
+      conversationsService.markConversationAsRead(selectedConversation.id)
+        .then((response) => {
+          if (response.success && response.markedCount > 0) {
+            console.log(`✅ ${response.markedCount} message(s) marqué(s) comme lu(s) pour la conversation ${selectedConversation.id}`);
+            // Rafraîchir la liste des conversations pour mettre à jour le compteur unreadCount
+            loadData();
+          }
+        })
+        .catch((error) => {
+          console.error('Erreur lors du marquage des messages comme lus:', error);
+        });
+    }
+  }, [selectedConversation?.id, user?.id, loadData]);
+
+  // Effet 3: chargement des participants uniquement quand l'ID de conversation change
   useEffect(() => {
     if (selectedConversation?.id) {
       loadConversationParticipants(selectedConversation.id);
@@ -958,40 +976,43 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
                 <div className="flex items-center gap-2">
                   {/* Bouton pour créer une nouvelle conversation */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsCreateConversationModalOpen(true)}
-                    className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
-                    title={t('createNewConversation')}
-                  >
-                    <MessageSquare className="h-5 w-5 text-primary" />
-                  </Button>
-                  
-                  {/* Bouton pour créer un nouveau lien - seulement pour les conversations de groupe et avec les bons rôles */}
-                  {selectedConversation?.type !== 'direct' && 
-                   !(selectedConversation?.type === 'global' && user.role !== 'BIGBOSS' && user.role !== 'ADMIN') && (
-                    <CreateLinkButton
-                      onLinkCreated={() => {
-                        // Lien créé depuis l'en-tête
-                      }}
+                  <div className="relative">
+                    <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => setIsCreateConversationModalOpen(true)}
                       className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                      title={t('createNewConversation')}
                     >
-                      <Link2 className="h-5 w-5 text-primary" />
-                    </CreateLinkButton>
-                  )}
-                  
-                  
-                  {/* Indicateur de messages non lus */}
-                  <div className="relative">
-                    {conversations.filter(c => (c.unreadCount || 0) > 0).length > 0 && (
-                      <div className="h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                        {conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)}
-                      </div>
-                    )}
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                    </Button>
+                    {/* Pastille pour les messages non lus */}
+                    {(() => {
+                      const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+                      return totalUnread > 0 ? (
+                        <Badge 
+                          variant="destructive" 
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold shadow-lg"
+                        >
+                          {totalUnread > 99 ? '99+' : totalUnread}
+                        </Badge>
+                      ) : null;
+                    })()}
                   </div>
+                  
+                  {/* Bouton pour créer un nouveau lien - toujours disponible pour les administrateurs */}
+                  <CreateLinkButton
+                    onLinkCreated={() => {
+                      // Lien créé depuis l'en-tête
+                      loadData();
+                    }}
+                    forceModal={true}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                  >
+                    <Link2 className="h-5 w-5 text-primary" />
+                  </CreateLinkButton>
                 </div>
               </div>
 
@@ -1400,22 +1421,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 <div className="flex gap-4 justify-center">
                   <Button
                     onClick={() => setIsCreateConversationModalOpen(true)}
-                    className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all relative"
+                    className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all"
                   >
                     <MessageSquare className="h-5 w-5 mr-2" />
                     {t('createConversation')}
-                    {/* Pastille pour les messages non lus */}
-                    {(() => {
-                      const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-                      return totalUnread > 0 ? (
-                        <Badge 
-                          variant="destructive" 
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold shadow-lg"
-                        >
-                          {totalUnread > 99 ? '99+' : totalUnread}
-                        </Badge>
-                      ) : null;
-                    })()}
                   </Button>
                   <CreateLinkButton
                     variant="outline"

@@ -19,7 +19,16 @@ import {
   FileText, 
   Image,
   Check,
-  X
+  X,
+  Users,
+  User,
+  Mail,
+  Video,
+  Volume2,
+  File,
+  Link,
+  MapPin,
+  Phone
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/clipboard';
@@ -34,6 +43,9 @@ interface LinkSummaryModalProps {
     title: string;
     description: string;
     expirationDays: number;
+    maxUses?: number;
+    maxConcurrentUsers?: number;
+    maxUniqueSessions?: number;
     allowAnonymousMessages: boolean;
     allowAnonymousFiles: boolean;
     allowAnonymousImages: boolean;
@@ -126,93 +138,172 @@ export function LinkSummaryModal({
             </div>
           </div>
 
-          {/* Paramètres condensés */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            {/* Expiration */}
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{t('expires')}</span>
-              <span>{formatExpirationDate(linkData.expirationDays)}</span>
+          {/* Détails du lien */}
+          <div className="space-y-4">
+            {/* Première ligne : Expiration et Limites d'usage vs Exigences d'authentification */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Expiration et Limites d'usage */}
+              <div className="space-y-3">
+                {/* Expiration */}
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{t('expires')}</span>
+                  <span className="font-medium">{formatExpirationDate(linkData.expirationDays)}</span>
+                </div>
+
+                {/* Limites d'usage */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{t('userLimits')}</span>
+                  </div>
+                  <div className="ml-6 space-y-1 text-sm">
+                    {linkData.maxUses ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{t('limitedTo')}:</span>
+                        <Badge variant="outline">{linkData.maxUses} {linkData.maxUses === 1 ? t('usage') : t('usages')}</Badge>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">{t('unlimitedUsage')}</span>
+                    )}
+                    {linkData.maxConcurrentUsers && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{t('maxConcurrent')}:</span>
+                        <Badge variant="outline">{linkData.maxConcurrentUsers}</Badge>
+                      </div>
+                    )}
+                    {linkData.maxUniqueSessions && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">{t('maxSessions')}:</span>
+                        <Badge variant="outline">{linkData.maxUniqueSessions}</Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Exigences d'authentification */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">{t('authRequirements')}</span>
+                </div>
+                <div className="ml-6 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t('nickname')}</span>
+                    {linkData.requireNickname ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-600" />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t('email')}</span>
+                    {linkData.requireEmail ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <X className="h-4 w-4 text-red-600" />
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Langues */}
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">{t('languages')}</span>
-              <div className="flex gap-1">
-                {linkData.allowedLanguages.slice(0, 2).map((lang) => (
+            {/* Langues autorisées */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">{t('languages')}</span>
+              </div>
+              <div className="ml-6 flex flex-wrap gap-1">
+                {linkData.allowedLanguages.map((lang) => (
                   <Badge key={lang} variant="secondary" className="text-xs">
                     {lang.toUpperCase()}
                   </Badge>
                 ))}
-                {linkData.allowedLanguages.length > 2 && (
-                  <Badge variant="secondary" className="text-xs">
-                    +{linkData.allowedLanguages.length - 2}
-                  </Badge>
-                )}
               </div>
             </div>
 
-            {/* Permissions */}
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{t('messages')}</span>
-              {linkData.allowAnonymousMessages ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : (
-                <X className="h-4 w-4 text-red-600" />
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{t('files')}</span>
-              {linkData.allowAnonymousFiles ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : (
-                <X className="h-4 w-4 text-red-600" />
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Image className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{t('images')}</span>
-              {linkData.allowAnonymousImages ? (
-                <Check className="h-4 w-4 text-green-600" />
-              ) : (
-                <X className="h-4 w-4 text-red-600" />
-              )}
-            </div>
-
-            {/* Authentification */}
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">{t('auth')}</span>
-              <div className="flex gap-1">
-                {!linkData.requireNickname && !linkData.requireEmail ? (
-                  <Badge variant="secondary" className="text-xs">{t('none')}</Badge>
-                ) : (
-                  <>
-                    {linkData.requireNickname && (
-                      <Badge variant="secondary" className="text-xs">{t('nickname')}</Badge>
-                    )}
-                    {linkData.requireEmail && (
-                      <Badge variant="secondary" className="text-xs">{t('email')}</Badge>
-                    )}
-                  </>
-                )}
+            {/* Permissions d'envoi sur 3 colonnes */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">{t('sendPermissions')}</span>
+              </div>
+              <div className="ml-6 grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('messages')}</span>
+                  {linkData.allowAnonymousMessages ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('files')}</span>
+                  {linkData.allowAnonymousFiles ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Image className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('images')}</span>
+                  {linkData.allowAnonymousImages ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Video className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('videos')}</span>
+                  {linkData.allowAnonymousFiles ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Volume2 className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('audio')}</span>
+                  {linkData.allowAnonymousFiles ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <File className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('documents')}</span>
+                  {linkData.allowAnonymousFiles ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('links')}</span>
+                  <Check className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('location')}</span>
+                  <Check className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{t('contacts')}</span>
+                  <Check className="h-4 w-4 text-green-600" />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={onClose}>
-            {t('close')}
-          </Button>
-          <Button onClick={handleCopyLink} className="flex items-center gap-2">
-            <Copy className="h-4 w-4" />
-            {t('copyLink')}
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );

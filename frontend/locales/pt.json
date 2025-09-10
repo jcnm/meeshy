@@ -315,15 +315,15 @@
       "address": {
         "title": "Nossa Morada",
         "company": "Meeshy",
-        "building": "9-11 Avenue de l'Arche",
-        "street": "92400 Courbevoie",
+        "building": "9 - 11 Avenue de l'Arche",
+        "street": "Courbevoie 92400",
         "city": "França"
       },
       "contact": {
         "title": "Contacto",
         "email": {
           "label": "Email",
-          "value": "contact@meeshy.com"
+          "value": "contact@meeshy.me"
         }
       },
       "availability": {
@@ -412,7 +412,7 @@
         },
         "contact": {
           "title": "8. Contact",
-          "content": "For any questions regarding these terms of use, please contact us at: contact@meeshy.com"
+          "content": "For any questions regarding these terms of use, please contact us at: contact@meeshy.me"
         }
       },
       "navigation": {
@@ -505,7 +505,7 @@
             "Data portability",
             "Object to processing"
           ],
-          "contact": "To exercise these rights, contact us at: privacy@meeshy.com"
+          "contact": "To exercise these rights, contact us at: privacy@meeshy.me"
         },
         "cookies": {
           "title": "7. Cookies and similar technologies",
@@ -518,8 +518,8 @@
         "contact": {
           "title": "9. Contact",
           "content": "For any questions regarding this privacy policy or the processing of your personal data, please contact us:",
-          "email": "Email: privacy@meeshy.com",
-          "address": "Address: Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+          "email": "Email: privacy@meeshy.me",
+          "address": "Address: 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
         }
       },
       "navigation": {
@@ -742,7 +742,8 @@
       "startConversation": "Iniciar uma conversa",
       "createCommunityButton": "Criar uma comunidade",
       "createGroupButton": "Criar uma comunidade",
-      "settings": "Configurações"
+      "settings": "Configurações",
+      "shareApp": "Compartilhar app"
     },
     "quickActions": {
       "title": "Ações Rápidas",
@@ -871,7 +872,8 @@
         "uploadImage": "Upload an image",
         "takePhoto": "Take a photo",
         "removePhoto": "Remove photo",
-        "photoUpdated": "Profile photo updated"
+        "photoUpdated": "Profile photo updated",
+        "previewTitle": "Visualização da Foto"
       },
       "personalInfo": {
         "title": "Personal Information",
@@ -885,14 +887,18 @@
         "phoneNumber": "Phone number",
         "phoneNumberPlaceholder": "+33 1 23 45 67 89",
         "username": "Username",
-        "usernameCannotChange": "Username cannot be modified"
+        "usernameCannotChange": "Username cannot be modified",
+        "bio": "Biografia",
+        "bioPlaceholder": "Conte-nos sobre você..."
       },
       "actions": {
         "cancel": "Cancel",
         "save": "Save",
         "saving": "Saving...",
         "profileUpdated": "Profile updated successfully",
-        "updateError": "Error updating profile"
+        "updateError": "Error updating profile",
+        "confirm": "Confirmar",
+        "uploading": "Enviando..."
       }
     },
     "translation": {
@@ -1141,6 +1147,11 @@
       "sent": "Enviado",
       "delivered": "Entregue",
       "read": "Lido"
+    },
+    "toasts": {
+      "messages": {
+        "textCopied": "Texto copiado para a área de transferência"
+      }
     }
   },
   "anonymousChat": {
@@ -1421,7 +1432,7 @@
       "title": "Contact Information",
       "email": {
         "label": "Email",
-        "value": "contact@meeshy.com"
+        "value": "contact@meeshy.me"
       },
       "phone": {
         "label": "Phone",
@@ -1575,7 +1586,7 @@
         "Data portability",
         "Object to processing"
       ],
-      "contact": "To exercise these rights, contact us at: privacy@meeshy.com"
+      "contact": "To exercise these rights, contact us at: privacy@meeshy.me"
     },
     "cookies": {
       "title": "7. Cookies and Similar Technologies",
@@ -1588,8 +1599,8 @@
     "contact": {
       "title": "9. Contact",
       "intro": "For any questions regarding this privacy policy or the processing of your personal data, please contact us:",
-      "email": "Email: privacy@meeshy.com",
-      "address": "Address: Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+      "email": "Email: privacy@meeshy.me",
+      "address": "Address: 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
     },
     "footer": {
       "title": "Learn more about Meeshy",
@@ -1912,8 +1923,8 @@
     "contact": {
       "title": "11. Contact",
       "intro": "For any questions regarding these terms of service, contact us:",
-      "email": "Email: legal@meeshy.com",
-      "address": "Address: Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+      "email": "Email: legal@meeshy.me",
+      "address": "Address: 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
     },
     "footer": {
       "title": "Learn more about Meeshy",
@@ -2071,7 +2082,8 @@
         "translationInProgress": "Tradução em andamento...",
         "retranslationInProgress": "Retradução em andamento...",
         "editSoon": "Edição disponível em breve",
-        "translationSuccess": "Tradução bem-sucedida"
+        "translationSuccess": "Tradução bem-sucedida",
+        "textCopied": "Texto copiado para a área de transferência"
       },
       "conversations": {
         "loadError": "Erro ao carregar conversa"
@@ -2148,7 +2160,8 @@
         "translationInProgress": "Tradução em andamento...",
         "retranslationInProgress": "Retradução em andamento...",
         "editSoon": "Edição disponível em breve",
-        "translationSuccess": "Tradução bem-sucedida"
+        "translationSuccess": "Tradução bem-sucedida",
+        "textCopied": "Texto copiado para a área de transferência"
       },
       "conversations": {
         "loadError": "Erro ao carregar conversa"
@@ -2312,22 +2325,37 @@
     "linkCreatedSuccessfully": "Link de compartilhamento criado com sucesso!"
   },
   "linkSummaryModal": {
-    "title": "Link de compartilhamento criado com sucesso",
-    "description": "Seu link de compartilhamento foi gerado automaticamente.",
+    "title": "Link de compartilhamento criado",
+    "description": "Seu link de compartilhamento foi criado com sucesso. Aqui está um resumo das configurações definidas.",
     "shareLink": "Link de compartilhamento",
-    "copy": "Copiar",
     "copied": "Copiado",
-    "close": "Fechar",
-    "copyLink": "Copiar link",
-    "expires": "Expira:",
-    "languages": "Idiomas:",
-    "messages": "Mensagens:",
-    "files": "Arquivos:",
-    "images": "Imagens:",
-    "auth": "Auth:",
-    "none": "Nenhuma",
+    "copy": "Copiar",
+    "expires": "Expira em",
+    "userLimits": "Limites de usuários",
+    "maxUses": "Máx. utilizações",
+    "maxConcurrent": "Máx. usuários simultâneos",
+    "maxSessions": "Máx. sessões únicas",
+    "noLimits": "Sem limites",
+    "limitedTo": "Limitado a",
+    "usage": "uso",
+    "usages": "usos",
+    "unlimitedUsage": "Sem limite de uso",
+    "languages": "Idiomas permitidos",
+    "sendPermissions": "Permissões de envio",
+    "messages": "Mensagens",
+    "files": "Arquivos",
+    "images": "Imagens",
+    "videos": "Vídeos",
+    "audio": "Áudio",
+    "documents": "Documentos",
+    "links": "Links",
+    "location": "Localização",
+    "contacts": "Contatos",
+    "authRequirements": "Requisitos de autenticação",
     "nickname": "Apelido",
-    "email": "Email"
+    "email": "Email",
+    "close": "Fechar",
+    "copyLink": "Copiar link"
   },
   "joinPage": {
     "title": "Entrar na conversa",
@@ -2475,24 +2503,5 @@
       "email": "Email Obrigatório",
       "emailDescription": "Exigir um email para usuários anônimos"
     }
-  },
-  "conversationUI": {
-    "participants": "Participantes",
-    "createLink": "Criar link",
-    "addParticipant": "Adicionar participante",
-    "searchParticipants": "Buscar participantes",
-    "online": "Online",
-    "offline": "Offline",
-    "noOneOnline": "Ninguém online",
-    "noOfflineParticipants": "Nenhum participante offline",
-    "you": "Você",
-    "removeFromGroup": "Remover do grupo",
-    "participantRemoved": "Participante removido da conversa",
-    "removeParticipantError": "Erro ao remover participante",
-    "linkCreated": "Link de conversa criado",
-    "createLinkError": "Erro ao criar link",
-    "conversationSearch": "Busca de conversa",
-    "communities": "Comunidades",
-    "conversationUI": "Interface de conversa"
   }
 }

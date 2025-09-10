@@ -596,6 +596,36 @@ export class ConversationsService {
   }
 
   /**
+   * Marque tous les messages d'une conversation comme lus
+   */
+  async markConversationAsRead(conversationId: string): Promise<{
+    success: boolean;
+    message: string;
+    markedCount: number;
+  }> {
+    const requestKey = `mark-read-${conversationId}`;
+    const controller = this.createRequestController(requestKey);
+    
+    try {
+      const response = await apiService.post<{
+        success: boolean;
+        message: string;
+        markedCount: number;
+      }>(`/conversations/${conversationId}/mark-read`, {}, {
+        signal: controller.signal
+      });
+      
+      // Nettoyer le controller une fois la requête terminée
+      this.pendingRequests.delete(requestKey);
+      
+      return response.data;
+    } catch (error) {
+      this.pendingRequests.delete(requestKey);
+      throw error;
+    }
+  }
+
+  /**
    * Crée un nouveau controller pour une requête
    */
   private createRequestController(key: string): AbortController {

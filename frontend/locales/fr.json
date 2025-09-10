@@ -358,15 +358,15 @@
       "address": {
         "title": "Notre Adresse",
         "company": "Meeshy",
-        "building": "9-11 Avenue de l'Arche",
-        "street": "92400 Courbevoie",
+        "building": "9 - 11 Avenue de l'Arche",
+        "street": "Courbevoie 92400",
         "city": "France"
       },
       "contact": {
         "title": "Contact",
         "email": {
           "label": "Email",
-          "value": "contact@meeshy.com"
+          "value": "contact@meeshy.me"
         }
       },
       "availability": {
@@ -455,7 +455,7 @@
         },
         "contact": {
           "title": "8. Contact",
-          "content": "Pour toute question concernant ces conditions d'utilisation, veuillez nous contacter à l'adresse : contact@meeshy.com"
+          "content": "Pour toute question concernant ces conditions d'utilisation, veuillez nous contacter à l'adresse : contact@meeshy.me"
         }
       },
       "navigation": {
@@ -548,7 +548,7 @@
             "Portabilité de vos données",
             "Vous opposer au traitement"
           ],
-          "contact": "Pour exercer ces droits, contactez-nous à : privacy@meeshy.com"
+          "contact": "Pour exercer ces droits, contactez-nous à : privacy@meeshy.me"
         },
         "cookies": {
           "title": "7. Cookies et technologies similaires",
@@ -561,8 +561,8 @@
         "contact": {
           "title": "9. Contact",
           "content": "Pour toute question concernant cette politique de confidentialité ou le traitement de vos données personnelles, veuillez nous contacter :",
-          "email": "Email : privacy@meeshy.com",
-          "address": "Adresse : Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+          "email": "Email : privacy@meeshy.me",
+          "address": "Adresse : 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
         }
       },
       "navigation": {
@@ -811,7 +811,8 @@
       "startConversation": "Démarrer une conversation",
       "createCommunityButton": "Créer une communauté",
       "createGroupButton": "Créer une communauté",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "shareApp": "Partager l'application"
     },
     "quickActions": {
       "title": "Actions rapides",
@@ -897,7 +898,8 @@
         "uploadImage": "Télécharger une image",
         "takePhoto": "Prendre une photo",
         "removePhoto": "Supprimer la photo",
-        "photoUpdated": "Photo de profil mise à jour"
+        "photoUpdated": "Photo de profil mise à jour",
+        "previewTitle": "Aperçu de la photo"
       },
       "personalInfo": {
         "title": "Informations personnelles",
@@ -911,14 +913,18 @@
         "phoneNumber": "Numéro de téléphone",
         "phoneNumberPlaceholder": "+33 1 23 45 67 89",
         "username": "Nom d'utilisateur",
-        "usernameCannotChange": "Le nom d'utilisateur ne peut pas être modifié"
+        "usernameCannotChange": "Le nom d'utilisateur ne peut pas être modifié",
+        "bio": "Biographie",
+        "bioPlaceholder": "Parlez-nous de vous..."
       },
       "actions": {
         "cancel": "Annuler",
         "save": "Sauvegarder",
         "saving": "Sauvegarde...",
         "profileUpdated": "Profil mis à jour avec succès",
-        "updateError": "Erreur lors de la mise à jour du profil"
+        "updateError": "Erreur lors de la mise à jour du profil",
+        "confirm": "Confirmer",
+        "uploading": "Téléchargement..."
       }
     },
     "translation": {
@@ -1202,6 +1208,11 @@
       "sent": "Envoyé",
       "delivered": "Livré",
       "read": "Lu"
+    },
+    "toasts": {
+      "messages": {
+        "textCopied": "Texte copié dans le presse-papiers"
+      }
     }
   },
   "anonymousChat": {
@@ -1446,7 +1457,7 @@
     },
     "email": {
       "label": "Email",
-      "value": "contact@meeshy.com"
+      "value": "contact@meeshy.me"
     },
     "phone": {
       "label": "Téléphone",
@@ -1508,8 +1519,8 @@
     "title": "Politique de Confidentialité",
     "lastUpdated": "Dernière mise à jour : 6 septembre 2025",
     "intro": "Pour toute question concernant cette politique de confidentialité ou le traitement de vos données personnelles, veuillez nous contacter :",
-    "email": "privacy@meeshy.com",
-    "address": "Tour First, 1 Place des Saisons, 92400 Courbevoie, France",
+    "email": "privacy@meeshy.me",
+    "address": "9 - 11 Avenue de l'Arche, Courbevoie 92400, France",
     "introduction": {
       "title": "1. Introduction",
       "content": "Chez Meeshy, nous nous engageons à protéger votre vie privée et vos données personnelles. Cette politique de confidentialité explique comment nous collectons, utilisons et protégeons vos informations lorsque vous utilisez notre service de messagerie multilingue."
@@ -1602,7 +1613,7 @@
         "Portabilité de vos données",
         "Vous opposer au traitement"
       ],
-      "contact": "Pour exercer ces droits, contactez-nous à : privacy@meeshy.com"
+      "contact": "Pour exercer ces droits, contactez-nous à : privacy@meeshy.me"
     },
     "cookies": {
       "title": "7. Cookies et technologies similaires",
@@ -1615,8 +1626,8 @@
     "contact": {
       "title": "9. Contact",
       "intro": "Pour toute question concernant cette politique de confidentialité ou le traitement de vos données personnelles, veuillez nous contacter :",
-      "email": "Email : privacy@meeshy.com",
-      "address": "Adresse : Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+      "email": "Email : privacy@meeshy.me",
+      "address": "Adresse : 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
     },
     "footer": {
       "title": "En savoir plus sur Meeshy",
@@ -1631,8 +1642,8 @@
     "title": "Conditions d'Utilisation",
     "lastUpdated": "Dernière mise à jour : 1er janvier 2026",
     "intro": "Pour toute question concernant ces conditions d'utilisation, contactez-nous :",
-    "email": "legal@meeshy.com",
-    "address": "Tour First, 1 Place des Saisons, 92400 Courbevoie, France",
+    "email": "legal@meeshy.me",
+    "address": "9 - 11 Avenue de l'Arche, Courbevoie 92400, France",
     "acceptance": {
       "title": "1. Acceptation des Conditions",
       "content": "En accédant et en utilisant Meeshy, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre service."
@@ -1692,8 +1703,8 @@
     "contact": {
       "title": "11. Contact",
       "intro": "Pour toute question concernant ces conditions d'utilisation, contactez-nous :",
-      "email": "Email : legal@meeshy.com",
-      "address": "Adresse : Tour First, 1 Place des Saisons, 92400 Courbevoie, France"
+      "email": "Email : legal@meeshy.me",
+      "address": "Adresse : 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
     },
     "footer": {
       "title": "En savoir plus sur Meeshy",
@@ -2099,7 +2110,8 @@
         "translationInProgress": "Traduction en cours...",
         "retranslationInProgress": "Retraduction en cours...",
         "editSoon": "Modification bientôt disponible",
-        "translationSuccess": "Traduction réussie"
+        "translationSuccess": "Traduction réussie",
+        "textCopied": "Texte copié dans le presse-papiers"
       },
       "conversations": {
         "loadError": "Erreur lors du chargement de la conversation"
@@ -2156,6 +2168,7 @@
     "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
     "errorLoadingConversation": "Erreur lors du chargement de la conversation",
     "writeMessage": "Écris ton message...",
+    "addParticipant": "Ajouter un participant",
     "conversations": {
       "title": "Conversations"
     },
@@ -2182,7 +2195,8 @@
         "translationInProgress": "Traduction en cours...",
         "retranslationInProgress": "Retraduction en cours...",
         "editSoon": "Modification bientôt disponible",
-        "translationSuccess": "Traduction réussie"
+        "translationSuccess": "Traduction réussie",
+        "textCopied": "Texte copié dans le presse-papiers"
       },
       "conversations": {
         "loadError": "Erreur lors du chargement de la conversation"
@@ -2241,7 +2255,8 @@
     "createLinkError": "Erreur lors de la création du lien",
     "conversationSearch": "Recherche de conversation",
     "communities": "Communautés",
-    "conversationUI": "Interface de conversation"
+    "conversationUI": "Interface de conversation",
+    "loading": "Chargement..."
   },
   "conversationLinks": {
     "title": "Liens de partage",
@@ -2492,5 +2507,38 @@
       "email": "Email requis",
       "emailDescription": "Exiger un email pour les utilisateurs anonymes"
     }
+  },
+  "linkSummaryModal": {
+    "title": "Lien de partage créé",
+    "description": "Votre lien de partage a été créé avec succès. Voici un résumé des paramètres configurés.",
+    "shareLink": "Lien de partage",
+    "copied": "Copié",
+    "copy": "Copier",
+    "expires": "Expire le",
+    "userLimits": "Limites d'utilisateurs",
+    "maxUses": "Utilisations max",
+    "maxConcurrent": "Utilisateurs simultanés max",
+    "maxSessions": "Sessions uniques max",
+    "noLimits": "Aucune limite",
+    "limitedTo": "Limité à",
+    "usage": "usage",
+    "usages": "usages",
+    "unlimitedUsage": "Sans limite d'usage",
+    "languages": "Langues autorisées",
+    "sendPermissions": "Permissions d'envoi",
+    "messages": "Messages",
+    "files": "Fichiers",
+    "images": "Images",
+    "videos": "Vidéos",
+    "audio": "Audio",
+    "documents": "Documents",
+    "links": "Liens",
+    "location": "Localisation",
+    "contacts": "Contacts",
+    "authRequirements": "Exigences d'authentification",
+    "nickname": "Pseudo",
+    "email": "Email",
+    "close": "Fermer",
+    "copyLink": "Copier le lien"
   }
 }
