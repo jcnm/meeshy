@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Users,
   Plus,
@@ -63,6 +64,9 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  
+  // États pour les tabs
+  const [activeTab, setActiveTab] = useState('public');
 
   // États formulaire
   const [newGroupName, setNewGroupName] = useState('');
@@ -406,6 +410,31 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
     }
   }, [newGroupName, newGroupIdentifier, generateIdentifier]);
 
+  // Filtrer les groupes basé sur la recherche
+  // Filtrer les groupes par tab et recherche
+  const filteredGroups = useMemo(() => {
+    let filtered = groups;
+    
+    // Filtrer par tab (seulement PUBLIC et PRIVÉE)
+    if (activeTab === 'private') {
+      filtered = filtered.filter(group => group.isPrivate);
+    } else {
+      // Par défaut, afficher les communautés publiques
+      filtered = filtered.filter(group => !group.isPrivate);
+    }
+    
+    // Filtrer par recherche
+    if (searchFilter.trim()) {
+      filtered = filtered.filter(group => 
+        group.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+        (group.identifier && group.identifier.toLowerCase().includes(searchFilter.toLowerCase())) ||
+        (group.description && group.description.toLowerCase().includes(searchFilter.toLowerCase()))
+      );
+    }
+    
+    return filtered;
+  }, [groups, activeTab, searchFilter]);
+
   // Si on est en train de vérifier l'authentification, afficher un loader
   if (isAuthChecking) {
     return (
@@ -422,13 +451,6 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   if (!user) {
     return null;
   }
-
-  // Filtrer les groupes basé sur la recherche
-  const filteredGroups = groups.filter(group => 
-    group.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-    (group.identifier && group.identifier.toLowerCase().includes(searchFilter.toLowerCase())) ||
-    (group.description && group.description.toLowerCase().includes(searchFilter.toLowerCase()))
-  );
 
   return (
     <DashboardLayout title={tUI('communities')}>
@@ -455,6 +477,24 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                 <div className="relative">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
+              </div>
+
+              {/* Tabs pour classer les communautés */}
+              <div className="mb-4">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="public" className="flex items-center space-x-2">
+                      <Globe className="h-4 w-4" />
+                      <span>Publiques</span>
+                      <Badge variant="secondary">{groups.filter(g => !g.isPrivate).length}</Badge>
+                    </TabsTrigger>
+                    <TabsTrigger value="private" className="flex items-center space-x-2">
+                      <Lock className="h-4 w-4" />
+                      <span>Privées</span>
+                      <Badge variant="secondary">{groups.filter(g => g.isPrivate).length}</Badge>
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
 
               {/* Champ de filtrage des groupes */}
@@ -491,164 +531,85 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                     }
                   </p>
                 </div>
+              ) : filteredGroups.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                  <Users className="h-16 w-16 text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    Aucune communauté {activeTab === 'private' ? 'privée' : 'publique'}
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    {searchFilter.trim() 
+                      ? 'Aucune communauté trouvée pour cette recherche'
+                      : `Aucune communauté ${activeTab === 'private' ? 'privée' : 'publique'} trouvée`
+                    }
+                  </p>
+                </div>
               ) : (
                 <div className="p-2">
-                  {/* Séparer les groupes en publics et privés avec filtrage */}
-                  {(() => {
-                    // Appliquer d'abord le filtre de recherche
-                    const filteredGroups = groups.filter(group => {
-                      if (!searchFilter) return true;
-                      const searchLower = searchFilter.toLowerCase();
-                      const name = group.name.toLowerCase();
-                      const description = group.description?.toLowerCase() || '';
-                      const identifier = group.identifier?.toLowerCase() || '';
-                      return name.includes(searchLower) || description.includes(searchLower) || identifier.includes(searchLower);
-                    });
-                    
-                    const publicGroups = filteredGroups.filter(group => !group.isPrivate);
-                    const privateGroups = filteredGroups.filter(group => group.isPrivate);
-
-                    return (
-                      <>
-                        {/* Section Communautés Publiques */}
-                        {publicGroups.length > 0 && (
-                          <div className="mb-6">
-                            <div className="px-4 py-2 mb-3">
-                              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                                Publiques
-                              </h3>
-                            </div>
-                            <div className="space-y-2">
-                              {publicGroups.map((group) => (
-                                <div
-                                  key={`public-${group.id}`}
-                                  onClick={() => handleSelectGroup(group)}
-                                  className={cn(
-                                    "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
-                                    selectedGroup?.id === group.id
-                                      ? "bg-primary/20 border-primary/40 shadow-md"
-                                      : "hover:bg-accent/50 border-transparent hover:border-border/30"
-                                  )}
-                                >
-                                  <div className="relative">
-                                    <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                                      <AvatarImage src={group.avatar || undefined} />
-                                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                        {group.name.substring(0, 2).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
-                                  </div>
-
-                                  <div className="ml-4 flex-1 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                      <h3 className="font-bold text-foreground truncate">
-                                        {group.name}
-                                      </h3>
-                                      <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                                        {group._count?.members || 0} membres
-                                      </span>
-                                    </div>
-                                    {group.description && (
-                                      <p className="text-sm text-muted-foreground truncate">
-                                        {group.description}
-                                      </p>
-                                    )}
-                                    <div className="flex items-center gap-1 mt-1 group/identifier">
-                                      <span 
-                                        className="text-xs text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          copyIdentifier(group.identifier || `mshy_${generateIdentifier(group.name)}`);
-                                        }}
-                                      >
-                                        {group.identifier || `mshy_${generateIdentifier(group.name)}`}
-                                      </span>
-                                      {copiedIdentifier === (group.identifier || `mshy_${generateIdentifier(group.name)}`) ? (
-                                        <CheckCircle2 className="h-3 w-3 text-green-500" />
-                                      ) : (
-                                        <Copy className="h-3 w-3 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                  <div className="space-y-2">
+                    {filteredGroups.map((group) => (
+                      <div
+                        key={group.id}
+                        onClick={() => handleSelectGroup(group)}
+                        className={cn(
+                          "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                          selectedGroup?.id === group.id
+                            ? "bg-primary/20 border-primary/40 shadow-md"
+                            : "hover:bg-accent/50 border-transparent hover:border-border/30"
                         )}
+                      >
+                        <div className="relative">
+                          <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                            <AvatarImage src={group.avatar || undefined} />
+                            <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                              {group.name.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={cn(
+                            "absolute -bottom-0 -right-0 h-4 w-4 rounded-full border-2 border-background",
+                            group.isPrivate ? "bg-orange-500" : "bg-green-500"
+                          )}></div>
+                        </div>
 
-                        {/* Section Communautés Privées */}
-                        {privateGroups.length > 0 && (
-                          <div className="mb-6">
-                            <div className="px-4 py-2 mb-3">
-                              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                                Privées
+                        <div className="ml-4 flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-foreground truncate">
+                                {group.name}
                               </h3>
+                              {group.isPrivate && (
+                                <Lock className="h-4 w-4 text-muted-foreground" />
+                              )}
                             </div>
-                            <div className="space-y-2">
-                              {privateGroups.map((group) => (
-                                <div
-                                  key={`private-${group.id}`}
-                                  onClick={() => handleSelectGroup(group)}
-                                  className={cn(
-                                    "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
-                                    selectedGroup?.id === group.id
-                                      ? "bg-primary/20 border-primary/40 shadow-md"
-                                      : "hover:bg-accent/50 border-transparent hover:border-border/30"
-                                  )}
-                                >
-                                  <div className="relative">
-                                    <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                                      <AvatarImage src={group.avatar || undefined} />
-                                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                        {group.name.substring(0, 2).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-orange-500 rounded-full border-2 border-background"></div>
-                                  </div>
-
-                                  <div className="ml-4 flex-1 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        <h3 className="font-bold text-foreground truncate">
-                                          {group.name}
-                                        </h3>
-                                        <Lock className="h-4 w-4 text-muted-foreground" />
-                                      </div>
-                                      <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                                        {group._count?.members || 0} membres
-                                      </span>
-                                    </div>
-                                    {group.description && (
-                                      <p className="text-sm text-muted-foreground truncate">
-                                        {group.description}
-                                      </p>
-                                    )}
-                                    <div className="flex items-center gap-1 mt-1 group/identifier">
-                                      <span 
-                                        className="text-xs text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          copyIdentifier(group.identifier || `mshy_${generateIdentifier(group.name)}`);
-                                        }}
-                                      >
-                                        {group.identifier || `mshy_${generateIdentifier(group.name)}`}
-                                      </span>
-                                      {copiedIdentifier === (group.identifier || `mshy_${generateIdentifier(group.name)}`) ? (
-                                        <CheckCircle2 className="h-3 w-3 text-green-500" />
-                                      ) : (
-                                        <Copy className="h-3 w-3 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                            <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                              {group._count?.members || 0} membres
+                            </span>
                           </div>
-                        )}
-                      </>
-                    );
-                  })()}
+                          {group.description && (
+                            <p className="text-sm text-muted-foreground truncate">
+                              {group.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-1 mt-1 group/identifier">
+                            <span 
+                              className="text-xs text-primary font-mono cursor-pointer hover:text-primary/80 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyIdentifier(group.identifier || `mshy_${generateIdentifier(group.name)}`);
+                              }}
+                            >
+                              {group.identifier || `mshy_${generateIdentifier(group.name)}`}
+                            </span>
+                            {copiedIdentifier === (group.identifier || `mshy_${generateIdentifier(group.name)}`) ? (
+                              <CheckCircle2 className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <Copy className="h-3 w-3 text-muted-foreground opacity-0 group-hover/identifier:opacity-100 transition-opacity" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

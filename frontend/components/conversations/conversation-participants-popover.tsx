@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';
 import { UserRoleEnum } from '@shared/types';
 import { CreateLinkButton } from './create-link-button';
+import { InviteUserModal } from './invite-user-modal';
 
 interface ConversationParticipantsPopoverProps {
   conversationId: string;
@@ -54,6 +55,7 @@ export function ConversationParticipantsPopover({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Vérifier si l'utilisateur actuel est admin
   const currentUserParticipant = participants.find(p => p.userId === currentUser.id);
@@ -104,8 +106,14 @@ export function ConversationParticipantsPopover({
     }
   };
 
+  const handleUserInvited = (user: any) => {
+    onParticipantAdded?.(user);
+    toast.success(`${user.displayName || user.username} a été invité à la conversation`);
+  };
+
 
   return (
+    <>
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
@@ -134,20 +142,28 @@ export function ConversationParticipantsPopover({
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-semibold text-sm">{tUI('participants')} ({participants.length})</h4>
             <div className="flex items-center gap-1">
-              <CreateLinkButton
-                conversationId={conversationId}
-                conversationType={conversationType}
-                userRole={currentUser.role}
-                userConversationRole={userConversationRole}
-                onLinkCreated={(link) => {
-                  onLinkCreated?.(link);
-                }}
-              />
+              {/* Bouton de création de lien - seulement pour les conversations de groupe et avec les bons rôles */}
+              {conversationType !== 'direct' && 
+               !(conversationType === 'global' && currentUser.role !== 'BIGBOSS' && currentUser.role !== 'ADMIN') && (
+                <CreateLinkButton
+                  forceModal={true}
+                  onLinkCreated={(link) => {
+                    onLinkCreated?.(link);
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                >
+                  <Link2 className="h-4 w-4 text-primary" />
+                </CreateLinkButton>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0"
                 title={tUI('addParticipant')}
+                onClick={() => setShowInviteModal(true)}
+                disabled={!isAdmin}
               >
                 <UserPlus className="h-3.5 w-3.5" />
               </Button>
@@ -287,5 +303,15 @@ export function ConversationParticipantsPopover({
         </div>
       </PopoverContent>
     </Popover>
+
+    {/* Modale d'invitation d'utilisateurs */}
+    <InviteUserModal
+      isOpen={showInviteModal}
+      onClose={() => setShowInviteModal(false)}
+      conversationId={conversationId}
+      currentParticipants={participants.map(p => p.user)}
+      onUserInvited={handleUserInvited}
+    />
+    </>
   );
 }

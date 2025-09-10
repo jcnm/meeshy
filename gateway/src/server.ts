@@ -32,6 +32,7 @@ import userPreferencesRoutes from './routes/user-preferences';
 import { translationRoutes } from './routes/translation-non-blocking';
 import { maintenanceRoutes } from './routes/maintenance';
 import { authTestRoutes } from './routes/auth-test';
+import affiliateRoutes from './routes/affiliate';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -476,6 +477,10 @@ class MeeshyServer {
     
     // Register user preferences routes with /users prefix
     await this.server.register(userPreferencesRoutes, { prefix: '/users' });
+    
+    // Register affiliate routes
+    await this.server.register(affiliateRoutes);
+
 
     // Register maintenance routes with /maintenance prefix
     await this.server.register(maintenanceRoutes, { prefix: '/maintenance' });

@@ -1190,7 +1190,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                     className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={activeUser.avatar} alt={activeUser.firstName} />
+                      <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
                       <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
                         {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
                       </AvatarFallback>
@@ -1218,7 +1218,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                         className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
                       >
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={activeUser.avatar} alt={activeUser.firstName} />
+                          <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white">
                             {activeUser.firstName?.charAt(0)}{activeUser.lastName?.charAt(0)}
                           </AvatarFallback>

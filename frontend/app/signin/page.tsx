@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MessageSquare, UserPlus, Eye, EyeOff, Mail, Phone, Globe, User, Lock } from 'lucide-react';
+import { MessageSquare, UserPlus, Eye, EyeOff, Mail, Phone, Globe, User, Lock, X } from 'lucide-react';
 // Pas d'import useAuth - la page signin ne doit pas être protégée
 import { useTranslations } from '@/hooks/useTranslations';
 import { SUPPORTED_LANGUAGES } from '@/types';
@@ -32,15 +32,49 @@ function SigninPageContent() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [affiliateData, setAffiliateData] = useState<{
+    isValid: boolean;
+    token: any;
+    affiliateUser: any;
+  } | null>(null);
+  const [isValidatingAffiliate, setIsValidatingAffiliate] = useState(false);
   // Pas d'utilisation de useAuth - gestion manuelle de l'authentification
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslations('register');
 
-  // Récupérer l'URL de retour depuis les paramètres de recherche
+  // Récupérer l'URL de retour et le token d'affiliation depuis les paramètres de recherche
   const returnUrl = searchParams.get('returnUrl');
+  const affiliateToken = searchParams.get('affiliate');
 
   // Pas de vérification d'authentification - la page signin est accessible à tous
+
+  // Valider le token d'affiliation au chargement de la page
+  useEffect(() => {
+    if (affiliateToken) {
+      validateAffiliateToken(affiliateToken);
+    }
+  }, [affiliateToken]);
+
+  const validateAffiliateToken = async (token: string) => {
+    try {
+      setIsValidatingAffiliate(true);
+      const response = await fetch(buildApiUrl(`/affiliate/validate/${token}`));
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAffiliateData(data.data);
+      } else {
+        console.error('Erreur validation token affiliation');
+        setAffiliateData({ isValid: false, token: null, affiliateUser: null });
+      }
+    } catch (error) {
+      console.error('Erreur validation token:', error);
+      setAffiliateData({ isValid: false, token: null, affiliateUser: null });
+    } finally {
+      setIsValidatingAffiliate(false);
+    }
+  };
 
   const handleNextStep = () => {
     // Validation de l'étape 1
@@ -108,6 +142,25 @@ function SigninPageContent() {
         localStorage.setItem('auth_token', data.data.token);
         localStorage.setItem('user_data', JSON.stringify(data.data.user));
         
+        // Gérer l'affiliation si un token valide est présent
+        if (affiliateToken && affiliateData?.isValid) {
+          try {
+            await fetch(buildApiUrl('/affiliate/register'), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                token: affiliateToken,
+                referredUserId: data.data.user.id
+              })
+            });
+          } catch (affiliateError) {
+            console.error('Erreur enregistrement affiliation:', affiliateError);
+            // Ne pas bloquer l'inscription si l'affiliation échoue
+          }
+        }
+        
         toast.success(`${t('success.welcome')} ${formData.firstName}!`);
         
         // Redirection vers l'URL de retour ou la page d'accueil
@@ -137,6 +190,38 @@ function SigninPageContent() {
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Meeshy</h1>
           <p className="text-gray-600 text-lg">{t('description')}</p>
+          
+          {/* Affichage des informations d'affiliation */}
+          {affiliateToken && (
+            <div className="mt-4">
+              {isValidatingAffiliate ? (
+                <div className="flex items-center justify-center space-x-2 text-blue-600">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm">Validation du lien d'invitation...</span>
+                </div>
+              ) : affiliateData?.isValid ? (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
+                  <div className="flex items-center justify-center space-x-2 text-purple-700 mb-2">
+                    <UserPlus className="h-5 w-5" />
+                    <span className="font-semibold">Invitation de {affiliateData.affiliateUser?.firstName} {affiliateData.affiliateUser?.lastName}</span>
+                  </div>
+                  <p className="text-sm text-purple-600">
+                    Rejoignez Meeshy et discutez avec {affiliateData.affiliateUser?.firstName} et d'autres personnes du monde entier !
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-center justify-center space-x-2 text-red-700 mb-2">
+                    <X className="h-5 w-5" />
+                    <span className="font-semibold">Lien d'invitation invalide</span>
+                  </div>
+                  <p className="text-sm text-red-600">
+                    Ce lien d'invitation n'est plus valide ou a expiré. Vous pouvez toujours vous inscrire normalement.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Formulaire d'inscription en 2 étapes */}

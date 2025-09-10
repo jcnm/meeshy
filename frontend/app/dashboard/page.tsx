@@ -14,18 +14,33 @@ import {
   Globe2,
   Zap,
   Link2,
-  RefreshCw
+  RefreshCw,
+  Share2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CreateLinkButtonV2 } from '@/components/conversations/create-link-button-v2';
-import { useState, useEffect } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CreateLinkButton } from '@/components/conversations/create-link-button';
+import { CreateLinkModalV2 } from '@/components/conversations/create-link-modal';
+import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
+// Import supprimé - la modal sera définie dans ce fichier
+import { ShareAffiliateButton } from '@/components/affiliate/share-affiliate-button';
+import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { User, Conversation } from '@/types';
 import { useUser } from '@/context/AppContext';
 import { dashboardService, type DashboardData } from '@/services/dashboard.service';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+// Avatar déjà importé plus haut
+import { Check, X, Shield, Eye, Search } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { buildApiUrl } from '@/lib/config';
 export default function DashboardPage() {
   const router = useRouter();
   const { user } = useUser();
@@ -33,30 +48,173 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
+  const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+  
+  // États pour la modal de groupe
+  const [groupName, setGroupName] = useState('');
+  const [groupDescription, setGroupDescription] = useState('');
+  const [isGroupPrivate, setIsGroupPrivate] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [groupSearchQuery, setGroupSearchQuery] = useState('');
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async (forceRefresh = false) => {
     if (!user) return;
+    
+    // Avoid too frequent API calls (30 second cache)
+    const now = Date.now();
+    const CACHE_DURATION = 30000; // 30 seconds
+    
+    if (!forceRefresh && dashboardData && (now - lastFetchTime) < CACHE_DURATION) {
+      console.log('[DASHBOARD] Using cache, no new API call');
+      return;
+    }
     
     try {
       setIsLoading(true);
       setError(null);
       
+      console.log('[DASHBOARD] Loading dashboard data...');
       const response = await dashboardService.getDashboardData();
       if (response.data) {
         setDashboardData(response.data);
+        setLastFetchTime(now);
       } else {
         throw new Error(t('dataLoadingError'));
       }
     } catch (err) {
-      console.error('Erreur lors du chargement du dashboard:', err);
+      console.error('Error loading dashboard:', err);
       setError(err instanceof Error ? err : new Error(t('errorUnknown')));
     } finally {
       setIsLoading(false);
     }
+  }, [user, t, dashboardData, lastFetchTime]);
+
+  const refresh = useCallback(() => {
+    loadDashboardData(true); // Force refresh
+  }, [loadDashboardData]);
+
+  // Handlers pour les modales
+  const handleConversationCreated = (conversationId: string) => {
+    toast.success(t('success.conversationCreated'));
+    setIsCreateConversationModalOpen(false);
+    router.push(`/conversations/${conversationId}`);
+    loadDashboardData(true);
   };
 
-  const refresh = () => {
-    loadDashboardData();
+  const handleGroupCreated = (groupId: string) => {
+    toast.success(t('success.groupCreated'));
+    setIsCreateGroupModalOpen(false);
+    router.push(`/groups/${groupId}`);
+    loadDashboardData(true);
+  };
+
+  const handleLinkCreated = () => {
+    toast.success(t('success.linkCreated'));
+    setIsCreateLinkModalOpen(false);
+    loadDashboardData(true);
+  };
+
+  // Fonctions pour la modal de groupe
+  const loadUsers = useCallback(async (searchQuery: string = '') => {
+    setIsLoadingUsers(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+      
+      const url = searchQuery.trim() 
+        ? `${buildApiUrl('/users/search')}?q=${encodeURIComponent(searchQuery)}`
+        : buildApiUrl('/users');
+        
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const users = (data.data || data.users || []).filter((user: User) => 
+          user.id !== user?.id && 
+          !selectedUsers.some(selected => selected.id === user.id)
+        );
+        setAvailableUsers(users);
+      } else {
+        console.error('Erreur API:', response.status, response.statusText);
+        toast.error('Erreur lors du chargement des utilisateurs');
+      }
+    } catch (error) {
+      console.error('Erreur chargement utilisateurs:', error);
+      toast.error('Erreur lors du chargement des utilisateurs');
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  }, [user?.id, selectedUsers]);
+
+  const toggleUserSelection = (user: User) => {
+    setSelectedUsers(prev => {
+      const isSelected = prev.some(u => u.id === user.id);
+      if (isSelected) {
+        return prev.filter(u => u.id !== user.id);
+      } else {
+        return [...prev, user];
+      }
+    });
+  };
+
+  const createGroup = async () => {
+    if (!groupName.trim()) {
+      toast.error('Veuillez saisir un nom pour le groupe');
+      return;
+    }
+
+    setIsCreatingGroup(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+
+      const response = await fetch(buildApiUrl('/groups'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: groupName.trim(),
+          description: groupDescription.trim() || undefined,
+          isPrivate: isGroupPrivate,
+          memberIds: selectedUsers.map(u => u.id)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast.success('Groupe créé avec succès');
+        handleGroupCreated(data.group.id);
+        handleGroupModalClose();
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Erreur lors de la création du groupe');
+      }
+    } catch (error) {
+      console.error('Erreur création groupe:', error);
+      toast.error('Erreur lors de la création du groupe');
+    } finally {
+      setIsCreatingGroup(false);
+    }
+  };
+
+  const handleGroupModalClose = () => {
+    setGroupName('');
+    setGroupDescription('');
+    setIsGroupPrivate(false);
+    setSelectedUsers([]);
+    setGroupSearchQuery('');
+    setAvailableUsers([]);
+    setIsCreateGroupModalOpen(false);
   };
 
   useEffect(() => {
@@ -65,10 +223,31 @@ export default function DashboardPage() {
     } else {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, loadDashboardData]);
 
-  // Extraction des données du dashboard
-  const stats = dashboardData?.stats || {
+  // Effet pour charger les utilisateurs quand la modal s'ouvre
+  useEffect(() => {
+    if (isCreateGroupModalOpen) {
+      loadUsers();
+    }
+  }, [isCreateGroupModalOpen, loadUsers]);
+
+  // Effet pour gérer la recherche en temps réel avec debounce
+  useEffect(() => {
+    if (isCreateGroupModalOpen && groupSearchQuery.trim()) {
+      const timer = setTimeout(() => {
+        loadUsers(groupSearchQuery);
+      }, 300); // Debounce de 300ms
+
+      return () => clearTimeout(timer);
+    } else if (isCreateGroupModalOpen && !groupSearchQuery.trim()) {
+      // Si la recherche est vide, charger tous les utilisateurs
+      loadUsers();
+    }
+  }, [groupSearchQuery, isCreateGroupModalOpen, loadUsers]);
+
+  // Extract dashboard data with memoization
+  const stats = useMemo(() => dashboardData?.stats || {
     totalConversations: 0,
     totalCommunities: 0,
     totalMessages: 0,
@@ -76,9 +255,10 @@ export default function DashboardPage() {
     translationsToday: 0,
     totalLinks: 0,
     lastUpdated: new Date(),
-  };
-  const recentConversations = dashboardData?.recentConversations || [];
-  const recentCommunities = dashboardData?.recentCommunities || [];
+  }, [dashboardData?.stats]);
+  
+  const recentConversations = useMemo(() => dashboardData?.recentConversations || [], [dashboardData?.recentConversations]);
+  const recentCommunities = useMemo(() => dashboardData?.recentCommunities || [], [dashboardData?.recentCommunities]);
 
   // Gestion de l'erreur et du chargement
   if (error) {
@@ -112,7 +292,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      {/* Greeting et actions rapides */}
+      {/* Greeting and quick actions */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
@@ -126,8 +306,16 @@ export default function DashboardPage() {
           
                                 <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button 
+              className="bg-purple-600 hover:bg-purple-700 flex-1 sm:flex-none" 
+              onClick={() => setIsShareModalOpen(true)}
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">{t('actions.shareApp')}</span>
+              <span className="sm:hidden">{t('shareApp')}</span>
+            </Button>
+            <Button 
               className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none" 
-              onClick={() => setIsCreateLinkModalOpen(true)}
+              onClick={() => router.push('/links')}
             >
               <Link2 className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">{t('actions.createLink')}</span>
@@ -154,7 +342,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-        {/* Statistiques */}
+        {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardHeader className="pb-2">
@@ -247,9 +435,9 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Contenu principal en grille */}
+        {/* Main content in grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Conversations récentes */}
+          {/* Recent conversations */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -289,7 +477,7 @@ export default function DashboardPage() {
                         </p>
                         <div className="flex items-center space-x-2">
                           <p className="text-xs text-gray-500">
-                            {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', { 
+                            {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString(t('time.format'), { 
                               hour: '2-digit', 
                               minute: '2-digit' 
                             })}
@@ -321,7 +509,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Groupes récents */}
+          {/* Recent groups */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -395,7 +583,7 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Actions rapides en bas */}
+        {/* Quick actions at bottom */}
         <div className="mt-8">
           <Card>
             <CardHeader>
@@ -408,35 +596,41 @@ export default function DashboardPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                   <Button 
                     variant="outline" 
                     className="h-20 flex-col space-y-2"
-                    onClick={() => router.push('/conversations?new=true')}
+                    onClick={() => setIsCreateConversationModalOpen(true)}
                   >
                     <MessageSquare className="h-6 w-6" />
                     <span>{t('quickActions.newConversation')}</span>
                   </Button>
                   
-                  <CreateLinkButtonV2
+                  <Button
                     variant="outline"
                     className="h-20 flex-col space-y-2"
-                    onLinkCreated={() => {
-                      toast.success(t('success.linkCreated'));
-                      loadDashboardData();
-                    }}
+                    onClick={() => setIsCreateLinkModalOpen(true)}
                   >
                     <Link2 className="h-6 w-6" />
                     <span>{t('quickActions.createLink')}</span>
-                  </CreateLinkButtonV2>
+                  </Button>
                   
                   <Button 
                     variant="outline" 
                     className="h-20 flex-col space-y-2"
-                    onClick={() => router.push('/groups?new=true')}
+                    onClick={() => setIsCreateGroupModalOpen(true)}
                   >
                     <Users className="h-6 w-6" />
                     <span>{t('quickActions.createCommunity')}</span>
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col space-y-2"
+                    onClick={() => setIsShareModalOpen(true)}
+                  >
+                    <Share2 className="h-6 w-6" />
+                    <span>{t('quickActions.shareApp')}</span>
                   </Button>
                   
                   <Button 
@@ -452,6 +646,203 @@ export default function DashboardPage() {
           </Card>
         </div>
 
+        {/* Modales */}
+        <CreateConversationModal
+          isOpen={isCreateConversationModalOpen}
+          onClose={() => setIsCreateConversationModalOpen(false)}
+          currentUser={user!}
+          onConversationCreated={handleConversationCreated}
+        />
+
+        <CreateLinkModalV2
+          isOpen={isCreateLinkModalOpen}
+          onClose={() => setIsCreateLinkModalOpen(false)}
+          onLinkCreated={handleLinkCreated}
+        />
+
+        {/* Modal de création de groupe améliorée */}
+        <Dialog open={isCreateGroupModalOpen} onOpenChange={handleGroupModalClose}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Users className="h-5 w-5 text-blue-600" />
+                <span>Créer une nouvelle communauté</span>
+              </DialogTitle>
+              <DialogDescription>
+                Créez une communauté pour organiser vos conversations avec plusieurs personnes
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Nom du groupe */}
+              <div>
+                <Label htmlFor="groupName" className="text-sm font-medium">
+                  Nom de la communauté *
+                </Label>
+                <Input
+                  id="groupName"
+                  value={groupName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGroupName(e.target.value)}
+                  placeholder="Ex: Équipe Marketing, Famille, Amis..."
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <Label htmlFor="groupDescription" className="text-sm font-medium">
+                  Description (optionnelle)
+                </Label>
+                <Textarea
+                  id="groupDescription"
+                  value={groupDescription}
+                  onChange={(e) => setGroupDescription(e.target.value)}
+                  placeholder="Décrivez le but de cette communauté..."
+                  className="mt-1"
+                  rows={2}
+                />
+              </div>
+
+              {/* Confidentialité */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label className="text-sm font-medium">Communauté privée</Label>
+                  <p className="text-xs text-gray-500">
+                    {isGroupPrivate ? 'Seuls les membres invités peuvent rejoindre' : 'La communauté peut être découverte et rejointe par d\'autres'}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {isGroupPrivate ? <Shield className="h-4 w-4 text-blue-600" /> : <Eye className="h-4 w-4 text-gray-400" />}
+                  <Switch
+                    checked={isGroupPrivate}
+                    onCheckedChange={setIsGroupPrivate}
+                  />
+                </div>
+              </div>
+              
+              {/* Recherche d'utilisateurs */}
+              <div>
+                <Label htmlFor="userSearch" className="text-sm font-medium">
+                  Rechercher des membres
+                </Label>
+                <div className="relative mt-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="userSearch"
+                    value={groupSearchQuery}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGroupSearchQuery(e.target.value)}
+                    placeholder="Rechercher par nom ou username..."
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Membres sélectionnés */}
+              {selectedUsers.length > 0 && (
+                <div>
+                  <Label className="text-sm font-medium">
+                    Membres sélectionnés ({selectedUsers.length + 1} au total, vous inclus)
+                  </Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {/* Utilisateur actuel (admin) */}
+                    <Badge variant="default" className="flex items-center gap-1">
+                      {user?.displayName || user?.username}
+                      <Shield className="h-3 w-3" />
+                    </Badge>
+                    {/* Membres sélectionnés */}
+                    {selectedUsers.map(user => (
+                      <Badge
+                        key={user.id}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {user.displayName || user.username}
+                        <X
+                          className="h-3 w-3 cursor-pointer"
+                          onClick={() => toggleUserSelection(user)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Liste des utilisateurs */}
+              <div>
+                <Label className="text-sm font-medium">
+                  Utilisateurs disponibles
+                </Label>
+                <ScrollArea className="h-48 mt-2 border rounded-lg">
+                  {isLoadingUsers ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                      Chargement des utilisateurs...
+                    </div>
+                  ) : availableUsers.length === 0 ? (
+                    <div className="p-4 text-center text-gray-500">
+                      {groupSearchQuery.trim() ? 'Aucun utilisateur trouvé pour cette recherche' : 'Aucun utilisateur disponible'}
+                    </div>
+                  ) : (
+                    <div className="p-2">
+                      {availableUsers.map(user => {
+                        const isSelected = selectedUsers.some(u => u.id === user.id);
+                        return (
+                          <div
+                            key={user.id}
+                            className={`flex items-center space-x-3 p-2 rounded-lg cursor-pointer hover:bg-gray-50 ${
+                              isSelected ? 'bg-blue-50 border border-blue-200' : ''
+                            }`}
+                            onClick={() => toggleUserSelection(user)}
+                          >
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user.avatar} />
+                              <AvatarFallback>
+                                {(user.displayName || user.username).charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <p className="font-medium text-sm">
+                                {user.displayName || user.username}
+                              </p>
+                              <p className="text-xs text-gray-500">@{user.username}</p>
+                            </div>
+                            {isSelected && (
+                              <Check className="h-4 w-4 text-blue-600" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+              
+              {/* Actions */}
+              <div className="flex space-x-3 pt-4">
+                <Button
+                  onClick={createGroup}
+                  disabled={!groupName.trim() || isCreatingGroup}
+                  className="flex-1"
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  {isCreatingGroup ? 'Création...' : 'Créer la communauté'}
+                </Button>
+                <Button
+                  onClick={handleGroupModalClose}
+                  variant="outline"
+                >
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <ShareAffiliateModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          userLanguage={user?.systemLanguage || 'fr'}
+        />
     </DashboardLayout>
   );
 }

@@ -139,6 +139,7 @@ export interface SocketIOUser {
   phoneNumber?: string;
   displayName?: string;
   avatar?: string;
+  bio?: string;
   role: string;
   permissions?: UserPermissions; // Optionnel pour la rétrocompatibilité
   isOnline: boolean;

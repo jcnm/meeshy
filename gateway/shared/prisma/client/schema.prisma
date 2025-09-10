@@ -15,6 +15,7 @@ model User {
   username                    String    @unique
   firstName                   String
   lastName                    String
+  bio                         String    @default("")
   email                       String    @unique
   phoneNumber                 String?
   password                    String
@@ -23,7 +24,7 @@ model User {
   isOnline                    Boolean   @default(false)
   lastSeen                    DateTime  @default(now())
   lastActiveAt                DateTime  @default(now())
-  systemLanguage              String    @default("fr")
+  systemLanguage              String    @default("en")
   regionalLanguage            String    @default("fr")
   customDestinationLanguage   String?
   autoTranslateEnabled        Boolean   @default(true)
@@ -50,6 +51,9 @@ model User {
   typingIndicators        TypingIndicator[]
   preferences             UserPreference[]
   stats                   UserStats?
+  createdAffiliateTokens  AffiliateToken[]         @relation("AffiliateTokenCreator")
+  affiliateRelations      AffiliateRelation[]      @relation("AffiliateUser")
+  referredRelations       AffiliateRelation[]      @relation("ReferredUser")
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -348,4 +352,36 @@ model ConversationPreference {
 
   user         User         @relation(fields: [userId], references: [id])
   conversation Conversation @relation(fields: [conversationId], references: [id])
+}
+
+/// Token d'affiliation pour inviter des utilisateurs
+model AffiliateToken {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  token       String    @unique
+  name        String // Nom de la campagne d'affiliation
+  createdBy   String    @db.ObjectId
+  maxUses     Int? // Limite d'utilisation (null = illimité)
+  currentUses Int       @default(0)
+  expiresAt   DateTime? // Date d'expiration (null = pas d'expiration)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  creator      User                @relation("AffiliateTokenCreator", fields: [createdBy], references: [id])
+  affiliations AffiliateRelation[]
+}
+
+/// Relation d'affiliation entre utilisateurs
+model AffiliateRelation {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  affiliateTokenId String    @db.ObjectId
+  affiliateUserId  String    @db.ObjectId // Utilisateur qui a invité
+  referredUserId   String    @db.ObjectId // Utilisateur invité
+  status           String    @default("pending") // pending, completed, expired
+  createdAt        DateTime  @default(now())
+  completedAt      DateTime? // Date de finalisation de l'inscription
+
+  affiliateToken AffiliateToken @relation(fields: [affiliateTokenId], references: [id])
+  affiliateUser  User           @relation("AffiliateUser", fields: [affiliateUserId], references: [id])
+  referredUser   User           @relation("ReferredUser", fields: [referredUserId], references: [id])
 }

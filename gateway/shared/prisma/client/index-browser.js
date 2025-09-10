@@ -118,6 +118,7 @@ exports.Prisma.UserScalarFieldEnum = {
   username: 'username',
   firstName: 'firstName',
   lastName: 'lastName',
+  bio: 'bio',
   email: 'email',
   phoneNumber: 'phoneNumber',
   password: 'password',
@@ -360,6 +361,29 @@ exports.Prisma.ConversationPreferenceScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AffiliateTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  name: 'name',
+  createdBy: 'createdBy',
+  maxUses: 'maxUses',
+  currentUses: 'currentUses',
+  expiresAt: 'expiresAt',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AffiliateRelationScalarFieldEnum = {
+  id: 'id',
+  affiliateTokenId: 'affiliateTokenId',
+  affiliateUserId: 'affiliateUserId',
+  referredUserId: 'referredUserId',
+  status: 'status',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -387,7 +411,9 @@ exports.Prisma.ModelName = {
   CommunityMember: 'CommunityMember',
   UserStats: 'UserStats',
   UserPreference: 'UserPreference',
-  ConversationPreference: 'ConversationPreference'
+  ConversationPreference: 'ConversationPreference',
+  AffiliateToken: 'AffiliateToken',
+  AffiliateRelation: 'AffiliateRelation'
 };
 
 /**

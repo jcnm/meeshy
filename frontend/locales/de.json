@@ -29,7 +29,8 @@
     "submit": "Absenden",
     "confirm": "Bestätigen",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "insufficientRights": "Sie haben nicht die erforderlichen Rechte, um diese Operation durchzuführen"
   },
   "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
   "writeMessage": "Schreiben Sie Ihre Nachricht...",
@@ -47,6 +48,9 @@
   "private": "Privat",
   "createLink": "Link erstellen",
   "newConversation": "Neues Gespräch",
+    "createConversation": "Gespräch erstellen",
+    "createNewConversation": "Neues Gespräch erstellen",
+    "createNewLink": "Neuen Link erstellen",
   "chooseConversation": "Wählen Sie ein Gespräch!",
   "chooseConversationDescription": "Klicken Sie links auf ein Gespräch, um zu chatten",
   "loading": "Laden...",
@@ -121,6 +125,7 @@
       "createLink": "Einen Link erstellen",
       "createCommunity": "Eine Community erstellen",
       "createGroup": "Eine Community erstellen",
+      "shareApp": "App teilen",
       "settings": "Einstellungen"
     },
     "emptyStates": {
@@ -177,6 +182,12 @@
     },
     "time": {
       "format": "de-DE"
+    },
+    "communities": {
+      "private": "Privat",
+      "members": "Mitglieder",
+      "member": "Mitglied",
+      "membersCount": "{count} Mitglieder"
     },
     "steps": {
       "selectConversation": "Unterhaltung auswählen",
@@ -284,5 +295,28 @@
     "errors": {
       "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
     }
+  },
+  "conversationUI": {
+    "participants": "Teilnehmer",
+    "createLink": "Link erstellen",
+    "addParticipant": "Teilnehmer hinzufügen",
+    "searchParticipants": "Teilnehmer suchen",
+    "online": "Online",
+    "offline": "Offline",
+    "noOneOnline": "Niemand online",
+    "noOfflineParticipants": "Keine offline Teilnehmer",
+    "you": "Sie",
+    "removeFromGroup": "Aus Gruppe entfernen",
+    "participantRemoved": "Teilnehmer aus Unterhaltung entfernt",
+    "removeParticipantError": "Fehler beim Entfernen des Teilnehmers",
+    "linkCreated": "Unterhaltungslink erstellt",
+    "createLinkError": "Fehler beim Erstellen des Links",
+    "conversationSearch": "Unterhaltungssuche",
+    "communities": "Gemeinschaften",
+    "conversationUI": "Unterhaltungs-UI"
+  },
+  "bubbleStream": {
+    "user": "Benutzer",
+    "users": "Benutzer"
   }
 }

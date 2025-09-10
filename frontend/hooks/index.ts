@@ -18,4 +18,5 @@ export { useFontPreference } from './use-font-preference';
 export { useFixRadixZIndex } from './use-fix-z-index';
 
 // Authentification
+export { useAuth } from './use-auth';
 export { useAuthGuard } from './use-auth-guard';

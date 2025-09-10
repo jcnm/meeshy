@@ -181,6 +181,64 @@ export async function linksRoutes(fastify: FastifyInstance) {
     return `mshy_${conversationShareLinkId}.${initialId}`;
   }
 
+  /**
+   * Vérifie l'unicité d'un identifiant de ConversationShareLink et génère une variante avec timestamp si nécessaire
+   */
+  async function ensureUniqueShareLinkIdentifier(prisma: any, baseIdentifier: string): Promise<string> {
+    // Si l'identifiant est vide, générer un identifiant par défaut
+    if (!baseIdentifier || baseIdentifier.trim() === '') {
+      const timestamp = Date.now().toString();
+      const randomPart = Math.random().toString(36).substring(2, 8);
+      baseIdentifier = `mshy_link-${timestamp}-${randomPart}`;
+    }
+    
+    let identifier = baseIdentifier.trim();
+    
+    // Vérifier si l'identifiant existe déjà
+    const existing = await prisma.conversationShareLink.findFirst({
+      where: { identifier }
+    });
+    
+    if (!existing) {
+      return identifier;
+    }
+    
+    // Si l'identifiant existe, ajouter un suffixe timestamp YYYYmmddHHMMSS
+    const now = new Date();
+    const timestamp = now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0') +
+      now.getHours().toString().padStart(2, '0') +
+      now.getMinutes().toString().padStart(2, '0') +
+      now.getSeconds().toString().padStart(2, '0');
+    
+    identifier = `${baseIdentifier}-${timestamp}`;
+    
+    // Vérifier que le nouvel identifiant avec timestamp n'existe pas non plus
+    const existingWithTimestamp = await prisma.conversationShareLink.findFirst({
+      where: { identifier }
+    });
+    
+    if (!existingWithTimestamp) {
+      return identifier;
+    }
+    
+    // Si même avec le timestamp il y a un conflit, ajouter un suffixe numérique
+    let counter = 1;
+    while (true) {
+      const newIdentifier = `${baseIdentifier}-${timestamp}-${counter}`;
+      const existingWithCounter = await prisma.conversationShareLink.findFirst({
+        where: { identifier: newIdentifier }
+      });
+      
+      if (!existingWithCounter) {
+        return newIdentifier;
+      }
+      
+      counter++;
+    }
+  }
+
   // 1. Créer un lien - Les utilisateurs authentifiés peuvent créer des liens pour leurs conversations
   fastify.post('/links', { 
     onRequest: [authRequired] 
@@ -274,7 +332,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
           if (userRole !== UserRoleEnum.BIGBOSS) {
             return reply.status(403).send({
               success: false,
-              message: 'You must have BIGBOSS rights to create share links for global conversations'
+              message: 'You do not have the necessary rights to perform this operation'
             });
           }
         }
@@ -375,6 +433,21 @@ export async function linksRoutes(fastify: FastifyInstance) {
       // Générer le linkId initial
       const initialLinkId = generateInitialLinkId();
 
+      // Générer un identifiant unique (basé sur le nom du lien, ou la description, ou généré)
+      let baseIdentifier: string;
+      if (body.name) {
+        baseIdentifier = `mshy_${body.name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+      } else if (body.description) {
+        // Utiliser la description comme base si pas de nom
+        baseIdentifier = `mshy_${body.description.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 30)}`;
+      } else {
+        // Générer un identifiant unique si ni nom ni description
+        const timestamp = Date.now().toString();
+        const randomPart = Math.random().toString(36).substring(2, 8);
+        baseIdentifier = `mshy_link-${timestamp}-${randomPart}`;
+      }
+      const uniqueIdentifier = await ensureUniqueShareLinkIdentifier(fastify.prisma, baseIdentifier);
+
       // Créer le lien de partage
       const shareLink = await fastify.prisma.conversationShareLink.create({
         data: {
@@ -395,7 +468,8 @@ export async function linksRoutes(fastify: FastifyInstance) {
           requireEmail: body.requireEmail ?? false,
           allowedCountries: body.allowedCountries ?? [],
           allowedLanguages: body.allowedLanguages ?? [],
-          allowedIpRanges: body.allowedIpRanges ?? []
+          allowedIpRanges: body.allowedIpRanges ?? [],
+          identifier: uniqueIdentifier
         }
       });
 
@@ -1527,6 +1601,465 @@ export async function linksRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ 
         success: false, 
         message: 'Erreur interne du serveur' 
+      });
+    }
+  });
+
+  // Route PATCH pour mettre à jour un lien (compatible avec le frontend)
+  fastify.patch('/links/:linkId', { 
+    onRequest: [authRequired] 
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
+    try {
+      const { linkId } = request.params as { linkId: string };
+      const body = updateLinkSchema.parse(request.body);
+      
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+      
+      const userId = request.authContext.registeredUser!.id;
+
+      // Récupérer le lien de partage par linkId
+      const shareLink = await fastify.prisma.conversationShareLink.findFirst({
+        where: { linkId },
+        include: {
+          conversation: {
+            include: {
+              members: {
+                where: { userId, isActive: true }
+              }
+            }
+          }
+        }
+      });
+
+      if (!shareLink) {
+        return reply.status(404).send({
+          success: false,
+          message: 'Lien de partage non trouvé'
+        });
+      }
+
+      // Vérifier les permissions
+      const isCreator = shareLink.createdBy === userId;
+      const isConversationAdmin = shareLink.conversation.members.some(member => 
+        member.role === 'ADMIN' || member.role === 'MODERATOR'
+      );
+
+      if (!isCreator && !isConversationAdmin) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permissions insuffisantes pour modifier ce lien'
+        });
+      }
+
+      // Préparer les données de mise à jour
+      const updateData: any = {};
+      
+      if (body.name !== undefined) updateData.name = body.name;
+      if (body.description !== undefined) updateData.description = body.description;
+      if (body.maxUses !== undefined) updateData.maxUses = body.maxUses;
+      if (body.maxConcurrentUsers !== undefined) updateData.maxConcurrentUsers = body.maxConcurrentUsers;
+      if (body.maxUniqueSessions !== undefined) updateData.maxUniqueSessions = body.maxUniqueSessions;
+      if (body.expiresAt !== undefined) updateData.expiresAt = body.expiresAt ? new Date(body.expiresAt) : null;
+      if (body.isActive !== undefined) updateData.isActive = body.isActive;
+      if (body.allowAnonymousMessages !== undefined) updateData.allowAnonymousMessages = body.allowAnonymousMessages;
+      if (body.allowAnonymousFiles !== undefined) updateData.allowAnonymousFiles = body.allowAnonymousFiles;
+      if (body.allowAnonymousImages !== undefined) updateData.allowAnonymousImages = body.allowAnonymousImages;
+      if (body.allowViewHistory !== undefined) updateData.allowViewHistory = body.allowViewHistory;
+      if (body.requireNickname !== undefined) updateData.requireNickname = body.requireNickname;
+      if (body.requireEmail !== undefined) updateData.requireEmail = body.requireEmail;
+      if (body.allowedCountries !== undefined) updateData.allowedCountries = body.allowedCountries;
+      if (body.allowedLanguages !== undefined) updateData.allowedLanguages = body.allowedLanguages;
+      if (body.allowedIpRanges !== undefined) updateData.allowedIpRanges = body.allowedIpRanges;
+
+      // Mettre à jour le lien
+      const updatedLink = await fastify.prisma.conversationShareLink.update({
+        where: { id: shareLink.id },
+        data: updateData,
+        include: {
+          conversation: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              type: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          },
+          creator: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: updatedLink,
+        message: 'Lien mis à jour avec succès'
+      });
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({ 
+          success: false, 
+          message: 'Données invalides', 
+          errors: error.errors 
+        });
+      }
+      logError(fastify.log, 'Update link error:', error);
+      return reply.status(500).send({ 
+        success: false, 
+        message: 'Erreur interne du serveur' 
+      });
+    }
+  });
+
+  // Route pour obtenir tous les liens créés par l'utilisateur
+  fastify.get('/links/my-links', {
+    onRequest: [authRequired]
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
+    try {
+      const authContext = request.authContext;
+      if (!authContext || !isRegisteredUser(authContext)) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Utilisateur non autorisé'
+        });
+      }
+
+      const links = await fastify.prisma.conversationShareLink.findMany({
+        where: {
+          createdBy: authContext.registeredUser.id
+        },
+        include: {
+          conversation: {
+            select: {
+              id: true,
+              title: true,
+              type: true,
+              description: true
+            }
+          },
+          anonymousParticipants: {
+            select: {
+              id: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      // Transformer les données pour inclure les statistiques et les liens
+      const transformedLinks = links.map(link => ({
+        ...link,
+        conversation: {
+          ...link.conversation,
+          // Ajouter le lien vers la conversation
+          conversationUrl: `/conversations/${link.conversation.id}`
+        },
+        creator: {
+          id: authContext.registeredUser.id,
+          username: authContext.registeredUser.username,
+          firstName: authContext.registeredUser.firstName,
+          lastName: authContext.registeredUser.lastName,
+          displayName: authContext.registeredUser.displayName,
+          avatar: authContext.registeredUser.avatar
+        },
+        stats: {
+          totalParticipants: link.anonymousParticipants.length,
+          memberCount: 0,
+          anonymousCount: link.anonymousParticipants.length,
+          languageCount: link.allowedLanguages?.length || 0,
+          spokenLanguages: link.allowedLanguages || []
+        }
+      }));
+
+      return reply.send({
+        success: true,
+        data: transformedLinks
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Get user links error:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur lors de la récupération des liens'
+      });
+    }
+  });
+
+  // Route pour basculer l'état actif/inactif d'un lien
+  fastify.patch('/links/:linkId/toggle', {
+    onRequest: [authRequired]
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
+    try {
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+      
+      const userId = request.authContext.registeredUser!.id;
+      const { linkId } = request.params as { linkId: string };
+      const { isActive } = request.body as { isActive: boolean };
+
+      // Vérifier que le lien existe et appartient à l'utilisateur
+      const link = await fastify.prisma.conversationShareLink.findFirst({
+        where: {
+          linkId,
+          createdBy: userId
+        },
+        include: {
+          conversation: {
+            include: {
+              members: {
+                where: { userId, isActive: true }
+              }
+            }
+          }
+        }
+      });
+
+      if (!link) {
+        return reply.status(404).send({
+          success: false,
+          message: 'Lien non trouvé'
+        });
+      }
+
+      // Vérifier les permissions (créateur ou admin de conversation)
+      const isCreator = link.createdBy === userId;
+      const isConversationAdmin = link.conversation.members.some(member => 
+        member.role === 'ADMIN' || member.role === 'MODERATOR'
+      );
+
+      if (!isCreator && !isConversationAdmin) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permissions insuffisantes pour modifier ce lien'
+        });
+      }
+
+      // Mettre à jour l'état du lien
+      const updatedLink = await fastify.prisma.conversationShareLink.update({
+        where: { id: link.id },
+        data: { isActive },
+        include: {
+          conversation: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              type: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          },
+          creator: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: updatedLink,
+        message: isActive ? 'Lien activé avec succès' : 'Lien désactivé avec succès'
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Toggle link status error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur lors de la modification du statut du lien'
+      });
+    }
+  });
+
+  // Route pour prolonger la durée d'un lien
+  fastify.patch('/links/:linkId/extend', {
+    onRequest: [authRequired]
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
+    try {
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+      
+      const userId = request.authContext.registeredUser!.id;
+      const { linkId } = request.params as { linkId: string };
+      const { expiresAt } = request.body as { expiresAt: string };
+
+      // Vérifier que le lien existe et appartient à l'utilisateur
+      const link = await fastify.prisma.conversationShareLink.findFirst({
+        where: {
+          linkId,
+          createdBy: userId
+        },
+        include: {
+          conversation: {
+            include: {
+              members: {
+                where: { userId, isActive: true }
+              }
+            }
+          }
+        }
+      });
+
+      if (!link) {
+        return reply.status(404).send({
+          success: false,
+          message: 'Lien non trouvé'
+        });
+      }
+
+      // Vérifier les permissions (créateur ou admin de conversation)
+      const isCreator = link.createdBy === userId;
+      const isConversationAdmin = link.conversation.members.some(member => 
+        member.role === 'ADMIN' || member.role === 'MODERATOR'
+      );
+
+      if (!isCreator && !isConversationAdmin) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permissions insuffisantes pour modifier ce lien'
+        });
+      }
+
+      // Mettre à jour la date d'expiration
+      const updatedLink = await fastify.prisma.conversationShareLink.update({
+        where: { id: link.id },
+        data: { expiresAt: new Date(expiresAt) },
+        include: {
+          conversation: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              type: true,
+              isActive: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          },
+          creator: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+              displayName: true,
+              avatar: true
+            }
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: updatedLink,
+        message: 'Lien prolongé avec succès'
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Extend link duration error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur lors de la prolongation du lien'
+      });
+    }
+  });
+
+  // Route pour supprimer un lien
+  fastify.delete('/links/:linkId', {
+    onRequest: [authRequired]
+  }, async (request: UnifiedAuthRequest, reply: FastifyReply) => {
+    try {
+      if (!isRegisteredUser(request.authContext)) {
+        return reply.status(403).send({
+          error: 'Utilisateur enregistré requis'
+        });
+      }
+      
+      const userId = request.authContext.registeredUser!.id;
+      const { linkId } = request.params as { linkId: string };
+
+      // Vérifier que le lien existe et appartient à l'utilisateur
+      const link = await fastify.prisma.conversationShareLink.findFirst({
+        where: {
+          linkId,
+          createdBy: userId
+        },
+        include: {
+          conversation: {
+            include: {
+              members: {
+                where: { userId, isActive: true }
+              }
+            }
+          }
+        }
+      });
+
+      if (!link) {
+        return reply.status(404).send({
+          success: false,
+          message: 'Lien non trouvé'
+        });
+      }
+
+      // Vérifier les permissions (créateur ou admin de conversation)
+      const isCreator = link.createdBy === userId;
+      const isConversationAdmin = link.conversation.members.some(member => 
+        member.role === 'ADMIN' || member.role === 'MODERATOR'
+      );
+
+      if (!isCreator && !isConversationAdmin) {
+        return reply.status(403).send({
+          success: false,
+          message: 'Permissions insuffisantes pour supprimer ce lien'
+        });
+      }
+
+      // Supprimer le lien
+      await fastify.prisma.conversationShareLink.delete({
+        where: { id: link.id }
+      });
+
+      return reply.send({
+        success: true,
+        message: 'Lien supprimé avec succès'
+      });
+
+    } catch (error) {
+      logError(fastify.log, 'Delete link error:', error);
+      return reply.status(500).send({
+        success: false,
+        message: 'Erreur lors de la suppression du lien'
       });
     }
   });

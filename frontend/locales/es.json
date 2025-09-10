@@ -29,7 +29,8 @@
     "submit": "Enviar",
     "confirm": "Confirmar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "insufficientRights": "No tienes los derechos necesarios para realizar esta operación"
   },
   "noMessagesDescription": "¡Inicia la conversación enviando un mensaje!",
   "writeMessage": "Escribe tu mensaje...",
@@ -47,6 +48,9 @@
   "private": "Privado",
   "createLink": "Crear Enlace",
   "newConversation": "Nueva Conversación",
+    "createConversation": "Crear conversación",
+    "createNewConversation": "Crear nueva conversación",
+    "createNewLink": "Crear nuevo enlace",
   "chooseConversation": "¡Elige una conversación!",
   "chooseConversationDescription": "Haz clic en una conversación a la izquierda para comenzar a chatear",
   "loading": "Cargando...",
@@ -121,6 +125,7 @@
       "createLink": "Crear un enlace",
       "createCommunity": "Crear una comunidad",
       "createGroup": "Crear una comunidad",
+      "shareApp": "Compartir app",
       "settings": "Configuración"
     },
     "emptyStates": {
@@ -172,6 +177,12 @@
     },
     "time": {
       "format": "es-ES"
+    },
+    "communities": {
+      "private": "Privada",
+      "members": "miembros",
+      "member": "miembro",
+      "membersCount": "{count} miembros"
     },
     "steps": {
       "selectConversation": "Seleccionar conversación",
@@ -444,5 +455,28 @@
     "errors": {
       "loginFailed": "Error al iniciar sesión. Verifica tus credenciales."
     }
+  },
+  "conversationUI": {
+    "participants": "Participantes",
+    "createLink": "Crear enlace",
+    "addParticipant": "Agregar participante",
+    "searchParticipants": "Buscar participantes",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "noOneOnline": "Nadie en línea",
+    "noOfflineParticipants": "No hay participantes desconectados",
+    "you": "Tú",
+    "removeFromGroup": "Eliminar del grupo",
+    "participantRemoved": "Participante eliminado de la conversación",
+    "removeParticipantError": "Error al eliminar participante",
+    "linkCreated": "Enlace de conversación creado",
+    "createLinkError": "Error al crear enlace",
+    "conversationSearch": "Búsqueda de conversación",
+    "communities": "Comunidades",
+    "conversationUI": "Interfaz de conversación"
+  },
+  "bubbleStream": {
+    "user": "Usuario",
+    "users": "Usuarios"
   }
 }

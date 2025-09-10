@@ -375,30 +375,35 @@ export function ConversationDetailsSidebar({
             </FoldableSection>
 
             {/* Section Liens de partage */}
-            <FoldableSection
-              title={t('shareLinks')}
-              icon={<Link2 className="h-4 w-4 mr-2" />}
-              defaultExpanded={false}
-            >
-              <div className="space-y-4">
-                {/* Bouton pour créer un nouveau lien */}
-                <CreateLinkButton
-                  conversationId={conversation.id}
-                  conversationType={conversation.type}
-                  userRole={currentUser.role}
-                  userConversationRole={conversation.participants?.find(p => p.userId === currentUser.id)?.role}
-                  onLinkCreated={() => {
-                    // Recharger la liste des liens
-                    window.location.reload();
-                  }}
-                />
-                
-                {/* Liste des liens existants */}
-                <ConversationLinksSection 
-                  conversationId={conversation.id}
-                />
-              </div>
-            </FoldableSection>
+            {/* Section des liens de partage - seulement pour les conversations de groupe */}
+            {conversation.type !== 'direct' && (
+              <FoldableSection
+                title={t('shareLinks')}
+                icon={<Link2 className="h-4 w-4 mr-2" />}
+                defaultExpanded={false}
+              >
+                <div className="space-y-4">
+                  {/* Bouton pour créer un nouveau lien */}
+                  <CreateLinkButton
+                    forceModal={true}
+                    onLinkCreated={() => {
+                      // Recharger la liste des liens
+                      window.location.reload();
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Link2 className="h-4 w-4 mr-2" />
+                    {t('createLink')}
+                  </CreateLinkButton>
+                  
+                  {/* Liste des liens existants */}
+                  <ConversationLinksSection 
+                    conversationId={conversation.id}
+                  />
+                </div>
+              </FoldableSection>
+            )}
           </div>
         </ScrollArea>
       </div>

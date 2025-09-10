@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,9 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User as UserType } from '@/types';
 import { getUserInitials } from '@/utils/user';
 import { toast } from 'sonner';
-import { Upload, Camera } from 'lucide-react';
+import { Upload, Camera, X } from 'lucide-react';
 import { useTranslations } from '@/hooks/useTranslations';
 import { buildApiUrl } from '@/lib/config';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface UserSettingsProps {
   user: UserType | null;
@@ -27,8 +28,13 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
     displayName: '',
     email: '',
     phoneNumber: '',
+    bio: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -38,6 +44,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
         displayName: user.displayName || '',
         email: user.email || '',
         phoneNumber: user.phoneNumber || '',
+        bio: user.bio || '',
       });
     }
   }, [user]);
@@ -47,6 +54,60 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('La taille de l\'image ne doit pas dépasser 5MB');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+        setShowAvatarDialog(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarPreview || !user) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const response = await fetch(buildApiUrl('/users/me/avatar'), {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({ avatar: avatarPreview })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de l\'upload de l\'avatar');
+      }
+
+      const responseData = await response.json();
+      const updatedUser: UserType = {
+        ...user,
+        avatar: responseData.data.avatar
+      };
+      
+      onUserUpdate(updatedUser);
+      toast.success('Photo de profil mise à jour avec succès');
+      setShowAvatarDialog(false);
+      setAvatarPreview(null);
+    } catch (error) {
+      console.error('Erreur lors de l\'upload:', error);
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'upload de l\'avatar');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const handleSave = async () => {
@@ -115,11 +176,23 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarSelect}
+                className="hidden"
+              />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full sm:w-auto"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <Upload className="h-4 w-4 mr-2" />
                 {t('profile.photo.uploadImage')}
               </Button>
-              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto" disabled>
                 <Camera className="h-4 w-4 mr-2" />
                 {t('profile.photo.takePhoto')}
               </Button>
@@ -197,6 +270,21 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="settings-bio">{t('profile.personalInfo.bio')}</Label>
+            <Textarea
+              id="settings-bio"
+              value={formData.bio}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
+              placeholder={t('profile.personalInfo.bioPlaceholder')}
+              className="w-full min-h-[100px]"
+              maxLength={500}
+            />
+            <p className="text-sm text-muted-foreground text-right">
+              {formData.bio.length}/500
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="settings-username">{t('profile.personalInfo.username')}</Label>
             <Input
               id="settings-username"
@@ -218,6 +306,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           displayName: user.displayName || '',
           email: user.email || '',
           phoneNumber: user.phoneNumber || '',
+          bio: user.bio || '',
         })}>
           {t('profile.actions.cancel')}
         </Button>
@@ -225,6 +314,37 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           {isLoading ? t('profile.actions.saving') : t('profile.actions.save')}
         </Button>
       </div>
+
+      {/* Modale de prévisualisation d'avatar */}
+      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('profile.photo.previewTitle')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4">
+            {avatarPreview && (
+              <Avatar className="h-32 w-32">
+                <AvatarImage src={avatarPreview} alt="Preview" />
+                <AvatarFallback>{getUserInitials(user)}</AvatarFallback>
+              </Avatar>
+            )}
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAvatarDialog(false);
+                  setAvatarPreview(null);
+                }}
+              >
+                {t('profile.actions.cancel')}
+              </Button>
+              <Button onClick={handleAvatarUpload} disabled={isUploadingAvatar}>
+                {isUploadingAvatar ? t('profile.actions.uploading') : t('profile.actions.confirm')}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

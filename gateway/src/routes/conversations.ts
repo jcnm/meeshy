@@ -170,6 +170,64 @@ async function ensureUniqueConversationIdentifier(prisma: any, baseIdentifier: s
   }
 }
 
+/**
+ * Vérifie l'unicité d'un identifiant de ConversationShareLink et génère une variante avec timestamp si nécessaire
+ */
+async function ensureUniqueShareLinkIdentifier(prisma: any, baseIdentifier: string): Promise<string> {
+  // Si l'identifiant est vide, générer un identifiant par défaut
+  if (!baseIdentifier || baseIdentifier.trim() === '') {
+    const timestamp = Date.now().toString();
+    const randomPart = Math.random().toString(36).substring(2, 8);
+    baseIdentifier = `mshy_link-${timestamp}-${randomPart}`;
+  }
+  
+  let identifier = baseIdentifier.trim();
+  
+  // Vérifier si l'identifiant existe déjà
+  const existing = await prisma.conversationShareLink.findFirst({
+    where: { identifier }
+  });
+  
+  if (!existing) {
+    return identifier;
+  }
+  
+  // Si l'identifiant existe, ajouter un suffixe timestamp YYYYmmddHHMMSS
+  const now = new Date();
+  const timestamp = now.getFullYear().toString() +
+    (now.getMonth() + 1).toString().padStart(2, '0') +
+    now.getDate().toString().padStart(2, '0') +
+    now.getHours().toString().padStart(2, '0') +
+    now.getMinutes().toString().padStart(2, '0') +
+    now.getSeconds().toString().padStart(2, '0');
+  
+  identifier = `${baseIdentifier}-${timestamp}`;
+  
+  // Vérifier que le nouvel identifiant avec timestamp n'existe pas non plus
+  const existingWithTimestamp = await prisma.conversationShareLink.findFirst({
+    where: { identifier }
+  });
+  
+  if (!existingWithTimestamp) {
+    return identifier;
+  }
+  
+  // Si même avec le timestamp il y a un conflit, ajouter un suffixe numérique
+  let counter = 1;
+  while (true) {
+    const newIdentifier = `${baseIdentifier}-${timestamp}-${counter}`;
+    const existingWithCounter = await prisma.conversationShareLink.findFirst({
+      where: { identifier: newIdentifier }
+    });
+    
+    if (!existingWithCounter) {
+      return newIdentifier;
+    }
+    
+    counter++;
+  }
+}
+
 // Prisma et TranslationService sont décorés et fournis par le serveur principal
 
 
@@ -2208,7 +2266,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         if (userRole !== UserRoleEnum.BIGBOSS) {
           return reply.status(403).send({
             success: false,
-            error: 'You must have BIGBOSS rights to create share links for global conversations'
+            error: 'You do not have the necessary rights to perform this operation'
           });
         }
       }
@@ -2219,6 +2277,21 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       // Générer le linkId initial
       const initialLinkId = generateInitialLinkId();
+
+      // Générer un identifiant unique (basé sur le nom du lien, ou le titre, ou généré)
+      let baseIdentifier: string;
+      if (body.name) {
+        baseIdentifier = `mshy_${body.name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}`;
+      } else if (body.description) {
+        // Utiliser la description comme base si pas de nom
+        baseIdentifier = `mshy_${body.description.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 30)}`;
+      } else {
+        // Générer un identifiant unique si ni nom ni description
+        const timestamp = Date.now().toString();
+        const randomPart = Math.random().toString(36).substring(2, 8);
+        baseIdentifier = `mshy_link-${timestamp}-${randomPart}`;
+      }
+      const uniqueIdentifier = await ensureUniqueShareLinkIdentifier(prisma, baseIdentifier);
 
       // Créer le lien avec toutes les options configurables
       const shareLink = await prisma.conversationShareLink.create({
@@ -2240,7 +2313,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           requireEmail: body.requireEmail ?? false,
           allowedCountries: body.allowedCountries ?? [],
           allowedLanguages: body.allowedLanguages ?? [],
-          allowedIpRanges: body.allowedIpRanges ?? []
+          allowedIpRanges: body.allowedIpRanges ?? [],
+          identifier: uniqueIdentifier
         }
       });
 
@@ -2603,6 +2677,139 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({
         success: false,
         error: 'Erreur lors de la jointure de la conversation'
+      });
+    }
+  });
+
+  // Route pour inviter un utilisateur à une conversation
+  fastify.post('/conversations/:id/invite', {
+    onRequest: [fastify.authenticate]
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const authContext = (request as any).authContext;
+      if (!authContext || !authContext.isAuthenticated || !authContext.registeredUser) {
+        return reply.status(401).send({
+          success: false,
+          error: 'Utilisateur non authentifié'
+        });
+      }
+
+      const { id: conversationId } = request.params as { id: string };
+      const { userId } = request.body as { userId: string };
+      const inviterId = authContext.userId;
+
+      // Vérifier que la conversation existe
+      const conversation = await fastify.prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          members: {
+            where: { isActive: true },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  role: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!conversation) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Conversation non trouvée'
+        });
+      }
+
+      // Vérifier que l'inviteur est membre de la conversation
+      const inviterMember = conversation.members.find(m => m.userId === inviterId);
+      if (!inviterMember) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous n\'êtes pas membre de cette conversation'
+        });
+      }
+
+      // Vérifier que l'inviteur a les permissions pour inviter
+      const canInvite = 
+        inviterMember.role === 'ADMIN' ||
+        inviterMember.role === 'CREATOR' ||
+        authContext.registeredUser.role === 'ADMIN' ||
+        authContext.registeredUser.role === 'BIGBOSS';
+
+      if (!canInvite) {
+        return reply.status(403).send({
+          success: false,
+          error: 'Vous n\'avez pas les permissions pour inviter des utilisateurs'
+        });
+      }
+
+      // Vérifier que l'utilisateur à inviter existe
+      const userToInvite = await fastify.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          username: true,
+          displayName: true,
+          firstName: true,
+          lastName: true
+        }
+      });
+
+      if (!userToInvite) {
+        return reply.status(404).send({
+          success: false,
+          error: 'Utilisateur non trouvé'
+        });
+      }
+
+      // Vérifier que l'utilisateur n'est pas déjà membre
+      const existingMember = conversation.members.find(m => m.userId === userId);
+      if (existingMember) {
+        return reply.status(400).send({
+          success: false,
+          error: 'Cet utilisateur est déjà membre de la conversation'
+        });
+      }
+
+      // Ajouter l'utilisateur à la conversation
+      const newMember = await fastify.prisma.conversationMember.create({
+        data: {
+          conversationId: conversationId,
+          userId: userId,
+          role: 'MEMBER',
+          joinedAt: new Date(),
+          isActive: true
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              firstName: true,
+              lastName: true,
+              avatar: true,
+              isOnline: true
+            }
+          }
+        }
+      });
+
+      return reply.send({
+        success: true,
+        data: newMember,
+        message: `${userToInvite.displayName || userToInvite.username} a été invité à la conversation`
+      });
+
+    } catch (error) {
+      console.error('Erreur lors de l\'invitation:', error);
+      return reply.status(500).send({
+        success: false,
+        error: 'Erreur interne du serveur'
       });
     }
   });

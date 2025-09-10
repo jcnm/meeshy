@@ -16,7 +16,8 @@ import {
   Calendar,
   ArrowLeft,
   Link2,
-  Info
+  Info,
+  UserPlus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
@@ -29,7 +30,8 @@ import type {
 import { conversationsService } from '@/services/conversations.service';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { MessageComposer, MessageComposerRef } from '@/components/common/message-composer';
-import { CreateLinkButtonV2 } from './create-link-button-v2';
+import { CreateLinkButton } from './create-link-button';
+import { CreateLinkModalV2 as CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { ConversationDetailsSidebar } from './conversation-details-sidebar';
 import { cn } from '@/lib/utils';
@@ -37,6 +39,7 @@ import { translationService } from '@/services/translation.service';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
 import { cleanTranslationOutput } from '@/utils/translation-cleaner';
 import { socketIOUserToUser, createDefaultUser } from '@/utils/user-adapter';
@@ -44,7 +47,6 @@ import type { BubbleTranslation } from '@shared/types';
 import { UserRoleEnum } from '@shared/types';
 import { ConversationParticipants } from '@/components/conversations/conversation-participants';
 import { ConversationParticipantsPopover } from '@/components/conversations/conversation-participants-popover';
-import { CreateLinkButton } from '@/components/conversations/create-link-button';
 import { getUserLanguageChoices } from '@/utils/user-language-preferences';
 import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
@@ -120,6 +122,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [conversationParticipants, setConversationParticipants] = useState<ThreadMember[]>([]);
+  
+  // États pour les onglets et filtres
+  const [activeTab, setActiveTab] = useState<'public' | 'private'>('public');
+  const [publicSearchFilter, setPublicSearchFilter] = useState('');
+  const [privateSearchFilter, setPrivateSearchFilter] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('fr'); // Langue pour l'envoi des messages
   const [isLoading, setIsLoading] = useState(true);
@@ -130,13 +137,45 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // États modaux
   const [isCreateConversationModalOpen, setIsCreateConversationModalOpen] = useState(false);
+  const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isDetailsSidebarOpen, setIsDetailsSidebarOpen] = useState(false);
 
   // Flag pour éviter de recharger les conversations juste après en avoir créé une
   const [justCreatedConversation, setJustCreatedConversation] = useState<string | null>(null);
 
-  // États de filtrage
-  const [searchFilter, setSearchFilter] = useState<string>('');
+  // États de filtrage (maintenant gérés par onglet)
+  
+  // Fonctions helper pour filtrer les conversations
+  const getFilteredPublicConversations = useCallback(() => {
+    const publicConversations = conversations.filter(conv => 
+      conv.type === 'global' || conv.type === 'public'
+    );
+    
+    if (!publicSearchFilter) return publicConversations;
+    
+    const searchLower = publicSearchFilter.toLowerCase();
+    return publicConversations.filter(conv => {
+      const name = getConversationDisplayName(conv).toLowerCase();
+      const description = conv.description?.toLowerCase() || '';
+      return name.includes(searchLower) || description.includes(searchLower);
+    });
+  }, [conversations, publicSearchFilter]);
+
+  const getFilteredPrivateConversations = useCallback(() => {
+    const privateConversations = conversations.filter(conv => 
+      conv.type !== 'global' && conv.type !== 'public'
+    );
+    
+    if (!privateSearchFilter) return privateConversations;
+    
+    const searchLower = privateSearchFilter.toLowerCase();
+    return privateConversations.filter(conv => {
+      const name = getConversationDisplayName(conv).toLowerCase();
+      const description = conv.description?.toLowerCase() || '';
+      return name.includes(searchLower) || description.includes(searchLower);
+    });
+  }, [conversations, privateSearchFilter]);
+
   // États typing (centralisés)
   interface TypingUserState {
     userId: string;
@@ -441,6 +480,19 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       }
       return 'C';
     }
+  }, [user]);
+
+  // Fonction pour obtenir l'URL de l'avatar d'une conversation
+  const getConversationAvatarUrl = useCallback((conversation: Conversation): string | undefined => {
+    if (!conversation.isGroup) {
+      // Pour les conversations privées, utiliser l'avatar de l'autre participant
+      const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
+      if (otherParticipant?.user?.avatar) {
+        return otherParticipant.user.avatar;
+      }
+    }
+    // Pour les groupes, on pourrait avoir un avatar de groupe dans le futur
+    return undefined;
   }, [user]);
 
   // Fonction utilitaire pour obtenir l'icône d'une conversation par type
@@ -916,15 +968,21 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     <MessageSquare className="h-5 w-5 text-primary" />
                   </Button>
                   
-                  {/* Bouton pour créer un lien de partage */}
-                  <CreateLinkButtonV2
-                    className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
-                    onLinkCreated={() => {
-                      loadData();
-                    }}
-                  >
-                    <Link2 className="h-5 w-5 text-primary" />
-                  </CreateLinkButtonV2>
+                  {/* Bouton pour créer un nouveau lien - seulement pour les conversations de groupe et avec les bons rôles */}
+                  {selectedConversation?.type !== 'direct' && 
+                   !(selectedConversation?.type === 'global' && user.role !== 'BIGBOSS' && user.role !== 'ADMIN') && (
+                    <CreateLinkButton
+                      onLinkCreated={() => {
+                        // Lien créé depuis l'en-tête
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                    >
+                      <Link2 className="h-5 w-5 text-primary" />
+                    </CreateLinkButton>
+                  )}
+                  
                   
                   {/* Indicateur de messages non lus */}
                   <div className="relative">
@@ -937,38 +995,53 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
               </div>
 
-              {/* Champ de filtrage des conversations */}
-              <div className="mb-2">
-                <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                  {t('filtreConversations')}
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchFilter}
-                    onChange={(e) => setSearchFilter(e.target.value)}
-                    placeholder={tSearch('placeholder')}
-                    className="w-full h-8 text-sm px-3 py-2 border border-border/30 rounded-lg bg-background/50 
-                             placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 
-                             transition-all outline-none"
-                  />
-                </div>
-              </div>
             </div>
 
+            {/* Section fixe avec onglets et champs de recherche */}
+            {conversations.length > 0 && (
+              <div className="flex-shrink-0 mx-2">
+                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'public' | 'private')} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mt-2">
+                    <TabsTrigger value="public" className="flex items-center gap-1 text-xs px-2">
+                      <span className="truncate">{t('public')}</span>
+                      <span className="text-xs">({getFilteredPublicConversations().length})</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="private" className="flex items-center gap-1 text-xs px-2">
+                      <span className="truncate">{t('private')}</span>
+                      <span className="text-xs">({getFilteredPrivateConversations().length})</span>
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  {/* Champ de recherche fixe pour l'onglet actif */}
+                  <div className="mt-2">
+                    {activeTab === 'public' ? (
+                      <input
+                        type="text"
+                        value={publicSearchFilter}
+                        onChange={(e) => setPublicSearchFilter(e.target.value)}
+                        placeholder={tSearch('placeholder')}
+                        className="w-full h-8 text-sm px-3 py-2 border border-border/30 rounded-lg bg-background/50 
+                                 placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 
+                                 transition-all outline-none"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={privateSearchFilter}
+                        onChange={(e) => setPrivateSearchFilter(e.target.value)}
+                        placeholder={tSearch('placeholder')}
+                        className="w-full h-8 text-sm px-3 py-2 border border-border/30 rounded-lg bg-background/50 
+                                 placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/20 focus:border-primary/30 
+                                 transition-all outline-none"
+                      />
+                    )}
+                  </div>
+                </Tabs>
+              </div>
+            )}
+
             {/* Liste scrollable */}
-            <div className="flex-1 overflow-y-auto">
-              {/* Debug info */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="p-2 bg-yellow-100 text-yellow-800 text-xs">
-                  {t('debug', { 
-                    count: conversations.length, 
-                    loading: isLoading ? t('yes') : t('no'), 
-                    user: user ? t('connected') : t('notConnected') 
-                  })}
-                </div>
-              )}
-              
+            <div className="flex-1 overflow-y-auto mx-2">
               {conversations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <MessageSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
@@ -984,156 +1057,141 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
               ) : (
                 <div className="p-2">
-                  {/* Séparer les conversations en publiques et privées avec filtrage */}
-                  {(() => {
-                    // Appliquer d'abord le filtre de recherche
-                    const filteredConversations = conversations.filter(conv => {
-                      if (!searchFilter) return true;
-                      const searchLower = searchFilter.toLowerCase();
-                      const name = getConversationDisplayName(conv).toLowerCase();
-                      const description = conv.description?.toLowerCase() || '';
-                      return name.includes(searchLower) || description.includes(searchLower);
-                    });
-                    
-                    const publicConversations = filteredConversations.filter(conv => 
-                      conv.type === 'global' || conv.type === 'public'
-                    );
-                    const privateConversations = filteredConversations.filter(conv => 
-                      conv.type !== 'global' && conv.type !== 'public'
-                    );
+                  {/* Liste des conversations publiques */}
+                  {activeTab === 'public' && (
+                    <>
+                      {getFilteredPublicConversations().length === 0 ? (
+                        <div className="flex flex-col items-center justify-center p-8 text-center">
+                          <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                          <p className="text-muted-foreground text-sm">
+                            {publicSearchFilter ? t('noPublicConversationsFound') : t('noPublicConversations')}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {getFilteredPublicConversations()
+                            .filter(conversation => conversation && conversation.id)
+                            .map((conversation) => (
+                            <div
+                              key={`public-${conversation.id}`}
+                              onClick={() => handleSelectConversation(conversation)}
+                              className={cn(
+                                "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                                selectedConversation?.id === conversation.id
+                                  ? "bg-primary/20 border-primary/40 shadow-md"
+                                  : "hover:bg-accent/50 border-transparent hover:border-border/30"
+                              )}
+                            >
+                              <div className="relative">
+                                <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                                  <AvatarImage src={getConversationAvatarUrl(conversation)} />
+                                  <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                    {getConversationIcon(conversation) || getConversationAvatar(conversation)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
+                              </div>
 
-                    return (
-                      <>
-                        {/* Section Conversations Publiques */}
-                        {publicConversations.length > 0 && (
-                          <div className="mb-6">
-                            <div className="px-4 py-2 mb-3">
-                              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                                {t('public')}
-                              </h3>
-                            </div>
-                            <div className="space-y-2">
-                              {publicConversations
-                                .filter(conversation => conversation && conversation.id) // Filtrer les conversations invalides
-                                .map((conversation) => (
-                                <div
-                                  key={`public-${conversation.id}`}
-                                  onClick={() => handleSelectConversation(conversation)}
-                                  className={cn(
-                                    "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
-                                    selectedConversation?.id === conversation.id
-                                      ? "bg-primary/20 border-primary/40 shadow-md"
-                                      : "hover:bg-accent/50 border-transparent hover:border-border/30"
-                                  )}
-                                >
-                                  <div className="relative">
-                                    <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                                      <AvatarImage />
-                                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                        {getConversationIcon(conversation) || getConversationAvatar(conversation)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
-                                  </div>
-
-                                  <div className="ml-4 flex-1 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                      <h3 className="font-bold text-foreground truncate">
-                                        {getConversationDisplayName(conversation)}
-                                      </h3>
-                                      {conversation.lastMessage && (
-                                        <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                                          {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                          })}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {conversation.lastMessage && (
-                                      <p className="text-sm text-muted-foreground truncate">
-                                        {conversation.lastMessage.content}
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  {(conversation.unreadCount || 0) > 0 && (
-                                    <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
-                                      {conversation.unreadCount}
-                                    </div>
+                              <div className="ml-4 flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <h3 className="font-bold text-foreground truncate">
+                                    {getConversationDisplayName(conversation)}
+                                  </h3>
+                                  {conversation.lastMessage && (
+                                    <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                                      {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
                                   )}
                                 </div>
-                              ))}
+                                {conversation.lastMessage && (
+                                  <p className="text-sm text-muted-foreground truncate">
+                                    {conversation.lastMessage.content}
+                                  </p>
+                                )}
+                              </div>
+
+                              {(conversation.unreadCount || 0) > 0 && (
+                                <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
+                                  {conversation.unreadCount}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        )}
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
 
-                        {/* Section Conversations Privées */}
-                        {privateConversations.length > 0 && (
-                          <div className="mb-6">
-                            <div className="px-4 py-2 mb-3">
-                              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                                {t('private')}
-                              </h3>
-                            </div>
-                            <div className="space-y-2">
-                              {privateConversations
-                                .filter(conversation => conversation && conversation.id) // Filtrer les conversations invalides
-                                .map((conversation) => (
-                                <div
-                                  key={`private-${conversation.id}`}
-                                  onClick={() => handleSelectConversation(conversation)}
-                                  className={cn(
-                                    "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
-                                    selectedConversation?.id === conversation.id
-                                      ? "bg-primary/20 border-primary/40 shadow-md"
-                                      : "hover:bg-accent/50 border-transparent hover:border-border/30"
-                                  )}
-                                >
-                                  <div className="relative">
-                                    <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                                      <AvatarImage />
-                                      <AvatarFallback className="bg-primary/20 text-primary font-bold">
-                                        {getConversationIcon(conversation) || getConversationAvatar(conversation)}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
-                                  </div>
+                  {/* Liste des conversations privées */}
+                  {activeTab === 'private' && (
+                    <>
+                      {getFilteredPrivateConversations().length === 0 ? (
+                        <div className="flex flex-col items-center justify-center p-8 text-center">
+                          <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                          <p className="text-muted-foreground text-sm">
+                            {privateSearchFilter ? t('noPrivateConversationsFound') : t('noPrivateConversations')}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {getFilteredPrivateConversations()
+                            .filter(conversation => conversation && conversation.id)
+                            .map((conversation) => (
+                            <div
+                              key={`private-${conversation.id}`}
+                              onClick={() => handleSelectConversation(conversation)}
+                              className={cn(
+                                "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                                selectedConversation?.id === conversation.id
+                                  ? "bg-primary/20 border-primary/40 shadow-md"
+                                  : "hover:bg-accent/50 border-transparent hover:border-border/30"
+                              )}
+                            >
+                              <div className="relative">
+                                <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                                  <AvatarImage src={getConversationAvatarUrl(conversation)} />
+                                  <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                    {getConversationIcon(conversation) || getConversationAvatar(conversation)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
+                              </div>
 
-                                  <div className="ml-4 flex-1 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                      <h3 className="font-bold text-foreground truncate">
-                                        {getConversationDisplayName(conversation)}
-                                      </h3>
-                                      {conversation.lastMessage && (
-                                        <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                                          {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                          })}
-                                        </span>
-                                      )}
-                                    </div>
-                                    {conversation.lastMessage && (
-                                      <p className="text-sm text-muted-foreground truncate">
-                                        {conversation.lastMessage.content}
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  {(conversation.unreadCount || 0) > 0 && (
-                                    <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
-                                      {conversation.unreadCount}
-                                    </div>
+                              <div className="ml-4 flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <h3 className="font-bold text-foreground truncate">
+                                    {getConversationDisplayName(conversation)}
+                                  </h3>
+                                  {conversation.lastMessage && (
+                                    <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                                      {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
                                   )}
                                 </div>
-                              ))}
+                                {conversation.lastMessage && (
+                                  <p className="text-sm text-muted-foreground truncate">
+                                    {conversation.lastMessage.content}
+                                  </p>
+                                )}
+                              </div>
+
+                              {(conversation.unreadCount || 0) > 0 && (
+                                <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
+                                  {conversation.unreadCount}
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -1162,7 +1220,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     )}
                     <div className="relative">
                       <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-                        <AvatarImage />
+                        <AvatarImage src={getConversationAvatarUrl(selectedConversation)} />
                         <AvatarFallback className="bg-primary/20 text-primary font-bold">
                           {getConversationIcon(selectedConversation) || getConversationAvatar(selectedConversation)}
                         </AvatarFallback>
@@ -1185,6 +1243,38 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                           className="mt-1"
                         />
                       </div>
+                    </div>
+                    
+                    {/* Boutons d'action rapides - masqués sur mobile */}
+                    <div className="hidden md:flex items-center gap-1">
+                      {/* Bouton pour créer un lien - seulement pour les conversations de groupe et avec les bons rôles */}
+                      {selectedConversation?.type !== 'direct' && 
+                       !(selectedConversation?.type === 'global' && user.role !== 'BIGBOSS' && user.role !== 'ADMIN') && (
+                        <CreateLinkButton
+                          onLinkCreated={() => {
+                            // Lien créé depuis l'en-tête
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                        >
+                          <Link2 className="h-4 w-4 text-primary" />
+                        </CreateLinkButton>
+                      )}
+                      
+                      {/* Bouton pour ajouter un participant */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                        title={t('addParticipant')}
+                        onClick={() => {
+                          // Ouvrir le modal d'invitation
+                          // TODO: Implémenter l'ouverture du modal d'invitation
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4 text-primary" />
+                      </Button>
                     </div>
                     
                     {/* Bouton pour afficher les participants */}
@@ -1310,21 +1400,33 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 <div className="flex gap-4 justify-center">
                   <Button
                     onClick={() => setIsCreateConversationModalOpen(true)}
-                    className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+                    className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all relative"
                   >
                     <MessageSquare className="h-5 w-5 mr-2" />
                     {t('createConversation')}
+                    {/* Pastille pour les messages non lus */}
+                    {(() => {
+                      const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+                      return totalUnread > 0 ? (
+                        <Badge 
+                          variant="destructive" 
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs font-bold shadow-lg"
+                        >
+                          {totalUnread > 99 ? '99+' : totalUnread}
+                        </Badge>
+                      ) : null;
+                    })()}
                   </Button>
-                  <CreateLinkButtonV2
+                  <CreateLinkButton
                     variant="outline"
-                    className="rounded-2xl px-6 py-3 border-2 border-primary/20 hover:border-primary/40 font-semibold shadow-md hover:shadow-lg transition-all"
+                    className="rounded-2xl px-6 py-3 border-2 border-primary/20 hover:border-primary/40 font-semibold shadow-md hover:shadow-lg transition-all text-primary hover:text-primary-foreground hover:bg-primary"
                     onLinkCreated={() => {
                       loadData();
                     }}
                   >
                     <Link2 className="h-5 w-5 mr-2" />
                     {t('createLink')}
-                  </CreateLinkButtonV2>
+                  </CreateLinkButton>
                 </div>
               </div>
             )}
@@ -1395,6 +1497,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               }, 1000);
             });
           }
+        }}
+      />
+
+      {/* Modal de création de lien */}
+      <CreateLinkModal
+        isOpen={isCreateLinkModalOpen}
+        onClose={() => setIsCreateLinkModalOpen(false)}
+        onLinkCreated={() => {
+          setIsCreateLinkModalOpen(false);
+          loadData();
         }}
       />
 

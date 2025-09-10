@@ -47,6 +47,9 @@
   "private": "خاص",
   "createLink": "إنشاء رابط",
   "newConversation": "محادثة جديدة",
+  "createConversation": "إنشاء محادثة",
+  "createNewConversation": "إنشاء محادثة جديدة",
+  "createNewLink": "إنشاء رابط جديد",
   "chooseConversation": "اختر محادثة!",
   "chooseConversationDescription": "انقر على محادثة على اليسار لبدء الدردشة",
   "loading": "جاري التحميل...",
@@ -284,5 +287,28 @@
     "errors": {
       "loginFailed": "فشل تسجيل الدخول. تحقق من بيانات الاعتماد الخاصة بك."
     }
+  },
+  "conversationUI": {
+    "participants": "المشاركون",
+    "createLink": "إنشاء رابط",
+    "addParticipant": "إضافة مشارك",
+    "searchParticipants": "البحث عن المشاركين",
+    "online": "متصل",
+    "offline": "غير متصل",
+    "noOneOnline": "لا أحد متصل",
+    "noOfflineParticipants": "لا يوجد مشاركون غير متصلين",
+    "you": "أنت",
+    "removeFromGroup": "إزالة من المجموعة",
+    "participantRemoved": "تم إزالة المشارك من المحادثة",
+    "removeParticipantError": "خطأ في إزالة المشارك",
+    "linkCreated": "تم إنشاء رابط المحادثة",
+    "createLinkError": "خطأ في إنشاء الرابط",
+    "conversationSearch": "البحث في المحادثة",
+    "communities": "المجتمعات",
+    "conversationUI": "واجهة المحادثة"
+  },
+  "bubbleStream": {
+    "user": "مستخدم",
+    "users": "مستخدمون"
   }
 }

@@ -29,7 +29,51 @@
     "submit": "Submit",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "insufficientRights": "You do not have the necessary rights to perform this operation"
+  },
+  "affiliate": {
+    "shareApp": "Share the app",
+    "createToken": "Create token",
+    "tokenName": "Token name",
+    "tokenNamePlaceholder": "Ex: Facebook campaign, Family invitation...",
+    "selectToken": "Select an affiliate token",
+    "shareMessage": "Share message",
+    "shareMessagePlaceholder": "Your invitation message...",
+    "affiliateLink": "Affiliate link",
+    "copyLink": "Copy link",
+    "copyMessage": "Copy message",
+    "share": "Share",
+    "statistics": "Statistics",
+    "uses": "uses",
+    "createdOn": "Created on",
+    "expiresOn": "Expires on",
+    "active": "Active",
+    "inactive": "Inactive",
+    "expired": "Expired",
+    "limitReached": "Limit reached",
+    "newToken": "New",
+    "create": "Create",
+    "creating": "Creating...",
+    "linkCopied": "Link copied to clipboard",
+    "messageCopied": "Message copied to clipboard",
+    "tokenCreated": "Token created successfully",
+    "errorCreatingToken": "Error creating token",
+    "errorLoadingTokens": "Error loading tokens",
+    "errorSharing": "Error sharing",
+    "errorCopying": "Error copying",
+    "enterTokenName": "Please enter a token name",
+    "defaultMessage": "Join me on Meeshy! A multilingual messaging platform where you can chat with people from around the world and learn languages while having fun. Click this link to sign up:",
+    "shareTitle": "Join me on Meeshy",
+    "modalTitle": "Share the app",
+    "modalDescription": "Create an affiliate link to invite your friends to join Meeshy",
+    "existingTokens": "Existing tokens",
+    "tokenStatus": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "expired": "Expired",
+      "limitReached": "Limit reached"
+    }
   },
   "noMessagesDescription": "Start the conversation by sending a message!",
   "writeMessage": "Write your message...",
@@ -48,6 +92,8 @@
   "createLink": "Create Link",
   "newConversation": "New Conversation",
   "createConversation": "Create Conversation",
+  "createNewConversation": "Create New Conversation",
+  "createNewLink": "Create New Link",
   "chooseConversation": "Choose a conversation!",
   "chooseConversationDescription": "Click on a conversation on the left to start chatting",
   "navigation": {
@@ -763,6 +809,7 @@
       "createLink": "Create a link",
       "createCommunity": "Create a community",
       "createGroup": "Create a community",
+      "shareApp": "Share app",
       "settings": "Settings"
     },
     "emptyStates": {
@@ -775,6 +822,12 @@
     },
     "time": {
       "format": "en-US"
+    },
+    "communities": {
+      "private": "Private",
+      "members": "members",
+      "member": "member",
+      "membersCount": "{count} members"
     }
   },
   "layout": {
@@ -858,7 +911,6 @@
     "settingsError": "Error loading settings",
     "settingsSaved": "Settings saved successfully",
     "settingsSaveError": "Error saving settings",
-    
     "tabs": {
       "profile": "Profile",
       "translation": "Translation",
@@ -866,7 +918,6 @@
       "fonts": "Fonts",
       "stats": "Stats"
     },
-    
     "profile": {
       "title": "Profile",
       "description": "Personal information",
@@ -902,7 +953,6 @@
         "updateError": "Error updating profile"
       }
     },
-    
     "translation": {
       "title": "Language and Translation Configuration",
       "description": "Define your languages and translation settings",
@@ -959,7 +1009,6 @@
       "useCustomDestination": "Use custom destination",
       "customDestinationPlaceholder": "Select a language"
     },
-    
     "theme": {
       "title": "Theme and interface",
       "description": "Customize the appearance, language and fonts of the application",
@@ -1025,7 +1074,6 @@
       "settingsUpdated": "Theme updated",
       "interfaceLanguageUpdated": "Interface language updated"
     },
-    
     "fonts": {
       "title": "Font selection",
       "description": "Customize the appearance of text in the application",
@@ -1042,7 +1090,6 @@
         "description": "Spacing between text lines"
       }
     },
-    
     "stats": {
       "title": "Translation statistics",
       "description": "View your translation usage statistics",
@@ -1052,7 +1099,6 @@
       "mostTranslatedLanguage": "Most translated language",
       "translationHistory": "Translation history"
     },
-    
     "notifications": {
       "title": "Notifications",
       "description": "Configure your notification preferences",
@@ -1062,7 +1108,6 @@
       "groupNotifications": "Group notifications",
       "translationNotifications": "Translation notifications"
     },
-    
     "privacy": {
       "title": "Privacy",
       "description": "Manage your privacy settings",
@@ -1071,7 +1116,6 @@
       "analytics": "Analytics",
       "cookies": "Cookies"
     },
-    
     "security": {
       "title": "Security",
       "description": "Your account security settings",
@@ -1080,7 +1124,6 @@
       "loginHistory": "Login history",
       "activeSessions": "Active sessions"
     },
-    
     "noUserConnected": "No user connected"
   },
   "notFound": {
@@ -1168,6 +1211,9 @@
     "reloadPage": "Reload page",
     "messagePlaceholder": "Type your message...",
     "user": "User",
+    "users": "Users",
+    "messageTooOldToDelete": "This message can no longer be deleted (more than 12h old)",
+    "noRightsToDelete": "You don't have the rights to delete this message",
     "anonymous": "Anonymous",
     "unknownUser": "?",
     "missingLinkId": "Missing link ID",
@@ -1223,12 +1269,6 @@
       "saved": "Settings saved successfully",
       "saveError": "Error saving settings",
       "reset": "Settings reset"
-    },
-    "links": {
-      "copied": "Link copied to clipboard",
-      "generated": "Link generated successfully!",
-      "generatedAndCopied": "Link generated and copied to clipboard!",
-      "generateError": "Error generating link"
     },
     "participants": {
       "removed": "Participant removed from conversation",
@@ -1694,28 +1734,88 @@
       "usageLimitInfo": "Maximum number of times the link can be used. Once the limit is reached, the link will be disabled"
     },
     "durationOptions": {
-      "1": { "label": "1 day", "description": "Temporary link" },
-      "3": { "label": "3 days", "description": "Short term" },
-      "7": { "label": "1 week", "description": "Short term" },
-      "14": { "label": "2 weeks", "description": "Short term" },
-      "30": { "label": "1 month", "description": "Medium term" },
-      "60": { "label": "2 months", "description": "Medium term" },
-      "90": { "label": "3 months", "description": "Long term" },
-      "180": { "label": "6 months", "description": "Long term" },
-      "365": { "label": "1 year", "description": "Permanent" },
-      "730": { "label": "2 years", "description": "Permanent" }
+      "1": {
+        "label": "1 day",
+        "description": "Temporary link"
+      },
+      "3": {
+        "label": "3 days",
+        "description": "Short term"
+      },
+      "7": {
+        "label": "1 week",
+        "description": "Short term"
+      },
+      "14": {
+        "label": "2 weeks",
+        "description": "Short term"
+      },
+      "30": {
+        "label": "1 month",
+        "description": "Medium term"
+      },
+      "60": {
+        "label": "2 months",
+        "description": "Medium term"
+      },
+      "90": {
+        "label": "3 months",
+        "description": "Long term"
+      },
+      "180": {
+        "label": "6 months",
+        "description": "Long term"
+      },
+      "365": {
+        "label": "1 year",
+        "description": "Permanent"
+      },
+      "730": {
+        "label": "2 years",
+        "description": "Permanent"
+      }
     },
     "limitOptions": {
-      "unlimited": { "label": "Unlimited", "description": "No restrictions" },
-      "5": { "label": "5 uses", "description": "Very small group" },
-      "10": { "label": "10 uses", "description": "Small group" },
-      "25": { "label": "25 uses", "description": "Small group" },
-      "50": { "label": "50 uses", "description": "Medium group" },
-      "100": { "label": "100 uses", "description": "Large group" },
-      "250": { "label": "250 uses", "description": "Large group" },
-      "500": { "label": "500 uses", "description": "Very large group" },
-      "1000": { "label": "1000 uses", "description": "Public event" },
-      "5000": { "label": "5000 uses", "description": "Massive event" }
+      "5": {
+        "label": "5 uses",
+        "description": "Very small group"
+      },
+      "10": {
+        "label": "10 uses",
+        "description": "Small group"
+      },
+      "25": {
+        "label": "25 uses",
+        "description": "Small group"
+      },
+      "50": {
+        "label": "50 uses",
+        "description": "Medium group"
+      },
+      "100": {
+        "label": "100 uses",
+        "description": "Large group"
+      },
+      "250": {
+        "label": "250 uses",
+        "description": "Large group"
+      },
+      "500": {
+        "label": "500 uses",
+        "description": "Very large group"
+      },
+      "1000": {
+        "label": "1000 uses",
+        "description": "Public event"
+      },
+      "5000": {
+        "label": "5000 uses",
+        "description": "Massive event"
+      },
+      "unlimited": {
+        "label": "Unlimited",
+        "description": "No restrictions"
+      }
     },
     "permissions": {
       "title": "Guest permissions",
@@ -1758,38 +1858,38 @@
       "conversation": "Conversation",
       "validityDuration": "Validity Duration",
       "usageLimit": "Usage Limit",
-      "welcomeMessage": "Welcome Message",
-      "usageCount": "{count} uses",
+      "usageCount": "Usage count",
       "unlimited": "Unlimited",
-      "linkDisabledAfter": "Link will be disabled after {count} uses",
+      "welcomeMessage": "Welcome Message",
       "noCustomMessage": "No custom message",
-      "welcomeMessageDescription": "This message will be displayed on the /join page to welcome participants",
-      "permissionsGranted": "Guest Permissions",
+      "welcomeMessageDescription": "Welcome message description",
+      "permissionsGranted": "Permissions granted",
       "messages": "Messages",
-      "images": "Images",
-      "files": "Files",
-      "history": "History",
       "allowed": "Allowed",
       "forbidden": "Forbidden",
-      "visible": "Visible",
-      "hidden": "Hidden",
       "guestsCanSendMessages": "Guests can send messages",
       "guestsCannotSendMessages": "Guests cannot send messages",
+      "images": "Images",
       "guestsCanShareImages": "Guests can share images",
       "guestsCannotShareImages": "Guests cannot share images",
+      "files": "Files",
       "guestsCanShareFiles": "Guests can share files",
       "guestsCannotShareFiles": "Guests cannot share files",
+      "history": "History",
+      "visible": "Visible",
+      "hidden": "Hidden",
       "guestsCanViewHistory": "Guests can view history",
       "guestsCannotViewHistory": "Guests cannot view history",
-      "nicknameRequired": "Nickname Required",
-      "emailRequired": "Email Required",
+      "nicknameRequired": "Nickname required",
       "yes": "Yes",
       "no": "No",
-      "guestsMustEnterNickname": "Guests must enter a nickname",
+      "guestsMustEnterNickname": "Guests must enter nickname",
       "guestsCanStayAnonymous": "Guests can stay anonymous",
-      "guestsMustEnterEmail": "Guests must enter an email",
-      "allowedLanguages": "Allowed Languages",
-      "selectedLanguages": "Selected Languages"
+      "emailRequired": "Email required",
+      "guestsMustEnterEmail": "Guests must enter email",
+      "allowedLanguages": "Allowed languages",
+      "selectedLanguages": "Selected languages",
+      "linkDisabledAfter": "Link disabled after"
     },
     "linkDetails": {
       "title": "Sharing link name",
@@ -1803,44 +1903,6 @@
       "welcomeMessage": "Welcome message",
       "welcomeMessageInfo": "Message that will be displayed to your guests before they join the conversation",
       "welcomeMessagePlaceholder": "Ex: Welcome to our discussion! Feel free to share your ideas..."
-    },
-    "summary": {
-      "title": "Summary of your configuration",
-      "description": "Review all settings before generating the link",
-      "basicInfo": "Basic information",
-      "conversation": "Conversation",
-      "validityDuration": "Validity duration",
-      "usageLimit": "Usage limit",
-      "welcomeMessage": "Welcome message",
-      "expiresOn": "Expires on {date}",
-      "linkWillBeDisabled": "The link will be disabled after {count} uses",
-      "displayedOnJoinPage": "This message will be displayed on the /join page to welcome participants",
-      "noCustomMessage": "No custom message",
-      "notSelected": "Not selected",
-      "unlimited": "Unlimited",
-      "permissions": "Guest permissions",
-      "messages": "Messages",
-      "images": "Images",
-      "files": "Files",
-      "history": "History",
-      "allowed": "Allowed",
-      "forbidden": "Forbidden",
-      "visible": "Visible",
-      "hidden": "Hidden",
-      "required": "Yes",
-      "notRequired": "No",
-      "guestsCanSendMessages": "Guests can send messages",
-      "guestsCannotSendMessages": "Guests cannot send messages",
-      "guestsCanShareImages": "Guests can share images",
-      "guestsCannotShareImages": "Guests cannot share images",
-      "guestsCanShareFiles": "Guests can share files",
-      "guestsCannotShareFiles": "Guests cannot share files",
-      "guestsCanViewHistory": "Guests can view history",
-      "guestsCannotViewHistory": "Guests cannot view history",
-      "guestsMustEnterNickname": "Guests must enter a nickname",
-      "guestsCanStayAnonymous": "Guests can stay anonymous",
-      "guestsMustEnterEmail": "Guests must enter an email",
-      "selectedLanguages": "Selected languages"
     },
     "success": {
       "title": "Link created successfully!",
@@ -1879,46 +1941,6 @@
       "linkGenerated": "Link generated successfully!",
       "linkCopied": "Link copied to clipboard",
       "tokenCopied": "Token copied to clipboard"
-    },
-    "summary": {
-      "title": "Configuration Summary",
-      "description": "Review settings before generating the link",
-      "basicInfo": "Basic Information",
-      "conversation": "Conversation",
-      "validityDuration": "Validity Duration",
-      "usageLimit": "Usage Limit",
-      "usageCount": "Usage count",
-      "unlimited": "Unlimited",
-      "welcomeMessage": "Welcome Message",
-      "noCustomMessage": "No custom message",
-      "welcomeMessageDescription": "Welcome message description",
-      "permissionsGranted": "Permissions granted",
-      "messages": "Messages",
-      "allowed": "Allowed",
-      "forbidden": "Forbidden",
-      "guestsCanSendMessages": "Guests can send messages",
-      "guestsCannotSendMessages": "Guests cannot send messages",
-      "images": "Images",
-      "guestsCanShareImages": "Guests can share images",
-      "guestsCannotShareImages": "Guests cannot share images",
-      "files": "Files",
-      "guestsCanShareFiles": "Guests can share files",
-      "guestsCannotShareFiles": "Guests cannot share files",
-      "history": "History",
-      "visible": "Visible",
-      "hidden": "Hidden",
-      "guestsCanViewHistory": "Guests can view history",
-      "guestsCannotViewHistory": "Guests cannot view history",
-      "nicknameRequired": "Nickname required",
-      "yes": "Yes",
-      "no": "No",
-      "guestsMustEnterNickname": "Guests must enter nickname",
-      "guestsCanStayAnonymous": "Guests can stay anonymous",
-      "emailRequired": "Email required",
-      "guestsMustEnterEmail": "Guests must enter email",
-      "allowedLanguages": "Allowed languages",
-      "selectedLanguages": "Selected languages",
-      "linkDisabledAfter": "Link disabled after"
     },
     "createLinkModal": "Create link modal"
   },
@@ -2058,57 +2080,6 @@
     "createConversationModal": "Create conversation modal"
   },
   "conversationSearch": {
-    "placeholder": "Search by name, description...",
-    "filterConversations": "Filter conversations",
-    "searchParticipants": "Search...",
-    "shareMessage": "Share something with the world..."
-  },
-  "conversationLayout": {
-    "authChecking": "Checking authentication...",
-    "loadingConversations": "Loading conversations...",
-    "loadingConversationsDescription": "Retrieving your conversations...",
-    "noConversations": "No conversations",
-    "noConversationsDescription": "Start by creating a new conversation or joining an existing one.",
-    "chooseConversation": "Choose a conversation",
-    "chooseConversationDescription": "Select a conversation from the list to start chatting.",
-    "welcome": "Welcome to Meeshy",
-    "welcomeDescription": "Connect with your friends and colleagues in real-time with automatic translation.",
-    "createConversation": "Create conversation",
-    "filtreConversations": "Filter conversations",
-    "notConnected": "Not connected",
-    "participantRemoved": "Participant removed: {userId}",
-    "participantAdded": "Participant added: {userId}",
-    "errorLoadingNewConversation": "Error loading new conversation",
-    "errorLoadingConversation": "Error loading conversation",
-    "writeMessage": "Write your message...",
-    "conversations": {
-      "title": "Conversations"
-    },
-    "no": "No",
-    "connected": "Connected",
-    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
-    "public": "Public",
-    "private": "Private",
-    "createLink": "Create link",
-    "conversationDetails": "Conversation details",
-    "noMessages": "No messages in this conversation",
-    "noMessagesDescription": "Start the conversation by sending a message!",
-    "yes": "Yes",
-    "conversationLayout": "Conversation layout",
-    "conversationSearch": "Conversation search",
-    "toasts": {
-      "messages": {
-        "translationInProgress": "Translation in progress...",
-        "retranslationInProgress": "Retranslation in progress...",
-        "editSoon": "Edit available soon",
-        "translationSuccess": "Translation successful"
-      },
-      "conversations": {
-        "loadError": "Error loading conversation"
-      }
-    }
-  },
-  "conversationSearch": {
     "authChecking": "Checking authentication...",
     "toasts": {
       "messages": {
@@ -2153,6 +2124,57 @@
     "participantRemoved": "Participant removed: {userId}",
     "participantAdded": "Participant added: {userId}",
     "conversationUI": "Conversation UI"
+  },
+  "conversationLayout": {
+    "authChecking": "Checking authentication...",
+    "loadingConversations": "Loading conversations...",
+    "loadingConversationsDescription": "Retrieving your conversations...",
+    "noConversations": "No conversations",
+    "noConversationsDescription": "Start by creating a new conversation or joining an existing one.",
+    "chooseConversation": "Choose a conversation",
+    "chooseConversationDescription": "Select a conversation from the list to start chatting.",
+    "welcome": "Welcome to Meeshy",
+    "welcomeDescription": "Connect with your friends and colleagues in real-time with automatic translation.",
+    "createConversation": "Create conversation",
+    "filtreConversations": "Filter conversations",
+    "notConnected": "Not connected",
+    "participantRemoved": "Participant removed: {userId}",
+    "participantAdded": "Participant added: {userId}",
+    "errorLoadingNewConversation": "Error loading new conversation",
+    "errorLoadingConversation": "Error loading conversation",
+    "writeMessage": "Write your message...",
+    "conversations": {
+      "title": "Conversations"
+    },
+    "no": "No",
+    "connected": "Connected",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "public": "Public",
+    "private": "Private",
+    "createLink": "Create link",
+    "createNewConversation": "Create New Conversation",
+    "createNewLink": "Create New Link",
+    "noPublicConversations": "No public conversations",
+    "noPublicConversationsFound": "No public conversations found",
+    "noPrivateConversations": "No private conversations",
+    "noPrivateConversationsFound": "No private conversations found",
+    "conversationDetails": "Conversation details",
+    "noMessages": "No messages in this conversation",
+    "noMessagesDescription": "Start the conversation by sending a message!",
+    "yes": "Yes",
+    "conversationLayout": "Conversation layout",
+    "conversationSearch": "Conversation search",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Translation in progress...",
+        "retranslationInProgress": "Retranslation in progress...",
+        "editSoon": "Edit available soon",
+        "translationSuccess": "Translation successful"
+      },
+      "conversations": {
+        "loadError": "Error loading conversation"
+      }
+    }
   },
   "conversationWrapper": {
     "authChecking": "Checking authentication...",
@@ -2205,6 +2227,7 @@
     "linkCreated": "Conversation link created",
     "createLinkError": "Error creating link",
     "conversationSearch": "Conversation search",
+    "communities": "Communities",
     "conversationUI": "Conversation UI"
   },
   "conversationLinks": {
@@ -2310,69 +2333,6 @@
     "createLink": "Create link",
     "linkCreatedSuccessfully": "Share link created successfully!"
   },
-  "createConversationModal": {
-    "title": "New conversation",
-    "description": "Create a modern conversation with an intelligent and dynamic approach",
-    "steps": {
-      "members": "Members",
-      "details": "Details"
-    },
-    "community": {
-      "title": "Community (optional)",
-      "searchPlaceholder": "Search for a community...",
-      "loading": "Loading...",
-      "noCommunitiesFound": "No communities found.",
-      "membersCount": "{count} members • {conversations} conversations",
-      "private": "Private",
-      "public": "Public"
-    },
-    "members": {
-      "title": "Add members",
-      "searchPlaceholder": "Search users by name or username...",
-      "loading": "Loading...",
-      "noUsersFound": "No users found.",
-      "selectedMembers": "Selected members ({count})"
-    },
-    "conversationDetails": {
-      "title": "Conversation details",
-      "conversationTitle": "Conversation title",
-      "titlePlaceholder": "Title will be generated automatically...",
-      "titleInfoDirect": "Title automatically generated for direct conversations",
-      "titleInfoGroup": "Modify the title if necessary for group conversations",
-      "identifier": "Identifier",
-      "identifierRequired": "*",
-      "identifierPrefix": "mshy_",
-      "identifierPlaceholder": "my-identifier",
-      "identifierInfo": "Allowed characters: letters, numbers, hyphens, underscores, @",
-      "identifierError": "Identifier contains unauthorized characters",
-      "typeDirect": "Direct",
-      "typeGroup": "Group"
-    },
-    "autoGeneratedTitles": {
-      "directWithUser": "Conversation with {username}",
-      "betweenTwoUsers": "Conversation with {user1} and {user2}",
-      "groupWithMultiple": "Conversation with {user1}, {user2} and {count} other{plural}",
-      "groupWithTwo": "Conversation with {user1} and {user2}"
-    },
-    "actions": {
-      "create": "Create",
-      "creating": "Creating...",
-      "createDirectConversation": "Create direct conversation",
-      "createGroupConversation": "Create group conversation",
-      "cancel": "Cancel"
-    },
-    "errors": {
-      "selectAtLeastOneUser": "Please select at least one user",
-      "identifierRequired": "Identifier is required",
-      "invalidIdentifier": "Identifier can only contain letters, numbers, hyphens, underscores and @",
-      "searchError": "Error during search",
-      "creationError": "Error creating conversation",
-      "loadingCommunitiesError": "Error loading communities"
-    },
-    "success": {
-      "conversationCreated": "Conversation created successfully"
-    }
-  },
   "joinPage": {
     "title": "Join conversation",
     "invitedTo": "You are invited to join",
@@ -2405,5 +2365,119 @@
     "linkInactive": "This link is no longer active",
     "linkLimitReached": "This link has reached its usage limit",
     "loadingError": "Error loading link"
+  },
+  "links": {
+    "copied": "Link copied to clipboard",
+    "generated": "Link generated successfully!",
+    "generatedAndCopied": "Link generated and copied to clipboard!",
+    "generateError": "Error generating link",
+    "title": "Link Management",
+    "pageTitle": "My Share Links",
+    "pageDescription": "Manage your conversation share links",
+    "searchPlaceholder": "Search for a link...",
+    "createLink": "Create Link",
+    "tabs": {
+      "active": "Active",
+      "expired": "Expired",
+      "disabled": "Disabled"
+    },
+    "noLinks": "No links found",
+    "unnamedLink": "Unnamed link",
+    "conversation": "Conversation",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "expired": "Expired",
+      "never": "Never",
+      "daysRemaining": "{days} day(s) remaining",
+      "hoursRemaining": "{hours} hour(s) remaining"
+    },
+      "actions": {
+        "copy": "Copy",
+        "viewDetails": "View Details",
+        "edit": "Edit",
+        "disable": "Disable",
+        "enable": "Enable",
+        "extend7Days": "Extend by 7 days",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "save": "Save"
+      },
+    "stats": {
+      "uses": "Uses",
+      "active": "Active",
+      "created": "Created",
+      "expires": "Expires"
+    },
+      "success": {
+        "linkCopied": "Link copied to clipboard",
+        "linkDisabled": "Link disabled successfully",
+        "linkEnabled": "Link enabled successfully",
+        "linkExtended": "Link extended by {days} day(s)",
+        "linkDeleted": "Link deleted successfully",
+        "linkUpdated": "Link updated successfully"
+      },
+      "errors": {
+        "loadFailed": "Error loading links",
+        "toggleFailed": "Error changing status",
+        "extendFailed": "Error extending link",
+        "deleteFailed": "Error deleting link",
+        "updateFailed": "Error updating link"
+      },
+    "confirm": {
+      "delete": "Are you sure you want to delete this link?"
+    },
+    "details": {
+      "title": "Link Details",
+      "basicInfo": "Basic Information",
+      "linkName": "Link Name",
+      "description": "Description",
+      "conversation": "Conversation",
+      "linkUrl": "Link URL",
+      "usage": "Usage Statistics",
+      "totalUses": "Total Uses",
+      "activeUsers": "Active Users",
+      "totalParticipants": "Total Participants",
+      "languages": "Supported Languages",
+      "permissions": "Permissions",
+      "dates": "Important Dates",
+      "created": "Created",
+      "expires": "Expires",
+      "lastUpdated": "Last Updated",
+      "creator": "Creator"
+    },
+    "permissions": {
+      "messages": "Messages",
+      "images": "Images",
+      "files": "Files",
+      "viewHistory": "View History",
+      "allowed": "Allowed",
+      "denied": "Denied",
+      "messagesDescription": "Allow anonymous users to send messages",
+      "imagesDescription": "Allow anonymous users to send images",
+      "filesDescription": "Allow anonymous users to send files",
+      "viewHistoryDescription": "Allow anonymous users to view message history"
+    },
+    "edit": {
+      "title": "Edit Link",
+      "linkName": "Link Name",
+      "linkNamePlaceholder": "Enter a name for the link",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter a description for the link",
+      "maxUses": "Maximum Uses",
+      "maxUsesDescription": "Maximum number of uses (leave empty for unlimited)",
+      "expiresAt": "Expiration Date",
+      "expiresAtDescription": "Link expiration date and time",
+      "selectDate": "Select a date",
+      "permissions": "Permissions",
+      "requirements": "Requirements"
+    },
+    "requirements": {
+      "nickname": "Nickname Required",
+      "nicknameDescription": "Require a nickname for anonymous users",
+      "email": "Email Required",
+      "emailDescription": "Require an email for anonymous users"
+    }
   }
 }

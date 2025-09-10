@@ -29,7 +29,8 @@
     "submit": "Enviar",
     "confirm": "Confirmar",
     "yes": "Sim",
-    "no": "Não"
+    "no": "Não",
+    "insufficientRights": "Você não tem os direitos necessários para realizar esta operação"
   },
   "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
   "writeMessage": "Escreva sua mensagem...",
@@ -48,6 +49,8 @@
   "createLink": "Criar Link",
   "newConversation": "Nova Conversa",
   "createConversation": "Criar Conversa",
+  "createNewConversation": "Criar Nova Conversa",
+  "createNewLink": "Criar Novo Link",
   "chooseConversation": "Escolha uma conversa!",
   "chooseConversationDescription": "Clique em uma conversa à esquerda para começar a conversar",
   "navigation": {
@@ -748,6 +751,7 @@
       "createLink": "Criar um link",
       "createCommunity": "Criar uma comunidade",
       "createGroup": "Criar uma comunidade",
+      "shareApp": "Compartilhar app",
       "settings": "Configurações"
     },
     "emptyStates": {
@@ -760,6 +764,12 @@
     },
     "time": {
       "format": "pt-BR"
+    },
+    "communities": {
+      "private": "Privada",
+      "members": "membros",
+      "member": "membro",
+      "membersCount": "{count} membros"
     }
   },
   "layout": {
@@ -1143,6 +1153,7 @@
     "reloadPage": "Reload page",
     "messagePlaceholder": "Type your message...",
     "user": "User",
+    "users": "Users",
     "anonymous": "Anonymous",
     "unknownUser": "?",
     "missingLinkId": "Missing link ID",
@@ -1234,12 +1245,6 @@
       "saved": "Settings saved successfully",
       "saveError": "Error saving settings",
       "reset": "Settings reset"
-    },
-    "links": {
-      "copied": "Link copied to clipboard",
-      "generated": "Link generated successfully!",
-      "generatedAndCopied": "Link generated and copied to clipboard!",
-      "generateError": "Error generating link"
     },
     "participants": {
       "removed": "Participant removed from conversation",
@@ -2306,6 +2311,24 @@
     "createLink": "Criar link",
     "linkCreatedSuccessfully": "Link de compartilhamento criado com sucesso!"
   },
+  "linkSummaryModal": {
+    "title": "Link de compartilhamento criado com sucesso",
+    "description": "Seu link de compartilhamento foi gerado automaticamente.",
+    "shareLink": "Link de compartilhamento",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "close": "Fechar",
+    "copyLink": "Copiar link",
+    "expires": "Expira:",
+    "languages": "Idiomas:",
+    "messages": "Mensagens:",
+    "files": "Arquivos:",
+    "images": "Imagens:",
+    "auth": "Auth:",
+    "none": "Nenhuma",
+    "nickname": "Apelido",
+    "email": "Email"
+  },
   "joinPage": {
     "title": "Entrar na conversa",
     "invitedTo": "Você foi convidado(a) para entrar",
@@ -2338,5 +2361,138 @@
     "linkInactive": "Este link não está mais ativo",
     "linkLimitReached": "Este link atingiu seu limite de uso",
     "loadingError": "Erro ao carregar o link"
+  },
+  "links": {
+    "copied": "Link copiado para a área de transferência",
+    "generated": "Link gerado com sucesso!",
+    "generatedAndCopied": "Link gerado e copiado para a área de transferência!",
+    "generateError": "Erro ao gerar link",
+    "title": "Gerenciamento de Links",
+    "pageTitle": "Meus Links de Compartilhamento",
+    "pageDescription": "Gerencie seus links de compartilhamento de conversas",
+    "searchPlaceholder": "Pesquisar um link...",
+    "createLink": "Criar Link",
+    "tabs": {
+      "active": "Ativos",
+      "expired": "Expirados",
+      "disabled": "Desabilitados"
+    },
+    "noLinks": "Nenhum link encontrado",
+    "unnamedLink": "Link sem nome",
+    "conversation": "Conversa",
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "expired": "Expirado",
+      "never": "Nunca",
+      "daysRemaining": "{days} dia(s) restante(s)",
+      "hoursRemaining": "{hours} hora(s) restante(s)"
+    },
+      "actions": {
+        "copy": "Copiar",
+        "viewDetails": "Ver Detalhes",
+        "edit": "Editar",
+        "disable": "Desativar",
+        "enable": "Ativar",
+        "extend7Days": "Estender por 7 dias",
+        "delete": "Excluir",
+        "cancel": "Cancelar",
+        "saving": "Salvando...",
+        "save": "Salvar"
+      },
+    "stats": {
+      "uses": "Usos",
+      "active": "Ativos",
+      "created": "Criado",
+      "expires": "Expira"
+    },
+      "success": {
+        "linkCopied": "Link copiado para a área de transferência",
+        "linkDisabled": "Link desativado com sucesso",
+        "linkEnabled": "Link ativado com sucesso",
+        "linkExtended": "Link estendido por {days} dia(s)",
+        "linkDeleted": "Link excluído com sucesso",
+        "linkUpdated": "Link atualizado com sucesso"
+      },
+      "errors": {
+        "loadFailed": "Erro ao carregar links",
+        "toggleFailed": "Erro ao alterar status",
+        "extendFailed": "Erro ao estender link",
+        "deleteFailed": "Erro ao excluir link",
+        "updateFailed": "Erro ao atualizar o link"
+      },
+    "confirm": {
+      "delete": "Tem certeza de que deseja excluir este link?"
+    },
+    "details": {
+      "title": "Detalhes do Link",
+      "basicInfo": "Informações Básicas",
+      "linkName": "Nome do Link",
+      "description": "Descrição",
+      "conversation": "Conversa",
+      "linkUrl": "URL do Link",
+      "usage": "Estatísticas de Uso",
+      "totalUses": "Usos Totais",
+      "activeUsers": "Usuários Ativos",
+      "totalParticipants": "Total de Participantes",
+      "languages": "Idiomas Suportados",
+      "permissions": "Permissões",
+      "dates": "Datas Importantes",
+      "created": "Criado",
+      "expires": "Expira",
+      "lastUpdated": "Última Atualização",
+      "creator": "Criador"
+    },
+    "permissions": {
+      "messages": "Mensagens",
+      "images": "Imagens",
+      "files": "Arquivos",
+      "viewHistory": "Ver Histórico",
+      "allowed": "Permitido",
+      "denied": "Negado",
+      "messagesDescription": "Permitir que usuários anônimos enviem mensagens",
+      "imagesDescription": "Permitir que usuários anônimos enviem imagens",
+      "filesDescription": "Permitir que usuários anônimos enviem arquivos",
+      "viewHistoryDescription": "Permitir que usuários anônimos vejam o histórico de mensagens"
+    },
+    "edit": {
+      "title": "Editar Link",
+      "linkName": "Nome do Link",
+      "linkNamePlaceholder": "Digite um nome para o link",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Digite uma descrição para o link",
+      "maxUses": "Usos Máximos",
+      "maxUsesDescription": "Número máximo de usos (deixe vazio para ilimitado)",
+      "expiresAt": "Data de Expiração",
+      "expiresAtDescription": "Data e hora de expiração do link",
+      "selectDate": "Selecionar uma data",
+      "permissions": "Permissões",
+      "requirements": "Requisitos"
+    },
+    "requirements": {
+      "nickname": "Apelido Obrigatório",
+      "nicknameDescription": "Exigir um apelido para usuários anônimos",
+      "email": "Email Obrigatório",
+      "emailDescription": "Exigir um email para usuários anônimos"
+    }
+  },
+  "conversationUI": {
+    "participants": "Participantes",
+    "createLink": "Criar link",
+    "addParticipant": "Adicionar participante",
+    "searchParticipants": "Buscar participantes",
+    "online": "Online",
+    "offline": "Offline",
+    "noOneOnline": "Ninguém online",
+    "noOfflineParticipants": "Nenhum participante offline",
+    "you": "Você",
+    "removeFromGroup": "Remover do grupo",
+    "participantRemoved": "Participante removido da conversa",
+    "removeParticipantError": "Erro ao remover participante",
+    "linkCreated": "Link de conversa criado",
+    "createLinkError": "Erro ao criar link",
+    "conversationSearch": "Busca de conversa",
+    "communities": "Comunidades",
+    "conversationUI": "Interface de conversa"
   }
 }

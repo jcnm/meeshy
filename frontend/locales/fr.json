@@ -1,7 +1,7 @@
 {
   "languageNames": {
     "en": "Anglais",
-    "fr": "Français", 
+    "fr": "Français",
     "pt": "Portugais",
     "es": "Espagnol",
     "de": "Allemand",
@@ -29,7 +29,51 @@
     "submit": "Soumettre",
     "confirm": "Confirmer",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "insufficientRights": "Vous n'avez pas les droits nécessaires pour effectuer cette opération"
+  },
+  "affiliate": {
+    "shareApp": "Partager l'application",
+    "createToken": "Créer un token",
+    "tokenName": "Nom du token",
+    "tokenNamePlaceholder": "Ex: Campagne Facebook, Invitation famille...",
+    "selectToken": "Sélectionner un token d'affiliation",
+    "shareMessage": "Message de partage",
+    "shareMessagePlaceholder": "Votre message d'invitation...",
+    "affiliateLink": "Lien d'affiliation",
+    "copyLink": "Copier le lien",
+    "copyMessage": "Copier le message",
+    "share": "Partager",
+    "statistics": "Statistiques",
+    "uses": "utilisations",
+    "createdOn": "Créé le",
+    "expiresOn": "Expire le",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "expired": "Expiré",
+    "limitReached": "Limite atteinte",
+    "newToken": "Nouveau",
+    "create": "Créer",
+    "creating": "Création...",
+    "linkCopied": "Lien copié dans le presse-papiers",
+    "messageCopied": "Message copié dans le presse-papiers",
+    "tokenCreated": "Token créé avec succès",
+    "errorCreatingToken": "Erreur lors de la création du token",
+    "errorLoadingTokens": "Erreur lors du chargement des tokens",
+    "errorSharing": "Erreur lors du partage",
+    "errorCopying": "Erreur lors de la copie",
+    "enterTokenName": "Veuillez saisir un nom pour le token",
+    "defaultMessage": "Rejoins-moi sur Meeshy ! Une plateforme de messagerie multilingue où tu peux discuter avec des personnes du monde entier et apprendre les langues en t'amusant. Clique sur ce lien pour t'inscrire :",
+    "shareTitle": "Rejoins-moi sur Meeshy",
+    "modalTitle": "Partager l'application",
+    "modalDescription": "Créez un lien d'affiliation pour inviter vos amis à rejoindre Meeshy",
+    "existingTokens": "Tokens existants",
+    "tokenStatus": {
+      "active": "Actif",
+      "inactive": "Inactif", 
+      "expired": "Expiré",
+      "limitReached": "Limite atteinte"
+    }
   },
   "noMessagesDescription": "Commencez la conversation en envoyant un message !",
   "writeMessage": "Écris ton message...",
@@ -47,7 +91,9 @@
   "private": "Privé",
   "createLink": "Créer un lien",
   "newConversation": "Nouvelle conversation",
-  "createConversation": "Créer conversation",
+  "createConversation": "Créer une conversation",
+  "createNewConversation": "Créer une nouvelle conversation",
+  "createNewLink": "Créer un nouveau lien",
   "chooseConversation": "Choisis une conversation !",
   "chooseConversationDescription": "Clique sur une conversation à gauche pour commencer à discuter",
   "navigation": {
@@ -572,7 +618,7 @@
     "clearSessionDescription": "Cette action supprimera toutes vos données de session et vous déconnectera.",
     "share": "Partager",
     "login": "Connexion",
-    "register": "Inscription", 
+    "register": "Inscription",
     "signIn": "Se connecter",
     "signUp": "S'inscrire",
     "profile": "Profil",
@@ -758,7 +804,7 @@
     "actions": {
       "createLink": "Créer un lien",
       "newConversation": "Nouvelle conversation",
-      "createConversation": "Créer conversation",
+      "createConversation": "Créer une conversation",
       "createCommunity": "Créer une communauté",
       "createGroup": "Créer une communauté",
       "viewAll": "Voir tout",
@@ -774,6 +820,7 @@
       "createLink": "Créer un lien",
       "createCommunity": "Créer une communauté",
       "createGroup": "Créer une communauté",
+      "shareApp": "Partager l'app",
       "settings": "Paramètres"
     },
     "emptyStates": {
@@ -786,6 +833,12 @@
     },
     "time": {
       "format": "fr-FR"
+    },
+    "communities": {
+      "private": "Privé",
+      "members": "membres",
+      "member": "membre",
+      "membersCount": "{count} membres"
     }
   },
   "layout": {
@@ -826,7 +879,6 @@
     "settingsSaved": "Paramètres enregistrés avec succès",
     "settingsSaveError": "Erreur lors de l'enregistrement des paramètres",
     "noUserConnected": "Aucun utilisateur connecté",
-    
     "tabs": {
       "profile": "Profil",
       "translation": "Traduction",
@@ -834,7 +886,6 @@
       "fonts": "Polices",
       "stats": "Statistiques"
     },
-    
     "profile": {
       "title": "Profil",
       "description": "Informations personnelles",
@@ -870,7 +921,6 @@
         "updateError": "Erreur lors de la mise à jour du profil"
       }
     },
-    
     "translation": {
       "title": "Configuration des langues et traduction",
       "description": "Définissez vos langues et paramètres de traduction",
@@ -919,7 +969,6 @@
         "updateError": "Erreur lors de la mise à jour des paramètres de langue"
       }
     },
-    
     "theme": {
       "title": "Thème et interface",
       "description": "Personnalisez l'apparence, la langue et les polices de l'application",
@@ -985,7 +1034,6 @@
       "settingsUpdated": "Thème mis à jour",
       "interfaceLanguageUpdated": "Langue de l'interface mise à jour"
     },
-    
     "fonts": {
       "title": "Sélection des polices",
       "description": "Personnalisez l'apparence du texte dans l'application",
@@ -1002,7 +1050,6 @@
         "description": "Espacement entre les lignes de texte"
       }
     },
-    
     "stats": {
       "title": "Statistiques de traduction",
       "description": "Consultez vos statistiques d'utilisation de la traduction",
@@ -1012,7 +1059,6 @@
       "mostTranslatedLanguage": "Langue la plus traduite",
       "translationHistory": "Historique des traductions"
     },
-    
     "notifications": {
       "title": "Notifications",
       "description": "Configurez vos préférences de notifications",
@@ -1022,7 +1068,6 @@
       "groupNotifications": "Notifications de groupe",
       "translationNotifications": "Notifications de traduction"
     },
-    
     "privacy": {
       "title": "Confidentialité",
       "description": "Gérez vos paramètres de confidentialité",
@@ -1031,7 +1076,6 @@
       "analytics": "Analytics",
       "cookies": "Cookies"
     },
-    
     "security": {
       "title": "Sécurité",
       "description": "Paramètres de sécurité de votre compte",
@@ -1170,6 +1214,9 @@
     "reloadPage": "Recharger la page",
     "messagePlaceholder": "Tapez votre message...",
     "user": "Utilisateur",
+    "users": "Utilisateurs",
+    "messageTooOldToDelete": "Ce message ne peut plus être supprimé (plus de 12h)",
+    "noRightsToDelete": "Vous n'avez pas les droits pour supprimer ce message",
     "anonymous": "Anonyme",
     "unknownUser": "?",
     "missingLinkId": "ID de lien manquant",
@@ -1225,12 +1272,6 @@
       "saved": "Paramètres sauvegardés avec succès",
       "saveError": "Erreur lors de la sauvegarde",
       "reset": "Paramètres réinitialisés"
-    },
-    "links": {
-      "copied": "Lien copié dans le presse-papiers",
-      "generated": "Lien généré avec succès !",
-      "generatedAndCopied": "Lien généré et copié dans le presse-papiers !",
-      "generateError": "Erreur lors de la génération du lien"
     },
     "participants": {
       "removed": "Participant supprimé de la conversation",
@@ -1702,28 +1743,88 @@
       "usageLimitInfo": "Nombre maximum de fois que le lien peut être utilisé. Une fois la limite atteinte, le lien sera désactivé"
     },
     "durationOptions": {
-      "1": { "label": "1 jour", "description": "Lien temporaire" },
-      "3": { "label": "3 jours", "description": "Court terme" },
-      "7": { "label": "1 semaine", "description": "Court terme" },
-      "14": { "label": "2 semaines", "description": "Court terme" },
-      "30": { "label": "1 mois", "description": "Moyen terme" },
-      "60": { "label": "2 mois", "description": "Moyen terme" },
-      "90": { "label": "3 mois", "description": "Long terme" },
-      "180": { "label": "6 mois", "description": "Long terme" },
-      "365": { "label": "1 an", "description": "Permanent" },
-      "730": { "label": "2 ans", "description": "Permanent" }
+      "1": {
+        "label": "1 jour",
+        "description": "Lien temporaire"
+      },
+      "3": {
+        "label": "3 jours",
+        "description": "Court terme"
+      },
+      "7": {
+        "label": "1 semaine",
+        "description": "Court terme"
+      },
+      "14": {
+        "label": "2 semaines",
+        "description": "Court terme"
+      },
+      "30": {
+        "label": "1 mois",
+        "description": "Moyen terme"
+      },
+      "60": {
+        "label": "2 mois",
+        "description": "Moyen terme"
+      },
+      "90": {
+        "label": "3 mois",
+        "description": "Long terme"
+      },
+      "180": {
+        "label": "6 mois",
+        "description": "Long terme"
+      },
+      "365": {
+        "label": "1 an",
+        "description": "Permanent"
+      },
+      "730": {
+        "label": "2 ans",
+        "description": "Permanent"
+      }
     },
     "limitOptions": {
-      "unlimited": { "label": "Illimité", "description": "Aucune restriction" },
-      "5": { "label": "5 utilisations", "description": "Très petit groupe" },
-      "10": { "label": "10 utilisations", "description": "Petit groupe" },
-      "25": { "label": "25 utilisations", "description": "Petit groupe" },
-      "50": { "label": "50 utilisations", "description": "Groupe moyen" },
-      "100": { "label": "100 utilisations", "description": "Grand groupe" },
-      "250": { "label": "250 utilisations", "description": "Grand groupe" },
-      "500": { "label": "500 utilisations", "description": "Très grand groupe" },
-      "1000": { "label": "1000 utilisations", "description": "Événement public" },
-      "5000": { "label": "5000 utilisations", "description": "Événement massif" }
+      "5": {
+        "label": "5 utilisations",
+        "description": "Très petit groupe"
+      },
+      "10": {
+        "label": "10 utilisations",
+        "description": "Petit groupe"
+      },
+      "25": {
+        "label": "25 utilisations",
+        "description": "Petit groupe"
+      },
+      "50": {
+        "label": "50 utilisations",
+        "description": "Groupe moyen"
+      },
+      "100": {
+        "label": "100 utilisations",
+        "description": "Grand groupe"
+      },
+      "250": {
+        "label": "250 utilisations",
+        "description": "Grand groupe"
+      },
+      "500": {
+        "label": "500 utilisations",
+        "description": "Très grand groupe"
+      },
+      "1000": {
+        "label": "1000 utilisations",
+        "description": "Événement public"
+      },
+      "5000": {
+        "label": "5000 utilisations",
+        "description": "Événement massif"
+      },
+      "unlimited": {
+        "label": "Illimité",
+        "description": "Aucune restriction"
+      }
     },
     "permissions": {
       "title": "Permissions des invités",
@@ -1766,135 +1867,6 @@
       "conversation": "Conversation",
       "validityDuration": "Durée de validité",
       "usageLimit": "Limite d'utilisations",
-      "welcomeMessage": "Message de bienvenue",
-      "usageCount": "{count} utilisations",
-      "unlimited": "Illimitées",
-      "linkDisabledAfter": "Le lien sera désactivé après {count} utilisations",
-      "noCustomMessage": "Aucun message personnalisé",
-      "welcomeMessageDescription": "Ce message sera affiché sur la page /join pour accueillir les participants",
-      "permissionsGranted": "Permissions des invités",
-      "messages": "Messages",
-      "images": "Images",
-      "files": "Fichiers",
-      "history": "Historique",
-      "allowed": "Autorisé",
-      "forbidden": "Interdit",
-      "visible": "Visible",
-      "hidden": "Masqué",
-      "guestsCanSendMessages": "Les invités peuvent envoyer des messages",
-      "guestsCannotSendMessages": "Les invités ne peuvent pas envoyer de messages",
-      "guestsCanShareImages": "Les invités peuvent partager des images",
-      "guestsCannotShareImages": "Les invités ne peuvent pas partager d'images",
-      "guestsCanShareFiles": "Les invités peuvent partager des fichiers",
-      "guestsCannotShareFiles": "Les invités ne peuvent pas partager de fichiers",
-      "guestsCanViewHistory": "Les invités peuvent voir l'historique",
-      "guestsCannotViewHistory": "Les invités ne peuvent pas voir l'historique",
-      "nicknameRequired": "Pseudo obligatoire",
-      "emailRequired": "Email obligatoire",
-      "yes": "Oui",
-      "no": "Non",
-      "guestsMustEnterNickname": "Les invités doivent saisir un pseudo",
-      "guestsCanStayAnonymous": "Les invités peuvent rester anonymes",
-      "guestsMustEnterEmail": "Les invités doivent saisir un email",
-      "allowedLanguages": "Langues autorisées",
-      "selectedLanguages": "Langues sélectionnées"
-    },
-    "linkDetails": {
-      "title": "Nom du lien de partage",
-      "description": "Le nom est généré automatiquement mais vous pouvez le modifier",
-      "linkName": "Nom du lien *",
-      "linkNameInfo": "Titre qui sera affiché aux participants lorsqu'ils recevront le lien de partage",
-      "linkNamePlaceholder": "Ex: Rejoindre la conversation : Réunion équipe",
-      "linkIdentifier": "Identifiant du lien *",
-      "linkIdentifierInfo": "Identifiant unique utilisé dans l'URL du lien de partage. Les 6 derniers caractères sont générés aléatoirement pour éviter les conflits",
-      "regenerateIdentifier": "Régénérer le suffixe de l'identifiant",
-      "welcomeMessage": "Message de bienvenue",
-      "welcomeMessageInfo": "Message qui sera affiché à vos invités avant qu'ils ne rejoignent la conversation",
-      "welcomeMessagePlaceholder": "Ex: Bienvenue dans notre discussion ! N'hésitez pas à partager vos idées..."
-    },
-    "summary": {
-      "title": "Résumé de votre configuration",
-      "description": "Vérifiez tous les paramètres avant de générer le lien",
-      "basicInfo": "Informations de base",
-      "conversation": "Conversation",
-      "validityDuration": "Durée de validité",
-      "usageLimit": "Limite d'utilisations",
-      "welcomeMessage": "Message de bienvenue",
-      "expiresOn": "Expire le {date}",
-      "linkWillBeDisabled": "Le lien sera désactivé après {count} utilisations",
-      "displayedOnJoinPage": "Ce message sera affiché sur la page /join pour accueillir les participants",
-      "noCustomMessage": "Aucun message personnalisé",
-      "notSelected": "Non sélectionnée",
-      "unlimited": "Illimitées",
-      "permissions": "Permissions des invités",
-      "messages": "Messages",
-      "images": "Images",
-      "files": "Fichiers",
-      "history": "Historique",
-      "allowed": "Autorisé",
-      "forbidden": "Interdit",
-      "visible": "Visible",
-      "hidden": "Masqué",
-      "required": "Oui",
-      "notRequired": "Non",
-      "guestsCanSendMessages": "Les invités peuvent envoyer des messages",
-      "guestsCannotSendMessages": "Les invités ne peuvent pas envoyer de messages",
-      "guestsCanShareImages": "Les invités peuvent partager des images",
-      "guestsCannotShareImages": "Les invités ne peuvent pas partager d'images",
-      "guestsCanShareFiles": "Les invités peuvent partager des fichiers",
-      "guestsCannotShareFiles": "Les invités ne peuvent pas partager de fichiers",
-      "guestsCanViewHistory": "Les invités peuvent voir l'historique",
-      "guestsCannotViewHistory": "Les invités ne peuvent pas voir l'historique",
-      "guestsMustEnterNickname": "Les invités doivent saisir un pseudo",
-      "guestsCanStayAnonymous": "Les invités peuvent rester anonymes",
-      "guestsMustEnterEmail": "Les invités doivent saisir un email",
-      "selectedLanguages": "Langues sélectionnées"
-    },
-    "success": {
-      "title": "Lien créé avec succès !",
-      "description": "Votre lien de partage est prêt à être utilisé",
-      "summary": "Synthèse de votre lien",
-      "conversation": "Conversation",
-      "validityDuration": "Durée de validité",
-      "usageLimit": "Limite d'utilisations",
-      "permissions": "Permissions",
-      "fullLink": "Lien de partage complet",
-      "fullLinkDescription": "Partagez ce lien pour permettre aux autres de rejoindre la conversation",
-      "copy": "Copier",
-      "copyLink": "Copier le lien",
-      "close": "Fermer"
-    },
-    "navigation": {
-      "previous": "Précédent",
-      "next": "Suivant",
-      "createLink": "Créer le lien",
-      "generating": "Génération..."
-    },
-    "search": {
-      "conversations": "Rechercher une conversation...",
-      "noConversationsFound": "Aucune conversation trouvée"
-    },
-    "errors": {
-      "selectConversation": "Veuillez sélectionner une conversation ou créer une nouvelle",
-      "enterTitle": "Veuillez saisir un titre pour la nouvelle conversation",
-      "loadingConversations": "Erreur lors du chargement des conversations",
-      "searchingUsers": "Erreur lors de la recherche d'utilisateurs",
-      "generatingLink": "Erreur lors de la génération du lien",
-      "missingToken": "Token de lien manquant dans la réponse"
-    },
-     "successMessages": {
-      "linkGeneratedAndCopied": "Lien généré et copié dans le presse-papiers !",
-      "linkGenerated": "Lien généré avec succès !",
-      "linkCopied": "Lien copié dans le presse-papiers",
-      "tokenCopied": "Token copié dans le presse-papiers"
-    },
-    "summary": {
-      "title": "Résumé de la configuration",
-      "description": "Vérifiez les paramètres avant de générer le lien",
-      "basicInfo": "Informations de base",
-      "conversation": "Conversation",
-      "validityDuration": "Durée de validité",
-      "usageLimit": "Limite d'utilisations",
       "unlimited": "Illimité",
       "welcomeMessage": "Message de bienvenue",
       "noCustomMessage": "Aucun message personnalisé",
@@ -1928,67 +1900,118 @@
       "usageCount": "Nombre d'utilisations",
       "linkDisabledAfter": "Lien désactivé après"
     },
+    "linkDetails": {
+      "title": "Nom du lien de partage",
+      "description": "Le nom est généré automatiquement mais vous pouvez le modifier",
+      "linkName": "Nom du lien *",
+      "linkNameInfo": "Titre qui sera affiché aux participants lorsqu'ils recevront le lien de partage",
+      "linkNamePlaceholder": "Ex: Rejoindre la conversation : Réunion équipe",
+      "linkIdentifier": "Identifiant du lien *",
+      "linkIdentifierInfo": "Identifiant unique utilisé dans l'URL du lien de partage. Les 6 derniers caractères sont générés aléatoirement pour éviter les conflits",
+      "regenerateIdentifier": "Régénérer le suffixe de l'identifiant",
+      "welcomeMessage": "Message de bienvenue",
+      "welcomeMessageInfo": "Message qui sera affiché à vos invités avant qu'ils ne rejoignent la conversation",
+      "welcomeMessagePlaceholder": "Ex: Bienvenue dans notre discussion ! N'hésitez pas à partager vos idées..."
+    },
+    "success": {
+      "title": "Lien créé avec succès !",
+      "description": "Votre lien de partage est prêt à être utilisé",
+      "summary": "Synthèse de votre lien",
+      "conversation": "Conversation",
+      "validityDuration": "Durée de validité",
+      "usageLimit": "Limite d'utilisations",
+      "permissions": "Permissions",
+      "fullLink": "Lien de partage complet",
+      "fullLinkDescription": "Partagez ce lien pour permettre aux autres de rejoindre la conversation",
+      "copy": "Copier",
+      "copyLink": "Copier le lien",
+      "close": "Fermer"
+    },
+    "navigation": {
+      "previous": "Précédent",
+      "next": "Suivant",
+      "createLink": "Créer le lien",
+      "generating": "Génération..."
+    },
+    "search": {
+      "conversations": "Rechercher une conversation...",
+      "noConversationsFound": "Aucune conversation trouvée"
+    },
+    "errors": {
+      "selectConversation": "Veuillez sélectionner une conversation ou créer une nouvelle",
+      "enterTitle": "Veuillez saisir un titre pour la nouvelle conversation",
+      "loadingConversations": "Erreur lors du chargement des conversations",
+      "searchingUsers": "Erreur lors de la recherche d'utilisateurs",
+      "generatingLink": "Erreur lors de la génération du lien",
+      "missingToken": "Token de lien manquant dans la réponse"
+    },
+    "successMessages": {
+      "linkGeneratedAndCopied": "Lien généré et copié dans le presse-papiers !",
+      "linkGenerated": "Lien généré avec succès !",
+      "linkCopied": "Lien copié dans le presse-papiers",
+      "tokenCopied": "Token copié dans le presse-papiers"
+    },
     "createLinkModal": "Modal de création de lien"
   },
-   "createConversationModal": {
-     "title": "Nouvelle conversation",
-     "description": "Créez une conversation moderne avec une approche intelligente et dynamique",
-     "steps": {
-       "members": "Membres",
-       "details": "Détails"
-     },
-     "community": {
-       "title": "Communauté (optionnel)",
-       "searchPlaceholder": "Rechercher une communauté...",
-       "loading": "Chargement...",
-       "noCommunitiesFound": "Aucune communauté trouvée.",
-       "membersCount": "{count} membres • {conversations} conversations",
-       "private": "Privée",
-       "public": "Publique"
-     },
-     "members": {
-       "title": "Ajouter des membres",
-       "searchPlaceholder": "Rechercher des utilisateurs par nom ou username...",
-       "loading": "Chargement...",
-       "noUsersFound": "Aucun utilisateur trouvé.",
-       "selectedMembers": "Membres sélectionnés ({count})"
-     },
-     "conversationDetails": {
-       "title": "Détails de la conversation",
-       "conversationTitle": "Titre de la conversation",
-       "titlePlaceholder": "Le titre sera généré automatiquement...",
-       "titleInfoDirect": "Titre généré automatiquement pour les conversations directes",
-       "titleInfoGroup": "Modifiez le titre si nécessaire pour les conversations de groupe",
-       "identifier": "Identifiant",
-       "identifierRequired": "*",
-       "identifierPrefix": "mshy_",
-       "identifierPlaceholder": "mon-identifiant",
-       "identifierInfo": "Caractères autorisés: lettres, chiffres, tirets, underscores, @",
-       "identifierError": "L'identifiant contient des caractères non autorisés",
-       "typeDirect": "Directe",
-       "typeGroup": "Groupe"
-     },
-     "autoGeneratedTitles": {
-       "directWithUser": "Conversation avec {username}",
-       "betweenTwoUsers": "Conversation avec {user1} et {user2}",
-       "groupWithMultiple": "Conversation avec {user1}, {user2} et {count} autre{plural}",
-       "groupWithTwo": "Conversation avec {user1} et {user2}"
-     },
-     "actions": {
-       "create": "Créer",
-       "creating": "Création...",
-       "createDirectConversation": "Créer conversation directe",
-       "createGroupConversation": "Créer conversation de groupe",
-       "cancel": "Annuler"
-     },
-     "errors": {
-       "selectAtLeastOneUser": "Veuillez sélectionner au moins un utilisateur",
-       "identifierRequired": "L'identifiant est obligatoire",
-       "invalidIdentifier": "L'identifiant ne peut contenir que des lettres, chiffres, tirets, underscores et @",
-       "searchError": "Erreur lors de la recherche",
-       "creationError": "Erreur lors de la création de la conversation",
-       "loadingCommunitiesError": "Erreur lors du chargement des communautés"
-     },
+  "createConversationModal": {
+    "title": "Nouvelle conversation",
+    "description": "Créez une conversation moderne avec une approche intelligente et dynamique",
+    "steps": {
+      "members": "Membres",
+      "details": "Détails"
+    },
+    "community": {
+      "title": "Communauté (optionnel)",
+      "searchPlaceholder": "Rechercher une communauté...",
+      "loading": "Chargement...",
+      "noCommunitiesFound": "Aucune communauté trouvée.",
+      "membersCount": "{count} membres • {conversations} conversations",
+      "private": "Privée",
+      "public": "Publique"
+    },
+    "members": {
+      "title": "Ajouter des membres",
+      "searchPlaceholder": "Rechercher des utilisateurs par nom ou nom d'utilisateur...",
+      "loading": "Chargement...",
+      "noUsersFound": "Aucun utilisateur trouvé.",
+      "selectedMembers": "Membres sélectionnés ({count})"
+    },
+    "conversationDetails": {
+      "title": "Détails de la conversation",
+      "conversationTitle": "Titre de la conversation",
+      "titlePlaceholder": "Le titre sera généré automatiquement...",
+      "titleInfoDirect": "Titre généré automatiquement pour les conversations directes",
+      "titleInfoGroup": "Modifiez le titre si nécessaire pour les conversations de groupe",
+      "identifier": "Identifiant",
+      "identifierRequired": "*",
+      "identifierPrefix": "mshy_",
+      "identifierPlaceholder": "mon-identifiant",
+      "identifierInfo": "Caractères autorisés : lettres, chiffres, tirets, underscores, @",
+      "identifierError": "L'identifiant contient des caractères non autorisés",
+      "typeDirect": "Directe",
+      "typeGroup": "Groupe"
+    },
+    "autoGeneratedTitles": {
+      "directWithUser": "Conversation avec {username}",
+      "betweenTwoUsers": "Conversation avec {user1} et {user2}",
+      "groupWithMultiple": "Conversation avec {user1}, {user2} et {count} autre{plural}",
+      "groupWithTwo": "Conversation avec {user1} et {user2}"
+    },
+    "actions": {
+      "create": "Créer",
+      "creating": "Création...",
+      "createDirectConversation": "Créer une conversation directe",
+      "createGroupConversation": "Créer une conversation de groupe",
+      "cancel": "Annuler"
+    },
+    "errors": {
+      "selectAtLeastOneUser": "Veuillez sélectionner au moins un utilisateur",
+      "identifierRequired": "L'identifiant est obligatoire",
+      "invalidIdentifier": "L'identifiant ne peut contenir que des lettres, chiffres, tirets, underscores et @",
+      "searchError": "Erreur lors de la recherche",
+      "creationError": "Erreur lors de la création de la conversation",
+      "loadingCommunitiesError": "Erreur lors du chargement des communautés"
+    },
     "success": {
       "conversationCreated": "Conversation créée avec succès"
     }
@@ -2142,6 +2165,12 @@
     "public": "Public",
     "private": "Privé",
     "createLink": "Créer un lien",
+    "createNewConversation": "Créer une nouvelle conversation",
+    "createNewLink": "Créer un nouveau lien",
+    "noPublicConversations": "Aucune conversation publique",
+    "noPublicConversationsFound": "Aucune conversation publique trouvée",
+    "noPrivateConversations": "Aucune conversation privée",
+    "noPrivateConversationsFound": "Aucune conversation privée trouvée",
     "conversationDetails": "Détails de la conversation",
     "noMessages": "Aucun message dans cette conversation",
     "noMessagesDescription": "Commencez la conversation en envoyant un message !",
@@ -2211,6 +2240,7 @@
     "linkCreated": "Lien de conversation créé",
     "createLinkError": "Erreur lors de la création du lien",
     "conversationSearch": "Recherche de conversation",
+    "communities": "Communautés",
     "conversationUI": "Interface de conversation"
   },
   "conversationLinks": {
@@ -2316,69 +2346,6 @@
     "createLink": "Créer un lien",
     "linkCreatedSuccessfully": "Lien de partage créé avec succès !"
   },
-  "createConversationModal": {
-    "title": "Nouvelle conversation",
-    "description": "Créez une conversation moderne avec une approche intelligente et dynamique",
-    "steps": {
-      "members": "Membres",
-      "details": "Détails"
-    },
-    "community": {
-      "title": "Communauté (optionnel)",
-      "searchPlaceholder": "Rechercher une communauté...",
-      "loading": "Chargement...",
-      "noCommunitiesFound": "Aucune communauté trouvée.",
-      "membersCount": "{count} membres • {conversations} conversations",
-      "private": "Privée",
-      "public": "Publique"
-    },
-    "members": {
-      "title": "Ajouter des membres",
-      "searchPlaceholder": "Rechercher des utilisateurs par nom ou nom d'utilisateur...",
-      "loading": "Chargement...",
-      "noUsersFound": "Aucun utilisateur trouvé.",
-      "selectedMembers": "Membres sélectionnés ({count})"
-    },
-    "conversationDetails": {
-      "title": "Détails de la conversation",
-      "conversationTitle": "Titre de la conversation",
-      "titlePlaceholder": "Le titre sera généré automatiquement...",
-      "titleInfoDirect": "Titre généré automatiquement pour les conversations directes",
-      "titleInfoGroup": "Modifiez le titre si nécessaire pour les conversations de groupe",
-      "identifier": "Identifiant",
-      "identifierRequired": "*",
-      "identifierPrefix": "mshy_",
-      "identifierPlaceholder": "mon-identifiant",
-      "identifierInfo": "Caractères autorisés : lettres, chiffres, tirets, underscores, @",
-      "identifierError": "L'identifiant contient des caractères non autorisés",
-      "typeDirect": "Directe",
-      "typeGroup": "Groupe"
-    },
-    "autoGeneratedTitles": {
-      "directWithUser": "Conversation avec {username}",
-      "betweenTwoUsers": "Conversation avec {user1} et {user2}",
-      "groupWithMultiple": "Conversation avec {user1}, {user2} et {count} autre{plural}",
-      "groupWithTwo": "Conversation avec {user1} et {user2}"
-    },
-    "actions": {
-      "create": "Créer",
-      "creating": "Création...",
-      "createDirectConversation": "Créer une conversation directe",
-      "createGroupConversation": "Créer une conversation de groupe",
-      "cancel": "Annuler"
-    },
-    "errors": {
-      "selectAtLeastOneUser": "Veuillez sélectionner au moins un utilisateur",
-      "identifierRequired": "L'identifiant est obligatoire",
-      "invalidIdentifier": "L'identifiant ne peut contenir que des lettres, chiffres, tirets, underscores et @",
-      "searchError": "Erreur lors de la recherche",
-      "creationError": "Erreur lors de la création de la conversation",
-      "loadingCommunitiesError": "Erreur lors du chargement des communautés"
-    },
-    "success": {
-      "conversationCreated": "Conversation créée avec succès"
-    }
-  },
   "joinPage": {
     "title": "Rejoindre la conversation",
     "invitedTo": "Vous êtes invité(e) à rejoindre",
@@ -2411,5 +2378,119 @@
     "linkInactive": "Ce lien n'est plus actif",
     "linkLimitReached": "Ce lien a atteint sa limite d'utilisation",
     "loadingError": "Erreur lors du chargement du lien"
+  },
+  "links": {
+    "copied": "Lien copié dans le presse-papiers",
+    "generated": "Lien généré avec succès !",
+    "generatedAndCopied": "Lien généré et copié dans le presse-papiers !",
+    "generateError": "Erreur lors de la génération du lien",
+    "title": "Gestion des liens",
+    "pageTitle": "Mes liens de partage",
+    "pageDescription": "Gérez vos liens de partage de conversations",
+    "searchPlaceholder": "Rechercher un lien...",
+    "createLink": "Créer un lien",
+    "tabs": {
+      "active": "Actifs",
+      "expired": "Expirés",
+      "disabled": "Désactivés"
+    },
+    "noLinks": "Aucun lien trouvé",
+    "unnamedLink": "Lien sans nom",
+    "conversation": "Conversation",
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "expired": "Expiré",
+      "never": "Jamais",
+      "daysRemaining": "{days} jour(s) restant(s)",
+      "hoursRemaining": "{hours} heure(s) restante(s)"
+    },
+      "actions": {
+        "copy": "Copier",
+        "viewDetails": "Voir les détails",
+        "edit": "Modifier",
+        "disable": "Désactiver",
+        "enable": "Activer",
+        "extend7Days": "Prolonger de 7 jours",
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "saving": "Enregistrement...",
+        "save": "Enregistrer"
+      },
+    "stats": {
+      "uses": "Utilisations",
+      "active": "Actifs",
+      "created": "Créé le",
+      "expires": "Expire le"
+    },
+      "success": {
+        "linkCopied": "Lien copié dans le presse-papiers",
+        "linkDisabled": "Lien désactivé avec succès",
+        "linkEnabled": "Lien activé avec succès",
+        "linkExtended": "Lien prolongé de {days} jour(s)",
+        "linkDeleted": "Lien supprimé avec succès",
+        "linkUpdated": "Lien mis à jour avec succès"
+      },
+      "errors": {
+        "loadFailed": "Erreur lors du chargement des liens",
+        "toggleFailed": "Erreur lors du changement de statut",
+        "extendFailed": "Erreur lors de la prolongation",
+        "deleteFailed": "Erreur lors de la suppression",
+        "updateFailed": "Erreur lors de la mise à jour du lien"
+      },
+    "confirm": {
+      "delete": "Êtes-vous sûr de vouloir supprimer ce lien ?"
+    },
+    "details": {
+      "title": "Détails du lien",
+      "basicInfo": "Informations de base",
+      "linkName": "Nom du lien",
+      "description": "Description",
+      "conversation": "Conversation",
+      "linkUrl": "URL du lien",
+      "usage": "Statistiques d'utilisation",
+      "totalUses": "Utilisations totales",
+      "activeUsers": "Utilisateurs actifs",
+      "totalParticipants": "Participants totaux",
+      "languages": "Langues supportées",
+      "permissions": "Permissions",
+      "dates": "Dates importantes",
+      "created": "Créé le",
+      "expires": "Expire le",
+      "lastUpdated": "Dernière mise à jour",
+      "creator": "Créateur"
+    },
+    "permissions": {
+      "messages": "Messages",
+      "images": "Images",
+      "files": "Fichiers",
+      "viewHistory": "Voir l'historique",
+      "allowed": "Autorisé",
+      "denied": "Interdit",
+      "messagesDescription": "Permettre aux utilisateurs anonymes d'envoyer des messages",
+      "imagesDescription": "Permettre aux utilisateurs anonymes d'envoyer des images",
+      "filesDescription": "Permettre aux utilisateurs anonymes d'envoyer des fichiers",
+      "viewHistoryDescription": "Permettre aux utilisateurs anonymes de voir l'historique des messages"
+    },
+    "edit": {
+      "title": "Modifier le lien",
+      "linkName": "Nom du lien",
+      "linkNamePlaceholder": "Entrez un nom pour le lien",
+      "description": "Description",
+      "descriptionPlaceholder": "Entrez une description pour le lien",
+      "maxUses": "Utilisations maximales",
+      "maxUsesDescription": "Nombre maximum d'utilisations (laisser vide pour illimité)",
+      "expiresAt": "Date d'expiration",
+      "expiresAtDescription": "Date et heure d'expiration du lien",
+      "selectDate": "Sélectionner une date",
+      "permissions": "Permissions",
+      "requirements": "Exigences"
+    },
+    "requirements": {
+      "nickname": "Pseudo requis",
+      "nicknameDescription": "Exiger un pseudo pour les utilisateurs anonymes",
+      "email": "Email requis",
+      "emailDescription": "Exiger un email pour les utilisateurs anonymes"
+    }
   }
 }

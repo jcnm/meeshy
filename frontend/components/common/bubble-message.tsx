@@ -95,20 +95,6 @@ function BubbleMessageInner({
 }: BubbleMessageProps) {
   const { t } = useTranslations('bubbleStream');
   
-  // Debug: Afficher la structure du message reçu (réduit pour éviter le spam)
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && Math.random() < 0.1) { // Seulement 10% des messages pour éviter le spam
-      // eslint-disable-next-line no-console
-      console.log('🔍 BubbleMessage reçu:', {
-        id: message.id,
-        content: message.content,
-        originalContent: message.originalContent,
-        sender: message.sender?.username,
-        hasTranslations: !!message.translations,
-        translationsCount: message.translations?.length || 0
-      });
-    }
-  }, [message.id]);
 
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
   const [isHovered, setIsHovered] = useState(false);
@@ -144,16 +130,6 @@ function BubbleMessageInner({
         setShowNewTranslationsIndicator(false);
       }, 10000);
       
-      // Debug: Afficher les nouvelles traductions
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🆕 Nouvelles traductions détectées pour le message ${message.id}:`, {
-          nouvelles: newTranslations,
-          total: currentTranslationCount,
-          nouvellesCumulées: newTranslationsCount + newTranslations,
-          indicateurAffiché: true,
-          disparitionDans: '10 secondes'
-        });
-      }
       
       // Nettoyer le timer si le composant se démonte
       return () => clearTimeout(timer);
@@ -190,17 +166,14 @@ function BubbleMessageInner({
     // Si le message a un readStatus, compter les lecteurs
     if (message.readStatus && message.readStatus.length > 0) {
       const readCount = message.readStatus.length;
-      const totalParticipants = conversationType === 'direct' ? 2 : 10; // Estimation pour les groupes
       
-      if (readCount >= totalParticipants - 1) { // Tous les autres participants ont lu
-        return { status: 'read', count: readCount };
-      } else if (readCount > 0) { // Certains ont lu
-        return { status: 'delivered', count: readCount };
+      if (readCount > 0) { // Au moins une personne a lu
+        return { status: 'read' };
       }
     }
     
     // Par défaut, considérer comme envoyé
-    return { status: 'sent', count: 0 };
+    return { status: 'sent' };
   };
 
   const getLanguageInfo = (langCode: string) => {
@@ -319,14 +292,11 @@ function BubbleMessageInner({
         await onForceTranslation(message.id, targetLanguage);
         // Le toast de succès est géré dans bubble-stream-page.tsx, pas ici
       } catch (error) {
-        console.error('❌ Erreur lors de la traduction forcée:', error);
         toast.error(t('toasts.messages.translationError'));
       } finally {
         setHasPendingForcedTranslation(false); // Réinitialiser l'état
       }
     } else {
-      // toast.info(`Traduction forcée vers ${getLanguageInfo(targetLanguage).name}`);
-      console.log('⚠️ Pas de callback onForceTranslation fourni');
       setHasPendingForcedTranslation(false); // Réinitialiser l'état
     }
   };
@@ -351,9 +321,6 @@ function BubbleMessageInner({
     
     if (onForceTranslation) {
       try {
-        // CORRECTION: Passer le modèle supérieur pour la retraduction
-        console.log(`🔄 Retraduction avec modèle ${nextTier} pour ${targetLanguage}`);
-        
         // Appeler le service de traduction directement avec le bon modèle
         const { messageTranslationService } = await import('@/services/message-translation.service');
         
@@ -364,18 +331,14 @@ function BubbleMessageInner({
           model: nextTier as 'basic' | 'medium' | 'premium'
         });
         
-        console.log('✅ Retraduction demandée avec succès:', result);
         toast.success(`Retraduction en cours vers ${getLanguageInfo(targetLanguage).name} (modèle ${nextTier})`);
         
         // Déclencher le callback pour mettre à jour l'interface
         await onForceTranslation(message.id, targetLanguage);
         
       } catch (error) {
-        console.error('❌ Erreur lors de l\'upgrade de traduction:', error);
         toast.error('Erreur lors de la demande d\'upgrade');
       }
-    } else {
-      console.warn('⚠️ Pas de callback onForceTranslation fourni pour l\'upgrade');
     }
   };
 
@@ -396,6 +359,26 @@ function BubbleMessageInner({
     return false;
   };
 
+  // Vérifier si l'utilisateur peut supprimer le message (avec restriction temporelle)
+  const canDeleteMessage = () => {
+    // Les utilisateurs avec des rôles élevés peuvent toujours supprimer
+    if (userRole === 'BIGBOSS' || userRole === 'ADMIN' || userRole === 'MODERATOR') {
+      return true;
+    }
+    
+    // Pour les autres utilisateurs, vérifier l'âge du message
+    const messageAge = Date.now() - new Date(message.createdAt).getTime();
+    const twelveHoursInMs = 12 * 60 * 60 * 1000; // 12 heures en millisecondes
+    
+    // Si le message a plus de 12h, seuls les rôles élevés peuvent le supprimer
+    if (messageAge > twelveHoursInMs) {
+      return false;
+    }
+    
+    // Sinon, utiliser la logique normale de modification
+    return canModifyMessage();
+  };
+
   const canShowOptionsMenu = canModifyMessage();
 
   // Fonctions pour gérer l'édition et la suppression
@@ -408,7 +391,6 @@ function BubbleMessageInner({
         await onEditMessage(message.id, newContent.trim());
         toast.success('Message modifié avec succès');
       } catch (error) {
-        console.error('Erreur lors de la modification du message:', error);
         toast.error('Erreur lors de la modification du message');
       }
     }
@@ -417,13 +399,25 @@ function BubbleMessageInner({
   const handleDeleteMessage = async () => {
     if (!onDeleteMessage) return;
     
+    // Vérifier si l'utilisateur peut supprimer le message
+    if (!canDeleteMessage()) {
+      const messageAge = Date.now() - new Date(message.createdAt).getTime();
+      const twelveHoursInMs = 12 * 60 * 60 * 1000;
+      
+      if (messageAge > twelveHoursInMs) {
+        toast.error(t('messageTooOldToDelete'));
+      } else {
+        toast.error(t('noRightsToDelete'));
+      }
+      return;
+    }
+    
     const confirmed = confirm('Êtes-vous sûr de vouloir supprimer ce message ?');
     if (confirmed) {
       try {
         await onDeleteMessage(message.id);
         toast.success('Message supprimé avec succès');
       } catch (error) {
-        console.error('Erreur lors de la suppression du message:', error);
         toast.error('Erreur lors de la suppression du message');
       }
     }
@@ -463,17 +457,6 @@ function BubbleMessageInner({
 
   const isTranslated = currentDisplayLanguage !== message.originalLanguage;
   
-  // Debug: Afficher le résultat de la déduplication (réduit pour éviter le spam)
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && Math.random() < 0.05) { // Seulement 5% des messages pour éviter le spam
-      // eslint-disable-next-line no-console
-      console.log('🔧 AvailableVersions après déduplication:', {
-        messageId: message.id,
-        totalVersions: availableVersions.length,
-        originalLanguage: message.originalLanguage
-      });
-    }
-  }, [message.id, availableVersions.length, message.originalLanguage]);
   
   // Permettre à l'émetteur de voir les traductions de son propre message
   const canSeeTranslations = availableVersions.length > 1;
@@ -492,22 +475,6 @@ function BubbleMessageInner({
   const finalShouldShowBadge = shouldShowTranslationBadge || forceShowBadge;
   const finalBadgeCount = forceShowBadge ? 1 : totalTranslationBadgeCount;
 
-  // Debug pour comprendre pourquoi le badge ne s'affiche pas
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 Badge Debug:', {
-      messageId: message.id,
-      isRead,
-      shouldShowTranslationBadge,
-      totalTranslationBadgeCount,
-      translationCount,
-      showNewTranslationsIndicator,
-      newTranslationsCount,
-      messageAge: Date.now() - new Date(message.createdAt).getTime(),
-      isOwnMessage: message.senderId === currentUser.id || message.anonymousSenderId === currentUser.id,
-      readStatus: message.readStatus,
-      currentUserId: currentUser.id
-    });
-  }
 
   // Filtrer les versions disponibles selon le filtre de recherche
   const filteredVersions = availableVersions.filter(version => {
@@ -724,7 +691,6 @@ function BubbleMessageInner({
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation(); // Empêcher la propagation
-                      console.log('🌐 Click sur globe, état actuel:', isTranslationPopoverOpen);
                       setIsTranslationPopoverOpen(!isTranslationPopoverOpen);
                       
                       // Réinitialiser le compteur de nouvelles traductions quand on ouvre le popover
@@ -766,7 +732,6 @@ function BubbleMessageInner({
                   avoidCollisions={true}
                   onOpenAutoFocus={(e) => e.preventDefault()}
                   onInteractOutside={(e) => {
-                    console.log('🌐 Click outside popover');
                     setIsTranslationPopoverOpen(false);
                     setTranslationFilter(''); // Réinitialiser le filtre
                   }}
@@ -807,7 +772,6 @@ function BubbleMessageInner({
                               key={`${message.id}-${version.language}-${version.timestamp?.getTime() || Date.now()}`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                console.log('🌐 Switch vers langue:', version.language);
                                 handleLanguageSwitch(version.language);
                                 setIsTranslationPopoverOpen(false);
                               }}
@@ -1000,7 +964,7 @@ function BubbleMessageInner({
               const deliveryStatus = getMessageDeliveryStatus();
               if (!deliveryStatus) return null;
 
-              const { status, count } = deliveryStatus;
+              const { status } = deliveryStatus;
               
               return (
                 <div className="flex items-center space-x-2">
@@ -1010,16 +974,10 @@ function BubbleMessageInner({
                       <span className="text-xs">{t('deliveryStatus.sent')}</span>
                     </div>
                   )}
-                  {status === 'delivered' && (
-                    <div className="flex items-center space-x-1 text-blue-500">
-                      <CheckCheck className="h-3 w-3" />
-                      <span className="text-xs">{t('deliveryStatus.delivered')} ({count})</span>
-                    </div>
-                  )}
                   {status === 'read' && (
                     <div className="flex items-center space-x-1 text-green-500">
                       <CheckCheck className="h-3 w-3" />
-                      <span className="text-xs">{t('deliveryStatus.read')} ({count})</span>
+                      <span className="text-xs">{t('deliveryStatus.read')}</span>
                     </div>
                   )}
                   
@@ -1040,13 +998,15 @@ function BubbleMessageInner({
                           <Edit className="h-4 w-4" />
                           <span>{t('edit')}</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={handleDeleteMessage} 
-                          className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span>{t('delete')}</span>
-                        </DropdownMenuItem>
+                        {canDeleteMessage() && (
+                          <DropdownMenuItem 
+                            onClick={handleDeleteMessage} 
+                            className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>{t('delete')}</span>
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}

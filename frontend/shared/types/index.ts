@@ -16,6 +16,9 @@ export * from './migration-utils';
 // Export des types unifiés Phase 2 - Messaging
 export * from './messaging';
 
+// Export des types unifiés Phase 3 - Affiliate
+export * from './affiliate';
+
 // ===== ÉVÉNEMENTS SOCKET.IO =====
 export * from './socketio-events';
 

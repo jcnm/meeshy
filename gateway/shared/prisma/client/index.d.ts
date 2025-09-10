@@ -93,6 +93,16 @@ export type UserPreference = $Result.DefaultSelection<Prisma.$UserPreferencePayl
  * Préférence spécifique à une conversation
  */
 export type ConversationPreference = $Result.DefaultSelection<Prisma.$ConversationPreferencePayload>
+/**
+ * Model AffiliateToken
+ * Token d'affiliation pour inviter des utilisateurs
+ */
+export type AffiliateToken = $Result.DefaultSelection<Prisma.$AffiliateTokenPayload>
+/**
+ * Model AffiliateRelation
+ * Relation d'affiliation entre utilisateurs
+ */
+export type AffiliateRelation = $Result.DefaultSelection<Prisma.$AffiliateRelationPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -338,6 +348,26 @@ export class PrismaClient<
     * ```
     */
   get conversationPreference(): Prisma.ConversationPreferenceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.affiliateToken`: Exposes CRUD operations for the **AffiliateToken** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AffiliateTokens
+    * const affiliateTokens = await prisma.affiliateToken.findMany()
+    * ```
+    */
+  get affiliateToken(): Prisma.AffiliateTokenDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.affiliateRelation`: Exposes CRUD operations for the **AffiliateRelation** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AffiliateRelations
+    * const affiliateRelations = await prisma.affiliateRelation.findMany()
+    * ```
+    */
+  get affiliateRelation(): Prisma.AffiliateRelationDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -793,7 +823,9 @@ export namespace Prisma {
     CommunityMember: 'CommunityMember',
     UserStats: 'UserStats',
     UserPreference: 'UserPreference',
-    ConversationPreference: 'ConversationPreference'
+    ConversationPreference: 'ConversationPreference',
+    AffiliateToken: 'AffiliateToken',
+    AffiliateRelation: 'AffiliateRelation'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -812,7 +844,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageReadStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageReadStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation"
       txIsolationLevel: never
     }
     model: {
@@ -2000,6 +2032,154 @@ export namespace Prisma {
           }
         }
       }
+      AffiliateToken: {
+        payload: Prisma.$AffiliateTokenPayload<ExtArgs>
+        fields: Prisma.AffiliateTokenFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AffiliateTokenFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AffiliateTokenFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
+          }
+          findFirst: {
+            args: Prisma.AffiliateTokenFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AffiliateTokenFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
+          }
+          findMany: {
+            args: Prisma.AffiliateTokenFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>[]
+          }
+          create: {
+            args: Prisma.AffiliateTokenCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
+          }
+          createMany: {
+            args: Prisma.AffiliateTokenCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.AffiliateTokenDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
+          }
+          update: {
+            args: Prisma.AffiliateTokenUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
+          }
+          deleteMany: {
+            args: Prisma.AffiliateTokenDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AffiliateTokenUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.AffiliateTokenUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
+          }
+          aggregate: {
+            args: Prisma.AffiliateTokenAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAffiliateToken>
+          }
+          groupBy: {
+            args: Prisma.AffiliateTokenGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateTokenGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AffiliateTokenFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AffiliateTokenAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.AffiliateTokenCountArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateTokenCountAggregateOutputType> | number
+          }
+        }
+      }
+      AffiliateRelation: {
+        payload: Prisma.$AffiliateRelationPayload<ExtArgs>
+        fields: Prisma.AffiliateRelationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AffiliateRelationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AffiliateRelationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
+          }
+          findFirst: {
+            args: Prisma.AffiliateRelationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AffiliateRelationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
+          }
+          findMany: {
+            args: Prisma.AffiliateRelationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>[]
+          }
+          create: {
+            args: Prisma.AffiliateRelationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
+          }
+          createMany: {
+            args: Prisma.AffiliateRelationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.AffiliateRelationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
+          }
+          update: {
+            args: Prisma.AffiliateRelationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
+          }
+          deleteMany: {
+            args: Prisma.AffiliateRelationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AffiliateRelationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.AffiliateRelationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
+          }
+          aggregate: {
+            args: Prisma.AffiliateRelationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAffiliateRelation>
+          }
+          groupBy: {
+            args: Prisma.AffiliateRelationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateRelationGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.AffiliateRelationFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.AffiliateRelationAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.AffiliateRelationCountArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateRelationCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2095,6 +2275,8 @@ export namespace Prisma {
     userStats?: UserStatsOmit
     userPreference?: UserPreferenceOmit
     conversationPreference?: ConversationPreferenceOmit
+    affiliateToken?: AffiliateTokenOmit
+    affiliateRelation?: AffiliateRelationOmit
   }
 
   /* Types for Logging */
@@ -2187,6 +2369,9 @@ export namespace Prisma {
     notifications: number
     typingIndicators: number
     preferences: number
+    createdAffiliateTokens: number
+    affiliateRelations: number
+    referredRelations: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2202,6 +2387,9 @@ export namespace Prisma {
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
     typingIndicators?: boolean | UserCountOutputTypeCountTypingIndicatorsArgs
     preferences?: boolean | UserCountOutputTypeCountPreferencesArgs
+    createdAffiliateTokens?: boolean | UserCountOutputTypeCountCreatedAffiliateTokensArgs
+    affiliateRelations?: boolean | UserCountOutputTypeCountAffiliateRelationsArgs
+    referredRelations?: boolean | UserCountOutputTypeCountReferredRelationsArgs
   }
 
   // Custom InputTypes
@@ -2297,6 +2485,27 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPreferencesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserPreferenceWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedAffiliateTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateTokenWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAffiliateRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReferredRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
   }
 
 
@@ -2528,6 +2737,37 @@ export namespace Prisma {
 
 
   /**
+   * Count Type AffiliateTokenCountOutputType
+   */
+
+  export type AffiliateTokenCountOutputType = {
+    affiliations: number
+  }
+
+  export type AffiliateTokenCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    affiliations?: boolean | AffiliateTokenCountOutputTypeCountAffiliationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * AffiliateTokenCountOutputType without action
+   */
+  export type AffiliateTokenCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateTokenCountOutputType
+     */
+    select?: AffiliateTokenCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * AffiliateTokenCountOutputType without action
+   */
+  export type AffiliateTokenCountOutputTypeCountAffiliationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
+  }
+
+
+  /**
    * Models
    */
 
@@ -2546,6 +2786,7 @@ export namespace Prisma {
     username: string | null
     firstName: string | null
     lastName: string | null
+    bio: string | null
     email: string | null
     phoneNumber: string | null
     password: string | null
@@ -2573,6 +2814,7 @@ export namespace Prisma {
     username: string | null
     firstName: string | null
     lastName: string | null
+    bio: string | null
     email: string | null
     phoneNumber: string | null
     password: string | null
@@ -2600,6 +2842,7 @@ export namespace Prisma {
     username: number
     firstName: number
     lastName: number
+    bio: number
     email: number
     phoneNumber: number
     password: number
@@ -2629,6 +2872,7 @@ export namespace Prisma {
     username?: true
     firstName?: true
     lastName?: true
+    bio?: true
     email?: true
     phoneNumber?: true
     password?: true
@@ -2656,6 +2900,7 @@ export namespace Prisma {
     username?: true
     firstName?: true
     lastName?: true
+    bio?: true
     email?: true
     phoneNumber?: true
     password?: true
@@ -2683,6 +2928,7 @@ export namespace Prisma {
     username?: true
     firstName?: true
     lastName?: true
+    bio?: true
     email?: true
     phoneNumber?: true
     password?: true
@@ -2783,6 +3029,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio: string
     email: string
     phoneNumber: string | null
     password: string
@@ -2827,6 +3074,7 @@ export namespace Prisma {
     username?: boolean
     firstName?: boolean
     lastName?: boolean
+    bio?: boolean
     email?: boolean
     phoneNumber?: boolean
     password?: boolean
@@ -2860,6 +3108,9 @@ export namespace Prisma {
     typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     preferences?: boolean | User$preferencesArgs<ExtArgs>
     stats?: boolean | User$statsArgs<ExtArgs>
+    createdAffiliateTokens?: boolean | User$createdAffiliateTokensArgs<ExtArgs>
+    affiliateRelations?: boolean | User$affiliateRelationsArgs<ExtArgs>
+    referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2870,6 +3121,7 @@ export namespace Prisma {
     username?: boolean
     firstName?: boolean
     lastName?: boolean
+    bio?: boolean
     email?: boolean
     phoneNumber?: boolean
     password?: boolean
@@ -2892,7 +3144,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "firstName" | "lastName" | "email" | "phoneNumber" | "password" | "displayName" | "avatar" | "isOnline" | "lastSeen" | "lastActiveAt" | "systemLanguage" | "regionalLanguage" | "customDestinationLanguage" | "autoTranslateEnabled" | "translateToSystemLanguage" | "translateToRegionalLanguage" | "useCustomDestination" | "role" | "isActive" | "deactivatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "firstName" | "lastName" | "bio" | "email" | "phoneNumber" | "password" | "displayName" | "avatar" | "isOnline" | "lastSeen" | "lastActiveAt" | "systemLanguage" | "regionalLanguage" | "customDestinationLanguage" | "autoTranslateEnabled" | "translateToSystemLanguage" | "translateToRegionalLanguage" | "useCustomDestination" | "role" | "isActive" | "deactivatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
     communityMemberships?: boolean | User$communityMembershipsArgs<ExtArgs>
@@ -2907,6 +3159,9 @@ export namespace Prisma {
     typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     preferences?: boolean | User$preferencesArgs<ExtArgs>
     stats?: boolean | User$statsArgs<ExtArgs>
+    createdAffiliateTokens?: boolean | User$createdAffiliateTokensArgs<ExtArgs>
+    affiliateRelations?: boolean | User$affiliateRelationsArgs<ExtArgs>
+    referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -2926,12 +3181,16 @@ export namespace Prisma {
       typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
       preferences: Prisma.$UserPreferencePayload<ExtArgs>[]
       stats: Prisma.$UserStatsPayload<ExtArgs> | null
+      createdAffiliateTokens: Prisma.$AffiliateTokenPayload<ExtArgs>[]
+      affiliateRelations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
+      referredRelations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       username: string
       firstName: string
       lastName: string
+      bio: string
       email: string
       phoneNumber: string | null
       password: string
@@ -3331,6 +3590,9 @@ export namespace Prisma {
     typingIndicators<T extends User$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, User$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     preferences<T extends User$preferencesArgs<ExtArgs> = {}>(args?: Subset<T, User$preferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stats<T extends User$statsArgs<ExtArgs> = {}>(args?: Subset<T, User$statsArgs<ExtArgs>>): Prisma__UserStatsClient<$Result.GetResult<Prisma.$UserStatsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    createdAffiliateTokens<T extends User$createdAffiliateTokensArgs<ExtArgs> = {}>(args?: Subset<T, User$createdAffiliateTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    affiliateRelations<T extends User$affiliateRelationsArgs<ExtArgs> = {}>(args?: Subset<T, User$affiliateRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    referredRelations<T extends User$referredRelationsArgs<ExtArgs> = {}>(args?: Subset<T, User$referredRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3364,6 +3626,7 @@ export namespace Prisma {
     readonly username: FieldRef<"User", 'String'>
     readonly firstName: FieldRef<"User", 'String'>
     readonly lastName: FieldRef<"User", 'String'>
+    readonly bio: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly phoneNumber: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
@@ -4058,6 +4321,78 @@ export namespace Prisma {
      */
     include?: UserStatsInclude<ExtArgs> | null
     where?: UserStatsWhereInput
+  }
+
+  /**
+   * User.createdAffiliateTokens
+   */
+  export type User$createdAffiliateTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    where?: AffiliateTokenWhereInput
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
+    cursor?: AffiliateTokenWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
+  }
+
+  /**
+   * User.affiliateRelations
+   */
+  export type User$affiliateRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    cursor?: AffiliateRelationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * User.referredRelations
+   */
+  export type User$referredRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    cursor?: AffiliateRelationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
   }
 
   /**
@@ -20548,6 +20883,2117 @@ export namespace Prisma {
 
 
   /**
+   * Model AffiliateToken
+   */
+
+  export type AggregateAffiliateToken = {
+    _count: AffiliateTokenCountAggregateOutputType | null
+    _avg: AffiliateTokenAvgAggregateOutputType | null
+    _sum: AffiliateTokenSumAggregateOutputType | null
+    _min: AffiliateTokenMinAggregateOutputType | null
+    _max: AffiliateTokenMaxAggregateOutputType | null
+  }
+
+  export type AffiliateTokenAvgAggregateOutputType = {
+    maxUses: number | null
+    currentUses: number | null
+  }
+
+  export type AffiliateTokenSumAggregateOutputType = {
+    maxUses: number | null
+    currentUses: number | null
+  }
+
+  export type AffiliateTokenMinAggregateOutputType = {
+    id: string | null
+    token: string | null
+    name: string | null
+    createdBy: string | null
+    maxUses: number | null
+    currentUses: number | null
+    expiresAt: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AffiliateTokenMaxAggregateOutputType = {
+    id: string | null
+    token: string | null
+    name: string | null
+    createdBy: string | null
+    maxUses: number | null
+    currentUses: number | null
+    expiresAt: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AffiliateTokenCountAggregateOutputType = {
+    id: number
+    token: number
+    name: number
+    createdBy: number
+    maxUses: number
+    currentUses: number
+    expiresAt: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AffiliateTokenAvgAggregateInputType = {
+    maxUses?: true
+    currentUses?: true
+  }
+
+  export type AffiliateTokenSumAggregateInputType = {
+    maxUses?: true
+    currentUses?: true
+  }
+
+  export type AffiliateTokenMinAggregateInputType = {
+    id?: true
+    token?: true
+    name?: true
+    createdBy?: true
+    maxUses?: true
+    currentUses?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AffiliateTokenMaxAggregateInputType = {
+    id?: true
+    token?: true
+    name?: true
+    createdBy?: true
+    maxUses?: true
+    currentUses?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AffiliateTokenCountAggregateInputType = {
+    id?: true
+    token?: true
+    name?: true
+    createdBy?: true
+    maxUses?: true
+    currentUses?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AffiliateTokenAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AffiliateToken to aggregate.
+     */
+    where?: AffiliateTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateTokens to fetch.
+     */
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AffiliateTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AffiliateTokens
+    **/
+    _count?: true | AffiliateTokenCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AffiliateTokenAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AffiliateTokenSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AffiliateTokenMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AffiliateTokenMaxAggregateInputType
+  }
+
+  export type GetAffiliateTokenAggregateType<T extends AffiliateTokenAggregateArgs> = {
+        [P in keyof T & keyof AggregateAffiliateToken]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAffiliateToken[P]>
+      : GetScalarType<T[P], AggregateAffiliateToken[P]>
+  }
+
+
+
+
+  export type AffiliateTokenGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateTokenWhereInput
+    orderBy?: AffiliateTokenOrderByWithAggregationInput | AffiliateTokenOrderByWithAggregationInput[]
+    by: AffiliateTokenScalarFieldEnum[] | AffiliateTokenScalarFieldEnum
+    having?: AffiliateTokenScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AffiliateTokenCountAggregateInputType | true
+    _avg?: AffiliateTokenAvgAggregateInputType
+    _sum?: AffiliateTokenSumAggregateInputType
+    _min?: AffiliateTokenMinAggregateInputType
+    _max?: AffiliateTokenMaxAggregateInputType
+  }
+
+  export type AffiliateTokenGroupByOutputType = {
+    id: string
+    token: string
+    name: string
+    createdBy: string
+    maxUses: number | null
+    currentUses: number
+    expiresAt: Date | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: AffiliateTokenCountAggregateOutputType | null
+    _avg: AffiliateTokenAvgAggregateOutputType | null
+    _sum: AffiliateTokenSumAggregateOutputType | null
+    _min: AffiliateTokenMinAggregateOutputType | null
+    _max: AffiliateTokenMaxAggregateOutputType | null
+  }
+
+  type GetAffiliateTokenGroupByPayload<T extends AffiliateTokenGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AffiliateTokenGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AffiliateTokenGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AffiliateTokenGroupByOutputType[P]>
+            : GetScalarType<T[P], AffiliateTokenGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AffiliateTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    token?: boolean
+    name?: boolean
+    createdBy?: boolean
+    maxUses?: boolean
+    currentUses?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    affiliations?: boolean | AffiliateToken$affiliationsArgs<ExtArgs>
+    _count?: boolean | AffiliateTokenCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["affiliateToken"]>
+
+
+
+  export type AffiliateTokenSelectScalar = {
+    id?: boolean
+    token?: boolean
+    name?: boolean
+    createdBy?: boolean
+    maxUses?: boolean
+    currentUses?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AffiliateTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "token" | "name" | "createdBy" | "maxUses" | "currentUses" | "expiresAt" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["affiliateToken"]>
+  export type AffiliateTokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    affiliations?: boolean | AffiliateToken$affiliationsArgs<ExtArgs>
+    _count?: boolean | AffiliateTokenCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $AffiliateTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AffiliateToken"
+    objects: {
+      creator: Prisma.$UserPayload<ExtArgs>
+      affiliations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      token: string
+      name: string
+      createdBy: string
+      maxUses: number | null
+      currentUses: number
+      expiresAt: Date | null
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["affiliateToken"]>
+    composites: {}
+  }
+
+  type AffiliateTokenGetPayload<S extends boolean | null | undefined | AffiliateTokenDefaultArgs> = $Result.GetResult<Prisma.$AffiliateTokenPayload, S>
+
+  type AffiliateTokenCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AffiliateTokenFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AffiliateTokenCountAggregateInputType | true
+    }
+
+  export interface AffiliateTokenDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AffiliateToken'], meta: { name: 'AffiliateToken' } }
+    /**
+     * Find zero or one AffiliateToken that matches the filter.
+     * @param {AffiliateTokenFindUniqueArgs} args - Arguments to find a AffiliateToken
+     * @example
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AffiliateTokenFindUniqueArgs>(args: SelectSubset<T, AffiliateTokenFindUniqueArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AffiliateToken that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AffiliateTokenFindUniqueOrThrowArgs} args - Arguments to find a AffiliateToken
+     * @example
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AffiliateTokenFindUniqueOrThrowArgs>(args: SelectSubset<T, AffiliateTokenFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AffiliateToken that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateTokenFindFirstArgs} args - Arguments to find a AffiliateToken
+     * @example
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AffiliateTokenFindFirstArgs>(args?: SelectSubset<T, AffiliateTokenFindFirstArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AffiliateToken that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateTokenFindFirstOrThrowArgs} args - Arguments to find a AffiliateToken
+     * @example
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AffiliateTokenFindFirstOrThrowArgs>(args?: SelectSubset<T, AffiliateTokenFindFirstOrThrowArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AffiliateTokens that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateTokenFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AffiliateTokens
+     * const affiliateTokens = await prisma.affiliateToken.findMany()
+     * 
+     * // Get first 10 AffiliateTokens
+     * const affiliateTokens = await prisma.affiliateToken.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const affiliateTokenWithIdOnly = await prisma.affiliateToken.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AffiliateTokenFindManyArgs>(args?: SelectSubset<T, AffiliateTokenFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AffiliateToken.
+     * @param {AffiliateTokenCreateArgs} args - Arguments to create a AffiliateToken.
+     * @example
+     * // Create one AffiliateToken
+     * const AffiliateToken = await prisma.affiliateToken.create({
+     *   data: {
+     *     // ... data to create a AffiliateToken
+     *   }
+     * })
+     * 
+     */
+    create<T extends AffiliateTokenCreateArgs>(args: SelectSubset<T, AffiliateTokenCreateArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AffiliateTokens.
+     * @param {AffiliateTokenCreateManyArgs} args - Arguments to create many AffiliateTokens.
+     * @example
+     * // Create many AffiliateTokens
+     * const affiliateToken = await prisma.affiliateToken.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AffiliateTokenCreateManyArgs>(args?: SelectSubset<T, AffiliateTokenCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AffiliateToken.
+     * @param {AffiliateTokenDeleteArgs} args - Arguments to delete one AffiliateToken.
+     * @example
+     * // Delete one AffiliateToken
+     * const AffiliateToken = await prisma.affiliateToken.delete({
+     *   where: {
+     *     // ... filter to delete one AffiliateToken
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AffiliateTokenDeleteArgs>(args: SelectSubset<T, AffiliateTokenDeleteArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AffiliateToken.
+     * @param {AffiliateTokenUpdateArgs} args - Arguments to update one AffiliateToken.
+     * @example
+     * // Update one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AffiliateTokenUpdateArgs>(args: SelectSubset<T, AffiliateTokenUpdateArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AffiliateTokens.
+     * @param {AffiliateTokenDeleteManyArgs} args - Arguments to filter AffiliateTokens to delete.
+     * @example
+     * // Delete a few AffiliateTokens
+     * const { count } = await prisma.affiliateToken.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AffiliateTokenDeleteManyArgs>(args?: SelectSubset<T, AffiliateTokenDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AffiliateTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateTokenUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AffiliateTokens
+     * const affiliateToken = await prisma.affiliateToken.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AffiliateTokenUpdateManyArgs>(args: SelectSubset<T, AffiliateTokenUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AffiliateToken.
+     * @param {AffiliateTokenUpsertArgs} args - Arguments to update or create a AffiliateToken.
+     * @example
+     * // Update or create a AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.upsert({
+     *   create: {
+     *     // ... data to create a AffiliateToken
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AffiliateToken we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AffiliateTokenUpsertArgs>(args: SelectSubset<T, AffiliateTokenUpsertArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AffiliateTokens that matches the filter.
+     * @param {AffiliateTokenFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const affiliateToken = await prisma.affiliateToken.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AffiliateTokenFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a AffiliateToken.
+     * @param {AffiliateTokenAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const affiliateToken = await prisma.affiliateToken.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AffiliateTokenAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of AffiliateTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateTokenCountArgs} args - Arguments to filter AffiliateTokens to count.
+     * @example
+     * // Count the number of AffiliateTokens
+     * const count = await prisma.affiliateToken.count({
+     *   where: {
+     *     // ... the filter for the AffiliateTokens we want to count
+     *   }
+     * })
+    **/
+    count<T extends AffiliateTokenCountArgs>(
+      args?: Subset<T, AffiliateTokenCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AffiliateTokenCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AffiliateToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AffiliateTokenAggregateArgs>(args: Subset<T, AffiliateTokenAggregateArgs>): Prisma.PrismaPromise<GetAffiliateTokenAggregateType<T>>
+
+    /**
+     * Group by AffiliateToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateTokenGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AffiliateTokenGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AffiliateTokenGroupByArgs['orderBy'] }
+        : { orderBy?: AffiliateTokenGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AffiliateTokenGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAffiliateTokenGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AffiliateToken model
+   */
+  readonly fields: AffiliateTokenFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AffiliateToken.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AffiliateTokenClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    affiliations<T extends AffiliateToken$affiliationsArgs<ExtArgs> = {}>(args?: Subset<T, AffiliateToken$affiliationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AffiliateToken model
+   */
+  interface AffiliateTokenFieldRefs {
+    readonly id: FieldRef<"AffiliateToken", 'String'>
+    readonly token: FieldRef<"AffiliateToken", 'String'>
+    readonly name: FieldRef<"AffiliateToken", 'String'>
+    readonly createdBy: FieldRef<"AffiliateToken", 'String'>
+    readonly maxUses: FieldRef<"AffiliateToken", 'Int'>
+    readonly currentUses: FieldRef<"AffiliateToken", 'Int'>
+    readonly expiresAt: FieldRef<"AffiliateToken", 'DateTime'>
+    readonly isActive: FieldRef<"AffiliateToken", 'Boolean'>
+    readonly createdAt: FieldRef<"AffiliateToken", 'DateTime'>
+    readonly updatedAt: FieldRef<"AffiliateToken", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AffiliateToken findUnique
+   */
+  export type AffiliateTokenFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateToken to fetch.
+     */
+    where: AffiliateTokenWhereUniqueInput
+  }
+
+  /**
+   * AffiliateToken findUniqueOrThrow
+   */
+  export type AffiliateTokenFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateToken to fetch.
+     */
+    where: AffiliateTokenWhereUniqueInput
+  }
+
+  /**
+   * AffiliateToken findFirst
+   */
+  export type AffiliateTokenFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateToken to fetch.
+     */
+    where?: AffiliateTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateTokens to fetch.
+     */
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AffiliateTokens.
+     */
+    cursor?: AffiliateTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AffiliateTokens.
+     */
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateToken findFirstOrThrow
+   */
+  export type AffiliateTokenFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateToken to fetch.
+     */
+    where?: AffiliateTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateTokens to fetch.
+     */
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AffiliateTokens.
+     */
+    cursor?: AffiliateTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AffiliateTokens.
+     */
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateToken findMany
+   */
+  export type AffiliateTokenFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateTokens to fetch.
+     */
+    where?: AffiliateTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateTokens to fetch.
+     */
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AffiliateTokens.
+     */
+    cursor?: AffiliateTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateTokens.
+     */
+    skip?: number
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateToken create
+   */
+  export type AffiliateTokenCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AffiliateToken.
+     */
+    data: XOR<AffiliateTokenCreateInput, AffiliateTokenUncheckedCreateInput>
+  }
+
+  /**
+   * AffiliateToken createMany
+   */
+  export type AffiliateTokenCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AffiliateTokens.
+     */
+    data: AffiliateTokenCreateManyInput | AffiliateTokenCreateManyInput[]
+  }
+
+  /**
+   * AffiliateToken update
+   */
+  export type AffiliateTokenUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AffiliateToken.
+     */
+    data: XOR<AffiliateTokenUpdateInput, AffiliateTokenUncheckedUpdateInput>
+    /**
+     * Choose, which AffiliateToken to update.
+     */
+    where: AffiliateTokenWhereUniqueInput
+  }
+
+  /**
+   * AffiliateToken updateMany
+   */
+  export type AffiliateTokenUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AffiliateTokens.
+     */
+    data: XOR<AffiliateTokenUpdateManyMutationInput, AffiliateTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which AffiliateTokens to update
+     */
+    where?: AffiliateTokenWhereInput
+    /**
+     * Limit how many AffiliateTokens to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AffiliateToken upsert
+   */
+  export type AffiliateTokenUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AffiliateToken to update in case it exists.
+     */
+    where: AffiliateTokenWhereUniqueInput
+    /**
+     * In case the AffiliateToken found by the `where` argument doesn't exist, create a new AffiliateToken with this data.
+     */
+    create: XOR<AffiliateTokenCreateInput, AffiliateTokenUncheckedCreateInput>
+    /**
+     * In case the AffiliateToken was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AffiliateTokenUpdateInput, AffiliateTokenUncheckedUpdateInput>
+  }
+
+  /**
+   * AffiliateToken delete
+   */
+  export type AffiliateTokenDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    /**
+     * Filter which AffiliateToken to delete.
+     */
+    where: AffiliateTokenWhereUniqueInput
+  }
+
+  /**
+   * AffiliateToken deleteMany
+   */
+  export type AffiliateTokenDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AffiliateTokens to delete
+     */
+    where?: AffiliateTokenWhereInput
+    /**
+     * Limit how many AffiliateTokens to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AffiliateToken findRaw
+   */
+  export type AffiliateTokenFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AffiliateToken aggregateRaw
+   */
+  export type AffiliateTokenAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AffiliateToken.affiliations
+   */
+  export type AffiliateToken$affiliationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    cursor?: AffiliateRelationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateToken without action
+   */
+  export type AffiliateTokenDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AffiliateRelation
+   */
+
+  export type AggregateAffiliateRelation = {
+    _count: AffiliateRelationCountAggregateOutputType | null
+    _min: AffiliateRelationMinAggregateOutputType | null
+    _max: AffiliateRelationMaxAggregateOutputType | null
+  }
+
+  export type AffiliateRelationMinAggregateOutputType = {
+    id: string | null
+    affiliateTokenId: string | null
+    affiliateUserId: string | null
+    referredUserId: string | null
+    status: string | null
+    createdAt: Date | null
+    completedAt: Date | null
+  }
+
+  export type AffiliateRelationMaxAggregateOutputType = {
+    id: string | null
+    affiliateTokenId: string | null
+    affiliateUserId: string | null
+    referredUserId: string | null
+    status: string | null
+    createdAt: Date | null
+    completedAt: Date | null
+  }
+
+  export type AffiliateRelationCountAggregateOutputType = {
+    id: number
+    affiliateTokenId: number
+    affiliateUserId: number
+    referredUserId: number
+    status: number
+    createdAt: number
+    completedAt: number
+    _all: number
+  }
+
+
+  export type AffiliateRelationMinAggregateInputType = {
+    id?: true
+    affiliateTokenId?: true
+    affiliateUserId?: true
+    referredUserId?: true
+    status?: true
+    createdAt?: true
+    completedAt?: true
+  }
+
+  export type AffiliateRelationMaxAggregateInputType = {
+    id?: true
+    affiliateTokenId?: true
+    affiliateUserId?: true
+    referredUserId?: true
+    status?: true
+    createdAt?: true
+    completedAt?: true
+  }
+
+  export type AffiliateRelationCountAggregateInputType = {
+    id?: true
+    affiliateTokenId?: true
+    affiliateUserId?: true
+    referredUserId?: true
+    status?: true
+    createdAt?: true
+    completedAt?: true
+    _all?: true
+  }
+
+  export type AffiliateRelationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AffiliateRelation to aggregate.
+     */
+    where?: AffiliateRelationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateRelations to fetch.
+     */
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AffiliateRelationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateRelations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateRelations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AffiliateRelations
+    **/
+    _count?: true | AffiliateRelationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AffiliateRelationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AffiliateRelationMaxAggregateInputType
+  }
+
+  export type GetAffiliateRelationAggregateType<T extends AffiliateRelationAggregateArgs> = {
+        [P in keyof T & keyof AggregateAffiliateRelation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAffiliateRelation[P]>
+      : GetScalarType<T[P], AggregateAffiliateRelation[P]>
+  }
+
+
+
+
+  export type AffiliateRelationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithAggregationInput | AffiliateRelationOrderByWithAggregationInput[]
+    by: AffiliateRelationScalarFieldEnum[] | AffiliateRelationScalarFieldEnum
+    having?: AffiliateRelationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AffiliateRelationCountAggregateInputType | true
+    _min?: AffiliateRelationMinAggregateInputType
+    _max?: AffiliateRelationMaxAggregateInputType
+  }
+
+  export type AffiliateRelationGroupByOutputType = {
+    id: string
+    affiliateTokenId: string
+    affiliateUserId: string
+    referredUserId: string
+    status: string
+    createdAt: Date
+    completedAt: Date | null
+    _count: AffiliateRelationCountAggregateOutputType | null
+    _min: AffiliateRelationMinAggregateOutputType | null
+    _max: AffiliateRelationMaxAggregateOutputType | null
+  }
+
+  type GetAffiliateRelationGroupByPayload<T extends AffiliateRelationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AffiliateRelationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AffiliateRelationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AffiliateRelationGroupByOutputType[P]>
+            : GetScalarType<T[P], AffiliateRelationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AffiliateRelationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    affiliateTokenId?: boolean
+    affiliateUserId?: boolean
+    referredUserId?: boolean
+    status?: boolean
+    createdAt?: boolean
+    completedAt?: boolean
+    affiliateToken?: boolean | AffiliateTokenDefaultArgs<ExtArgs>
+    affiliateUser?: boolean | UserDefaultArgs<ExtArgs>
+    referredUser?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["affiliateRelation"]>
+
+
+
+  export type AffiliateRelationSelectScalar = {
+    id?: boolean
+    affiliateTokenId?: boolean
+    affiliateUserId?: boolean
+    referredUserId?: boolean
+    status?: boolean
+    createdAt?: boolean
+    completedAt?: boolean
+  }
+
+  export type AffiliateRelationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "affiliateTokenId" | "affiliateUserId" | "referredUserId" | "status" | "createdAt" | "completedAt", ExtArgs["result"]["affiliateRelation"]>
+  export type AffiliateRelationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    affiliateToken?: boolean | AffiliateTokenDefaultArgs<ExtArgs>
+    affiliateUser?: boolean | UserDefaultArgs<ExtArgs>
+    referredUser?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $AffiliateRelationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AffiliateRelation"
+    objects: {
+      affiliateToken: Prisma.$AffiliateTokenPayload<ExtArgs>
+      affiliateUser: Prisma.$UserPayload<ExtArgs>
+      referredUser: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      affiliateTokenId: string
+      affiliateUserId: string
+      referredUserId: string
+      status: string
+      createdAt: Date
+      completedAt: Date | null
+    }, ExtArgs["result"]["affiliateRelation"]>
+    composites: {}
+  }
+
+  type AffiliateRelationGetPayload<S extends boolean | null | undefined | AffiliateRelationDefaultArgs> = $Result.GetResult<Prisma.$AffiliateRelationPayload, S>
+
+  type AffiliateRelationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AffiliateRelationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AffiliateRelationCountAggregateInputType | true
+    }
+
+  export interface AffiliateRelationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AffiliateRelation'], meta: { name: 'AffiliateRelation' } }
+    /**
+     * Find zero or one AffiliateRelation that matches the filter.
+     * @param {AffiliateRelationFindUniqueArgs} args - Arguments to find a AffiliateRelation
+     * @example
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AffiliateRelationFindUniqueArgs>(args: SelectSubset<T, AffiliateRelationFindUniqueArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AffiliateRelation that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AffiliateRelationFindUniqueOrThrowArgs} args - Arguments to find a AffiliateRelation
+     * @example
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AffiliateRelationFindUniqueOrThrowArgs>(args: SelectSubset<T, AffiliateRelationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AffiliateRelation that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateRelationFindFirstArgs} args - Arguments to find a AffiliateRelation
+     * @example
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AffiliateRelationFindFirstArgs>(args?: SelectSubset<T, AffiliateRelationFindFirstArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AffiliateRelation that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateRelationFindFirstOrThrowArgs} args - Arguments to find a AffiliateRelation
+     * @example
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AffiliateRelationFindFirstOrThrowArgs>(args?: SelectSubset<T, AffiliateRelationFindFirstOrThrowArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AffiliateRelations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateRelationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AffiliateRelations
+     * const affiliateRelations = await prisma.affiliateRelation.findMany()
+     * 
+     * // Get first 10 AffiliateRelations
+     * const affiliateRelations = await prisma.affiliateRelation.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const affiliateRelationWithIdOnly = await prisma.affiliateRelation.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AffiliateRelationFindManyArgs>(args?: SelectSubset<T, AffiliateRelationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AffiliateRelation.
+     * @param {AffiliateRelationCreateArgs} args - Arguments to create a AffiliateRelation.
+     * @example
+     * // Create one AffiliateRelation
+     * const AffiliateRelation = await prisma.affiliateRelation.create({
+     *   data: {
+     *     // ... data to create a AffiliateRelation
+     *   }
+     * })
+     * 
+     */
+    create<T extends AffiliateRelationCreateArgs>(args: SelectSubset<T, AffiliateRelationCreateArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AffiliateRelations.
+     * @param {AffiliateRelationCreateManyArgs} args - Arguments to create many AffiliateRelations.
+     * @example
+     * // Create many AffiliateRelations
+     * const affiliateRelation = await prisma.affiliateRelation.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AffiliateRelationCreateManyArgs>(args?: SelectSubset<T, AffiliateRelationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a AffiliateRelation.
+     * @param {AffiliateRelationDeleteArgs} args - Arguments to delete one AffiliateRelation.
+     * @example
+     * // Delete one AffiliateRelation
+     * const AffiliateRelation = await prisma.affiliateRelation.delete({
+     *   where: {
+     *     // ... filter to delete one AffiliateRelation
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AffiliateRelationDeleteArgs>(args: SelectSubset<T, AffiliateRelationDeleteArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AffiliateRelation.
+     * @param {AffiliateRelationUpdateArgs} args - Arguments to update one AffiliateRelation.
+     * @example
+     * // Update one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AffiliateRelationUpdateArgs>(args: SelectSubset<T, AffiliateRelationUpdateArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AffiliateRelations.
+     * @param {AffiliateRelationDeleteManyArgs} args - Arguments to filter AffiliateRelations to delete.
+     * @example
+     * // Delete a few AffiliateRelations
+     * const { count } = await prisma.affiliateRelation.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AffiliateRelationDeleteManyArgs>(args?: SelectSubset<T, AffiliateRelationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AffiliateRelations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateRelationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AffiliateRelations
+     * const affiliateRelation = await prisma.affiliateRelation.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AffiliateRelationUpdateManyArgs>(args: SelectSubset<T, AffiliateRelationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one AffiliateRelation.
+     * @param {AffiliateRelationUpsertArgs} args - Arguments to update or create a AffiliateRelation.
+     * @example
+     * // Update or create a AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.upsert({
+     *   create: {
+     *     // ... data to create a AffiliateRelation
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AffiliateRelation we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AffiliateRelationUpsertArgs>(args: SelectSubset<T, AffiliateRelationUpsertArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AffiliateRelations that matches the filter.
+     * @param {AffiliateRelationFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const affiliateRelation = await prisma.affiliateRelation.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: AffiliateRelationFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a AffiliateRelation.
+     * @param {AffiliateRelationAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const affiliateRelation = await prisma.affiliateRelation.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: AffiliateRelationAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of AffiliateRelations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateRelationCountArgs} args - Arguments to filter AffiliateRelations to count.
+     * @example
+     * // Count the number of AffiliateRelations
+     * const count = await prisma.affiliateRelation.count({
+     *   where: {
+     *     // ... the filter for the AffiliateRelations we want to count
+     *   }
+     * })
+    **/
+    count<T extends AffiliateRelationCountArgs>(
+      args?: Subset<T, AffiliateRelationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AffiliateRelationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AffiliateRelation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateRelationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AffiliateRelationAggregateArgs>(args: Subset<T, AffiliateRelationAggregateArgs>): Prisma.PrismaPromise<GetAffiliateRelationAggregateType<T>>
+
+    /**
+     * Group by AffiliateRelation.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AffiliateRelationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AffiliateRelationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AffiliateRelationGroupByArgs['orderBy'] }
+        : { orderBy?: AffiliateRelationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AffiliateRelationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAffiliateRelationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AffiliateRelation model
+   */
+  readonly fields: AffiliateRelationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AffiliateRelation.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AffiliateRelationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    affiliateToken<T extends AffiliateTokenDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AffiliateTokenDefaultArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    affiliateUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    referredUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AffiliateRelation model
+   */
+  interface AffiliateRelationFieldRefs {
+    readonly id: FieldRef<"AffiliateRelation", 'String'>
+    readonly affiliateTokenId: FieldRef<"AffiliateRelation", 'String'>
+    readonly affiliateUserId: FieldRef<"AffiliateRelation", 'String'>
+    readonly referredUserId: FieldRef<"AffiliateRelation", 'String'>
+    readonly status: FieldRef<"AffiliateRelation", 'String'>
+    readonly createdAt: FieldRef<"AffiliateRelation", 'DateTime'>
+    readonly completedAt: FieldRef<"AffiliateRelation", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AffiliateRelation findUnique
+   */
+  export type AffiliateRelationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateRelation to fetch.
+     */
+    where: AffiliateRelationWhereUniqueInput
+  }
+
+  /**
+   * AffiliateRelation findUniqueOrThrow
+   */
+  export type AffiliateRelationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateRelation to fetch.
+     */
+    where: AffiliateRelationWhereUniqueInput
+  }
+
+  /**
+   * AffiliateRelation findFirst
+   */
+  export type AffiliateRelationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateRelation to fetch.
+     */
+    where?: AffiliateRelationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateRelations to fetch.
+     */
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AffiliateRelations.
+     */
+    cursor?: AffiliateRelationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateRelations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateRelations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AffiliateRelations.
+     */
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateRelation findFirstOrThrow
+   */
+  export type AffiliateRelationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateRelation to fetch.
+     */
+    where?: AffiliateRelationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateRelations to fetch.
+     */
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AffiliateRelations.
+     */
+    cursor?: AffiliateRelationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateRelations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateRelations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AffiliateRelations.
+     */
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateRelation findMany
+   */
+  export type AffiliateRelationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * Filter, which AffiliateRelations to fetch.
+     */
+    where?: AffiliateRelationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AffiliateRelations to fetch.
+     */
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AffiliateRelations.
+     */
+    cursor?: AffiliateRelationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AffiliateRelations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AffiliateRelations.
+     */
+    skip?: number
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateRelation create
+   */
+  export type AffiliateRelationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AffiliateRelation.
+     */
+    data: XOR<AffiliateRelationCreateInput, AffiliateRelationUncheckedCreateInput>
+  }
+
+  /**
+   * AffiliateRelation createMany
+   */
+  export type AffiliateRelationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AffiliateRelations.
+     */
+    data: AffiliateRelationCreateManyInput | AffiliateRelationCreateManyInput[]
+  }
+
+  /**
+   * AffiliateRelation update
+   */
+  export type AffiliateRelationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AffiliateRelation.
+     */
+    data: XOR<AffiliateRelationUpdateInput, AffiliateRelationUncheckedUpdateInput>
+    /**
+     * Choose, which AffiliateRelation to update.
+     */
+    where: AffiliateRelationWhereUniqueInput
+  }
+
+  /**
+   * AffiliateRelation updateMany
+   */
+  export type AffiliateRelationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AffiliateRelations.
+     */
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyInput>
+    /**
+     * Filter which AffiliateRelations to update
+     */
+    where?: AffiliateRelationWhereInput
+    /**
+     * Limit how many AffiliateRelations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AffiliateRelation upsert
+   */
+  export type AffiliateRelationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AffiliateRelation to update in case it exists.
+     */
+    where: AffiliateRelationWhereUniqueInput
+    /**
+     * In case the AffiliateRelation found by the `where` argument doesn't exist, create a new AffiliateRelation with this data.
+     */
+    create: XOR<AffiliateRelationCreateInput, AffiliateRelationUncheckedCreateInput>
+    /**
+     * In case the AffiliateRelation was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AffiliateRelationUpdateInput, AffiliateRelationUncheckedUpdateInput>
+  }
+
+  /**
+   * AffiliateRelation delete
+   */
+  export type AffiliateRelationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    /**
+     * Filter which AffiliateRelation to delete.
+     */
+    where: AffiliateRelationWhereUniqueInput
+  }
+
+  /**
+   * AffiliateRelation deleteMany
+   */
+  export type AffiliateRelationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AffiliateRelations to delete
+     */
+    where?: AffiliateRelationWhereInput
+    /**
+     * Limit how many AffiliateRelations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AffiliateRelation findRaw
+   */
+  export type AffiliateRelationFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AffiliateRelation aggregateRaw
+   */
+  export type AffiliateRelationAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * AffiliateRelation without action
+   */
+  export type AffiliateRelationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -20556,6 +23002,7 @@ export namespace Prisma {
     username: 'username',
     firstName: 'firstName',
     lastName: 'lastName',
+    bio: 'bio',
     email: 'email',
     phoneNumber: 'phoneNumber',
     password: 'password',
@@ -20846,6 +23293,35 @@ export namespace Prisma {
   export type ConversationPreferenceScalarFieldEnum = (typeof ConversationPreferenceScalarFieldEnum)[keyof typeof ConversationPreferenceScalarFieldEnum]
 
 
+  export const AffiliateTokenScalarFieldEnum: {
+    id: 'id',
+    token: 'token',
+    name: 'name',
+    createdBy: 'createdBy',
+    maxUses: 'maxUses',
+    currentUses: 'currentUses',
+    expiresAt: 'expiresAt',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AffiliateTokenScalarFieldEnum = (typeof AffiliateTokenScalarFieldEnum)[keyof typeof AffiliateTokenScalarFieldEnum]
+
+
+  export const AffiliateRelationScalarFieldEnum: {
+    id: 'id',
+    affiliateTokenId: 'affiliateTokenId',
+    affiliateUserId: 'affiliateUserId',
+    referredUserId: 'referredUserId',
+    status: 'status',
+    createdAt: 'createdAt',
+    completedAt: 'completedAt'
+  };
+
+  export type AffiliateRelationScalarFieldEnum = (typeof AffiliateRelationScalarFieldEnum)[keyof typeof AffiliateRelationScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -20941,6 +23417,7 @@ export namespace Prisma {
     username?: StringFilter<"User"> | string
     firstName?: StringFilter<"User"> | string
     lastName?: StringFilter<"User"> | string
+    bio?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     phoneNumber?: StringNullableFilter<"User"> | string | null
     password?: StringFilter<"User"> | string
@@ -20974,6 +23451,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
     stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
+    createdAffiliateTokens?: AffiliateTokenListRelationFilter
+    affiliateRelations?: AffiliateRelationListRelationFilter
+    referredRelations?: AffiliateRelationListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -20981,6 +23461,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -21014,6 +23495,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
     preferences?: UserPreferenceOrderByRelationAggregateInput
     stats?: UserStatsOrderByWithRelationInput
+    createdAffiliateTokens?: AffiliateTokenOrderByRelationAggregateInput
+    affiliateRelations?: AffiliateRelationOrderByRelationAggregateInput
+    referredRelations?: AffiliateRelationOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -21025,6 +23509,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     firstName?: StringFilter<"User"> | string
     lastName?: StringFilter<"User"> | string
+    bio?: StringFilter<"User"> | string
     phoneNumber?: StringNullableFilter<"User"> | string | null
     password?: StringFilter<"User"> | string
     displayName?: StringNullableFilter<"User"> | string | null
@@ -21057,6 +23542,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
     stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
+    createdAffiliateTokens?: AffiliateTokenListRelationFilter
+    affiliateRelations?: AffiliateRelationListRelationFilter
+    referredRelations?: AffiliateRelationListRelationFilter
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -21064,6 +23552,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -21097,6 +23586,7 @@ export namespace Prisma {
     username?: StringWithAggregatesFilter<"User"> | string
     firstName?: StringWithAggregatesFilter<"User"> | string
     lastName?: StringWithAggregatesFilter<"User"> | string
+    bio?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     phoneNumber?: StringNullableWithAggregatesFilter<"User"> | string | null
     password?: StringWithAggregatesFilter<"User"> | string
@@ -22522,11 +25012,168 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"ConversationPreference"> | Date | string
   }
 
+  export type AffiliateTokenWhereInput = {
+    AND?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    OR?: AffiliateTokenWhereInput[]
+    NOT?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    id?: StringFilter<"AffiliateToken"> | string
+    token?: StringFilter<"AffiliateToken"> | string
+    name?: StringFilter<"AffiliateToken"> | string
+    createdBy?: StringFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableFilter<"AffiliateToken"> | number | null
+    currentUses?: IntFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    affiliations?: AffiliateRelationListRelationFilter
+  }
+
+  export type AffiliateTokenOrderByWithRelationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    creator?: UserOrderByWithRelationInput
+    affiliations?: AffiliateRelationOrderByRelationAggregateInput
+  }
+
+  export type AffiliateTokenWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    token?: string
+    AND?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    OR?: AffiliateTokenWhereInput[]
+    NOT?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    name?: StringFilter<"AffiliateToken"> | string
+    createdBy?: StringFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableFilter<"AffiliateToken"> | number | null
+    currentUses?: IntFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    affiliations?: AffiliateRelationListRelationFilter
+  }, "id" | "token">
+
+  export type AffiliateTokenOrderByWithAggregationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AffiliateTokenCountOrderByAggregateInput
+    _avg?: AffiliateTokenAvgOrderByAggregateInput
+    _max?: AffiliateTokenMaxOrderByAggregateInput
+    _min?: AffiliateTokenMinOrderByAggregateInput
+    _sum?: AffiliateTokenSumOrderByAggregateInput
+  }
+
+  export type AffiliateTokenScalarWhereWithAggregatesInput = {
+    AND?: AffiliateTokenScalarWhereWithAggregatesInput | AffiliateTokenScalarWhereWithAggregatesInput[]
+    OR?: AffiliateTokenScalarWhereWithAggregatesInput[]
+    NOT?: AffiliateTokenScalarWhereWithAggregatesInput | AffiliateTokenScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    token?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    name?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    createdBy?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableWithAggregatesFilter<"AffiliateToken"> | number | null
+    currentUses?: IntWithAggregatesFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableWithAggregatesFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolWithAggregatesFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AffiliateToken"> | Date | string
+  }
+
+  export type AffiliateRelationWhereInput = {
+    AND?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    OR?: AffiliateRelationWhereInput[]
+    NOT?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    id?: StringFilter<"AffiliateRelation"> | string
+    affiliateTokenId?: StringFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringFilter<"AffiliateRelation"> | string
+    referredUserId?: StringFilter<"AffiliateRelation"> | string
+    status?: StringFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type AffiliateRelationOrderByWithRelationInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+    affiliateToken?: AffiliateTokenOrderByWithRelationInput
+    affiliateUser?: UserOrderByWithRelationInput
+    referredUser?: UserOrderByWithRelationInput
+  }
+
+  export type AffiliateRelationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    OR?: AffiliateRelationWhereInput[]
+    NOT?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    affiliateTokenId?: StringFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringFilter<"AffiliateRelation"> | string
+    referredUserId?: StringFilter<"AffiliateRelation"> | string
+    status?: StringFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type AffiliateRelationOrderByWithAggregationInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+    _count?: AffiliateRelationCountOrderByAggregateInput
+    _max?: AffiliateRelationMaxOrderByAggregateInput
+    _min?: AffiliateRelationMinOrderByAggregateInput
+  }
+
+  export type AffiliateRelationScalarWhereWithAggregatesInput = {
+    AND?: AffiliateRelationScalarWhereWithAggregatesInput | AffiliateRelationScalarWhereWithAggregatesInput[]
+    OR?: AffiliateRelationScalarWhereWithAggregatesInput[]
+    NOT?: AffiliateRelationScalarWhereWithAggregatesInput | AffiliateRelationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    affiliateTokenId?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    referredUserId?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    status?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableWithAggregatesFilter<"AffiliateRelation"> | Date | string | null
+  }
+
   export type UserCreateInput = {
     id?: string
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -22560,6 +25207,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -22567,6 +25217,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -22600,12 +25251,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUpdateInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -22639,12 +25294,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -22678,6 +25337,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -22685,6 +25347,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -22711,6 +25374,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -22737,6 +25401,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -24265,6 +26930,159 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AffiliateTokenCreateInput = {
+    id?: string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedAffiliateTokensInput
+    affiliations?: AffiliateRelationCreateNestedManyWithoutAffiliateTokenInput
+  }
+
+  export type AffiliateTokenUncheckedCreateInput = {
+    id?: string
+    token: string
+    name: string
+    createdBy: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    affiliations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateTokenInput
+  }
+
+  export type AffiliateTokenUpdateInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedAffiliateTokensNestedInput
+    affiliations?: AffiliateRelationUpdateManyWithoutAffiliateTokenNestedInput
+  }
+
+  export type AffiliateTokenUncheckedUpdateInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    affiliations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenNestedInput
+  }
+
+  export type AffiliateTokenCreateManyInput = {
+    id?: string
+    token: string
+    name: string
+    createdBy: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AffiliateTokenUpdateManyMutationInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AffiliateTokenUncheckedUpdateManyInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AffiliateRelationCreateInput = {
+    id?: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+    affiliateToken: AffiliateTokenCreateNestedOneWithoutAffiliationsInput
+    affiliateUser: UserCreateNestedOneWithoutAffiliateRelationsInput
+    referredUser: UserCreateNestedOneWithoutReferredRelationsInput
+  }
+
+  export type AffiliateRelationUncheckedCreateInput = {
+    id?: string
+    affiliateTokenId: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationUpdateInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateToken?: AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput
+    affiliateUser?: UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput
+    referredUser?: UserUpdateOneRequiredWithoutReferredRelationsNestedInput
+  }
+
+  export type AffiliateRelationUncheckedUpdateInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationCreateManyInput = {
+    id?: string
+    affiliateTokenId: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationUpdateManyMutationInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -24395,6 +27213,18 @@ export namespace Prisma {
     isNot?: UserStatsWhereInput | null
   }
 
+  export type AffiliateTokenListRelationFilter = {
+    every?: AffiliateTokenWhereInput
+    some?: AffiliateTokenWhereInput
+    none?: AffiliateTokenWhereInput
+  }
+
+  export type AffiliateRelationListRelationFilter = {
+    every?: AffiliateRelationWhereInput
+    some?: AffiliateRelationWhereInput
+    none?: AffiliateRelationWhereInput
+  }
+
   export type CommunityOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -24439,11 +27269,20 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type AffiliateTokenOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AffiliateRelationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -24471,6 +27310,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -24498,6 +27338,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -25476,6 +28317,90 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type AffiliateTokenCountOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AffiliateTokenAvgOrderByAggregateInput = {
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+  }
+
+  export type AffiliateTokenMaxOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AffiliateTokenMinOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AffiliateTokenSumOrderByAggregateInput = {
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+  }
+
+  export type AffiliateTokenScalarRelationFilter = {
+    is?: AffiliateTokenWhereInput
+    isNot?: AffiliateTokenWhereInput
+  }
+
+  export type AffiliateRelationCountOrderByAggregateInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
+  export type AffiliateRelationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
+  export type AffiliateRelationMinOrderByAggregateInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
   export type CommunityCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -25566,6 +28491,27 @@ export namespace Prisma {
     connect?: UserStatsWhereUniqueInput
   }
 
+  export type AffiliateTokenCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+  }
+
+  export type AffiliateRelationCreateNestedManyWithoutAffiliateUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type AffiliateRelationCreateNestedManyWithoutReferredUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
   export type CommunityUncheckedCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -25654,6 +28600,27 @@ export namespace Prisma {
     create?: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
     connectOrCreate?: UserStatsCreateOrConnectWithoutUserInput
     connect?: UserStatsWhereUniqueInput
+  }
+
+  export type AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+  }
+
+  export type AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -25856,6 +28823,48 @@ export namespace Prisma {
     update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
   }
 
+  export type AffiliateTokenUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    upsert?: AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    set?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    disconnect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    delete?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    update?: AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: AffiliateTokenUpdateManyWithWhereWithoutCreatorInput | AffiliateTokenUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
+  }
+
+  export type AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type AffiliateRelationUpdateManyWithoutReferredUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput | AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
   export type CommunityUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -26032,6 +29041,48 @@ export namespace Prisma {
     delete?: UserStatsWhereInput | boolean
     connect?: UserStatsWhereUniqueInput
     update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    upsert?: AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    set?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    disconnect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    delete?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    update?: AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: AffiliateTokenUpdateManyWithWhereWithoutCreatorInput | AffiliateTokenUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput | AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
   }
 
   export type AnonymousParticipantCreateNestedManyWithoutConversationInput = {
@@ -27005,6 +30056,104 @@ export namespace Prisma {
     update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutPreferencesInput, ConversationUpdateWithoutPreferencesInput>, ConversationUncheckedUpdateWithoutPreferencesInput>
   }
 
+  export type UserCreateNestedOneWithoutCreatedAffiliateTokensInput = {
+    create?: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedAffiliateTokensInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type AffiliateRelationCreateNestedManyWithoutAffiliateTokenInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateTokenInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutCreatedAffiliateTokensNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedAffiliateTokensInput
+    upsert?: UserUpsertWithoutCreatedAffiliateTokensInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedAffiliateTokensInput, UserUpdateWithoutCreatedAffiliateTokensInput>, UserUncheckedUpdateWithoutCreatedAffiliateTokensInput>
+  }
+
+  export type AffiliateRelationUpdateManyWithoutAffiliateTokenNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type AffiliateTokenCreateNestedOneWithoutAffiliationsInput = {
+    create?: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutAffiliationsInput
+    connect?: AffiliateTokenWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAffiliateRelationsInput = {
+    create?: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAffiliateRelationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutReferredRelationsInput = {
+    create?: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferredRelationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput = {
+    create?: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutAffiliationsInput
+    upsert?: AffiliateTokenUpsertWithoutAffiliationsInput
+    connect?: AffiliateTokenWhereUniqueInput
+    update?: XOR<XOR<AffiliateTokenUpdateToOneWithWhereWithoutAffiliationsInput, AffiliateTokenUpdateWithoutAffiliationsInput>, AffiliateTokenUncheckedUpdateWithoutAffiliationsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput = {
+    create?: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAffiliateRelationsInput
+    upsert?: UserUpsertWithoutAffiliateRelationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAffiliateRelationsInput, UserUpdateWithoutAffiliateRelationsInput>, UserUncheckedUpdateWithoutAffiliateRelationsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutReferredRelationsNestedInput = {
+    create?: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferredRelationsInput
+    upsert?: UserUpsertWithoutReferredRelationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReferredRelationsInput, UserUpdateWithoutReferredRelationsInput>, UserUncheckedUpdateWithoutReferredRelationsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -27683,6 +30832,95 @@ export namespace Prisma {
     create: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
   }
 
+  export type AffiliateTokenCreateWithoutCreatorInput = {
+    id?: string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    affiliations?: AffiliateRelationCreateNestedManyWithoutAffiliateTokenInput
+  }
+
+  export type AffiliateTokenUncheckedCreateWithoutCreatorInput = {
+    id?: string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    affiliations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateTokenInput
+  }
+
+  export type AffiliateTokenCreateOrConnectWithoutCreatorInput = {
+    where: AffiliateTokenWhereUniqueInput
+    create: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type AffiliateTokenCreateManyCreatorInputEnvelope = {
+    data: AffiliateTokenCreateManyCreatorInput | AffiliateTokenCreateManyCreatorInput[]
+  }
+
+  export type AffiliateRelationCreateWithoutAffiliateUserInput = {
+    id?: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+    affiliateToken: AffiliateTokenCreateNestedOneWithoutAffiliationsInput
+    referredUser: UserCreateNestedOneWithoutReferredRelationsInput
+  }
+
+  export type AffiliateRelationUncheckedCreateWithoutAffiliateUserInput = {
+    id?: string
+    affiliateTokenId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationCreateOrConnectWithoutAffiliateUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    create: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput>
+  }
+
+  export type AffiliateRelationCreateManyAffiliateUserInputEnvelope = {
+    data: AffiliateRelationCreateManyAffiliateUserInput | AffiliateRelationCreateManyAffiliateUserInput[]
+  }
+
+  export type AffiliateRelationCreateWithoutReferredUserInput = {
+    id?: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+    affiliateToken: AffiliateTokenCreateNestedOneWithoutAffiliationsInput
+    affiliateUser: UserCreateNestedOneWithoutAffiliateRelationsInput
+  }
+
+  export type AffiliateRelationUncheckedCreateWithoutReferredUserInput = {
+    id?: string
+    affiliateTokenId: string
+    affiliateUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationCreateOrConnectWithoutReferredUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    create: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput>
+  }
+
+  export type AffiliateRelationCreateManyReferredUserInputEnvelope = {
+    data: AffiliateRelationCreateManyReferredUserInput | AffiliateRelationCreateManyReferredUserInput[]
+  }
+
   export type CommunityUpsertWithWhereUniqueWithoutCreatorInput = {
     where: CommunityWhereUniqueInput
     update: XOR<CommunityUpdateWithoutCreatorInput, CommunityUncheckedUpdateWithoutCreatorInput>
@@ -28103,6 +31341,83 @@ export namespace Prisma {
     lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: AffiliateTokenWhereUniqueInput
+    update: XOR<AffiliateTokenUpdateWithoutCreatorInput, AffiliateTokenUncheckedUpdateWithoutCreatorInput>
+    create: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: AffiliateTokenWhereUniqueInput
+    data: XOR<AffiliateTokenUpdateWithoutCreatorInput, AffiliateTokenUncheckedUpdateWithoutCreatorInput>
+  }
+
+  export type AffiliateTokenUpdateManyWithWhereWithoutCreatorInput = {
+    where: AffiliateTokenScalarWhereInput
+    data: XOR<AffiliateTokenUpdateManyMutationInput, AffiliateTokenUncheckedUpdateManyWithoutCreatorInput>
+  }
+
+  export type AffiliateTokenScalarWhereInput = {
+    AND?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
+    OR?: AffiliateTokenScalarWhereInput[]
+    NOT?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
+    id?: StringFilter<"AffiliateToken"> | string
+    token?: StringFilter<"AffiliateToken"> | string
+    name?: StringFilter<"AffiliateToken"> | string
+    createdBy?: StringFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableFilter<"AffiliateToken"> | number | null
+    currentUses?: IntFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+  }
+
+  export type AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    update: XOR<AffiliateRelationUpdateWithoutAffiliateUserInput, AffiliateRelationUncheckedUpdateWithoutAffiliateUserInput>
+    create: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput>
+  }
+
+  export type AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    data: XOR<AffiliateRelationUpdateWithoutAffiliateUserInput, AffiliateRelationUncheckedUpdateWithoutAffiliateUserInput>
+  }
+
+  export type AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput = {
+    where: AffiliateRelationScalarWhereInput
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserInput>
+  }
+
+  export type AffiliateRelationScalarWhereInput = {
+    AND?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+    OR?: AffiliateRelationScalarWhereInput[]
+    NOT?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+    id?: StringFilter<"AffiliateRelation"> | string
+    affiliateTokenId?: StringFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringFilter<"AffiliateRelation"> | string
+    referredUserId?: StringFilter<"AffiliateRelation"> | string
+    status?: StringFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
+  }
+
+  export type AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    update: XOR<AffiliateRelationUpdateWithoutReferredUserInput, AffiliateRelationUncheckedUpdateWithoutReferredUserInput>
+    create: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput>
+  }
+
+  export type AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    data: XOR<AffiliateRelationUpdateWithoutReferredUserInput, AffiliateRelationUncheckedUpdateWithoutReferredUserInput>
+  }
+
+  export type AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput = {
+    where: AffiliateRelationScalarWhereInput
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyWithoutReferredUserInput>
   }
 
   export type AnonymousParticipantCreateWithoutConversationInput = {
@@ -28567,6 +31882,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -28599,6 +31915,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -28606,6 +31925,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -28638,6 +31958,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -28707,6 +32030,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -28739,12 +32063,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -28777,6 +32105,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutMembersInput = {
@@ -28892,6 +32223,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -28924,6 +32256,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedShareLinksInput = {
@@ -28931,6 +32266,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -28963,6 +32299,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedShareLinksInput = {
@@ -29048,6 +32387,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -29080,12 +32420,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedShareLinksInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -29118,6 +32462,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutShareLinksInput = {
@@ -29662,6 +33009,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -29694,6 +33042,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -29701,6 +33052,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -29733,6 +33085,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -29969,6 +33324,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30001,12 +33357,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30039,6 +33399,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutMessagesInput = {
@@ -30187,6 +33550,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30219,6 +33583,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutMessageReadStatusInput = {
@@ -30226,6 +33593,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30258,6 +33626,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutMessageReadStatusInput = {
@@ -30323,6 +33694,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30355,12 +33727,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageReadStatusInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30393,6 +33769,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type MessageUpsertWithoutReadStatusInput = {
@@ -30447,6 +33826,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30479,6 +33859,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutReceivedFriendRequestsInput = {
@@ -30486,6 +33869,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30518,6 +33902,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutReceivedFriendRequestsInput = {
@@ -30530,6 +33917,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30562,6 +33950,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutSentFriendRequestsInput = {
@@ -30569,6 +33960,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30601,6 +33993,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutSentFriendRequestsInput = {
@@ -30623,6 +34018,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30655,12 +34051,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedFriendRequestsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30693,6 +34093,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUpsertWithoutSentFriendRequestsInput = {
@@ -30710,6 +34113,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30742,12 +34146,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentFriendRequestsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30780,6 +34188,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateWithoutTypingIndicatorsInput = {
@@ -30787,6 +34198,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30819,6 +34231,9 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -30826,6 +34241,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -30858,6 +34274,9 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -30927,6 +34346,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30959,12 +34379,16 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTypingIndicatorsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -30997,6 +34421,9 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutTypingIndicatorsInput = {
@@ -31055,6 +34482,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31087,6 +34515,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -31094,6 +34525,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31126,6 +34558,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -31148,6 +34583,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31180,12 +34616,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31218,6 +34658,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type CommunityMemberCreateWithoutCommunityInput = {
@@ -31248,6 +34691,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31280,6 +34724,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedCommunitiesInput = {
@@ -31287,6 +34734,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31319,6 +34767,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedCommunitiesInput = {
@@ -31408,6 +34859,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31440,12 +34892,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedCommunitiesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31478,6 +34934,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithWhereUniqueWithoutCommunityInput = {
@@ -31520,6 +34979,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31552,6 +35012,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutCommunityMembershipsInput = {
@@ -31559,6 +35022,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31591,6 +35055,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutCommunityMembershipsInput = {
@@ -31644,6 +35111,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31676,12 +35144,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommunityMembershipsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31714,6 +35186,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type CommunityUpsertWithoutMembersInput = {
@@ -31756,6 +35231,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31788,6 +35264,9 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutStatsInput = {
@@ -31795,6 +35274,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31827,6 +35307,9 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutStatsInput = {
@@ -31849,6 +35332,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31881,12 +35365,16 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStatsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31919,6 +35407,9 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateWithoutPreferencesInput = {
@@ -31926,6 +35417,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31958,6 +35450,9 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -31965,6 +35460,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31997,6 +35493,9 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -32019,6 +35518,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -32051,12 +35551,16 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferencesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -32089,6 +35593,9 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateWithoutConversationPreferencesInput = {
@@ -32096,6 +35603,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -32128,6 +35636,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationPreferencesInput = {
@@ -32135,6 +35646,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -32167,6 +35679,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationPreferencesInput = {
@@ -32236,6 +35751,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -32268,12 +35784,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationPreferencesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -32306,6 +35826,9 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutPreferencesInput = {
@@ -32357,6 +35880,673 @@ export namespace Prisma {
     shareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutConversationNestedInput
     messages?: MessageUncheckedUpdateManyWithoutConversationNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
+  }
+
+  export type UserCreateWithoutCreatedAffiliateTokensInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedAffiliateTokensInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedAffiliateTokensInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
+  }
+
+  export type AffiliateRelationCreateWithoutAffiliateTokenInput = {
+    id?: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+    affiliateUser: UserCreateNestedOneWithoutAffiliateRelationsInput
+    referredUser: UserCreateNestedOneWithoutReferredRelationsInput
+  }
+
+  export type AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput = {
+    id?: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput = {
+    where: AffiliateRelationWhereUniqueInput
+    create: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput>
+  }
+
+  export type AffiliateRelationCreateManyAffiliateTokenInputEnvelope = {
+    data: AffiliateRelationCreateManyAffiliateTokenInput | AffiliateRelationCreateManyAffiliateTokenInput[]
+  }
+
+  export type UserUpsertWithoutCreatedAffiliateTokensInput = {
+    update: XOR<UserUpdateWithoutCreatedAffiliateTokensInput, UserUncheckedUpdateWithoutCreatedAffiliateTokensInput>
+    create: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedAffiliateTokensInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedAffiliateTokensInput, UserUncheckedUpdateWithoutCreatedAffiliateTokensInput>
+  }
+
+  export type UserUpdateWithoutCreatedAffiliateTokensInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedAffiliateTokensInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+  }
+
+  export type AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput = {
+    where: AffiliateRelationWhereUniqueInput
+    update: XOR<AffiliateRelationUpdateWithoutAffiliateTokenInput, AffiliateRelationUncheckedUpdateWithoutAffiliateTokenInput>
+    create: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput>
+  }
+
+  export type AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput = {
+    where: AffiliateRelationWhereUniqueInput
+    data: XOR<AffiliateRelationUpdateWithoutAffiliateTokenInput, AffiliateRelationUncheckedUpdateWithoutAffiliateTokenInput>
+  }
+
+  export type AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput = {
+    where: AffiliateRelationScalarWhereInput
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenInput>
+  }
+
+  export type AffiliateTokenCreateWithoutAffiliationsInput = {
+    id?: string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedAffiliateTokensInput
+  }
+
+  export type AffiliateTokenUncheckedCreateWithoutAffiliationsInput = {
+    id?: string
+    token: string
+    name: string
+    createdBy: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AffiliateTokenCreateOrConnectWithoutAffiliationsInput = {
+    where: AffiliateTokenWhereUniqueInput
+    create: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+  }
+
+  export type UserCreateWithoutAffiliateRelationsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAffiliateRelationsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAffiliateRelationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
+  }
+
+  export type UserCreateWithoutReferredRelationsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+  }
+
+  export type UserUncheckedCreateWithoutReferredRelationsInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+  }
+
+  export type UserCreateOrConnectWithoutReferredRelationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
+  }
+
+  export type AffiliateTokenUpsertWithoutAffiliationsInput = {
+    update: XOR<AffiliateTokenUpdateWithoutAffiliationsInput, AffiliateTokenUncheckedUpdateWithoutAffiliationsInput>
+    create: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+    where?: AffiliateTokenWhereInput
+  }
+
+  export type AffiliateTokenUpdateToOneWithWhereWithoutAffiliationsInput = {
+    where?: AffiliateTokenWhereInput
+    data: XOR<AffiliateTokenUpdateWithoutAffiliationsInput, AffiliateTokenUncheckedUpdateWithoutAffiliationsInput>
+  }
+
+  export type AffiliateTokenUpdateWithoutAffiliationsInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedAffiliateTokensNestedInput
+  }
+
+  export type AffiliateTokenUncheckedUpdateWithoutAffiliationsInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutAffiliateRelationsInput = {
+    update: XOR<UserUpdateWithoutAffiliateRelationsInput, UserUncheckedUpdateWithoutAffiliateRelationsInput>
+    create: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAffiliateRelationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAffiliateRelationsInput, UserUncheckedUpdateWithoutAffiliateRelationsInput>
+  }
+
+  export type UserUpdateWithoutAffiliateRelationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAffiliateRelationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+  }
+
+  export type UserUpsertWithoutReferredRelationsInput = {
+    update: XOR<UserUpdateWithoutReferredRelationsInput, UserUncheckedUpdateWithoutReferredRelationsInput>
+    create: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutReferredRelationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReferredRelationsInput, UserUncheckedUpdateWithoutReferredRelationsInput>
+  }
+
+  export type UserUpdateWithoutReferredRelationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutReferredRelationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
   }
 
   export type CommunityCreateManyCreatorInput = {
@@ -32500,6 +36690,36 @@ export namespace Prisma {
     description?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type AffiliateTokenCreateManyCreatorInput = {
+    id?: string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AffiliateRelationCreateManyAffiliateUserInput = {
+    id?: string
+    affiliateTokenId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationCreateManyReferredUserInput = {
+    id?: string
+    affiliateTokenId: string
+    affiliateUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
   }
 
   export type CommunityUpdateWithoutCreatorInput = {
@@ -32905,6 +37125,89 @@ export namespace Prisma {
     description?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AffiliateTokenUpdateWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    affiliations?: AffiliateRelationUpdateManyWithoutAffiliateTokenNestedInput
+  }
+
+  export type AffiliateTokenUncheckedUpdateWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    affiliations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenNestedInput
+  }
+
+  export type AffiliateTokenUncheckedUpdateManyWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AffiliateRelationUpdateWithoutAffiliateUserInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateToken?: AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput
+    referredUser?: UserUpdateOneRequiredWithoutReferredRelationsNestedInput
+  }
+
+  export type AffiliateRelationUncheckedUpdateWithoutAffiliateUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUpdateWithoutReferredUserInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateToken?: AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput
+    affiliateUser?: UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput
+  }
+
+  export type AffiliateRelationUncheckedUpdateWithoutReferredUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutReferredUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AnonymousParticipantCreateManyConversationInput = {
@@ -33686,6 +37989,39 @@ export namespace Prisma {
     lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AffiliateRelationCreateManyAffiliateTokenInput = {
+    id?: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationUpdateWithoutAffiliateTokenInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateUser?: UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput
+    referredUser?: UserUpdateOneRequiredWithoutReferredRelationsNestedInput
+  }
+
+  export type AffiliateRelationUncheckedUpdateWithoutAffiliateTokenInput = {
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenInput = {
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 

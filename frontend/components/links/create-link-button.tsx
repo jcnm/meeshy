@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Link2, Plus } from 'lucide-react';
-import { CreateLinkModalV2 } from './create-link-modal-v2';
+import { Link2 } from 'lucide-react';
+import { CreateLinkModalV2 as CreateLinkModal } from '@/components/conversations/create-link-modal';
 import { toast } from 'sonner';
 
-interface CreateLinkButtonV2Props {
+interface CreateLinkButtonProps {
   onLinkCreated?: () => void;
   variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive';
   size?: 'default' | 'sm' | 'lg' | 'icon';
@@ -14,13 +14,13 @@ interface CreateLinkButtonV2Props {
   children?: React.ReactNode;
 }
 
-export function CreateLinkButtonV2({
+export function CreateLinkButton({
   onLinkCreated,
   variant = 'default',
   size = 'default',
   className,
   children
-}: CreateLinkButtonV2Props) {
+}: CreateLinkButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLinkCreated = () => {
@@ -45,7 +45,7 @@ export function CreateLinkButtonV2({
         )}
       </Button>
 
-      <CreateLinkModalV2
+      <CreateLinkModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onLinkCreated={handleLinkCreated}
