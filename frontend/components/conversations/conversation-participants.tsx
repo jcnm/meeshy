@@ -20,6 +20,7 @@ import { SocketIOUser as User, ThreadMember, UserRoleEnum } from '@shared/types'
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';
+import { getUserInitials } from '@/lib/avatar-utils';
 
 interface ConversationParticipantsProps {
   conversationId: string;
@@ -83,8 +84,7 @@ export function ConversationParticipants({
   };
 
   const getAvatarFallback = (user: User): string => {
-    const displayName = getDisplayName(user);
-    return displayName.slice(0, 2).toUpperCase();
+    return getUserInitials(user);
   };
 
   const isCreator = (participant: ThreadMember): boolean => {

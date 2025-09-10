@@ -49,6 +49,7 @@ import type { Message } from '@shared/types/conversation';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 import { Z_CLASSES } from '@/lib/z-index';
 import { useTranslations } from '@/hooks/useTranslations';
+import { getMessageInitials } from '@/lib/avatar-utils';
 
 interface BubbleMessageProps {
   message: Message & {
@@ -537,15 +538,7 @@ function BubbleMessageInner({
                   alt={message.sender?.firstName || message.anonymousSender?.firstName} 
                 />
                 <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
-                  {message.sender ? (
-                    <>
-                      {message.sender?.firstName?.charAt(0)?.toUpperCase()}{message.sender?.lastName?.charAt(0)?.toUpperCase()}
-                    </>
-                  ) : (
-                    <>
-                      {message.anonymousSender?.firstName?.charAt(0)?.toUpperCase()}{message.anonymousSender?.lastName?.charAt(0)?.toUpperCase()}
-                    </>
-                  )}
+                  {getMessageInitials(message)}
                 </AvatarFallback>
               </Avatar>
               

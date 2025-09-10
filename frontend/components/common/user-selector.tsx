@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User, SUPPORTED_LANGUAGES } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
+import { getUserInitials } from '@/lib/avatar-utils';
 
 interface UserSelectorProps {
   users: User[];
@@ -76,7 +77,7 @@ export function UserSelector({ users, onUserSelect, isLoading = false }: UserSel
               <CardHeader className="text-center">
                 <Avatar className="w-16 h-16 mx-auto mb-2">
                   <AvatarFallback className="text-lg font-bold">
-                    {user.username.charAt(0).toUpperCase()}
+                    {getUserInitials(user)}
                   </AvatarFallback>
                 </Avatar>
                 <CardTitle className="text-lg">{user.username}</CardTitle>

@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAnonymousMessages, type AnonymousMessage } from '@/hooks/use-anonymous-messages';
 import { useTranslations } from '@/hooks/useTranslations';
+import { getMessageInitials } from '@/lib/avatar-utils';
 
 interface AnonymousChatProps {
   linkId: string;
@@ -116,14 +117,10 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
     return undefined;
   };
 
-  // Obtenir les initiales pour l'avatar
-  const getMessageInitials = (message: AnonymousMessage) => {
-    if (message.sender) {
-      const firstName = message.sender.firstName || '';
-      const lastName = message.sender.lastName || '';
-      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    }
-    return t('unknownUser');
+  // Utiliser la fonction utilitaire pour obtenir les initiales
+  const getMessageInitialsLocal = (message: AnonymousMessage) => {
+    const initials = getMessageInitials(message);
+    return initials === '??' ? t('unknownUser') : initials;
   };
 
   if (!hasActiveSession) {
@@ -204,7 +201,7 @@ export function AnonymousChat({ linkId, participant, conversation }: AnonymousCh
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={getMessageAvatar(message)} />
                   <AvatarFallback className="text-xs">
-                    {getMessageInitials(message)}
+                    {getMessageInitialsLocal(message)}
                   </AvatarFallback>
                 </Avatar>
                 

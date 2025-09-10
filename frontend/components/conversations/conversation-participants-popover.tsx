@@ -26,6 +26,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { UserRoleEnum } from '@shared/types';
 import { CreateLinkButton } from './create-link-button';
 import { InviteUserModal } from './invite-user-modal';
+import { getUserInitials } from '@/lib/avatar-utils';
 
 interface ConversationParticipantsPopoverProps {
   conversationId: string;
@@ -86,8 +87,7 @@ export function ConversationParticipantsPopover({
   };
 
   const getAvatarFallback = (user: any): string => {
-    const displayName = getDisplayName(user);
-    return displayName.slice(0, 2).toUpperCase();
+    return getUserInitials(user);
   };
 
   const handleRemoveParticipant = async (userId: string) => {
