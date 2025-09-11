@@ -34,7 +34,6 @@ import { cn } from '@/lib/utils';
 import { isValidJWTFormat } from '@/utils/auth';
 import { communitiesService } from '@/services/communities.service';
 import { conversationsService } from '@/services/conversations.service';
-import { ConversationLayoutResponsive } from '@/components/conversations/ConversationLayoutResponsive';
 import type { Conversation } from '@shared/types';
 
 interface GroupsLayoutProps {
@@ -56,7 +55,6 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   // États pour les conversations de la communauté
   const [communityConversations, setCommunityConversations] = useState<Conversation[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | undefined>();
 
   // États UI responsive
   const [showGroupsList, setShowGroupsList] = useState(true);
@@ -278,24 +276,18 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
         loadCommunityConversations(group.id);
       }
       
-      // Sur mobile, masquer la liste et afficher les détails
-      if (isMobile) {
-        setShowGroupsList(false);
-      }
-      
       // S'assurer que l'identifiant commence par mshy_
       let identifier = group.identifier || `mshy_${generateIdentifier(group.name)}`;
       if (!identifier.startsWith('mshy_')) {
         identifier = `mshy_${identifier}`;
       }
       
-      console.log('[DEBUG] Updating URL to:', `/groups/${identifier}`);
-      // Utiliser replace au lieu de push pour éviter l'ajout à l'historique et le double clic
-      router.replace(`/groups/${identifier}`);
+      console.log('[DEBUG] Navigating to:', `/groups/${identifier}`);
+      router.push(`/groups/${identifier}`);
     } catch (error) {
       console.error('[ERROR] handleSelectGroup failed:', error);
     }
-  }, [router, generateIdentifier, loadCommunityConversations, isMobile]);
+  }, [router, generateIdentifier, loadCommunityConversations]);
 
   // Retour à la liste (mobile uniquement)
   const handleBackToList = useCallback(() => {
@@ -461,10 +453,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   }
 
   return (
-    <DashboardLayout 
-      title={tUI('communities')}
-      className={cn(isMobile && selectedGroup && "groups-open-mobile")}
-    >
+    <DashboardLayout title={tUI('communities')}>
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
@@ -473,10 +462,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
           </div>
         </div>
       ) : (
-        <div className={cn(
-          "h-[calc(100vh-6rem)] flex bg-transparent",
-          isMobile && showGroupsList && "groups-listing-mobile"
-        )}>
+        <div className="h-[calc(100vh-6rem)] flex bg-transparent">
           {/* Liste des groupes */}
           <div className={cn(
             "flex flex-col bg-white/80 backdrop-blur-sm rounded-l-2xl border border-border/50 shadow-lg",
@@ -645,7 +631,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
           {/* Zone de détails du groupe */}
           <div className={cn(
             "flex flex-col",
-            isMobile ? (showGroupsList ? "hidden" : "w-full group-detail-mobile") : "flex-1"
+            isMobile ? (showGroupsList ? "hidden" : "w-full") : "flex-1"
           )}>
             {selectedGroup ? (
               <>
@@ -766,7 +752,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                             <div
                               key={conversation.id}
                               className="flex items-center gap-3 p-3 rounded-xl border border-border/20 hover:bg-accent/50 transition-colors cursor-pointer"
-                              onClick={() => setSelectedConversationId(conversation.id)}
+                              onClick={() => router.push(`/conversations?id=${conversation.id}`)}
                             >
                               <div className="flex-shrink-0">
                                 <Avatar className="h-10 w-10">
@@ -817,23 +803,6 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                   </div>
                 </div>
 
-                {/* Affichage de la conversation sélectionnée */}
-                {selectedConversationId && (
-                  <div className="fixed inset-0 z-50 bg-background">
-                    <ConversationLayoutResponsive selectedConversationId={selectedConversationId} />
-                    <div className="absolute top-4 left-4 z-10">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedConversationId(undefined)}
-                        className="bg-background/80 backdrop-blur-sm"
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Retour au groupe
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center bg-white/30 backdrop-blur-sm rounded-r-2xl">
