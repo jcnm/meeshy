@@ -18,6 +18,7 @@ interface CreateLinkButtonProps {
   className?: string;
   children?: React.ReactNode;
   forceModal?: boolean; // Force l'ouverture de la modale au lieu de créer un lien directement
+  disableSummaryModal?: boolean; // Désactive la modale de résumé après création
 }
 
 export function CreateLinkButton({
@@ -26,7 +27,8 @@ export function CreateLinkButton({
   size = 'default',
   className,
   children,
-  forceModal = false
+  forceModal = false,
+  disableSummaryModal = false
 }: CreateLinkButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -149,8 +151,10 @@ export function CreateLinkButton({
           });
         }
         
-        // Ouvrir le modal synthétique avec le récapitulatif
-        setIsSummaryModalOpen(true);
+        // Ouvrir le modal synthétique avec le récapitulatif seulement si pas désactivé
+        if (!disableSummaryModal) {
+          setIsSummaryModalOpen(true);
+        }
         onLinkCreated?.();
       } else {
         const error = await response.json();

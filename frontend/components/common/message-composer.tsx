@@ -4,7 +4,7 @@ import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle } from
 import { Send, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { LanguageSelector } from '@/components/translation';
+import { LanguageFlagSelector } from '@/components/translation';
 import { MAX_MESSAGE_LENGTH } from '@/lib/constants/languages';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -82,15 +82,6 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       
       {/* Indicateurs dans le textarea */}
       <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-600 pointer-events-auto">
-        {/* Sélecteur de langue d'envoi */}
-        <LanguageSelector
-          value={selectedLanguage}
-          onValueChange={onLanguageChange}
-          placeholder="Langue d'écriture"
-          className="border-gray-200 hover:border-blue-300"
-          choices={choices}
-        />
-        
         {/* Localisation */}
         {location && (
           <div className="flex items-center space-x-1">
@@ -100,22 +91,31 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         )}
       </div>
 
-      {/* Bouton d'envoi et compteur */}
+      {/* Bouton d'envoi, compteur et sélecteur de langue */}
       <div className="absolute bottom-3 right-3 flex items-center space-x-2 pointer-events-auto">
         {/* Compteur de caractères */}
         <span className={`text-xs ${value.length > MAX_MESSAGE_LENGTH * 0.8 ? 'text-orange-500' : 'text-gray-500'}`}>
           {value.length}/{MAX_MESSAGE_LENGTH}
         </span>
         
-        {/* Bouton d'envoi */}
-        <Button
-          onClick={onSend}
-          disabled={!value.trim() || !isComposingEnabled}
-          size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white h-8 w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          <Send className="h-4 w-4" />
-        </Button>
+        {/* Sélecteur de langue d'envoi - au-dessus du bouton */}
+        <div className="flex flex-col items-center space-y-1">
+          <LanguageFlagSelector
+            value={selectedLanguage}
+            onValueChange={onLanguageChange}
+            choices={choices}
+          />
+          
+          {/* Bouton d'envoi */}
+          <Button
+            onClick={onSend}
+            disabled={!value.trim() || !isComposingEnabled}
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white h-8 w-8 p-0 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

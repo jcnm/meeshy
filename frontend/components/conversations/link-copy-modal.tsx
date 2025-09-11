@@ -118,7 +118,7 @@ export function LinkCopyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[320px] w-[90vw] max-h-[80vh] p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] max-h-[80vh] p-0 overflow-hidden sm:max-w-[320px] sm:w-[90vw] sm:max-h-[75vh]">
         {/* Header avec statut */}
         <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 border-b">
           <div className="flex items-center gap-2">

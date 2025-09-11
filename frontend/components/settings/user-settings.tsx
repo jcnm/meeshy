@@ -317,7 +317,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
 
       {/* Modale de prévisualisation d'avatar */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md w-[95vw] sm:max-w-md sm:w-[90vw]">
           <DialogHeader>
             <DialogTitle>{t('profile.photo.previewTitle')}</DialogTitle>
           </DialogHeader>

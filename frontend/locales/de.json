@@ -32,9 +32,53 @@
     "no": "Nein",
     "insufficientRights": "Sie haben nicht die erforderlichen Rechte, um diese Operation durchzuführen"
   },
+  "affiliate": {
+    "shareApp": "App teilen",
+    "createToken": "Token erstellen",
+    "tokenName": "Token-Name",
+    "tokenNamePlaceholder": "Z.B.: Facebook-Kampagne, Familieneinladung...",
+    "selectToken": "Affiliate-Token auswählen",
+    "shareMessage": "Teilen-Nachricht",
+    "shareMessagePlaceholder": "Ihre Einladungsnachricht...",
+    "affiliateLink": "Affiliate-Link",
+    "copyLink": "Link kopieren",
+    "copyMessage": "Nachricht kopieren",
+    "share": "Teilen",
+    "statistics": "Statistiken",
+    "uses": "Verwendungen",
+    "createdOn": "Erstellt am",
+    "expiresOn": "Läuft ab am",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "expired": "Abgelaufen",
+    "limitReached": "Limit erreicht",
+    "newToken": "Neu",
+    "create": "Erstellen",
+    "creating": "Erstellen...",
+    "linkCopied": "Link in die Zwischenablage kopiert",
+    "messageCopied": "Nachricht in die Zwischenablage kopiert",
+    "tokenCreated": "Token erfolgreich erstellt",
+    "errorCreatingToken": "Fehler beim Erstellen des Tokens",
+    "errorLoadingTokens": "Fehler beim Laden der Tokens",
+    "errorSharing": "Fehler beim Teilen",
+    "errorCopying": "Fehler beim Kopieren",
+    "enterTokenName": "Bitte geben Sie einen Namen für den Token ein",
+    "defaultMessage": "Tritt mir bei Meeshy bei! Eine mehrsprachige Messaging-Plattform, auf der du mit Menschen aus der ganzen Welt chatten und dabei Sprachen lernen kannst. Klicke auf diesen Link, um dich anzumelden:",
+    "shareTitle": "Tritt mir bei Meeshy bei",
+    "modalTitle": "App teilen",
+    "modalDescription": "Erstellen Sie einen Affiliate-Link, um Ihre Freunde einzuladen, Meeshy beizutreten",
+    "existingTokens": "Bestehende Tokens",
+    "tokenStatus": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv", 
+      "expired": "Abgelaufen",
+      "limitReached": "Limit erreicht"
+    }
+  },
   "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
   "writeMessage": "Schreiben Sie Ihre Nachricht...",
   "title": "Titel",
+  "loading": "Lädt...",
   "translationModel": "Übersetzungsmodell",
   "chooseModel": "Wählen Sie ein Modell",
   "apiService": "API-Service",
@@ -47,22 +91,673 @@
   "private": "Privat",
   "createLink": "Link erstellen",
   "newConversation": "Neues Gespräch",
-    "createConversation": "Gespräch erstellen",
-    "createNewConversation": "Neues Gespräch erstellen",
-    "createNewLink": "Neuen Link erstellen",
+  "createConversation": "Gespräch erstellen",
+  "createNewConversation": "Neues Gespräch erstellen",
+  "createNewLink": "Neuen Link erstellen",
   "chooseConversation": "Wählen Sie ein Gespräch!",
   "chooseConversationDescription": "Klicken Sie links auf ein Gespräch, um zu chatten",
-  "loading": "Laden...",
   "navigation": {
     "home": "Startseite",
     "dashboard": "Dashboard",
-    "conversations": "Unterhaltungen",
+    "conversations": "Gespräche",
     "contacts": "Kontakte",
     "settings": "Einstellungen",
     "profile": "Profil",
     "logout": "Abmelden",
     "login": "Anmelden",
     "register": "Registrieren"
+  },
+  "landing": {
+    "navigation": {
+      "home": "Startseite",
+      "features": "Funktionen",
+      "about": "Über uns",
+      "contact": "Kontakt"
+    },
+    "hero": {
+      "badge": "Echtzeit-Übersetzung",
+      "title": "Kommunizieren Sie ohne",
+      "titleHighlight": "Sprachbarrieren",
+      "subtitle": "Meeshy übersetzt Ihre Nachrichten automatisch in Echtzeit mit KI, direkt in Ihrem Browser. Keine Daten verlassen Ihr Gerät.",
+      "startFree": "Kostenlos starten",
+      "joinConversation": "Gespräch beitreten",
+      "resumeOrJoin": "Gespräch fortsetzen oder beitreten"
+    },
+    "mission": {
+      "title": "Unsere Mission",
+      "slogan": "Begegnen Sie ohne Schüchternheit! 🌍✨",
+      "tagline": "Verbinden Sie die Welt, eine Übersetzung nach der anderen",
+      "description": "Wir glauben, dass Sprachbarrieren niemals bedeutungsvollen Verbindungen im Wege stehen sollten. Unsere Plattform ermöglicht es Menschen auf der ganzen Welt, frei zu kommunizieren, indem sie die Mauern niederreißt, die uns trennen, und Brücken des Verständnisses baut.",
+      "signature": {
+        "line1": "❤️ Erstellt mit ❤️",
+        "line2": "von Entwicklern, die glauben, dass Kommunikation keine Grenzen haben sollte."
+      }
+    },
+    "features": {
+      "title": "Warum Meeshy wählen?",
+      "subtitle": "Eine moderne Messaging-Plattform, die Sprachbarrieren bricht",
+      "universalTranslation": {
+        "title": "Universelle Übersetzung",
+        "description": "Unterstützung für über 15 Sprachen mit fortschrittlichen KI-Modellen (MT5 und NLLB)"
+      },
+      "autoDetection": {
+        "title": "Automatische Erkennung",
+        "description": "Erkennt automatisch die Sprache der Nachrichten für präzisere Übersetzungen."
+      },
+      "privacy": {
+        "title": "100% Privat",
+        "description": "Nur clientseitige Übersetzung. Ihre Daten bleiben auf Ihrem Gerät."
+      },
+      "realtime": {
+        "title": "Echtzeit",
+        "description": "Nachrichten werden sofort übersetzt mit Tipp-Indikatoren und Anwesenheit."
+      },
+      "groupChats": {
+        "title": "Gruppengespräche",
+        "description": "Erstellen Sie mehrsprachige Gemeinschaften und verwalten Sie Berechtigungen einfach."
+      },
+      "multiLanguage": {
+        "title": "Anpassbare Mehrsprachigkeit",
+        "description": "Konfigurieren Sie Ihre System- und Regionalsprachen für eine maßgeschneiderte Erfahrung."
+      },
+      "modernInterface": {
+        "title": "Moderne Benutzeroberfläche",
+        "description": "Responsives und intuitives Design für eine optimale Benutzererfahrung."
+      },
+      "internationalColleagues": {
+        "title": "Internationale Kollegen",
+        "description": "Kommunizieren Sie mit Ihren ausländischen Kollegen, ohne sich um Sprachbarrieren zu sorgen."
+      },
+      "multilingualClassrooms": {
+        "title": "Mehrsprachige Klassenzimmer",
+        "description": "Tauschen Sie sich mit Ihren Klassenkameraden in ihrer Muttersprache aus, unabhängig von ihrer Herkunft."
+      }
+    },
+    "cta": {
+      "title": "Bereit, grenzenlos zu kommunizieren?",
+      "subtitle": "Treten Sie Tausenden von Nutzern bei, die bereits Meeshy verwenden, um Sprachbarrieren zu durchbrechen.",
+      "createAccount": "Mein Konto erstellen"
+    },
+    "footer": {
+      "copyright": "© 2026 Meeshy",
+      "tagline": "Begegnen Sie ohne Schüchternheit",
+      "links": {
+        "about": "Über uns",
+        "policy": "Richtlinie",
+        "terms": "Bedingungen",
+        "contact": "Kontakt",
+        "partners": "Partner"
+      },
+      "social": {
+        "followUs": "Folgen Sie uns"
+      },
+      "usefulLinks": "Nützliche Links"
+    },
+    "about": {
+      "title": "Über Meeshy",
+      "subtitle": "Wir glauben, dass Sprachbarrieren niemals bedeutungsvolle Verbindungen verhindern sollten.",
+      "backHome": "Zurück zur Startseite",
+      "mission": {
+        "title": "Unsere Mission",
+        "description": "Die Welt verbinden, eine Übersetzung nach der anderen. Unsere Plattform ermöglicht es Menschen aus allen Ecken der Welt, frei zu kommunizieren, indem sie die Mauern niederreißt, die uns trennen, und Brücken des Verständnisses baut."
+      },
+      "values": {
+        "globalAccess": {
+          "title": "Globale Zugänglichkeit",
+          "description": "Mehrsprachige Kommunikation für alle, überall auf der Welt zugänglich machen."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "Die neuesten KI-Technologien für präzise und schnelle Übersetzungen nutzen."
+        },
+        "privacy": {
+          "title": "Respekt für die Privatsphäre",
+          "description": "Ihre Gespräche bleiben privat und sicher."
+        }
+      },
+      "team": {
+        "title": "Unser Team",
+        "description": "Erstellt mit ❤️ von Entwicklern, die glauben, dass Kommunikation keine Grenzen haben sollte.",
+        "details": "Meeshy wird von einem leidenschaftlichen Team aus Entwicklern, Linguisten und Designern entwickelt, die eine gemeinsame Vision teilen: eine Welt, in der Sprache kein Hindernis mehr für die menschliche Kommunikation ist."
+      },
+      "cta": {
+        "title": "Möchten Sie mehr erfahren?",
+        "contact": "Kontaktieren Sie uns"
+      }
+    },
+    "partners": {
+      "title": "Partner",
+      "subtitle": "Treten Sie unserem Partner-Ökosystem bei und tragen Sie dazu bei, die Welt zu verbinden, indem Sie Sprachbarrieren durchbrechen.",
+      "backHome": "Zurück zur Startseite",
+      "enterprise": {
+        "title": "Unternehmens-Teams",
+        "description": "Setzen Sie Meeshy in Ihrem Unternehmen ein, um eine nahtlose mehrsprachige Kommunikation zwischen globalen Teams zu ermöglichen.",
+        "features": {
+          "deployment": "On-Premise- oder Cloud-Bereitstellung",
+          "sso": "SSO- und Active Directory-Integration",
+          "analytics": "Team-Kommunikationsanalyse",
+          "support": "24/7 Unternehmens-Support",
+          "customization": "Anpassung und maßgeschneiderte Funktionen"
+        },
+        "pricing": "Kontaktieren Sie uns für Unternehmenspreise"
+      },
+      "education": {
+        "title": "Bildungseinrichtungen",
+        "description": "Fördern Sie die internationale Zusammenarbeit in Schulen und Universitäten mit mehrsprachigen Kommunikationstools.",
+        "features": {
+          "classrooms": "Mehrsprachige virtuelle Klassenzimmer",
+          "exchange": "Unterstützung für Austauschprogramme",
+          "learning": "Integration in das Sprachenlernen",
+          "admin": "Administratives Dashboard",
+          "curriculum": "Lehrplan-basierte Sprachunterstützung"
+        },
+        "pricing": "Spezielle Tarife für Bildungseinrichtungen"
+      },
+      "types": {
+        "tech": {
+          "title": "Technologie-Partner",
+          "description": "Integrieren Sie Meeshy in Ihre Anwendungen und Services, um Ihren Nutzern mehrsprachige Übersetzungsfähigkeiten zu bieten.",
+          "features": [
+            "Echtzeit-Übersetzungs-API",
+            "SDKs für mobile Anwendungen",
+            "Einfache Web-Integration",
+            "Dedizierter technischer Support"
+          ]
+        },
+        "strategic": {
+          "title": "Strategische Partner",
+          "description": "Arbeiten Sie mit uns zusammen, um neue Funktionen zu entwickeln und unsere globale Reichweite zu erweitern.",
+          "features": [
+            "Gemeinsame Funktionsentwicklung",
+            "Vertriebspartnerschaften",
+            "Zertifizierungsprogramme",
+            "Veranstaltungen und Konferenzen"
+          ]
+        }
+      },
+      "deployment": {
+        "title": "Bereitstellungslösungen",
+        "onPremise": {
+          "title": "On-Premise-Bereitstellung",
+          "description": "Vollständige Kontrolle über Ihre Daten mit einer On-Site-Installation.",
+          "features": {
+            "security": "Verstärkte Sicherheit und Vertraulichkeit",
+            "compliance": "Einhaltung von Compliance-Anforderungen",
+            "customization": "Vollständige Anpassungsmöglichkeiten",
+            "performance": "Für Ihre Infrastruktur optimierte Leistung"
+          }
+        },
+        "cloud": {
+          "title": "Cloud-Bereitstellung",
+          "description": "Schnelle Einrichtung mit unserer verwalteten Cloud-Lösung.",
+          "features": {
+            "quick": "Schnelle Einrichtung in 5 Minuten",
+            "scalable": "Auto-skalierbare Infrastruktur",
+            "maintenance": "Keine Wartung erforderlich",
+            "updates": "Automatische Updates und Funktionen"
+          }
+        }
+      },
+      "useCases": {
+        "title": "Anwendungsfälle und Erfolgsgeschichten",
+        "business": {
+          "title": "Unternehmens-Teams",
+          "items": {
+            "meetings": "Mehrsprachige Team-Meetings",
+            "support": "Internationaler Kundensupport",
+            "collaboration": "Grenzüberschreitende Projektzusammenarbeit",
+            "training": "Globale Schulungsprogramme"
+          }
+        },
+        "education": {
+          "title": "Bildungseinrichtungen",
+          "items": {
+            "language": "Sprachlernprogramme",
+            "international": "Unterstützung für internationale Studenten",
+            "research": "Kollaborative Forschungsprojekte",
+            "cultural": "Kulturelle Austauschprogramme"
+          }
+        },
+        "community": {
+          "title": "Gemeinschaftsorganisationen",
+          "items": {
+            "nonprofits": "Internationale NGO-Sensibilisierung",
+            "events": "Mehrsprachige Veranstaltungen und Konferenzen",
+            "volunteer": "Freiwilligen-Koordinationsprogramme",
+            "healthcare": "Gesundheitskommunikations-Support"
+          }
+        }
+      },
+      "benefits": {
+        "title": "Partnerschaftsvorteile",
+        "priority": {
+          "title": "Prioritärer Zugang",
+          "description": "Frühzeitiger Zugang zu neuen Funktionen und APIs"
+        },
+        "support": {
+          "title": "Dedizierter Support",
+          "description": "Dediziertes technisches Support-Team für Ihre Projekte"
+        },
+        "visibility": {
+          "title": "Sichtbarkeit",
+          "description": "Hervorhebung Ihrer Partnerschaft auf unseren Plattformen"
+        }
+      },
+      "become": {
+        "title": "Partner werden",
+        "description": "Sie sind interessiert an einer Partnerschaft mit Meeshy? Kontaktieren Sie uns, um Kooperationsmöglichkeiten zu besprechen.",
+        "contact": "Kontaktieren Sie uns",
+        "about": "Über uns",
+        "api": "API-Dokumentation"
+      }
+    },
+    "contact": {
+      "title": "Kontaktieren Sie uns",
+      "subtitle": "Wir befinden uns im Herzen von La Défense, Paris",
+      "backHome": "Zurück zur Startseite",
+      "address": {
+        "title": "Unsere Adresse",
+        "company": "Meeshy",
+        "building": "Tour Eggée, 9 - 11 Avenue de l'Arche",
+        "street": "92400 Courbevoie",
+        "city": "Frankreich"
+      },
+      "contact": {
+        "title": "Kontakt",
+        "email": {
+          "label": "E-Mail",
+          "value": "contact@meeshy.me"
+        }
+      },
+      "availability": {
+        "title": "Verfügbarkeit",
+        "description": "Wir sind 24/7 verfügbar, um Sie zu unterstützen"
+      },
+      "transport": {
+        "title": "Wie Sie uns erreichen",
+        "train": {
+          "title": "Mit dem Zug",
+          "rer": "RER A: Station \"La Défense - Grande Arche\"",
+          "transilien": "Transilien L: Station \"La Défense\"",
+          "time": "Von Paris: 10-15 Minuten von Châtelet-Les Halles"
+        },
+        "metro": {
+          "title": "Mit der Metro",
+          "line1": "Linie 1: Station \"La Défense - Grande Arche\"",
+          "time": "Vom Zentrum von Paris: 20-25 Minuten"
+        },
+        "bus": {
+          "title": "Mit dem Bus",
+          "lines": "Linien: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+          "stop": "Haltestelle \"La Défense - Grande Arche\""
+        },
+        "lineU": {
+          "title": "Linie U",
+          "transilien": "Transilien U: Station \"La Défense\"",
+          "time": "Von West-Paris: 15-20 Minuten"
+        },
+        "lineE277": {
+          "title": "Linie E277",
+          "bus": "Bus E277: Haltestelle \"La Défense - Grande Arche\"",
+          "time": "Express-Service vom Westen"
+        },
+        "car": {
+          "title": "Mit dem Auto",
+          "highway": "Autobahn A14: Ausfahrt \"La Défense\"",
+          "parking": "Parken: Mehrere Parkplätze in der Gegend verfügbar",
+          "rates": "Preise: 2-4€/Stunde je nach Parkplatz"
+        }
+      },
+      "cta": {
+        "title": "Möchten Sie mehr erfahren?",
+        "learnMore": "Mehr erfahren",
+        "collaborate": "Mit uns zusammenarbeiten"
+      }
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "lastUpdated": "Zuletzt aktualisiert: 1. Januar 2026",
+      "sections": {
+        "acceptance": {
+          "title": "1. Annahme der Bedingungen",
+          "content": "Durch den Zugriff auf und die Nutzung von Meeshy stimmen Sie zu, an diese Nutzungsbedingungen gebunden zu sein. Wenn Sie diesen Bedingungen nicht zustimmen, nutzen Sie bitte unseren Service nicht."
+        },
+        "description": {
+          "title": "2. Servicebeschreibung",
+          "content": "Meeshy ist eine mehrsprachige Messaging-Plattform, die künstliche Intelligenz verwendet, um Nachrichten in Echtzeit automatisch zu übersetzen. Unser Service ermöglicht die Kommunikation ohne Sprachbarrieren direkt in Ihrem Browser."
+        },
+        "acceptableUse": {
+          "title": "3. Angemessene Nutzung",
+          "content": "Sie verpflichten sich:",
+          "list": [
+            "Den Service legal und respektvoll zu nutzen",
+            "Keine beleidigenden, illegalen oder unangemessenen Inhalte zu veröffentlichen",
+            "Die Privatsphäre und Rechte anderer zu respektieren",
+            "Nicht zu versuchen, die Sicherheit des Services zu gefährden",
+            "Den Service nicht ohne Genehmigung für kommerzielle Zwecke zu nutzen"
+          ]
+        },
+        "privacy": {
+          "title": "4. Datenschutz und Daten",
+          "content": "Wir verpflichten uns, Ihre Privatsphäre zu schützen. Übersetzungen werden lokal in Ihrem Browser durchgeführt, wenn möglich. Keine persönlichen Daten werden ohne Ihre ausdrückliche Zustimmung gespeichert. Weitere Details finden Sie in unserer Datenschutzrichtlinie."
+        },
+        "intellectualProperty": {
+          "title": "5. Geistiges Eigentum",
+          "content": "Meeshy und sein Inhalt sind durch Urheberrecht und andere Gesetze zum geistigen Eigentum geschützt. Sie dürfen unseren Service nicht ohne Genehmigung kopieren, modifizieren oder verteilen."
+        },
+        "limitation": {
+          "title": "6. Haftungsbeschränkung",
+          "content": "Meeshy wird \"wie besehen\" bereitgestellt. Wir garantieren nicht, dass der Service ununterbrochen oder fehlerfrei sein wird. Wir haften nicht für indirekte oder Folgeschäden, die aus der Nutzung unseres Services resultieren."
+        },
+        "modifications": {
+          "title": "7. Änderungen",
+          "content": "Wir behalten uns das Recht vor, diese Bedingungen jederzeit zu ändern. Änderungen treten mit ihrer Veröffentlichung auf dieser Seite in Kraft. Ihre fortgesetzte Nutzung des Services stellt Ihre Annahme der geänderten Bedingungen dar."
+        },
+        "contact": {
+          "title": "8. Kontakt",
+          "content": "Bei Fragen zu diesen Nutzungsbedingungen kontaktieren Sie uns bitte unter: contact@meeshy.me"
+        }
+      },
+      "navigation": {
+        "title": "Mehr über Meeshy erfahren",
+        "about": "Über uns",
+        "contact": "Kontaktieren Sie uns",
+        "partners": "Partner werden"
+      }
+    },
+    "privacy": {
+      "title": "Datenschutzrichtlinie",
+      "lastUpdated": "Zuletzt aktualisiert: 1. Januar 2026",
+      "backHome": "Zurück zur Startseite",
+      "print": "Drucken",
+      "sections": {
+        "introduction": {
+          "title": "1. Einführung",
+          "content": "Bei Meeshy verpflichten wir uns, Ihre Privatsphäre und persönlichen Daten zu schützen. Diese Datenschutzrichtlinie erklärt, wie wir Ihre Informationen sammeln, verwenden und schützen, wenn Sie unseren mehrsprachigen Messaging-Service nutzen."
+        },
+        "dataCollection": {
+          "title": "2. Informationen, die wir sammeln",
+          "personal": {
+            "title": "2.1 Persönliche Informationen",
+            "list": [
+              "Benutzername und E-Mail-Adresse (bei der Registrierung)",
+              "Spracheinstellungen",
+              "Profilinformationen (optional)"
+            ]
+          },
+          "translation": {
+            "title": "2.2 Übersetzungsdaten",
+            "list": [
+              "Übersetzte Nachrichten (lokal in Ihrem Browser verarbeitet)",
+              "Quell- und Zielsprachen",
+              "Übersetzungsmetadaten (ohne Nachrichteninhalt)"
+            ]
+          },
+          "technical": {
+            "title": "2.3 Technische Daten",
+            "list": [
+              "IP-Adresse (anonymisiert)",
+              "Browser-Typ und -Version",
+              "Service-Nutzungsdaten (anonyme Statistiken)"
+            ]
+          }
+        },
+        "usage": {
+          "title": "3. Wie wir Ihre Informationen verwenden",
+          "list": [
+            "Bereitstellung des Services: Echtzeit-Übersetzung Ihrer Nachrichten",
+            "Verbesserung des Services: Entwicklung neuer Funktionen",
+            "Kundensupport: Beantwortung Ihrer Fragen und Problemlösung",
+            "Sicherheit: Schutz vor Missbrauch und Betrug",
+            "Kommunikation: Wichtige Informationen über den Service"
+          ]
+        },
+        "protection": {
+          "title": "4. Schutz Ihrer Daten",
+          "local": {
+            "title": "4.1 Lokale Verarbeitung",
+            "content": "Die meisten Übersetzungen werden direkt in Ihrem Browser durchgeführt, was bedeutet, dass Ihre Nachrichten niemals Ihr Gerät verlassen."
+          },
+          "encryption": {
+            "title": "4.2 Verschlüsselung",
+            "content": "Alle Kommunikationen zwischen Ihrem Browser und unseren Servern sind mit TLS 1.3 verschlüsselt."
+          },
+          "storage": {
+            "title": "4.3 Sichere Speicherung",
+            "content": "Die auf unseren Servern gespeicherten Daten sind durch Sicherheitsmaßnahmen auf Unternehmensebene geschützt, einschließlich Verschlüsselung im Ruhezustand."
+          }
+        },
+        "sharing": {
+          "title": "5. Informationsaustausch",
+          "content": "Wir verkaufen, vermieten oder teilen Ihre persönlichen Informationen nicht mit Dritten, außer in den folgenden Fällen:",
+          "list": [
+            "Mit Ihrer ausdrücklichen Zustimmung",
+            "Zur Einhaltung einer gesetzlichen Verpflichtung",
+            "Zum Schutz unserer Rechte, Eigentum oder Sicherheit",
+            "Mit vertrauenswürdigen Dienstleistern (unter Vertraulichkeitsvertrag)"
+          ]
+        },
+        "rights": {
+          "title": "6. Ihre Rechte",
+          "content": "Gemäß der DSGVO haben Sie das Recht:",
+          "list": [
+            "Auf Ihre persönlichen Daten zuzugreifen",
+            "Unrichtige Informationen zu berichtigen",
+            "Ihre persönlichen Daten zu löschen",
+            "Die Verarbeitung Ihrer Daten zu beschränken",
+            "Datenportabilität",
+            "Der Verarbeitung zu widersprechen"
+          ],
+          "contact": "Um diese Rechte auszuüben, kontaktieren Sie uns unter: privacy@meeshy.me"
+        },
+        "cookies": {
+          "title": "7. Cookies und ähnliche Technologien",
+          "content": "Wir verwenden wesentliche Cookies für den Betrieb des Services und analytische Cookies zur Verbesserung der Benutzererfahrung. Sie können Ihre Cookie-Einstellungen in den Einstellungen Ihres Browsers verwalten."
+        },
+        "modifications": {
+          "title": "8. Änderungen dieser Richtlinie",
+          "content": "Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wichtige Änderungen werden per E-Mail oder über eine Benachrichtigung in der Anwendung mitgeteilt. Das Datum der letzten Aktualisierung ist oben auf dieser Seite angegeben."
+        },
+        "contact": {
+          "title": "9. Kontakt",
+          "content": "Bei Fragen zu dieser Datenschutzrichtlinie oder der Verarbeitung Ihrer persönlichen Daten kontaktieren Sie uns bitte:",
+          "email": "E-Mail: privacy@meeshy.me",
+          "address": "Adresse: 9 - 11 Avenue de l'Arche, Courbevoie 92400, Frankreich"
+        }
+      },
+      "navigation": {
+        "title": "Mehr über Meeshy erfahren",
+        "about": "Über uns",
+        "contact": "Kontaktieren Sie uns",
+        "partners": "Partner werden"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Anmelden",
+      "description": "Willkommen zurück bei Meeshy",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "loginButton": "Anmelden",
+      "forgotPassword": "Passwort vergessen?",
+      "noAccount": "Sie haben noch kein Konto?",
+      "registerLink": "Hier registrieren"
+    },
+    "register": {
+      "title": "Konto erstellen",
+      "description": "Treten Sie Meeshy bei und kommunizieren Sie ohne Barrieren",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "username": "Benutzername",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "registerButton": "Konto erstellen",
+      "hasAccount": "Sie haben bereits ein Konto?",
+      "loginLink": "Hier anmelden"
+    },
+    "joinConversation": {
+      "title": "Gespräch beitreten",
+      "description": "Geben Sie den Gesprächslink ein, den Sie erhalten haben",
+      "resumeTitle": "Gespräch fortsetzen oder beitreten",
+      "resumeDescription": "Sie haben ein laufendes Gespräch. Sie können es fortsetzen oder einem neuen Gespräch beitreten.",
+      "ongoingConversation": "Laufendes Gespräch",
+      "ongoingDescription": "Sie haben ein aktives Gespräch, das Sie fortsetzen können.",
+      "resumeButton": "Laufendes Gespräch fortsetzen",
+      "orJoinNew": "Oder einem neuen Gespräch beitreten",
+      "newConversationDescription": "Geben Sie unten einen neuen Gesprächslink ein:",
+      "linkPlaceholder": "Gesprächslink eingeben",
+      "joinButton": "Gespräch beitreten"
+    }
+  },
+  "header": {
+    "shareLinkCopied": "Freigabe-Link in die Zwischenablage kopiert",
+    "clearSession": "Sitzung löschen",
+    "clearSessionConfirm": "Sind Sie sicher, dass Sie Ihre Sitzung löschen möchten?",
+    "clearSessionDescription": "Diese Aktion wird alle Ihre Sitzungsdaten löschen und Sie abmelden.",
+    "share": "Teilen",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "logout": "Abmelden",
+    "anonymousSession": "Anonyme Sitzung",
+    "cancel": "Abbrechen",
+    "clearSessionButton": "Sitzung löschen",
+    "loginTitle": "Anmelden",
+    "loginDescription": "Melden Sie sich bei Ihrem Meeshy-Konto an",
+    "registerTitle": "Konto erstellen",
+    "registerDescription": "Treten Sie Meeshy bei und kommunizieren Sie ohne Barrieren"
+  },
+  "language": {
+    "title": "Sprachen",
+    "description": "Übersetzungseinstellungen",
+    "selectLanguage": "Sprache auswählen",
+    "interfaceLanguage": "Oberflächensprache",
+    "systemLanguage": "Systemsprache",
+    "regionalLanguage": "Regionale Sprache",
+    "customLanguage": "Benutzerdefinierte Sprache",
+    "autoTranslate": "Automatische Übersetzung",
+    "translateToSystem": "In Systemsprache übersetzen",
+    "translateToRegional": "In regionale Sprache übersetzen",
+    "useCustomDestination": "Benutzerdefiniertes Ziel verwenden"
+  },
+  "errors": {
+    "loginFailed": "Anmeldung fehlgeschlagen",
+    "registrationFailed": "Registrierung fehlgeschlagen",
+    "invalidCredentials": "Ungültige Anmeldedaten",
+    "networkError": "Netzwerkfehler",
+    "unknownError": "Ein unbekannter Fehler ist aufgetreten",
+    "validationError": "Validierungsfehler"
+  },
+  "success": {
+    "loginSuccess": "Anmeldung erfolgreich",
+    "registrationSuccess": "Konto erfolgreich erstellt",
+    "settingsSaved": "Einstellungen erfolgreich gespeichert",
+    "profileUpdated": "Profil erfolgreich aktualisiert",
+    "welcome": "Willkommen"
+  },
+  "login": {
+    "title": "Anmelden",
+    "subtitle": "Bei Ihrem Konto anmelden",
+    "formTitle": "Anmelden",
+    "formDescription": "Geben Sie Ihre Anmeldedaten ein",
+    "usernameLabel": "Benutzername oder E-Mail",
+    "usernamePlaceholder": "Ihr Benutzername",
+    "usernameHelp": "Geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein",
+    "passwordLabel": "Passwort",
+    "passwordPlaceholder": "Ihr Passwort",
+    "passwordHelp": "Geben Sie Ihr persönliches Passwort ein",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "loginButton": "Anmelden",
+    "loggingIn": "Anmelden...",
+    "verifyingAuth": "Authentifizierung überprüfen...",
+    "redirecting": "Weiterleitung läuft...",
+    "loading": "Lädt...",
+    "validation": {
+      "required": "Alle Felder sind erforderlich"
+    },
+    "noAccount": "Sie haben kein Konto?",
+    "registerLink": "Hier registrieren",
+    "success": {
+      "loginSuccess": "Anmeldung erfolgreich!"
+    },
+    "errors": {
+      "loginFailed": "Anmeldung fehlgeschlagen. Überprüfen Sie Ihre Anmeldedaten."
+    }
+  },
+  "register": {
+    "title": "Konto erstellen",
+    "description": "Treten Sie Meeshy bei und kommunizieren Sie ohne Barrieren",
+    "formDescription": "Füllen Sie das unten stehende Formular aus, um Ihr Konto zu erstellen",
+    "firstNameLabel": "Vorname *",
+    "firstNamePlaceholder": "Ihr Vorname",
+    "lastNameLabel": "Nachname *",
+    "lastNamePlaceholder": "Ihr Nachname",
+    "usernameLabel": "Benutzername *",
+    "usernamePlaceholder": "Wählen Sie einen Benutzernamen",
+    "usernameHelp": "Dieser Name wird für andere Benutzer sichtbar sein",
+    "emailLabel": "E-Mail *",
+    "emailPlaceholder": "ihre@email.com",
+    "phoneLabel": "Telefon",
+    "phonePlaceholder": "+49123456789",
+    "passwordLabel": "Passwort *",
+    "passwordPlaceholder": "Wählen Sie ein Passwort",
+    "passwordHelp": "Mindestens 6 Zeichen",
+    "confirmPasswordLabel": "Passwort bestätigen *",
+    "confirmPasswordPlaceholder": "Bestätigen Sie Ihr Passwort",
+    "systemLanguageLabel": "Systemsprache",
+    "regionalLanguageLabel": "Regionalsprache",
+    "registerButton": "Konto erstellen",
+    "creating": "Erstellen...",
+    "fillRequiredFields": "Bitte füllen Sie alle Pflichtfelder aus",
+    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
+    "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen enthalten",
+    "registrationError": "Fehler beim Erstellen des Kontos",
+    "hasAccount": "Sie haben bereits ein Konto?",
+    "loginLink": "Hier anmelden",
+    "acceptTerms": "Ich akzeptiere die",
+    "termsOfService": "Nutzungsbedingungen",
+    "and": "und die",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "contactUs": "kontaktieren Sie uns",
+    "mustAcceptTerms": "Sie müssen die Nutzungsbedingungen und die Datenschutzrichtlinie akzeptieren",
+    "validation": {
+      "required": "Alle Felder sind erforderlich",
+      "passwordMismatch": "Die Passwörter stimmen nicht überein",
+      "passwordLength": "Das Passwort muss mindestens 6 Zeichen enthalten"
+    },
+    "success": {
+      "registerSuccess": "Konto erfolgreich erstellt!",
+      "welcome": "Willkommen"
+    },
+    "errors": {
+      "registerFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    }
+  },
+  "joinConversation": {
+    "title": "Gespräch beitreten",
+    "description": "Geben Sie den Gesprächslink ein, den Sie erhalten haben",
+    "resumeTitle": "Gespräch fortsetzen oder beitreten",
+    "resumeDescription": "Sie haben ein laufendes Gespräch. Sie können es fortsetzen oder einem neuen Gespräch beitreten.",
+    "ongoingConversation": "Laufendes Gespräch",
+    "ongoingDescription": "Sie haben ein aktives Gespräch, das Sie fortsetzen können.",
+    "resumeButton": "Laufendes Gespräch fortsetzen",
+    "orJoinNew": "Oder einem neuen Gespräch beitreten",
+    "newConversationDescription": "Geben Sie unten einen neuen Gesprächslink ein:",
+    "linkLabel": "Gesprächslink",
+    "linkPlaceholder": "Link hier einfügen oder ID eingeben",
+    "joinButton": "Gespräch beitreten",
+    "verifying": "Überprüfung...",
+    "enterLink": "Bitte geben Sie einen Gesprächslink ein",
+    "invalidLink": "Ungültiger Gesprächslink",
+    "expiredLink": "Ungültiger oder abgelaufener Gesprächslink",
+    "verificationError": "Fehler bei der Link-Überprüfung",
+    "validLink": "Gültiger Link! Weiterleitung..."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -72,20 +767,20 @@
     "overview": "Hier ist eine Übersicht Ihrer heutigen Messaging-Aktivität.",
     "loading": "Dashboard wird geladen...",
     "errorLoading": "❌ Ladefehler: {message}",
-    "retry": "Wiederholen",
+    "retry": "Erneut versuchen",
     "stats": {
-      "totalConversations": "Gesamte Unterhaltungen",
-      "totalCommunities": "Gesamte Communities",
-      "totalGroups": "Gesamte Communities",
-      "totalMessages": "Gesamte Nachrichten",
-      "activeConversations": "Aktive Unterhaltungen",
+      "totalConversations": "Gesamtgespräche",
+      "totalCommunities": "Gemeinschaften gesamt",
+      "totalGroups": "Gemeinschaften gesamt",
+      "totalMessages": "Nachrichten gesamt",
+      "activeConversations": "Aktive Gespräche",
       "translationsToday": "Übersetzungen heute",
-      "totalLinks": "Gesamte Links",
-      "conversations": "Unterhaltungen",
-      "communities": "Communities",
-      "groups": "Communities",
+      "totalLinks": "Links gesamt",
+      "conversations": "Gespräche",
+      "communities": "Gemeinschaften",
+      "groups": "Gemeinschaften",
       "messages": "Nachrichten",
-      "activeConversationsTitle": "Aktive Unterhaltungen",
+      "activeConversationsTitle": "Aktive Gespräche",
       "translations": "Übersetzungen",
       "links": "Links",
       "total": "Gesamt",
@@ -95,91 +790,47 @@
       "today": "Heute",
       "created": "Erstellt"
     },
-    "recentConversations": "Kürzliche Unterhaltungen",
-    "recentCommunities": "Kürzliche Communities",
-    "recentGroups": "Kürzliche Communities",
+    "recentConversations": "Aktuelle Gespräche",
+    "recentCommunities": "Aktuelle Gemeinschaften",
+    "recentGroups": "Aktuelle Gemeinschaften",
     "createLink": "Link erstellen",
-    "newConversation": "Neue Unterh.",
-    "createCommunity": "Community erstellen",
+    "newConversation": "Neues Gesp.",
+    "createCommunity": "Gemeinschaft erstellen",
     "refresh": "Aktualisieren",
     "loadingError": "Ladefehler",
     "noData": "Keine Daten verfügbar",
     "errorUnknown": "Unbekannter Fehler",
     "dataLoadingError": "Fehler beim Laden der Daten",
     "actions": {
-      "createLink": "Einen Link erstellen",
-      "newConversation": "Neue Unterhaltung",
-      "createConversation": "Unterhaltung erstellen",
-      "createCommunity": "Eine Community erstellen",
-      "createGroup": "Eine Community erstellen",
+      "createLink": "Link erstellen",
+      "newConversation": "Neues Gespräch",
+      "createConversation": "Gespräch erstellen",
+      "createCommunity": "Gemeinschaft erstellen",
+      "createGroup": "Gemeinschaft erstellen",
       "viewAll": "Alle anzeigen",
-      "startConversation": "Eine Unterhaltung beginnen",
-      "createCommunityButton": "Eine Community erstellen",
-      "createGroupButton": "Eine Community erstellen",
+      "startConversation": "Gespräch starten",
+      "createCommunityButton": "Gemeinschaft erstellen",
+      "createGroupButton": "Gemeinschaft erstellen",
       "settings": "Einstellungen",
       "shareApp": "App teilen"
     },
     "quickActions": {
-      "title": "Schnellaktionen",
-      "description": "Schneller Zugriff auf Hauptfunktionen",
-      "newConversation": "Neue Unterhaltung",
-      "createLink": "Einen Link erstellen",
-      "createCommunity": "Eine Community erstellen",
-      "createGroup": "Eine Community erstellen",
+      "title": "Schnelle Aktionen",
+      "description": "Schnell auf Hauptfunktionen zugreifen",
+      "newConversation": "Neues Gespräch",
+      "createLink": "Link erstellen",
+      "createCommunity": "Gemeinschaft erstellen",
+      "createGroup": "Gemeinschaft erstellen",
       "shareApp": "App teilen",
       "settings": "Einstellungen"
     },
     "emptyStates": {
-      "noRecentConversations": "Keine kürzlichen Unterhaltungen",
-      "noRecentCommunities": "Keine kürzlichen Communities",
-      "noRecentGroups": "Keine kürzlichen Communities"
+      "noRecentConversations": "Keine aktuellen Gespräche",
+      "noRecentCommunities": "Keine aktuellen Gemeinschaften",
+      "noRecentGroups": "Keine aktuellen Gemeinschaften"
     },
     "success": {
-      "loginSuccess": "Erfolgreich angemeldet",
-      "registrationSuccess": "Konto erfolgreich erstellt",
-      "settingsSaved": "Einstellungen erfolgreich gespeichert",
-      "profileUpdated": "Profil erfolgreich aktualisiert",
-      "welcome": "Willkommen",
-      "linkCreated": "Unterhaltungslink erfolgreich erstellt!"
-    },
-    "summary": {
-      "title": "Konfigurationsübersicht",
-      "description": "Überprüfen Sie die Einstellungen vor der Link-Generierung",
-      "basicInfo": "Grundinformationen",
-      "conversation": "Unterhaltung",
-      "validityDuration": "Gültigkeitsdauer",
-      "usageLimit": "Nutzungslimit",
-      "usageCount": "{count} Nutzungen",
-      "unlimited": "Unbegrenzt",
-      "welcomeMessage": "Willkommensnachricht",
-      "noCustomMessage": "Keine benutzerdefinierte Nachricht",
-      "welcomeMessageDescription": "Beschreibung der Willkommensnachricht",
-      "permissionsGranted": "Gewährte Berechtigungen",
-      "messages": "Nachrichten",
-      "allowed": "Erlaubt",
-      "forbidden": "Verboten",
-      "guestsCanSendMessages": "Gäste können Nachrichten senden",
-      "guestsCannotSendMessages": "Gäste können keine Nachrichten senden",
-      "images": "Bilder",
-      "guestsCanShareImages": "Gäste können Bilder teilen",
-      "guestsCannotShareImages": "Gäste können keine Bilder teilen",
-      "files": "Dateien",
-      "guestsCanShareFiles": "Gäste können Dateien teilen",
-      "guestsCannotShareFiles": "Gäste können keine Dateien teilen",
-      "history": "Verlauf",
-      "visible": "Sichtbar",
-      "hidden": "Versteckt",
-      "guestsCanViewHistory": "Gäste können den Verlauf anzeigen",
-      "guestsCannotViewHistory": "Gäste können den Verlauf nicht anzeigen",
-      "nicknameRequired": "Spitzname erforderlich",
-      "yes": "Ja",
-      "no": "Nein",
-      "guestsMustEnterNickname": "Gäste müssen einen Spitznamen eingeben",
-      "guestsCanStayAnonymous": "Gäste können anonym bleiben",
-      "emailRequired": "E-Mail erforderlich",
-      "guestsMustEnterEmail": "Gäste müssen eine E-Mail eingeben",
-      "allowedLanguages": "Erlaubte Sprachen",
-      "selectedLanguages": "Ausgewählte Sprachen"
+      "linkCreated": "Gesprächslink erfolgreich erstellt!"
     },
     "time": {
       "format": "de-DE"
@@ -189,126 +840,46 @@
       "members": "Mitglieder",
       "member": "Mitglied",
       "membersCount": "{count} Mitglieder"
-    },
-    "steps": {
-      "selectConversation": "Unterhaltung auswählen",
-      "configureLink": "Link konfigurieren",
-      "linkOptions": "Link-Optionen",
-      "summaryAndGeneration": "Zusammenfassung und Generierung"
-    },
-    "stepDescriptions": {
-      "selectConversation": "Wählen Sie eine bestehende Unterhaltung oder erstellen Sie eine neue",
-      "configureLink": "Konfigurieren Sie die grundlegenden Link-Parameter",
-      "configureNewConversation": "Definieren Sie die Details Ihrer neuen Unterhaltung",
-      "linkOptions": "Passen Sie Berechtigungen und Einschränkungen an",
-      "summaryAndGeneration": "Überprüfen und generieren Sie Ihren Unterhaltungslink"
     }
   },
-  "createLinkButton": {
-    "createConversationLink": "Gesprächslink erstellen",
-    "needBigbossRights": "BIGBOSS-Rechte erforderlich, um Freigabelinks für globale Gespräche zu erstellen",
-    "noRightsToCreate": "Sie haben keine Rechte, Freigabelinks für dieses Gespräch zu erstellen",
-    "linkCreatedAndCopied": "Gesprächslink erstellt und kopiert",
-    "linkCreated": "Gesprächslink erstellt",
-    "copyManually": "Manuell kopieren",
-    "copiedToClipboard": "In die Zwischenablage kopiert",
-    "copyFailed": "Kopieren fehlgeschlagen",
-    "errorCreatingLink": "Fehler beim Erstellen des Links",
-    "createLinkButton": "Link-Erstellungsbutton"
-  },
-  "bubbleStream": {
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "deliveryStatus": {
-      "sent": "Gesendet",
-      "delivered": "Zugestellt",
-      "read": "Gelesen"
+  "layout": {
+    "header": {
+      "searchPlaceholder": "Gespräche, Gemeinschaften, Kontakte suchen...",
+      "notifications": "Benachrichtigungen",
+      "unreadCount": "{count} ungelesen",
+      "userMenu": "Benutzermenü"
     },
-    "toasts": {
-      "messages": {
-        "textCopied": "Text in die Zwischenablage kopiert"
-      }
-    }
-  },
-  "register": {
-    "title": "Konto erstellen",
-    "description": "Trete Meeshy bei und kommuniziere ohne Barrieren",
-    "formDescription": "Fülle das untenstehende Formular aus, um dein Konto zu erstellen",
-    "firstNameLabel": "Vorname *",
-    "firstNamePlaceholder": "Dein Vorname",
-    "lastNameLabel": "Nachname *",
-    "lastNamePlaceholder": "Dein Nachname",
-    "usernameLabel": "Benutzername *",
-    "usernamePlaceholder": "Wähle einen Benutzernamen",
-    "usernameHelp": "Dieser Name wird für andere Benutzer sichtbar sein",
-    "emailLabel": "E-Mail *",
-    "emailPlaceholder": "deine@email.com",
-    "phoneLabel": "Telefon",
-    "phonePlaceholder": "+33123456789",
-    "passwordLabel": "Passwort *",
-    "passwordPlaceholder": "Wähle ein Passwort",
-    "passwordHelp": "Mindestens 6 Zeichen",
-    "confirmPasswordLabel": "Passwort bestätigen *",
-    "confirmPasswordPlaceholder": "Bestätige dein Passwort",
-    "systemLanguageLabel": "Systemsprache",
-    "regionalLanguageLabel": "Regionale Sprache",
-    "registerButton": "Konto erstellen",
-    "creating": "Erstelle...",
-    "fillRequiredFields": "Bitte fülle alle Pflichtfelder aus",
-    "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
-    "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
-    "registrationError": "Fehler beim Erstellen des Kontos",
-    "hasAccount": "Hast du bereits ein Konto?",
-    "loginLink": "Hier anmelden",
-    "acceptTerms": "Ich akzeptiere die",
-    "termsOfService": "Nutzungsbedingungen",
-    "and": "und die",
-    "privacyPolicy": "Datenschutzrichtlinie",
-    "contactUs": "kontaktiere uns",
-    "mustAcceptTerms": "Sie müssen den Nutzungsbedingungen und der Datenschutzrichtlinie zustimmen"
-  },
-  "messages": {
-    "sent": "Nachricht gesendet!",
-    "sendError": "Fehler beim Senden der Nachricht",
-    "editSoon": "Nachrichtenbearbeitung kommt bald",
-    "translationError": "Fehler beim Anfordern der Übersetzung",
-    "translationMaxTier": "Diese Übersetzung verwendet bereits die höchste Stufe",
-    "translationInProgress": "Übersetzung läuft...",
-    "retranslationInProgress": "Erzwungene Neuübersetzung läuft...",
-    "translationSuccess": "Nachricht mit {model} übersetzt",
-    "textCopied": "Text kopiert",
-    "deliveryStatus": {
-      "sent": "Gesendet",
-      "delivered": "Zugestellt",
-      "read": "Gelesen"
-    }
-  },
-  "login": {
-    "title": "Anmeldung",
-    "description": "Willkommen zurück bei Meeshy",
-    "email": "E-Mail",
-    "password": "Passwort",
-    "loginButton": "Anmelden",
-    "forgotPassword": "Passwort vergessen?",
-    "noAccount": "Haben Sie noch kein Konto?",
-    "registerLink": "Hier registrieren",
-    "validation": {
-      "required": "Alle Felder sind erforderlich"
+    "navigation": {
+      "dashboard": "Dashboard",
+      "conversations": "Gespräche",
+      "communities": "Gemeinschaften",
+      "contacts": "Kontakte",
+      "links": "Links",
+      "profile": "Profil",
+      "settings": "Einstellungen",
+      "admin": "Administration",
+      "logout": "Abmelden"
     },
-    "success": {
-      "loginSuccess": "Anmeldung erfolgreich!"
+    "auth": {
+      "checking": "Authentifizierung überprüfen...",
+      "logoutSuccess": "Erfolgreich abgemeldet",
+      "logoutError": "Fehler beim Abmelden"
     },
-    "errors": {
-      "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
+    "communities": {
+      "private": "Privat",
+      "members": "Mitglieder",
+      "member": "Mitglied",
+      "membersCount": "{count} Mitglieder"
     }
   },
   "settings": {
     "title": "Einstellungen",
-    "pageTitle": "Einstellungen für {username}",
+    "pageTitle": "Einstellungen von {username}",
     "loadingSettings": "Einstellungen werden geladen...",
     "settingsError": "Fehler beim Laden der Einstellungen",
     "settingsSaved": "Einstellungen erfolgreich gespeichert",
     "settingsSaveError": "Fehler beim Speichern der Einstellungen",
+    "noUserConnected": "Kein Benutzer verbunden",
     "tabs": {
       "profile": "Profil",
       "translation": "Übersetzung",
@@ -322,12 +893,12 @@
       "settingsTitle": "Profil-Einstellungen",
       "settingsDescription": "Einstellungen für {username}",
       "photo": {
-        "title": "Profilfoto",
-        "description": "Passen Sie Ihr Profilfoto an, das anderen Benutzern sichtbar ist",
+        "title": "Profilbild",
+        "description": "Passen Sie Ihr Profilbild an, das für andere Benutzer sichtbar ist",
         "uploadImage": "Bild hochladen",
         "takePhoto": "Foto aufnehmen",
         "removePhoto": "Foto entfernen",
-        "photoUpdated": "Profilfoto aktualisiert",
+        "photoUpdated": "Profilbild aktualisiert",
         "previewTitle": "Foto-Vorschau"
       },
       "personalInfo": {
@@ -336,13 +907,13 @@
         "firstName": "Vorname",
         "lastName": "Nachname",
         "displayName": "Anzeigename",
-        "displayNamePlaceholder": "Wie Sie in Unterhaltungen erscheinen möchten",
+        "displayNamePlaceholder": "Wie Sie in Gesprächen erscheinen möchten",
         "email": "E-Mail",
         "emailPlaceholder": "ihre.email@beispiel.com",
         "phoneNumber": "Telefonnummer",
-        "phoneNumberPlaceholder": "+33 1 23 45 67 89",
+        "phoneNumberPlaceholder": "+49 1 23 45 67 89",
         "username": "Benutzername",
-        "usernameCannotChange": "Benutzername kann nicht geändert werden",
+        "usernameCannotChange": "Der Benutzername kann nicht geändert werden",
         "bio": "Biografie",
         "bioPlaceholder": "Erzählen Sie uns von sich..."
       },
@@ -356,347 +927,795 @@
         "uploading": "Hochladen..."
       }
     },
-    "noUserConnected": "Kein Benutzer verbunden"
-  },
-  "contact": {
-    "title": "Kontaktieren Sie uns",
-    "subtitle": "Wir befinden uns im Herzen von La Défense, Paris",
-    "backHome": "Zurück zur Startseite",
-    "address": {
-      "title": "Unsere Adresse",
-      "company": "Meeshy",
-      "building": "9 - 11 Avenue de l'Arche",
-      "street": "Courbevoie 92400",
-      "city": "Frankreich"
-    },
-    "contact": {
-      "title": "Kontakt",
-      "email": {
-        "label": "E-Mail",
-        "value": "contact@meeshy.me"
+    "translation": {
+      "title": "Sprachen- und Übersetzungskonfiguration",
+      "description": "Definieren Sie Ihre Sprachen und Übersetzungseinstellungen",
+      "mainLanguages": {
+        "title": "Hauptsprachen",
+        "description": "Konfigurieren Sie Ihre bevorzugten Sprachen für die Kommunikation",
+        "systemLanguage": "Systemsprache",
+        "systemLanguageDescription": "Hauptsprache Ihrer Benutzeroberfläche und Nachrichten",
+        "regionalLanguage": "Regionalsprache",
+        "regionalLanguageDescription": "Sprache Ihrer Region oder bevorzugte Zweitsprache",
+        "customDestinationLanguage": "Benutzerdefinierte Zielsprache",
+        "customDestinationLanguageDescription": "Spezifische Sprache für automatische Übersetzung (optional)",
+        "selectLanguage": "Sprache auswählen",
+        "none": "Keine"
+      },
+      "autoTranslation": {
+        "title": "Automatische Übersetzungsoptionen",
+        "description": "Konfigurieren Sie, wie Nachrichten automatisch übersetzt werden",
+        "enabled": "Automatische Übersetzung",
+        "enabledDescription": "Aktiviert die automatische Übersetzung eingehender Nachrichten",
+        "exclusiveMode": "Exklusivmodus: Aktivieren Sie nur eine Übersetzungsoption gleichzeitig.",
+        "translateToSystem": "Nur in Systemsprache übersetzen",
+        "translateToSystemDescription": "Übersetzt Nachrichten nur in {flag} {language}",
+        "translateToRegional": "Nur in Regionalsprache übersetzen",
+        "translateToRegionalDescription": "Übersetzt Nachrichten nur in {flag} {language}",
+        "translateToCustom": "Nur in benutzerdefinierte Sprache übersetzen",
+        "translateToCustomDescription": "Übersetzt Nachrichten nur in {flag} {language}",
+        "noCustomLanguage": "Keine benutzerdefinierte Sprache festgelegt - definieren Sie eine oben",
+        "tip": "Tipp:",
+        "tipDescription": "Wenn keine Option ausgewählt ist, werden Nachrichten in alle Ihre konfigurierten Sprachen übersetzt (System + Regional + Benutzerdefiniert)."
+      },
+      "preview": {
+        "title": "Konfigurationsvorschau",
+        "systemLanguage": "Systemsprache",
+        "regionalLanguage": "Regionalsprache",
+        "customLanguage": "Benutzerdefinierte Sprache",
+        "autoTranslation": "Automatische Übersetzung",
+        "enabled": "Aktiviert",
+        "disabled": "Deaktiviert"
+      },
+      "actions": {
+        "save": "Speichern",
+        "saving": "Speichern...",
+        "cancel": "Abbrechen",
+        "settingsUpdated": "Spracheinstellungen aktualisiert",
+        "updateError": "Fehler beim Aktualisieren der Spracheinstellungen"
       }
     },
-    "availability": {
-      "title": "Verfügbarkeit",
-      "description": "Wir sind 24/7 verfügbar, um Sie zu unterstützen"
+    "theme": {
+      "title": "Design und Benutzeroberfläche",
+      "description": "Passen Sie das Aussehen, die Sprache und die Schriftarten der Anwendung an",
+      "displayMode": {
+        "title": "Anzeigemodus",
+        "light": "Hell",
+        "dark": "Dunkel",
+        "system": "System"
+      },
+      "accentColor": {
+        "title": "Akzentfarbe",
+        "blue": "Blau",
+        "green": "Grün",
+        "purple": "Violett",
+        "red": "Rot",
+        "orange": "Orange",
+        "pink": "Rosa"
+      },
+      "interfaceLanguage": {
+        "title": "Sprache der Benutzeroberfläche",
+        "description": "Legt die Sprache der Benutzeroberfläche fest"
+      },
+      "ui": {
+        "title": "Benutzeroberfläche",
+        "description": "Anzeige- und Verhaltensoptionen",
+        "fontSize": {
+          "title": "Schriftgröße",
+          "small": "Klein",
+          "medium": "Mittel",
+          "large": "Groß"
+        },
+        "compactMode": {
+          "title": "Kompaktmodus",
+          "description": "Reduziert den Abstand, um mehr Inhalt anzuzeigen"
+        },
+        "animations": {
+          "title": "Animationen",
+          "description": "Aktiviert Übergänge und Animationen der Benutzeroberfläche"
+        },
+        "interfaceLanguage": {
+          "title": "Sprache der Benutzeroberfläche",
+          "description": "Legt die Sprache der Benutzeroberfläche fest"
+        },
+        "fontFamily": {
+          "title": "Schriftfamilie",
+          "description": "Wählen Sie die Hauptschrift der Anwendung"
+        },
+        "lineHeight": {
+          "title": "Zeilenhöhe",
+          "description": "Abstand zwischen Textzeilen",
+          "tight": "Eng",
+          "normal": "Normal",
+          "relaxed": "Entspannt",
+          "loose": "Locker"
+        }
+      },
+      "preview": {
+        "title": "Vorschau",
+        "description": "Vorschau der angewendeten Einstellungen",
+        "exampleMessage": "Beispielnachricht",
+        "exampleText": "Dies ist eine Vorschau des Aussehens von Nachrichten mit Ihren aktuellen Einstellungen."
+      },
+      "settingsUpdated": "Design aktualisiert",
+      "interfaceLanguageUpdated": "Sprache der Benutzeroberfläche aktualisiert"
     },
-    "transport": {
-      "title": "Wie Sie uns erreichen",
-      "train": {
-        "title": "Mit dem Zug",
-        "rer": "RER A: Station \"La Défense - Grande Arche\"",
-        "transilien": "Transilien L: Station \"La Défense\"",
-        "time": "Von Paris: 10-15 Minuten von Châtelet-Les Halles"
+    "fonts": {
+      "title": "Schriftauswahl",
+      "description": "Passen Sie das Aussehen des Textes in der Anwendung an",
+      "fontFamily": {
+        "title": "Schriftfamilie",
+        "description": "Wählen Sie die Hauptschrift der Anwendung"
       },
-      "metro": {
-        "title": "Mit der U-Bahn",
-        "line1": "Linie 1: Station \"La Défense\"",
-        "time": "Von Paris: 15-20 Minuten von Châtelet-Les Halles"
+      "fontSize": {
+        "title": "Schriftgröße",
+        "description": "Passen Sie die Textgröße an"
       },
-      "bus": {
-        "title": "Mit dem Bus",
-        "lines": "Buslinien 73, 141, 144, 159, 174, 175, 176, 178, 258, 262, 272, 276, 278, 360, 378",
-        "time": "Von Paris: 20-30 Minuten"
-      },
-      "car": {
-        "title": "Mit dem Auto",
-        "parking": "Parkhaus verfügbar",
-        "time": "Von Paris: 15-25 Minuten je nach Verkehr"
+      "lineHeight": {
+        "title": "Zeilenhöhe",
+        "description": "Abstand zwischen Textzeilen"
+      }
+    },
+    "stats": {
+      "title": "Übersetzungsstatistiken",
+      "description": "Sehen Sie Ihre Übersetzungsnutzungsstatistiken ein",
+      "totalTranslations": "Übersetzungen gesamt",
+      "languagesUsed": "Verwendete Sprachen",
+      "translationAccuracy": "Übersetzungsgenauigkeit",
+      "mostTranslatedLanguage": "Meistübersetzte Sprache",
+      "translationHistory": "Übersetzungsverlauf"
+    },
+    "notifications": {
+      "title": "Benachrichtigungen",
+      "description": "Konfigurieren Sie Ihre Benachrichtigungseinstellungen",
+      "emailNotifications": "E-Mail-Benachrichtigungen",
+      "pushNotifications": "Push-Benachrichtigungen",
+      "messageNotifications": "Nachrichten-Benachrichtigungen",
+      "groupNotifications": "Gruppen-Benachrichtigungen",
+      "translationNotifications": "Übersetzungs-Benachrichtigungen"
+    },
+    "privacy": {
+      "title": "Datenschutz",
+      "description": "Verwalten Sie Ihre Datenschutzeinstellungen",
+      "dataSharing": "Datenweitergabe",
+      "translationHistory": "Übersetzungsverlauf",
+      "analytics": "Analytics",
+      "cookies": "Cookies"
+    },
+    "security": {
+      "title": "Sicherheit",
+      "description": "Sicherheitseinstellungen Ihres Kontos",
+      "password": "Passwort",
+      "twoFactorAuth": "Zwei-Faktor-Authentifizierung",
+      "loginHistory": "Anmeldeverlauf",
+      "activeSessions": "Aktive Sitzungen"
+    }
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Entschuldigung, diese Seite existiert noch nicht.",
+    "suggestions": [
+      "Zurück zum Dashboard",
+      "Ihre Gespräche ansehen",
+      "Ihre Gemeinschaften ansehen"
+    ],
+    "backToDashboard": "Zurück zum Dashboard",
+    "previousPage": "Vorherige Seite"
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "invalidEmail": "Ungültige E-Mail-Adresse",
+    "invalidPhone": "Ungültige Telefonnummer",
+    "passwordTooShort": "Das Passwort muss mindestens 6 Zeichen enthalten",
+    "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein"
+  },
+  "communities": {
+    "private": "Privat",
+    "members": "Mitglieder",
+    "member": "Mitglied",
+    "membersCount": "{count} Mitglieder"
+  },
+  "conversations": {
+    "title": "Meine Gespräche",
+    "conversations": "Gespräche",
+    "loading": "Gespräche werden geladen...",
+    "loadingConversations": "Lädt...",
+    "loadingConversationsDescription": "Ihre Gespräche werden abgerufen...",
+    "noConversations": "Keine Gespräche",
+    "noConversationsDescription": "Starten Sie ein neues Gespräch, um mit Ihren Freunden zu chatten!",
+    "chooseConversation": "Wählen Sie ein Gespräch!",
+    "chooseConversationDescription": "Klicken Sie links auf ein Gespräch, um zu chatten",
+    "welcome": "Willkommen! 🎉",
+    "welcomeDescription": "Sie haben noch keine Gespräche. Beginnen Sie mit der Erstellung eines neuen!",
+    "newConversation": "Neues Gespräch",
+    "createLink": "Link erstellen",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "translationModel": "Übersetzungsmodell",
+    "chooseModel": "Modell wählen",
+    "apiService": "API-Service",
+    "active": "Aktiv",
+    "debug": "Debug: {count} Gespräche | Loading: {loading} | User: {user}",
+    "connected": "verbunden",
+    "notConnected": "nicht verbunden",
+    "yes": "ja",
+    "no": "nein",
+    "writeMessage": "Schreiben Sie Ihre Nachricht...",
+    "noMessages": "Keine Nachrichten in diesem Gespräch",
+    "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
+    "errorLoadingConversation": "Fehler beim Laden des Gesprächs. Neu laden...",
+    "participantRemoved": "Teilnehmer entfernt: {userId}",
+    "participantAdded": "Teilnehmer hinzugefügt: {userId}",
+    "linkCreated": "Link erstellt",
+    "conversationCreated": "Gespräch erstellt",
+    "errorLoadingNewConversation": "Fehler beim Laden des neuen Gesprächs:",
+    "lastMessage": "Letzte Nachricht",
+    "noLastMessage": "Noch keine Nachricht",
+    "authChecking": "Authentifizierung überprüfen..."
+  },
+  "bubbleStream": {
+    "loading": "Nachrichten werden geladen...",
+    "connecting": "Verbindung zum Server wird hergestellt...",
+    "initializing": "Initialisierung...",
+    "emptyStateMessage": "Momentan keine Nachrichten",
+    "emptyStateDescription": "Seien Sie der Erste, der im globalen Stream postet!",
+    "languagePlaceholder": "Schreibsprache",
+    "activeLanguages": "Aktive Sprachen",
+    "typing": {
+      "single": "{name} schreibt gerade...",
+      "double": "{name1} und {name2} schreiben gerade...",
+      "multiple": "{name} und {count} andere schreiben gerade..."
+    },
+    "realTimeMessages": "Echtzeit-Nachrichten",
+    "connectionInProgress": "Verbindung wird hergestellt...",
+    "connected": "Verbindung hergestellt! Echtzeit-Nachrichten aktiviert",
+    "websocketConnected": "WebSocket verbunden - Echtzeit-Nachrichten",
+    "websocketEstablished": "WebSocket-Verbindung hergestellt - Echtzeit-Nachrichten aktiviert",
+    "reconnecting": "Tentative de reconnexion...",
+    "retry": "Réessayer",
+    "diagnostics": "Diagnostic",
+    "connectionError": "Erreur de connexion",
+    "tryAgain": "Réessayer",
+    "translating": "Traduction...",
+    "originalLanguage": "Langue originale",
+    "clickToViewOriginal": "Cliquer pour voir l'original",
+    "availableTranslations": "Traductions disponibles",
+    "reply": "Répondre",
+    "addToFavorites": "Zu Favoriten hinzufügen",
+    "copy": "Kopieren",
+    "report": "Signaler",
+    "share": "Teilen",
+    "pin": "Épingler",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "filterLanguages": "Filtern les langues...",
+    "original": "Original",
+    "improveTranslationQuality": "Améliorer la qualité de traduction",
+    "noTranslationFound": "Aucune traduction trouvée",
+    "noTranslationAvailable": "Aucune traduction disponible",
+    "translateToOtherLanguages": "Traduire vers d'autres langues",
+    "translationsInProgress": "Traductions en cours...",
+    "shareWithWorld": "Partagez quelque chose avec le monde...",
+    "detected": "Détecté: {language}",
+    "reconnect": "Erneut verbinden",
+    "debug": "Debug",
+    "activeUsers": "Utilisateurs Actifs ({count})",
+    "charactersRemaining": "{count} caractères restants",
+    "charactersOverLimit": "{count} caractères en trop",
+    "newMessageFrom": "📨 Neue Nachricht von {name}",
+    "webSocketConnectionInProgress": "Anmelden WebSocket en cours...",
+    "deliveryStatus": {
+      "sent": "Gesendet",
+      "delivered": "Zugestellt",
+      "read": "Gelesen"
+    },
+    "toasts": {
+      "messages": {
+        "textCopied": "Texte copié dans le presse-papiers"
       }
     }
+  },
+  "anonymousChat": {
+    "title": "Conversation",
+    "connectedAs": "Connecté en tant que {firstName} {lastName} (@{username})",
+    "loadingMessages": "Lädt des messages...",
+    "loadMore": "Charger plus de messages",
+    "loading": "Lädt...",
+    "sessionNotActive": "Session anonyme non active",
+    "reloadPage": "Recharger la page",
+    "messagePlaceholder": "Tapez votre message...",
+    "user": "Utilisateur",
+    "users": "Benutzer",
+    "messageTooOldToDelete": "Diese Nachricht kann nicht mehr gelöscht werden (älter als 12 Stunden)",
+    "noRightsToDelete": "Sie haben nicht die Berechtigung, diese Nachricht zu löschen",
+    "anonymous": "Anonym",
+    "unknownUser": "?",
+    "missingLinkId": "Link-ID fehlt",
+    "loadingError": "Fehler beim Laden",
+    "unknownError": "Unbekannter Fehler",
+    "loadingConversation": "Unterhaltung wird geladen...",
+    "error": "Fehler",
+    "accessDenied": "Zugriff verweigert",
+    "accessDeniedDescription": "Sie haben nicht die erforderlichen Berechtigungen, um auf diese Unterhaltung zuzugreifen.",
+    "authenticationRequired": "Authentifizierung erforderlich",
+    "authenticationRequiredDescription": "Sie müssen angemeldet sein, um auf diese Unterhaltung zuzugreifen.",
+    "conversationNotFound": "Unterhaltung nicht gefunden",
+    "conversationNotFoundDescription": "Diese Unterhaltung existiert nicht oder der Link ist ungültig."
   },
   "toasts": {
     "connection": {
       "established": "Verbindung hergestellt",
       "disconnected": "Vom Server getrennt",
-      "lost": "Verbindung verloren, Verbindung wird wiederhergestellt...",
+      "lost": "Verbindung verloren, Wiederverbindung...",
       "reconnecting": "Verbindung wird hergestellt - Bitte warten...",
       "websocketConnecting": "WebSocket-Verbindung wird hergestellt...",
       "reconnectSuccess": "Wiederverbindung erfolgreich!",
-      "reconnectFailed": "Wiederverbindung fehlgeschlagen - Server überprüfen",
-      "cannotReconnect": "Wiederverbindung nicht möglich. Bitte Seite neu laden."
+      "reconnectFailed": "Wiederverbindung fehlgeschlagen - Server prüfen",
+      "cannotReconnect": "Wiederverbindung nicht möglich. Bitte laden Sie die Seite neu."
     },
     "messages": {
+      "sent": "Nachricht gesendet!",
+      "sendError": "Fehler beim Senden der Nachricht",
+      "editSoon": "Nachrichtenbearbeitung bald verfügbar",
+      "translationError": "Fehler bei der Übersetzungsanfrage",
+      "translationMaxTier": "Diese Übersetzung verwendet bereits die höchste Stufe",
       "translationInProgress": "Übersetzung läuft...",
-      "retranslationInProgress": "Neuübersetzung läuft...",
-      "editSoon": "Bearbeitung bald verfügbar",
-      "translationSuccess": "Übersetzung erfolgreich",
-      "textCopied": "Text in die Zwischenablage kopiert"
-    },
-    "conversations": {
-      "loadError": "Fehler beim Laden der Unterhaltung"
-    }
-  },
-  "linkSummaryModal": {
-    "title": "Freigabe-Link erstellt",
-    "description": "Ihr Freigabe-Link wurde erfolgreich erstellt. Hier ist eine Zusammenfassung der konfigurierten Einstellungen.",
-    "shareLink": "Freigabe-Link",
-    "copied": "Kopiert",
-    "copy": "Kopieren",
-    "expires": "Läuft ab am",
-    "userLimits": "Benutzerlimits",
-    "maxUses": "Max. Verwendungen",
-    "maxConcurrent": "Max. gleichzeitige Benutzer",
-    "maxSessions": "Max. eindeutige Sitzungen",
-    "noLimits": "Keine Limits",
-    "limitedTo": "Begrenzt auf",
-    "usage": "Verwendung",
-    "usages": "Verwendungen",
-    "unlimitedUsage": "Unbegrenzte Verwendung",
-    "languages": "Erlaubte Sprachen",
-    "sendPermissions": "Sendeberechtigungen",
-    "messages": "Nachrichten",
-    "files": "Dateien",
-    "images": "Bilder",
-    "videos": "Videos",
-    "audio": "Audio",
-    "documents": "Dokumente",
-    "links": "Links",
-    "location": "Standort",
-    "contacts": "Kontakte",
-    "authRequirements": "Authentifizierungsanforderungen",
-    "nickname": "Spitzname",
-    "email": "E-Mail",
-    "close": "Schließen",
-    "copyLink": "Link kopieren"
-  },
-  "conversations": {
-    "loading": "Lädt...",
-    "conversationCreated": "Gespräch erfolgreich erstellt",
-    "conversationDetails": "Gesprächsdetails"
-  },
-  "conversationWrapper": {
-    "authChecking": "Authentifizierung wird überprüft...",
-    "conversationWrapper": "Gesprächsumhüllung"
-  },
-  "conversationLayout": {
-    "authChecking": "Authentifizierung wird überprüft...",
-    "loadingConversations": "Gespräche werden geladen...",
-    "loadingConversationsDescription": "Ihre Gespräche werden abgerufen...",
-    "noConversations": "Keine Gespräche",
-    "noConversationsDescription": "Erstellen Sie ein neues Gespräch oder treten Sie einem bestehenden bei.",
-    "chooseConversation": "Wählen Sie ein Gespräch",
-    "chooseConversationDescription": "Wählen Sie ein Gespräch aus der Liste, um zu chatten.",
-    "welcome": "Willkommen bei Meeshy",
-    "welcomeDescription": "Verbinden Sie sich mit Freunden und Kollegen in Echtzeit mit automatischer Übersetzung.",
-    "createConversation": "Gespräch erstellen",
-    "filtreConversations": "Gespräche filtern",
-    "notConnected": "Nicht verbunden",
-    "participantRemoved": "Teilnehmer entfernt: {userId}",
-    "participantAdded": "Teilnehmer hinzugefügt: {userId}",
-    "errorLoadingNewConversation": "Fehler beim Laden des neuen Gesprächs",
-    "errorLoadingConversation": "Fehler beim Laden des Gesprächs",
-    "writeMessage": "Schreiben Sie Ihre Nachricht...",
-    "addParticipant": "Teilnehmer hinzufügen",
-    "conversations": {
-      "title": "Gespräche"
-    },
-    "no": "Nein",
-    "connected": "Verbunden",
-    "debug": "Debug: {count} Gespräche | Laden: {loading} | Benutzer: {user}",
-    "public": "Öffentlich",
-    "private": "Privat",
-    "createLink": "Link erstellen",
-    "createNewConversation": "Neues Gespräch erstellen",
-    "createNewLink": "Neuen Link erstellen",
-    "noPublicConversations": "Keine öffentlichen Gespräche",
-    "noPublicConversationsFound": "Keine öffentlichen Gespräche gefunden",
-    "noPrivateConversations": "Keine privaten Gespräche",
-    "noPrivateConversationsFound": "Keine privaten Gespräche gefunden",
-    "conversationDetails": "Gesprächsdetails",
-    "noMessages": "Keine Nachrichten in diesem Gespräch",
-    "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
-    "yes": "Ja",
-    "conversationLayout": "Gesprächslayout",
-    "conversationSearch": "Gesprächssuche",
-    "toasts": {
-      "messages": {
-        "translationInProgress": "Übersetzung läuft...",
-        "retranslationInProgress": "Neuübersetzung läuft...",
-        "editSoon": "Bearbeitung bald verfügbar",
-        "translationSuccess": "Übersetzung erfolgreich",
-        "textCopied": "Text in die Zwischenablage kopiert"
-      },
-      "conversations": {
-        "loadError": "Fehler beim Laden des Gesprächs"
-      }
-    }
-  },
-  "conversationSearch": {
-    "placeholder": "Nach Name, Beschreibung suchen...",
-    "filterConversations": "Gespräche filtern",
-    "searchParticipants": "Suchen...",
-    "shareMessage": "Teilen Sie etwas mit der Welt...",
-    "authChecking": "Authentifizierung wird überprüft...",
-    "toasts": {
-      "messages": {
-        "translationInProgress": "Übersetzung läuft...",
-        "retranslationInProgress": "Neuübersetzung läuft...",
-        "editSoon": "Bearbeitung bald verfügbar",
-        "translationSuccess": "Übersetzung erfolgreich",
-        "textCopied": "Text in die Zwischenablage kopiert"
-      },
-      "conversations": {
-        "loadError": "Fehler beim Laden des Gesprächs"
+      "retranslationInProgress": "Erzwungene Neuübersetzung läuft...",
+      "translationSuccess": "Nachricht übersetzt mit {model}",
+      "textCopied": "Text kopiert",
+      "deliveryStatus": {
+        "sent": "Gesendet",
+        "delivered": "Zugestellt", 
+        "read": "Gelesen"
       }
     },
     "conversations": {
-      "title": "Gespräche"
+      "loadError": "Unterhaltungen können nicht geladen werden",
+      "loadErrorGeneric": "Fehler beim Laden der Unterhaltung"
     },
-    "loadingConversations": "Gespräche werden geladen...",
-    "loadingConversationsDescription": "Ihre Gespräche werden abgerufen...",
-    "noConversations": "Keine Gespräche",
-    "noConversationsDescription": "Erstellen Sie ein neues Gespräch oder treten Sie einem bestehenden bei.",
-    "chooseConversation": "Wählen Sie ein Gespräch",
-    "chooseConversationDescription": "Wählen Sie ein Gespräch aus der Liste, um zu chatten.",
-    "welcome": "Willkommen bei Meeshy",
-    "welcomeDescription": "Verbinden Sie sich mit Freunden und Kollegen in Echtzeit mit automatischer Übersetzung.",
-    "createConversation": "Gespräch erstellen",
-    "filtreConversations": "Gespräche filtern",
-    "notConnected": "Nicht verbunden",
-    "participantRemoved": "Teilnehmer entfernt: {userId}",
-    "participantAdded": "Teilnehmer hinzugefügt: {userId}",
-    "errorLoadingNewConversation": "Fehler beim Laden des neuen Gesprächs",
-    "errorLoadingConversation": "Fehler beim Laden des Gesprächs",
-    "writeMessage": "Schreiben Sie Ihre Nachricht...",
-    "no": "Nein",
-    "connected": "Verbunden",
-    "debug": "Debug: {count} Gespräche | Laden: {loading} | Benutzer: {user}",
-    "public": "Öffentlich",
-    "private": "Privat",
-    "createLink": "Link erstellen",
-    "conversationDetails": "Gesprächsdetails",
-    "noMessages": "Keine Nachrichten in diesem Gespräch",
-    "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
-    "yes": "Ja",
-    "conversationLayout": "Gesprächslayout",
-    "conversationSearch": "Gesprächssuche",
-    "conversationUI": "Gesprächsoberfläche"
+    "auth": {
+      "logoutSuccess": "Erfolgreich abgemeldet",
+      "fillAllFields": "Bitte füllen Sie alle Felder aus",
+      "connectionError": "Verbindungsfehler",
+      "serverConnectionError": "Fehler bei der Serververbindung"
+    },
+    "settings": {
+      "saved": "Einstellungen sauvegardés avec succès",
+      "saveError": "Erreur lors de la sauvegarde",
+      "reset": "Einstellungen zurückgesetzt"
+    },
+    "participants": {
+      "removed": "Teilnehmer aus der Unterhaltung entfernt",
+      "removeError": "Fehler beim Entfernen des Teilnehmers"
+    },
+    "conversation": {
+      "nameUpdated": "Name der Unterhaltung aktualisiert", 
+      "nameUpdateError": "Fehler beim Aktualisieren des Namens",
+      "created": "Unterhaltung erfolgreich erstellt"
+    }
   },
-  "conversationDetails": {
-    "title": "Gesprächsdetails",
-    "conversationGroup": "Gruppengespräch",
-    "conversationPrivate": "Privates Gespräch",
-    "conversationName": "Gesprächsname",
-    "clickToEdit": "Klicken Sie, um den Namen zu bearbeiten",
-    "editName": "Name bearbeiten",
-    "nameCannotBeEmpty": "Der Gesprächsname darf nicht leer sein",
-    "nameUpdated": "Gesprächsname aktualisiert",
-    "conversationExists": "Ein Gespräch mit diesem Namen existiert bereits",
-    "noPermissionToModify": "Sie haben keine Berechtigung, dieses Gespräch zu ändern",
-    "conversationNotFound": "Gespräch nicht gefunden",
-    "invalidData": "Ungültige Daten",
-    "updateError": "Fehler beim Aktualisieren des Namens",
-    "participantRemoved": "Teilnehmer aus dem Gespräch entfernt",
-    "removeParticipantError": "Fehler beim Entfernen des Teilnehmers",
-    "activeLanguages": "Aktive Sprachen",
-    "activeUsers": "Aktive Benutzer",
-    "noActiveUsers": "Keine aktiven Benutzer",
-    "otherActiveUsers": "+{count} weitere aktive Benutzer",
-    "shareLinks": "Freigabelinks",
-    "conversationDetails": "Gesprächsdetails"
+  "partners": {
+    "backHome": "Zurück zur Startseite",
+    "title": "Meeshy Partnerschaften",
+    "subtitle": "Treten Sie unserem Ökosystem bei und bieten Sie mehrsprachige Kommunikationslösungen für Ihre Teams, Studenten und Gemeinschaften.",
+    "enterprise": {
+      "title": "Unternehmens-Teams",
+      "description": "Spezielle Lösungen für Organisationen, die Echtzeit-Übersetzung in ihre Arbeitsabläufe integrieren möchten.",
+      "features": {
+        "deployment": "Vor-Ort- oder Cloud-Bereitstellung",
+        "sso": "SSO-Integration und Benutzerverwaltung",
+        "analytics": "Erweiterte Dashboards und Analysen",
+        "support": "Prioritäts-Support 24/7",
+        "customization": "Vollständige Interface-Anpassung"
+      },
+      "pricing": "Maßgeschneiderte Preise - Kontaktieren Sie uns"
+    },
+    "education": {
+      "title": "Bildungseinrichtungen",
+      "description": "Spezielle Programme für Schulen, Universitäten und Ausbildungszentren, die internationale Austausche erleichtern möchten.",
+      "features": {
+        "classrooms": "Mehrsprachige virtuelle Klassenzimmer",
+        "exchange": "Erleichterte Austauschprogramme",
+        "learning": "Adaptive Lernwerkzeuge",
+        "admin": "Zentralisierte institutionelle Verwaltung",
+        "curriculum": "Integration in bestehende Lehrpläne"
+      },
+      "pricing": "Vergünstigte Bildungstarife - 50% Rabatt"
+    },
+    "types": {
+      "tech": {
+        "title": "Technologie-Partner",
+        "description": "Integrieren Sie unsere Übersetzungs-APIs in Ihre bestehenden Anwendungen und Dienste.",
+        "features": {
+          "0": "Vollständige REST- und WebSocket-APIs",
+          "1": "SDKs in mehreren Sprachen verfügbar",
+          "2": "Detaillierte technische Dokumentation",
+          "3": "Dedizierter Entwickler-Support"
+        }
+      }
+    },
+    "deployment": {
+      "title": "Solutions de Déploiement",
+      "onPremise": {
+        "title": "Déploiement Sur Site",
+        "description": "Installation complète dans votre infrastructure pour un contrôle total et une sécurité maximale.",
+        "features": {
+          "security": "Sécurité et confidentialité renforcées",
+          "compliance": "Conformité aux réglementations spécifiques",
+          "customization": "Personnalisation avancée selon vos besoins",
+          "performance": "Optimisation des performances sur votre réseau"
+        }
+      },
+      "cloud": {
+        "title": "Solution Cloud",
+        "description": "Déploiement rapide et gestion simplifiée avec notre infrastructure cloud sécurisée.",
+        "features": {
+          "quick": "Mise en place rapide en moins de 24h",
+          "scalable": "Montée en charge automatique",
+          "maintenance": "Maintenance et mises à jour automatiques",
+          "updates": "Neues fonctionnalités en continu"
+        }
+      }
+    },
+    "useCases": {
+      "title": "Cas d'Usage",
+      "business": {
+        "title": "Entreprises",
+        "items": {
+          "meetings": "Réunions internationales fluides",
+          "support": "Support client multilingue",
+          "collaboration": "Collaboration d'équipes dispersées",
+          "training": "Formation et onboarding globaux"
+        }
+      },
+      "education": {
+        "title": "Éducation",
+        "items": {
+          "language": "Apprentissage des langues immersif",
+          "international": "Programmes internationaux",
+          "research": "Collaboration de recherche mondiale",
+          "cultural": "Échanges culturels enrichissants"
+        }
+      },
+      "community": {
+        "title": "Gemeinschaften",
+        "items": {
+          "nonprofits": "Gemeinnützige Organisationen",
+          "events": "Multikulturelle Veranstaltungen",
+          "volunteer": "Internationale Freiwilligenprogramme",
+          "healthcare": "Gemeinschaftsgesundheitsdienste"
+        }
+      }
+    },
+    "benefits": {
+      "title": "Partner-Vorteile",
+      "priority": {
+        "title": "Prioritäts-Support",
+        "description": "Direkter Zugang zu unserem technischen Team mit garantierten Antwortzeiten."
+      },
+      "support": {
+        "title": "Dedizierte Betreuung",
+        "description": "Ein dedizierter Partner-Manager, der Sie bei Ihrer Bereitstellung begleitet."
+      },
+      "visibility": {
+        "title": "Erhöhte Sichtbarkeit",
+        "description": "Hervorhebung Ihrer Organisation in unserem Partner-Ökosystem."
+      }
+    },
+    "become": {
+      "title": "Partner werden",
+      "description": "Bereit, die Kommunikation in Ihrer Organisation zu transformieren? Kontaktieren Sie uns für eine maßgeschneiderte Partnerschaft.",
+      "contact": "Kontaktieren Sie uns",
+      "about": "Mehr erfahren",
+      "api": "API-Dokumentation"
+    }
   },
-  "conversationParticipants": {
-    "noParticipantsOnline": "Keine Teilnehmer online",
-    "online": "online",
-    "typing": "schreibt...",
-    "typingMultiple": "Personen schreiben...",
-    "you": "Sie",
-    "conversationParticipants": "Gesprächsteilnehmer"
+  "about": {
+    "backHome": "Zurück à l'accueil",
+    "title": "Über Meeshy",
+    "subtitle": "Wir glauben, dass Kommunikation niemals durch Sprachbarrieren eingeschränkt werden sollte.",
+    "mission": {
+      "title": "Unsere Mission",
+      "description": "Bei Meeshy bemühen wir uns, eine Welt zu schaffen, in der jede Unterhaltung möglich ist, unabhängig von der gesprochenen Sprache. Unsere Messaging-Plattform mit automatischer Übersetzung ermöglicht es Menschen aller Herkunft, authentisch zu kommunizieren und ihre Ideen ohne Einschränkungen zu teilen."
+    },
+    "values": {
+      "globalAccess": {
+        "title": "Globaler Zugang",
+        "description": "Wir machen mehrsprachige Kommunikation für alle auf der ganzen Welt zugänglich."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "Wir erweitern die Grenzen der Übersetzungstechnologie, um ein nahtloses Erlebnis zu bieten."
+      },
+      "privacy": {
+        "title": "Datenschutz",
+        "description": "Ihre Gespräche bleiben privat. Die Übersetzung erfolgt lokal auf Ihrem Gerät."
+      }
+    },
+    "team": {
+      "title": "Unser Team",
+      "description": "Wir sind ein leidenschaftliches Team aus Entwicklern, Linguisten und Designern, die zusammenarbeiten, um Sprachbarrieren zu durchbrechen.",
+      "details": "Mit Sitz in Frankreich verstehen wir die Bedeutung der Bewahrung kultureller Nuancen in jedem Gespräch und erleichtern gleichzeitig das gegenseitige Verständnis."
+    },
+    "cta": {
+      "title": "Möchten Sie mehr über unsere Vision erfahren?",
+      "contact": "Kontaktieren Sie uns",
+      "terms": "Nutzungsbedingungen",
+      "privacy": "Datenschutzrichtlinie"
+    }
   },
-  "conversationUI": {
-    "participants": "Teilnehmer",
-    "createLink": "Link erstellen",
-    "addParticipant": "Teilnehmer hinzufügen",
-    "searchParticipants": "Teilnehmer suchen",
-    "online": "Online",
-    "offline": "Offline",
-    "noOneOnline": "Niemand online",
-    "noOfflineParticipants": "Keine Offline-Teilnehmer",
-    "you": "Sie",
-    "removeFromGroup": "Aus der Gruppe entfernen",
-    "participantRemoved": "Teilnehmer aus dem Gespräch entfernt",
-    "removeParticipantError": "Fehler beim Entfernen des Teilnehmers",
-    "linkCreated": "Gesprächslink erstellt",
-    "createLinkError": "Fehler beim Erstellen des Links",
-    "conversationSearch": "Gesprächssuche",
-    "communities": "Gemeinschaften",
-    "conversationUI": "Gesprächsoberfläche",
-    "loading": "Lädt..."
+  "contact": {
+    "backHome": "Zurück zur Startseite",
+    "title": "Kontaktieren Sie uns",
+    "subtitle": "Wir würden uns freuen, mit Ihnen über Ihre mehrsprachigen Kommunikationsbedürfnisse zu sprechen.",
+    "address": {
+      "title": "Unsere Adresse",
+      "company": "Meeshy SAS",
+      "building": "Tour Ariane",
+      "street": "5 Place de la Pyramide",
+      "city": "92800 Puteaux, Frankreich"
+    },
+    "email": {
+      "label": "E-Mail",
+      "value": "contact@meeshy.me"
+    },
+    "phone": {
+      "label": "Telefon",
+      "value": "+33 (0)1 47 17 67 00"
+    },
+    "hours": {
+      "title": "Öffnungszeiten",
+      "weekdays": "Montag - Freitag",
+      "weekdaysTime": "9:00 - 18:00",
+      "saturday": "Samstag",
+      "saturdayTime": "10:00 - 16:00",
+      "sunday": "Sonntag",
+      "sundayTime": "Geschlossen"
+    },
+    "directions": {
+      "title": "Wie Sie uns erreichen",
+      "train": {
+        "title": "Mit dem Zug",
+        "rera": "RER A: Station \"La Défense - Grande Arche\"",
+        "transilien": "Transilien L: Station \"La Défense\"",
+        "duration": "Von Paris: 10-15 Minuten von Châtelet-Les Halles"
+      },
+      "metro": {
+        "title": "Mit der Metro",
+        "line1": "Linie 1: Station \"La Défense - Grande Arche\"",
+        "duration": "Vom Zentrum von Paris: 20-25 Minuten"
+      },
+      "bus": {
+        "title": "Mit dem Bus",
+        "lines": "Linien: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+        "stop": "Haltestelle \"La Défense - Grande Arche\""
+      },
+      "lineU": {
+        "title": "Linie U",
+        "transilien": "Transilien U: Station \"La Défense\"",
+        "duration": "Vom Westen von Paris: 15-20 Minuten"
+      },
+      "express": {
+        "title": "Linie E277",
+        "bus": "Bus E277: Haltestelle \"La Défense - Grande Arche\"",
+        "service": "Express-Service vom Westen"
+      },
+      "car": {
+        "title": "Mit dem Auto",
+        "highway": "Autobahn A14: Ausfahrt \"La Défense\"",
+        "parking": "Parkplätze: Mehrere Parkplätze im Viertel verfügbar",
+        "rates": "Tarife: 2-4€/Stunde je nach Parkplatz"
+      }
+    },
+    "cta": {
+      "title": "Möchten Sie mehr erfahren?",
+      "about": "Mehr erfahren",
+      "partners": "Mit uns zusammenarbeiten"
+    }
   },
-  "typingIndicator": {
-    "isTyping": "schreibt",
-    "areTyping": "schreiben",
-    "multipleTyping": "Personen schreiben",
-    "typing": "Schreibt...",
-    "typingIndicator": "Schreibanzeige"
+  "privacy": {
+    "backHome": "Zurück zur Startseite",
+    "print": "Drucken",
+    "title": "Datenschutzrichtlinie",
+    "lastUpdated": "Zuletzt aktualisiert: 6. September 2025",
+    "intro": "Bei Fragen zu dieser Datenschutzrichtlinie oder der Verarbeitung Ihrer persönlichen Daten kontaktieren Sie uns bitte:",
+    "email": "privacy@meeshy.me",
+    "address": "Tour Eggée, 9 - 11 Avenue de l'Arche, 92400 Courbevoie, Frankreich",
+    "introduction": {
+      "title": "1. Einführung",
+      "content": "Bei Meeshy verpflichten wir uns, Ihre Privatsphäre und persönlichen Daten zu schützen. Diese Datenschutzrichtlinie erklärt, wie wir Ihre Informationen sammeln, verwenden und schützen, wenn Sie unseren mehrsprachigen Messaging-Service nutzen."
+    },
+    "dataCollection": {
+      "title": "2. Informationen, die wir sammeln",
+      "personal": {
+        "title": "2.1 Persönliche Informationen",
+        "items": [
+          "Benutzername und E-Mail-Adresse (bei der Registrierung)",
+          "Sprachpräferenzen",
+          "Profilinformationen (optional)"
+        ]
+      },
+      "translation": {
+        "title": "2.2 Übersetzungsdaten",
+        "items": [
+          "Übersetzte Nachrichten (lokal in Ihrem Browser verarbeitet)",
+          "Quell- und Zielsprachen",
+          "Übersetzungsmetadaten (ohne Nachrichteninhalt)"
+        ]
+      },
+      "technical": {
+        "title": "2.3 Technische Daten",
+        "items": [
+          "IP-Adresse (anonymisiert)",
+          "Browsertyp und -version",
+          "Service-Nutzungsdaten (anonyme Statistiken)"
+        ]
+      }
+    },
+    "usage": {
+      "title": "3. Wie wir Ihre Informationen verwenden",
+      "items": [
+        {
+          "title": "Servicebereitstellung:",
+          "description": "Echtzeitübersetzung Ihrer Nachrichten"
+        },
+        {
+          "title": "Serviceverbesserung:",
+          "description": "Entwicklung neuer Funktionen"
+        },
+        {
+          "title": "Kundensupport:",
+          "description": "Beantwortung Ihrer Fragen und Problemlösung"
+        },
+        {
+          "title": "Sicherheit:",
+          "description": "Schutz vor Missbrauch und Betrug"
+        },
+        {
+          "title": "Kommunikation:",
+          "description": "Wichtige Informationen über den Service"
+        }
+      ]
+    },
+    "protection": {
+      "title": "4. Schutz Ihrer Daten",
+      "local": {
+        "title": "4.1 Lokale Verarbeitung",
+        "content": "Die meisten Übersetzungen werden direkt in Ihrem Browser durchgeführt, was bedeutet, dass Ihre Nachrichten niemals Ihr Gerät verlassen."
+      },
+      "encryption": {
+        "title": "4.2 Verschlüsselung",
+        "content": "Alle Kommunikationen zwischen Ihrem Browser und unseren Servern sind mit TLS 1.3 verschlüsselt."
+      },
+      "storage": {
+        "title": "4.3 Sichere Speicherung",
+        "content": "Die auf unseren Servern gespeicherten Daten sind durch Unternehmenssicherheitsmaßnahmen geschützt, einschließlich Verschlüsselung im Ruhezustand."
+      }
+    },
+    "sharing": {
+      "title": "5. Informationsaustausch",
+      "intro": "Wir verkaufen, vermieten oder teilen Ihre persönlichen Informationen nicht mit Dritten, außer in folgenden Fällen:",
+      "cases": [
+        "Mit Ihrer ausdrücklichen Zustimmung",
+        "Um gesetzlichen Verpflichtungen nachzukommen",
+        "Zum Schutz unserer Rechte, Eigentums oder Sicherheit",
+        "Mit vertrauenswürdigen Dienstleistern (unter Vertraulichkeitsvereinbarung)"
+      ]
+    },
+    "rights": {
+      "title": "6. Ihre Rechte",
+      "intro": "Gemäß der DSGVO haben Sie das Recht:",
+      "list": [
+        "Zugang zu Ihren persönlichen Daten",
+        "Berichtigung unrichtiger Informationen",
+        "Löschung Ihrer persönlichen Daten",
+        "Einschränkung der Verarbeitung Ihrer Daten",
+        "Datenportabilität",
+        "Widerspruch gegen die Verarbeitung"
+      ],
+      "contact": "Um diese Rechte auszuüben, kontaktieren Sie uns unter: privacy@meeshy.me"
+    },
+    "cookies": {
+      "title": "7. Cookies und ähnliche Technologien",
+      "content": "Wir verwenden wesentliche Cookies für den Betrieb des Services und analytische Cookies zur Verbesserung der Benutzererfahrung. Sie können Ihre Cookie-Einstellungen in den Einstellungen Ihres Browsers verwalten."
+    },
+    "changes": {
+      "title": "8. Änderungen an dieser Richtlinie",
+      "content": "Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wichtige Änderungen werden per E-Mail oder über eine Benachrichtigung in der Anwendung mitgeteilt. Das Datum der letzten Aktualisierung ist oben auf dieser Seite angegeben."
+    },
+    "contact": {
+      "title": "9. Kontakt",
+      "intro": "Bei Fragen zu dieser Datenschutzrichtlinie oder der Verarbeitung Ihrer persönlichen Daten kontaktieren Sie uns bitte:",
+      "email": "E-Mail: privacy@meeshy.me",
+      "address": "Adresse: 9 - 11 Avenue de l'Arche, Courbevoie 92400, Frankreich"
+    },
+    "footer": {
+      "title": "Mehr über Meeshy erfahren",
+      "about": "Über uns",
+      "contact": "Kontaktieren Sie uns",
+      "partners": "Partner werden"
+    }
   },
-  "createConversationModal": {
-    "title": "Neues Gespräch",
-    "description": "Erstellen Sie ein modernes Gespräch mit einem intelligenten und dynamischen Ansatz",
-    "steps": {
-      "members": "Mitglieder",
-      "details": "Details"
+  "terms": {
+    "backHome": "Zurück zur Startseite",
+    "print": "Drucken",
+    "title": "Nutzungsbedingungen",
+    "lastUpdated": "Zuletzt aktualisiert: 1. Januar 2026",
+    "intro": "Bei Fragen zu diesen Nutzungsbedingungen kontaktieren Sie uns:",
+    "email": "legal@meeshy.me",
+    "address": "Tour Eggée, 9 - 11 Avenue de l'Arche, 92400 Courbevoie, Frankreich",
+    "acceptance": {
+      "title": "1. Annahme der Bedingungen",
+      "content": "Durch den Zugriff auf und die Nutzung von Meeshy stimmen Sie zu, an diese Nutzungsbedingungen gebunden zu sein. Wenn Sie diesen Bedingungen nicht zustimmen, nutzen Sie bitte unseren Service nicht."
     },
-    "community": {
-      "title": "Gemeinschaft (optional)",
-      "searchPlaceholder": "Nach einer Gemeinschaft suchen...",
-      "loading": "Lädt...",
-      "noCommunitiesFound": "Keine Gemeinschaften gefunden.",
-      "membersCount": "{count} Mitglieder • {conversations} Gespräche",
-      "private": "Privat",
-      "public": "Öffentlich"
+    "service": {
+      "title": "2. Servicebeschreibung",
+      "content": "Meeshy ist ein mehrsprachiger Messaging-Service, der Echtzeitübersetzung von Nachrichten ermöglicht. Wir behalten uns das Recht vor, den Service jederzeit zu ändern, auszusetzen oder zu unterbrechen."
     },
-    "members": {
-      "title": "Mitglieder hinzufügen",
-      "searchPlaceholder": "Benutzer nach Name oder Benutzername suchen...",
-      "loading": "Lädt...",
-      "noUsersFound": "Keine Benutzer gefunden.",
-      "selectedMembers": "Ausgewählte Mitglieder ({count})"
+    "account": {
+      "title": "3. Benutzerkonto",
+      "intro": "Um bestimmte Funktionen von Meeshy zu nutzen, müssen Sie ein Konto erstellen. Sie verpflichten sich zu:",
+      "responsibilities": [
+        "Genaue und vollständige Informationen bereitstellen",
+        "Die Sicherheit Ihres Passworts wahren",
+        "Uns sofort über unbefugte Nutzung informieren",
+        "Für alle Aktivitäten unter Ihrem Konto verantwortlich sein"
+      ]
     },
-    "conversationDetails": {
-      "title": "Gesprächsdetails",
-      "conversationTitle": "Gesprächstitel",
-      "titlePlaceholder": "Der Titel wird automatisch generiert...",
-      "titleInfoDirect": "Automatisch generierter Titel für direkte Gespräche",
-      "titleInfoGroup": "Bearbeiten Sie den Titel bei Bedarf für Gruppengespräche",
-      "identifier": "Bezeichner",
-      "identifierRequired": "*",
-      "identifierPrefix": "mshy_",
-      "identifierPlaceholder": "mein-bezeichner",
-      "identifierInfo": "Erlaubte Zeichen: Buchstaben, Zahlen, Bindestriche, Unterstriche, @",
-      "identifierError": "Der Bezeichner enthält nicht erlaubte Zeichen",
-      "typeDirect": "Direkt",
-      "typeGroup": "Gruppe"
+    "usage": {
+      "title": "4. Akzeptable Nutzung",
+      "intro": "Sie verpflichten sich, den Service nicht zu verwenden für:",
+      "prohibited": [
+        "Verletzung lokaler, nationaler oder internationaler Gesetze",
+        "Belästigung, Missbrauch oder Schädigung anderer",
+        "Übertragung illegaler, beleidigender oder unangemessener Inhalte",
+        "Verbreitung von Viren oder anderen schädlichen Codes",
+        "Vortäuschung der Identität einer anderen Person",
+        "Umgehung der Sicherheitsmaßnahmen des Services"
+      ]
     },
-    "autoGeneratedTitles": {
-      "directWithUser": "Gespräch mit {username}",
-      "betweenTwoUsers": "Gespräch mit {user1} und {user2}",
-      "groupWithMultiple": "Gespräch mit {user1}, {user2} und {count} andere{plural}",
-      "groupWithTwo": "Gespräch mit {user1} und {user2}"
+    "content": {
+      "title": "5. Benutzerinhalt",
+      "ownership": "Sie behalten das Eigentum an allen Inhalten, die Sie bei Meeshy einreichen.",
+      "license": "Durch das Einreichen von Inhalten gewähren Sie uns eine weltweite, nicht-exklusive, gebührenfreie Lizenz zur Nutzung, Änderung und Verteilung dieser Inhalte im Rahmen des Services.",
+      "responsibility": "Sie sind vollständig verantwortlich für die Inhalte, die Sie teilen, und garantieren, dass diese keine Rechte Dritter verletzen."
     },
-    "actions": {
-      "create": "Erstellen",
-      "creating": "Erstelle...",
-      "createDirectConversation": "Direktes Gespräch erstellen",
-      "createGroupConversation": "Gruppengespräch erstellen",
-      "cancel": "Abbrechen"
+    "privacy": {
+      "title": "6. Datenschutz",
+      "content": "Ihre Privatsphäre ist uns wichtig. Bitte lesen Sie unsere Datenschutzrichtlinie, um zu verstehen, wie wir Ihre Informationen sammeln, verwenden und schützen."
     },
-    "errors": {
-      "selectAtLeastOneUser": "Bitte wählen Sie mindestens einen Benutzer aus",
-      "identifierRequired": "Der Bezeichner ist erforderlich",
-      "invalidIdentifier": "Der Bezeichner darf nur Buchstaben, Zahlen, Bindestriche, Unterstriche und @ enthalten",
-      "searchError": "Fehler bei der Suche",
-      "creationError": "Fehler beim Erstellen des Gesprächs",
-      "loadingCommunitiesError": "Fehler beim Laden der Gemeinschaften"
+    "termination": {
+      "title": "7. Kündigung",
+      "content": "Wir können Ihr Konto jederzeit mit oder ohne Vorankündigung bei Verletzung dieser Bedingungen kündigen oder aussetzen. Sie können Ihr Konto auch jederzeit kündigen, indem Sie uns kontaktieren."
     },
-    "success": {
-      "conversationCreated": "Gespräch erfolgreich erstellt"
+    "limitation": {
+      "title": "8. Haftungsbeschränkung",
+      "content": "Soweit gesetzlich zulässig, haftet Meeshy nicht für indirekte, zufällige, besondere oder Folgeschäden, die aus der Nutzung des Services entstehen."
     },
-    "createConversationModal": "Dialog zum Erstellen eines Gesprächs"
+    "changes": {
+      "title": "9. Änderungen der Bedingungen",
+      "content": "Wir behalten uns das Recht vor, diese Bedingungen jederzeit zu ändern. Wichtige Änderungen werden per E-Mail oder über die Anwendung mitgeteilt. Die fortgesetzte Nutzung des Services nach den Änderungen stellt Ihre Zustimmung zu den neuen Bedingungen dar."
+    },
+    "governing": {
+      "title": "10. Anwendbares Recht",
+      "content": "Diese Bedingungen unterliegen französischem Recht. Jeder Streitfall wird der ausschließlichen Gerichtsbarkeit der französischen Gerichte unterworfen."
+    },
+    "contact": {
+      "title": "11. Kontakt",
+      "intro": "Bei Fragen zu diesen Nutzungsbedingungen kontaktieren Sie uns:",
+      "email": "E-Mail: legal@meeshy.me",
+      "address": "Adresse: 9 - 11 Avenue de l'Arche, Courbevoie 92400, Frankreich"
+    },
+    "footer": {
+      "title": "Mehr über Meeshy erfahren",
+      "about": "Über uns",
+      "contact": "Kontaktieren Sie uns",
+      "partners": "Partner werden",
+      "privacy": "Datenschutzrichtlinie"
+    }
   },
   "createLinkModal": {
-    "title": "Freigabelink erstellen",
+    "title": "Freigabe-Link erstellen",
     "description": "Erstellen Sie einen Link, damit andere Personen einem Gespräch beitreten können",
     "steps": {
       "selectConversation": "Gespräch auswählen",
@@ -706,243 +1725,820 @@
     },
     "stepDescriptions": {
       "selectConversation": "Wählen Sie ein bestehendes Gespräch oder erstellen Sie ein neues",
-      "configureLink": "Konfigurieren Sie die grundlegenden Link-Einstellungen",
-      "configureNewConversation": "Definieren Sie die Details Ihres neuen Gesprächs",
+      "configureLink": "Konfigurieren Sie die Grundeinstellungen des Links",
+      "configureNewConversation": "Bestimmen Sie die Details Ihres neuen Gesprächs",
       "linkOptions": "Passen Sie Berechtigungen und Einschränkungen an",
       "summaryAndGeneration": "Überprüfen Sie Ihre Einstellungen und generieren Sie den Link"
     },
     "createNewConversation": {
       "title": "Neues Gespräch erstellen",
-      "description": "Erstellen Sie ein dediziertes Gespräch für diesen Freigabelink",
-      "orSelectExisting": "Oder wählen Sie ein bestehendes Gespräch"
+      "description": "Erstellen Sie ein dediziertes Gespräch für diesen Freigabe-Link",
+      "orSelectExisting": "Oder wählen Sie ein bestehendes Gespräch aus"
     },
     "conversationForm": {
-      "title": "Gesprächstitel *",
-      "titleInfo": "Name, der dieses Gespräch identifiziert und zur Generierung des Link-Namens verwendet wird",
-      "titlePlaceholder": "Z.B.: Team-Diskussion, Projekt-Brainstorming...",
-      "description": "Beschreibung (optional)",
-      "descriptionInfo": "Beschreibung, die in der Gesprächsliste erscheint und Mitgliedern hilft, den Zweck zu verstehen",
-      "descriptionPlaceholder": "Beschreiben Sie den Zweck dieses Gesprächs...",
-      "baseMembers": "Basismitglieder",
-      "memberCount": "{count} Mitglied(er)",
-      "searchUsers": "Benutzer suchen... (tippen zum Suchen)",
-      "noUsersFound": "Keine Benutzer gefunden"
+      "title": "Titre de la conversation *",
+      "titleInfo": "Nom qui identifiera cette conversation et sera utilisé pour générer le nom du lien de partage",
+      "titlePlaceholder": "Ex: Discussion équipe, Brainstorming projet...",
+      "description": "Description (optionnelle)",
+      "descriptionInfo": "Description qui apparaîtra dans la liste des conversations et aidera les membres à comprendre l'objectif",
+      "descriptionPlaceholder": "Décrivez l'objectif de cette conversation...",
+      "baseMembers": "Membres de base",
+      "memberCount": "{count} membre(s)",
+      "searchUsers": "Suchen des utilisateurs... (tapez pour rechercher)",
+      "noUsersFound": "Aucun utilisateur trouvé"
     },
     "linkConfiguration": {
-      "validityDuration": "Gültigkeitsdauer",
-      "validityDurationInfo": "Dauer, für die der Freigabelink aktiv bleibt. Nach Ablauf funktioniert der Link nicht mehr",
-      "usageLimit": "Nutzungslimit",
-      "usageLimitInfo": "Maximale Anzahl der Nutzungen des Links. Nach Erreichen des Limits wird der Link deaktiviert"
+      "validityDuration": "Durée de validité",
+      "validityDurationInfo": "Durée pendant laquelle le lien de partage restera actif. Après expiration, le lien ne fonctionnera plus",
+      "usageLimit": "Limite d'utilisations",
+      "usageLimitInfo": "Nombre maximum de fois que le lien peut être utilisé. Une fois la limite atteinte, le lien sera désactivé"
     },
     "durationOptions": {
       "1": {
-        "label": "1 Tag",
-        "description": "Temporärer Link"
+        "label": "1 jour",
+        "description": "Lien temporaire"
       },
       "3": {
-        "label": "3 Tage",
-        "description": "Kurzfristig"
+        "label": "3 jours",
+        "description": "Court terme"
       },
       "7": {
-        "label": "1 Woche",
-        "description": "Kurzfristig"
+        "label": "1 semaine",
+        "description": "Court terme"
       },
       "14": {
-        "label": "2 Wochen",
-        "description": "Kurzfristig"
+        "label": "2 semaines",
+        "description": "Court terme"
       },
       "30": {
-        "label": "1 Monat",
-        "description": "Mittelfristig"
+        "label": "1 mois",
+        "description": "Moyen terme"
       },
       "60": {
-        "label": "2 Monate",
-        "description": "Mittelfristig"
+        "label": "2 mois",
+        "description": "Moyen terme"
       },
       "90": {
-        "label": "3 Monate",
-        "description": "Langfristig"
+        "label": "3 mois",
+        "description": "Long terme"
       },
       "180": {
-        "label": "6 Monate",
-        "description": "Langfristig"
+        "label": "6 mois",
+        "description": "Long terme"
       },
       "365": {
-        "label": "1 Jahr",
+        "label": "1 an",
         "description": "Permanent"
       },
       "730": {
-        "label": "2 Jahre",
+        "label": "2 ans",
         "description": "Permanent"
       }
     },
     "limitOptions": {
       "5": {
-        "label": "5 Nutzungen",
-        "description": "Sehr kleine Gruppe"
+        "label": "5 utilisations",
+        "description": "Très petit groupe"
       },
       "10": {
-        "label": "10 Nutzungen",
-        "description": "Kleine Gruppe"
+        "label": "10 utilisations",
+        "description": "Petit groupe"
       },
       "25": {
-        "label": "25 Nutzungen",
-        "description": "Kleine Gruppe"
+        "label": "25 utilisations",
+        "description": "Petit groupe"
       },
       "50": {
-        "label": "50 Nutzungen",
-        "description": "Mittlere Gruppe"
+        "label": "50 utilisations",
+        "description": "Groupe moyen"
       },
       "100": {
-        "label": "100 Nutzungen",
-        "description": "Große Gruppe"
+        "label": "100 utilisations",
+        "description": "Grand groupe"
       },
       "250": {
-        "label": "250 Nutzungen",
-        "description": "Große Gruppe"
+        "label": "250 utilisations",
+        "description": "Grand groupe"
       },
       "500": {
-        "label": "500 Nutzungen",
-        "description": "Sehr große Gruppe"
+        "label": "500 utilisations",
+        "description": "Très grand groupe"
       },
       "1000": {
-        "label": "1000 Nutzungen",
-        "description": "Öffentliche Veranstaltung"
+        "label": "1000 utilisations",
+        "description": "Événement public"
       },
       "5000": {
-        "label": "5000 Nutzungen",
-        "description": "Massive Veranstaltung"
+        "label": "5000 utilisations",
+        "description": "Événement massif"
       },
       "unlimited": {
-        "label": "Unbegrenzt",
-        "description": "Keine Einschränkung"
+        "label": "Illimité",
+        "description": "Aucune restriction"
       }
     },
     "permissions": {
-      "title": "Gastberechtigungen",
-      "description": "Definieren Sie, was anonyme Teilnehmer tun können",
+      "title": "Permissions des invités",
+      "description": "Définissez ce que les participants anonymes peuvent faire",
       "sendMessages": {
-        "label": "Nachrichten senden",
-        "description": "Erlaube das Senden von Textnachrichten"
+        "label": "Envoyer des messages",
+        "description": "Autoriser l'envoi de messages texte"
       },
       "shareImages": {
-        "label": "Bilder teilen",
-        "description": "Erlaube das Senden von Bildern"
+        "label": "Teilen des images",
+        "description": "Autoriser l'envoi d'images"
       },
       "shareFiles": {
-        "label": "Dateien teilen",
-        "description": "Erlaube das Senden von Dateien"
+        "label": "Teilen des fichiers",
+        "description": "Autoriser l'envoi de fichiers"
       },
       "viewHistory": {
-        "label": "Verlauf anzeigen",
-        "description": "Zugriff auf alte Nachrichten"
+        "label": "Voir l'historique",
+        "description": "Accès aux anciens messages"
       },
       "requireNickname": {
-        "label": "Spitzname erforderlich",
-        "description": "Eingabe eines Spitznamens erzwingen"
+        "label": "Pseudo obligatoire",
+        "description": "Forcer la saisie d'un pseudo"
       },
       "requireEmail": {
-        "label": "E-Mail erforderlich",
-        "description": "Eingabe einer E-Mail erzwingen"
+        "label": "Email obligatoire",
+        "description": "Forcer la saisie d'un email"
       }
     },
     "allowedLanguages": {
-      "title": "Erlaubte Sprachen",
-      "description": "Wählen Sie die erlaubten Sprachen für Teilnehmer",
-      "allowAllLanguages": "Leer lassen, um alle Sprachen zu erlauben",
-      "allowLanguage": "Teilnehmer in {language} erlauben"
+      "title": "Langues autorisées",
+      "description": "Sélectionnez les langues autorisées pour les participants",
+      "allowAllLanguages": "Laisser vide pour autoriser toutes les langues",
+      "allowLanguage": "Autoriser les participants en {language}"
     },
     "summary": {
-      "title": "Konfigurationsübersicht",
-      "description": "Überprüfen Sie die Einstellungen vor der Link-Generierung",
-      "basicInfo": "Grundinformationen",
-      "conversation": "Gespräch",
-      "validityDuration": "Gültigkeitsdauer",
-      "usageLimit": "Nutzungslimit",
-      "unlimited": "Unbegrenzt",
-      "welcomeMessage": "Willkommensnachricht",
-      "noCustomMessage": "Keine benutzerdefinierte Nachricht",
-      "messages": "Nachrichten",
-      "allowed": "Erlaubt",
-      "forbidden": "Verboten",
-      "guestsCanSendMessages": "Gäste können Nachrichten senden",
-      "guestsCannotSendMessages": "Gäste können keine Nachrichten senden",
-      "images": "Bilder",
-      "guestsCanShareImages": "Gäste können Bilder teilen",
-      "guestsCannotShareImages": "Gäste können keine Bilder teilen",
-      "files": "Dateien",
-      "guestsCanShareFiles": "Gäste können Dateien teilen",
-      "guestsCannotShareFiles": "Gäste können keine Dateien teilen",
-      "history": "Verlauf",
+      "title": "Résumé de la configuration",
+      "description": "Vérifiez les paramètres avant de générer le lien",
+      "basicInfo": "Informations de base",
+      "conversation": "Conversation",
+      "validityDuration": "Durée de validité",
+      "usageLimit": "Limite d'utilisations",
+      "unlimited": "Illimité",
+      "welcomeMessage": "Message de bienvenue",
+      "noCustomMessage": "Aucun message personnalisé",
+      "messages": "Messages",
+      "allowed": "Autorisé",
+      "forbidden": "Interdit",
+      "guestsCanSendMessages": "Les invités peuvent envoyer des messages",
+      "guestsCannotSendMessages": "Les invités ne peuvent pas envoyer de messages",
+      "images": "Images",
+      "guestsCanShareImages": "Les invités peuvent partager des images",
+      "guestsCannotShareImages": "Les invités ne peuvent pas partager d'images",
+      "files": "Fichiers",
+      "guestsCanShareFiles": "Les invités peuvent partager des fichiers",
+      "guestsCannotShareFiles": "Les invités ne peuvent pas partager de fichiers",
+      "history": "Historique",
       "visible": "Sichtbar",
-      "hidden": "Versteckt",
-      "guestsCanViewHistory": "Gäste können den Verlauf anzeigen",
-      "guestsCannotViewHistory": "Gäste können den Verlauf nicht anzeigen",
-      "guestsMustEnterNickname": "Gäste müssen einen Spitznamen eingeben",
-      "guestsCanStayAnonymous": "Gäste können anonym bleiben",
-      "guestsMustEnterEmail": "Gäste müssen eine E-Mail eingeben",
-      "selectedLanguages": "Ausgewählte Sprachen",
-      "welcomeMessageDescription": "Beschreibung der Willkommensnachricht",
-      "permissionsGranted": "Gewährte Berechtigungen",
-      "nicknameRequired": "Spitzname erforderlich",
+      "hidden": "Masqué",
+      "guestsCanViewHistory": "Les invités peuvent voir l'historique",
+      "guestsCannotViewHistory": "Les invités ne peuvent pas voir l'historique",
+      "guestsMustEnterNickname": "Les invités doivent entrer un pseudonyme",
+      "guestsCanStayAnonymous": "Les invités peuvent rester anonymes",
+      "guestsMustEnterEmail": "Les invités doivent entrer un email",
+      "selectedLanguages": "Langues sélectionnées",
+      "welcomeMessageDescription": "Description du message de bienvenue",
+      "permissionsGranted": "Permissions accordées",
+      "nicknameRequired": "Pseudonyme requis",
       "yes": "Ja",
       "no": "Nein",
-      "emailRequired": "E-Mail erforderlich",
-      "allowedLanguages": "Erlaubte Sprachen",
-      "usageCount": "Anzahl der Nutzungen",
-      "linkDisabledAfter": "Link deaktiviert nach"
+      "emailRequired": "Email requis",
+      "allowedLanguages": "Langues autorisées",
+      "usageCount": "Nombre d'utilisations",
+      "linkDisabledAfter": "Lien désactivé après"
     },
     "linkDetails": {
-      "title": "Name des Freigabelinks",
-      "description": "Der Name wird automatisch generiert, aber Sie können ihn ändern",
-      "linkName": "Link-Name *",
-      "linkNameInfo": "Titel, der den Teilnehmern angezeigt wird, wenn sie den Freigabelink erhalten",
-      "linkNamePlaceholder": "Z.B.: Dem Gespräch beitreten: Team-Meeting",
-      "linkIdentifier": "Link-Bezeichner *",
-      "linkIdentifierInfo": "Eindeutiger Bezeichner, der in der URL des Freigabelinks verwendet wird. Die letzten 6 Zeichen werden zufällig generiert, um Konflikte zu vermeiden",
-      "regenerateIdentifier": "Suffix des Bezeichners regenerieren",
-      "welcomeMessage": "Willkommensnachricht",
-      "welcomeMessageInfo": "Nachricht, die Ihren Gästen angezeigt wird, bevor sie dem Gespräch beitreten",
-      "welcomeMessagePlaceholder": "Z.B.: Willkommen in unserer Diskussion! Zögern Sie nicht, Ihre Ideen zu teilen..."
+      "title": "Nom du lien de partage",
+      "description": "Le nom est généré automatiquement mais vous pouvez le modifier",
+      "linkName": "Nom du lien *",
+      "linkNameInfo": "Titre qui sera affiché aux participants lorsqu'ils recevront le lien de partage",
+      "linkNamePlaceholder": "Ex: Rejoindre la conversation : Réunion équipe",
+      "linkIdentifier": "Identifiant du lien *",
+      "linkIdentifierInfo": "Identifiant unique utilisé dans l'URL du lien de partage. Les 6 derniers caractères sont générés aléatoirement pour éviter les conflits",
+      "regenerateIdentifier": "Régénérer le suffixe de l'identifiant",
+      "welcomeMessage": "Message de bienvenue",
+      "welcomeMessageInfo": "Message qui sera affiché à vos invités avant qu'ils ne rejoignent la conversation",
+      "welcomeMessagePlaceholder": "Ex: Bienvenue dans notre discussion ! N'hésitez pas à partager vos idées..."
     },
     "success": {
-      "title": "Link erfolgreich erstellt!",
-      "description": "Ihr Freigabelink ist bereit zur Verwendung",
-      "summary": "Zusammenfassung Ihres Links",
-      "conversation": "Gespräch",
-      "validityDuration": "Gültigkeitsdauer",
-      "usageLimit": "Nutzungslimit",
-      "permissions": "Berechtigungen",
-      "fullLink": "Vollständiger Freigabelink",
-      "fullLinkDescription": "Teilen Sie diesen Link, damit andere dem Gespräch beitreten können",
+      "title": "Lien créé avec succès !",
+      "description": "Votre lien de partage est prêt à être utilisé",
+      "summary": "Synthèse de votre lien",
+      "conversation": "Conversation",
+      "validityDuration": "Durée de validité",
+      "usageLimit": "Limite d'utilisations",
+      "permissions": "Permissions",
+      "fullLink": "Lien de partage complet",
+      "fullLinkDescription": "Partagez ce lien pour permettre aux autres de rejoindre la conversation",
       "copy": "Kopieren",
-      "copyLink": "Link kopieren",
+      "copyLink": "Kopieren le lien",
       "close": "Schließen"
     },
     "navigation": {
-      "previous": "Zurück",
+      "previous": "Vorherige",
       "next": "Weiter",
-      "createLink": "Link erstellen",
-      "generating": "Generiere..."
+      "createLink": "Erstellen le lien",
+      "generating": "Génération..."
     },
     "search": {
-      "conversations": "Nach einem Gespräch suchen...",
+      "conversations": "Suchen une conversation...",
       "noConversationsFound": "Keine Gespräche gefunden"
     },
     "errors": {
-      "selectConversation": "Bitte wählen Sie ein Gespräch oder erstellen Sie ein neues",
-      "enterTitle": "Bitte geben Sie einen Titel für das neue Gespräch ein",
-      "loadingConversations": "Fehler beim Laden der Gespräche",
-      "searchingUsers": "Fehler bei der Benutzersuche",
-      "generatingLink": "Fehler beim Generieren des Links",
-      "missingToken": "Link-Token fehlt in der Antwort"
+      "selectConversation": "Veuillez sélectionner une conversation ou créer une nouvelle",
+      "enterTitle": "Veuillez saisir un titre pour la nouvelle conversation",
+      "loadingConversations": "Erreur lors du chargement des conversations",
+      "searchingUsers": "Erreur lors de la recherche d'utilisateurs",
+      "generatingLink": "Erreur lors de la génération du lien",
+      "missingToken": "Token de lien manquant dans la réponse"
     },
     "successMessages": {
-      "linkGeneratedAndCopied": "Link generiert und in die Zwischenablage kopiert!",
-      "linkGenerated": "Link erfolgreich generiert!",
-      "linkCopied": "Link in die Zwischenablage kopiert",
-      "tokenCopied": "Token in die Zwischenablage kopiert"
+      "linkGeneratedAndCopied": "Lien généré et copié dans le presse-papiers !",
+      "linkGenerated": "Lien généré avec succès !",
+      "linkCopied": "Lien copié dans le presse-papiers",
+      "tokenCopied": "Token copié dans le presse-papiers"
     },
-    "createLinkModal": "Dialog zum Erstellen eines Links"
+    "createLinkModal": "Modal de création de lien"
+  },
+  "createConversationModal": {
+    "title": "Neues Gespräch",
+    "description": "Créez une conversation moderne avec une approche intelligente et dynamique",
+    "steps": {
+      "members": "Mitglieder",
+      "details": "Détails"
+    },
+    "community": {
+      "title": "Communauté (optionnel)",
+      "searchPlaceholder": "Suchen une communauté...",
+      "loading": "Lädt...",
+      "noCommunitiesFound": "Aucune communauté trouvée.",
+      "membersCount": "{count} membres • {conversations} conversations",
+      "private": "Privée",
+      "public": "Publique"
+    },
+    "members": {
+      "title": "Ajouter des membres",
+      "searchPlaceholder": "Suchen des utilisateurs par nom ou nom d'utilisateur...",
+      "loading": "Lädt...",
+      "noUsersFound": "Aucun utilisateur trouvé.",
+      "selectedMembers": "Membres sélectionnés ({count})"
+    },
+    "conversationDetails": {
+      "title": "Détails de la conversation",
+      "conversationTitle": "Titre de la conversation",
+      "titlePlaceholder": "Le titre sera généré automatiquement...",
+      "titleInfoDirect": "Titre généré automatiquement pour les conversations directes",
+      "titleInfoGroup": "Modifiez le titre si nécessaire pour les conversations de groupe",
+      "identifier": "Identifiant",
+      "identifierRequired": "*",
+      "identifierPrefix": "mshy_",
+      "identifierPlaceholder": "mon-identifiant",
+      "identifierInfo": "Caractères autorisés : lettres, chiffres, tirets, underscores, @",
+      "identifierError": "L'identifiant contient des caractères non autorisés",
+      "typeDirect": "Directe",
+      "typeGroup": "Groupe"
+    },
+    "autoGeneratedTitles": {
+      "directWithUser": "Conversation avec {username}",
+      "betweenTwoUsers": "Conversation avec {user1} et {user2}",
+      "groupWithMultiple": "Conversation avec {user1}, {user2} et {count} autre{plural}",
+      "groupWithTwo": "Conversation avec {user1} et {user2}"
+    },
+    "actions": {
+      "create": "Erstellen",
+      "creating": "Création...",
+      "createDirectConversation": "Erstellen une conversation directe",
+      "createGroupConversation": "Erstellen une conversation de groupe",
+      "cancel": "Abbrechen"
+    },
+    "errors": {
+      "selectAtLeastOneUser": "Veuillez sélectionner au moins un utilisateur",
+      "identifierRequired": "L'identifiant est obligatoire",
+      "invalidIdentifier": "L'identifiant ne peut contenir que des lettres, chiffres, tirets, underscores et @",
+      "searchError": "Erreur lors de la recherche",
+      "creationError": "Erreur lors de la création de la conversation",
+      "loadingCommunitiesError": "Erreur lors du chargement des communautés"
+    },
+    "success": {
+      "conversationCreated": "Conversation créée avec succès"
+    }
+  },
+  "chatPage": {
+    "verifyingAuth": "Vérification de l'authentification...",
+    "loadingConversation": "Lädt de la conversation...",
+    "missingLinkId": "Identifiant de lien manquant",
+    "sessionExpired": "Session expirée. Veuillez rejoindre la conversation à nouveau.",
+    "noConversationData": "Aucune donnée de conversation disponible",
+    "incompleteData": "Données incomplètes",
+    "incompleteDataDescription": "Les données de la conversation sont incomplètes. Veuillez réessayer.",
+    "anonymousSessionCleared": "Session anonyme effacée",
+    "createAccount": "Konto erstellen",
+    "createAccountDescription": "Rejoignez Meeshy et communiquez sans barrières",
+    "login": "Anmelden",
+    "loginDescription": "Connectez-vous à votre compte Meeshy",
+    "errorLoading": "Erreur lors du chargement de la conversation",
+    "accessDenied": "Accès non autorisé à cette conversation",
+    "conversationNotFound": "Conversation introuvable",
+    "sessionExpiredReconnect": "Session expirée. Veuillez vous reconnecter.",
+    "defaultUser": "Utilisateur",
+    "defaultAnonymous": "Anonyme"
+  },
+  "anonymousChatErrorHandler": {
+    "forbidden": {
+      "title": "Accès non autorisé",
+      "description": "Vous n'avez pas l'autorisation d'accéder à cette conversation.",
+      "actions": {
+        "backHome": "Zurückner à l'accueil"
+      }
+    },
+    "unauthorized": {
+      "title": "Session expirée",
+      "description": "Votre session a expiré. Veuillez vous reconnecter pour continuer.",
+      "actions": {
+        "rejoin": "Rejoindre à nouveau",
+        "login": "Anmelden",
+        "backHome": "Zurückner à l'accueil"
+      }
+    },
+    "notFound": {
+      "title": "Conversation introuvable",
+      "description": "Cette conversation n'existe pas ou a été supprimée.",
+      "actions": {
+        "backHome": "Zurückner à l'accueil"
+      }
+    },
+    "invalidIdentifier": {
+      "title": "Lien invalide",
+      "description": "Le lien que vous essayez d'utiliser n'est pas valide.",
+      "actions": {
+        "backHome": "Zurückner à l'accueil"
+      }
+    },
+    "generic": {
+      "title": "Erreur de connexion",
+      "description": "Une erreur est survenue lors du chargement de la conversation.",
+      "actions": {
+        "retry": "Réessayer",
+        "backHome": "Zurückner à l'accueil"
+      }
+    },
+    "maxRetriesReached": "Nombre maximum de tentatives atteint",
+    "retryFailed": "Échec de la nouvelle tentative",
+    "attempts": "Tentatives: {current}/{max}",
+    "debug": {
+      "title": "Debug:",
+      "identifier": "Identifiant:",
+      "type": "Type:",
+      "attempts": "Tentatives:",
+      "anonymous": "Anonyme",
+      "authenticated": "Authentifié"
+    },
+    "createConversationModal": "Modal de création de conversation"
+  },
+  "conversationSearch": {
+    "placeholder": "Suchen par nom, description...",
+    "filterConversations": "Filtern les conversations",
+    "searchParticipants": "Suchen...",
+    "shareMessage": "Partagez quelque chose avec le monde...",
+    "authChecking": "Vérification de l'authentification...",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Traduction en cours...",
+        "retranslationInProgress": "Retraduction en cours...",
+        "editSoon": "Modification bientôt disponible",
+        "translationSuccess": "Traduction réussie",
+        "textCopied": "Texte copié dans le presse-papiers"
+      },
+      "conversations": {
+        "loadError": "Erreur lors du chargement de la conversation"
+      }
+    },
+    "conversations": {
+      "title": "Gespräche"
+    },
+    "loadingConversations": "Lädt des conversations...",
+    "loadingConversationsDescription": "Récupération de vos conversations...",
+    "noConversations": "Keine Gespräche",
+    "noConversationsDescription": "Commencez par créer une nouvelle conversation ou rejoignez-en une existante.",
+    "chooseConversation": "Choisissez une conversation",
+    "chooseConversationDescription": "Sélectionnez une conversation dans la liste pour commencer à discuter.",
+    "welcome": "Bienvenue sur Meeshy",
+    "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
+    "createConversation": "Gespräch erstellen",
+    "filtreConversations": "Filtern les conversations",
+    "notConnected": "Non connecté",
+    "participantRemoved": "Participant supprimé: {userId}",
+    "participantAdded": "Participant ajouté: {userId}",
+    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
+    "errorLoadingConversation": "Erreur lors du chargement de la conversation",
+    "writeMessage": "Écris ton message...",
+    "no": "Nein",
+    "connected": "Verbunden",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "createLink": "Link erstellen",
+    "conversationDetails": "Détails de la conversation",
+    "noMessages": "Aucun message dans cette conversation",
+    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
+    "yes": "Ja",
+    "conversationLayout": "Layout de conversation",
+    "conversationSearch": "Recherche de conversation",
+    "conversationUI": "Interface de conversation"
+  },
+  "conversationLayout": {
+    "authChecking": "Vérification de l'authentification...",
+    "loadingConversations": "Lädt des conversations...",
+    "loadingConversationsDescription": "Récupération de vos conversations...",
+    "noConversations": "Keine Gespräche",
+    "noConversationsDescription": "Commencez par créer une nouvelle conversation ou rejoignez-en une existante.",
+    "chooseConversation": "Choisissez une conversation",
+    "chooseConversationDescription": "Sélectionnez une conversation dans la liste pour commencer à discuter.",
+    "welcome": "Bienvenue sur Meeshy",
+    "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
+    "createConversation": "Gespräch erstellen",
+    "filtreConversations": "Filtern les conversations",
+    "notConnected": "Non connecté",
+    "participantRemoved": "Participant supprimé: {userId}",
+    "participantAdded": "Participant ajouté: {userId}",
+    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
+    "errorLoadingConversation": "Erreur lors du chargement de la conversation",
+    "writeMessage": "Écris ton message...",
+    "addParticipant": "Ajouter un participant",
+    "conversations": {
+      "title": "Gespräche"
+    },
+    "no": "Nein",
+    "connected": "Verbunden",
+    "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
+    "public": "Öffentlich",
+    "private": "Privat",
+    "createLink": "Link erstellen",
+    "createNewConversation": "Erstellen une nouvelle conversation",
+    "createNewLink": "Erstellen un nouveau lien",
+    "noPublicConversations": "Aucune conversation publique",
+    "noPublicConversationsFound": "Aucune conversation publique trouvée",
+    "noPrivateConversations": "Aucune conversation privée",
+    "noPrivateConversationsFound": "Aucune conversation privée trouvée",
+    "conversationDetails": "Détails de la conversation",
+    "noMessages": "Aucun message dans cette conversation",
+    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
+    "yes": "Ja",
+    "conversationLayout": "Layout de conversation",
+    "conversationSearch": "Recherche de conversation",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Traduction en cours...",
+        "retranslationInProgress": "Retraduction en cours...",
+        "editSoon": "Modification bientôt disponible",
+        "translationSuccess": "Traduction réussie",
+        "textCopied": "Texte copié dans le presse-papiers"
+      },
+      "conversations": {
+        "loadError": "Erreur lors du chargement de la conversation"
+      }
+    }
+  },
+  "conversationWrapper": {
+    "authChecking": "Vérification de l'authentification...",
+    "conversationWrapper": "Wrapper de conversation"
+  },
+  "conversationDetails": {
+    "title": "Détails de la conversation",
+    "conversationGroup": "Conversation de groupe",
+    "conversationPrivate": "Conversation privée",
+    "conversationName": "Nom de la conversation",
+    "clickToEdit": "Cliquer pour modifier le nom",
+    "editName": "Bearbeiten le nom",
+    "nameCannotBeEmpty": "Le nom de la conversation ne peut pas être vide",
+    "nameUpdated": "Nom de la conversation mis à jour",
+    "conversationExists": "Une conversation avec ce nom existe déjà",
+    "noPermissionToModify": "Vous n'avez pas les permissions pour modifier cette conversation",
+    "conversationNotFound": "Conversation non trouvée",
+    "invalidData": "Données invalides",
+    "updateError": "Erreur lors de la mise à jour du nom",
+    "participantRemoved": "Participant supprimé de la conversation",
+    "removeParticipantError": "Erreur lors de la suppression du participant",
+    "activeLanguages": "Langues Actives",
+    "activeUsers": "Utilisateurs Actifs",
+    "noActiveUsers": "Aucun utilisateur actif",
+    "otherActiveUsers": "+{count} autres utilisateurs actifs",
+    "shareLinks": "Liens de partage",
+    "conversationDetails": "Détails de la conversation"
+  },
+  "conversationParticipants": {
+    "noParticipantsOnline": "Aucun participant en ligne",
+    "online": "en ligne",
+    "typing": "écrit...",
+    "typingMultiple": "personnes écrivent...",
+    "you": "Vous",
+    "conversationParticipants": "Participants de la conversation"
+  },
+  "conversationUI": {
+    "participants": "Participants",
+    "createLink": "Link erstellen",
+    "addParticipant": "Ajouter un participant",
+    "searchParticipants": "Suchen des participants",
+    "online": "Online",
+    "offline": "Offline",
+    "noOneOnline": "Personne en ligne",
+    "noOfflineParticipants": "Aucun participant hors ligne",
+    "you": "Vous",
+    "removeFromGroup": "Löschen du groupe",
+    "participantRemoved": "Participant supprimé de la conversation",
+    "removeParticipantError": "Erreur lors de la suppression du participant",
+    "linkCreated": "Lien de conversation créé",
+    "createLinkError": "Erreur lors de la création du lien",
+    "conversationSearch": "Recherche de conversation",
+    "communities": "Gemeinschaften",
+    "conversationUI": "Interface de conversation",
+    "loading": "Lädt..."
+  },
+  "conversationLinks": {
+    "title": "Liens de partage",
+    "loadingLinks": "Lädt des liens...",
+    "noShareLinks": "Aucun lien de partage",
+    "activeLinks": "Liens actifs",
+    "expiredLinks": "Liens expirés",
+    "copy": "Kopieren",
+    "linkCopied": "Lien copié dans le presse-papiers",
+    "linkDetails": "Détails du lien",
+    "noDescription": "Aucune description",
+    "createdBy": "Créé par:",
+    "createdOn": "Créé le:",
+    "permissions": "Permissions",
+    "messages": "Messages",
+    "images": "Images",
+    "files": "Fichiers",
+    "history": "Historique",
+    "restrictions": "Restrictions",
+    "languages": "Langues:",
+    "countries": "Pays:",
+    "status": {
+      "active": "Aktiv",
+      "disabled": "Désactivé",
+      "expired": "Abgelaufen"
+    }
+  },
+  "conversationPreview": {
+    "title": "Aperçu de la conversation",
+    "conversationWith": "Conversation avec {username}",
+    "conversationWithMultiple": "Conversation avec {users}",
+    "direct": "Directe",
+    "group": "Groupe",
+    "members": "Mitglieder",
+    "you": "Vous",
+    "autoTranslationEnabled": "Traduction automatique activée",
+    "endToEndEncrypted": "Messages chiffrés de bout en bout",
+    "historySaved": "Historique sauvegardé"
+  },
+  "identifierSuggestions": {
+    "title": "Suggestions d'identifiants"
+  },
+  "smartSearch": {
+    "recentSearches": "Recherches récentes",
+    "recentUsers": "Utilisateurs récents",
+    "suggestions": "Suggestions"
+  },
+  "typingIndicator": {
+    "isTyping": "est en train d'écrire",
+    "areTyping": "sont en train d'écrire",
+    "multipleTyping": "personnes sont en train d'écrire",
+    "typing": "Écrit...",
+    "typingIndicator": "Indicateur de frappe"
+  },
+  "createLinkButton": {
+    "createConversationLink": "Erstellen un lien de conversation",
+    "needBigbossRights": "Droits BIGBOSS requis pour créer des liens de partage pour les conversations globales",
+    "noRightsToCreate": "Vous n'avez pas les droits pour créer des liens de partage pour cette conversation",
+    "linkCreatedAndCopied": "Lien de conversation créé et copié",
+    "linkCreated": "Lien de conversation créé",
+    "copyManually": "Kopieren manuellement",
+    "copiedToClipboard": "Copié dans le presse-papiers",
+    "copyFailed": "Échec de la copie",
+    "errorCreatingLink": "Erreur lors de la création du lien",
+    "createLinkButton": "Bouton de création de lien",
+    "generatedLink": "Lien généré",
+    "linkDetails": "Détails du lien",
+    "name": "Nom",
+    "description": "Description",
+    "maxUses": "Utilisations max",
+    "expiresAt": "Expire le",
+    "allowAnonymousMessages": "Messages anonymes",
+    "allowAnonymousFiles": "Fichiers anonymes",
+    "allowAnonymousImages": "Images anonymes",
+    "allowViewHistory": "Voir l'historique",
+    "requireNickname": "Pseudo requis",
+    "requireEmail": "Email requis",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
+    "noExpiration": "Aucune expiration",
+    "advancedSettings": "Einstellungen avancés",
+    "advancedSettingsInfo": "Utilisez le bouton de création de liens pour définir des configurations plus fines (expiration, permissions, etc.)",
+    "close": "Schließen",
+    "copy": "Kopieren",
+    "copied": "Copié",
+    "active": "Aktiv",
+    "participants": "Participants",
+    "uses": "Utilisations",
+    "unlimited": "Illimité",
+    "permissions": "Permissions",
+    "messages": "Messages",
+    "files": "Fichiers",
+    "images": "Images",
+    "history": "Historique",
+    "nickname": "Pseudo",
+    "email": "Email",
+    "createdAt": "Créé le",
+    "defaultLinkName": "Lien d'invitation",
+    "defaultLinkDescription": "Rejoignez cette conversation"
+  },
+  "createLinkButtonV2": {
+    "createLink": "Link erstellen",
+    "linkCreatedSuccessfully": "Lien de partage créé avec succès !"
+  },
+  "joinPage": {
+    "title": "Rejoindre la conversation",
+    "invitedTo": "Vous êtes invité(e) à rejoindre",
+    "conversationWithoutName": "Conversation sans nom",
+    "type": "Type",
+    "group": "Groupe",
+    "direct": "Conversation directe",
+    "public": "Conversation publique",
+    "global": "Conversation globale",
+    "privateConversation": "Conversation privée",
+    "participants": "Participants",
+    "members": "membre(s)",
+    "includingAnonymous": "dont {count} anonyme(s)",
+    "spokenLanguages": "Langues parlées",
+    "languages": "langue(s)",
+    "createdOn": "Créée le",
+    "expiresOn": "Expire le",
+    "noExpiration": "Aucune expiration",
+    "joinButton": "Rejoindre",
+    "joinAnonymously": "Rejoindre anonymement",
+    "loginRequired": "Anmelden requise",
+    "registerRequired": "Registrieren requise",
+    "sessionAnonymous": "Session anonyme",
+    "connected": "Verbunden",
+    "leaveSession": "Quitter la session",
+    "disconnect": "Se déconnecter",
+    "sessionClosed": "Session fermée",
+    "linkNotFound": "Lien de conversation invalide ou introuvable",
+    "linkExpired": "Ce lien a expiré",
+    "linkInactive": "Ce lien n'est plus actif",
+    "linkLimitReached": "Ce lien a atteint sa limite d'utilisation",
+    "loadingError": "Erreur lors du chargement du lien"
+  },
+  "links": {
+    "copied": "Lien copié dans le presse-papiers",
+    "generated": "Lien généré avec succès !",
+    "generatedAndCopied": "Lien généré et copié dans le presse-papiers !",
+    "generateError": "Erreur lors de la génération du lien",
+    "title": "Gestion des liens",
+    "pageTitle": "Mes liens de partage",
+    "pageDescription": "Gérez vos liens de partage de conversations",
+    "searchPlaceholder": "Suchen un lien...",
+    "createLink": "Link erstellen",
+    "tabs": {
+      "active": "Aktiv",
+      "expired": "Expirés",
+      "disabled": "Désactivés"
+    },
+    "noLinks": "Aucun lien trouvé",
+    "unnamedLink": "Lien sans nom",
+    "conversation": "Conversation",
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "expired": "Abgelaufen",
+      "never": "Niemals",
+      "daysRemaining": "{days} jour(s) restant(s)",
+      "hoursRemaining": "{hours} heure(s) restante(s)"
+    },
+      "actions": {
+        "copy": "Kopieren",
+        "viewDetails": "Voir les détails",
+        "edit": "Bearbeiten",
+        "disable": "Deaktivieren",
+        "enable": "Aktivieren",
+        "extend7Days": "Prolonger de 7 jours",
+        "delete": "Löschen",
+        "cancel": "Abbrechen",
+        "saving": "Enregistrement...",
+        "save": "Speichern"
+      },
+    "stats": {
+      "uses": "Utilisations",
+      "active": "Aktiv",
+      "created": "Créé le",
+      "expires": "Expire le"
+    },
+      "success": {
+        "linkCopied": "Lien copié dans le presse-papiers",
+        "linkDisabled": "Lien désactivé avec succès",
+        "linkEnabled": "Lien activé avec succès",
+        "linkExtended": "Lien prolongé de {days} jour(s)",
+        "linkDeleted": "Lien supprimé avec succès",
+        "linkUpdated": "Lien mis à jour avec succès"
+      },
+      "errors": {
+        "loadFailed": "Erreur lors du chargement des liens",
+        "toggleFailed": "Erreur lors du changement de statut",
+        "extendFailed": "Erreur lors de la prolongation",
+        "deleteFailed": "Erreur lors de la suppression",
+        "updateFailed": "Erreur lors de la mise à jour du lien"
+      },
+    "confirm": {
+      "delete": "Êtes-vous sûr de vouloir supprimer ce lien ?"
+    },
+    "details": {
+      "title": "Détails du lien",
+      "basicInfo": "Informations de base",
+      "linkName": "Nom du lien",
+      "description": "Description",
+      "conversation": "Conversation",
+      "linkUrl": "URL du lien",
+      "usage": "Statistiques d'utilisation",
+      "totalUses": "Utilisations totales",
+      "activeUsers": "Utilisateurs actifs",
+      "totalParticipants": "Participants totaux",
+      "languages": "Langues supportées",
+      "permissions": "Permissions",
+      "dates": "Dates importantes",
+      "created": "Créé le",
+      "expires": "Expire le",
+      "lastUpdated": "Dernière mise à jour",
+      "creator": "Créateur"
+    },
+    "permissions": {
+      "messages": "Messages",
+      "images": "Images",
+      "files": "Fichiers",
+      "viewHistory": "Voir l'historique",
+      "allowed": "Autorisé",
+      "denied": "Interdit",
+      "messagesDescription": "Permettre aux utilisateurs anonymes d'envoyer des messages",
+      "imagesDescription": "Permettre aux utilisateurs anonymes d'envoyer des images",
+      "filesDescription": "Permettre aux utilisateurs anonymes d'envoyer des fichiers",
+      "viewHistoryDescription": "Permettre aux utilisateurs anonymes de voir l'historique des messages"
+    },
+    "edit": {
+      "title": "Bearbeiten le lien",
+      "linkName": "Nom du lien",
+      "linkNamePlaceholder": "Entrez un nom pour le lien",
+      "description": "Description",
+      "descriptionPlaceholder": "Entrez une description pour le lien",
+      "maxUses": "Utilisations maximales",
+      "maxUsesDescription": "Nombre maximum d'utilisations (laisser vide pour illimité)",
+      "expiresAt": "Date d'expiration",
+      "expiresAtDescription": "Date et heure d'expiration du lien",
+      "selectDate": "Sélectionner une date",
+      "permissions": "Permissions",
+      "requirements": "Exigences"
+    },
+    "requirements": {
+      "nickname": "Pseudo requis",
+      "nicknameDescription": "Exiger un pseudo pour les utilisateurs anonymes",
+      "email": "Email requis",
+      "emailDescription": "Exiger un email pour les utilisateurs anonymes"
+    }
+  },
+  "linkSummaryModal": {
+    "title": "Lien de partage créé",
+    "description": "Votre lien de partage a été créé avec succès. Voici un résumé des paramètres configurés.",
+    "shareLink": "Lien de partage",
+    "copied": "Copié",
+    "copy": "Kopieren",
+    "expires": "Expire le",
+    "userLimits": "Limites d'utilisateurs",
+    "maxUses": "Utilisations max",
+    "maxConcurrent": "Utilisateurs simultanés max",
+    "maxSessions": "Sessions uniques max",
+    "noLimits": "Aucune limite",
+    "limitedTo": "Limité à",
+    "usage": "usage",
+    "usages": "usages",
+    "unlimitedUsage": "Sans limite d'usage",
+    "languages": "Langues autorisées",
+    "sendPermissions": "Permissions d'envoi",
+    "messages": "Messages",
+    "files": "Fichiers",
+    "images": "Images",
+    "videos": "Vidéos",
+    "audio": "Audio",
+    "documents": "Documents",
+    "links": "Liens",
+    "location": "Localisation",
+    "contacts": "Kontakte",
+    "authRequirements": "Exigences d'authentification",
+    "nickname": "Pseudo",
+    "email": "Email",
+    "close": "Schließen",
+    "copyLink": "Kopieren le lien"
   }
 }

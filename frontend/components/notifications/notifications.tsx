@@ -57,6 +57,12 @@ export function useNotifications() {
   }, []);
 
   const notify = (config: NotificationConfig) => {
+    // Désactiver les toasts sur mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    if (isMobile) {
+      return;
+    }
+
     const { title, description, type, duration = 4000, action } = config;
 
     const getIcon = () => {

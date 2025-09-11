@@ -8,16 +8,22 @@ import { useLanguage } from '@/context/LanguageContext';
 import frTranslations from '@/locales/fr.json';
 import enTranslations from '@/locales/en.json';
 import ptTranslations from '@/locales/pt.json';
+import esTranslations from '@/locales/es.json';
+import deTranslations from '@/locales/de.json';
+import itTranslations from '@/locales/it.json';
 
 interface TranslationMessages {
   [key: string]: any;
 }
 
-// Vraies traductions importées statiquement (focus on FR, EN, PT)
+// Vraies traductions importées statiquement
 const REAL_TRANSLATIONS = {
   fr: frTranslations,
   en: enTranslations,
   pt: ptTranslations,
+  es: esTranslations,
+  de: deTranslations,
+  it: itTranslations,
 };
 
 export function useTranslations(namespace?: string) {

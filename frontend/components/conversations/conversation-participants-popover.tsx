@@ -145,24 +145,35 @@ export function ConversationParticipantsPopover({
               {/* Bouton de création de lien - seulement pour les conversations de groupe et avec les bons rôles */}
               {conversationType !== 'direct' && 
                !(conversationType === 'global' && currentUser.role !== 'BIGBOSS' && currentUser.role !== 'ADMIN') && (
-                <CreateLinkButton
-                  forceModal={true}
-                  onLinkCreated={(link) => {
-                    onLinkCreated?.(link);
+                <div 
+                  onClick={(e) => {
+                    // Fermer le popover immédiatement au clic
+                    setIsOpen(false);
+                    // Laisser l'événement continuer vers le CreateLinkButton
                   }}
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
                 >
-                  <Link2 className="h-4 w-4 text-primary" />
-                </CreateLinkButton>
+                  <CreateLinkButton
+                    disableSummaryModal={true}
+                    onLinkCreated={(link) => {
+                      onLinkCreated?.(link);
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
+                  >
+                    <Link2 className="h-4 w-4 text-primary" />
+                  </CreateLinkButton>
+                </div>
               )}
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0"
                 title={tUI('addParticipant')}
-                onClick={() => setShowInviteModal(true)}
+                onClick={() => {
+                  setIsOpen(false); // Fermer le popover
+                  setShowInviteModal(true);
+                }}
                 disabled={!isAdmin}
               >
                 <UserPlus className="h-3.5 w-3.5" />

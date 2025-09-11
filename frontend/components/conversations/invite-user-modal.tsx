@@ -160,7 +160,7 @@ export function InviteUserModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[80vh] flex flex-col sm:max-w-2xl sm:w-[90vw] sm:max-h-[75vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />

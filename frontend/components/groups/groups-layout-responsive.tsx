@@ -506,7 +506,7 @@ export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayout
 
       {/* Modal de création */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-[95vw] sm:max-w-md sm:w-[90vw]">
           <DialogHeader>
             <DialogTitle>Créer une communauté</DialogTitle>
           </DialogHeader>

@@ -430,12 +430,31 @@ export default function ChatPage() {
     updatedAt: new Date()
   };
 
+  // Fonction pour obtenir le nom d'affichage approprié d'une conversation
+  const getConversationDisplayTitle = (conversation: any, currentUser: any): string => {
+    if (conversation.type !== 'direct') {
+      return conversation.title || conversation.name || 'Conversation de groupe';
+    } else {
+      // Pour les conversations directes, afficher le nom de l'autre participant
+      const otherParticipant = conversation.members?.find((member: any) => 
+        member.userId !== currentUser?.id
+      );
+      if (otherParticipant?.user) {
+        // Prioriser le displayName, sinon prénom/nom, sinon username
+        return otherParticipant.user.displayName ||
+               `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
+               otherParticipant.user.username;
+      }
+      return conversation.title || conversation.name || 'Conversation privée';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header avec lien de partage */}
       <Header 
         mode="chat"
-        conversationTitle={conversationData.conversation.title}
+        conversationTitle={getConversationDisplayTitle(conversationData.conversation, conversationData.currentUser)}
         shareLink={`${window.location.origin}/join/${conversationData.link.linkId}`}
         user={conversationData.currentUser ? {
           id: conversationData.currentUser.id,

@@ -327,9 +327,9 @@ export async function linksRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // Pour les conversations globales, seuls les BIGBOSS peuvent créer des liens
+        // Pour les conversations globales, seuls les ADMIN et BIGBOSS peuvent créer des liens
         if (conversationType === 'global') {
-          if (userRole !== UserRoleEnum.BIGBOSS) {
+          if (userRole !== UserRoleEnum.BIGBOSS && userRole !== UserRoleEnum.ADMIN) {
             return reply.status(403).send({
               success: false,
               message: 'You do not have the necessary rights to perform this operation'

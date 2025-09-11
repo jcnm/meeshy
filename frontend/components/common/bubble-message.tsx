@@ -50,6 +50,7 @@ import type { BubbleStreamMessage } from '@/types/bubble-stream';
 import { Z_CLASSES } from '@/lib/z-index';
 import { useTranslations } from '@/hooks/useTranslations';
 import { getMessageInitials } from '@/lib/avatar-utils';
+import { cn } from '@/lib/utils';
 
 interface BubbleMessageProps {
   message: Message & {
@@ -95,6 +96,19 @@ function BubbleMessageInner({
   isTranslating
 }: BubbleMessageProps) {
   const { t } = useTranslations('bubbleStream');
+  
+  // Détection mobile
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
   
 
   const [currentDisplayLanguage, setCurrentDisplayLanguage] = useState(message.originalLanguage);
@@ -515,9 +529,12 @@ function BubbleMessageInner({
     <TooltipProvider>
       <Card 
         ref={messageRef}
-        className={`bubble-message relative transition-all duration-300 hover:shadow-lg ${
-          isOwnMessage ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'
-        } ${isUsedLanguage ? 'ring-2 ring-green-200 ring-opacity-50' : ''}`}
+        className={cn(
+          "bubble-message relative transition-all duration-300 hover:shadow-lg",
+          isOwnMessage ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200',
+          isUsedLanguage && 'ring-2 ring-green-200 ring-opacity-50',
+          isMobile && 'bubble-message-mobile'
+        )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => {
           setIsHovered(false);
@@ -528,11 +545,11 @@ function BubbleMessageInner({
           }, 300);
         }}
       >
-        <CardContent className="p-4">
+        <CardContent className={cn("p-4", isMobile && "mobile-compact-small")}>
           {/* Header */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
+              <Avatar className={cn(isMobile ? "mobile-avatar" : "h-10 w-10")}>
                 <AvatarImage 
                   src={(message.sender as any)?.avatar} 
                   alt={message.sender?.firstName || message.anonymousSender?.firstName} 
@@ -544,14 +561,14 @@ function BubbleMessageInner({
               
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium text-gray-900">
+                  <span className={cn("font-medium text-gray-900 participant-name", isMobile && "mobile-text-sm")}>
                     @{message.sender?.username || message.anonymousSender?.username}
                   </span>
                   {message.anonymousSender && (
                     <Ghost className="h-4 w-4 text-gray-400" />
                   )}
                   <span className="text-gray-400">•</span>
-                  <span className="text-sm text-gray-500 flex items-center">
+                  <span className={cn("text-gray-500 flex items-center timestamp", isMobile ? "mobile-text-xs" : "text-sm")}>
                     <Timer className="h-3 w-3 mr-1" />
                     {formatTimeAgo(message.createdAt)}
                   </span>
@@ -572,9 +589,9 @@ function BubbleMessageInner({
             {/* Indicateur de langue originale seulement */}
             <div className="flex items-center space-x-2">
               {(message.translations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
-                <div className="flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full">
+                <div className={cn("flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full", isMobile && "language-indicator-mobile")}>
                   <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-                  <span className="text-xs text-blue-600 font-medium">{t('translating')}</span>
+                  <span className={cn("text-blue-600 font-medium", isMobile ? "mobile-text-xs" : "text-xs")}>{t('translating')}</span>
                 </div>
               )}
               
@@ -610,7 +627,7 @@ function BubbleMessageInner({
                 ref={contentRef}
               >
                 <div className="flex items-start justify-between">
-                  <p className="text-gray-900 leading-relaxed whitespace-pre-wrap text-base flex-1">
+                  <p className={cn("text-gray-900 leading-relaxed whitespace-pre-wrap flex-1", isMobile ? "mobile-text-base" : "text-base")}>
                     {getCurrentContent()}
                   </p>
                   {/* Indicateur de traductions disponibles */}

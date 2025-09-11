@@ -32,6 +32,49 @@
     "no": "Não",
     "insufficientRights": "Você não tem os direitos necessários para realizar esta operação"
   },
+  "affiliate": {
+    "shareApp": "Compartilhar aplicativo",
+    "createToken": "Criar token",
+    "tokenName": "Nome do token",
+    "tokenNamePlaceholder": "Ex: Campanha Facebook, Convite família...",
+    "selectToken": "Selecionar token de afiliação",
+    "shareMessage": "Mensagem de compartilhamento",
+    "shareMessagePlaceholder": "Sua mensagem de convite...",
+    "affiliateLink": "Link de afiliação",
+    "copyLink": "Copiar link",
+    "copyMessage": "Copiar mensagem",
+    "share": "Compartilhar",
+    "statistics": "Estatísticas",
+    "uses": "usos",
+    "createdOn": "Criado em",
+    "expiresOn": "Expira em",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "expired": "Expirado",
+    "limitReached": "Limite atingido",
+    "newToken": "Novo",
+    "create": "Criar",
+    "creating": "Criando...",
+    "linkCopied": "Link copiado para área de transferência",
+    "messageCopied": "Mensagem copiada para área de transferência",
+    "tokenCreated": "Token criado com sucesso",
+    "errorCreatingToken": "Erro ao criar token",
+    "errorLoadingTokens": "Erro ao carregar tokens",
+    "errorSharing": "Erro ao compartilhar",
+    "errorCopying": "Erro ao copiar",
+    "enterTokenName": "Por favor, insira um nome para o token",
+    "defaultMessage": "Junte-se a mim no Meeshy! Uma plataforma de mensagens multilíngue onde você pode conversar com pessoas do mundo todo e aprender idiomas se divertindo. Clique neste link para se inscrever:",
+    "shareTitle": "Junte-se a mim no Meeshy",
+    "modalTitle": "Compartilhar aplicativo",
+    "modalDescription": "Crie um link de afiliação para convidar seus amigos a se juntarem ao Meeshy",
+    "existingTokens": "Tokens existentes",
+    "tokenStatus": {
+      "active": "Ativo",
+      "inactive": "Inativo", 
+      "expired": "Expirado",
+      "limitReached": "Limite atingido"
+    }
+  },
   "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",
   "writeMessage": "Escreva sua mensagem...",
   "title": "Título",
@@ -66,261 +109,261 @@
   },
   "landing": {
     "navigation": {
-      "home": "Home",
-      "features": "Features",
-      "about": "About",
-      "contact": "Contact"
+      "home": "Início",
+      "features": "Funcionalidades",
+      "about": "Sobre",
+      "contact": "Contato"
     },
     "hero": {
-      "badge": "Real-time translation",
-      "title": "Communicate without",
-      "titleHighlight": "language barriers",
-      "subtitle": "Meeshy automatically translates your messages in real-time using AI, directly in your browser. No data leaves your device.",
-      "startFree": "Start for free",
-      "joinConversation": "Join a conversation",
-      "resumeOrJoin": "Resume or join a conversation"
+      "badge": "Tradução em tempo real",
+      "title": "Comunique-se sem",
+      "titleHighlight": "barreiras linguísticas",
+      "subtitle": "O Meeshy traduz automaticamente suas mensagens em tempo real usando IA, diretamente no seu navegador. Nenhum dado sai do seu dispositivo.",
+      "startFree": "Começar gratuitamente",
+      "joinConversation": "Entrar em uma conversa",
+      "resumeOrJoin": "Retomar ou entrar em uma conversa"
     },
     "mission": {
-      "title": "Our Mission",
-      "slogan": "Meet without shyness! 🌍✨",
-      "tagline": "Connect the world, one translation at a time",
-      "description": "We believe that language barriers should never stand in the way of meaningful connections. Our platform empowers people from all corners of the globe to communicate freely, breaking down the walls that separate us and building bridges of understanding.",
+      "title": "Nossa Missão",
+      "slogan": "Conheça sem timidez! 🌍✨",
+      "tagline": "Conecte o mundo, uma tradução por vez",
+      "description": "Acreditamos que as barreiras linguísticas nunca devem ser um obstáculo para conexões significativas. Nossa plataforma permite que pessoas de todos os cantos do mundo se comuniquem livremente, derrubando as paredes que nos separam e construindo pontes de compreensão.",
       "signature": {
-        "line1": "❤️ Made with ❤️",
-        "line2": "by developers who believe communication should have no boundaries."
+        "line1": "❤️ Feito com ❤️",
+        "line2": "por desenvolvedores que acreditam que a comunicação não deve ter fronteiras."
       }
     },
     "features": {
-      "title": "Why choose Meeshy?",
-      "subtitle": "A modern messaging platform that breaks language barriers",
+      "title": "Por que escolher o Meeshy?",
+      "subtitle": "Uma plataforma de mensagens moderna que quebra barreiras linguísticas",
       "universalTranslation": {
-        "title": "Universal Translation",
-        "description": "Support for over 15 languages with advanced AI models (MT5 and NLLB)"
+        "title": "Tradução Universal",
+        "description": "Suporte para mais de 15 idiomas com modelos de IA avançados (MT5 e NLLB)"
       },
       "autoDetection": {
-        "title": "Automatic Detection",
-        "description": "Automatically detects message language for more accurate translation."
+        "title": "Detecção Automática",
+        "description": "Detecta automaticamente o idioma das mensagens para tradução mais precisa."
       },
       "privacy": {
-        "title": "100% Private",
-        "description": "Client-side translation only. Your data stays on your device."
+        "title": "100% Privado",
+        "description": "Tradução apenas no lado do cliente. Seus dados permanecem no seu dispositivo."
       },
       "realtime": {
-        "title": "Real-time",
-        "description": "Messages translated instantly with typing indicators and presence."
+        "title": "Tempo Real",
+        "description": "Mensagens traduzidas instantaneamente com indicadores de digitação e presença."
       },
       "groupChats": {
-        "title": "Group Conversations",
-        "description": "Create multilingual communities and manage permissions easily."
+        "title": "Conversas em Grupo",
+        "description": "Crie comunidades multilíngues e gerencie permissões facilmente."
       },
       "multiLanguage": {
-        "title": "Custom Multi-Language",
-        "description": "Configure your system and regional languages for a tailored experience."
+        "title": "Multi-idiomas Personalizados",
+        "description": "Configure seus idiomas do sistema e regionais para uma experiência personalizada."
       },
       "modernInterface": {
-        "title": "Modern Interface",
-        "description": "Responsive and intuitive design for an optimal user experience."
+        "title": "Interface Moderna",
+        "description": "Design responsivo e intuitivo para uma experiência de usuário ideal."
       },
       "internationalColleagues": {
-        "title": "International Colleagues",
-        "description": "Communicate with your foreign colleagues without worrying about language barriers."
+        "title": "Colegas Internacionais",
+        "description": "Comunique-se com seus colegas estrangeiros sem se preocupar com barreiras linguísticas."
       },
       "multilingualClassrooms": {
-        "title": "Multilingual Classrooms",
-        "description": "Exchange with your classmates in their native language, no matter where they come from."
+        "title": "Salas de Aula Multilíngues",
+        "description": "Converse com seus colegas de classe em sua língua nativa, não importa de onde venham."
       }
     },
     "cta": {
-      "title": "Ready to communicate without limits?",
-      "subtitle": "Join thousands of users who already use Meeshy to break language barriers.",
-      "createAccount": "Create my account"
+      "title": "Pronto para se comunicar sem limites?",
+      "subtitle": "Junte-se a milhares de usuários que já usam o Meeshy para quebrar barreiras linguísticas.",
+      "createAccount": "Criar minha conta"
     },
     "footer": {
       "copyright": "© 2026 Meeshy",
-      "tagline": "Meet without shyness",
+      "tagline": "Conheça sem timidez",
       "links": {
-        "about": "About",
-        "policy": "Policy",
-        "terms": "Terms",
-        "contact": "Contact",
-        "partners": "Partners"
+        "about": "Sobre",
+        "policy": "Política",
+        "terms": "Termos",
+        "contact": "Contato",
+        "partners": "Parceiros"
       },
       "social": {
-        "followUs": "Follow us"
+        "followUs": "Siga-nos"
       },
-      "usefulLinks": "Useful Links"
+      "usefulLinks": "Links Úteis"
     },
     "about": {
-      "title": "About Meeshy",
-      "subtitle": "We believe that language barriers should never stand in the way of meaningful connections.",
-      "backHome": "Back to home",
+      "title": "Sobre o Meeshy",
+      "subtitle": "Acreditamos que as barreiras linguísticas nunca devem ser um obstáculo para conexões significativas.",
+      "backHome": "Voltar ao início",
       "mission": {
-        "title": "Our Mission",
-        "description": "Connect the world, one translation at a time. Our platform empowers people from all corners of the globe to communicate freely, breaking down the walls that separate us and building bridges of understanding."
+        "title": "Nossa Missão",
+        "description": "Conectar o mundo, uma tradução por vez. Nossa plataforma permite que pessoas de todos os cantos do mundo se comuniquem livremente, derrubando as paredes que nos separam e construindo pontes de compreensão."
       },
       "values": {
         "globalAccess": {
-          "title": "Global Accessibility",
-          "description": "Making multilingual communication accessible to everyone, everywhere in the world."
+          "title": "Acessibilidade Global",
+          "description": "Tornar a comunicação multilíngue acessível a todos, em todos os lugares do mundo."
         },
         "innovation": {
-          "title": "Innovation",
-          "description": "Using the latest AI technologies for accurate and fast translations."
+          "title": "Inovação",
+          "description": "Usar as mais recentes tecnologias de IA para traduções precisas e rápidas."
         },
         "privacy": {
-          "title": "Privacy Respect",
-          "description": "Your conversations remain private and secure. and soon, translations done locally in your browser."
+          "title": "Respeito à Privacidade",
+          "description": "Suas conversas permanecem privadas e seguras."
         }
       },
       "team": {
-        "title": "Our Team",
-        "description": "Made with ❤️ by developers who believe communication should have no boundaries.",
-        "details": "Meeshy is developed by a passionate team of developers, linguists and designers who share a common vision: a world where language is no longer an obstacle to human communication."
+        "title": "Nossa Equipe",
+        "description": "Feito com ❤️ por desenvolvedores que acreditam que a comunicação não deve ter fronteiras.",
+        "details": "O Meeshy é desenvolvido por uma equipe apaixonada de desenvolvedores, linguistas e designers que compartilham uma visão comum: um mundo onde o idioma não é mais um obstáculo para a comunicação humana."
       },
       "cta": {
-        "title": "Want to know more?",
-        "contact": "Contact us"
+        "title": "Quer saber mais?",
+        "contact": "Entre em contato"
       }
     },
     "partners": {
-      "title": "Partners",
-      "subtitle": "Join our partner ecosystem and help connect the world through breaking language barriers.",
-      "backHome": "Back to home",
+      "title": "Parceiros",
+      "subtitle": "Junte-se ao nosso ecossistema de parceiros e contribua para conectar o mundo quebrando barreiras linguísticas.",
+      "backHome": "Voltar ao início",
       "enterprise": {
-        "title": "Enterprise Teams",
-        "description": "Deploy Meeshy in your company to enable seamless multilingual communication across global teams.",
+        "title": "Equipes Empresariais",
+        "description": "Implante o Meeshy em sua empresa para permitir comunicação multilíngue fluida entre equipes globais.",
         "features": {
-          "deployment": "On-premise or cloud deployment",
-          "sso": "SSO and Active Directory integration",
-          "analytics": "Team communication analytics",
-          "support": "24/7 enterprise support",
-          "customization": "Custom branding and features"
+          "deployment": "Implantação local ou na nuvem",
+          "sso": "Integração SSO e Active Directory",
+          "analytics": "Análise de comunicação de equipe",
+          "support": "Suporte empresarial 24/7",
+          "customization": "Personalização e funcionalidades sob medida"
         },
-        "pricing": "Contact us for enterprise pricing"
+        "pricing": "Entre em contato para preços empresariais"
       },
       "education": {
-        "title": "Educational Institutions",
-        "description": "Enable international collaboration in schools and universities with multilingual communication tools.",
+        "title": "Instituições Educacionais",
+        "description": "Promova colaboração internacional em escolas e universidades com ferramentas de comunicação multilíngue.",
         "features": {
-          "classrooms": "Multilingual virtual classrooms",
-          "exchange": "Student exchange programs support",
-          "learning": "Language learning integration",
-          "admin": "Administrative dashboard",
-          "curriculum": "Curriculum-based language support"
+          "classrooms": "Salas de aula virtuais multilíngues",
+          "exchange": "Suporte para programas de intercâmbio estudantil",
+          "learning": "Integração ao aprendizado de idiomas",
+          "admin": "Painel administrativo",
+          "curriculum": "Suporte linguístico baseado no currículo"
         },
-        "pricing": "Special pricing for educational institutions"
+        "pricing": "Preços especiais para instituições educacionais"
       },
       "types": {
         "tech": {
-          "title": "Technology Partners",
-          "description": "Integrate Meeshy into your applications and services to offer multilingual translation capabilities to your users.",
+          "title": "Parceiros Tecnológicos",
+          "description": "Integre o Meeshy em suas aplicações e serviços para oferecer capacidades de tradução multilíngue aos seus usuários.",
           "features": [
-            "Real-time translation API",
-            "SDK for mobile applications",
-            "Simple web integration",
-            "Dedicated technical support"
+            "API de tradução em tempo real",
+            "SDK para aplicações móveis",
+            "Integração web simples",
+            "Suporte técnico dedicado"
           ]
         },
         "strategic": {
-          "title": "Strategic Partners",
-          "description": "Collaborate with us to develop new features and expand our global reach.",
+          "title": "Parceiros Estratégicos",
+          "description": "Colabore conosco para desenvolver novas funcionalidades e expandir nosso alcance global.",
           "features": [
-            "Feature co-development",
-            "Distribution partnerships",
-            "Certification programs",
-            "Events and conferences"
+            "Co-desenvolvimento de funcionalidades",
+            "Parcerias de distribuição",
+            "Programas de certificação",
+            "Eventos e conferências"
           ]
         }
       },
       "deployment": {
-        "title": "Deployment Solutions",
+        "title": "Soluções de Implantação",
         "onPremise": {
-          "title": "On-Premise Deployment",
-          "description": "Full control over your data with on-premise installation.",
+          "title": "Implantação Local",
+          "description": "Controle total sobre seus dados com instalação local.",
           "features": {
-            "security": "Enhanced security and privacy",
-            "compliance": "Meet compliance requirements",
-            "customization": "Full customization capabilities",
-            "performance": "Optimized performance for your infrastructure"
+            "security": "Segurança e privacidade aprimoradas",
+            "compliance": "Atendimento aos requisitos de conformidade",
+            "customization": "Capacidades de personalização completas",
+            "performance": "Performance otimizada para sua infraestrutura"
           }
         },
         "cloud": {
-          "title": "Cloud Deployment",
-          "description": "Quick setup with our managed cloud solution.",
+          "title": "Implantação em Nuvem",
+          "description": "Configuração rápida com nossa solução em nuvem gerenciada.",
           "features": {
-            "quick": "Quick 5-minute setup",
-            "scalable": "Auto-scaling infrastructure",
-            "maintenance": "No maintenance required",
-            "updates": "Automatic updates and features"
+            "quick": "Configuração rápida em 5 minutos",
+            "scalable": "Infraestrutura auto-evolutiva",
+            "maintenance": "Nenhuma manutenção necessária",
+            "updates": "Atualizações e funcionalidades automáticas"
           }
         }
       },
       "useCases": {
-        "title": "Use Cases & Success Stories",
+        "title": "Casos de Uso e Histórias de Sucesso",
         "business": {
-          "title": "Business Teams",
+          "title": "Equipes Empresariais",
           "items": {
-            "meetings": "Multilingual team meetings",
-            "support": "International customer support",
-            "collaboration": "Cross-border project collaboration",
-            "training": "Global training programs"
+            "meetings": "Reuniões de equipe multilíngues",
+            "support": "Suporte ao cliente internacional",
+            "collaboration": "Colaboração de projetos transfronteiriços",
+            "training": "Programas de treinamento globais"
           }
         },
         "education": {
-          "title": "Educational Institutions",
+          "title": "Instituições Educacionais",
           "items": {
-            "language": "Language learning programs",
-            "international": "International student support",
-            "research": "Collaborative research projects",
-            "cultural": "Cultural exchange programs"
+            "language": "Programas de aprendizado de idiomas",
+            "international": "Suporte a estudantes internacionais",
+            "research": "Projetos de pesquisa colaborativos",
+            "cultural": "Programas de intercâmbio cultural"
           }
         },
         "community": {
-          "title": "Community Organizations",
+          "title": "Organizações Comunitárias",
           "items": {
-            "nonprofits": "Non-profit international outreach",
-            "events": "Multilingual events and conferences",
-            "volunteer": "Volunteer coordination programs",
-            "healthcare": "Healthcare communication support"
+            "nonprofits": "Alcance internacional de ONGs",
+            "events": "Eventos e conferências multilíngues",
+            "volunteer": "Programas de coordenação de voluntários",
+            "healthcare": "Suporte de comunicação em saúde"
           }
         }
       },
       "benefits": {
-        "title": "Partnership Benefits",
+        "title": "Benefícios da Parceria",
         "priority": {
-          "title": "Priority Access",
-          "description": "Early access to new features and APIs"
+          "title": "Acesso Prioritário",
+          "description": "Acesso antecipado a novas funcionalidades e APIs"
         },
         "support": {
-          "title": "Dedicated Support",
-          "description": "Dedicated technical support team for your projects"
+          "title": "Suporte Dedicado",
+          "description": "Equipe de suporte técnico dedicada para seus projetos"
         },
         "visibility": {
-          "title": "Visibility",
-          "description": "Showcase your partnership on our platforms"
+          "title": "Visibilidade",
+          "description": "Destaque da sua parceria em nossas plataformas"
         }
       },
       "become": {
-        "title": "Become a Partner",
-        "description": "Interested in partnering with Meeshy? Contact us to discuss collaboration opportunities.",
-        "contact": "Contact us",
-        "about": "About us",
-        "api": "API Documentation"
+        "title": "Tornar-se Parceiro",
+        "description": "Interessado em uma parceria com o Meeshy? Entre em contato para discutir oportunidades de colaboração.",
+        "contact": "Entre em contato",
+        "about": "Sobre nós",
+        "api": "Documentação da API"
       }
     },
     "contact": {
-      "title": "Contact us",
-      "subtitle": "We are located in the heart of La Défense, Paris",
-      "backHome": "Back to home",
+      "title": "Entre em contato",
+      "subtitle": "Estamos localizados no coração de La Défense, Paris",
+      "backHome": "Voltar ao início",
       "address": {
-        "title": "Nossa Morada",
+        "title": "Nosso Endereço",
         "company": "Meeshy",
         "building": "9 - 11 Avenue de l'Arche",
         "street": "Courbevoie 92400",
         "city": "França"
       },
       "contact": {
-        "title": "Contacto",
+        "title": "Contato",
         "email": {
           "label": "Email",
           "value": "contact@meeshy.me"
@@ -331,315 +374,315 @@
         "description": "Estamos disponíveis 24/7 para apoiá-lo"
       },
       "transport": {
-        "title": "How to reach us",
+        "title": "Como nos encontrar",
         "train": {
-          "title": "By Train",
-          "rer": "RER A: \"La Défense - Grande Arche\" station",
-          "transilien": "Transilien L: \"La Défense\" station",
-          "time": "From Paris: 10-15 minutes from Châtelet-Les Halles"
+          "title": "De Trem",
+          "rer": "RER A: Estação \"La Défense - Grande Arche\"",
+          "transilien": "Transilien L: Estação \"La Défense\"",
+          "time": "De Paris: 10-15 minutos de Châtelet-Les Halles"
         },
         "metro": {
-          "title": "By Metro",
-          "line1": "Line 1: \"La Défense - Grande Arche\" station",
-          "time": "From central Paris: 20-25 minutes"
+          "title": "De Metrô",
+          "line1": "Linha 1: Estação \"La Défense - Grande Arche\"",
+          "time": "Do centro de Paris: 20-25 minutos"
         },
         "bus": {
-          "title": "By Bus",
-          "lines": "Lines: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
-          "stop": "\"La Défense - Grande Arche\" stop"
+          "title": "De Ônibus",
+          "lines": "Linhas: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+          "stop": "Parada \"La Défense - Grande Arche\""
         },
         "lineU": {
-          "title": "Line U",
-          "transilien": "Transilien U: \"La Défense\" station",
-          "time": "From western Paris: 15-20 minutes"
+          "title": "Linha U",
+          "transilien": "Transilien U: Estação \"La Défense\"",
+          "time": "Do oeste de Paris: 15-20 minutos"
         },
         "lineE277": {
-          "title": "Line E277",
-          "bus": "Bus E277: \"La Défense - Grande Arche\" stop",
-          "time": "Express service from the west"
+          "title": "Linha E277",
+          "bus": "Ônibus E277: Parada \"La Défense - Grande Arche\"",
+          "time": "Serviço expresso do oeste"
         },
         "car": {
-          "title": "By Car",
-          "highway": "Highway A14: \"La Défense\" exit",
-          "parking": "Parking: Several parking lots available in the area",
-          "rates": "Rates: €2-4/hour depending on parking"
+          "title": "De Carro",
+          "highway": "Autoestrada A14: Saída \"La Défense\"",
+          "parking": "Estacionamento: Vários estacionamentos disponíveis na área",
+          "rates": "Tarifas: €2-4/hora dependendo do estacionamento"
         }
       },
       "cta": {
-        "title": "Want to know more?",
-        "learnMore": "Learn more",
-        "collaborate": "Collaborate with us"
+        "title": "Quer saber mais?",
+        "learnMore": "Saiba mais",
+        "collaborate": "Colaborar conosco"
       }
     },
     "terms": {
-      "title": "Terms of Use",
-      "lastUpdated": "Last updated: January 1, 2026",
+      "title": "Termos de Uso",
+      "lastUpdated": "Última atualização: 1º de janeiro de 2026",
       "sections": {
         "acceptance": {
-          "title": "1. Acceptance of Terms",
-          "content": "By accessing and using Meeshy, you agree to be bound by these terms of use. If you do not agree to these terms, please do not use our service."
+          "title": "1. Aceitação dos Termos",
+          "content": "Ao acessar e usar o Meeshy, você concorda em ficar vinculado a estes termos de uso. Se você não concordar com estes termos, por favor, não use nosso serviço."
         },
         "description": {
-          "title": "2. Service Description",
-          "content": "Meeshy is a multilingual messaging platform that uses artificial intelligence to automatically translate messages in real-time. Our service enables communication without language barriers directly in your browser."
+          "title": "2. Descrição do Serviço",
+          "content": "O Meeshy é uma plataforma de mensagens multilíngue que usa inteligência artificial para traduzir automaticamente mensagens em tempo real. Nosso serviço permite comunicação sem barreiras linguísticas diretamente no seu navegador."
         },
         "acceptableUse": {
-          "title": "3. Acceptable Use",
-          "content": "You agree to:",
+          "title": "3. Uso Aceitável",
+          "content": "Você concorda em:",
           "list": [
-            "Use the service legally and respectfully",
-            "Not publish offensive, illegal or inappropriate content",
-            "Respect privacy and the rights of others",
-            "Not attempt to compromise service security",
-            "Not use the service for commercial purposes without authorization"
+            "Usar o serviço de forma legal e respeitosa",
+            "Não publicar conteúdo ofensivo, ilegal ou inadequado",
+            "Respeitar a privacidade e os direitos dos outros",
+            "Não tentar comprometer a segurança do serviço",
+            "Não usar o serviço para fins comerciais sem autorização"
           ]
         },
         "privacy": {
-          "title": "4. Privacy and Data",
-          "content": "We are committed to protecting your privacy. Translations are performed locally in your browser when possible. No personal data is stored without your explicit consent. See our privacy policy for more details."
+          "title": "4. Privacidade e Dados",
+          "content": "Estamos comprometidos em proteger sua privacidade. As traduções são realizadas localmente no seu navegador quando possível. Nenhum dado pessoal é armazenado sem seu consentimento explícito. Consulte nossa política de privacidade para mais detalhes."
         },
         "intellectualProperty": {
-          "title": "5. Intellectual Property",
-          "content": "Meeshy and its content are protected by copyright and other intellectual property laws. You may not copy, modify or distribute our service without authorization."
+          "title": "5. Propriedade Intelectual",
+          "content": "O Meeshy e seu conteúdo são protegidos por direitos autorais e outras leis de propriedade intelectual. Você não pode copiar, modificar ou distribuir nosso serviço sem autorização."
         },
         "limitation": {
-          "title": "6. Limitation of Liability",
-          "content": "Meeshy is provided \"as is\". We do not guarantee that the service will be uninterrupted or error-free. We will not be liable for indirect or consequential damages resulting from the use of our service."
+          "title": "6. Limitação de Responsabilidade",
+          "content": "O Meeshy é fornecido \"como está\". Não garantimos que o serviço será ininterrupto ou livre de erros. Não seremos responsáveis por danos indiretos ou consequenciais resultantes do uso de nosso serviço."
         },
         "modifications": {
-          "title": "7. Modifications",
-          "content": "We reserve the right to modify these terms at any time. Changes will take effect upon their publication on this page. Your continued use of the service constitutes your acceptance of the modified terms."
+          "title": "7. Modificações",
+          "content": "Reservamo-nos o direito de modificar estes termos a qualquer momento. As modificações entrarão em vigor após sua publicação nesta página. Seu uso continuado do serviço constitui sua aceitação dos termos modificados."
         },
         "contact": {
-          "title": "8. Contact",
-          "content": "For any questions regarding these terms of use, please contact us at: contact@meeshy.me"
+          "title": "8. Contato",
+          "content": "Para qualquer pergunta sobre estes termos de uso, entre em contato conosco em: contact@meeshy.me"
         }
       },
       "navigation": {
-        "title": "Learn more about Meeshy",
-        "about": "About us",
-        "contact": "Contact us",
-        "partners": "Become a partner"
+        "title": "Saiba mais sobre o Meeshy",
+        "about": "Sobre nós",
+        "contact": "Entre em contato",
+        "partners": "Torne-se parceiro"
       }
     },
     "privacy": {
-      "title": "Privacy Policy",
-      "lastUpdated": "Last updated: January 1, 2026",
-      "backHome": "Back to home",
-      "print": "Print",
+      "title": "Política de Privacidade",
+      "lastUpdated": "Última atualização: 1º de janeiro de 2026",
+      "backHome": "Voltar ao início",
+      "print": "Imprimir",
       "sections": {
         "introduction": {
-          "title": "1. Introduction",
-          "content": "At Meeshy, we are committed to protecting your privacy and personal data. This privacy policy explains how we collect, use and protect your information when you use our multilingual messaging service."
+          "title": "1. Introdução",
+          "content": "No Meeshy, estamos comprometidos em proteger sua privacidade e dados pessoais. Esta política de privacidade explica como coletamos, usamos e protegemos suas informações quando você usa nosso serviço de mensagens multilíngue."
         },
         "dataCollection": {
-          "title": "2. Information we collect",
+          "title": "2. Informações que coletamos",
           "personal": {
-            "title": "2.1 Personal information",
+            "title": "2.1 Informações pessoais",
             "list": [
-              "Username and email address (upon registration)",
-              "Language preferences",
-              "Profile information (optional)"
+              "Nome de usuário e endereço de email (no registro)",
+              "Preferências de idioma",
+              "Informações de perfil (opcionais)"
             ]
           },
           "translation": {
-            "title": "2.2 Translation data",
+            "title": "2.2 Dados de tradução",
             "list": [
-              "Translated messages (processed locally in your browser)",
-              "Source and target languages",
-              "Translation metadata (without message content)"
+              "Mensagens traduzidas (processadas localmente no seu navegador)",
+              "Idiomas de origem e destino",
+              "Metadados de tradução (sem conteúdo das mensagens)"
             ]
           },
           "technical": {
-            "title": "2.3 Technical data",
+            "title": "2.3 Dados técnicos",
             "list": [
-              "IP address (anonymized)",
-              "Browser type and version",
-              "Service usage data (anonymous statistics)"
+              "Endereço IP (anonimizado)",
+              "Tipo e versão do navegador",
+              "Dados de uso do serviço (estatísticas anônimas)"
             ]
           }
         },
         "usage": {
-          "title": "3. How we use your information",
+          "title": "3. Como usamos suas informações",
           "list": [
-            "Service provision: Real-time translation of your messages",
-            "Service improvement: Development of new features",
-            "Customer support: Answering your questions and resolving issues",
-            "Security: Protection against abuse and fraud",
-            "Communication: Important information about the service"
+            "Prestação do serviço: Tradução em tempo real de suas mensagens",
+            "Melhoria do serviço: Desenvolvimento de novas funcionalidades",
+            "Suporte ao cliente: Resposta às suas perguntas e resolução de problemas",
+            "Segurança: Proteção contra abusos e fraudes",
+            "Comunicação: Informações importantes sobre o serviço"
           ]
         },
         "protection": {
-          "title": "4. Protection of your data",
+          "title": "4. Proteção de seus dados",
           "local": {
-            "title": "4.1 Local processing",
-            "content": "Most translations are performed directly in your browser, meaning your messages never leave your device."
+            "title": "4.1 Processamento local",
+            "content": "A maioria das traduções é realizada diretamente no seu navegador, o que significa que suas mensagens nunca saem do seu dispositivo."
           },
           "encryption": {
-            "title": "4.2 Encryption",
-            "content": "All communications between your browser and our servers are encrypted using TLS 1.3."
+            "title": "4.2 Criptografia",
+            "content": "Todas as comunicações entre seu navegador e nossos servidores são criptografadas usando TLS 1.3."
           },
           "storage": {
-            "title": "4.3 Secure storage",
-            "content": "Data stored on our servers is protected by enterprise-level security measures, including encryption at rest."
+            "title": "4.3 Armazenamento seguro",
+            "content": "Os dados armazenados em nossos servidores são protegidos por medidas de segurança de nível empresarial, incluindo criptografia em repouso."
           }
         },
         "sharing": {
-          "title": "5. Information sharing",
-          "content": "We do not sell, rent or share your personal information with third parties, except in the following cases:",
+          "title": "5. Compartilhamento de informações",
+          "content": "Não vendemos, alugamos ou compartilhamos suas informações pessoais com terceiros, exceto nos seguintes casos:",
           "list": [
-            "With your explicit consent",
-            "To comply with a legal obligation",
-            "To protect our rights, property or security",
-            "With trusted service providers (under confidentiality agreement)"
+            "Com seu consentimento explícito",
+            "Para cumprir uma obrigação legal",
+            "Para proteger nossos direitos, propriedade ou segurança",
+            "Com prestadores de serviços confiáveis (sob contrato de confidencialidade)"
           ]
         },
         "rights": {
-          "title": "6. Your rights",
-          "content": "In accordance with GDPR, you have the right to:",
+          "title": "6. Seus direitos",
+          "content": "De acordo com o RGPD, você tem o direito de:",
           "list": [
-            "Access your personal data",
-            "Rectify inaccurate information",
-            "Delete your personal data",
-            "Limit the processing of your data",
-            "Data portability",
-            "Object to processing"
+            "Acessar seus dados pessoais",
+            "Retificar informações incorretas",
+            "Excluir seus dados pessoais",
+            "Limitar o processamento de seus dados",
+            "Portabilidade de dados",
+            "Opor-se ao processamento"
           ],
-          "contact": "To exercise these rights, contact us at: privacy@meeshy.me"
+          "contact": "Para exercer esses direitos, entre em contato conosco em: privacy@meeshy.me"
         },
         "cookies": {
-          "title": "7. Cookies and similar technologies",
-          "content": "We use essential cookies for service functionality and analytical cookies to improve user experience. You can manage your cookie preferences in your browser settings."
+          "title": "7. Cookies e tecnologias similares",
+          "content": "Usamos cookies essenciais para o funcionamento do serviço e cookies analíticos para melhorar a experiência do usuário. Você pode gerenciar suas preferências de cookies nas configurações do seu navegador."
         },
         "modifications": {
-          "title": "8. Modifications to this policy",
-          "content": "We may update this privacy policy from time to time. Important changes will be communicated by email or via a notification in the application. The last update date is indicated at the top of this page."
+          "title": "8. Modificações desta política",
+          "content": "Podemos atualizar esta política de privacidade de tempos em tempos. Modificações importantes serão comunicadas por email ou via notificação no aplicativo. A data da última atualização está indicada no topo desta página."
         },
         "contact": {
-          "title": "9. Contact",
-          "content": "For any questions regarding this privacy policy or the processing of your personal data, please contact us:",
+          "title": "9. Contato",
+          "content": "Para qualquer pergunta sobre esta política de privacidade ou o processamento de seus dados pessoais, entre em contato conosco:",
           "email": "Email: privacy@meeshy.me",
-          "address": "Address: 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
+          "address": "Endereço: Tour Eggée, 9 - 11 Avenue de l'Arche 92400, Courbevoie, França"
         }
       },
       "navigation": {
-        "title": "Learn more about Meeshy",
-        "about": "About us",
-        "contact": "Contact us",
-        "partners": "Become a partner"
+        "title": "Saiba mais sobre o Meeshy",
+        "about": "Sobre nós",
+        "contact": "Entre em contato",
+        "partners": "Torne-se parceiro"
       }
     }
   },
   "auth": {
     "login": {
-      "title": "Login",
-      "description": "Welcome back to Meeshy",
+      "title": "Entrar",
+      "description": "Bem-vindo de volta ao Meeshy",
       "email": "Email",
-      "password": "Password",
-      "loginButton": "Login",
-      "forgotPassword": "Forgot password?",
-      "noAccount": "Don't have an account?",
-      "registerLink": "Register here"
+      "password": "Senha",
+      "loginButton": "Entrar",
+      "forgotPassword": "Esqueceu a senha?",
+      "noAccount": "Não tem uma conta?",
+      "registerLink": "Registre-se aqui"
     },
     "register": {
-      "title": "Create an account",
-      "description": "Join Meeshy and communicate without barriers",
-      "firstName": "First name",
-      "lastName": "Last name",
-      "username": "Username",
+      "title": "Criar uma conta",
+      "description": "Junte-se ao Meeshy e comunique-se sem barreiras",
+      "firstName": "Nome",
+      "lastName": "Sobrenome",
+      "username": "Nome de usuário",
       "email": "Email",
-      "password": "Password",
-      "confirmPassword": "Confirm password",
-      "registerButton": "Create account",
-      "hasAccount": "Already have an account?",
-      "loginLink": "Login here"
+      "password": "Senha",
+      "confirmPassword": "Confirmar senha",
+      "registerButton": "Criar conta",
+      "hasAccount": "Já tem uma conta?",
+      "loginLink": "Faça login aqui"
     },
     "joinConversation": {
-      "title": "Join a conversation",
-      "description": "Enter the conversation link you received",
-      "resumeTitle": "Resume or join a conversation",
-      "resumeDescription": "You have an ongoing conversation. You can resume it or join a new conversation.",
-      "ongoingConversation": "Ongoing conversation",
-      "ongoingDescription": "You have an active conversation that you can resume.",
-      "resumeButton": "Resume ongoing conversation",
-      "orJoinNew": "Or join a new conversation",
-      "newConversationDescription": "Enter a new conversation link below:",
-      "linkPlaceholder": "Enter conversation link",
-      "joinButton": "Join conversation"
+      "title": "Entrar em uma conversa",
+      "description": "Digite o link da conversa que você recebeu",
+      "resumeTitle": "Retomar ou entrar em uma conversa",
+      "resumeDescription": "Você tem uma conversa em andamento. Pode retomá-la ou entrar em uma nova conversa.",
+      "ongoingConversation": "Conversa em andamento",
+      "ongoingDescription": "Você tem uma conversa ativa que pode retomar.",
+      "resumeButton": "Retomar conversa em andamento",
+      "orJoinNew": "Ou entrar em uma nova conversa",
+      "newConversationDescription": "Digite um novo link de conversa abaixo:",
+      "linkPlaceholder": "Digite o link da conversa",
+      "joinButton": "Entrar na conversa"
     }
   },
   "header": {
-    "shareLinkCopied": "Share link copied to clipboard",
-    "clearSession": "Clear session",
-    "clearSessionConfirm": "Are you sure you want to clear your session?",
-    "clearSessionDescription": "This action will remove all your session data and log you out.",
-    "share": "Share",
-    "login": "Login",
-    "register": "Register",
-    "signIn": "Sign in",
-    "signUp": "Sign up",
-    "profile": "Profile",
-    "settings": "Settings",
-    "logout": "Logout",
-    "anonymousSession": "Anonymous session",
-    "cancel": "Cancel",
-    "clearSessionButton": "Clear session",
-    "loginTitle": "Login",
-    "loginDescription": "Sign in to your Meeshy account",
-    "registerTitle": "Create account",
-    "registerDescription": "Join Meeshy and communicate without barriers"
+    "shareLinkCopied": "Link de compartilhamento copiado para área de transferência",
+    "clearSession": "Limpar sessão",
+    "clearSessionConfirm": "Tem certeza de que deseja limpar sua sessão?",
+    "clearSessionDescription": "Esta ação removerá todos os seus dados de sessão e o desconectará.",
+    "share": "Compartilhar",
+    "login": "Entrar",
+    "register": "Registrar",
+    "signIn": "Entrar",
+    "signUp": "Inscrever-se",
+    "profile": "Perfil",
+    "settings": "Configurações",
+    "logout": "Sair",
+    "anonymousSession": "Sessão anônima",
+    "cancel": "Cancelar",
+    "clearSessionButton": "Limpar sessão",
+    "loginTitle": "Entrar",
+    "loginDescription": "Entre na sua conta Meeshy",
+    "registerTitle": "Criar conta",
+    "registerDescription": "Junte-se ao Meeshy e comunique-se sem barreiras"
   },
   "language": {
-    "title": "Languages",
-    "description": "Translation preferences",
-    "selectLanguage": "Select language",
-    "interfaceLanguage": "Interface language",
-    "systemLanguage": "System language",
-    "regionalLanguage": "Regional language",
-    "customLanguage": "Custom language",
-    "autoTranslate": "Auto translate",
-    "translateToSystem": "Translate to system language",
-    "translateToRegional": "Translate to regional language",
-    "useCustomDestination": "Use custom destination"
+    "title": "Idiomas",
+    "description": "Preferências de tradução",
+    "selectLanguage": "Selecionar idioma",
+    "interfaceLanguage": "Idioma da interface",
+    "systemLanguage": "Idioma do sistema",
+    "regionalLanguage": "Idioma regional",
+    "customLanguage": "Idioma personalizado",
+    "autoTranslate": "Tradução automática",
+    "translateToSystem": "Traduzir para idioma do sistema",
+    "translateToRegional": "Traduzir para idioma regional",
+    "useCustomDestination": "Usar destino personalizado"
   },
   "errors": {
-    "loginFailed": "Login failed",
-    "registrationFailed": "Registration failed",
-    "invalidCredentials": "Invalid credentials",
-    "networkError": "Network error",
-    "unknownError": "An unknown error occurred",
-    "validationError": "Validation error"
+    "loginFailed": "Falha no login",
+    "registrationFailed": "Falha no registro",
+    "invalidCredentials": "Credenciais inválidas",
+    "networkError": "Erro de rede",
+    "unknownError": "Ocorreu um erro desconhecido",
+    "validationError": "Erro de validação"
   },
   "success": {
-    "loginSuccess": "Successfully logged in",
-    "registrationSuccess": "Account created successfully",
-    "settingsSaved": "Settings saved successfully",
-    "profileUpdated": "Profile updated successfully",
-    "welcome": "Welcome"
+    "loginSuccess": "Login realizado com sucesso",
+    "registrationSuccess": "Conta criada com sucesso",
+    "settingsSaved": "Configurações salvas com sucesso",
+    "profileUpdated": "Perfil atualizado com sucesso",
+    "welcome": "Bem-vindo"
   },
   "login": {
-    "title": "Login",
-    "subtitle": "Connect to your account",
-    "formTitle": "Login",
-    "formDescription": "Enter your credentials to log in",
-    "usernameLabel": "Username or email",
-    "usernamePlaceholder": "Your username",
-    "usernameHelp": "Enter your username or email address",
-    "passwordLabel": "Password",
-    "passwordPlaceholder": "Your password",
-    "passwordHelp": "Enter your personal password",
-    "showPassword": "Show password",
-    "hidePassword": "Hide password",
-    "loginButton": "Login",
-    "loggingIn": "Logging in...",
-    "verifyingAuth": "Verifying authentication...",
-    "redirecting": "Redirecting...",
-    "loading": "Loading...",
-    "noAccount": "Não tem uma conta?",
-    "registerLink": "Registe-se aqui",
+    "title": "Entrar",
+    "subtitle": "Conecte-se à sua conta",
+    "formTitle": "Entrar",
+    "formDescription": "Digite suas credenciais para fazer login",
+    "usernameLabel": "Nome de usuário ou email",
+    "usernamePlaceholder": "Seu nome de usuário",
+    "usernameHelp": "Digite seu nome de usuário ou endereço de email",
+    "passwordLabel": "Senha",
+    "passwordPlaceholder": "Sua senha",
+    "passwordHelp": "Digite sua senha pessoal",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "loginButton": "Entrar",
+    "loggingIn": "Entrando...",
+    "verifyingAuth": "Verificando autenticação...",
+    "redirecting": "Redirecionando...",
+    "loading": "Carregando...",
     "validation": {
       "required": "Todos os campos são obrigatórios"
     },
+    "noAccount": "Não tem uma conta?",
+    "registerLink": "Registre-se aqui",
     "success": {
       "loginSuccess": "Login bem-sucedido!"
     },
@@ -648,47 +691,73 @@
     }
   },
   "register": {
-    "title": "Create an account",
-    "description": "Join Meeshy and communicate without barriers",
-    "firstNameLabel": "First name *",
-    "firstNamePlaceholder": "Your first name",
-    "lastNameLabel": "Last name *",
-    "lastNamePlaceholder": "Your last name",
-    "usernameLabel": "Username *",
-    "usernamePlaceholder": "Choose a username",
+    "title": "Criar uma conta",
+    "description": "Junte-se ao Meeshy e comunique-se sem barreiras",
+    "formDescription": "Preencha o formulário abaixo para criar sua conta",
+    "firstNameLabel": "Nome *",
+    "firstNamePlaceholder": "Seu nome",
+    "lastNameLabel": "Sobrenome *",
+    "lastNamePlaceholder": "Seu sobrenome",
+    "usernameLabel": "Nome de usuário *",
+    "usernamePlaceholder": "Escolha um nome de usuário",
+    "usernameHelp": "Este nome será visível para outros usuários",
     "emailLabel": "Email *",
-    "emailPlaceholder": "your@email.com",
-    "phoneLabel": "Phone",
-    "phonePlaceholder": "+33123456789",
-    "passwordLabel": "Password *",
-    "passwordPlaceholder": "Choose a password",
-    "systemLanguageLabel": "System language",
-    "regionalLanguageLabel": "Regional language",
-    "registerButton": "Create account",
-    "creating": "Creating...",
-    "fillRequiredFields": "Please fill in all required fields",
-    "accountCreationError": "Error creating account",
-    "mustAcceptTerms": "Você deve aceitar os termos de serviço e a política de privacidade"
+    "emailPlaceholder": "seu@email.com",
+    "phoneLabel": "Telefone",
+    "phonePlaceholder": "+55123456789",
+    "passwordLabel": "Senha *",
+    "passwordPlaceholder": "Escolha uma senha",
+    "passwordHelp": "Mínimo 6 caracteres",
+    "confirmPasswordLabel": "Confirmar senha *",
+    "confirmPasswordPlaceholder": "Confirme sua senha",
+    "systemLanguageLabel": "Idioma do sistema",
+    "regionalLanguageLabel": "Idioma regional",
+    "registerButton": "Criar conta",
+    "creating": "Criando...",
+    "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios",
+    "passwordsDoNotMatch": "As senhas não coincidem",
+    "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
+    "registrationError": "Erro ao criar a conta",
+    "hasAccount": "Já tem uma conta?",
+    "loginLink": "Faça login aqui",
+    "acceptTerms": "Aceito os",
+    "termsOfService": "termos de serviço",
+    "and": "e a",
+    "privacyPolicy": "política de privacidade",
+    "contactUs": "entre em contato conosco",
+    "mustAcceptTerms": "Você deve aceitar os termos de serviço e a política de privacidade",
+    "validation": {
+      "required": "Todos os campos são obrigatórios",
+      "passwordMismatch": "As senhas não coincidem",
+      "passwordLength": "A senha deve ter pelo menos 6 caracteres"
+    },
+    "success": {
+      "registerSuccess": "Conta criada com sucesso!",
+      "welcome": "Bem-vindo"
+    },
+    "errors": {
+      "registerFailed": "Falha no registro. Tente novamente."
+    }
   },
   "joinConversation": {
-    "title": "Join a conversation",
-    "description": "Enter the conversation link you received",
-    "resumeTitle": "Resume or join a conversation",
-    "resumeDescription": "You have an ongoing conversation. You can resume it or join a new conversation.",
-    "ongoingConversation": "Ongoing conversation",
-    "ongoingDescription": "You have an active conversation that you can resume.",
-    "resumeButton": "Resume ongoing conversation",
-    "orJoinNew": "Or join a new conversation",
-    "newConversationDescription": "Enter a new conversation link below:",
-    "linkLabel": "Conversation link",
-    "linkPlaceholder": "Paste the link here or enter the ID",
-    "joinButton": "Join conversation",
-    "verifying": "Verifying...",
-    "enterLink": "Please enter a conversation link",
-    "invalidLink": "Invalid conversation link",
-    "expiredLink": "Invalid or expired conversation link",
-    "verificationError": "Link verification error",
-    "validLink": "Valid link! Redirecting..."
+    "title": "Entrar em uma conversa",
+    "description": "Digite o link da conversa que você recebeu",
+    "resumeTitle": "Retomar ou entrar em uma conversa",
+    "resumeDescription": "Você tem uma conversa em andamento. Pode retomá-la ou entrar em uma nova conversa.",
+    "ongoingConversation": "Conversa em andamento",
+    "ongoingDescription": "Você tem uma conversa ativa que pode retomar.",
+    "resumeButton": "Retomar conversa em andamento",
+    "orJoinNew": "Ou entrar em uma nova conversa",
+    "newConversationDescription": "Digite um novo link de conversa abaixo:",
+    "linkLabel": "Link da conversa",
+    "linkPlaceholder": "Cole o link aqui ou digite o ID",
+    "joinButton": "Entrar na conversa",
+    "verifying": "Verificando...",
+    "enterLink": "Por favor, digite um link de conversa",
+    "invalidLink": "Link de conversa inválido",
+    "expiredLink": "Link de conversa inválido ou expirado",
+    "verificationError": "Erro de verificação do link",
+    "validLink": "Link válido! Redirecionando..."
   },
   "dashboard": {
     "title": "Painel de Controle",
@@ -775,21 +844,21 @@
   },
   "layout": {
     "header": {
-      "searchPlaceholder": "Search conversations, communities, contacts...",
-      "notifications": "Notifications",
-      "unreadCount": "{count} unread",
-      "userMenu": "User menu"
+      "searchPlaceholder": "Pesquisar conversas, comunidades, contatos...",
+      "notifications": "Notificações",
+      "unreadCount": "{count} não lidas",
+      "userMenu": "Menu do usuário"
     },
     "navigation": {
-      "dashboard": "Dashboard",
-      "conversations": "Conversations",
-      "communities": "Communities",
-      "contacts": "Contacts",
+      "dashboard": "Painel",
+      "conversations": "Conversas",
+      "communities": "Comunidades",
+      "contacts": "Contatos",
       "links": "Links",
-      "profile": "Profile",
-      "settings": "Settings",
-      "admin": "Administration",
-      "logout": "Logout"
+      "profile": "Perfil",
+      "settings": "Configurações",
+      "admin": "Administração",
+      "logout": "Sair"
     },
     "auth": {
       "checking": "Verificando autenticação...",
@@ -804,10 +873,10 @@
     }
   },
   "communities": {
-    "private": "Private",
-    "members": "members",
-    "member": "member",
-    "membersCount": "{count} members"
+    "private": "Privado",
+    "members": "membros",
+    "member": "membro",
+    "membersCount": "{count} membros"
   },
   "conversations": {
     "title": "Minhas Conversas",
@@ -845,252 +914,252 @@
     "errorLoadingNewConversation": "Erro ao carregar nova conversa:",
     "lastMessage": "Última mensagem",
     "noLastMessage": "Nenhuma mensagem ainda",
-    "authChecking": "Checking authentication..."
+    "authChecking": "Verificando autenticação..."
   },
   "settings": {
-    "title": "Settings",
-    "pageTitle": "Settings for {username}",
-    "loadingSettings": "Loading settings...",
-    "settingsError": "Error loading settings",
-    "settingsSaved": "Settings saved successfully",
-    "settingsSaveError": "Error saving settings",
+    "title": "Configurações",
+    "pageTitle": "Configurações de {username}",
+    "loadingSettings": "Carregando configurações...",
+    "settingsError": "Erro ao carregar configurações",
+    "settingsSaved": "Configurações salvas com sucesso",
+    "settingsSaveError": "Erro ao salvar configurações",
+    "noUserConnected": "Nenhum usuário conectado",
     "tabs": {
-      "profile": "Profile",
-      "translation": "Translation",
-      "theme": "Theme",
-      "fonts": "Fonts",
-      "stats": "Stats"
+      "profile": "Perfil",
+      "translation": "Tradução",
+      "theme": "Tema",
+      "fonts": "Fontes",
+      "stats": "Estatísticas"
     },
     "profile": {
-      "title": "Profile",
-      "description": "Personal information",
-      "settingsTitle": "Profile Settings",
-      "settingsDescription": "Settings for {username}",
+      "title": "Perfil",
+      "description": "Informações pessoais",
+      "settingsTitle": "Configurações do perfil",
+      "settingsDescription": "Configurações para {username}",
       "photo": {
-        "title": "Profile Photo",
-        "description": "Customize your profile photo visible to other users",
-        "uploadImage": "Upload an image",
-        "takePhoto": "Take a photo",
-        "removePhoto": "Remove photo",
-        "photoUpdated": "Profile photo updated",
-        "previewTitle": "Visualização da Foto"
+        "title": "Foto do perfil",
+        "description": "Personalize sua foto de perfil visível para outros usuários",
+        "uploadImage": "Enviar uma imagem",
+        "takePhoto": "Tirar uma foto",
+        "removePhoto": "Remover foto",
+        "photoUpdated": "Foto do perfil atualizada",
+        "previewTitle": "Visualização da foto"
       },
       "personalInfo": {
-        "title": "Personal Information",
-        "description": "Modify your profile information",
-        "firstName": "First name",
-        "lastName": "Last name",
-        "displayName": "Display name",
-        "displayNamePlaceholder": "How you want to appear in conversations",
+        "title": "Informações pessoais",
+        "description": "Modifique suas informações de perfil",
+        "firstName": "Nome",
+        "lastName": "Sobrenome",
+        "displayName": "Nome de exibição",
+        "displayNamePlaceholder": "Como você quer aparecer nas conversas",
         "email": "Email",
-        "emailPlaceholder": "your.email@example.com",
-        "phoneNumber": "Phone number",
-        "phoneNumberPlaceholder": "+33 1 23 45 67 89",
-        "username": "Username",
-        "usernameCannotChange": "Username cannot be modified",
+        "emailPlaceholder": "seu.email@exemplo.com",
+        "phoneNumber": "Número de telefone",
+        "phoneNumberPlaceholder": "+55 11 23 45 67 89",
+        "username": "Nome de usuário",
+        "usernameCannotChange": "O nome de usuário não pode ser modificado",
         "bio": "Biografia",
         "bioPlaceholder": "Conte-nos sobre você..."
       },
       "actions": {
-        "cancel": "Cancel",
-        "save": "Save",
-        "saving": "Saving...",
-        "profileUpdated": "Profile updated successfully",
-        "updateError": "Error updating profile",
+        "cancel": "Cancelar",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "profileUpdated": "Perfil atualizado com sucesso",
+        "updateError": "Erro ao atualizar perfil",
         "confirm": "Confirmar",
         "uploading": "Enviando..."
       }
     },
     "translation": {
-      "title": "Language and Translation Configuration",
-      "description": "Define your languages and translation settings",
+      "title": "Configuração de Idioma e Tradução",
+      "description": "Defina seus idiomas e configurações de tradução",
       "mainLanguages": {
-        "title": "Main Languages",
-        "description": "Configure your preferred languages for communication",
-        "systemLanguage": "System language",
-        "systemLanguageDescription": "Main language of your interface and messages",
-        "regionalLanguage": "Regional language",
-        "regionalLanguageDescription": "Language of your region or preferred secondary language",
-        "customDestinationLanguage": "Custom destination language",
-        "customDestinationLanguageDescription": "Specific language for automatic translation (optional)",
-        "selectLanguage": "Select a language",
-        "none": "None"
+        "title": "Idiomas Principais",
+        "description": "Configure seus idiomas preferidos para comunicação",
+        "systemLanguage": "Idioma do sistema",
+        "systemLanguageDescription": "Idioma principal da sua interface e mensagens",
+        "regionalLanguage": "Idioma regional",
+        "regionalLanguageDescription": "Idioma da sua região ou idioma secundário preferido",
+        "customDestinationLanguage": "Idioma de destino personalizado",
+        "customDestinationLanguageDescription": "Idioma específico para tradução automática (opcional)",
+        "selectLanguage": "Selecionar um idioma",
+        "none": "Nenhum"
       },
       "autoTranslation": {
-        "title": "Automatic Translation Options",
-        "description": "Configure how messages are automatically translated",
-        "enabled": "Automatic translation",
-        "enabledDescription": "Enables automatic translation of incoming messages",
-        "exclusiveMode": "Exclusive mode: Enable only one translation option at a time.",
-        "translateToSystem": "Translate to system language only",
-        "translateToSystemDescription": "Translates messages to {flag} {language} only",
-        "translateToRegional": "Translate to regional language only",
-        "translateToRegionalDescription": "Translates messages to {flag} {language} only",
-        "translateToCustom": "Translate to custom language only",
-        "translateToCustomDescription": "Translates messages to {flag} {language} only",
-        "noCustomLanguage": "No custom language defined - set one above",
-        "tip": "Tip:",
-        "tipDescription": "If no option is selected, messages will be translated to all your configured languages (system + regional + custom)."
+        "title": "Opções de Tradução Automática",
+        "description": "Configure como as mensagens são traduzidas automaticamente",
+        "enabled": "Tradução automática",
+        "enabledDescription": "Habilita a tradução automática de mensagens recebidas",
+        "exclusiveMode": "Modo exclusivo: Habilite apenas uma opção de tradução por vez.",
+        "translateToSystem": "Traduzir apenas para idioma do sistema",
+        "translateToSystemDescription": "Traduz mensagens apenas para {flag} {language}",
+        "translateToRegional": "Traduzir apenas para idioma regional",
+        "translateToRegionalDescription": "Traduz mensagens apenas para {flag} {language}",
+        "translateToCustom": "Traduzir apenas para idioma personalizado",
+        "translateToCustomDescription": "Traduz mensagens apenas para {flag} {language}",
+        "noCustomLanguage": "Nenhum idioma personalizado definido - defina um acima",
+        "tip": "Dica:",
+        "tipDescription": "Se nenhuma opção for selecionada, as mensagens serão traduzidas para todos os seus idiomas configurados (sistema + regional + personalizado)."
       },
       "preview": {
-        "title": "Configuration Preview",
-        "systemLanguage": "System language",
-        "regionalLanguage": "Regional language",
-        "customLanguage": "Custom language",
-        "autoTranslation": "Automatic translation",
-        "enabled": "Enabled",
-        "disabled": "Disabled"
+        "title": "Visualização da Configuração",
+        "systemLanguage": "Idioma do sistema",
+        "regionalLanguage": "Idioma regional",
+        "customLanguage": "Idioma personalizado",
+        "autoTranslation": "Tradução automática",
+        "enabled": "Habilitado",
+        "disabled": "Desabilitado"
       },
       "actions": {
-        "save": "Save",
-        "saving": "Saving...",
-        "cancel": "Cancel",
-        "settingsUpdated": "Language settings updated",
-        "updateError": "Error updating language settings"
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "cancel": "Cancelar",
+        "settingsUpdated": "Configurações de idioma atualizadas",
+        "updateError": "Erro ao atualizar configurações de idioma"
       },
-      "systemLanguage": "System language",
-      "regionalLanguage": "Regional language",
-      "customDestinationLanguage": "Custom destination language",
-      "autoTranslateEnabled": "Auto-translation enabled",
-      "translateToSystemLanguage": "Translate to system language",
-      "translateToRegionalLanguage": "Translate to regional language",
-      "useCustomDestination": "Use custom destination",
-      "customDestinationPlaceholder": "Select a language"
+      "systemLanguage": "Idioma do sistema",
+      "regionalLanguage": "Idioma regional",
+      "customDestinationLanguage": "Idioma de destino personalizado",
+      "autoTranslateEnabled": "Tradução automática habilitada",
+      "translateToSystemLanguage": "Traduzir para idioma do sistema",
+      "translateToRegionalLanguage": "Traduzir para idioma regional",
+      "useCustomDestination": "Usar destino personalizado",
+      "customDestinationPlaceholder": "Selecionar um idioma"
     },
     "theme": {
-      "title": "Theme and interface",
-      "description": "Customize the appearance, language and fonts of the application",
+      "title": "Tema e interface",
+      "description": "Personalize a aparência, idioma e fontes da aplicação",
       "displayMode": {
-        "title": "Display mode",
-        "light": "Light",
-        "dark": "Dark",
-        "system": "System"
+        "title": "Modo de exibição",
+        "light": "Claro",
+        "dark": "Escuro",
+        "system": "Sistema"
       },
       "accentColor": {
-        "title": "Accent color",
-        "blue": "Blue",
-        "green": "Green",
-        "purple": "Purple",
-        "red": "Red",
-        "orange": "Orange",
-        "pink": "Pink"
+        "title": "Cor de destaque",
+        "blue": "Azul",
+        "green": "Verde",
+        "purple": "Roxo",
+        "red": "Vermelho",
+        "orange": "Laranja",
+        "pink": "Rosa"
       },
       "interfaceLanguage": {
-        "title": "Interface language",
-        "description": "Sets the user interface language"
+        "title": "Idioma da interface",
+        "description": "Define o idioma da interface do usuário"
       },
       "ui": {
-        "title": "User interface",
-        "description": "Display and behavior options",
+        "title": "Interface do usuário",
+        "description": "Opções de exibição e comportamento",
         "fontSize": {
-          "title": "Font size",
-          "small": "Small",
-          "medium": "Medium",
-          "large": "Large"
+          "title": "Tamanho da fonte",
+          "small": "Pequeno",
+          "medium": "Médio",
+          "large": "Grande"
         },
         "compactMode": {
-          "title": "Compact mode",
-          "description": "Reduces spacing to display more content"
+          "title": "Modo compacto",
+          "description": "Reduz o espaçamento para exibir mais conteúdo"
         },
         "animations": {
-          "title": "Animations",
-          "description": "Enables interface transitions and animations"
+          "title": "Animações",
+          "description": "Habilita transições e animações da interface"
         },
         "interfaceLanguage": {
-          "title": "Interface language",
-          "description": "Sets the user interface language"
+          "title": "Idioma da interface",
+          "description": "Define o idioma da interface do usuário"
         },
         "fontFamily": {
-          "title": "Font family",
-          "description": "Choose the main font of the application"
+          "title": "Família da fonte",
+          "description": "Escolha a fonte principal da aplicação"
         },
         "lineHeight": {
-          "title": "Line height",
-          "description": "Spacing between text lines",
-          "tight": "Tight",
+          "title": "Altura da linha",
+          "description": "Espaçamento entre as linhas de texto",
+          "tight": "Apertado",
           "normal": "Normal",
-          "relaxed": "Relaxed",
-          "loose": "Loose"
+          "relaxed": "Relaxado",
+          "loose": "Soltos"
         }
       },
       "preview": {
-        "title": "Preview",
-        "description": "Preview of applied settings",
-        "exampleMessage": "Example message",
-        "exampleText": "This is a preview of how messages will appear with your current settings."
+        "title": "Visualização",
+        "description": "Visualização das configurações aplicadas",
+        "exampleMessage": "Mensagem de exemplo",
+        "exampleText": "Esta é uma visualização de como as mensagens aparecerão com suas configurações atuais."
       },
-      "settingsUpdated": "Theme updated",
-      "interfaceLanguageUpdated": "Interface language updated"
+      "settingsUpdated": "Tema atualizado",
+      "interfaceLanguageUpdated": "Idioma da interface atualizado"
     },
     "fonts": {
-      "title": "Font selection",
-      "description": "Customize the appearance of text in the application",
+      "title": "Seleção de fontes",
+      "description": "Personalize a aparência do texto na aplicação",
       "fontFamily": {
-        "title": "Font family",
-        "description": "Choose the main font of the application"
+        "title": "Família da fonte",
+        "description": "Escolha a fonte principal da aplicação"
       },
       "fontSize": {
-        "title": "Font size",
-        "description": "Adjust text size"
+        "title": "Tamanho da fonte",
+        "description": "Ajuste o tamanho do texto"
       },
       "lineHeight": {
-        "title": "Line height",
-        "description": "Spacing between text lines"
+        "title": "Altura da linha",
+        "description": "Espaçamento entre as linhas de texto"
       }
     },
     "stats": {
-      "title": "Translation statistics",
-      "description": "View your translation usage statistics",
-      "totalTranslations": "Total translations",
-      "languagesUsed": "Languages used",
-      "translationAccuracy": "Translation accuracy",
-      "mostTranslatedLanguage": "Most translated language",
-      "translationHistory": "Translation history"
+      "title": "Estatísticas de tradução",
+      "description": "Visualize suas estatísticas de uso de tradução",
+      "totalTranslations": "Total de traduções",
+      "languagesUsed": "Idiomas utilizados",
+      "translationAccuracy": "Precisão da tradução",
+      "mostTranslatedLanguage": "Idioma mais traduzido",
+      "translationHistory": "Histórico de traduções"
     },
     "notifications": {
-      "title": "Notifications",
-      "description": "Configure your notification preferences",
-      "emailNotifications": "Email notifications",
-      "pushNotifications": "Push notifications",
-      "messageNotifications": "Message notifications",
-      "groupNotifications": "Group notifications",
-      "translationNotifications": "Translation notifications"
+      "title": "Notificações",
+      "description": "Configure suas preferências de notificação",
+      "emailNotifications": "Notificações por email",
+      "pushNotifications": "Notificações push",
+      "messageNotifications": "Notificações de mensagem",
+      "groupNotifications": "Notificações de grupo",
+      "translationNotifications": "Notificações de tradução"
     },
     "privacy": {
-      "title": "Privacy",
-      "description": "Manage your privacy settings",
-      "dataSharing": "Data sharing",
-      "translationHistory": "Translation history",
-      "analytics": "Analytics",
+      "title": "Privacidade",
+      "description": "Gerencie suas configurações de privacidade",
+      "dataSharing": "Compartilhamento de dados",
+      "translationHistory": "Histórico de traduções",
+      "analytics": "Análises",
       "cookies": "Cookies"
     },
     "security": {
-      "title": "Security",
-      "description": "Your account security settings",
-      "password": "Password",
-      "twoFactorAuth": "Two-factor authentication",
-      "loginHistory": "Login history",
-      "activeSessions": "Active sessions"
-    },
-    "noUserConnected": "No user connected"
+      "title": "Segurança",
+      "description": "Configurações de segurança da sua conta",
+      "password": "Senha",
+      "twoFactorAuth": "Autenticação de dois fatores",
+      "loginHistory": "Histórico de login",
+      "activeSessions": "Sessões ativas"
+    }
   },
   "notFound": {
-    "title": "Page not found",
-    "description": "Sorry, this page doesn't exist yet.",
+    "title": "Página não encontrada",
+    "description": "Desculpe, esta página ainda não existe.",
     "suggestions": [
-      "Return to dashboard",
-      "Check your conversations",
-      "View your communities"
+      "Voltar ao painel",
+      "Consultar suas conversas",
+      "Ver suas comunidades"
     ],
-    "backToDashboard": "Back to dashboard",
-    "previousPage": "Previous page"
+    "backToDashboard": "Voltar ao painel",
+    "previousPage": "Página anterior"
   },
   "validation": {
-    "required": "This field is required",
-    "invalidEmail": "Invalid email address",
-    "invalidPhone": "Invalid phone number",
-    "passwordTooShort": "Password must be at least 6 characters",
-    "passwordsDoNotMatch": "Passwords do not match"
+    "required": "Este campo é obrigatório",
+    "invalidEmail": "Endereço de email inválido",
+    "invalidPhone": "Número de telefone inválido",
+    "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
+    "passwordsDoNotMatch": "As senhas não coincidem"
   },
   "bubbleStream": {
     "loading": "Carregando mensagens...",
@@ -1155,76 +1224,42 @@
     }
   },
   "anonymousChat": {
-    "title": "Conversation",
-    "connectedAs": "Connected as {firstName} {lastName} (@{username})",
-    "loadingMessages": "Loading messages...",
-    "loadMore": "Load more messages",
-    "loading": "Loading...",
-    "sessionNotActive": "Anonymous session not active",
-    "reloadPage": "Reload page",
-    "messagePlaceholder": "Type your message...",
-    "user": "User",
-    "users": "Users",
-    "anonymous": "Anonymous",
+    "title": "Conversa",
+    "connectedAs": "Conectado como {firstName} {lastName} (@{username})",
+    "loadingMessages": "Carregando mensagens...",
+    "loadMore": "Carregar mais mensagens",
+    "loading": "Carregando...",
+    "sessionNotActive": "Sessão anônima não ativa",
+    "reloadPage": "Recarregar página",
+    "messagePlaceholder": "Digite sua mensagem...",
+    "user": "Usuário",
+    "users": "Usuários",
+    "messageTooOldToDelete": "Esta mensagem não pode mais ser excluída (mais de 12h)",
+    "noRightsToDelete": "Você não tem direitos para excluir esta mensagem",
+    "anonymous": "Anônimo",
     "unknownUser": "?",
-    "missingLinkId": "Missing link ID",
-    "loadingError": "Error loading",
-    "unknownError": "Unknown error",
-    "loadingConversation": "Loading conversation...",
-    "error": "Error",
-    "accessDenied": "Access denied",
-    "accessDeniedDescription": "You don't have the necessary permissions to access this conversation.",
-    "authenticationRequired": "Authentication required",
-    "authenticationRequiredDescription": "You must be logged in to access this conversation.",
-    "conversationNotFound": "Conversation not found",
-    "conversationNotFoundDescription": "This conversation doesn't exist or the link is invalid."
+    "missingLinkId": "ID do link ausente",
+    "loadingError": "Erro ao carregar",
+    "unknownError": "Erro desconhecido",
+    "loadingConversation": "Carregando conversa...",
+    "error": "Erro",
+    "accessDenied": "Acesso negado",
+    "accessDeniedDescription": "Você não tem as permissões necessárias para acessar esta conversa.",
+    "authenticationRequired": "Autenticação necessária",
+    "authenticationRequiredDescription": "Você deve estar logado para acessar esta conversa.",
+    "conversationNotFound": "Conversa não encontrada",
+    "conversationNotFoundDescription": "Esta conversa não existe ou o link é inválido."
   },
   "toasts": {
     "connection": {
-      "established": "Connection established",
-      "disconnected": "Disconnected by server",
-      "lost": "Connection lost, reconnecting...",
-      "reconnecting": "Connecting - Please wait...",
-      "websocketConnecting": "WebSocket connection in progress...",
-      "reconnectSuccess": "Reconnection successful!",
-      "reconnectFailed": "Reconnection failed - Check server",
-      "cannotReconnect": "Unable to reconnect. Please reload the page."
-    },
-    "register": {
-      "title": "Criar uma conta",
-      "description": "Junte-se ao Meeshy e comunique sem barreiras",
-      "formDescription": "Preencha o formulário abaixo para criar sua conta",
-      "firstNameLabel": "Nome *",
-      "firstNamePlaceholder": "Seu nome",
-      "lastNameLabel": "Sobrenome *",
-      "lastNamePlaceholder": "Seu sobrenome",
-      "usernameLabel": "Nome de usuário *",
-      "usernamePlaceholder": "Escolha um nome de usuário",
-      "usernameHelp": "Este nome será visível para outros usuários",
-      "emailLabel": "Email *",
-      "emailPlaceholder": "seu@email.com",
-      "phoneLabel": "Telefone",
-      "phonePlaceholder": "+33123456789",
-      "passwordLabel": "Senha *",
-      "passwordPlaceholder": "Escolha uma senha",
-      "passwordHelp": "Mínimo 6 caracteres",
-      "confirmPasswordLabel": "Confirmar senha *",
-      "confirmPasswordPlaceholder": "Confirme sua senha",
-      "systemLanguageLabel": "Idioma do sistema",
-      "regionalLanguageLabel": "Idioma regional",
-      "registerButton": "Criar conta",
-      "creating": "Criando...",
-      "fillRequiredFields": "Por favor, preencha todos os campos obrigatórios",
-      "passwordsDoNotMatch": "As senhas não coincidem",
-      "passwordTooShort": "A senha deve ter pelo menos 6 caracteres",
-      "registrationError": "Erro ao criar a conta",
-      "hasAccount": "Já tem uma conta?",
-      "loginLink": "Faça login aqui",
-      "acceptTerms": "Aceito os",
-      "termsOfService": "termos de serviço",
-      "and": "e a",
-      "privacyPolicy": "política de privacidade",
-      "contactUs": "entre em contato"
+      "established": "Conexão estabelecida",
+      "disconnected": "Desconectado pelo servidor",
+      "lost": "Conexão perdida, reconectando...",
+      "reconnecting": "Conectando - Aguarde...",
+      "websocketConnecting": "Conexão WebSocket em andamento...",
+      "reconnectSuccess": "Reconexão bem-sucedida!",
+      "reconnectFailed": "Reconexão falhou - Verifique o servidor",
+      "cannotReconnect": "Não é possível reconectar. Recarregue a página."
     },
     "messages": {
       "sent": "Mensagem enviada!",
@@ -1243,370 +1278,370 @@
       }
     },
     "conversations": {
-      "loadError": "Unable to load conversations",
-      "loadErrorGeneric": "Error loading conversation"
+      "loadError": "Não foi possível carregar conversas",
+      "loadErrorGeneric": "Erro ao carregar conversa"
     },
     "auth": {
-      "logoutSuccess": "Logout successful",
-      "fillAllFields": "Please fill in all fields",
-      "connectionError": "Connection error",
-      "serverConnectionError": "Server connection error"
+      "logoutSuccess": "Logout bem-sucedido",
+      "fillAllFields": "Por favor, preencha todos os campos",
+      "connectionError": "Erro de conexão",
+      "serverConnectionError": "Erro de conexão com o servidor"
     },
     "settings": {
-      "saved": "Settings saved successfully",
-      "saveError": "Error saving settings",
-      "reset": "Settings reset"
+      "saved": "Configurações salvas com sucesso",
+      "saveError": "Erro ao salvar configurações",
+      "reset": "Configurações redefinidas"
     },
     "participants": {
-      "removed": "Participant removed from conversation",
-      "removeError": "Error removing participant"
+      "removed": "Participante removido da conversa",
+      "removeError": "Erro ao remover participante"
     },
     "conversation": {
-      "nameUpdated": "Conversation name updated",
-      "nameUpdateError": "Error updating name",
-      "created": "Conversation created successfully"
+      "nameUpdated": "Nome da conversa atualizado",
+      "nameUpdateError": "Erro ao atualizar nome",
+      "created": "Conversa criada com sucesso"
     }
   },
   "partners": {
-    "backHome": "Back Home",
-    "title": "Meeshy Partnerships",
-    "subtitle": "Join our ecosystem and provide multilingual communication solutions to your teams, students, and communities.",
+    "backHome": "Voltar ao Início",
+    "title": "Parcerias Meeshy",
+    "subtitle": "Junte-se ao nosso ecossistema e forneça soluções de comunicação multilíngue para suas equipes, estudantes e comunidades.",
     "enterprise": {
-      "title": "Enterprise Teams",
-      "description": "Dedicated solutions for organizations wanting to integrate real-time translation into their workflows.",
+      "title": "Equipes Empresariais",
+      "description": "Soluções dedicadas para organizações que desejam integrar tradução em tempo real em seus fluxos de trabalho.",
       "features": {
-        "deployment": "On-premise or cloud deployment",
-        "sso": "SSO integration and user management",
-        "analytics": "Advanced dashboards and analytics",
-        "support": "24/7 priority support",
-        "customization": "Complete interface customization"
+        "deployment": "Implantação local ou em nuvem",
+        "sso": "Integração SSO e gerenciamento de usuários",
+        "analytics": "Dashboards avançados e análises",
+        "support": "Suporte prioritário 24/7",
+        "customization": "Personalização completa da interface"
       },
-      "pricing": "Custom pricing - Contact us"
+      "pricing": "Preços personalizados - Entre em contato"
     },
     "education": {
-      "title": "Educational Institutions",
-      "description": "Special programs for schools, universities, and training centers that want to facilitate international exchanges.",
+      "title": "Instituições Educacionais",
+      "description": "Programas especiais para escolas, universidades e centros de treinamento que desejam facilitar intercâmbios internacionais.",
       "features": {
-        "classrooms": "Multilingual virtual classrooms",
-        "exchange": "Facilitated exchange programs",
-        "learning": "Adaptive learning tools",
-        "admin": "Centralized institutional management",
-        "curriculum": "Integration with existing curricula"
+        "classrooms": "Salas de aula virtuais multilíngues",
+        "exchange": "Programas de intercâmbio facilitados",
+        "learning": "Ferramentas de aprendizado adaptativo",
+        "admin": "Gestão institucional centralizada",
+        "curriculum": "Integração com currículos existentes"
       },
-      "pricing": "Preferential education rates - 50% discount"
+      "pricing": "Tarifas educacionais preferenciais - 50% de desconto"
     },
     "types": {
       "tech": {
-        "title": "Technology Partners",
-        "description": "Integrate our translation APIs into your existing applications and services.",
+        "title": "Parceiros Tecnológicos",
+        "description": "Integre nossas APIs de tradução em suas aplicações e serviços existentes.",
         "features": {
-          "0": "Complete REST and WebSocket APIs",
-          "1": "SDKs available in multiple languages",
-          "2": "Detailed technical documentation",
-          "3": "Dedicated developer support"
+          "0": "APIs REST e WebSocket completas",
+          "1": "SDKs disponíveis em múltiplas linguagens",
+          "2": "Documentação técnica detalhada",
+          "3": "Suporte dedicado para desenvolvedores"
         }
       }
     },
     "deployment": {
-      "title": "Deployment Solutions",
+      "title": "Soluções de Implantação",
       "onPremise": {
-        "title": "On-Premise Deployment",
-        "description": "Complete installation in your infrastructure for total control and maximum security.",
+        "title": "Implantação Local",
+        "description": "Instalação completa em sua infraestrutura para controle total e máxima segurança.",
         "features": {
-          "security": "Enhanced security and confidentiality",
-          "compliance": "Compliance with specific regulations",
-          "customization": "Advanced customization according to your needs",
-          "performance": "Performance optimization on your network"
+          "security": "Segurança e confidencialidade aprimoradas",
+          "compliance": "Conformidade com regulamentações específicas",
+          "customization": "Personalização avançada de acordo com suas necessidades",
+          "performance": "Otimização de desempenho em sua rede"
         }
       },
       "cloud": {
-        "title": "Cloud Solution",
-        "description": "Fast deployment and simplified management with our secure cloud infrastructure.",
+        "title": "Solução em Nuvem",
+        "description": "Implantação rápida e gerenciamento simplificado com nossa infraestrutura em nuvem segura.",
         "features": {
-          "quick": "Quick setup in less than 24h",
-          "scalable": "Automatic scaling",
-          "maintenance": "Automatic maintenance and updates",
-          "updates": "Continuous new features"
+          "quick": "Configuração rápida em menos de 24h",
+          "scalable": "Escalonamento automático",
+          "maintenance": "Manutenção e atualizações automáticas",
+          "updates": "Novos recursos contínuos"
         }
       }
     },
     "useCases": {
-      "title": "Use Cases",
+      "title": "Casos de Uso",
       "business": {
-        "title": "Business",
+        "title": "Negócios",
         "items": {
-          "meetings": "Smooth international meetings",
-          "support": "Multilingual customer support",
-          "collaboration": "Distributed team collaboration",
-          "training": "Global training and onboarding"
+          "meetings": "Reuniões internacionais fluidas",
+          "support": "Suporte ao cliente multilíngue",
+          "collaboration": "Colaboração de equipes distribuídas",
+          "training": "Treinamento e integração globais"
         }
       },
       "education": {
-        "title": "Education",
+        "title": "Educação",
         "items": {
-          "language": "Immersive language learning",
-          "international": "International programs",
-          "research": "Global research collaboration",
-          "cultural": "Enriching cultural exchanges"
+          "language": "Aprendizado imersivo de idiomas",
+          "international": "Programas internacionais",
+          "research": "Colaboração global em pesquisa",
+          "cultural": "Intercâmbios culturais enriquecedores"
         }
       },
       "community": {
-        "title": "Communities",
+        "title": "Comunidades",
         "items": {
-          "nonprofits": "Non-profit organizations",
-          "events": "Multicultural events",
-          "volunteer": "International volunteer programs",
-          "healthcare": "Community healthcare services"
+          "nonprofits": "Organizações sem fins lucrativos",
+          "events": "Eventos multiculturais",
+          "volunteer": "Programas internacionais de voluntariado",
+          "healthcare": "Serviços comunitários de saúde"
         }
       }
     },
     "benefits": {
-      "title": "Partner Benefits",
+      "title": "Benefícios de Parceria",
       "priority": {
-        "title": "Priority Support",
-        "description": "Direct access to our technical team with guaranteed response times."
+        "title": "Suporte Prioritário",
+        "description": "Acesso direto à nossa equipe técnica com tempos de resposta garantidos."
       },
       "support": {
-        "title": "Dedicated Support",
-        "description": "A dedicated partner manager to accompany you in your deployment."
+        "title": "Suporte Dedicado",
+        "description": "Um gerente de parceria dedicado para acompanhá-lo em sua implantação."
       },
       "visibility": {
-        "title": "Enhanced Visibility",
-        "description": "Highlighting your organization in our partner ecosystem."
+        "title": "Visibilidade Aprimorada",
+        "description": "Destaque de sua organização em nosso ecossistema de parceiros."
       }
     },
     "become": {
-      "title": "Become a Partner",
-      "description": "Ready to transform communication in your organization? Contact us to discuss a customized partnership.",
-      "contact": "Contact Us",
-      "about": "Learn More",
-      "api": "API Documentation"
+      "title": "Torne-se um Parceiro",
+      "description": "Pronto para transformar a comunicação em sua organização? Entre em contato conosco para discutir uma parceria personalizada.",
+      "contact": "Entre em Contato",
+      "about": "Saiba Mais",
+      "api": "Documentação da API"
     }
   },
   "about": {
-    "backHome": "Back Home",
-    "title": "About Meeshy",
-    "subtitle": "We believe that communication should never be limited by language barriers.",
+    "backHome": "Voltar ao Início",
+    "title": "Sobre o Meeshy",
+    "subtitle": "Acreditamos que a comunicação nunca deve ser limitada por barreiras linguísticas.",
     "mission": {
-      "title": "Our Mission",
-      "description": "At Meeshy, we strive to create a world where every conversation is possible, regardless of the language spoken. Our messaging platform with automatic translation enables people from all backgrounds to connect authentically and share their ideas without limitations."
+      "title": "Nossa Missão",
+      "description": "No Meeshy, nos esforçamos para criar um mundo onde toda conversa é possível, independentemente do idioma falado. Nossa plataforma de mensagens com tradução automática permite que pessoas de todas as origens se conectem autenticamente e compartilhem suas ideias sem limitações."
     },
     "values": {
       "globalAccess": {
-        "title": "Global Access",
-        "description": "We make multilingual communication accessible to everyone, everywhere in the world."
+        "title": "Acesso Global",
+        "description": "Tornamos a comunicação multilíngue acessível a todos, em qualquer lugar do mundo."
       },
       "innovation": {
-        "title": "Innovation",
-        "description": "We push the boundaries of translation technology to provide a seamless experience."
+        "title": "Inovação",
+        "description": "Empurramos os limites da tecnologia de tradução para fornecer uma experiência perfeita."
       },
       "privacy": {
-        "title": "Privacy",
-        "description": "Your conversations remain private. Translation happens locally on your device."
+        "title": "Privacidade",
+        "description": "Suas conversas permanecem privadas. A tradução acontece localmente em seu dispositivo."
       }
     },
     "team": {
-      "title": "Our Team",
-      "description": "We are a passionate team of developers, linguists, and designers working together to break down language barriers.",
-      "details": "Based in France, we understand the importance of preserving cultural nuances in every conversation while facilitating mutual understanding."
+      "title": "Nossa Equipe",
+      "description": "Somos uma equipe apaixonada de desenvolvedores, linguistas e designers trabalhando juntos para quebrar barreiras linguísticas.",
+      "details": "Com sede na França, entendemos a importância de preservar nuances culturais em cada conversa, facilitando o entendimento mútuo."
     },
     "cta": {
-      "title": "Want to learn more about our vision?",
-      "contact": "Contact Us",
-      "terms": "Terms of Service",
-      "privacy": "Privacy Policy"
+      "title": "Quer saber mais sobre nossa visão?",
+      "contact": "Entre em Contato",
+      "terms": "Termos de Serviço",
+      "privacy": "Política de Privacidade"
     }
   },
   "contact": {
-    "backHome": "Back Home",
-    "title": "Contact Us",
-    "subtitle": "We would love to discuss your multilingual communication needs with you.",
+    "backHome": "Voltar ao Início",
+    "title": "Entre em Contato",
+    "subtitle": "Adoraríamos discutir suas necessidades de comunicação multilíngue com você.",
     "address": {
-      "title": "Our Address",
+      "title": "Nosso Endereço",
       "company": "Meeshy SAS",
-      "building": "Ariane Tower",
+      "building": "Torre Ariane",
       "street": "5 Place de la Pyramide",
-      "city": "92800 Puteaux, France"
+      "city": "92800 Puteaux, França"
     },
     "contact": {
-      "title": "Contact Information",
+      "title": "Informações de Contato",
       "email": {
         "label": "Email",
         "value": "contact@meeshy.me"
       },
       "phone": {
-        "label": "Phone",
+        "label": "Telefone",
         "value": "+33 (0)1 47 17 67 00"
       }
     },
     "hours": {
-      "title": "Opening Hours",
-      "weekdays": "Monday - Friday",
-      "weekdaysTime": "9:00 AM - 6:00 PM",
-      "saturday": "Saturday",
-      "saturdayTime": "10:00 AM - 4:00 PM",
-      "sunday": "Sunday",
-      "sundayTime": "Closed"
+      "title": "Horário de Funcionamento",
+      "weekdays": "Segunda - Sexta",
+      "weekdaysTime": "9:00 - 18:00",
+      "saturday": "Sábado",
+      "saturdayTime": "10:00 - 16:00",
+      "sunday": "Domingo",
+      "sundayTime": "Fechado"
     },
     "directions": {
-      "title": "How to reach us",
+      "title": "Como nos encontrar",
       "train": {
-        "title": "By Train",
-        "rera": "RER A: \"La Défense - Grande Arche\" Station",
-        "transilien": "Transilien L: \"La Défense\" Station",
-        "duration": "From Paris: 10-15 minutes from Châtelet-Les Halles"
+        "title": "De Trem",
+        "rera": "RER A: Estação \"La Défense - Grande Arche\"",
+        "transilien": "Transilien L: Estação \"La Défense\"",
+        "duration": "De Paris: 10-15 minutos de Châtelet-Les Halles"
       },
       "metro": {
-        "title": "By Metro",
-        "line1": "Line 1: \"La Défense - Grande Arche\" Station",
-        "duration": "From central Paris: 20-25 minutes"
+        "title": "De Metrô",
+        "line1": "Linha 1: Estação \"La Défense - Grande Arche\"",
+        "duration": "Do centro de Paris: 20-25 minutos"
       },
       "bus": {
-        "title": "By Bus",
-        "lines": "Lines: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
-        "stop": "Stop \"La Défense - Grande Arche\""
+        "title": "De Ônibus",
+        "lines": "Linhas: 73, 141, 144, 159, 174, 178, 258, 262, 272, 275, 276, 278, 360",
+        "stop": "Parada \"La Défense - Grande Arche\""
       },
       "lineU": {
-        "title": "Line U",
-        "transilien": "Transilien U: \"La Défense\" Station",
-        "duration": "From west Paris: 15-20 minutes"
+        "title": "Linha U",
+        "transilien": "Transilien U: Estação \"La Défense\"",
+        "duration": "Do oeste de Paris: 15-20 minutos"
       },
       "express": {
-        "title": "Line E277",
-        "bus": "Bus E277: \"La Défense - Grande Arche\" Stop",
-        "service": "Express service from the west"
+        "title": "Linha E277",
+        "bus": "Ônibus E277: Parada \"La Défense - Grande Arche\"",
+        "service": "Serviço expresso do oeste"
       },
       "car": {
-        "title": "By Car",
-        "highway": "Highway A14: \"La Défense\" Exit",
-        "parking": "Parking: Several parking lots available in the area",
-        "rates": "Rates: €2-4/hour depending on parking"
+        "title": "De Carro",
+        "highway": "Rodovia A14: Saída \"La Défense\"",
+        "parking": "Estacionamento: Vários estacionamentos disponíveis na área",
+        "rates": "Tarifas: €2-4/hora dependendo do estacionamento"
       }
     },
     "cta": {
-      "title": "Want to know more?",
-      "about": "Learn More",
-      "partners": "Partner with Us"
+      "title": "Quer saber mais?",
+      "about": "Saiba Mais",
+      "partners": "Seja Nosso Parceiro"
     }
   },
   "privacy": {
-    "backHome": "Back Home",
-    "print": "Print",
-    "title": "Privacy Policy",
-    "lastUpdated": "Last updated: September 6, 2025",
+    "backHome": "Voltar ao Início",
+    "print": "Imprimir",
+    "title": "Política de Privacidade",
+    "lastUpdated": "Última atualização: 6 de setembro de 2025",
     "introduction": {
-      "title": "1. Introduction",
-      "content": "At Meeshy, we are committed to protecting your privacy and personal data. This privacy policy explains how we collect, use, and protect your information when you use our multilingual messaging service."
+      "title": "1. Introdução",
+      "content": "No Meeshy, estamos comprometidos em proteger sua privacidade e dados pessoais. Esta política de privacidade explica como coletamos, usamos e protegemos suas informações quando você usa nosso serviço de mensagens multilíngue."
     },
     "dataCollection": {
-      "title": "2. Information We Collect",
+      "title": "2. Informações que Coletamos",
       "personal": {
-        "title": "2.1 Personal Information",
+        "title": "2.1 Informações Pessoais",
         "items": [
-          "Username and email address (during registration)",
-          "Language preferences",
-          "Profile information (optional)"
+          "Nome de usuário e endereço de email (durante o registro)",
+          "Preferências de idioma",
+          "Informações do perfil (opcional)"
         ]
       },
       "translation": {
-        "title": "2.2 Translation Data",
+        "title": "2.2 Dados de Tradução",
         "items": [
-          "Translated messages (processed locally in your browser)",
-          "Source and target languages",
-          "Translation metadata (without message content)"
+          "Mensagens traduzidas (processadas localmente em seu navegador)",
+          "Idiomas de origem e destino",
+          "Metadados de tradução (sem conteúdo da mensagem)"
         ]
       },
       "technical": {
-        "title": "2.3 Technical Data",
+        "title": "2.3 Dados Técnicos",
         "items": [
-          "IP address (anonymized)",
-          "Browser type and version",
-          "Service usage data (anonymous statistics)"
+          "Endereço IP (anonimizado)",
+          "Tipo e versão do navegador",
+          "Dados de uso do serviço (estatísticas anônimas)"
         ]
       }
     },
     "usage": {
-      "title": "3. How We Use Your Information",
+      "title": "3. Como Usamos Suas Informações",
       "items": [
         {
-          "title": "Service provision:",
-          "description": "Real-time translation of your messages"
+          "title": "Prestação de serviço:",
+          "description": "Tradução em tempo real de suas mensagens"
         },
         {
-          "title": "Service improvement:",
-          "description": "Development of new features"
+          "title": "Melhoria do serviço:",
+          "description": "Desenvolvimento de novas funcionalidades"
         },
         {
-          "title": "Customer support:",
-          "description": "Responding to your questions and resolving issues"
+          "title": "Suporte ao cliente:",
+          "description": "Respondendo suas perguntas e resolvendo problemas"
         },
         {
-          "title": "Security:",
-          "description": "Protection against abuse and fraud"
+          "title": "Segurança:",
+          "description": "Proteção contra abuso e fraude"
         },
         {
-          "title": "Communication:",
-          "description": "Important service information"
+          "title": "Comunicação:",
+          "description": "Informações importantes do serviço"
         }
       ]
     },
     "protection": {
-      "title": "4. Data Protection",
+      "title": "4. Proteção de Dados",
       "local": {
-        "title": "4.1 Local Processing",
-        "content": "Most translations are performed directly in your browser, which means your messages never leave your device."
+        "title": "4.1 Processamento Local",
+        "content": "A maioria das traduções são realizadas diretamente em seu navegador, o que significa que suas mensagens nunca saem do seu dispositivo."
       },
       "encryption": {
-        "title": "4.2 Encryption",
-        "content": "All communications between your browser and our servers are encrypted using TLS 1.3."
+        "title": "4.2 Criptografia",
+        "content": "Todas as comunicações entre seu navegador e nossos servidores são criptografadas usando TLS 1.3."
       },
       "storage": {
-        "title": "4.3 Secure Storage",
-        "content": "Data stored on our servers is protected by enterprise-grade security measures, including encryption at rest."
+        "title": "4.3 Armazenamento Seguro",
+        "content": "Os dados armazenados em nossos servidores são protegidos por medidas de segurança de nível empresarial, incluindo criptografia em repouso."
       }
     },
     "sharing": {
-      "title": "5. Information Sharing",
-      "intro": "We do not sell, rent, or share your personal information with third parties, except in the following cases:",
+      "title": "5. Compartilhamento de Informações",
+      "intro": "Não vendemos, alugamos ou compartilhamos suas informações pessoais com terceiros, exceto nos seguintes casos:",
       "cases": [
-        "With your explicit consent",
-        "To comply with legal obligations",
-        "To protect our rights, property, or security",
-        "With trusted service providers (under confidentiality agreements)"
+        "Com seu consentimento explícito",
+        "Para cumprir obrigações legais",
+        "Para proteger nossos direitos, propriedade ou segurança",
+        "Com provedores de serviços confiáveis (sob acordos de confidencialidade)"
       ]
     },
     "rights": {
-      "title": "6. Your Rights",
-      "intro": "In accordance with GDPR, you have the right to:",
+      "title": "6. Seus Direitos",
+      "intro": "De acordo com o GDPR, você tem o direito de:",
       "list": [
-        "Access your personal data",
-        "Rectify inaccurate information",
-        "Delete your personal data",
-        "Limit data processing",
-        "Data portability",
-        "Object to processing"
+        "Acessar seus dados pessoais",
+        "Retificar informações imprecisas",
+        "Excluir seus dados pessoais",
+        "Limitar o processamento de dados",
+        "Portabilidade de dados",
+        "Opor-se ao processamento"
       ],
-      "contact": "To exercise these rights, contact us at: privacy@meeshy.me"
+      "contact": "Para exercer esses direitos, entre em contato conosco em: privacy@meeshy.me"
     },
     "cookies": {
-      "title": "7. Cookies and Similar Technologies",
-      "content": "We use essential cookies for service functionality and analytical cookies to improve user experience. You can manage your cookie preferences in your browser settings."
+      "title": "7. Cookies e Tecnologias Similares",
+      "content": "Usamos cookies essenciais para funcionalidade do serviço e cookies analíticos para melhorar a experiência do usuário. Você pode gerenciar suas preferências de cookies nas configurações do seu navegador."
     },
     "changes": {
-      "title": "8. Changes to This Policy",
-      "content": "We may update this privacy policy from time to time. Important changes will be communicated by email or via an in-app notification. The last update date is indicated at the top of this page."
+      "title": "8. Alterações nesta Política",
+      "content": "Podemos atualizar esta política de privacidade de tempos em tempos. Mudanças importantes serão comunicadas por email ou através de uma notificação no aplicativo. A data da última atualização está indicada no topo desta página."
     },
     "contact": {
-      "title": "9. Contact",
-      "intro": "For any questions regarding this privacy policy or the processing of your personal data, please contact us:",
+      "title": "9. Contato",
+      "intro": "Para qualquer pergunta sobre esta política de privacidade ou o processamento de seus dados pessoais, entre em contato conosco:",
       "email": "Email: privacy@meeshy.me",
-      "address": "Address: 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
+      "address": "Endereço: Tour Eggée, 9 - 11 Avenue de l'Arche 92400, Courbevoie, França"
     },
     "footer": {
-      "title": "Learn more about Meeshy",
-      "about": "About Us",
-      "contact": "Contact Us",
-      "partners": "Become a Partner"
+      "title": "Saiba mais sobre o Meeshy",
+      "about": "Sobre Nós",
+      "contact": "Entre em Contato",
+      "partners": "Seja Nosso Parceiro"
     }
   },
   "createLinkModal": {
@@ -1860,78 +1895,78 @@
     "createLinkModal": "Modal de criação de link"
   },
   "terms": {
-    "backHome": "Back to Home",
-    "print": "Print",
-    "title": "Terms of Service",
-    "lastUpdated": "Last updated: January 1, 2026",
+    "backHome": "Voltar ao Início",
+    "print": "Imprimir",
+    "title": "Termos de Serviço",
+    "lastUpdated": "Última atualização: 1º de janeiro de 2026",
     "acceptance": {
-      "title": "1. Acceptance of Terms",
-      "content": "By accessing and using Meeshy, you agree to be bound by these terms of service. If you do not agree to these terms, please do not use our service."
+      "title": "1. Aceitação dos Termos",
+      "content": "Ao acessar e usar o Meeshy, você concorda em estar vinculado a estes termos de serviço. Se você não concordar com estes termos, por favor não use nosso serviço."
     },
     "service": {
-      "title": "2. Service Description",
-      "content": "Meeshy is a multilingual messaging service that enables real-time message translation. We reserve the right to modify, suspend, or discontinue the service at any time."
+      "title": "2. Descrição do Serviço",
+      "content": "O Meeshy é um serviço de mensagens multilíngue que permite a tradução de mensagens em tempo real. Reservamo-nos o direito de modificar, suspender ou descontinuar o serviço a qualquer momento."
     },
     "account": {
-      "title": "3. User Account",
-      "intro": "To use certain features of Meeshy, you must create an account. You agree to:",
+      "title": "3. Conta de Usuário",
+      "intro": "Para usar certos recursos do Meeshy, você deve criar uma conta. Você concorda em:",
       "responsibilities": [
-        "Provide accurate and complete information",
-        "Maintain the security of your password",
-        "Notify us immediately of any unauthorized use",
-        "Be responsible for all activities under your account"
+        "Fornecer informações precisas e completas",
+        "Manter a segurança de sua senha",
+        "Notificar-nos imediatamente sobre qualquer uso não autorizado",
+        "Ser responsável por todas as atividades em sua conta"
       ]
     },
     "usage": {
-      "title": "4. Acceptable Use",
-      "intro": "You agree not to use the service to:",
+      "title": "4. Uso Aceitável",
+      "intro": "Você concorda em não usar o serviço para:",
       "prohibited": [
-        "Violate local, national, or international laws",
-        "Harass, abuse, or harm others",
-        "Transmit illegal, offensive, or inappropriate content",
-        "Distribute viruses or other malicious code",
-        "Impersonate another person",
-        "Circumvent the service's security measures"
+        "Violar leis locais, nacionais ou internacionais",
+        "Assediar, abusar ou prejudicar outros",
+        "Transmitir conteúdo ilegal, ofensivo ou inadequado",
+        "Distribuir vírus ou outro código malicioso",
+        "Fazer-se passar por outra pessoa",
+        "Contornar as medidas de segurança do serviço"
       ]
     },
     "content": {
-      "title": "5. User Content",
-      "ownership": "You retain ownership of any content you submit to Meeshy.",
-      "license": "By submitting content, you grant us a worldwide, non-exclusive, royalty-free license to use, modify, and distribute this content as part of the service.",
-      "responsibility": "You are fully responsible for the content you share and warrant that it does not violate any third-party rights."
+      "title": "5. Conteúdo do Usuário",
+      "ownership": "Você mantém a propriedade de qualquer conteúdo que enviar ao Meeshy.",
+      "license": "Ao enviar conteúdo, você nos concede uma licença mundial, não exclusiva e livre de royalties para usar, modificar e distribuir este conteúdo como parte do serviço.",
+      "responsibility": "Você é totalmente responsável pelo conteúdo que compartilha e garante que não viola os direitos de terceiros."
     },
     "privacy": {
-      "title": "6. Privacy",
-      "content": "Your privacy is important to us. Please review our Privacy Policy to understand how we collect, use, and protect your information."
+      "title": "6. Privacidade",
+      "content": "Sua privacidade é importante para nós. Por favor, revise nossa Política de Privacidade para entender como coletamos, usamos e protegemos suas informações."
     },
     "termination": {
-      "title": "7. Termination",
-      "content": "We may terminate or suspend your account at any time, with or without notice, for any violation of these terms. You may also terminate your account at any time by contacting us."
+      "title": "7. Rescisão",
+      "content": "Podemos encerrar ou suspender sua conta a qualquer momento, com ou sem aviso, por qualquer violação destes termos. Você também pode encerrar sua conta a qualquer momento entrando em contato conosco."
     },
     "limitation": {
-      "title": "8. Limitation of Liability",
-      "content": "To the fullest extent permitted by law, Meeshy shall not be liable for any indirect, incidental, special, or consequential damages resulting from the use of the service."
+      "title": "8. Limitação de Responsabilidade",
+      "content": "Na máxima extensão permitida por lei, o Meeshy não será responsável por quaisquer danos indiretos, incidentais, especiais ou consequenciais resultantes do uso do serviço."
     },
     "changes": {
-      "title": "9. Changes to Terms",
-      "content": "We reserve the right to modify these terms at any time. Significant changes will be notified by email or through the application. Continued use of the service after changes constitutes your acceptance of the new terms."
+      "title": "9. Alterações nos Termos",
+      "content": "Reservamo-nos o direito de modificar estes termos a qualquer momento. Alterações significativas serão notificadas por email ou através do aplicativo. O uso continuado do serviço após as alterações constitui sua aceitação dos novos termos."
     },
     "governing": {
-      "title": "10. Governing Law",
-      "content": "These terms are governed by French law. Any disputes will be subject to the exclusive jurisdiction of French courts."
+      "title": "10. Lei Aplicável",
+      "content": "Estes termos são regidos pela lei francesa. Qualquer disputa estará sujeita à jurisdição exclusiva dos tribunais franceses."
     },
     "contact": {
-      "title": "11. Contact",
-      "intro": "For any questions regarding these terms of service, contact us:",
+      "title": "11. Contato",
+      "intro": "Para qualquer pergunta sobre estes termos de serviço, entre em contato conosco:",
       "email": "Email: legal@meeshy.me",
-      "address": "Address: 9 - 11 Avenue de l'Arche, Courbevoie 92400, France"
+      "address": "Endereço: Tour Eggée, 9 - 11 Avenue de l'Arche 92400, Courbevoie, França"
     },
     "footer": {
-      "title": "Learn more about Meeshy",
-      "about": "About Us",
-      "contact": "Contact Us",
-      "partners": "Become a Partner",
-      "privacy": "Privacy Policy"
+      "title": "Saiba mais sobre o Meeshy",
+      "about": "Sobre Nós",
+      "contact": "Entre em Contato",
+      "partners": "Seja Nosso Parceiro",
+      "privacy": "Política de Privacidade"
     }
   },
   "createConversationModal": {
@@ -2001,7 +2036,7 @@
     "verifyingAuth": "Verificando autenticação...",
     "loadingConversation": "Carregando conversa...",
     "missingLinkId": "ID do link ausente",
-    "sessionExpired": "Sessão expirada. Por favor, rejoin a conversa.",
+    "sessionExpired": "Sessão expirada. Por favor, entre novamente na conversa.",
     "noConversationData": "Nenhum dado de conversa disponível",
     "incompleteData": "Dados incompletos",
     "incompleteDataDescription": "Os dados da conversa estão incompletos. Por favor, tente novamente.",
@@ -2029,7 +2064,7 @@
       "title": "Sessão expirada",
       "description": "Sua sessão expirou. Por favor, reconecte para continuar.",
       "actions": {
-        "rejoin": "Rejoin novamente",
+        "rejoin": "Entrar novamente",
         "login": "Entrar",
         "backHome": "Voltar ao início"
       }
@@ -2324,39 +2359,6 @@
     "createLink": "Criar link",
     "linkCreatedSuccessfully": "Link de compartilhamento criado com sucesso!"
   },
-  "linkSummaryModal": {
-    "title": "Link de compartilhamento criado",
-    "description": "Seu link de compartilhamento foi criado com sucesso. Aqui está um resumo das configurações definidas.",
-    "shareLink": "Link de compartilhamento",
-    "copied": "Copiado",
-    "copy": "Copiar",
-    "expires": "Expira em",
-    "userLimits": "Limites de usuários",
-    "maxUses": "Máx. utilizações",
-    "maxConcurrent": "Máx. usuários simultâneos",
-    "maxSessions": "Máx. sessões únicas",
-    "noLimits": "Sem limites",
-    "limitedTo": "Limitado a",
-    "usage": "uso",
-    "usages": "usos",
-    "unlimitedUsage": "Sem limite de uso",
-    "languages": "Idiomas permitidos",
-    "sendPermissions": "Permissões de envio",
-    "messages": "Mensagens",
-    "files": "Arquivos",
-    "images": "Imagens",
-    "videos": "Vídeos",
-    "audio": "Áudio",
-    "documents": "Documentos",
-    "links": "Links",
-    "location": "Localização",
-    "contacts": "Contatos",
-    "authRequirements": "Requisitos de autenticação",
-    "nickname": "Apelido",
-    "email": "Email",
-    "close": "Fechar",
-    "copyLink": "Copiar link"
-  },
   "joinPage": {
     "title": "Entrar na conversa",
     "invitedTo": "Você foi convidado(a) para entrar",
@@ -2502,6 +2504,105 @@
       "nicknameDescription": "Exigir um apelido para usuários anônimos",
       "email": "Email Obrigatório",
       "emailDescription": "Exigir um email para usuários anônimos"
+    }
+  },
+  "linkSummaryModal": {
+    "title": "Link de compartilhamento criado",
+    "description": "Seu link de compartilhamento foi criado com sucesso. Aqui está um resumo das configurações definidas.",
+    "shareLink": "Link de compartilhamento",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "expires": "Expira em",
+    "userLimits": "Limites de usuários",
+    "maxUses": "Usos máximos",
+    "maxConcurrent": "Usuários simultâneos máx",
+    "maxSessions": "Sessões únicas máx",
+    "noLimits": "Nenhum limite",
+    "limitedTo": "Limitado a",
+    "usage": "uso",
+    "usages": "usos",
+    "unlimitedUsage": "Sem limite de uso",
+    "languages": "Idiomas permitidos",
+    "sendPermissions": "Permissões de envio",
+    "messages": "Mensagens",
+    "files": "Arquivos",
+    "images": "Imagens",
+    "videos": "Vídeos",
+    "audio": "Áudio",
+    "documents": "Documentos",
+    "links": "Links",
+    "location": "Localização",
+    "contacts": "Contatos",
+    "authRequirements": "Requisitos de autenticação",
+    "nickname": "Apelido",
+    "email": "Email",
+    "close": "Fechar",
+    "copyLink": "Copiar o link"
+  },
+  "contacts": {
+    "title": "Contatos",
+    "searchPlaceholder": "Pesquisar contatos...",
+    "contactsFound": "{{count}} contato encontrado",
+    "contactsFound_plural": "{{count}} contatos encontrados",
+    "inviteContact": "Convidar um contato",
+    "tabs": {
+      "all": "Todos",
+      "pending": "Pendentes",
+      "connected": "Conectados",
+      "refused": "Recusados",
+      "affiliates": "Afiliados"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "pending": "Pendente",
+      "rejected": "Recusado"
+    },
+    "actions": {
+      "message": "Mensagem",
+      "connection": "Conexão",
+      "viewProfile": "Ver perfil",
+      "sendMessage": "Enviar mensagem",
+      "call": "Ligar",
+      "remove": "Remover",
+      "accept": "Aceitar",
+      "reject": "Recusar",
+      "resend": "Reenviar"
+    },
+    "messages": {
+      "noContacts": "Nenhum contato",
+      "noContactsFound": "Nenhum contato encontrado",
+      "noContactsDescription": "Comece adicionando contatos para poder iniciar conversas.",
+      "noContactsFoundDescription": "Tente com outras palavras-chave ou adicione novos contatos.",
+      "searchUsers": "Pesquisar usuários",
+      "noPendingRequests": "Nenhuma solicitação pendente",
+      "noPendingRequestsDescription": "Você não tem nenhuma solicitação de amizade pendente de validação.",
+      "noConnectedContacts": "Nenhum contato conectado",
+      "noConnectedContactsDescription": "Você ainda não tem nenhum contato conectado. Envie solicitações de amizade!",
+      "noRefusedRequests": "Nenhuma solicitação recusada",
+      "noRefusedRequestsDescription": "Você não tem nenhuma solicitação de amizade recusada.",
+      "noAffiliateContacts": "Nenhum contato afiliado",
+      "noAffiliateContactsDescription": "Você ainda não tem nenhum contato que se juntou através dos seus links de afiliação.",
+      "requestSent": "Solicitação enviada em {{date}}",
+      "requestReceived": "Solicitação recebida em {{date}}",
+      "requestRejected": "Solicitação recusada em {{date}}",
+      "joinedOn": "Entrou em {{date}}"
+    },
+    "errors": {
+      "sessionExpired": "Sessão expirada, faça login novamente",
+      "connectionError": "Erro de conexão",
+      "loadContactsError": "Erro ao carregar contatos",
+      "searchError": "Erro na pesquisa",
+      "conversationCreationError": "Erro ao criar conversa",
+      "friendRequestError": "Erro na solicitação de amizade",
+      "updateError": "Erro na atualização",
+      "sendError": "Erro no envio"
+    },
+    "success": {
+      "conversationCreated": "Conversa criada com sucesso",
+      "friendRequestAccepted": "Solicitação de amizade aceita",
+      "friendRequestRejected": "Solicitação de amizade recusada",
+      "friendRequestSent": "Solicitação de amizade enviada"
     }
   }
 }

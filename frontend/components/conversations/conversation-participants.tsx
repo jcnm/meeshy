@@ -104,49 +104,13 @@ export function ConversationParticipants({
       <div className={`flex items-center gap-2 ${className}`}>
 
 
-        {/* Quand personne n'écrit, afficher la liste horizontale des en ligne */}
-        {usersTypingInChat.length === 0 ? (
-          <div className="flex items-center gap-2">
-            {onlineAll.length === 0 ? (
-              <span className="text-xs text-muted-foreground">{t('noParticipantsOnline')}</span>
-            ) : (
-              <>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  {onlineAll.slice(0, 4).map((participant, index) => {
-                    const isCurrentUser = participant.userId === currentUser.id;
-                    return (
-                      <span key={`${participant.userId}-${index}`} className="flex items-center gap-1">
-                        {shouldShowCrown(participant) && (
-                          <Crown className="h-3 w-3 text-yellow-500" />
-                        )}
-                        <span>{getDisplayName(participant.user)}{isCurrentUser && ` (${t('you')})`}</span>
-                        {index < Math.min(onlineAll.length, 4) - 1 && <span>, </span>}
-                      </span>
-                    );
-                  })}
-                  {onlineAll.length > 4 && (
-                    <>
-                      <span>, </span>
-                      <Users className="h-3 w-3 inline" />
-                      <span>{onlineAll.length} {t('online')}</span>
-                    </>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
-          // Sinon, afficher l'indicateur de frappe
+        {/* Afficher seulement l'indicateur de frappe quand quelqu'un écrit */}
+        {usersTypingInChat.length > 0 && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>{renderTypingMessage()}</span>
           </div>
         )}
-
-        {/* Compteur de personnes en ligne */}
-        <span className="text-xs text-muted-foreground">
-          {onlineAll.length} {t('online')}
-        </span>
       </div>
 
 

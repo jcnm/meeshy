@@ -20,7 +20,6 @@ import {
   Globe,
   Send,
   Languages,
-  MapPin, 
   TrendingUp, 
   ChevronUp,
   Loader2,
@@ -31,7 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Textarea } from '@/components/ui/textarea';
+import { MessageComposer } from '@/components/common/message-composer';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -47,9 +46,6 @@ import {
 } from '@/components/ui/popover';
 
 // Import des composants modulaires
-import {
-  LanguageSelector
-} from '@/components/translation';
 
 // Import des constantes centralisées
 import {
@@ -920,7 +916,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
   };
 
-  const remainingChars = MAX_MESSAGE_LENGTH - newMessage.length;
 
   return (
     <>
@@ -1040,7 +1035,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               
               <div 
                 ref={messagesContainerRef}
-                className="space-y-5 px-4 py-6"
+                className="px-4 py-6 messages-container scroll-optimized scrollbar-thin"
                 style={{ background: 'transparent' }}
               >
                 <MessagesDisplay
@@ -1053,7 +1048,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   emptyStateMessage={t('emptyStateMessage')}
                   emptyStateDescription={t('emptyStateDescription')}
                   reverseOrder={true}
-                  className="space-y-5"
+                  className="space-y-4"
                   onTranslation={handleTranslation}
                   onEditMessage={handleEditMessage}
                   onDeleteMessage={handleDeleteMessage}
@@ -1083,73 +1078,19 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           <div className="bg-blue-50/20 backdrop-blur-lg border-t border-blue-200/50 shadow-xl shadow-blue-500/10">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
               <div className="relative max-w-2xl mx-auto">
-                <Textarea
+                <MessageComposer
                   ref={textareaRef}
                   value={newMessage}
-                  onChange={(e) => handleTyping(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onChange={handleTyping}
+                  onSend={handleSendMessage}
+                  selectedLanguage={selectedInputLanguage}
+                  onLanguageChange={setSelectedInputLanguage}
+                  location={location}
+                  isComposingEnabled={isComposingEnabled}
                   placeholder={tSearch('shareMessage')}
-                  className="expandable-textarea min-h-[80px] max-h-40 resize-none pr-28 pb-14 pt-3 pl-3 text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
-                  maxLength={MAX_MESSAGE_LENGTH}
-                  disabled={!isComposingEnabled}
-                  style={{
-                    borderRadius: '16px',
-                    boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
-                    paddingBottom: '56px' // Espace pour les éléments en bas
-                  }}
+                  onKeyPress={handleKeyPress}
+                  choices={languageChoices}
                 />
-                
-                {/* Indicateurs dans le textarea - Positionnés plus bas pour éviter l'entrelacement */}
-                <div className="absolute bottom-3 left-3 flex items-center space-x-3 text-sm text-gray-600 pointer-events-auto">
-                  {/* Sélecteur de langue d'envoi - Limité aux choix configurés par l'utilisateur */}
-                  <LanguageSelector
-                    value={selectedInputLanguage}
-                    onValueChange={setSelectedInputLanguage}
-                    placeholder={t('languagePlaceholder')}
-                    className="border-gray-200 hover:border-blue-300"
-                    choices={languageChoices}
-                  />
-                  
-                  {/* Indicateur de langue détectée */}
-                  {detectedLanguage && detectedLanguage !== selectedInputLanguage && newMessage.trim().length > 15 && (
-                    <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
-                      <span>Rechercher</span>
-                      <span>Détecté: {getLanguageName(detectedLanguage)}</span>
-                    </div>
-                  )}
-                  
-                  {/* Localisation */}
-                  {location && (
-                    <div className="flex items-center space-x-1">
-                      <MapPin className="h-4 w-4" />
-                      <span>{location}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Bouton d'envoi et compteur - Positionnés pour éviter l'entrelacement */}
-                <div className="absolute bottom-3 right-3 flex items-center space-x-2 pointer-events-auto">
-                  {/* Compteur de caractères */}
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full bg-white/80 backdrop-blur-sm border ${
-                    remainingChars < 50 
-                      ? remainingChars < 0 
-                        ? 'text-red-600 border-red-200 bg-red-50/80' 
-                        : 'text-orange-600 border-orange-200 bg-orange-50/80'
-                      : 'text-gray-500 border-gray-200 bg-white/80'
-                  }`}>
-                    {remainingChars}
-                  </span>
-                  
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || newMessage.length > MAX_MESSAGE_LENGTH}
-                    size="sm"
-                    className="send-button px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg backdrop-blur-sm transition-all duration-200"
-                    style={{ borderRadius: '12px' }}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
               </div>
             </div>
           </div>

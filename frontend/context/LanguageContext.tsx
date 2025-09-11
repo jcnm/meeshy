@@ -56,7 +56,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   }, []);
 
   const isLanguageSupported = useCallback((language: string): boolean => {
-    return ['fr', 'en', 'es', 'de', 'pt'].includes(language);
+    return ['fr', 'en', 'es', 'de', 'pt', 'it'].includes(language);
   }, []);
 
   // Charger la langue sauvegardée au démarrage
@@ -103,7 +103,7 @@ export function useLanguage() {
       currentInterfaceLanguage: 'fr',
       setCustomDestinationLanguage: () => {},
       setInterfaceLanguage: () => {},
-      isLanguageSupported: (lang: string) => ['fr', 'en', 'es', 'de', 'pt'].includes(lang),
+      isLanguageSupported: (lang: string) => ['fr', 'en', 'es', 'de', 'pt', 'it'].includes(lang),
       getSupportedLanguages: () => INTERFACE_LANGUAGES,
     };
   }

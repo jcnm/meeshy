@@ -103,7 +103,7 @@ export function AppHeader({
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-2">
             <MessageSquare className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-gray-900">Meeshy</span>
+            <span className="text-xl font-bold text-gray-900 hidden md:inline">Meeshy</span>
           </div>
           
           {/* Navigation principale */}
@@ -137,18 +137,6 @@ export function AppHeader({
 
         {/* Actions utilisateur */}
         <div className="flex items-center space-x-3">
-          {/* Recherche - masquée en responsive */}
-          {showSearch && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => handleNavigation('/search')}
-              className="hidden md:flex"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-          )}
-
           {/* Notifications - masquées en responsive */}
           {showNotifications && (
             <div className="hidden md:block">
@@ -215,16 +203,14 @@ export function AppHeader({
 
               {/* Actions */}
               <div className="p-1">
-                {/* Recherche - visible uniquement en responsive */}
-                {showSearch && (
-                  <DropdownMenuItem 
-                    onClick={() => handleNavigation('/search')}
-                    className="md:hidden"
-                  >
-                    <Search className="h-4 w-4 mr-2" />
-                    Recherche
-                  </DropdownMenuItem>
-                )}
+                {/* Conversations - visible uniquement en responsive */}
+                <DropdownMenuItem 
+                  onClick={() => handleNavigation('/conversations')}
+                  className="md:hidden"
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Conversations
+                </DropdownMenuItem>
                 
                 {/* Notifications - visible uniquement en responsive */}
                 {showNotifications && (

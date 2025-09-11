@@ -124,6 +124,12 @@ export const useNotifications = (): UseNotificationsReturn => {
 
   // Afficher un toast pour une notification
   const showToast = useCallback((notification: Notification) => {
+    // Désactiver les toasts sur mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    if (isMobile) {
+      return;
+    }
+
     const getToastIcon = (type: string) => {
       switch (type) {
         case 'message':

@@ -1354,7 +1354,7 @@ export function CreateLinkModalV2({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto sm:max-w-4xl sm:w-[90vw] sm:max-h-[85vh]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center">
             <Link2 className="h-5 w-5 mr-2" />

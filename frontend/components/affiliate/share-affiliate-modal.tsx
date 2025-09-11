@@ -442,7 +442,7 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-md w-[95vw] max-h-[90vh] overflow-hidden flex flex-col sm:max-w-md sm:w-[90vw] sm:max-h-[85vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Share2 className="h-5 w-5 text-blue-600" />

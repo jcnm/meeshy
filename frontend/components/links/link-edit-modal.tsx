@@ -84,7 +84,7 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto sm:max-w-2xl sm:w-[90vw] sm:max-h-[85vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />

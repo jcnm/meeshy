@@ -255,7 +255,7 @@ export default function LinksPage() {
                   className="rounded-2xl px-6 py-3 border-2 border-primary/20 hover:border-primary/40 font-semibold shadow-md hover:shadow-lg transition-all"
                 >
                   <Link2 className="h-5 w-5 mr-2" />
-                  <span>Créer un lien</span>
+                  <span>{t('createLink')}</span>
                 </CreateLinkButton>
               </div>
             </form>

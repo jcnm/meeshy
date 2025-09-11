@@ -136,13 +136,16 @@ export function ConversationDetailsSidebar({
   }, [conversation.participants, messages]);
 
   const getConversationDisplayName = (conv: Conversation) => {
-    if (conv.isGroup) {
+    if (conv.type !== 'direct') {
       return conv.title || 'Conversation de groupe';
     }
     
     const otherParticipant = conv.participants?.find(p => p.userId !== currentUser.id);
     if (otherParticipant && otherParticipant.user) {
-      return `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`;
+      // Prioriser le displayName, sinon prénom/nom, sinon username
+      return otherParticipant.user.displayName ||
+             `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
+             otherParticipant.user.username;
     }
 
     return conv.name || 'Conversation';
@@ -306,7 +309,7 @@ export function ConversationDetailsSidebar({
                   </div>
                 )}
                 <p className="text-sm text-muted-foreground text-center">
-                  {conversation.isGroup ? t('conversationGroup') : t('conversationPrivate')}
+                  {conversation.type !== 'direct' ? t('conversationGroup') : t('conversationPrivate')}
                 </p>
               </div>
             </div>

@@ -39,6 +39,7 @@ import { User } from '@/types';
 import { usersService, conversationsService, type ParticipantsFilters } from '@/services';
 import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
 import { useUser } from '@/context/AppContext';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface FriendRequest {
   id: string;
@@ -66,6 +67,7 @@ interface AffiliateRelation {
 export default function ContactsPage() {
   const router = useRouter();
   const { user } = useUser();
+  const { t } = useTranslations('contacts');
   const [contacts, setContacts] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -91,7 +93,7 @@ export default function ContactsPage() {
         
         if (!response.ok) {
           localStorage.removeItem('auth_token');
-          toast.error('Session expirée, veuillez vous reconnecter');
+          toast.error(t('errors.sessionExpired'));
           router.push('/login');
           return;
         }
@@ -102,7 +104,7 @@ export default function ContactsPage() {
         loadAffiliateRelations();
       } catch (error) {
         console.error('Erreur vérification auth:', error);
-        toast.error('Erreur de connexion');
+        toast.error(t('errors.connectionError'));
         router.push('/login');
       }
     };
@@ -145,7 +147,7 @@ export default function ContactsPage() {
       setContacts(contactsData);
     } catch (error) {
       console.error('Erreur lors du chargement des contacts:', error);
-      toast.error('Erreur lors du chargement des contacts');
+      toast.error(t('errors.loadContactsError'));
       setContacts([]); // Initialiser avec un tableau vide en cas d'erreur
     } finally {
       setLoading(false);
@@ -202,7 +204,7 @@ export default function ContactsPage() {
       setSearchResults(searchData);
     } catch (error) {
       console.error('Erreur lors de la recherche:', error);
-      toast.error('Erreur lors de la recherche');
+      toast.error(t('errors.searchError'));
       setSearchResults([]); // Initialiser avec un tableau vide en cas d'erreur
     }
   };
@@ -246,18 +248,18 @@ export default function ContactsPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
-          toast.success('Conversation créée avec succès');
+          toast.success(t('success.conversationCreated'));
           router.push(`/conversations/${result.data.id}`);
         } else {
-          throw new Error(result.error || 'Erreur lors de la création de la conversation');
+          throw new Error(result.error || t('errors.conversationCreationError'));
         }
       } else {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur lors de la création de la conversation');
+        throw new Error(error.error || t('errors.conversationCreationError'));
       }
     } catch (error) {
       console.error('Erreur lors de la création de la conversation:', error);
-      toast.error(error instanceof Error ? error.message : 'Erreur lors de la création de la conversation');
+      toast.error(error instanceof Error ? error.message : t('errors.conversationCreationError'));
     }
   };
 
@@ -276,16 +278,16 @@ export default function ContactsPage() {
       });
 
       if (response.ok) {
-        toast.success(action === 'accept' ? 'Demande d\'amitié acceptée' : 'Demande d\'amitié refusée');
+        toast.success(action === 'accept' ? t('success.friendRequestAccepted') : t('success.friendRequestRejected'));
         loadFriendRequests();
         loadContacts(); // Recharger les contacts pour voir les nouveaux amis
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Erreur lors de la mise à jour');
+        toast.error(error.error || t('errors.updateError'));
       }
     } catch (error) {
       console.error('Erreur friend request:', error);
-      toast.error('Erreur lors de la mise à jour');
+      toast.error(t('errors.updateError'));
     }
   };
 
@@ -304,15 +306,15 @@ export default function ContactsPage() {
       });
 
       if (response.ok) {
-        toast.success('Demande d\'amitié envoyée');
+        toast.success(t('success.friendRequestSent'));
         loadFriendRequests();
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Erreur lors de l\'envoi');
+        toast.error(error.error || t('errors.sendError'));
       }
     } catch (error) {
       console.error('Erreur envoi friend request:', error);
-      toast.error('Erreur lors de l\'envoi');
+      toast.error(t('errors.sendError'));
     }
   };
 
@@ -331,7 +333,7 @@ export default function ContactsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout title="Contacts">
+      <DashboardLayout title={t('title')}>
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-4">
             <div className="h-12 bg-gray-200 rounded"></div>
@@ -347,7 +349,7 @@ export default function ContactsPage() {
   }
 
   return (
-    <DashboardLayout title="Contacts">
+    <DashboardLayout title={t('title')}>
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header avec recherche */}
         <Card>
@@ -357,7 +359,7 @@ export default function ContactsPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Rechercher des contacts..."
+                  placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -370,7 +372,7 @@ export default function ContactsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <p className="text-sm text-gray-600">
-                    {displayedUsers.length} contact{displayedUsers.length !== 1 ? 's' : ''} trouvé{displayedUsers.length !== 1 ? 's' : ''}
+                    {displayedUsers.length === 1 ? t('contactsFound', { count: displayedUsers.length }) : t('contactsFound_plural', { count: displayedUsers.length })}
                   </p>
                 </div>
                 
@@ -380,7 +382,7 @@ export default function ContactsPage() {
                   className="flex items-center space-x-2"
                 >
                   <Share2 className="h-4 w-4" />
-                  <span>Inviter un contact</span>
+                  <span>{t('inviteContact')}</span>
                 </Button>
               </div>
             </form>
@@ -388,32 +390,32 @@ export default function ContactsPage() {
         </Card>
 
         {/* Tabs pour organiser les contacts */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all" className="flex items-center space-x-2">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full contacts-tabs-mobile">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1 p-1">
+            <TabsTrigger value="all" className="flex flex-col items-center space-y-1 p-2 text-xs">
               <Users className="h-4 w-4" />
-              <span>Tous</span>
-              <Badge variant="secondary">{contacts.length}</Badge>
+              <span className="hidden sm:inline">{t('tabs.all')}</span>
+              <Badge variant="secondary" className="text-xs">{contacts.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="pending" className="flex items-center space-x-2">
+            <TabsTrigger value="pending" className="flex flex-col items-center space-y-1 p-2 text-xs">
               <Clock className="h-4 w-4" />
-              <span>En attente</span>
-              <Badge variant="secondary">{friendRequests.filter(r => r.status === 'pending').length}</Badge>
+              <span className="hidden sm:inline">{t('tabs.pending')}</span>
+              <Badge variant="secondary" className="text-xs">{friendRequests.filter(r => r.status === 'pending').length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="connected" className="flex items-center space-x-2">
+            <TabsTrigger value="connected" className="flex flex-col items-center space-y-1 p-2 text-xs">
               <UserCheck className="h-4 w-4" />
-              <span>Connectés</span>
-              <Badge variant="secondary">{friendRequests.filter(r => r.status === 'accepted').length}</Badge>
+              <span className="hidden sm:inline">{t('tabs.connected')}</span>
+              <Badge variant="secondary" className="text-xs">{friendRequests.filter(r => r.status === 'accepted').length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="refused" className="flex items-center space-x-2">
+            <TabsTrigger value="refused" className="flex flex-col items-center space-y-1 p-2 text-xs">
               <UserX className="h-4 w-4" />
-              <span>Refusés</span>
-              <Badge variant="secondary">{friendRequests.filter(r => r.status === 'rejected').length}</Badge>
+              <span className="hidden sm:inline">{t('tabs.refused')}</span>
+              <Badge variant="secondary" className="text-xs">{friendRequests.filter(r => r.status === 'rejected').length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="affiliates" className="flex items-center space-x-2">
+            <TabsTrigger value="affiliates" className="flex flex-col items-center space-y-1 p-2 text-xs">
               <Share2 className="h-4 w-4" />
-              <span>Affiliés</span>
-              <Badge variant="secondary">{affiliateRelations.length}</Badge>
+              <span className="hidden sm:inline">{t('tabs.affiliates')}</span>
+              <Badge variant="secondary" className="text-xs">{affiliateRelations.length}</Badge>
             </TabsTrigger>
           </TabsList>
 
@@ -424,12 +426,12 @@ export default function ContactsPage() {
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Users className="h-12 w-12 text-gray-400 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {searchQuery ? 'Aucun contact trouvé' : 'Aucun contact'}
+                    {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
                   </h3>
                   <p className="text-gray-600 text-center max-w-sm mb-4">
                     {searchQuery 
-                      ? 'Essayez avec d\'autres mots-clés ou ajoutez de nouveaux contacts.'
-                      : 'Commencez par ajouter des contacts pour pouvoir démarrer des conversations.'
+                      ? t('messages.noContactsFoundDescription')
+                      : t('messages.noContactsDescription')
                     }
                   </p>
                   <Button 
@@ -437,7 +439,7 @@ export default function ContactsPage() {
                     className="flex items-center space-x-2"
                   >
                     <UserPlus className="h-4 w-4" />
-                    <span>Rechercher des utilisateurs</span>
+                    <span>{t('messages.searchUsers')}</span>
                   </Button>
                 </CardContent>
               </Card>
@@ -465,7 +467,7 @@ export default function ContactsPage() {
                               <div className="flex items-center space-x-1">
                                 <div className={`w-2 h-2 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                                 <span className="text-xs text-gray-500">
-                                  {contact.isOnline ? 'En ligne' : 'Hors ligne'}
+                                  {contact.isOnline ? t('status.online') : t('status.offline')}
                                 </span>
                               </div>
                               
@@ -488,7 +490,7 @@ export default function ContactsPage() {
                             className="flex items-center space-x-1"
                           >
                             <MessageSquare className="h-4 w-4" />
-                            <span className="hidden sm:inline">Message</span>
+                            <span className="hidden sm:inline">{t('actions.message')}</span>
                           </Button>
                           
                           {searchQuery && (
@@ -499,7 +501,7 @@ export default function ContactsPage() {
                               className="flex items-center space-x-1"
                             >
                               <Link className="h-4 w-4" />
-                              <span className="hidden sm:inline">Connexion</span>
+                              <span className="hidden sm:inline">{t('actions.connection')}</span>
                             </Button>
                           )}
                           
@@ -513,21 +515,21 @@ export default function ContactsPage() {
                               <DropdownMenuItem 
                                 onClick={() => router.push(`/profile/${contact.id}`)}
                               >
-                                Voir le profil
+                                {t('actions.viewProfile')}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => startConversation(contact.id)}>
-                                Envoyer un message
+                                {t('actions.sendMessage')}
                               </DropdownMenuItem>
                               {contact.phoneNumber && (
                                 <DropdownMenuItem>
                                   <Phone className="mr-2 h-4 w-4" />
-                                  Appeler
+                                  {t('actions.call')}
                                 </DropdownMenuItem>
                               )}
                               {activeTab !== 'all' && (
                                 <DropdownMenuItem className="text-red-600">
                                   <UserMinus className="mr-2 h-4 w-4" />
-                                  Supprimer
+                                  {t('actions.remove')}
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -547,9 +549,9 @@ export default function ContactsPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Clock className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune demande en attente</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noPendingRequests')}</h3>
                   <p className="text-gray-600 text-center max-w-sm">
-                    Vous n'avez aucune demande d'amitié en attente de validation.
+                    {t('messages.noPendingRequestsDescription')}
                   </p>
                 </CardContent>
               </Card>
@@ -578,8 +580,8 @@ export default function ContactsPage() {
                               <p className="text-sm text-gray-600">@{otherUser?.username}</p>
                               <p className="text-xs text-gray-500">
                                 {isCurrentUserSender 
-                                  ? `Demande envoyée le ${new Date(request.createdAt).toLocaleDateString('fr-FR')}`
-                                  : `Demande reçue le ${new Date(request.createdAt).toLocaleDateString('fr-FR')}`
+                                  ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
+                                  : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
                                 }
                               </p>
                             </div>
@@ -589,7 +591,7 @@ export default function ContactsPage() {
                             {isCurrentUserSender ? (
                               <Badge variant="outline" className="text-orange-600 border-orange-200">
                                 <Clock className="h-3 w-3 mr-1" />
-                                En attente
+                                {t('status.pending')}
                               </Badge>
                             ) : (
                               <>
@@ -599,7 +601,7 @@ export default function ContactsPage() {
                                   className="flex items-center space-x-1 bg-green-600 hover:bg-green-700"
                                 >
                                   <Check className="h-4 w-4" />
-                                  <span>Accepter</span>
+                                  <span>{t('actions.accept')}</span>
                                 </Button>
                                 <Button
                                   size="sm"
@@ -608,7 +610,7 @@ export default function ContactsPage() {
                                   className="flex items-center space-x-1"
                                 >
                                   <X className="h-4 w-4" />
-                                  <span>Refuser</span>
+                                  <span>{t('actions.reject')}</span>
                                 </Button>
                               </>
                             )}
@@ -628,9 +630,9 @@ export default function ContactsPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <UserCheck className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun contact connecté</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noConnectedContacts')}</h3>
                   <p className="text-gray-600 text-center max-w-sm">
-                    Vous n'avez encore aucun contact connecté. Envoyez des demandes d'amitié !
+                    {t('messages.noConnectedContactsDescription')}
                   </p>
                 </CardContent>
               </Card>
@@ -660,7 +662,7 @@ export default function ContactsPage() {
                               <div className="flex items-center space-x-1 mt-1">
                                 <div className={`w-2 h-2 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                                 <span className="text-xs text-gray-500">
-                                  {otherUser?.isOnline ? 'En ligne' : 'Hors ligne'}
+                                  {otherUser?.isOnline ? t('status.online') : t('status.offline')}
                                 </span>
                               </div>
                             </div>
@@ -673,7 +675,7 @@ export default function ContactsPage() {
                               className="flex items-center space-x-1"
                             >
                               <MessageSquare className="h-4 w-4" />
-                              <span>Message</span>
+                              <span>{t('actions.message')}</span>
                             </Button>
                           </div>
                         </div>
@@ -691,9 +693,9 @@ export default function ContactsPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <UserX className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune demande refusée</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noRefusedRequests')}</h3>
                   <p className="text-gray-600 text-center max-w-sm">
-                    Vous n'avez aucune demande d'amitié refusée.
+                    {t('messages.noRefusedRequestsDescription')}
                   </p>
                 </CardContent>
               </Card>
@@ -722,10 +724,7 @@ export default function ContactsPage() {
                               </h3>
                               <p className="text-sm text-gray-600">@{otherUser?.username}</p>
                               <p className="text-xs text-gray-500">
-                                {isCurrentUserSender 
-                                  ? `Demande refusée le ${new Date(request.updatedAt).toLocaleDateString('fr-FR')}`
-                                  : `Demande refusée le ${new Date(request.updatedAt).toLocaleDateString('fr-FR')}`
-                                }
+                                {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString('pt-BR') })}
                               </p>
                             </div>
                           </div>
@@ -734,7 +733,7 @@ export default function ContactsPage() {
                             {isCurrentUserSender ? (
                               <Badge variant="outline" className="text-red-600 border-red-200">
                                 <UserX className="h-3 w-3 mr-1" />
-                                Refusé
+                                {t('status.rejected')}
                               </Badge>
                             ) : (
                               <Button
@@ -744,7 +743,7 @@ export default function ContactsPage() {
                                 className="flex items-center space-x-1"
                               >
                                 <UserPlus className="h-4 w-4" />
-                                <span>Renvoyer</span>
+                                <span>{t('actions.resend')}</span>
                               </Button>
                             )}
                           </div>
@@ -763,9 +762,9 @@ export default function ContactsPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <Share2 className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun contact affilié</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noAffiliateContacts')}</h3>
                   <p className="text-gray-600 text-center max-w-sm">
-                    Vous n'avez encore aucun contact qui a rejoint via vos liens d'affiliation.
+                    {t('messages.noAffiliateContactsDescription')}
                   </p>
                 </CardContent>
               </Card>
@@ -795,7 +794,7 @@ export default function ContactsPage() {
                               <div className="flex items-center space-x-1">
                                 <Calendar className="h-3 w-3 text-gray-400" />
                                 <span className="text-xs text-gray-500">
-                                  Rejoint le {new Date(relation.createdAt).toLocaleDateString('fr-FR')}
+                                  {t('messages.joinedOn', { date: new Date(relation.createdAt).toLocaleDateString('pt-BR') })}
                                 </span>
                               </div>
                             </div>
@@ -809,7 +808,7 @@ export default function ContactsPage() {
                             className="flex items-center space-x-1"
                           >
                             <MessageSquare className="h-4 w-4" />
-                            <span>Message</span>
+                            <span>{t('actions.message')}</span>
                           </Button>
                         </div>
                       </div>

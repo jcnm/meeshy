@@ -62,7 +62,7 @@ export function LinkDetailsModal({ link, isOpen, onClose }: LinkDetailsModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-lg w-[95vw] max-h-[80vh] overflow-y-auto sm:max-w-lg sm:w-[90vw] sm:max-h-[75vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />

@@ -39,12 +39,14 @@ interface DashboardLayoutProps {
   children: ReactNode;
   title?: string;
   hideSearch?: boolean;
+  className?: string;
 }
 
 export function DashboardLayout({ 
   children, 
   title,
-  hideSearch = false
+  hideSearch = false,
+  className = ""
 }: DashboardLayoutProps) {
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
@@ -117,7 +119,7 @@ export function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 ${className}`}>
       {/* Header fixe */}
       <header className="fixed top-0 left-0 right-0 z-[50] bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -131,7 +133,7 @@ export function DashboardLayout({
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <MessageSquare className="h-5 w-5 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">Meeshy</h1>
+                <h1 className="text-2xl font-bold text-gray-900 hidden md:inline">Meeshy</h1>
               </div>
               {title && (
                 <div className="hidden md:block">
@@ -178,7 +180,7 @@ export function DashboardLayout({
                       </p>
                       <p className="text-xs text-gray-500">@{user.username}</p>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                    <ChevronDown className="h-4 w-4 text-gray-400 hidden md:block" />
                   </Button>
                 </DropdownMenuTrigger>
                 

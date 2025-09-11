@@ -94,7 +94,7 @@ export function Header({
             <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">Meeshy</span>
+            <span className="text-xl font-bold text-gray-900 hidden md:inline">Meeshy</span>
           </button>
           
           {/* Titre de la conversation pour le mode chat */}

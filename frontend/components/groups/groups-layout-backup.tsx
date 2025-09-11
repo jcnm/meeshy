@@ -576,7 +576,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
       
       {/* Modale membres */}
       <Dialog open={isMembersOpen} onOpenChange={setIsMembersOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-[95vw] sm:max-w-md sm:w-[90vw]">
           <DialogHeader>
             <DialogTitle>Membres du groupe</DialogTitle>
           </DialogHeader>

@@ -9,6 +9,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 import {
   MessageSquare,
   Users,
@@ -34,7 +35,6 @@ import { CreateLinkButton } from './create-link-button';
 import { CreateLinkModalV2 as CreateLinkModal } from './create-link-modal';
 import { CreateConversationModal } from './create-conversation-modal';
 import { ConversationDetailsSidebar } from './conversation-details-sidebar';
-import { cn } from '@/lib/utils';
 import { translationService } from '@/services/translation.service';
 import { messageTranslationService } from '@/services/message-translation.service';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -451,23 +451,41 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Fonction utilitaire pour obtenir le nom d'affichage d'une conversation
   const getConversationDisplayName = useCallback((conversation: Conversation): string => {
-    if (conversation.isGroup) {
+    if (conversation.type !== 'direct') {
       return conversation.name || conversation.title || 'Groupe sans nom';
     } else {
-      // Pour les conversations privées, afficher le nom de l'autre participant
+      // Pour les conversations directes, afficher le nom de l'autre participant
       const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
       if (otherParticipant?.user) {
+        // Prioriser le displayName, sinon prénom/nom, sinon username
         return otherParticipant.user.displayName ||
-               `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}` ||
+               `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
                otherParticipant.user.username;
       }
       return conversation.name || conversation.title || 'Conversation privée';
     }
   }, [user]);
 
+  // Fonction spécifique pour obtenir le nom d'affichage dans l'en-tête (utilise les participants chargés)
+  const getConversationHeaderName = useCallback((conversation: Conversation): string => {
+    if (conversation.type !== 'direct') {
+      return conversation.name || conversation.title || 'Groupe sans nom';
+    } else {
+      // Pour les conversations directes, utiliser les participants chargés
+      const otherParticipant = conversationParticipants.find(p => p.userId !== user?.id);
+      if (otherParticipant?.user) {
+        // Prioriser le displayName, sinon prénom/nom, sinon username
+        return otherParticipant.user.displayName ||
+               `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
+               otherParticipant.user.username;
+      }
+      return conversation.name || conversation.title || 'Conversation privée';
+    }
+  }, [user, conversationParticipants]);
+
   // Fonction utilitaire pour obtenir l'avatar d'une conversation
   const getConversationAvatar = useCallback((conversation: Conversation): string => {
-    if (conversation.isGroup) {
+    if (conversation.type !== 'direct') {
       return (conversation.name || conversation.title || 'G').slice(0, 2).toUpperCase();
     } else {
       // Pour les conversations privées, utiliser l'initiale de l'autre participant
@@ -484,7 +502,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Fonction pour obtenir l'URL de l'avatar d'une conversation
   const getConversationAvatarUrl = useCallback((conversation: Conversation): string | undefined => {
-    if (!conversation.isGroup) {
+    if (conversation.type === 'direct') {
       // Pour les conversations privées, utiliser l'avatar de l'autre participant
       const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
       if (otherParticipant?.user?.avatar) {
@@ -504,7 +522,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     if (conversation.type === 'global') {
       return <Calendar className="h-6 w-6" />;
     }
-    if (conversation.isGroup) {
+    if (conversation.type !== 'direct') {
       return <Users className="h-6 w-6" />;
     }
     return null; // Pour les conversations privées, on utilisera l'avatar
@@ -952,7 +970,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   }, [selectedConversation?.id, loadConversationParticipants]);
 
   return (
-    <DashboardLayout title={t('conversations.title')}>
+    <DashboardLayout 
+      title={t('conversations.title')}
+      className={cn(
+        isMobile && selectedConversation && "conversation-open-mobile"
+      )}
+    >
 
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
@@ -962,11 +985,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           </div>
         </div>
       ) : (
-        <div className="h-[calc(100vh-6rem)] flex bg-transparent">
+        <div className={cn(
+          "h-[calc(100vh-6rem)] flex bg-transparent",
+          isMobile && "conversation-listing-mobile"
+        )}>
           {/* Liste des conversations */}
           <div className={cn(
             "flex flex-col bg-white/80 backdrop-blur-sm rounded-l-2xl border border-border/50 shadow-lg",
-            isMobile ? (showConversationList ? "w-full" : "hidden") : "w-96"
+            isMobile ? (showConversationList ? "w-full conversation-list-mobile" : "hidden") : "w-96"
           )}>
             {/* Header fixe */}
             <div className="flex-shrink-0 p-4 border-b border-border/30">
@@ -1062,7 +1088,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             )}
 
             {/* Liste scrollable */}
-            <div className="flex-1 overflow-y-auto mx-2">
+            <div className="flex-1 overflow-y-auto mx-2 pb-20">
               {conversations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                   <MessageSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
@@ -1097,14 +1123,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                               key={`public-${conversation.id}`}
                               onClick={() => handleSelectConversation(conversation)}
                               className={cn(
-                                "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                                "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2 conversation-list-item mobile-compact",
                                 selectedConversation?.id === conversation.id
                                   ? "bg-primary/20 border-primary/40 shadow-md"
                                   : "hover:bg-accent/50 border-transparent hover:border-border/30"
                               )}
                             >
                               <div className="relative">
-                                <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                                <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar" : "h-12 w-12")}>
                                   <AvatarImage src={getConversationAvatarUrl(conversation)} />
                                   <AvatarFallback className="bg-primary/20 text-primary font-bold">
                                     {getConversationIcon(conversation) || getConversationAvatar(conversation)}
@@ -1115,11 +1141,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                               <div className="ml-4 flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
-                                  <h3 className="font-bold text-foreground truncate">
+                                  <h3 className={cn(
+                                    "font-bold text-foreground truncate text-left", 
+                                    isMobile 
+                                      ? "mobile-text-base conversation-title-truncated" 
+                                      : "conversation-title-truncated-desktop"
+                                  )}>
                                     {getConversationDisplayName(conversation)}
                                   </h3>
                                   {conversation.lastMessage && (
-                                    <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                                    <span className={cn("text-muted-foreground ml-2 flex-shrink-0 timestamp", isMobile ? "mobile-text-xs" : "text-xs")}>
                                       {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
                                         hour: '2-digit',
                                         minute: '2-digit'
@@ -1128,12 +1159,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                   )}
                                 </div>
                                 {conversation.lastMessage && (
-                                  <p className="text-sm text-muted-foreground truncate">
+                                  <p className={cn("text-muted-foreground truncate", isMobile ? "mobile-text-sm" : "text-sm")}>
                                     {conversation.lastMessage.content}
                                   </p>
                                 )}
                               </div>
 
+                              {/* Badge du nombre de messages non lus seulement */}
                               {(conversation.unreadCount || 0) > 0 && (
                                 <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
                                   {conversation.unreadCount}
@@ -1165,14 +1197,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                               key={`private-${conversation.id}`}
                               onClick={() => handleSelectConversation(conversation)}
                               className={cn(
-                                "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2",
+                                "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2 conversation-list-item mobile-compact",
                                 selectedConversation?.id === conversation.id
                                   ? "bg-primary/20 border-primary/40 shadow-md"
                                   : "hover:bg-accent/50 border-transparent hover:border-border/30"
                               )}
                             >
                               <div className="relative">
-                                <Avatar className="h-12 w-12 ring-2 ring-primary/20">
+                                <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar" : "h-12 w-12")}>
                                   <AvatarImage src={getConversationAvatarUrl(conversation)} />
                                   <AvatarFallback className="bg-primary/20 text-primary font-bold">
                                     {getConversationIcon(conversation) || getConversationAvatar(conversation)}
@@ -1183,11 +1215,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                               <div className="ml-4 flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
-                                  <h3 className="font-bold text-foreground truncate">
+                                  <h3 className={cn(
+                                    "font-bold text-foreground truncate text-left", 
+                                    isMobile 
+                                      ? "mobile-text-base conversation-title-truncated" 
+                                      : "conversation-title-truncated-desktop"
+                                  )}>
                                     {getConversationDisplayName(conversation)}
                                   </h3>
                                   {conversation.lastMessage && (
-                                    <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                                    <span className={cn("text-muted-foreground ml-2 flex-shrink-0 timestamp", isMobile ? "mobile-text-xs" : "text-xs")}>
                                       {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
                                         hour: '2-digit',
                                         minute: '2-digit'
@@ -1196,12 +1233,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                   )}
                                 </div>
                                 {conversation.lastMessage && (
-                                  <p className="text-sm text-muted-foreground truncate">
+                                  <p className={cn("text-muted-foreground truncate", isMobile ? "mobile-text-sm" : "text-sm")}>
                                     {conversation.lastMessage.content}
                                   </p>
                                 )}
                               </div>
 
+                              {/* Badge du nombre de messages non lus seulement */}
                               {(conversation.unreadCount || 0) > 0 && (
                                 <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
                                   {conversation.unreadCount}
@@ -1217,6 +1255,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               )}
             </div>
 
+            {/* Bouton fixe pour créer une nouvelle conversation */}
+            <div className="absolute bottom-4 left-4 right-4 z-10">
+              <Button
+                onClick={() => setIsCreateConversationModalOpen(true)}
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <MessageSquare className="h-5 w-5" />
+                {t('createNewConversation')}
+              </Button>
+            </div>
+
           </div>
 
           {/* Zone de messages */}
@@ -1227,7 +1276,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             {selectedConversation ? (
               <>
                 {/* En-tête de la conversation */}
-                <div className="flex-shrink-0 p-4 border-b border-border/30 bg-white/90 backdrop-blur-sm rounded-tr-2xl">
+                <div className="flex-shrink-0 p-4 border-b border-border/30 bg-white/90 backdrop-blur-sm rounded-tr-2xl conversation-header-mobile">
                   <div className="flex items-center gap-3">
                     {isMobile && (
                       <Button
@@ -1240,7 +1289,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       </Button>
                     )}
                     <div className="relative">
-                      <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                      <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar-large" : "h-10 w-10")}>
                         <AvatarImage src={getConversationAvatarUrl(selectedConversation)} />
                         <AvatarFallback className="bg-primary/20 text-primary font-bold">
                           {getConversationIcon(selectedConversation) || getConversationAvatar(selectedConversation)}
@@ -1250,15 +1299,19 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     </div>
                     
                     <div className="flex-1">
-                      <h2 className="font-bold text-lg text-foreground">
-                        {getConversationDisplayName(selectedConversation)}
+                      <h2 className={cn(
+                        "font-bold text-foreground",
+                        isMobile ? "direct-conversation-title" : "text-lg",
+                        selectedConversation.type !== 'direct' && "conversation-title"
+                      )}>
+                        {getConversationHeaderName(selectedConversation)}
                       </h2>
-                      <div className="text-sm text-muted-foreground">
+                      <div className={cn("text-muted-foreground", isMobile ? "mobile-text-sm" : "text-sm")}>
                         <ConversationParticipants
                           conversationId={selectedConversation.id}
                           participants={conversationParticipants}
                           currentUser={user}
-                          isGroup={selectedConversation.isGroup || false}
+                          isGroup={selectedConversation.type !== 'direct'}
                           conversationType={selectedConversation.type}
                           typingUsers={typingUsers.map(u => ({ userId: u.userId, conversationId: u.conversationId }))}
                           className="mt-1"
@@ -1268,20 +1321,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     
                     {/* Boutons d'action rapides - masqués sur mobile */}
                     <div className="hidden md:flex items-center gap-1">
-                      {/* Bouton pour créer un lien - seulement pour les conversations de groupe et avec les bons rôles */}
-                      {selectedConversation?.type !== 'direct' && 
-                       !(selectedConversation?.type === 'global' && user.role !== 'BIGBOSS' && user.role !== 'ADMIN') && (
-                        <CreateLinkButton
-                          onLinkCreated={() => {
-                            // Lien créé depuis l'en-tête
-                          }}
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
-                        >
-                          <Link2 className="h-4 w-4 text-primary" />
-                        </CreateLinkButton>
-                      )}
                       
                       {/* Bouton pour ajouter un participant */}
                       <Button
@@ -1303,7 +1342,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       conversationId={selectedConversation.id}
                       participants={conversationParticipants}
                       currentUser={user}
-                      isGroup={selectedConversation.isGroup || false}
+                      isGroup={selectedConversation.type !== 'direct'}
                       conversationType={selectedConversation.type}
                       userConversationRole={getCurrentUserRole()}
                       onParticipantRemoved={(userId) => {
@@ -1335,7 +1374,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
 
                 {/* Messages scrollables */}
-                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm messages-container scroll-optimized scrollbar-thin">
+                <div ref={messagesContainerRef} className={cn(
+                  "flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm messages-container scroll-optimized scrollbar-thin",
+                  isMobile && "conversation-container-mobile conversation-messages-mobile"
+                )}>
                   <MessagesDisplay
                     messages={messages}
                     translatedMessages={translatedMessages}
@@ -1363,7 +1405,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 </div>
 
                 {/* Zone de saisie fixe en bas */}
-                <div className="flex-shrink-0 p-4 border-t border-border/30 bg-white/90 backdrop-blur-sm rounded-br-2xl">
+                <div className={cn(
+                  "flex-shrink-0 p-4 border-t border-border/30 bg-white/90 backdrop-blur-sm rounded-br-2xl",
+                  isMobile && "conversation-input-mobile"
+                )}>
                   <MessageComposer
                     ref={messageComposerRef}
                     value={newMessage}
