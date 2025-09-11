@@ -388,80 +388,64 @@
   padding: 0.5rem 0.75rem !important;
 }
 
-/* Styles pour la page /groups - Mobile full width */
-.groups-listing-mobile {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 30 !important;
-  overflow-x: hidden !important;
-  border-radius: 0 !important;
-  transform: translateX(0) !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.groups-listing-mobile .flex-shrink-0 {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-  text-align: center !important;
-  width: 100% !important;
-}
-
-.groups-listing-mobile .flex.items-center.justify-between {
-  justify-content: center !important;
-  text-align: center !important;
-  width: 100% !important;
-}
-
-.groups-listing-mobile .flex-1 {
-  width: 100% !important;
-  padding: 0 1rem !important;
-}
-
-.groups-listing-mobile .space-y-2 {
-  width: 100% !important;
-}
-
-/* Styles pour la vue détail d'un groupe - Mobile full width */
-.group-detail-mobile {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 40 !important;
-  overflow-x: hidden !important;
-  border-radius: 0 !important;
-  transform: translateX(0) !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.group-detail-mobile .flex-shrink-0 {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-  text-align: center !important;
-  width: 100% !important;
-}
-
-.group-detail-mobile .flex-1 {
-  width: 100% !important;
-  padding: 0 1rem !important;
-}
-
-/* Masquer le header principal quand on est dans un groupe sur mobile */
-.groups-open-mobile header {
-  display: none !important;
-}
+  
+  /* Réduction des tailles de titres de 40% sur mobile */
+  h1 {
+    font-size: 1.5rem !important; /* 24px * 0.6 = 14.4px ≈ 1.5rem */
+  }
+  
+  h2 {
+    font-size: 1.25rem !important; /* 20px * 0.6 = 12px ≈ 1.25rem */
+  }
+  
+  h3 {
+    font-size: 1rem !important; /* 16px * 0.6 = 9.6px ≈ 1rem */
+  }
+  
+  h4 {
+    font-size: 0.875rem !important; /* 14px * 0.6 = 8.4px ≈ 0.875rem */
+  }
+  
+  h5 {
+    font-size: 0.75rem !important; /* 12px * 0.6 = 7.2px ≈ 0.75rem */
+  }
+  
+  h6 {
+    font-size: 0.6875rem !important; /* 11px * 0.6 = 6.6px ≈ 0.6875rem */
+  }
+  
+  /* Réduction des classes de taille de texte */
+  .text-4xl {
+    font-size: 1.875rem !important; /* 36px * 0.6 = 21.6px ≈ 1.875rem */
+  }
+  
+  .text-3xl {
+    font-size: 1.5rem !important; /* 30px * 0.6 = 18px ≈ 1.5rem */
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem !important; /* 24px * 0.6 = 14.4px ≈ 1.25rem */
+  }
+  
+  .text-xl {
+    font-size: 1rem !important; /* 20px * 0.6 = 12px ≈ 1rem */
+  }
+  
+  .text-lg {
+    font-size: 0.875rem !important; /* 18px * 0.6 = 10.8px ≈ 0.875rem */
+  }
+  
+  .text-base {
+    font-size: 0.75rem !important; /* 16px * 0.6 = 9.6px ≈ 0.75rem */
+  }
+  
+  .text-sm {
+    font-size: 0.6875rem !important; /* 14px * 0.6 = 8.4px ≈ 0.6875rem */
+  }
+  
+  .text-xs {
+    font-size: 0.625rem !important; /* 12px * 0.6 = 7.2px ≈ 0.625rem */
+  }
   
   /* Indicateurs de langue plus compacts */
   .language-indicator-mobile {
