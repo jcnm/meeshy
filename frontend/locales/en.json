@@ -2091,6 +2091,10 @@
     "createConversationModal": "Create conversation modal"
   },
   "conversationSearch": {
+    "placeholder": "Search by name, description...",
+    "filterConversations": "Filter conversations",
+    "searchParticipants": "Search...",
+    "shareMessage": "Share something with the world...",
     "authChecking": "Checking authentication...",
     "toasts": {
       "messages": {
