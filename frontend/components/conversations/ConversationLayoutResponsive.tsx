@@ -451,18 +451,69 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Fonction utilitaire pour obtenir le nom d'affichage d'une conversation
   const getConversationDisplayName = useCallback((conversation: Conversation): string => {
-    if (conversation.type !== 'direct') {
+    // Déterminer si c'est une conversation directe
+    const isDirectConversation = conversation.type === 'direct' || 
+                                 (!conversation.isGroup && conversation.participants?.length === 2) ||
+                                 (!conversation.isGroup && !conversation.name && !conversation.title);
+
+    if (!isDirectConversation) {
+      // Pour les groupes, utiliser le nom ou titre
       return conversation.name || conversation.title || 'Groupe sans nom';
     } else {
-      // Pour les conversations directes, afficher le nom de l'autre participant
+      // Pour les conversations directes, d'abord essayer les participants
       const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
       if (otherParticipant?.user) {
-        // Prioriser le displayName, sinon prénom/nom, sinon username
-        return otherParticipant.user.displayName ||
+        const displayName = otherParticipant.user.displayName ||
                `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
                otherParticipant.user.username;
+        
+        if (displayName) {
+          return displayName;
+        }
       }
-      return conversation.name || conversation.title || 'Conversation privée';
+      
+      // Fallback : nettoyer le nom de la conversation
+      const conversationName = conversation.name || conversation.title;
+      if (conversationName && conversationName !== 'Conversation privée') {
+        // Nettoyer les noms formatés par l'API
+        let cleanName = conversationName;
+        
+        // Supprimer "Conversation avec" au début
+        if (cleanName.startsWith('Conversation avec ')) {
+          cleanName = cleanName.replace('Conversation avec ', '');
+        }
+        
+        // Pour les noms avec "&", prendre seulement la première partie (l'interlocuteur)
+        if (cleanName.includes(' & ')) {
+          const parts = cleanName.split(' & ');
+          // Prendre la partie qui n'est pas l'utilisateur actuel
+          const currentUserName = user?.displayName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username;
+          cleanName = parts.find(part => part.trim() !== currentUserName) || parts[0];
+        }
+        
+        // Pour les noms séparés par des virgules, filtrer l'utilisateur actuel
+        if (cleanName.includes(', ')) {
+          const names = cleanName.split(', ');
+          const currentUserName = user?.displayName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username;
+          
+          // Filtrer les noms pour exclure l'utilisateur actuel
+          const otherNames = names.filter(name => name.trim() !== currentUserName);
+          
+          // Prendre le premier nom qui n'est pas l'utilisateur actuel
+          cleanName = otherNames.length > 0 ? otherNames[0] : names[0];
+        }
+        
+        // Vérification finale : si le nom nettoyé correspond à l'utilisateur actuel, essayer de trouver un autre nom
+        const currentUserName = user?.displayName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username;
+        if (cleanName.trim() === currentUserName) {
+          // Si c'est l'utilisateur actuel, retourner "Conversation privée" 
+          return 'Conversation privée';
+        }
+        
+        return cleanName.trim();
+      }
+      
+      return 'Conversation privée';
     }
   }, [user]);
 
@@ -483,26 +534,82 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [user, conversationParticipants]);
 
+  // Fonction pour tronquer le nom d'affichage avec plus de caractères
   // Fonction utilitaire pour obtenir l'avatar d'une conversation
   const getConversationAvatar = useCallback((conversation: Conversation): string => {
-    if (conversation.type !== 'direct') {
-      return (conversation.name || conversation.title || 'G').slice(0, 2).toUpperCase();
+    // Déterminer si c'est une conversation directe
+    const isDirectConversation = conversation.type === 'direct' || 
+                                 (!conversation.isGroup && conversation.participants?.length === 2) ||
+                                 (!conversation.isGroup && !conversation.name && !conversation.title);
+
+    if (!isDirectConversation) {
+      // Pour les groupes, utiliser le nom ou titre
+      const groupName = conversation.name || conversation.title || 'Groupe';
+      return groupName.slice(0, 2).toUpperCase();
     } else {
-      // Pour les conversations privées, utiliser l'initiale de l'autre participant
+      // Pour les conversations directes, d'abord essayer les participants
       const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
       if (otherParticipant?.user) {
         const displayName = otherParticipant.user.displayName ||
-                           `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}` ||
-                           otherParticipant.user.username;
-        return displayName.slice(0, 2).toUpperCase();
+               `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
+               otherParticipant.user.username;
+        
+        if (displayName) {
+          return displayName.slice(0, 2).toUpperCase();
+        }
       }
-      return 'C';
+      
+      // Fallback : utiliser le nom nettoyé de la conversation (même logique que getConversationDisplayName)
+      const conversationName = conversation.name || conversation.title;
+      if (conversationName && conversationName !== 'Conversation privée') {
+        let cleanName = conversationName;
+        
+        // Supprimer "Conversation avec" au début
+        if (cleanName.startsWith('Conversation avec ')) {
+          cleanName = cleanName.replace('Conversation avec ', '');
+        }
+        
+        // Pour les noms avec "&", prendre seulement la première partie (l'interlocuteur)
+        if (cleanName.includes(' & ')) {
+          const parts = cleanName.split(' & ');
+          // Prendre la partie qui n'est pas l'utilisateur actuel
+          const currentUserName = user?.displayName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username;
+          cleanName = parts.find(part => part.trim() !== currentUserName) || parts[0];
+        }
+        
+        // Pour les noms séparés par des virgules, filtrer l'utilisateur actuel
+        if (cleanName.includes(', ')) {
+          const names = cleanName.split(', ');
+          const currentUserName = user?.displayName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username;
+          
+          // Filtrer les noms pour exclure l'utilisateur actuel
+          const otherNames = names.filter(name => name.trim() !== currentUserName);
+          
+          // Prendre le premier nom qui n'est pas l'utilisateur actuel
+          cleanName = otherNames.length > 0 ? otherNames[0] : names[0];
+        }
+        
+        // Vérification finale : si le nom nettoyé correspond à l'utilisateur actuel, utiliser initiales par défaut
+        const currentUserName = user?.displayName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.username;
+        if (cleanName.trim() === currentUserName) {
+          return 'CP'; // Conversation Privée
+        }
+        
+        return cleanName.trim().slice(0, 2).toUpperCase();
+      }
+      
+      return 'CP'; // Conversation Privée
     }
   }, [user]);
 
   // Fonction pour obtenir l'URL de l'avatar d'une conversation
   const getConversationAvatarUrl = useCallback((conversation: Conversation): string | undefined => {
-    if (conversation.type === 'direct') {
+    // Déterminer si c'est une conversation directe
+    const isDirectConversation = conversation.type === 'direct' || 
+                                 (!conversation.isGroup && conversation.participants?.length === 2) ||
+                                 (!conversation.isGroup && !conversation.name && !conversation.title);
+
+    if (isDirectConversation) {
       // Pour les conversations privées, utiliser l'avatar de l'autre participant
       const otherParticipant = conversation.participants?.find(p => p.userId !== user?.id);
       if (otherParticipant?.user?.avatar) {
@@ -512,6 +619,22 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     // Pour les groupes, on pourrait avoir un avatar de groupe dans le futur
     return undefined;
   }, [user]);
+
+  // Fonction de debug pour comprendre comment je récupère les destinataires
+  const debugConversationData = useCallback((conversation: Conversation) => {
+    console.log('=== DEBUG CONVERSATION ===');
+    console.log('Conversation ID:', conversation.id);
+    console.log('Conversation type:', conversation.type);
+    console.log('Conversation isGroup:', conversation.isGroup);
+    console.log('Conversation name:', conversation.name);
+    console.log('Conversation title:', conversation.title);
+    console.log('Participants:', conversation.participants);
+    console.log('Current user:', user);
+    console.log('Other participant:', conversation.participants?.find(p => p.userId !== user?.id));
+    console.log('Display name from getConversationDisplayName:', getConversationDisplayName(conversation));
+    console.log('Avatar initials from getConversationAvatar:', getConversationAvatar(conversation));
+    console.log('=========================');
+  }, [user, getConversationDisplayName, getConversationAvatar]);
 
   // Fonction utilitaire pour obtenir l'icône d'une conversation par type
   const getConversationIcon = useCallback((conversation: Conversation): React.ReactNode | null => {
@@ -1050,11 +1173,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'public' | 'private')} className="w-full">
                   <TabsList className="grid w-full grid-cols-2 mt-2">
                     <TabsTrigger value="public" className="flex items-center gap-1 text-xs px-2">
-                      <span className="truncate">{t('public')}</span>
+                      <span>{t('public')}</span>
                       <span className="text-xs">({getFilteredPublicConversations().length})</span>
                     </TabsTrigger>
                     <TabsTrigger value="private" className="flex items-center gap-1 text-xs px-2">
-                      <span className="truncate">{t('private')}</span>
+                      <span>{t('private')}</span>
                       <span className="text-xs">({getFilteredPrivateConversations().length})</span>
                     </TabsTrigger>
                   </TabsList>
@@ -1121,7 +1244,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                             .map((conversation) => (
                             <div
                               key={`public-${conversation.id}`}
-                              onClick={() => handleSelectConversation(conversation)}
+                              onClick={() => {
+                                debugConversationData(conversation);
+                                handleSelectConversation(conversation);
+                              }}
                               className={cn(
                                 "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2 conversation-list-item mobile-compact",
                                 selectedConversation?.id === conversation.id
@@ -1130,27 +1256,20 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                               )}
                             >
                               <div className="relative">
-                                <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar" : "h-12 w-12")}>
+                                <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar conversation-list-avatar" : "h-12 w-12 conversation-list-avatar")}>
                                   <AvatarImage src={getConversationAvatarUrl(conversation)} />
-                                  <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                  <AvatarFallback className="bg-primary/20 text-primary font-bold flex items-center justify-center text-center">
                                     {getConversationIcon(conversation) || getConversationAvatar(conversation)}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
                               </div>
 
-                              <div className="ml-4 flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <h3 className={cn(
-                                    "font-bold text-foreground truncate text-left", 
-                                    isMobile 
-                                      ? "mobile-text-base conversation-title-truncated" 
-                                      : "conversation-title-truncated-desktop"
-                                  )}>
-                                    {getConversationDisplayName(conversation)}
-                                  </h3>
+                              <div className={cn("ml-2 flex-1 relative", isMobile ? "conversation-content-mobile min-w-0" : "min-w-0")}>
+                                {/* Date positionnée absolument en haut à droite */}
+                                <div className="absolute top-0 right-0 flex flex-col items-end gap-1 z-10">
                                   {conversation.lastMessage && (
-                                    <span className={cn("text-muted-foreground ml-2 flex-shrink-0 timestamp", isMobile ? "mobile-text-xs" : "text-xs")}>
+                                    <span className={cn("text-muted-foreground timestamp bg-background/80 px-1 rounded", isMobile ? "mobile-text-xs" : "text-xs")}>
                                       {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
                                         hour: '2-digit',
                                         minute: '2-digit'
@@ -1158,19 +1277,30 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                     </span>
                                   )}
                                 </div>
-                                {conversation.lastMessage && (
-                                  <p className={cn("text-muted-foreground truncate", isMobile ? "mobile-text-sm" : "text-sm")}>
-                                    {conversation.lastMessage.content}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Badge du nombre de messages non lus seulement */}
-                              {(conversation.unreadCount || 0) > 0 && (
-                                <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
-                                  {conversation.unreadCount}
+                                
+                                {/* Contenu principal prenant toute la largeur */}
+                                <div className="w-full pr-16"> {/* pr-16 pour laisser de l'espace à la date */}
+                                  <h3 className={cn(
+                                    "font-bold text-foreground text-left leading-tight", 
+                                    isMobile 
+                                      ? "mobile-text-base conversation-title-mobile" 
+                                      : "conversation-title-desktop"
+                                  )}>
+                                    {getConversationDisplayName(conversation)}
+                                  </h3>
+                                  {conversation.lastMessage && (
+                                    <p className={cn("text-muted-foreground mt-1", isMobile ? "mobile-text-sm" : "text-sm")} 
+                                       style={{
+                                         display: '-webkit-box',
+                                         WebkitLineClamp: 2,
+                                         WebkitBoxOrient: 'vertical',
+                                         overflow: 'hidden'
+                                       }}>
+                                      {conversation.lastMessage.content}
+                                    </p>
+                                  )}
                                 </div>
-                              )}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -1195,7 +1325,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                             .map((conversation) => (
                             <div
                               key={`private-${conversation.id}`}
-                              onClick={() => handleSelectConversation(conversation)}
+                              onClick={() => {
+                                debugConversationData(conversation);
+                                handleSelectConversation(conversation);
+                              }}
                               className={cn(
                                 "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2 conversation-list-item mobile-compact",
                                 selectedConversation?.id === conversation.id
@@ -1204,27 +1337,20 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                               )}
                             >
                               <div className="relative">
-                                <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar" : "h-12 w-12")}>
+                                <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar conversation-list-avatar" : "h-12 w-12 conversation-list-avatar")}>
                                   <AvatarImage src={getConversationAvatarUrl(conversation)} />
-                                  <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                                  <AvatarFallback className="bg-primary/20 text-primary font-bold flex items-center justify-center text-center">
                                     {getConversationIcon(conversation) || getConversationAvatar(conversation)}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="absolute -bottom-0 -right-0 h-4 w-4 bg-green-500 rounded-full border-2 border-background"></div>
                               </div>
 
-                              <div className="ml-4 flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                  <h3 className={cn(
-                                    "font-bold text-foreground truncate text-left", 
-                                    isMobile 
-                                      ? "mobile-text-base conversation-title-truncated" 
-                                      : "conversation-title-truncated-desktop"
-                                  )}>
-                                    {getConversationDisplayName(conversation)}
-                                  </h3>
+                              <div className={cn("ml-2 flex-1 relative", isMobile ? "conversation-content-mobile min-w-0" : "min-w-0")}>
+                                {/* Date positionnée absolument en haut à droite */}
+                                <div className="absolute top-0 right-0 flex flex-col items-end gap-1 z-10">
                                   {conversation.lastMessage && (
-                                    <span className={cn("text-muted-foreground ml-2 flex-shrink-0 timestamp", isMobile ? "mobile-text-xs" : "text-xs")}>
+                                    <span className={cn("text-muted-foreground timestamp bg-background/80 px-1 rounded", isMobile ? "mobile-text-xs" : "text-xs")}>
                                       {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('fr-FR', {
                                         hour: '2-digit',
                                         minute: '2-digit'
@@ -1232,19 +1358,30 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                                     </span>
                                   )}
                                 </div>
-                                {conversation.lastMessage && (
-                                  <p className={cn("text-muted-foreground truncate", isMobile ? "mobile-text-sm" : "text-sm")}>
-                                    {conversation.lastMessage.content}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Badge du nombre de messages non lus seulement */}
-                              {(conversation.unreadCount || 0) > 0 && (
-                                <div className="ml-3 bg-primary text-primary-foreground text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-sm">
-                                  {conversation.unreadCount}
+                                
+                                {/* Contenu principal prenant toute la largeur */}
+                                <div className="w-full pr-16"> {/* pr-16 pour laisser de l'espace à la date */}
+                                  <h3 className={cn(
+                                    "font-bold text-foreground text-left leading-tight", 
+                                    isMobile 
+                                      ? "mobile-text-base conversation-title-mobile" 
+                                      : "conversation-title-desktop"
+                                  )}>
+                                    {getConversationDisplayName(conversation)}
+                                  </h3>
+                                  {conversation.lastMessage && (
+                                    <p className={cn("text-muted-foreground mt-1", isMobile ? "mobile-text-sm" : "text-sm")} 
+                                       style={{
+                                         display: '-webkit-box',
+                                         WebkitLineClamp: 2,
+                                         WebkitBoxOrient: 'vertical',
+                                         overflow: 'hidden'
+                                       }}>
+                                      {conversation.lastMessage.content}
+                                    </p>
+                                  )}
                                 </div>
-                              )}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -1255,16 +1392,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               )}
             </div>
 
-            {/* Bouton fixe pour créer une nouvelle conversation */}
-            <div className="absolute bottom-4 left-4 right-4 z-10">
-              <Button
-                onClick={() => setIsCreateConversationModalOpen(true)}
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <MessageSquare className="h-5 w-5" />
-                {t('createNewConversation')}
-              </Button>
-            </div>
+            {/* Bouton pour créer une nouvelle conversation après le contenu */}
+            {conversations.length > 0 && (
+              <div className="flex-shrink-0 p-4">
+                <Button
+                  onClick={() => setIsCreateConversationModalOpen(true)}
+                  className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  {t('createNewConversation')}
+                </Button>
+              </div>
+            )}
 
           </div>
 
@@ -1291,7 +1430,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     <div className="relative">
                       <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar-large" : "h-10 w-10")}>
                         <AvatarImage src={getConversationAvatarUrl(selectedConversation)} />
-                        <AvatarFallback className="bg-primary/20 text-primary font-bold">
+                        <AvatarFallback className="bg-primary/20 text-primary font-bold flex items-center justify-center">
                           {getConversationIcon(selectedConversation) || getConversationAvatar(selectedConversation)}
                         </AvatarFallback>
                       </Avatar>

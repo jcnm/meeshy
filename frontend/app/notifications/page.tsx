@@ -21,9 +21,11 @@ import {
 import { useNotifications } from '@/hooks/use-notifications';
 import { notificationService } from '@/services/notification.service';
 import { NotificationTest } from '@/components/notifications/NotificationTest';
+import { useTranslations } from '@/hooks/useTranslations';
 import type { Notification } from '@/services/notification.service';
 
 export default function NotificationsPage() {
+  const { t } = useTranslations();
   const { 
     notifications, 
     unreadNotifications, 
@@ -60,6 +62,10 @@ export default function NotificationsPage() {
     }
   };
 
+  const getNotificationTypeLabel = (type: string) => {
+    return t(`notifications.types.${type}`) || type.replace('_', ' ');
+  };
+
   const getNotificationColor = (type: string) => {
     switch (type) {
       case 'MESSAGE_RECEIVED':
@@ -83,11 +89,23 @@ export default function NotificationsPage() {
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMinutes < 1) return 'À l\'instant';
-    if (diffMinutes < 60) return `${diffMinutes} min`;
-    if (diffHours < 24) return `${diffHours}h`;
-    if (diffDays < 7) return `${diffDays}j`;
-    return date.toLocaleDateString('fr-FR');
+    if (diffMinutes < 1) return t('notifications.timeAgo.now');
+    if (diffMinutes < 60) return t('notifications.timeAgo.minute', { count: diffMinutes });
+    if (diffHours < 24) return t('notifications.timeAgo.hour', { count: diffHours });
+    if (diffDays < 7) return t('notifications.timeAgo.day', { count: diffDays });
+    return date.toLocaleDateString();
+  };
+
+  const getUnreadCountMessage = () => {
+    if (unreadCount > 0) {
+      const key = unreadCount === 1 ? 'notifications.unreadCount.single' : 'notifications.unreadCount.plural';
+      return t(key, { count: unreadCount, total: totalCount });
+    } else if (totalCount > 0) {
+      const plural = totalCount > 1 ? 's' : '';
+      return t('notifications.unreadCount.allRead', { total: totalCount, plural });
+    } else {
+      return t('notifications.unreadCount.empty');
+    }
   };
 
   if (false) { // loading supprimé
@@ -109,19 +127,14 @@ export default function NotificationsPage() {
   }
 
   return (
-    <DashboardLayout title="Notifications">
+    <DashboardLayout title={t('notifications.pageTitle')}>
       <div className="max-w-4xl mx-auto">
         {/* Header avec actions */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t('notifications.pageTitle')}</h1>
             <p className="text-gray-600 mt-1">
-              {unreadCount > 0 
-                ? `${unreadCount} notification${unreadCount > 1 ? 's' : ''} non lue${unreadCount > 1 ? 's' : ''} sur ${totalCount}`
-                : totalCount > 0 
-                  ? `${totalCount} notification${totalCount > 1 ? 's' : ''} (toutes lues)`
-                  : 'Aucune notification'
-              }
+              {getUnreadCountMessage()}
             </p>
           </div>
 
@@ -133,7 +146,7 @@ export default function NotificationsPage() {
               className="hidden sm:flex"
             >
               <Settings className="h-4 w-4 mr-2" />
-              Préférences
+              {t('notifications.preferences')}
             </Button>
             
             {unreadCount > 0 && (
@@ -144,7 +157,7 @@ export default function NotificationsPage() {
                 className="flex items-center space-x-2"
               >
                 <CheckCheck className="h-4 w-4" />
-                <span>Tout marquer</span>
+                <span>{t('notifications.markAllRead')}</span>
               </Button>
             )}
           </div>
@@ -160,10 +173,10 @@ export default function NotificationsPage() {
                     <BellOff className="h-8 w-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Aucune notification
+                    {t('notifications.empty.title')}
                   </h3>
                   <p className="text-gray-600 text-center max-w-sm">
-                    Vous êtes à jour ! Toutes vos notifications ont été lues.
+                    {t('notifications.empty.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -184,7 +197,7 @@ export default function NotificationsPage() {
                                 {notification.title}
                               </h4>
                               <Badge variant="secondary" className="text-xs">
-                                {notification.type.replace('_', ' ')}
+                                {getNotificationTypeLabel(notification.type)}
                               </Badge>
                             </div>
                             
@@ -220,20 +233,20 @@ export default function NotificationsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Settings className="h-5 w-5" />
-                  <span>Statut du Système</span>
+                  <span>{t('notifications.systemStatus')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Service de notifications</span>
+                  <span className="text-sm font-medium">{t('notifications.service')}</span>
                   <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Notifications totales</span>
+                  <span className="text-sm font-medium">{t('notifications.totalNotifications')}</span>
                   <Badge variant="secondary">{totalCount}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Non lues</span>
+                  <span className="text-sm font-medium">{t('notifications.unread')}</span>
                   <Badge variant={unreadCount > 0 ? "destructive" : "secondary"}>{unreadCount}</Badge>
                 </div>
               </CardContent>
@@ -242,7 +255,7 @@ export default function NotificationsPage() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Actions rapides</CardTitle>
+                <CardTitle>{t('notifications.quickActions')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <NotificationTest />

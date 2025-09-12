@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ResponsiveTabs } from '@/components/ui/responsive-tabs';
 import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { toast } from 'sonner';
@@ -27,7 +27,8 @@ import {
   UserX,
   Share2,
   Calendar,
-  Link
+  Link,
+  ChevronDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -54,13 +55,23 @@ interface FriendRequest {
 
 interface AffiliateRelation {
   id: string;
-  referredUser: User;
+  referredUser: {
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatar?: string;
+    isOnline: boolean;
+    createdAt: string;
+  };
   status: string;
   createdAt: string;
   completedAt?: string;
   affiliateToken: {
     name: string;
     token: string;
+    createdAt?: string;
   };
 }
 
@@ -318,8 +329,8 @@ export default function ContactsPage() {
     }
   };
 
-  const getUserDisplayName = (user: User): string => {
-    if (user.displayName) return user.displayName;
+  const getUserDisplayName = (user: User | { firstName: string; lastName: string; username: string; displayName?: string }): string => {
+    if ('displayName' in user && user.displayName) return user.displayName;
     return `${user.firstName} ${user.lastName}`.trim() || user.username;
   };
 
@@ -389,438 +400,513 @@ export default function ContactsPage() {
           </CardContent>
         </Card>
 
-        {/* Tabs pour organiser les contacts */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full contacts-tabs-mobile">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1 p-1">
-            <TabsTrigger value="all" className="flex flex-col items-center space-y-1 p-2 text-xs">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.all')}</span>
-              <Badge variant="secondary" className="text-xs">{contacts.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="pending" className="flex flex-col items-center space-y-1 p-2 text-xs">
-              <Clock className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.pending')}</span>
-              <Badge variant="secondary" className="text-xs">{friendRequests.filter(r => r.status === 'pending').length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="connected" className="flex flex-col items-center space-y-1 p-2 text-xs">
-              <UserCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.connected')}</span>
-              <Badge variant="secondary" className="text-xs">{friendRequests.filter(r => r.status === 'accepted').length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="refused" className="flex flex-col items-center space-y-1 p-2 text-xs">
-              <UserX className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.refused')}</span>
-              <Badge variant="secondary" className="text-xs">{friendRequests.filter(r => r.status === 'rejected').length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="affiliates" className="flex flex-col items-center space-y-1 p-2 text-xs">
-              <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.affiliates')}</span>
-              <Badge variant="secondary" className="text-xs">{affiliateRelations.length}</Badge>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Tab: Tous les contacts */}
-          <TabsContent value="all" className="space-y-4">
-            {displayedUsers.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Users className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
-                  </h3>
-                  <p className="text-gray-600 text-center max-w-sm mb-4">
-                    {searchQuery 
-                      ? t('messages.noContactsFoundDescription')
-                      : t('messages.noContactsDescription')
-                    }
-                  </p>
-                  <Button 
-                    onClick={() => router.push('/search')}
-                    className="flex items-center space-x-2"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    <span>{t('messages.searchUsers')}</span>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {displayedUsers.map((contact) => (
-                  <Card key={contact.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
-                            <AvatarFallback>
-                              {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">
-                              {getUserDisplayName(contact)}
-                            </h3>
-                            <p className="text-sm text-gray-600">@{contact.username}</p>
-                            
-                            <div className="flex items-center space-x-4 mt-1">
-                              <div className="flex items-center space-x-1">
-                                <div className={`w-2 h-2 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                <span className="text-xs text-gray-500">
-                                  {contact.isOnline ? t('status.online') : t('status.offline')}
-                                </span>
+        {/* Tabs responsifs avec ResponsiveTabs */}
+        <ResponsiveTabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          items={[
+            {
+              value: "all",
+              label: t('tabs.all'),
+              icon: <Users className="h-4 w-4" />,
+              content: (
+                <div className="space-y-4">
+                  {displayedUsers.length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <Users className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
+                        </h3>
+                        <p className="text-gray-600 text-center max-w-sm mb-4">
+                          {searchQuery 
+                            ? t('messages.noContactsFoundDescription')
+                            : t('messages.noContactsDescription')
+                          }
+                        </p>
+                        <Button 
+                          onClick={() => router.push('/search')}
+                          className="flex items-center space-x-2"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          <span>{t('messages.searchUsers')}</span>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-2">
+                      {displayedUsers.map((contact) => (
+                        <Card key={contact.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <Avatar className="h-12 w-12">
+                                  <AvatarImage src={contact.avatar} alt={getUserDisplayName(contact)} />
+                                  <AvatarFallback>
+                                    {getUserDisplayName(contact).slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    {getUserDisplayName(contact)}
+                                  </h3>
+                                  <p className="text-sm text-gray-600">@{contact.username}</p>
+                                  
+                                  <div className="flex items-center space-x-4 mt-1">
+                                    <div className="flex items-center space-x-1">
+                                      <div className={`w-2 h-2 rounded-full ${contact.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                      <span className="text-xs text-gray-500">
+                                        {contact.isOnline ? t('status.online') : t('status.offline')}
+                                      </span>
+                                    </div>
+                                    
+                                    {contact.email && (
+                                      <div className="flex items-center space-x-1">
+                                        <Mail className="h-3 w-3 text-gray-400" />
+                                        <span className="text-xs text-gray-500 truncate max-w-32">
+                                          {contact.email}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                               
-                              {contact.email && (
-                                <div className="flex items-center space-x-1">
-                                  <Mail className="h-3 w-3 text-gray-400" />
-                                  <span className="text-xs text-gray-500 truncate max-w-32">
-                                    {contact.email}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => startConversation(contact.id)}
-                            className="flex items-center space-x-1"
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t('actions.message')}</span>
-                          </Button>
-                          
-                          {searchQuery && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => sendFriendRequest(contact.id)}
-                              className="flex items-center space-x-1"
-                            >
-                              <Link className="h-4 w-4" />
-                              <span className="hidden sm:inline">{t('actions.connection')}</span>
-                            </Button>
-                          )}
-                          
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem 
-                                onClick={() => router.push(`/profile/${contact.id}`)}
-                              >
-                                {t('actions.viewProfile')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => startConversation(contact.id)}>
-                                {t('actions.sendMessage')}
-                              </DropdownMenuItem>
-                              {contact.phoneNumber && (
-                                <DropdownMenuItem>
-                                  <Phone className="mr-2 h-4 w-4" />
-                                  {t('actions.call')}
-                                </DropdownMenuItem>
-                              )}
-                              {activeTab !== 'all' && (
-                                <DropdownMenuItem className="text-red-600">
-                                  <UserMinus className="mr-2 h-4 w-4" />
-                                  {t('actions.remove')}
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Tab: Demandes en attente */}
-          <TabsContent value="pending" className="space-y-4">
-            {friendRequests.filter(r => r.status === 'pending').length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Clock className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noPendingRequests')}</h3>
-                  <p className="text-gray-600 text-center max-w-sm">
-                    {t('messages.noPendingRequestsDescription')}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {friendRequests.filter(r => r.status === 'pending').map((request) => {
-                  const isCurrentUserSender = request.senderId === user?.id;
-                  const otherUser = isCurrentUserSender ? request.receiver : request.sender;
-                  
-                  return (
-                    <Card key={request.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                              <AvatarFallback>
-                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900">
-                                {getUserDisplayName(otherUser!)}
-                              </h3>
-                              <p className="text-sm text-gray-600">@{otherUser?.username}</p>
-                              <p className="text-xs text-gray-500">
-                                {isCurrentUserSender 
-                                  ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
-                                  : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
-                                }
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            {isCurrentUserSender ? (
-                              <Badge variant="outline" className="text-orange-600 border-orange-200">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {t('status.pending')}
-                              </Badge>
-                            ) : (
-                              <>
+                              <div className="flex items-center space-x-2">
                                 <Button
                                   size="sm"
-                                  onClick={() => handleFriendRequest(request.id, 'accept')}
-                                  className="flex items-center space-x-1 bg-green-600 hover:bg-green-700"
-                                >
-                                  <Check className="h-4 w-4" />
-                                  <span>{t('actions.accept')}</span>
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleFriendRequest(request.id, 'reject')}
+                                  onClick={() => startConversation(contact.id)}
                                   className="flex items-center space-x-1"
                                 >
-                                  <X className="h-4 w-4" />
-                                  <span>{t('actions.reject')}</span>
+                                  <MessageSquare className="h-4 w-4" />
+                                  <span className="hidden sm:inline">{t('actions.message')}</span>
                                 </Button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Tab: Contacts connectés */}
-          <TabsContent value="connected" className="space-y-4">
-            {friendRequests.filter(r => r.status === 'accepted').length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <UserCheck className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noConnectedContacts')}</h3>
-                  <p className="text-gray-600 text-center max-w-sm">
-                    {t('messages.noConnectedContactsDescription')}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {friendRequests.filter(r => r.status === 'accepted').map((request) => {
-                  const otherUser = request.senderId === user?.id ? request.receiver : request.sender;
-                  const otherUserId = request.senderId === user?.id ? request.receiverId : request.senderId;
-                  
-                  return (
-                    <Card key={request.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                              <AvatarFallback>
-                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900">
-                                {getUserDisplayName(otherUser!)}
-                              </h3>
-                              <p className="text-sm text-gray-600">@{otherUser?.username}</p>
-                              <div className="flex items-center space-x-1 mt-1">
-                                <div className={`w-2 h-2 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                <span className="text-xs text-gray-500">
-                                  {otherUser?.isOnline ? t('status.online') : t('status.offline')}
-                                </span>
+                                
+                                {searchQuery && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => sendFriendRequest(contact.id)}
+                                    className="flex items-center space-x-1"
+                                  >
+                                    <Link className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{t('actions.connection')}</span>
+                                  </Button>
+                                )}
+                                
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem 
+                                      onClick={() => router.push(`/profile/${contact.id}`)}
+                                    >
+                                      {t('actions.viewProfile')}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => startConversation(contact.id)}>
+                                      {t('actions.sendMessage')}
+                                    </DropdownMenuItem>
+                                    {contact.phoneNumber && (
+                                      <DropdownMenuItem>
+                                        <Phone className="mr-2 h-4 w-4" />
+                                        {t('actions.call')}
+                                      </DropdownMenuItem>
+                                    )}
+                                    {activeTab !== 'all' && (
+                                      <DropdownMenuItem className="text-red-600">
+                                        <UserMinus className="mr-2 h-4 w-4" />
+                                        {t('actions.remove')}
+                                      </DropdownMenuItem>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={() => startConversation(otherUserId)}
-                              className="flex items-center space-x-1"
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                              <span>{t('actions.message')}</span>
-                            </Button>
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            },
+            {
+              value: "pending",
+              label: t('tabs.pending'),
+              icon: <Clock className="h-4 w-4" />,
+              content: (
+                <div className="space-y-4">
+                  {friendRequests.filter(r => r.status === 'pending').length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <Clock className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noPendingRequests')}</h3>
+                        <p className="text-gray-600 text-center max-w-sm">
+                          {t('messages.noPendingRequestsDescription')}
+                        </p>
                       </CardContent>
                     </Card>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Tab: Demandes refusées */}
-          <TabsContent value="refused" className="space-y-4">
-            {friendRequests.filter(r => r.status === 'rejected').length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <UserX className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noRefusedRequests')}</h3>
-                  <p className="text-gray-600 text-center max-w-sm">
-                    {t('messages.noRefusedRequestsDescription')}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {friendRequests.filter(r => r.status === 'rejected').map((request) => {
-                  const isCurrentUserSender = request.senderId === user?.id;
-                  const otherUser = isCurrentUserSender ? request.receiver : request.sender;
-                  const otherUserId = isCurrentUserSender ? request.receiverId : request.senderId;
-                  
-                  return (
-                    <Card key={request.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
-                              <AvatarFallback>
-                                {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900">
-                                {getUserDisplayName(otherUser!)}
-                              </h3>
-                              <p className="text-sm text-gray-600">@{otherUser?.username}</p>
-                              <p className="text-xs text-gray-500">
-                                {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString('pt-BR') })}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            {isCurrentUserSender ? (
-                              <Badge variant="outline" className="text-red-600 border-red-200">
-                                <UserX className="h-3 w-3 mr-1" />
-                                {t('status.rejected')}
-                              </Badge>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => sendFriendRequest(otherUserId)}
-                                className="flex items-center space-x-1"
-                              >
-                                <UserPlus className="h-4 w-4" />
-                                <span>{t('actions.resend')}</span>
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Tab: Contacts affiliés */}
-          <TabsContent value="affiliates" className="space-y-4">
-            {affiliateRelations.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <Share2 className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noAffiliateContacts')}</h3>
-                  <p className="text-gray-600 text-center max-w-sm">
-                    {t('messages.noAffiliateContactsDescription')}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {affiliateRelations.map((relation) => (
-                  <Card key={relation.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
-                            <AvatarFallback>
-                              {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">
-                              {getUserDisplayName(relation.referredUser)}
-                            </h3>
-                            <p className="text-sm text-gray-600">@{relation.referredUser.username}</p>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <Badge variant="outline" className="text-xs">
-                                {relation.affiliateToken.name}
-                              </Badge>
-                              <div className="flex items-center space-x-1">
-                                <Calendar className="h-3 w-3 text-gray-400" />
-                                <span className="text-xs text-gray-500">
-                                  {t('messages.joinedOn', { date: new Date(relation.createdAt).toLocaleDateString('pt-BR') })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {friendRequests.filter(r => r.status === 'pending').map((request) => {
+                        const isCurrentUserSender = request.senderId === user?.id;
+                        const otherUser = isCurrentUserSender ? request.receiver : request.sender;
                         
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => startConversation(relation.referredUser.id)}
-                            className="flex items-center space-x-1"
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                            <span>{t('actions.message')}</span>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                        return (
+                          <Card key={request.id} className="hover:shadow-md transition-shadow">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <Avatar className="h-12 w-12">
+                                    <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                    <AvatarFallback>
+                                      {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {getUserDisplayName(otherUser!)}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">@{otherUser?.username}</p>
+                                    <p className="text-xs text-gray-500">
+                                      {isCurrentUserSender 
+                                        ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
+                                        : t('messages.requestReceived', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
+                                      }
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-2">
+                                  {isCurrentUserSender ? (
+                                    <Badge variant="outline" className="text-orange-600 border-orange-200">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      {t('status.pending')}
+                                    </Badge>
+                                  ) : (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleFriendRequest(request.id, 'accept')}
+                                        className="flex items-center space-x-1 bg-green-600 hover:bg-green-700"
+                                      >
+                                        <Check className="h-4 w-4" />
+                                        <span>{t('actions.accept')}</span>
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleFriendRequest(request.id, 'reject')}
+                                        className="flex items-center space-x-1"
+                                      >
+                                        <X className="h-4 w-4" />
+                                        <span>{t('actions.reject')}</span>
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            },
+            {
+              value: "connected", 
+              label: t('tabs.connected'),
+              icon: <UserCheck className="h-4 w-4" />,
+              content: (
+                <div className="space-y-4">
+                  {friendRequests.filter(r => r.status === 'accepted').length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <UserCheck className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noConnectedContacts')}</h3>
+                        <p className="text-gray-600 text-center max-w-sm">
+                          {t('messages.noConnectedContactsDescription')}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-2">
+                      {friendRequests.filter(r => r.status === 'accepted').map((request) => {
+                        const otherUser = request.senderId === user?.id ? request.receiver : request.sender;
+                        const otherUserId = request.senderId === user?.id ? request.receiverId : request.senderId;
+                        
+                        return (
+                          <Card key={request.id} className="hover:shadow-md transition-shadow">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <Avatar className="h-12 w-12">
+                                    <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                    <AvatarFallback>
+                                      {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {getUserDisplayName(otherUser!)}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">@{otherUser?.username}</p>
+                                    <div className="flex items-center space-x-1 mt-1">
+                                      <div className={`w-2 h-2 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                      <span className="text-xs text-gray-500">
+                                        {otherUser?.isOnline ? t('status.online') : t('status.offline')}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => startConversation(otherUserId)}
+                                    className="flex items-center space-x-1"
+                                  >
+                                    <MessageSquare className="h-4 w-4" />
+                                    <span>{t('actions.message')}</span>
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            },
+            {
+              value: "refused",
+              label: t('tabs.refused'),
+              icon: <UserX className="h-4 w-4" />,
+              content: (
+                <div className="space-y-4">
+                  {friendRequests.filter(r => r.status === 'rejected').length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <UserX className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noRefusedRequests')}</h3>
+                        <p className="text-gray-600 text-center max-w-sm">
+                          {t('messages.noRefusedRequestsDescription')}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-2">
+                      {friendRequests.filter(r => r.status === 'rejected').map((request) => {
+                        const isCurrentUserSender = request.senderId === user?.id;
+                        const otherUser = isCurrentUserSender ? request.receiver : request.sender;
+                        const otherUserId = isCurrentUserSender ? request.receiverId : request.senderId;
+                        
+                        return (
+                          <Card key={request.id} className="hover:shadow-md transition-shadow">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <Avatar className="h-12 w-12">
+                                    <AvatarImage src={otherUser?.avatar} alt={getUserDisplayName(otherUser!)} />
+                                    <AvatarFallback>
+                                      {getUserDisplayName(otherUser!).slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900">
+                                      {getUserDisplayName(otherUser!)}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">@{otherUser?.username}</p>
+                                    <p className="text-xs text-gray-500">
+                                      {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString('pt-BR') })}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-2">
+                                  {isCurrentUserSender ? (
+                                    <Badge variant="outline" className="text-red-600 border-red-200">
+                                      <UserX className="h-3 w-3 mr-1" />
+                                      {t('status.rejected')}
+                                    </Badge>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => sendFriendRequest(otherUserId)}
+                                      className="flex items-center space-x-1"
+                                    >
+                                      <UserPlus className="h-4 w-4" />
+                                      <span>{t('actions.resend')}</span>
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            },
+            {
+              value: "affiliates",
+              label: t('tabs.affiliates'),
+              icon: <Share2 className="h-4 w-4" />,
+              content: (
+                <div className="space-y-4">
+                  {affiliateRelations.length === 0 ? (
+                    <Card>
+                      <CardContent className="flex flex-col items-center justify-center py-12">
+                        <Share2 className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noAffiliateContacts')}</h3>
+                        <p className="text-gray-600 text-center max-w-sm">
+                          {t('messages.noAffiliateContactsDescription')}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-2">
+                      {affiliateRelations.map((relation) => (
+                        <Card key={relation.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                <Avatar className="h-12 w-12">
+                                  <AvatarImage src={relation.referredUser.avatar} alt={getUserDisplayName(relation.referredUser)} />
+                                  <AvatarFallback>
+                                    {getUserDisplayName(relation.referredUser).slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    {getUserDisplayName(relation.referredUser)}
+                                  </h3>
+                                  <p className="text-sm text-gray-600">@{relation.referredUser.username}</p>
+                                  
+                                  {/* Informations détaillées */}
+                                  <div className="space-y-2 mt-3">
+                                    {/* Email si disponible */}
+                                    {relation.referredUser.email && (
+                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
+                                        <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                          <span className="text-xs text-gray-500 uppercase tracking-wide">
+                                            {t('messages.emailAddress')}
+                                          </span>
+                                          <p className="text-sm text-gray-700 truncate">
+                                            {relation.referredUser.email}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Lien d'invitation utilisé */}
+                                    <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-md">
+                                      <Link className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <span className="text-xs text-blue-500 uppercase tracking-wide">
+                                          {t('messages.linkUsed')}
+                                        </span>
+                                        <p className="text-sm text-blue-700 font-medium truncate">
+                                          {relation.affiliateToken.name}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      {/* Date d'inscription */}
+                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
+                                        <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                        <div className="flex-1">
+                                          <span className="text-xs text-gray-500 uppercase tracking-wide block">
+                                            {t('messages.registeredAt')}
+                                          </span>
+                                          <p className="text-sm text-gray-700">
+                                            {new Date(relation.referredUser.createdAt).toLocaleDateString('fr-FR', {
+                                              day: 'numeric',
+                                              month: 'short',
+                                              year: 'numeric'
+                                            })}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Date de jointure via le lien */}
+                                      <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md">
+                                        <UserCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                        <div className="flex-1">
+                                          <span className="text-xs text-green-600 uppercase tracking-wide block">
+                                            {t('messages.joinedOn')}
+                                          </span>
+                                          <p className="text-sm text-green-700 font-medium">
+                                            {new Date(relation.createdAt).toLocaleDateString('fr-FR', {
+                                              day: 'numeric',
+                                              month: 'short',
+                                              year: 'numeric'
+                                            })}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Statut en ligne/hors ligne */}
+                                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                      <div className="flex items-center space-x-2">
+                                        <div className={`w-3 h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                        <span className="text-sm text-gray-700">
+                                          {relation.referredUser.isOnline ? t('status.online') : t('status.offline')}
+                                        </span>
+                                      </div>
+                                      {relation.referredUser.isOnline && (
+                                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                                          Actif
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => startConversation(relation.referredUser.id)}
+                                  className="flex items-center space-x-1"
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                  <span>{t('actions.message')}</span>
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          ]}
+          mobileBreakpoint="md"
+          className="mb-6"
+        />
 
-        {/* Modal d'affiliation */}
+{/* Modal d'affiliation */}
         <ShareAffiliateModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
