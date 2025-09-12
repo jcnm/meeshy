@@ -207,15 +207,6 @@
     "errorCreatingLink": "خطأ في إنشاء الرابط",
     "createLinkButton": "زر إنشاء الرابط"
   },
-  "bubbleStream": {
-    "edit": "تعديل",
-    "delete": "حذف",
-    "deliveryStatus": {
-      "sent": "مرسل",
-      "delivered": "تم التسليم",
-      "read": "مقروء"
-    }
-  },
   "messages": {
     "sent": "تم إرسال الرسالة!",
     "sendError": "خطأ في إرسال الرسالة",
@@ -310,5 +301,64 @@
   "bubbleStream": {
     "user": "مستخدم",
     "users": "مستخدمون"
+  },
+  "notifications": {
+    "pageTitle": "الإشعارات",
+    "unreadCount": {
+      "single": "{count} إشعار غير مقروء",
+      "plural": "{count} إشعارات غير مقروءة",
+      "allRead": "تم قراءة جميع الإشعارات",
+      "empty": "لا توجد إشعارات"
+    },
+    "preferences": "إعدادات الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "systemStatus": "حالة النظام",
+    "service": "الخدمة",
+    "totalNotifications": "إجمالي الإشعارات",
+    "unread": "غير مقروء",
+    "quickActions": "الإجراءات السريعة",
+    "empty": {
+      "title": "لا توجد إشعارات",
+      "description": "ليس لديك أي إشعارات حتى الآن. ستظهر هنا عند حدوث شيء ما."
+    },
+    "types": {
+      "MESSAGE_RECEIVED": "تم استلام رسالة",
+      "USER_JOINED": "انضم مستخدم",
+      "USER_LEFT": "غادر مستخدم",
+      "CONVERSATION_CREATED": "تم إنشاء محادثة",
+      "message": "رسالة",
+      "conversation": "محادثة",
+      "system": "نظام",
+      "translation": "ترجمة"
+    },
+    "timeAgo": {
+      "now": "الآن",
+      "minute": "منذ {count} دقيقة",
+      "hour": "منذ {count} ساعة",
+      "day": "منذ {count} يوم"
+    },
+    "test": {
+      "title": "اختبار الإشعارات",
+      "description": "اختبر أنواع مختلفة من الإشعارات في النظام",
+      "clickToTest": "انقر للاختبار",
+      "types": {
+        "message": {
+          "title": "إشعار رسالة تجريبي",
+          "message": "هذا إشعار تجريبي للرسائل الجديدة"
+        },
+        "conversation": {
+          "title": "إشعار محادثة تجريبي",
+          "message": "هذا إشعار تجريبي لأحداث المحادثة"
+        },
+        "system": {
+          "title": "إشعار نظام تجريبي",
+          "message": "هذا إشعار تجريبي لأحداث النظام"
+        },
+        "translation": {
+          "title": "إشعار ترجمة تجريبي",
+          "message": "هذا إشعار تجريبي لأحداث الترجمة"
+        }
+      }
+    }
   }
 }

@@ -118,7 +118,7 @@
       "badge": "Traduction en temps réel",
       "title": "Communiquez sans",
       "titleHighlight": "barrières linguistiques",
-      "subtitle": "Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA, directement dans votre navigateur. Aucune donnée ne quitte votre appareil.",
+      "subtitle": "Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA. Traduction rapide, précise et fiable.",
       "startFree": "Commencer gratuitement",
       "joinConversation": "Rejoindre une conversation",
       "resumeOrJoin": "Reprendre ou rejoindre une conversation"
@@ -146,7 +146,7 @@
       },
       "privacy": {
         "title": "100% Privé",
-        "description": "Traduction côté client uniquement. Vos données restent sur votre appareil."
+        "description": "Traduction côté serveur avec sécurité de niveau entreprise. Vos données sont protégées par chiffrement."
       },
       "realtime": {
         "title": "Temps Réel",
@@ -439,7 +439,7 @@
         },
         "privacy": {
           "title": "4. Confidentialité et Données",
-          "content": "Nous nous engageons à protéger votre vie privée. Les traductions sont effectuées localement dans votre navigateur lorsque possible. Aucune donnée personnelle n'est stockée sans votre consentement explicite. Consultez notre politique de confidentialité pour plus de détails."
+          "content": "Nous nous engageons à protéger votre vie privée. Les traductions sont effectuées sur nos serveurs sécurisés avec un chiffrement de niveau entreprise. Aucune donnée personnelle n'est stockée sans votre consentement explicite. Consultez notre politique de confidentialité pour plus de détails."
         },
         "intellectualProperty": {
           "title": "5. Propriété Intellectuelle",
@@ -488,7 +488,7 @@
           "translation": {
             "title": "2.2 Données de traduction",
             "list": [
-              "Messages traduits (traités localement dans votre navigateur)",
+              "Messages traduits (traités sur serveurs sécurisés)",
               "Langues source et cible",
               "Métadonnées de traduction (sans contenu des messages)"
             ]
@@ -516,7 +516,7 @@
           "title": "4. Protection de vos données",
           "local": {
             "title": "4.1 Traitement local",
-            "content": "La plupart des traductions sont effectuées directement dans votre navigateur, ce qui signifie que vos messages ne quittent jamais votre appareil."
+            "content": "Toutes les traductions sont effectuées sur nos serveurs sécurisés avec des modèles d'IA avancés, garantissant une grande précision et fiabilité."
           },
           "encryption": {
             "title": "4.2 Chiffrement",
@@ -1072,7 +1072,64 @@
       "pushNotifications": "Notifications push",
       "messageNotifications": "Notifications de messages",
       "groupNotifications": "Notifications de groupe",
-      "translationNotifications": "Notifications de traduction"
+      "translationNotifications": "Notifications de traduction",
+      "pageTitle": "Notifications",
+      "unreadCount": {
+        "single": "{{count}} notification non lue sur {{total}}",
+        "plural": "{{count}} notifications non lues sur {{total}}",
+        "allRead": "{{total}} notification{{plural}} (toutes lues)",
+        "empty": "Aucune notification"
+      },
+      "preferences": "Préférences",
+      "markAllRead": "Tout marquer",
+      "systemStatus": "Statut du Système",
+      "service": "Service de notifications",
+      "totalNotifications": "Notifications totales",
+      "unread": "Non lues",
+      "quickActions": "Actions rapides",
+      "empty": {
+        "title": "Aucune notification",
+        "description": "Vous êtes à jour ! Toutes vos notifications ont été lues."
+      },
+      "types": {
+        "MESSAGE_RECEIVED": "Message reçu",
+        "USER_JOINED": "Utilisateur rejoint",
+        "USER_LEFT": "Utilisateur parti",
+        "CONVERSATION_CREATED": "Conversation créée",
+        "message": "Message",
+        "conversation": "Conversation",
+        "system": "Système",
+        "translation": "Traduction"
+      },
+      "timeAgo": {
+        "now": "À l'instant",
+        "minute": "{{count}} min",
+        "hour": "{{count}}h",
+        "day": "{{count}}j"
+      },
+      "test": {
+        "title": "Test du Système de Notifications",
+        "description": "Testez les différents types de notifications du nouveau système unifié",
+        "clickToTest": "Cliquez sur un bouton pour créer une notification de test",
+        "types": {
+          "message": {
+            "title": "Nouveau message",
+            "message": "Vous avez reçu un nouveau message de John Doe"
+          },
+          "conversation": {
+            "title": "Membre ajouté",
+            "message": "Alice a rejoint la conversation"
+          },
+          "system": {
+            "title": "Mise à jour système",
+            "message": "Une nouvelle version est disponible"
+          },
+          "translation": {
+            "title": "Traduction disponible",
+            "message": "🇫🇷 Bonjour le monde\n🇺🇸 Hello world\n🇪🇸 Hola mundo"
+          }
+        }
+      }
     },
     "privacy": {
       "title": "Confidentialité",
@@ -1429,7 +1486,7 @@
       },
       "privacy": {
         "title": "Confidentialité",
-        "description": "Vos conversations restent privées. La traduction se fait localement sur votre appareil."
+        "description": "Vos conversations restent privées. La traduction se fait sur nos serveurs sécurisés avec une sécurité de niveau entreprise."
       }
     },
     "team": {
@@ -1538,7 +1595,7 @@
       "translation": {
         "title": "2.2 Données de traduction",
         "items": [
-          "Messages traduits (traités localement dans votre navigateur)",
+          "Messages traduits (traités sur serveurs sécurisés)",
           "Langues source et cible",
           "Métadonnées de traduction (sans contenu des messages)"
         ]
@@ -1581,7 +1638,7 @@
       "title": "4. Protection de vos données",
       "local": {
         "title": "4.1 Traitement local",
-        "content": "La plupart des traductions sont effectuées directement dans votre navigateur, ce qui signifie que vos messages ne quittent jamais votre appareil."
+        "content": "Toutes les traductions sont effectuées sur nos serveurs sécurisés avec des modèles d'IA avancés, garantissant une grande précision et fiabilité."
       },
       "encryption": {
         "title": "4.2 Chiffrement",
@@ -2506,6 +2563,77 @@
       "nicknameDescription": "Exiger un pseudo pour les utilisateurs anonymes",
       "email": "Email requis",
       "emailDescription": "Exiger un email pour les utilisateurs anonymes"
+    }
+  },
+  "contacts": {
+    "title": "Contacts",
+    "searchPlaceholder": "Rechercher contacts par nom, email ou nom d'utilisateur...",
+    "contactsFound": "{count} contact trouvé",
+    "contactsFound_plural": "{count} contacts trouvés",
+    "inviteContact": "Inviter contact",
+    "tabs": {
+      "all": "Tous",
+      "pending": "En attente",
+      "connected": "Connectés",
+      "refused": "Refusés",
+      "affiliates": "Invités",
+      "categories": "Catégories"
+    },
+    "messages": {
+      "noContacts": "Aucun contact",
+      "noContactsDescription": "Vous n'avez pas encore de contacts. Commencez par chercher des utilisateurs !",
+      "noContactsFound": "Aucun contact trouvé",
+      "noContactsFoundDescription": "Aucun contact ne correspond à votre recherche.",
+      "searchUsers": "Rechercher des utilisateurs",
+      "noPendingRequests": "Aucune demande en attente",
+      "noPendingRequestsDescription": "Vous n'avez aucune demande d'ami en attente.",
+      "noConnectedContacts": "Aucun contact connecté",
+      "noConnectedContactsDescription": "Vous n'avez pas encore de contacts connectés.",
+      "noRefusedRequests": "Aucune demande refusée",
+      "noRefusedRequestsDescription": "Vous n'avez aucune demande d'ami refusée.",
+      "noAffiliateContacts": "Aucun contact invité",
+      "noAffiliateContactsDescription": "Personne n'a encore rejoint via vos liens d'invitation.",
+      "requestSent": "Demande envoyée le {date}",
+      "requestReceived": "Demande reçue le {date}",
+      "requestRejected": "Demande refusée le {date}",
+      "joinedOn": "Rejoint via lien",
+      "inviteLink": "Lien d'invitation",
+      "linkUsed": "Lien utilisé",
+      "lastConnection": "Dernière connexion",
+      "registeredAt": "Inscrit",
+      "emailAddress": "Email"
+    },
+    "status": {
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "pending": "En attente",
+      "rejected": "Refusé"
+    },
+    "actions": {
+      "message": "Message",
+      "connection": "Connexion",
+      "accept": "Accepter",
+      "reject": "Rejeter",
+      "resend": "Renvoyer",
+      "remove": "Supprimer",
+      "viewProfile": "Voir le profil",
+      "sendMessage": "Envoyer un message",
+      "call": "Appeler"
+    },
+    "success": {
+      "friendRequestSent": "Demande d'ami envoyée",
+      "friendRequestAccepted": "Demande d'ami acceptée",
+      "friendRequestRejected": "Demande d'ami refusée",
+      "conversationCreated": "Conversation créée"
+    },
+    "errors": {
+      "sessionExpired": "Session expirée",
+      "connectionError": "Erreur de connexion",
+      "loadContactsError": "Erreur lors du chargement des contacts",
+      "searchError": "Erreur lors de la recherche",
+      "conversationCreationError": "Erreur lors de la création de la conversation",
+      "updateError": "Erreur lors de la mise à jour",
+      "sendError": "Erreur lors de l'envoi"
     }
   },
   "linkSummaryModal": {

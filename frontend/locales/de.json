@@ -118,7 +118,7 @@
       "badge": "Echtzeit-Übersetzung",
       "title": "Kommunizieren Sie ohne",
       "titleHighlight": "Sprachbarrieren",
-      "subtitle": "Meeshy übersetzt Ihre Nachrichten automatisch in Echtzeit mit KI, direkt in Ihrem Browser. Keine Daten verlassen Ihr Gerät.",
+      "subtitle": "Meeshy übersetzt Ihre Nachrichten automatisch in Echtzeit mit KI. Schnelle, präzise und zuverlässige Übersetzung.",
       "startFree": "Kostenlos starten",
       "joinConversation": "Gespräch beitreten",
       "resumeOrJoin": "Gespräch fortsetzen oder beitreten"
@@ -146,7 +146,7 @@
       },
       "privacy": {
         "title": "100% Privat",
-        "description": "Nur clientseitige Übersetzung. Ihre Daten bleiben auf Ihrem Gerät."
+        "description": "Serverseitige Übersetzung mit Unternehmenssicherheit. Ihre Daten sind mit Verschlüsselung geschützt."
       },
       "realtime": {
         "title": "Echtzeit",
@@ -1072,7 +1072,64 @@
       "pushNotifications": "Push-Benachrichtigungen",
       "messageNotifications": "Nachrichten-Benachrichtigungen",
       "groupNotifications": "Gruppen-Benachrichtigungen",
-      "translationNotifications": "Übersetzungs-Benachrichtigungen"
+      "translationNotifications": "Übersetzungs-Benachrichtigungen",
+      "pageTitle": "Benachrichtigungen",
+      "unreadCount": {
+        "single": "{{count}} ungelesene Benachrichtigung von {{total}}",
+        "plural": "{{count}} ungelesene Benachrichtigungen von {{total}}",
+        "allRead": "{{total}} Benachrichtigung{{plural}} (alle gelesen)",
+        "empty": "Keine Benachrichtigungen"
+      },
+      "preferences": "Einstellungen",
+      "markAllRead": "Alle markieren",
+      "systemStatus": "Systemstatus",
+      "service": "Benachrichtigungsdienst",
+      "totalNotifications": "Gesamte Benachrichtigungen",
+      "unread": "Ungelesen",
+      "quickActions": "Schnellaktionen",
+      "empty": {
+        "title": "Keine Benachrichtigungen",
+        "description": "Sie sind auf dem neuesten Stand! Alle Ihre Benachrichtigungen wurden gelesen."
+      },
+      "types": {
+        "MESSAGE_RECEIVED": "Nachricht erhalten",
+        "USER_JOINED": "Benutzer beigetreten",
+        "USER_LEFT": "Benutzer verlassen",
+        "CONVERSATION_CREATED": "Unterhaltung erstellt",
+        "message": "Nachricht",
+        "conversation": "Unterhaltung",
+        "system": "System",
+        "translation": "Übersetzung"
+      },
+      "timeAgo": {
+        "now": "Gerade jetzt",
+        "minute": "{{count}} Min",
+        "hour": "{{count}}h",
+        "day": "{{count}}T"
+      },
+      "test": {
+        "title": "Test des Benachrichtigungssystems",
+        "description": "Testen Sie verschiedene Arten von Benachrichtigungen des neuen einheitlichen Systems",
+        "clickToTest": "Klicken Sie auf eine Schaltfläche, um eine Testbenachrichtigung zu erstellen",
+        "types": {
+          "message": {
+            "title": "Neue Nachricht",
+            "message": "Sie haben eine neue Nachricht von John Doe erhalten"
+          },
+          "conversation": {
+            "title": "Mitglied hinzugefügt",
+            "message": "Alice ist der Unterhaltung beigetreten"
+          },
+          "system": {
+            "title": "System-Update",
+            "message": "Eine neue Version ist verfügbar"
+          },
+          "translation": {
+            "title": "Übersetzung verfügbar",
+            "message": "🇫🇷 Bonjour le monde\n🇺🇸 Hello world\n🇪🇸 Hola mundo"
+          }
+        }
+      }
     },
     "privacy": {
       "title": "Datenschutz",
@@ -2161,14 +2218,14 @@
     "welcome": "Bienvenue sur Meeshy",
     "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
     "createConversation": "Gespräch erstellen",
-    "filtreConversations": "Filtern les conversations",
-    "notConnected": "Non connecté",
-    "participantRemoved": "Participant supprimé: {userId}",
-    "participantAdded": "Participant ajouté: {userId}",
-    "errorLoadingNewConversation": "Erreur lors du chargement de la nouvelle conversation",
-    "errorLoadingConversation": "Erreur lors du chargement de la conversation",
-    "writeMessage": "Écris ton message...",
-    "addParticipant": "Ajouter un participant",
+    "filtreConversations": "Gespräche filtern",
+    "notConnected": "Nicht verbunden",
+    "participantRemoved": "Teilnehmer entfernt: {userId}",
+    "participantAdded": "Teilnehmer hinzugefügt: {userId}",
+    "errorLoadingNewConversation": "Fehler beim Laden des neuen Gesprächs",
+    "errorLoadingConversation": "Fehler beim Laden des Gesprächs",
+    "writeMessage": "Schreibe deine Nachricht...",
+    "addParticipant": "Teilnehmer hinzufügen",
     "conversations": {
       "title": "Gespräche"
     },
@@ -2178,18 +2235,18 @@
     "public": "Öffentlich",
     "private": "Privat",
     "createLink": "Link erstellen",
-    "createNewConversation": "Erstellen une nouvelle conversation",
-    "createNewLink": "Erstellen un nouveau lien",
-    "noPublicConversations": "Aucune conversation publique",
-    "noPublicConversationsFound": "Aucune conversation publique trouvée",
-    "noPrivateConversations": "Aucune conversation privée",
-    "noPrivateConversationsFound": "Aucune conversation privée trouvée",
-    "conversationDetails": "Détails de la conversation",
-    "noMessages": "Aucun message dans cette conversation",
-    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
+    "createNewConversation": "Neues Gespräch erstellen",
+    "createNewLink": "Neuen Link erstellen",
+    "noPublicConversations": "Keine öffentlichen Gespräche",
+    "noPublicConversationsFound": "Keine öffentlichen Gespräche gefunden",
+    "noPrivateConversations": "Keine privaten Gespräche",
+    "noPrivateConversationsFound": "Keine privaten Gespräche gefunden",
+    "conversationDetails": "Gesprächsdetails",
+    "noMessages": "Keine Nachrichten in diesem Gespräch",
+    "noMessagesDescription": "Beginnen Sie das Gespräch, indem Sie eine Nachricht senden!",
     "yes": "Ja",
-    "conversationLayout": "Layout de conversation",
-    "conversationSearch": "Recherche de conversation",
+    "conversationLayout": "Gesprächslayout",
+    "conversationSearch": "Gesprächssuche",
     "toasts": {
       "messages": {
         "translationInProgress": "Traduction en cours...",

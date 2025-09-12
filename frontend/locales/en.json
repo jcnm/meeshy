@@ -118,7 +118,7 @@
       "badge": "Real-time translation",
       "title": "Communicate without",
       "titleHighlight": "language barriers",
-      "subtitle": "Meeshy automatically translates your messages in real-time using AI, directly in your browser. No data leaves your device.",
+      "subtitle": "Meeshy automatically translates your messages in real-time using AI. Fast, accurate, and reliable translation.",
       "startFree": "Start for free",
       "joinConversation": "Join a conversation",
       "resumeOrJoin": "Resume or join a conversation"
@@ -146,7 +146,7 @@
       },
       "privacy": {
         "title": "100% Private",
-        "description": "Client-side translation only. Your data stays on your device."
+        "description": "Server-side translation with enterprise-grade security. Your data is protected with encryption."
       },
       "realtime": {
         "title": "Real-time",
@@ -212,7 +212,7 @@
         },
         "privacy": {
           "title": "Privacy Respect",
-          "description": "Your conversations remain private and secure. and soon, translations done locally in your browser."
+          "description": "Your conversations remain private and secure with server-side translation powered by advanced AI models."
         }
       },
       "team": {
@@ -439,7 +439,7 @@
         },
         "privacy": {
           "title": "4. Privacy and Data",
-          "content": "We are committed to protecting your privacy. Translations are performed locally in your browser when possible. No personal data is stored without your explicit consent. See our privacy policy for more details."
+          "content": "We are committed to protecting your privacy. Translations are performed on our secure servers with enterprise-grade encryption. No personal data is stored without your explicit consent. See our privacy policy for more details."
         },
         "intellectualProperty": {
           "title": "5. Intellectual Property",
@@ -488,7 +488,7 @@
           "translation": {
             "title": "2.2 Translation data",
             "list": [
-              "Translated messages (processed locally in your browser)",
+              "Translated messages (processed on secure servers)",
               "Source and target languages",
               "Translation metadata (without message content)"
             ]
@@ -516,7 +516,7 @@
           "title": "4. Protection of your data",
           "local": {
             "title": "4.1 Local processing",
-            "content": "Most translations are performed directly in your browser, meaning your messages never leave your device."
+            "content": "All translations are performed on our secure servers with advanced AI models, ensuring high accuracy and reliability."
           },
           "encryption": {
             "title": "4.2 Encryption",
@@ -1112,7 +1112,64 @@
       "pushNotifications": "Push notifications",
       "messageNotifications": "Message notifications",
       "groupNotifications": "Group notifications",
-      "translationNotifications": "Translation notifications"
+      "translationNotifications": "Translation notifications",
+      "pageTitle": "Notifications",
+      "unreadCount": {
+        "single": "{{count}} unread notification out of {{total}}",
+        "plural": "{{count}} unread notifications out of {{total}}",
+        "allRead": "{{total}} notification{{plural}} (all read)",
+        "empty": "No notifications"
+      },
+      "preferences": "Preferences",
+      "markAllRead": "Mark all",
+      "systemStatus": "System Status",
+      "service": "Notification service",
+      "totalNotifications": "Total notifications",
+      "unread": "Unread",
+      "quickActions": "Quick actions",
+      "empty": {
+        "title": "No notifications",
+        "description": "You're all caught up! All your notifications have been read."
+      },
+      "types": {
+        "MESSAGE_RECEIVED": "Message received",
+        "USER_JOINED": "User joined",
+        "USER_LEFT": "User left",
+        "CONVERSATION_CREATED": "Conversation created",
+        "message": "Message",
+        "conversation": "Conversation",
+        "system": "System",
+        "translation": "Translation"
+      },
+      "timeAgo": {
+        "now": "Just now",
+        "minute": "{{count}} min",
+        "hour": "{{count}}h",
+        "day": "{{count}}d"
+      },
+      "test": {
+        "title": "Notification System Test",
+        "description": "Test different types of notifications from the new unified system",
+        "clickToTest": "Click a button to create a test notification",
+        "types": {
+          "message": {
+            "title": "New message",
+            "message": "You have received a new message from John Doe"
+          },
+          "conversation": {
+            "title": "Member added",
+            "message": "Alice joined the conversation"
+          },
+          "system": {
+            "title": "System update",
+            "message": "A new version is available"
+          },
+          "translation": {
+            "title": "Translation available",
+            "message": "🇫🇷 Bonjour le monde\n🇺🇸 Hello world\n🇪🇸 Hola mundo"
+          }
+        }
+      }
     },
     "privacy": {
       "title": "Privacy",
@@ -1426,7 +1483,7 @@
       },
       "privacy": {
         "title": "Privacy",
-        "description": "Your conversations remain private. Translation happens locally on your device."
+        "description": "Your conversations remain private. Translation happens on our secure servers with enterprise-grade security."
       }
     },
     "team": {
@@ -1459,6 +1516,10 @@
     "phone": {
       "label": "Phone",
       "value": "+33 (0)1 47 17 67 00"
+    },
+    "availability": {
+      "title": "Availability",
+      "description": "We are available 24/7 to support you"
     },
     "hours": {
       "title": "Opening Hours",
@@ -1532,7 +1593,7 @@
       "translation": {
         "title": "2.2 Translation Data",
         "items": [
-          "Translated messages (processed locally in your browser)",
+          "Translated messages (processed on secure servers)",
           "Source and target languages",
           "Translation metadata (without message content)"
         ]
@@ -1575,7 +1636,7 @@
       "title": "4. Data Protection",
       "local": {
         "title": "4.1 Local Processing",
-        "content": "Most translations are performed directly in your browser, which means your messages never leave your device."
+        "content": "All translations are performed on our secure servers with advanced AI models, ensuring high accuracy and reliability."
       },
       "encryption": {
         "title": "4.2 Encryption",
@@ -2530,5 +2591,75 @@
     "email": "Email",
     "close": "Close",
     "copyLink": "Copy link"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "searchPlaceholder": "Search contacts by name, email or username...",
+    "contactsFound": "{count} contact found",
+    "contactsFound_plural": "{count} contacts found",
+    "inviteContact": "Invite contact",
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "connected": "Connected",
+      "refused": "Refused",
+      "affiliates": "Invited"
+    },
+    "messages": {
+      "noContacts": "No contacts",
+      "noContactsDescription": "You don't have any contacts yet. Start by searching for users!",
+      "noContactsFound": "No contacts found",
+      "noContactsFoundDescription": "No contacts match your search.",
+      "searchUsers": "Search users",
+      "noPendingRequests": "No pending requests",
+      "noPendingRequestsDescription": "You have no pending friend requests.",
+      "noConnectedContacts": "No connected contacts",
+      "noConnectedContactsDescription": "You don't have any connected contacts yet.",
+      "noRefusedRequests": "No refused requests",
+      "noRefusedRequestsDescription": "You have no refused friend requests.",
+      "noAffiliateContacts": "No invited contacts",
+      "noAffiliateContactsDescription": "No one has joined yet via your invitation links.",
+      "requestSent": "Request sent on {date}",
+      "requestReceived": "Request received on {date}",
+      "requestRejected": "Request rejected on {date}",
+      "joinedOn": "Joined on {date}",
+      "inviteLink": "Invitation link",
+      "linkUsed": "Link used",
+      "lastConnection": "Last connection",
+      "registeredAt": "Registered on",
+      "emailAddress": "Email address"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "actions": {
+      "message": "Message",
+      "connection": "Connection",
+      "accept": "Accept",
+      "reject": "Reject",
+      "resend": "Resend",
+      "remove": "Remove",
+      "viewProfile": "View profile",
+      "sendMessage": "Send message",
+      "call": "Call"
+    },
+    "success": {
+      "friendRequestSent": "Friend request sent",
+      "friendRequestAccepted": "Friend request accepted",
+      "friendRequestRejected": "Friend request rejected",
+      "conversationCreated": "Conversation created"
+    },
+    "errors": {
+      "sessionExpired": "Session expired",
+      "connectionError": "Connection error",
+      "loadContactsError": "Error loading contacts",
+      "searchError": "Search error",
+      "conversationCreationError": "Error creating conversation",
+      "updateError": "Update error",
+      "sendError": "Send error"
+    }
   }
 }

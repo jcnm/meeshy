@@ -118,7 +118,7 @@
       "badge": "Tradução em tempo real",
       "title": "Comunique-se sem",
       "titleHighlight": "barreiras linguísticas",
-      "subtitle": "O Meeshy traduz automaticamente suas mensagens em tempo real usando IA, diretamente no seu navegador. Nenhum dado sai do seu dispositivo.",
+      "subtitle": "O Meeshy traduz automaticamente suas mensagens em tempo real usando IA. Tradução rápida, precisa e confiável.",
       "startFree": "Começar gratuitamente",
       "joinConversation": "Entrar em uma conversa",
       "resumeOrJoin": "Retomar ou entrar em uma conversa"
@@ -146,7 +146,7 @@
       },
       "privacy": {
         "title": "100% Privado",
-        "description": "Tradução apenas no lado do cliente. Seus dados permanecem no seu dispositivo."
+        "description": "Tradução do lado do servidor com segurança de nível empresarial. Seus dados estão protegidos com criptografia."
       },
       "realtime": {
         "title": "Tempo Real",
@@ -1124,7 +1124,64 @@
       "pushNotifications": "Notificações push",
       "messageNotifications": "Notificações de mensagem",
       "groupNotifications": "Notificações de grupo",
-      "translationNotifications": "Notificações de tradução"
+      "translationNotifications": "Notificações de tradução",
+      "pageTitle": "Notificações",
+      "unreadCount": {
+        "single": "{{count}} notificação não lida de {{total}}",
+        "plural": "{{count}} notificações não lidas de {{total}}",
+        "allRead": "{{total}} notificação{{plural}} (todas lidas)",
+        "empty": "Nenhuma notificação"
+      },
+      "preferences": "Preferências",
+      "markAllRead": "Marcar todas",
+      "systemStatus": "Status do Sistema",
+      "service": "Serviço de notificações",
+      "totalNotifications": "Total de notificações",
+      "unread": "Não lidas",
+      "quickActions": "Ações rápidas",
+      "empty": {
+        "title": "Nenhuma notificação",
+        "description": "Você está em dia! Todas as suas notificações foram lidas."
+      },
+      "types": {
+        "MESSAGE_RECEIVED": "Mensagem recebida",
+        "USER_JOINED": "Usuário entrou",
+        "USER_LEFT": "Usuário saiu",
+        "CONVERSATION_CREATED": "Conversa criada",
+        "message": "Mensagem",
+        "conversation": "Conversa",
+        "system": "Sistema",
+        "translation": "Tradução"
+      },
+      "timeAgo": {
+        "now": "Agora mesmo",
+        "minute": "{{count}} min",
+        "hour": "{{count}}h",
+        "day": "{{count}}d"
+      },
+      "test": {
+        "title": "Teste do Sistema de Notificações",
+        "description": "Teste diferentes tipos de notificações do novo sistema unificado",
+        "clickToTest": "Clique em um botão para criar uma notificação de teste",
+        "types": {
+          "message": {
+            "title": "Nova mensagem",
+            "message": "Você recebeu uma nova mensagem de John Doe"
+          },
+          "conversation": {
+            "title": "Membro adicionado",
+            "message": "Alice entrou na conversa"
+          },
+          "system": {
+            "title": "Atualização do sistema",
+            "message": "Uma nova versão está disponível"
+          },
+          "translation": {
+            "title": "Tradução disponível",
+            "message": "🇫🇷 Bonjour le monde\n🇺🇸 Hello world\n🇪🇸 Hola mundo"
+          }
+        }
+      }
     },
     "privacy": {
       "title": "Privacidade",
@@ -2175,6 +2232,7 @@
     "errorLoadingNewConversation": "Erro ao carregar nova conversa",
     "errorLoadingConversation": "Erro ao carregar conversa",
     "writeMessage": "Escreva sua mensagem...",
+    "addParticipant": "Adicionar participante",
     "conversations": {
       "title": "Conversas"
     },
@@ -2184,6 +2242,12 @@
     "public": "Público",
     "private": "Privado",
     "createLink": "Criar link",
+    "createNewConversation": "Criar nova conversa",
+    "createNewLink": "Criar novo link",
+    "noPublicConversations": "Nenhuma conversa pública",
+    "noPublicConversationsFound": "Nenhuma conversa pública encontrada",
+    "noPrivateConversations": "Nenhuma conversa privada",
+    "noPrivateConversationsFound": "Nenhuma conversa privada encontrada",
     "conversationDetails": "Detalhes da conversa",
     "noMessages": "Nenhuma mensagem nesta conversa",
     "noMessagesDescription": "Inicie a conversa enviando uma mensagem!",

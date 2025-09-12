@@ -1,0 +1,291 @@
+/* Styles responsive optimisés pour les conversations - Approche moderne sans hacks */
+
+/* Transitions fluides pour les changements d'état */
+.conversation-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optimisations pour les avatars */
+[data-slot="avatar-fallback"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Scroll optimisé pour les messages */
+.scroll-optimized {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-optimized::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scroll-optimized::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-optimized::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 2px;
+}
+
+.scroll-optimized::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Line clamp pour les textes longs */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Optimisations pour les modales sur mobile */
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    margin: 0.5rem !important;
+    max-height: calc(100vh - 1rem) !important;
+    width: calc(100vw - 1rem) !important;
+  }
+  
+  [data-radix-dialog-content] .p-6 {
+    padding: 1rem !important;
+  }
+  
+  [data-radix-dialog-content] h2 {
+    font-size: 1.125rem !important;
+    line-height: 1.5rem !important;
+  }
+  
+  [data-radix-dialog-content] button {
+    min-height: 2.5rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  [data-radix-dialog-content] input,
+  [data-radix-dialog-content] textarea,
+  [data-radix-dialog-content] select {
+    min-height: 2.5rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  [data-radix-dialog-content] .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  [data-radix-dialog-content] .grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Optimisations responsive pour les conversations */
+@media (max-width: 640px) {
+  /* Réduire les espacements sur très petits écrans */
+  .conversation-mobile-compact {
+    padding: 0.5rem !important;
+  }
+  
+  .conversation-mobile-compact .space-y-2 > * + * {
+    margin-top: 0.25rem !important;
+  }
+  
+  .conversation-mobile-compact .space-y-4 > * + * {
+    margin-top: 0.5rem !important;
+  }
+  
+  /* Optimiser les avatars sur mobile */
+  .conversation-mobile-compact [data-slot="avatar-fallback"] {
+    font-size: 0.625rem !important;
+  }
+  
+  /* Réduire la hauteur des boutons sur mobile */
+  .conversation-mobile-compact button {
+    min-height: 2rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  /* Optimiser les inputs sur mobile */
+  .conversation-mobile-compact input,
+  .conversation-mobile-compact textarea {
+    min-height: 2rem !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Améliorations pour les écrans moyens */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Optimiser l'espacement pour les tablettes */
+  .conversation-tablet-optimized {
+    padding: 0.75rem !important;
+  }
+  
+  .conversation-tablet-optimized .space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+  }
+  
+  .conversation-tablet-optimized .space-y-4 > * + * {
+    margin-top: 0.75rem !important;
+  }
+}
+
+/* Optimisations pour les très grands écrans */
+@media (min-width: 1536px) {
+  /* Augmenter légèrement les espacements sur les très grands écrans */
+  .conversation-large-screen {
+    padding: 1.5rem !important;
+  }
+  
+  .conversation-large-screen .space-y-4 > * + * {
+    margin-top: 1.5rem !important;
+  }
+}
+
+/* Masquer les toasts sur mobile pour une meilleure UX */
+@media (max-width: 768px) {
+  .sonner-toaster,
+  [data-sonner-toaster],
+  .toast-container,
+  [data-hot-toast],
+  .notification-toast,
+  .message-toast,
+  .connection-toast,
+  .translation-toast,
+  .toast-overlay,
+  .notification-overlay {
+    display: none !important;
+  }
+}
+
+/* Optimisations pour les performances */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-scroll {
+  will-change: scroll-position;
+}
+
+/* Animations fluides */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Focus visible pour l'accessibilité */
+.focus-visible:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Optimisations pour les performances de rendu */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Styles pour les états de chargement */
+.loading-skeleton {
+  background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted-foreground) / 0.1) 50%, hsl(var(--muted)) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Optimisations pour les interactions tactiles */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Styles pour les états d'erreur */
+.error-state {
+  border-color: hsl(var(--destructive));
+  background-color: hsl(var(--destructive) / 0.05);
+}
+
+/* Styles pour les états de succès */
+.success-state {
+  border-color: hsl(var(--primary));
+  background-color: hsl(var(--primary) / 0.05);
+}
+
+/* Optimisations pour les textes longs */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Styles pour les badges et indicateurs */
+.badge-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Optimisations pour les transitions de page */
+.page-transition {
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+}

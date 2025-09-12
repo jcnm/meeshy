@@ -118,7 +118,7 @@
       "badge": "Traducción en tiempo real",
       "title": "Comuníquese sin",
       "titleHighlight": "barreras lingüísticas",
-      "subtitle": "Meeshy traduce automáticamente sus mensajes en tiempo real con IA, directamente en su navegador. Ningún dato sale de su dispositivo.",
+      "subtitle": "Meeshy traduce automáticamente sus mensajes en tiempo real con IA. Traducción rápida, precisa y confiable.",
       "startFree": "Comenzar gratis",
       "joinConversation": "Unirse a una conversación",
       "resumeOrJoin": "Reanudar o unirse a una conversación"
@@ -146,7 +146,7 @@
       },
       "privacy": {
         "title": "100% Privado",
-        "description": "Traducción solo del lado del cliente. Sus datos permanecen en su dispositivo."
+        "description": "Traducción del lado del servidor con seguridad de nivel empresarial. Sus datos están protegidos con cifrado."
       },
       "realtime": {
         "title": "Tiempo Real",
@@ -1066,13 +1066,70 @@
       "translationHistory": "Historique des traductions"
     },
     "notifications": {
-      "title": "Notifications",
-      "description": "Configurez vos préférences de notifications",
-      "emailNotifications": "Notifications par email",
-      "pushNotifications": "Notifications push",
-      "messageNotifications": "Notifications de messages",
-      "groupNotifications": "Notifications de groupe",
-      "translationNotifications": "Notifications de traduction"
+      "title": "Notificaciones",
+      "description": "Configura tus preferencias de notificaciones",
+      "emailNotifications": "Notificaciones por email",
+      "pushNotifications": "Notificaciones push",
+      "messageNotifications": "Notificaciones de mensajes",
+      "groupNotifications": "Notificaciones de grupo",
+      "translationNotifications": "Notificaciones de traducción",
+      "pageTitle": "Notificaciones",
+      "unreadCount": {
+        "single": "{{count}} notificación sin leer de {{total}}",
+        "plural": "{{count}} notificaciones sin leer de {{total}}",
+        "allRead": "{{total}} notificación{{plural}} (todas leídas)",
+        "empty": "Ninguna notificación"
+      },
+      "preferences": "Preferencias",
+      "markAllRead": "Marcar todas",
+      "systemStatus": "Estado del Sistema",
+      "service": "Servicio de notificaciones",
+      "totalNotifications": "Total de notificaciones",
+      "unread": "Sin leer",
+      "quickActions": "Acciones rápidas",
+      "empty": {
+        "title": "Ninguna notificación",
+        "description": "¡Estás al día! Todas tus notificaciones han sido leídas."
+      },
+      "types": {
+        "MESSAGE_RECEIVED": "Mensaje recibido",
+        "USER_JOINED": "Usuario se unió",
+        "USER_LEFT": "Usuario se fue",
+        "CONVERSATION_CREATED": "Conversación creada",
+        "message": "Mensaje",
+        "conversation": "Conversación",
+        "system": "Sistema",
+        "translation": "Traducción"
+      },
+      "timeAgo": {
+        "now": "Ahora mismo",
+        "minute": "{{count}} min",
+        "hour": "{{count}}h",
+        "day": "{{count}}d"
+      },
+      "test": {
+        "title": "Prueba del Sistema de Notificaciones",
+        "description": "Prueba diferentes tipos de notificaciones del nuevo sistema unificado",
+        "clickToTest": "Haz clic en un botón para crear una notificación de prueba",
+        "types": {
+          "message": {
+            "title": "Nuevo mensaje",
+            "message": "Has recibido un nuevo mensaje de John Doe"
+          },
+          "conversation": {
+            "title": "Miembro añadido",
+            "message": "Alice se unió a la conversación"
+          },
+          "system": {
+            "title": "Actualización del sistema",
+            "message": "Una nueva versión está disponible"
+          },
+          "translation": {
+            "title": "Traducción disponible",
+            "message": "🇫🇷 Bonjour le monde\n🇺🇸 Hello world\n🇪🇸 Hola mundo"
+          }
+        }
+      }
     },
     "privacy": {
       "title": "Confidentialité",
@@ -1429,7 +1486,7 @@
       },
       "privacy": {
         "title": "Confidentialité",
-        "description": "Vos conversations restent privées. La traduction se fait localement sur su appareil."
+        "description": "Sus conversaciones permanecen privadas. La traducción se realiza en nuestros servidores seguros con seguridad de nivel empresarial."
       }
     },
     "team": {
@@ -1538,7 +1595,7 @@
       "translation": {
         "title": "2.2 Données de traduction",
         "items": [
-          "Messages traduits (traités localement dans su navigateur)",
+          "Mensajes traducidos (procesados en servidores seguros)",
           "Langues source et cible",
           "Métadonnées de traduction (sans contenu des messages)"
         ]
@@ -1581,7 +1638,7 @@
       "title": "4. Protection de vos données",
       "local": {
         "title": "4.1 Traitement local",
-        "content": "La plupart des traductions sont effectuées directement dans su navigateur, ce qui signifie que vos messages ne quittent jamais su appareil."
+        "content": "Todas las traducciones se realizan en nuestros servidores seguros con modelos de IA avanzados, garantizando alta precisión y confiabilidad."
       },
       "encryption": {
         "title": "4.2 Chiffrement",
@@ -2160,36 +2217,36 @@
     "chooseConversationDescription": "Sélectionnez une conversation dans la liste pour commencer à discuter.",
     "welcome": "Bienvenue sur Meeshy",
     "welcomeDescription": "Connectez-vous avec vos amis et collègues en temps réel avec traduction automatique.",
-    "createConversation": "Crear une conversation",
-    "filtreConversations": "Filtrar les conversations",
-    "notConnected": "Non connecté",
-    "participantRemoved": "Participant supprimé: {userId}",
-    "participantAdded": "Participant ajouté: {userId}",
-    "errorLoadingNewConversation": "Error lors du chargement de la nouvelle conversation",
-    "errorLoadingConversation": "Error lors du chargement de la conversation",
-    "writeMessage": "Écris ton message...",
-    "addParticipant": "Agregar un participant",
+    "createConversation": "Crear conversación",
+    "filtreConversations": "Filtrar conversaciones",
+    "notConnected": "No conectado",
+    "participantRemoved": "Participante eliminado: {userId}",
+    "participantAdded": "Participante agregado: {userId}",
+    "errorLoadingNewConversation": "Error al cargar la nueva conversación",
+    "errorLoadingConversation": "Error al cargar la conversación",
+    "writeMessage": "Escribe tu mensaje...",
+    "addParticipant": "Agregar participante",
     "conversations": {
-      "title": "Conversations"
+      "title": "Conversaciones"
     },
-    "no": "Non",
-    "connected": "Connecté",
+    "no": "No",
+    "connected": "Conectado",
     "debug": "Debug: {count} conversations | Loading: {loading} | User: {user}",
-    "public": "Public",
-    "private": "Privé",
-    "createLink": "Crear un lien",
-    "createNewConversation": "Crear une nouvelle conversation",
-    "createNewLink": "Crear un nouveau lien",
-    "noPublicConversations": "Aucune conversation publique",
-    "noPublicConversationsFound": "Aucune conversation publique trouvée",
-    "noPrivateConversations": "Aucune conversation privée",
-    "noPrivateConversationsFound": "Aucune conversation privée trouvée",
-    "conversationDetails": "Détails de la conversation",
-    "noMessages": "Aucun message dans cette conversation",
-    "noMessagesDescription": "Commencez la conversation en envoyant un message !",
-    "yes": "Oui",
-    "conversationLayout": "Layout de conversation",
-    "conversationSearch": "Recherche de conversation",
+    "public": "Público",
+    "private": "Privado",
+    "createLink": "Crear enlace",
+    "createNewConversation": "Crear nueva conversación",
+    "createNewLink": "Crear nuevo enlace",
+    "noPublicConversations": "No hay conversaciones públicas",
+    "noPublicConversationsFound": "No se encontraron conversaciones públicas",
+    "noPrivateConversations": "No hay conversaciones privadas",
+    "noPrivateConversationsFound": "No se encontraron conversaciones privadas",
+    "conversationDetails": "Detalles de la conversación",
+    "noMessages": "No hay mensajes en esta conversación",
+    "noMessagesDescription": "¡Comience la conversación enviando un mensaje!",
+    "yes": "Sí",
+    "conversationLayout": "Diseño de conversación",
+    "conversationSearch": "Búsqueda de conversación",
     "toasts": {
       "messages": {
         "translationInProgress": "Traduction en cours...",

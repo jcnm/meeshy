@@ -118,7 +118,7 @@
       "badge": "Traduction en temps réel",
       "title": "Communiquez sans",
       "titleHighlight": "barrières linguistiques",
-      "subtitle": "Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA, directement dans votre navigateur. Aucune donnée ne quitte votre appareil.",
+      "subtitle": "Meeshy traduce automaticamente i tuoi messaggi in tempo reale grazie all'IA. Traduzione veloce, precisa e affidabile.",
       "startFree": "Commencer gratuitement",
       "joinConversation": "Rejoindre une conversation",
       "resumeOrJoin": "Reprendre ou rejoindre une conversation"
@@ -146,7 +146,7 @@
       },
       "privacy": {
         "title": "100% Privé",
-        "description": "Traduction côté client uniquement. Vos données restent sur votre appareil."
+        "description": "Traduzione lato server con sicurezza di livello aziendale. I tuoi dati sono protetti con crittografia."
       },
       "realtime": {
         "title": "Temps Réel",
@@ -439,7 +439,7 @@
         },
         "privacy": {
           "title": "4. Confidentialité et Données",
-          "content": "Nous nous engageons à protéger votre vie privée. Les traductions sont effectuées localement dans votre navigateur lorsque possible. Aucune donnée personnelle n'est stockée sans votre consentement explicite. Consultez notre politique de confidentialité pour plus de détails."
+          "content": "Ci impegniamo a proteggere la tua privacy. Le traduzioni vengono eseguite sui nostri server sicuri con crittografia di livello aziendale. Nessun dato personale viene memorizzato senza il tuo consenso esplicito. Consulta la nostra politica sulla privacy per maggiori dettagli."
         },
         "intellectualProperty": {
           "title": "5. Propriété Intellectuelle",
@@ -488,7 +488,7 @@
           "translation": {
             "title": "2.2 Données de traduction",
             "list": [
-              "Messages traduits (traités localement dans votre navigateur)",
+              "Messaggi tradotti (elaborati su server sicuri)",
               "Langues source et cible",
               "Métadonnées de traduction (sans contenu des messages)"
             ]
@@ -516,7 +516,7 @@
           "title": "4. Protection de vos données",
           "local": {
             "title": "4.1 Traitement local",
-            "content": "La plupart des traductions sont effectuées directement dans votre navigateur, ce qui signifie que vos messages ne quittent jamais votre appareil."
+            "content": "Tutte le traduzioni vengono eseguite sui nostri server sicuri con modelli di IA avanzati, garantendo alta precisione e affidabilità."
           },
           "encryption": {
             "title": "4.2 Chiffrement",
@@ -1066,13 +1066,70 @@
       "translationHistory": "Historique des traductions"
     },
     "notifications": {
-      "title": "Notifications",
-      "description": "Configurez vos préférences de notifications",
-      "emailNotifications": "Notifications par email",
-      "pushNotifications": "Notifications push",
-      "messageNotifications": "Notifications de messages",
-      "groupNotifications": "Notifications de groupe",
-      "translationNotifications": "Notifications de traduction"
+      "title": "Notifiche",
+      "description": "Configura le tue preferenze di notifica",
+      "emailNotifications": "Notifiche email",
+      "pushNotifications": "Notifiche push",
+      "messageNotifications": "Notifiche dei messaggi",
+      "groupNotifications": "Notifiche di gruppo",
+      "translationNotifications": "Notifiche di traduzione",
+      "pageTitle": "Notifiche",
+      "unreadCount": {
+        "single": "{{count}} notifica non letta su {{total}}",
+        "plural": "{{count}} notifiche non lette su {{total}}",
+        "allRead": "{{total}} notifica{{plural}} (tutte lette)",
+        "empty": "Nessuna notifica"
+      },
+      "preferences": "Preferenze",
+      "markAllRead": "Segna tutte",
+      "systemStatus": "Stato del Sistema",
+      "service": "Servizio notifiche",
+      "totalNotifications": "Totale notifiche",
+      "unread": "Non lette",
+      "quickActions": "Azioni rapide",
+      "empty": {
+        "title": "Nessuna notifica",
+        "description": "Sei aggiornato! Tutte le tue notifiche sono state lette."
+      },
+      "types": {
+        "MESSAGE_RECEIVED": "Messaggio ricevuto",
+        "USER_JOINED": "Utente entrato",
+        "USER_LEFT": "Utente uscito",
+        "CONVERSATION_CREATED": "Conversazione creata",
+        "message": "Messaggio",
+        "conversation": "Conversazione",
+        "system": "Sistema",
+        "translation": "Traduzione"
+      },
+      "timeAgo": {
+        "now": "Proprio ora",
+        "minute": "{{count}} min",
+        "hour": "{{count}}h",
+        "day": "{{count}}g"
+      },
+      "test": {
+        "title": "Test del Sistema di Notifiche",
+        "description": "Testa diversi tipi di notifiche dal nuovo sistema unificato",
+        "clickToTest": "Clicca un pulsante per creare una notifica di test",
+        "types": {
+          "message": {
+            "title": "Nuovo messaggio",
+            "message": "Hai ricevuto un nuovo messaggio da John Doe"
+          },
+          "conversation": {
+            "title": "Membro aggiunto",
+            "message": "Alice è entrata nella conversazione"
+          },
+          "system": {
+            "title": "Aggiornamento sistema",
+            "message": "È disponibile una nuova versione"
+          },
+          "translation": {
+            "title": "Traduzione disponibile",
+            "message": "🇫🇷 Bonjour le monde\n🇺🇸 Hello world\n🇪🇸 Hola mundo"
+          }
+        }
+      }
     },
     "privacy": {
       "title": "Confidentialité",
@@ -1429,7 +1486,7 @@
       },
       "privacy": {
         "title": "Confidentialité",
-        "description": "Vos conversations restent privées. La traduction se fait localement sur votre appareil."
+        "description": "Le tue conversazioni rimangono private. La traduzione avviene sui nostri server sicuri con sicurezza di livello aziendale."
       }
     },
     "team": {
@@ -1538,7 +1595,7 @@
       "translation": {
         "title": "2.2 Données de traduction",
         "items": [
-          "Messages traduits (traités localement dans votre navigateur)",
+          "Messaggi tradotti (elaborati su server sicuri)",
           "Langues source et cible",
           "Métadonnées de traduction (sans contenu des messages)"
         ]
@@ -1581,7 +1638,7 @@
       "title": "4. Protection de vos données",
       "local": {
         "title": "4.1 Traitement local",
-        "content": "La plupart des traductions sont effectuées directement dans votre navigateur, ce qui signifie que vos messages ne quittent jamais votre appareil."
+        "content": "Tutte le traduzioni vengono eseguite sui nostri server sicuri con modelli di IA avanzati, garantendo alta precisione e affidabilità."
       },
       "encryption": {
         "title": "4.2 Chiffrement",

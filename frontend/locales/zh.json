@@ -284,5 +284,64 @@
     "errors": {
       "loginFailed": "登录失败。请检查您的凭据。"
     }
+  },
+  "notifications": {
+    "pageTitle": "通知",
+    "unreadCount": {
+      "single": "{count}条未读通知",
+      "plural": "{count}条未读通知",
+      "allRead": "所有通知已读",
+      "empty": "没有通知"
+    },
+    "preferences": "通知设置",
+    "markAllRead": "全部标记为已读",
+    "systemStatus": "系统状态",
+    "service": "服务",
+    "totalNotifications": "总通知数",
+    "unread": "未读",
+    "quickActions": "快速操作",
+    "empty": {
+      "title": "没有通知",
+      "description": "您还没有任何通知。当有事情发生时，它们会出现在这里。"
+    },
+    "types": {
+      "MESSAGE_RECEIVED": "收到消息",
+      "USER_JOINED": "用户加入",
+      "USER_LEFT": "用户离开",
+      "CONVERSATION_CREATED": "创建对话",
+      "message": "消息",
+      "conversation": "对话",
+      "system": "系统",
+      "translation": "翻译"
+    },
+    "timeAgo": {
+      "now": "现在",
+      "minute": "{count}分钟前",
+      "hour": "{count}小时前",
+      "day": "{count}天前"
+    },
+    "test": {
+      "title": "通知测试",
+      "description": "测试系统中不同类型的通知",
+      "clickToTest": "点击测试",
+      "types": {
+        "message": {
+          "title": "测试消息通知",
+          "message": "这是新消息的测试通知"
+        },
+        "conversation": {
+          "title": "测试对话通知",
+          "message": "这是对话事件的测试通知"
+        },
+        "system": {
+          "title": "测试系统通知",
+          "message": "这是系统事件的测试通知"
+        },
+        "translation": {
+          "title": "测试翻译通知",
+          "message": "这是翻译事件的测试通知"
+        }
+      }
+    }
   }
 }

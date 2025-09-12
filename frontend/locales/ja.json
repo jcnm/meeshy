@@ -284,5 +284,64 @@
     "errors": {
       "loginFailed": "ログインに失敗しました。認証情報を確認してください。"
     }
+  },
+  "notifications": {
+    "pageTitle": "通知",
+    "unreadCount": {
+      "single": "{count}件の未読通知",
+      "plural": "{count}件の未読通知",
+      "allRead": "すべての通知を既読",
+      "empty": "通知はありません"
+    },
+    "preferences": "通知設定",
+    "markAllRead": "すべて既読にする",
+    "systemStatus": "システムステータス",
+    "service": "サービス",
+    "totalNotifications": "総通知数",
+    "unread": "未読",
+    "quickActions": "クイックアクション",
+    "empty": {
+      "title": "通知はありません",
+      "description": "まだ通知はありません。何かが発生すると、ここに表示されます。"
+    },
+    "types": {
+      "MESSAGE_RECEIVED": "メッセージを受信",
+      "USER_JOINED": "ユーザーが参加",
+      "USER_LEFT": "ユーザーが退出",
+      "CONVERSATION_CREATED": "会話が作成されました",
+      "message": "メッセージ",
+      "conversation": "会話",
+      "system": "システム",
+      "translation": "翻訳"
+    },
+    "timeAgo": {
+      "now": "今",
+      "minute": "{count}分前",
+      "hour": "{count}時間前",
+      "day": "{count}日前"
+    },
+    "test": {
+      "title": "通知テスト",
+      "description": "システム内のさまざまなタイプの通知をテストします",
+      "clickToTest": "クリックしてテスト",
+      "types": {
+        "message": {
+          "title": "テストメッセージ通知",
+          "message": "これは新しいメッセージのテスト通知です"
+        },
+        "conversation": {
+          "title": "テスト会話通知",
+          "message": "これは会話イベントのテスト通知です"
+        },
+        "system": {
+          "title": "テストシステム通知",
+          "message": "これはシステムイベントのテスト通知です"
+        },
+        "translation": {
+          "title": "テスト翻訳通知",
+          "message": "これは翻訳イベントのテスト通知です"
+        }
+      }
+    }
   }
 }
