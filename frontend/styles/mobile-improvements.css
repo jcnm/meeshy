@@ -340,28 +340,64 @@
     text-align: left !important;
   }
   
-  /* Zone de saisie fixe en bas */
+  /* Zone de saisie fixe en bas - CORRECTIF URGENT */
   .conversation-input-mobile {
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
     width: 100vw !important;
-    z-index: 50 !important;
+    z-index: 100 !important; /* Z-index élevé pour éviter les conflits */
     overflow-x: hidden !important;
     border-radius: 0 !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding: 0.75rem 1rem !important;
+    background: white !important;
+    border-top: 1px solid hsl(var(--border)) !important;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1) !important;
+    display: block !important;
+    visibility: visible !important;
+  }
+  
+  /* S'assurer que le MessageComposer est visible sur mobile */
+  .conversation-input-mobile .message-composer-container,
+  .conversation-input-mobile .message-composer {
+    width: 100% !important;
+    max-width: none !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Forcer l'affichage de tous les éléments de composition */
+  .conversation-input-mobile textarea,
+  .conversation-input-mobile input,
+  .conversation-input-mobile button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Correction spécifique pour les textarea expandables */
+  .conversation-input-mobile .expandable-textarea {
+    min-height: 40px !important;
+    max-height: 120px !important;
+    resize: none !important;
   }
   
   /* Ajustement du conteneur des messages pour éviter le chevauchement */
   .conversation-messages-mobile {
     padding-top: 2.5rem !important; /* Espace minimal pour l'en-tête de conversation */
-    padding-bottom: 10rem !important; /* Espace très généreux pour la zone de saisie fixe */
+    /* padding-bottom géré par Tailwind responsive dans le composant */
     margin-top: 0 !important; /* Pas de marge supplémentaire */
     width: 100% !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* S'assurer que le conteneur de conversation principal laisse de l'espace */
+  .conversation-layout-mobile {
+    padding-bottom: 12rem !important;
   }
   
   /* Liste de conversations pleine largeur et hauteur */
@@ -386,6 +422,14 @@
 .bubble-message-mobile {
   margin: 0.25rem 0 !important;
   padding: 0.5rem 0.75rem !important;
+}
+
+/* Alignement des messages avec l'approche Tailwind - les messages prennent toute la largeur de leur conteneur */
+.bubble-message {
+  width: 100% !important; /* Messages prennent toute la largeur de leur conteneur */
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
   

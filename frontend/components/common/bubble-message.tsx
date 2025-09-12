@@ -212,7 +212,7 @@ function BubbleMessageInner({
 
   // Auto-transition vers la langue système dès qu'elle est disponible
   useEffect(() => {
-    const systemLanguageTranslation = message.translations.find(t => 
+    const systemLanguageTranslation = message.translations?.find(t => 
       t.language === currentUser.systemLanguage && t.status === 'completed'
     );
     
@@ -223,7 +223,7 @@ function BubbleMessageInner({
 
   // Réinitialiser l'état de traduction forcée quand les traductions sont mises à jour
   useEffect(() => {
-    if (hasPendingForcedTranslation && message.translations.some(t => t.status === 'completed')) {
+    if (hasPendingForcedTranslation && message.translations?.some(t => t.status === 'completed')) {
       setHasPendingForcedTranslation(false);
     }
   }, [message.translations, hasPendingForcedTranslation]);
@@ -255,7 +255,7 @@ function BubbleMessageInner({
     }
     
     // Chercher la traduction pour la langue d'affichage actuelle
-    const translation = message.translations.find(t => 
+    const translation = message.translations?.find(t => 
       t.language === currentDisplayLanguage && t.status === 'completed'
     );
     
@@ -283,7 +283,7 @@ function BubbleMessageInner({
   const getMissingLanguages = () => {
     const translatedLanguages = new Set([
       message.originalLanguage,
-      ...message.translations.map(t => t.language)
+      ...(message.translations?.map(t => t.language) || [])
     ]);
     
     return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
@@ -291,7 +291,7 @@ function BubbleMessageInner({
 
   // Obtenir les traductions disponibles (pour affichage du badge)
   const getAvailableTranslations = () => {
-    return message.translations.filter(t => t.status === 'completed');
+    return message.translations?.filter(t => t.status === 'completed') || [];
   };
 
   // Vérifier si des traductions sont disponibles
@@ -451,7 +451,7 @@ function BubbleMessageInner({
     },
     // Déduplication des traductions par langue - garder la plus récente
     ...Object.values(
-      message.translations
+      (message.translations || [])
         .filter(t => t.status === 'completed' && t.language) // Filtrer les traductions valides
         .reduce((acc, t) => {
           // Garder la traduction la plus récente pour chaque langue
@@ -588,7 +588,7 @@ function BubbleMessageInner({
 
             {/* Indicateur de langue originale seulement */}
             <div className="flex items-center space-x-2">
-              {(message.translations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
+              {(message.translations?.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
                 <div className={cn("flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full", isMobile && "language-indicator-mobile")}>
                   <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
                   <span className={cn("text-blue-600 font-medium", isMobile ? "mobile-text-xs" : "text-xs")}>{t('translating')}</span>
@@ -717,7 +717,7 @@ function BubbleMessageInner({
                     }`}
                   >
                     <Languages className={`h-4 w-4 transition-transform duration-200 ${
-                      (hasPendingForcedTranslation || message.translations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) ? 'animate-pulse text-blue-600' : ''
+                      (hasPendingForcedTranslation || message.translations?.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) ? 'animate-pulse text-blue-600' : ''
                     }`} />
                     {/* Badge pour indiquer le nombre de traductions */}
                     {finalShouldShowBadge && finalBadgeCount > 0 && (
@@ -907,7 +907,7 @@ function BubbleMessageInner({
                       </>
                     )}
                   
-                    {(message.translations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
+                    {(message.translations?.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center space-x-2 text-sm text-blue-700 bg-blue-50 p-2 rounded">
                           <Loader2 className="h-3 w-3 animate-spin" />

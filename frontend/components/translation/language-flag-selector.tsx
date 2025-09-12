@@ -51,7 +51,7 @@ export function LanguageFlagSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center w-8 h-8 p-0 border-gray-200 hover:border-blue-300",
+            "justify-center w-7 h-7 sm:w-8 sm:h-8 p-0 border-gray-200 hover:border-blue-300",
             className
           )}
         >

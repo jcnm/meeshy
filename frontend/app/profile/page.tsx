@@ -16,61 +16,25 @@ import {
   Edit,
   MessageSquare,
   Users,
-  Activity,
   Globe
 } from 'lucide-react';
 import { User } from '@/types';
-import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useUser } from '@/context/AppContext';
 import { getUserInitials } from '@/utils/user';
-import { usersService } from '@/services/users.service';
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalConversations: 0,
-    totalGroups: 0,
-    totalMessages: 0,
-    translationsUsed: 0,
-  });
 
   useEffect(() => {
-    // Charger les stats une fois que l'utilisateur est disponible
-    if (user && !isAuthChecking) {
-      loadUserStats();
-    } else if (!isAuthChecking && !user) {
+    if (!isAuthChecking && !user) {
       // Rediriger si pas d'utilisateur après vérification
       router.push('/');
+    } else if (user) {
+      setIsLoading(false);
     }
   }, [user, isAuthChecking, router]);
 
-  const loadUserStats = async () => {
-    try {
-      setIsLoading(true);
-      const response = await usersService.getDashboardStats();
-      if (response.data) {
-        setStats({
-          totalConversations: response.data.stats.totalConversations,
-          totalGroups: response.data.stats.totalCommunities,
-          totalMessages: response.data.stats.totalMessages,
-          translationsUsed: response.data.stats.translationsToday,
-        });
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des statistiques:', error);
-      toast.error('Erreur lors du chargement des statistiques');
-      // Utiliser des valeurs par défaut en cas d'erreur
-      setStats({
-        totalConversations: 0,
-        totalGroups: 0,
-        totalMessages: 0,
-        translationsUsed: 0,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -172,24 +136,6 @@ export default function ProfilePage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-600">{stats.totalConversations}</div>
-                    <div className="text-sm text-gray-600">Conversations</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-green-600">{stats.totalGroups}</div>
-                    <div className="text-sm text-gray-600">Groupes</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">{stats.totalMessages}</div>
-                    <div className="text-sm text-gray-600">Messages</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{stats.translationsUsed}</div>
-                    <div className="text-sm text-gray-600">Traductions</div>
-                  </div>
-                </div>
               </div>
             </div>
           </CardContent>

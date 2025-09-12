@@ -201,7 +201,7 @@ export function useMessageTranslations({
     }
     
     // Chercher une traduction dans la langue préférée
-    const preferredTranslation = message.translations.find(t => 
+    const preferredTranslation = message.translations?.find(t => 
       t.language === preferredLanguage && t.status === 'completed'
     );
     
@@ -233,7 +233,7 @@ export function useMessageTranslations({
     }
     
     // Vérifier si la traduction existe déjà
-    const existingTranslation = message.translations.find(t => 
+    const existingTranslation = message.translations?.find(t => 
       t.language === targetLang && t.status === 'completed'
     );
     

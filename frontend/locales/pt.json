@@ -1520,16 +1520,17 @@
       "street": "5 Place de la Pyramide",
       "city": "92800 Puteaux, França"
     },
-    "contact": {
-      "title": "Informações de Contato",
-      "email": {
-        "label": "Email",
-        "value": "contact@meeshy.me"
-      },
-      "phone": {
-        "label": "Telefone",
-        "value": "+33 (0)1 47 17 67 00"
-      }
+    "email": {
+      "label": "Email",
+      "value": "contact@meeshy.me"
+    },
+    "phone": {
+      "label": "Telefone",
+      "value": "+33 (0)1 47 17 67 00"
+    },
+    "availability": {
+      "title": "Disponibilidade",
+      "description": "Estamos disponíveis 24/7 para apoiá-lo"
     },
     "hours": {
       "title": "Horário de Funcionamento",

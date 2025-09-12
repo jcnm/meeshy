@@ -66,12 +66,12 @@ export const messagesService = {
   async getMessagesByConversation(
     conversationId: string, 
     page: number = 1, 
-    limit: number = 50
+    limit: number = 20
   ): Promise<ApiResponse<MessagesResponse>> {
     try {
-      // Utiliser l'endpoint correct de la gateway
+      // Utiliser l'endpoint correct de la gateway avec pagination optimisée
       const response = await apiService.get<{messages: Message[], hasMore: boolean, userLanguage: string}>(
-        `/conversations/${conversationId}/messages?limit=${limit}&offset=${(page - 1) * limit}`
+        `/conversations/${conversationId}/messages?limit=${limit}&offset=${(page - 1) * limit}&include_translations=true`
       );
       
       // Adapter la réponse au format attendu
@@ -88,6 +88,26 @@ export const messagesService = {
       };
     } catch (error) {
       console.error('Erreur lors de la récupération des messages:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Récupère les messages d'une conversation avec pagination par offset
+   */
+  async getMessagesWithOffset(
+    conversationId: string, 
+    offset: number = 0, 
+    limit: number = 20
+  ): Promise<{messages: Message[], hasMore: boolean, userLanguage: string}> {
+    try {
+      const response = await apiService.get<{messages: Message[], hasMore: boolean, userLanguage: string}>(
+        `/conversations/${conversationId}/messages?limit=${limit}&offset=${offset}&include_translations=true`
+      );
+      
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des messages avec offset:', error);
       throw error;
     }
   },

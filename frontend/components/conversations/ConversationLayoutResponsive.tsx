@@ -50,6 +50,7 @@ import { ConversationParticipantsPopover } from '@/components/conversations/conv
 import { getUserLanguageChoices } from '@/utils/user-language-preferences';
 import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
+import { useMessageTranslations } from '@/hooks/use-message-translations';
 import { useTranslationStats } from '@/hooks/use-translation-stats';
 import { MessagesDisplay } from '@/components/common/messages-display';
 import { messageService } from '@/services/message.service';
@@ -207,30 +208,83 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     });
   }, []);
 
-  // Hook pour le chargement des messages avec le nouveau hook factorized
-  const {
-    messages,
-    translatedMessages,
-    isLoadingMessages,
-    loadMessages,
-    clearMessages,
-    addMessage,
-    updateMessageTranslations,
-    addTranslatingState,
-    removeTranslatingState,
-    isTranslating
-  } = useConversationMessages({
-    currentUser: user!, // user est garanti d'exister après les checks
-    conversationId: selectedConversation?.id
-  });
-
-  // Hook pour les statistiques de traduction
-  const { stats: translationStats, incrementTranslationCount } = useTranslationStats();
-
   // Ref pour le scroll automatique vers le dernier message
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messageComposerRef = useRef<MessageComposerRef>(null);
+
+  // Hook pour la pagination infinie des messages (scroll vers le bas pour charger plus récents)
+  const {
+    messages,
+    isLoading: isLoadingMessages,
+    isLoadingMore,
+    hasMore,
+    error: messagesError,
+    loadMore,
+    refresh: refreshMessages,
+    clearMessages,
+    addMessage,
+    updateMessage: updateMessageTranslations,
+    removeMessage
+  } = useConversationMessages(selectedConversation?.id || null, user!, {
+    limit: 20,
+    enabled: !!selectedConversation?.id,
+    threshold: 100,
+    containerRef: messagesContainerRef
+  });
+
+  // Hook pour la gestion des traductions
+  const {
+    processMessageWithTranslations,
+    getPreferredLanguageContent,
+    getUserLanguagePreferences,
+    resolveUserPreferredLanguage,
+    shouldRequestTranslation,
+    getRequiredTranslations
+  } = useMessageTranslations({ currentUser: user! });
+
+  // État pour les traductions en cours
+  const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
+  const [translatedMessages, setTranslatedMessages] = useState<any[]>([]);
+
+  // Fonctions pour gérer l'état des traductions en cours
+  const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
+    setTranslatingMessages(prev => {
+      const newMap = new Map(prev);
+      if (!newMap.has(messageId)) {
+        newMap.set(messageId, new Set());
+      }
+      newMap.get(messageId)!.add(targetLanguage);
+      return newMap;
+    });
+  }, []);
+
+  const removeTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
+    setTranslatingMessages(prev => {
+      const newMap = new Map(prev);
+      if (newMap.has(messageId)) {
+        newMap.get(messageId)!.delete(targetLanguage);
+        if (newMap.get(messageId)!.size === 0) {
+          newMap.delete(messageId);
+        }
+      }
+      return newMap;
+    });
+  }, []);
+
+  const isTranslating = useCallback((messageId: string, targetLanguage: string) => {
+    return translatingMessages.get(messageId)?.has(targetLanguage) || false;
+  }, [translatingMessages]);
+
+  // Fonction pour charger les messages (compatibilité avec l'ancien hook)
+  const loadMessages = useCallback(async (conversationId: string, isNewConversation = false) => {
+    if (isNewConversation) {
+      await refreshMessages();
+    }
+  }, [refreshMessages]);
+
+  // Hook pour les statistiques de traduction
+  const { stats: translationStats, incrementTranslationCount } = useTranslationStats();
 
   // Fonctions pour gérer l'édition et la suppression des messages
   const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
@@ -373,7 +427,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
 
     // Ajouter le message en temps réel à la liste affichée
-    addMessage(message);
+    const isNewMessage = addMessage(message);
 
     // Mettre à jour la conversation avec le dernier message (optimisé et idempotent)
     setConversationsIfChanged(prev => prev.map(
@@ -382,26 +436,13 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         : conv
     ));
 
-    // Scroller vers le bas pour voir le nouveau message (optimisé)
-    setTimeout(() => {
-      try {
-        const container = messagesContainerRef.current;
-        if (container) {
-          // Vérifier si l'utilisateur est déjà en bas de la conversation
-          const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
-          if (isAtBottom) {
-            container.scrollTop = container.scrollHeight;
-          }
-        }
-      } catch (error) {
-        // Erreur silencieuse pour le scroll automatique
-      }
-    }, 50);
+    // Scroll automatique désactivé pour ConversationLayoutResponsive
+    // L'utilisateur garde sa position de scroll lors du chargement infini
   }, [selectedConversation?.id, addMessage, setConversationsIfChanged]);
 
   const handleTranslation = useCallback((messageId: string, translations: TranslationData[]) => {
     // Appliquer les traductions au message concerné via le loader commun
-    updateMessageTranslations(messageId, translations);
+        // updateMessageTranslations(messageId, translations);
     
     // Incrémenter le compteur de traduction pour les traductions pertinentes
     const userLanguages = [
@@ -706,19 +747,32 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }, isSafari ? 150 : (force ? 50 : 100)); // Délai plus long pour Safari
   }, []);
 
-  // Scroll automatique quand les messages changent
+  // Ref pour tracker le nombre de messages précédent
+  const previousMessageCountRef = useRef(0);
+  
+  // Scroll automatique SEULEMENT pour les nouveaux messages (pas le chargement infini)
   useEffect(() => {
     if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
+      const currentCount = messages.length;
+      const previousCount = previousMessageCountRef.current;
       
-      // Si c'est notre propre message, forcer le scroll immédiatement
-      if (lastMessage && lastMessage.senderId === user?.id) {
-        // Scroll automatique vers le bas
-        scrollToBottom(true);
-      } else {
-        // Scroll normal pour les autres messages
-        scrollToBottom();
+      // Ne déclencher le scroll que si le nombre de messages a augmenté (nouveaux messages)
+      // et non diminué (chargement infini qui ajoute des messages au début)
+      if (currentCount > previousCount) {
+        const lastMessage = messages[messages.length - 1];
+        
+        // Si c'est notre propre message, forcer le scroll immédiatement
+        if (lastMessage && lastMessage.senderId === user?.id) {
+          // Scroll automatique vers le bas
+          scrollToBottom(true);
+        } else {
+          // Scroll normal pour les autres messages
+          scrollToBottom();
+        }
       }
+      
+      // Mettre à jour le compteur
+      previousMessageCountRef.current = currentCount;
     }
   }, [messages, user?.id, scrollToBottom]);
 
@@ -1065,6 +1119,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversation?.id, loadMessages, clearMessages]); // Supprimé messages.length qui change constamment
 
+  // Effet pour scroll automatique à l'ouverture de conversation
+  useEffect(() => {
+    if (selectedConversation?.id && messages.length > 0) {
+      // Scroll vers le bas à l'ouverture de la conversation
+      setTimeout(() => {
+        scrollToBottom(true);
+      }, 100);
+    }
+  }, [selectedConversation?.id, messages.length, scrollToBottom]);
+
   // Effet 2: marquer les messages comme lus quand une conversation est ouverte
   useEffect(() => {
     if (selectedConversation?.id && user?.id) {
@@ -1410,7 +1474,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           {/* Zone de messages */}
           <div className={cn(
             "flex flex-col",
-            isMobile ? (showConversationList ? "hidden" : "w-full") : "flex-1"
+            isMobile ? (showConversationList ? "hidden" : "w-full h-full") : "flex-1 h-full"
           )}>
             {selectedConversation ? (
               <>
@@ -1514,9 +1578,21 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                 {/* Messages scrollables */}
                 <div ref={messagesContainerRef} className={cn(
-                  "flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm messages-container scroll-optimized scrollbar-thin",
-                  isMobile && "conversation-container-mobile conversation-messages-mobile"
+                  "flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm messages-container scroll-optimized scrollbar-thin relative z-0",
+                  // Approche responsive Tailwind : pb-20 sur mobile, pb-4 sur desktop
+                  "pb-20 md:pb-4",
+                  isMobile && "conversation-container-mobile"
                 )}>
+                  {/* Indicateur de chargement pour la pagination (messages plus anciens) - en haut */}
+                  {isLoadingMore && hasMore && messages.length > 0 && (
+                    <div className="flex justify-center py-4">
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        <span>Chargement des messages plus anciens...</span>
+                      </div>
+                    </div>
+                  )}
+
                   <MessagesDisplay
                     messages={messages}
                     translatedMessages={translatedMessages}
@@ -1539,14 +1615,20 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     addTranslatingState={addTranslatingState}
                     isTranslating={isTranslating}
                   />
+
+
                   {/* Élément invisible pour le scroll automatique */}
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Zone de saisie fixe en bas */}
+                {/* Zone de saisie fixe en bas - toujours visible */}
                 <div className={cn(
-                  "flex-shrink-0 p-4 border-t border-border/30 bg-white/90 backdrop-blur-sm rounded-br-2xl",
-                  isMobile && "conversation-input-mobile"
+                  "flex-shrink-0 border-t border-border/30 backdrop-blur-sm relative z-10",
+                  // Approche responsive Tailwind
+                  "p-3 md:p-4", // Padding réduit sur mobile
+                  "bg-white md:bg-white/70", // Fond solide sur mobile
+                  "md:rounded-br-2xl", // Coins arrondis seulement sur desktop
+                  isMobile ? "fixed bottom-0 left-0 right-0 w-full min-h-[80px] shadow-lg border-t-2" : "min-h-[120px]"
                 )}>
                   <MessageComposer
                     ref={messageComposerRef}
@@ -1573,7 +1655,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         handleSendMessage();
                       }
                     }}
-                    className="w-full"
+                    className="w-full min-h-[80px]"
                   />
                 </div>
               </>

@@ -67,8 +67,6 @@ import {
   LanguageIndicators,
   SidebarLanguageHeader,
   getUserLanguageChoices,
-  resolveUserPreferredLanguage as resolveUserLanguage,
-  getUserLanguagePreferences as getUserLanguages,
   type BubbleStreamMessage,
   type BubbleStreamPageProps,
   type LanguageChoice
@@ -92,7 +90,7 @@ import { conversationsService } from '@/services';
 import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useMessageLoader } from '@/hooks/use-message-loader';
-import { useConversationMessages } from '@/hooks/use-conversation-messages';
+import { useBubbleStreamMessages } from '@/hooks/use-bubble-stream-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
@@ -106,6 +104,26 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Hook pour fixer les z-index des composants Radix UI
   useFixRadixZIndex();
 
+  // Hook pour la pagination infinie des messages (scroll vers le haut pour charger plus anciens)
+  const {
+    messages,
+    isLoading: isLoadingMessages,
+    isLoadingMore,
+    hasMore,
+    error: messagesError,
+    loadMore,
+    refresh: refreshMessages,
+    clearMessages,
+    addMessage,
+    updateMessage: updateMessageTranslations,
+    removeMessage
+  } = useBubbleStreamMessages(conversationId, user, {
+    limit: 20,
+    enabled: true,
+    threshold: 100,
+    containerRef: messagesContainerRef
+  });
+
   // Hook pour la gestion des traductions
   const {
     processMessageWithTranslations,
@@ -116,30 +134,44 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     getRequiredTranslations
   } = useMessageTranslations({ currentUser: user });
 
-  // Hook pour le chargement des messages avec le nouveau hook factorized
-  const {
-    messages,
-    translatedMessages,
-    isLoadingMessages,
-    loadMessages,
-    clearMessages,
-    addMessage,
-    updateMessageTranslations,
-    addTranslatingState,
-    removeTranslatingState,
-    isTranslating
-  } = useConversationMessages({
-    currentUser: user,
-    conversationId: conversationId,
-    isAnonymousMode: isAnonymousMode,
-    linkId: linkId
-  });
+  // État pour les traductions en cours
+  const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
+  const [translatedMessages, setTranslatedMessages] = useState<BubbleStreamMessage[]>([]);
+
+  // Fonctions pour gérer l'état des traductions en cours
+  const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
+    setTranslatingMessages(prev => {
+      const newMap = new Map(prev);
+      if (!newMap.has(messageId)) {
+        newMap.set(messageId, new Set());
+      }
+      newMap.get(messageId)!.add(targetLanguage);
+      return newMap;
+    });
+  }, []);
+
+  const removeTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
+    setTranslatingMessages(prev => {
+      const newMap = new Map(prev);
+      if (newMap.has(messageId)) {
+        newMap.get(messageId)!.delete(targetLanguage);
+        if (newMap.get(messageId)!.size === 0) {
+          newMap.delete(messageId);
+        }
+      }
+      return newMap;
+    });
+  }, []);
+
+  const isTranslating = useCallback((messageId: string, targetLanguage: string) => {
+    return translatingMessages.get(messageId)?.has(targetLanguage) || false;
+  }, [translatingMessages]);
 
   // États de base
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [detectedLanguage, setDetectedLanguage] = useState<string>('fr');
-  const [userLanguage, setUserLanguage] = useState<string>(resolveUserLanguage(user));
+  const [userLanguage, setUserLanguage] = useState<string>(resolveUserPreferredLanguage());
   const [selectedInputLanguage, setSelectedInputLanguage] = useState<string>(user.systemLanguage || 'fr');
   const [messageLanguageStats, setMessageLanguageStats] = useState<LanguageStats[]>([]);
   const [activeLanguageStats, setActiveLanguageStats] = useState<LanguageStats[]>([]);
@@ -158,28 +190,28 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       });
       
       // Recharger les messages pour afficher la modification
-      await loadMessages(conversationId, true);
+      await refreshMessages();
       toast.success('Message modifié avec succès');
     } catch (error) {
       console.error('Erreur lors de la modification du message:', error);
       toast.error('Erreur lors de la modification du message');
       throw error;
     }
-  }, [conversationId, selectedInputLanguage, loadMessages]);
+  }, [conversationId, selectedInputLanguage, refreshMessages]);
 
   const handleDeleteMessage = useCallback(async (messageId: string) => {
     try {
       await messageService.deleteMessage(conversationId, messageId);
       
       // Recharger les messages pour afficher la suppression
-      await loadMessages(conversationId, true);
+      await refreshMessages();
       toast.success('Message supprimé avec succès');
     } catch (error) {
       console.error('Erreur lors de la suppression du message:', error);
       toast.error('Erreur lors de la suppression du message');
       throw error;
     }
-  }, [conversationId, loadMessages]);
+  }, [conversationId, refreshMessages]);
 
   // Logique de permissions pour la modération
   const getUserModerationRole = useCallback(() => {
@@ -262,7 +294,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const [hasEstablishedConnection, setHasEstablishedConnection] = useState(false);
 
   // Langues utilisées par l'utilisateur (basées sur ses préférences)
-  const usedLanguages: string[] = getUserLanguages(user);
+  const usedLanguages: string[] = getUserLanguagePreferences();
 
   // Obtenir les choix de langues pour l'utilisateur via la fonction centralisée
   const languageChoices = getUserLanguageChoices(user);
@@ -318,7 +350,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     // Traductions reçues pour message
     
     // Mettre à jour le message avec les nouvelles traductions
-    updateMessageTranslations(messageId, translations);
+        // updateMessageTranslations(messageId, translations);
     
     // Vérifier si on a des nouvelles traductions pour cet utilisateur
     const userLanguages = [
@@ -578,7 +610,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Mise à jour de la langue sélectionnée basée sur les préférences utilisateur uniquement
   useEffect(() => {
-    const newUserLanguage = resolveUserLanguage(user);
+    const newUserLanguage = resolveUserPreferredLanguage();
     setUserLanguage(newUserLanguage);
     
     // Vérifier si la langue actuellement sélectionnée est encore valide dans les choix disponibles
@@ -588,7 +620,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       console.log('Langue sélectionnée non disponible, retour à la langue système:', user.systemLanguage);
       setSelectedInputLanguage(user.systemLanguage || 'fr');
     }
-  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage, languageChoices, selectedInputLanguage]);
+  }, [user.systemLanguage, user.regionalLanguage, user.customDestinationLanguage]); // Supprimé languageChoices et selectedInputLanguage
 
   // Suppression de la simulation des statistiques de langues (désormais alimentées en temps réel)
 
@@ -600,8 +632,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   // Cleanup timeout de frappe au démontage et initialisation de la hauteur du textarea
   useEffect(() => {
     // Initialiser la hauteur du textarea au montage
-    if (textareaRef.current) {
-      textareaRef.current.style.height = '80px'; // Hauteur minimale
+    if (textareaRef.current && textareaRef.current.style) {
+      try {
+        textareaRef.current.style.height = '80px'; // Hauteur minimale
+      } catch (error) {
+        console.warn('Erreur lors de l\'initialisation du textarea:', error);
+      }
     }
     
     return () => {
@@ -625,11 +661,13 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Charger les messages existants dès que possible, sans attendre la connexion WebSocket
   useEffect(() => {
-    console.log('Chargement initial des messages depuis la base de données...');
-    // Charger immédiatement les messages existants via HTTP API
-    loadMessages(conversationId, true);
-    setHasLoadedMessages(true);
-  }, [conversationId, loadMessages]);
+    if (conversationId && !hasLoadedMessages) {
+      console.log('Chargement initial des messages depuis la base de données...');
+      // Charger immédiatement les messages existants via HTTP API
+      refreshMessages();
+      setHasLoadedMessages(true);
+    }
+  }, [conversationId]); // Supprimé refreshMessages des dépendances
 
   // Separately handle WebSocket connection for real-time updates
   useEffect(() => {
@@ -656,8 +694,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
   // Charger les utilisateurs actifs au démarrage
   useEffect(() => {
-    loadActiveUsers();
-  }, [loadActiveUsers]);
+    if (conversationId && activeUsers.length === 0) {
+      loadActiveUsers();
+    }
+  }, [conversationId]); // Supprimé loadActiveUsers des dépendances
 
   // Calculer les statistiques de langues à partir des messages chargés
   useEffect(() => {
@@ -705,11 +745,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       setMessageLanguageStats(messageStats);
       setActiveLanguageStats(userStats);
       
-      // Charger les utilisateurs actifs depuis l'API au lieu de simuler
-      if (activeUsers.length === 0) {
-        loadActiveUsers();
-      }
-      
       // Charger tous les participants pour calculer les statistiques des utilisateurs
       loadAllParticipants().then(allParticipants => {
         if (allParticipants.length > 0) {
@@ -738,7 +773,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         }
       });
     }
-  }, [translatedMessages.length, activeUsers.length, loadActiveUsers, loadAllParticipants]);
+  }, [translatedMessages.length]); // Supprimé les dépendances qui causent des boucles
 
   // Afficher l'écran de chargement pendant l'initialisation
   if (isInitializing) {
@@ -772,8 +807,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     setIsTyping(false);
     
     // Réinitialiser la hauteur du textarea
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+    if (textareaRef.current && textareaRef.current.style) {
+      try {
+        textareaRef.current.style.height = 'auto';
+      } catch (error) {
+        console.warn('Erreur lors de la réinitialisation du textarea:', error);
+      }
     }
 
     try {
@@ -887,24 +926,28 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
 
     // Auto-resize textarea avec gestion améliorée des retours à la ligne
-    if (textareaRef.current) {
-      // Réinitialiser la hauteur pour obtenir la hauteur naturelle du contenu
-      textareaRef.current.style.height = 'auto';
-      
-      // Calculer la hauteur nécessaire avec une hauteur minimale
-      const minHeight = 80; // Correspond à min-h-[80px]
-      const maxHeight = 160; // Correspond à max-h-40 (40 * 4px = 160px)
-      const scrollHeight = textareaRef.current.scrollHeight;
-      
-      // Utiliser la hauteur calculée en respectant les limites
-      const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
-      textareaRef.current.style.height = `${newHeight}px`;
-      
-      // Si le contenu dépasse la hauteur maximale, permettre le scroll
-      if (scrollHeight > maxHeight) {
-        textareaRef.current.style.overflowY = 'auto';
-      } else {
-        textareaRef.current.style.overflowY = 'hidden';
+    if (textareaRef.current && textareaRef.current.style) {
+      try {
+        // Réinitialiser la hauteur pour obtenir la hauteur naturelle du contenu
+        textareaRef.current.style.height = 'auto';
+        
+        // Calculer la hauteur nécessaire avec une hauteur minimale
+        const minHeight = 80; // Correspond à min-h-[80px]
+        const maxHeight = 160; // Correspond à max-h-40 (40 * 4px = 160px)
+        const scrollHeight = textareaRef.current.scrollHeight;
+        
+        // Utiliser la hauteur calculée en respectant les limites
+        const newHeight = Math.max(minHeight, Math.min(scrollHeight, maxHeight));
+        textareaRef.current.style.height = `${newHeight}px`;
+        
+        // Si le contenu dépasse la hauteur maximale, permettre le scroll
+        if (scrollHeight > maxHeight) {
+          textareaRef.current.style.overflowY = 'auto';
+        } else {
+          textareaRef.current.style.overflowY = 'hidden';
+        }
+      } catch (error) {
+        console.warn('Erreur lors du redimensionnement du textarea:', error);
       }
     }
   };
@@ -1038,6 +1081,16 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 className="px-4 py-6 messages-container scroll-optimized scrollbar-thin"
                 style={{ background: 'transparent' }}
               >
+                {/* Indicateur de chargement pour la pagination (messages plus anciens) */}
+                {isLoadingMore && hasMore && (
+                  <div className="flex justify-center py-4">
+                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span>Chargement des messages plus anciens...</span>
+                    </div>
+                  </div>
+                )}
+
                 <MessagesDisplay
                   messages={messages}
                   translatedMessages={translatedMessages}
@@ -1058,6 +1111,15 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   addTranslatingState={addTranslatingState}
                   isTranslating={isTranslating}
                 />
+
+                {/* Indicateur si plus de messages disponibles - positionné après les messages */}
+                {!hasMore && messages.length > 0 && (
+                  <div className="flex justify-center py-4">
+                    <div className="text-sm text-muted-foreground">
+                      Tous les messages ont été chargés
+                    </div>
+                  </div>
+                )}
 
                 {/* Espace supplémentaire réduit pour éviter que le dernier message soit caché */}
                 <div className="h-8" />

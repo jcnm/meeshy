@@ -410,6 +410,7 @@ class MeeshySocketIOService {
       content: socketMessage.content,
       originalLanguage: socketMessage.originalLanguage,
       messageType: socketMessage.messageType,
+      timestamp: socketMessage.createdAt,
       createdAt: socketMessage.createdAt,
       updatedAt: socketMessage.updatedAt,
       sender: socketMessage.sender || {

@@ -267,7 +267,7 @@ export class ConversationsService {
   /**
    * Obtenir les messages d'une conversation
    */
-  async getMessages(conversationId: string, page = 1, limit = 50): Promise<{
+  async getMessages(conversationId: string, page = 1, limit = 20): Promise<{
     messages: Message[];
     total: number;
     hasMore: boolean;

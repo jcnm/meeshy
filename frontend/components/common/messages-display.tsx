@@ -121,8 +121,8 @@ export function MessagesDisplay({
     }
   }, [messages, onTranslation]);
 
-  // État de chargement
-  if (isLoadingMessages) {
+  // État de chargement - seulement si on n'a pas encore de messages
+  if (isLoadingMessages && messages.length !== 0) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -156,21 +156,31 @@ export function MessagesDisplay({
     <div className={className}>
       {orderedMessages
         .filter(message => message && message.id) // Filtrer les messages invalides
-        .map((message) => (
-          <BubbleMessage
-            key={`message-${message.id}`}
-            message={message as any}
-            currentUser={currentUser}
-            userLanguage={userLanguage}
-            usedLanguages={usedLanguages}
-            onForceTranslation={handleForceTranslation}
-            onEditMessage={onEditMessage}
-            onDeleteMessage={onDeleteMessage}
-            conversationType={conversationType}
-            userRole={userRole}
-            isTranslating={isTranslating}
-          />
-        ))}
+        .map((message) => {
+          const isOwnMessage = message.senderId === currentUser.id;
+          return (
+            <div 
+              key={`message-container-${message.id}`}
+              className={`w-full flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-4`}
+            >
+              <div className={`${isOwnMessage ? 'ml-[8%]' : 'mr-[8%]'} w-[92%] max-w-[92%]`}>
+                <BubbleMessage
+                  key={`message-${message.id}`}
+                  message={message as any}
+                  currentUser={currentUser}
+                  userLanguage={userLanguage}
+                  usedLanguages={usedLanguages}
+                  onForceTranslation={handleForceTranslation}
+                  onEditMessage={onEditMessage}
+                  onDeleteMessage={onDeleteMessage}
+                  conversationType={conversationType}
+                  userRole={userRole}
+                  isTranslating={isTranslating}
+                />
+              </div>
+            </div>
+          );
+        })}
     </div>
   );
 }

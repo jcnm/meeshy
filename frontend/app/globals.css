@@ -141,6 +141,23 @@
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     will-change: scroll-position; /* Optimise les performances de scroll */
+    overflow-y: auto; /* Permet le scroll vertical */
+    max-height: calc(100vh - 200px); /* Hauteur maximale pour forcer le scroll */
+  }
+
+  /* Styles spécifiques pour mobile */
+  .conversation-container-mobile .messages-container {
+    max-height: none; /* Pas de limite de hauteur sur mobile */
+    height: 100%; /* Prend toute la hauteur disponible */
+    z-index: 0; /* Assurer que les messages sont derrière la zone de saisie */
+  }
+
+  /* Zone de saisie mobile */
+  .conversation-container-mobile .message-composer-container {
+    z-index: 10; /* Au-dessus des messages */
+    background: rgba(255, 255, 255, 0.8); /* Transparence pour voir les messages */
+    backdrop-filter: blur(8px); /* Effet de flou */
+    -webkit-backdrop-filter: blur(8px); /* Support Safari */
   }
 
   /* Force hardware acceleration for better performance */
