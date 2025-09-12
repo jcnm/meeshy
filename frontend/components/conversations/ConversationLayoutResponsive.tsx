@@ -441,8 +441,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   }, [selectedConversation?.id, addMessage, setConversationsIfChanged]);
 
   const handleTranslation = useCallback((messageId: string, translations: TranslationData[]) => {
+    console.log('🌐 [ConversationLayout] Traductions reçues pour message:', messageId, translations);
+    
     // Appliquer les traductions au message concerné via le loader commun
-        // updateMessageTranslations(messageId, translations);
+    updateMessageTranslations(messageId, translations);
     
     // Incrémenter le compteur de traduction pour les traductions pertinentes
     const userLanguages = [

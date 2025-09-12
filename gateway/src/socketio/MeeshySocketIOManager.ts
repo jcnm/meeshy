@@ -1041,6 +1041,33 @@ export class MeeshySocketIOManager {
         () => this.getConnectedUsers()
       );
 
+      // CORRECTION CRITIQUE: Récupérer les traductions existantes du message
+      let messageTranslations: any[] = [];
+      try {
+        if (message.id) {
+          const messageWithTranslations = await this.prisma.message.findUnique({
+            where: { id: message.id },
+            include: {
+              translations: {
+                select: {
+                  id: true,
+                  targetLanguage: true,
+                  translatedContent: true,
+                  translationModel: true,
+                  cacheKey: true,
+                  confidenceScore: true
+                }
+              }
+            }
+          });
+          
+          messageTranslations = messageWithTranslations?.translations || [];
+          console.log(`🔍 [DEBUG] Message ${message.id} a ${messageTranslations.length} traductions existantes`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ [DEBUG] Erreur récupération traductions pour ${message.id}:`, error);
+      }
+
       // Construire le payload de message pour broadcast - compatible avec les types existants
       const messagePayload = {
         id: message.id,
@@ -1053,6 +1080,8 @@ export class MeeshySocketIOManager {
         isDeleted: Boolean(message.isDeleted),
         createdAt: message.createdAt || new Date(),
         updatedAt: message.updatedAt || new Date(),
+        // CORRECTION CRITIQUE: Inclure les traductions dans le payload
+        translations: messageTranslations,
         sender: message.sender ? {
           id: message.sender.id,
           username: message.sender.username,
