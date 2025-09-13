@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useRef, memo, useMemo, useCallback } from 'react';
 import { 
   MessageCircle,
   Star,
@@ -326,17 +326,19 @@ function BubbleMessageInner({
       (t.status === 'completed' || !t.status) // Inclure les traductions DB (sans status)
     );
     
-    // Debug: Vérifier les traductions dans BubbleMessage
-    console.log(`🔍 [BubbleMessage] Message ${message.id} - traductions:`, {
-      totalTranslations: message.translations?.length || 0,
-      normalizedTranslations: normalizedTranslations.length,
-      availableTranslations: availableTranslations.length,
-      rawTranslations: message.translations,
-      normalizedData: normalizedTranslations,
-      availableData: availableTranslations,
-      backendFormat: (message.translations as any[])?.filter(t => t?.targetLanguage)?.length || 0,
-      frontendFormat: (message.translations as any[])?.filter(t => t?.language)?.length || 0
-    });
+    // Debug: Vérifier les traductions dans BubbleMessage (conditionné)
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_MESSAGES === 'true') {
+      console.log(`🔍 [BubbleMessage] Message ${message.id} - traductions:`, {
+        totalTranslations: message.translations?.length || 0,
+        normalizedTranslations: normalizedTranslations.length,
+        availableTranslations: availableTranslations.length,
+        rawTranslations: message.translations,
+        normalizedData: normalizedTranslations,
+        availableData: availableTranslations,
+        backendFormat: (message.translations as any[])?.filter(t => t?.targetLanguage)?.length || 0,
+        frontendFormat: (message.translations as any[])?.filter(t => t?.language)?.length || 0
+      });
+    }
     
     return availableTranslations;
   };
@@ -519,13 +521,14 @@ function BubbleMessageInner({
 
   const isTranslated = currentDisplayLanguage !== message.originalLanguage;
   
-  // Debug: Vérifier les versions disponibles pour le popover
-  console.log(`🎭 [BubbleMessage] Message ${message.id} - versions popover:`, {
-    totalVersions: availableVersions.length,
-    originalLanguage: message.originalLanguage,
-    currentDisplayLanguage,
-    versions: availableVersions.map(v => ({
-      language: (v as any).language,
+  // Debug: Vérifier les versions disponibles pour le popover (conditionné)
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_MESSAGES === 'true') {
+    console.log(`🎭 [BubbleMessage] Message ${message.id} - versions popover:`, {
+      totalVersions: availableVersions.length,
+      originalLanguage: message.originalLanguage,
+      currentDisplayLanguage,
+      versions: availableVersions.map(v => ({
+        language: (v as any).language,
       isOriginal: (v as any).isOriginal,
       hasContent: !!(v as any).content,
       status: (v as any).status,

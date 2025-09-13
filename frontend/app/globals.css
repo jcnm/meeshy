@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import des améliorations mobiles */
-@import '../styles/mobile-improvements.css';
-
 @layer base {
   :root {
     /* Layout */

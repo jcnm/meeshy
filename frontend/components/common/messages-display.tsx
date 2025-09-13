@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
 import { BubbleMessage } from '@/components/common/bubble-message';
@@ -148,19 +148,26 @@ export function MessagesDisplay({
     );
   }
 
-  // Choisir les messages à afficher et l'ordre
-  const messagesToDisplay = translatedMessages.length > 0 ? translatedMessages : messages;
-  const orderedMessages = reverseOrder ? [...messagesToDisplay].reverse() : messagesToDisplay;
+  // Choisir les messages à afficher et l'ordre (mémorisé)
+  const messagesToDisplay = useMemo(() => {
+    return translatedMessages.length > 0 ? translatedMessages : messages;
+  }, [translatedMessages, messages]);
 
-  // Debug: Vérifier les traductions dans les messages à afficher
-  console.log('🔍 [MessagesDisplay] Messages à afficher:', {
-    totalMessages: messagesToDisplay.length,
-    usingTranslatedMessages: translatedMessages.length > 0,
-    firstMessageTranslations: messagesToDisplay[0]?.translations?.length || 0
-  });
+  const orderedMessages = useMemo(() => {
+    return reverseOrder ? [...messagesToDisplay].reverse() : messagesToDisplay;
+  }, [messagesToDisplay, reverseOrder]);
 
-  if (messagesToDisplay.length > 0 && messagesToDisplay[0]?.translations) {
-    console.log('🌐 [MessagesDisplay] Premier message - traductions:', messagesToDisplay[0].translations);
+  // Debug: Vérifier les traductions dans les messages à afficher (conditionné)
+  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_MESSAGES === 'true') {
+    console.log('🔍 [MessagesDisplay] Messages à afficher:', {
+      totalMessages: messagesToDisplay.length,
+      usingTranslatedMessages: translatedMessages.length > 0,
+      firstMessageTranslations: messagesToDisplay[0]?.translations?.length || 0
+    });
+
+    if (messagesToDisplay.length > 0 && messagesToDisplay[0]?.translations) {
+      console.log('🌐 [MessagesDisplay] Premier message - traductions:', messagesToDisplay[0].translations);
+    }
   }
 
   return (

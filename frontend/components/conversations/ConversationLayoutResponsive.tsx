@@ -1487,16 +1487,20 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
           {/* Zone de messages */}
           <div className={cn(
-            "flex flex-col min-h-full",
-            isMobile ? (showConversationList ? "hidden" : "w-full") : "flex-1 h-full"
+            "flex flex-col",
+            // Tailwind uniquement - responsive simple
+            isMobile 
+              ? (showConversationList ? "hidden" : "w-full h-screen") 
+              : "flex-1 h-full"
           )}>
             {selectedConversation ? (
               <>
                 {/* En-tête de la conversation */}
                 <div className={cn(
-                  "flex-shrink-0 border-b border-border/30",
+                  "flex-shrink-0 border-b border-gray-200",
+                  // Tailwind uniquement - simple et responsive
                   isMobile 
-                    ? "p-3 bg-white conversation-header-mobile" 
+                    ? "p-3 bg-white" 
                     : "p-4 bg-white/90 backdrop-blur-sm rounded-tr-2xl"
                 )}>
                   <div className="flex items-center gap-3">
@@ -1511,7 +1515,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                       </Button>
                     )}
                     <div className="relative">
-                      <Avatar className={cn("ring-2 ring-primary/20", isMobile ? "mobile-avatar-large" : "h-10 w-10")}>
+                      <Avatar className={cn(
+                        "ring-2 ring-primary/20",
+                        // Tailwind responsive uniquement
+                        isMobile ? "h-10 w-10" : "h-10 w-10"
+                      )}>
                         <AvatarImage src={getConversationAvatarUrl(selectedConversation)} />
                         <AvatarFallback className="bg-primary/20 text-primary font-bold flex items-center justify-center">
                           {getConversationIcon(selectedConversation) || getConversationAvatar(selectedConversation)}
@@ -1522,13 +1530,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     
                     <div className="flex-1">
                       <h2 className={cn(
-                        "font-bold text-foreground",
-                        isMobile ? "direct-conversation-title" : "text-lg",
-                        selectedConversation.type !== 'direct' && "conversation-title"
+                        "font-bold text-foreground truncate",
+                        // Tailwind responsive uniquement
+                        isMobile ? "text-sm max-w-[14ch]" : "text-lg"
                       )}>
                         {getConversationHeaderName(selectedConversation)}
                       </h2>
-                      <div className={cn("text-muted-foreground", isMobile ? "mobile-text-sm" : "text-sm")}>
+                      <div className={cn(
+                        "text-muted-foreground",
+                        // Tailwind responsive uniquement
+                        isMobile ? "text-xs" : "text-sm"
+                      )}>
                         <ConversationParticipants
                           conversationId={selectedConversation.id}
                           participants={conversationParticipants}
@@ -1597,11 +1609,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                 {/* Messages scrollables */}
                 <div ref={messagesContainerRef} className={cn(
-                  "flex-1 overflow-y-auto messages-container scroll-optimized scrollbar-thin relative",
-                  // Approche simplifiée : padding réduit sur mobile (3/4 de moins)
-                  isMobile ? "px-2 py-2 pb-20 bg-white" : "p-4 pb-4 bg-white/50 backdrop-blur-sm",
-                  // Sur mobile: fond blanc solide, padding minimal, espace en bas pour la zone de saisie
-                  isMobile && "min-h-screen"
+                  "flex-1 overflow-y-auto relative",
+                  // Tailwind uniquement - approche simple et claire
+                  isMobile 
+                    ? "px-2 py-2 pb-20 bg-white min-h-screen" 
+                    : "p-4 pb-4 bg-white/50 backdrop-blur-sm"
                 )}>
                   {/* Indicateur de chargement pour la pagination (messages plus anciens) - en haut */}
                   {isLoadingMore && hasMore && messages.length > 0 && (
@@ -1626,7 +1638,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     emptyStateMessage={t('noMessages')}
                     emptyStateDescription={t('noMessagesDescription')}
                     reverseOrder={false}
-                    className="space-y-4"
+                    className={cn(
+                      // Tailwind responsive - espacement réduit sur mobile
+                      isMobile ? "space-y-1" : "space-y-4"
+                    )}
                     onEditMessage={handleEditMessage}
                     onDeleteMessage={handleDeleteMessage}
                     conversationType={selectedConversation?.type || 'direct'}
@@ -1643,10 +1658,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                 {/* Zone de saisie fixe en bas - toujours visible */}
                 <div className={cn(
-                  "flex-shrink-0 border-t border-border/30 relative",
-                  // Approche simplifiée pour mobile
+                  "flex-shrink-0 border-t border-gray-200",
+                  // Tailwind uniquement - simple et efficace
                   isMobile 
-                    ? "fixed bottom-0 left-0 right-0 w-full z-50 bg-white p-3 shadow-lg border-t-2" 
+                    ? "fixed bottom-0 left-0 right-0 w-full z-50 bg-white p-4 shadow-lg" 
                     : "p-4 bg-white/70 backdrop-blur-sm rounded-br-2xl min-h-[100px]"
                 )}>
                   <MessageComposer
