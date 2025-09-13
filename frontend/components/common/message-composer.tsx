@@ -70,13 +70,12 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         onChange={(e) => onChange(e.target.value)}
         onKeyPress={handleKeyPress}
         placeholder={finalPlaceholder}
-        className="expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-12 sm:pb-14 pt-3 pl-3 text-sm sm:text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
+        className="expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 text-sm sm:text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
         maxLength={MAX_MESSAGE_LENGTH}
         disabled={!isComposingEnabled}
         style={{
           borderRadius: '16px',
-          boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
-          paddingBottom: '48px'
+          boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)'
         }}
       />
       
@@ -92,7 +91,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
       </div>
 
       {/* Bouton d'envoi, compteur et sélecteur de langue */}
-      <div className="absolute bottom-2 sm:bottom-3 right-2 sm:right-3 flex items-center space-x-1 sm:space-x-2 pointer-events-auto">
+      <div className="absolute bottom-2 sm:bottom-3 right-3 sm:right-4 flex items-center space-x-1 sm:space-x-2 pointer-events-auto">
         {/* Compteur de caractères - masqué sur mobile */}
         <span className={`hidden sm:inline text-xs ${value.length > MAX_MESSAGE_LENGTH * 0.8 ? 'text-orange-500' : 'text-gray-500'}`}>
           {value.length}/{MAX_MESSAGE_LENGTH}

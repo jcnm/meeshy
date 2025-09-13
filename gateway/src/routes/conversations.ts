@@ -399,7 +399,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             where: {
               conversationId: conversation.id,
               NOT: {
-                readStatus: {
+                status: {
                   some: {
                     userId: userId
                   }
@@ -761,7 +761,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
               language: true
             }
           },
-          readStatus: {
+          status: {
             select: {
               userId: true,
               readAt: true
@@ -786,7 +786,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
                   avatar: true
                 }
               },
-              readStatus: {
+              status: {
                 select: {
                   userId: true,
                   readAt: true
@@ -878,7 +878,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             console.warn('[GATEWAY] Cannot mark messages as read: user not found:', userId);
           } else {
             // Vérifier quels messages ne sont pas encore marqués comme lus
-            const existingReadStatus = await prisma.messageReadStatus.findMany({
+            const existingReadStatus = await prisma.messageStatus.findMany({
               where: {
                 messageId: { in: messageIds },
                 userId: userId
@@ -890,7 +890,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             const unreadMessageIds = messageIds.filter(id => !alreadyReadMessageIds.has(id));
             
             if (unreadMessageIds.length > 0) {
-              await prisma.messageReadStatus.createMany({
+              await prisma.messageStatus.createMany({
                 data: unreadMessageIds.map(messageId => ({
                   messageId,
                   userId
@@ -903,10 +903,29 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         }
       }
 
+      // Debug: Logger les données de traduction avant envoi
+      const finalMessages = messagesWithAllTranslations.reverse();
+      console.log(`📤 [BACKEND] Envoi de ${finalMessages.length} messages avec traductions:`);
+      
+      finalMessages.slice(0, 3).forEach((msg, index) => {
+        console.log(`  [${index}] Message ${msg.id}:`);
+        console.log(`    - Content: ${msg.content?.substring(0, 50)}...`);
+        console.log(`    - Original Language: ${msg.originalLanguage}`);
+        console.log(`    - Translations Count: ${msg.translations?.length || 0}`);
+        
+        if (msg.translations && msg.translations.length > 0) {
+          msg.translations.forEach((t: any, tIndex: number) => {
+            console.log(`      [${tIndex}] ${t.targetLanguage}: ${t.translatedContent?.substring(0, 40)}...`);
+          });
+        } else {
+          console.log(`      ⚠️ Aucune traduction trouvée`);
+        }
+      });
+
       reply.send({
         success: true,
         data: {
-          messages: messagesWithAllTranslations.reverse(), // Inverser pour avoir l'ordre chronologique
+          messages: finalMessages,
           hasMore: messages.length === parseInt(limit),
           userLanguage: userPreferredLanguage
         }
@@ -956,7 +975,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           conversationId: conversationId,
           isDeleted: false,
           senderId: { not: userId }, // Ne pas marquer ses propres messages
-          readStatus: {
+          status: {
             none: {
               userId: userId
             }
@@ -976,14 +995,14 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Marquer tous les messages comme lus
-      const readStatusData = unreadMessages.map(message => ({
+      const statusData = unreadMessages.map(message => ({
         messageId: message.id,
         userId: userId,
         readAt: new Date()
       }));
 
-      await prisma.messageReadStatus.createMany({
-        data: readStatusData
+      await prisma.messageStatus.createMany({
+        data: statusData
       });
 
       return reply.send({
@@ -1114,7 +1133,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       });
 
       // Marquer le message comme lu pour l'expéditeur
-      await prisma.messageReadStatus.create({
+      await prisma.messageStatus.create({
         data: {
           messageId: message.id,
           userId
@@ -1202,13 +1221,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         where: {
           conversationId: conversationId, // Utiliser l'ID résolu
           isDeleted: false,
-          readStatus: { none: { userId } }
+          status: { none: { userId } }
         },
         select: { id: true }
       });
 
       if (unreadMessages.length > 0) {
-        await prisma.messageReadStatus.createMany({
+        await prisma.messageStatus.createMany({
           data: unreadMessages.map(m => ({ messageId: m.id, userId }))
         });
       }

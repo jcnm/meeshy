@@ -602,7 +602,7 @@ export class MessagingService {
    */
   private async markAsRead(messageId: string, userId: string): Promise<void> {
     try {
-      await this.prisma.messageReadStatus.create({
+      await this.prisma.messageStatus.create({
         data: {
           messageId,
           userId,

@@ -444,7 +444,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     console.log('🌐 [ConversationLayout] Traductions reçues pour message:', messageId, translations);
     
     // Appliquer les traductions au message concerné via le loader commun
-    updateMessageTranslations(messageId, translations);
+    // Note: updateMessage attend Partial<Message>, pas TranslationData[]
+    // Les traductions sont gérées par le système de traduction, pas par updateMessage
+    // updateMessage(messageId, { translations });
     
     // Incrémenter le compteur de traduction pour les traductions pertinentes
     const userLanguages = [
@@ -458,7 +460,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         incrementTranslationCount(translation.targetLanguage);
       }
     });
-  }, [updateMessageTranslations, user?.systemLanguage, user?.regionalLanguage, user?.customDestinationLanguage, incrementTranslationCount]);
+  }, [user?.systemLanguage, user?.regionalLanguage, user?.customDestinationLanguage, incrementTranslationCount]);
 
   const handleMessageSent = useCallback((content: string, language: string) => {
     // Scroller vers le bas après l'envoi
@@ -1131,6 +1133,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversation?.id, messages.length, scrollToBottom]);
 
+  // Effet pour focus automatique sur la zone de saisie à l'ouverture
+  useEffect(() => {
+    if (selectedConversation?.id && messageComposerRef.current) {
+      // Focus sur la zone de saisie après un délai pour laisser le temps au composant de se rendre
+      setTimeout(() => {
+        messageComposerRef.current?.focus();
+      }, 200);
+    }
+  }, [selectedConversation?.id]);
+
   // Effet 2: marquer les messages comme lus quand une conversation est ouverte
   useEffect(() => {
     if (selectedConversation?.id && user?.id) {
@@ -1175,7 +1187,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         </div>
       ) : (
         <div className={cn(
-          "h-[calc(100vh-6rem)] flex bg-transparent",
+          "h-[calc(100vh-8rem)] flex bg-transparent",
           isMobile && "conversation-listing-mobile"
         )}>
           {/* Liste des conversations */}
@@ -1475,13 +1487,18 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
           {/* Zone de messages */}
           <div className={cn(
-            "flex flex-col",
-            isMobile ? (showConversationList ? "hidden" : "w-full h-full") : "flex-1 h-full"
+            "flex flex-col min-h-full",
+            isMobile ? (showConversationList ? "hidden" : "w-full") : "flex-1 h-full"
           )}>
             {selectedConversation ? (
               <>
                 {/* En-tête de la conversation */}
-                <div className="flex-shrink-0 p-4 border-b border-border/30 bg-white/90 backdrop-blur-sm rounded-tr-2xl conversation-header-mobile">
+                <div className={cn(
+                  "flex-shrink-0 border-b border-border/30",
+                  isMobile 
+                    ? "p-3 bg-white conversation-header-mobile" 
+                    : "p-4 bg-white/90 backdrop-blur-sm rounded-tr-2xl"
+                )}>
                   <div className="flex items-center gap-3">
                     {isMobile && (
                       <Button
@@ -1580,10 +1597,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                 {/* Messages scrollables */}
                 <div ref={messagesContainerRef} className={cn(
-                  "flex-1 overflow-y-auto p-4 bg-white/50 backdrop-blur-sm messages-container scroll-optimized scrollbar-thin relative z-0",
-                  // Approche responsive Tailwind : pb-20 sur mobile, pb-4 sur desktop
-                  "pb-20 md:pb-4",
-                  isMobile && "conversation-container-mobile"
+                  "flex-1 overflow-y-auto messages-container scroll-optimized scrollbar-thin relative",
+                  // Approche simplifiée : padding réduit sur mobile (3/4 de moins)
+                  isMobile ? "px-2 py-2 pb-20 bg-white" : "p-4 pb-4 bg-white/50 backdrop-blur-sm",
+                  // Sur mobile: fond blanc solide, padding minimal, espace en bas pour la zone de saisie
+                  isMobile && "min-h-screen"
                 )}>
                   {/* Indicateur de chargement pour la pagination (messages plus anciens) - en haut */}
                   {isLoadingMore && hasMore && messages.length > 0 && (
@@ -1625,12 +1643,11 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
                 {/* Zone de saisie fixe en bas - toujours visible */}
                 <div className={cn(
-                  "flex-shrink-0 border-t border-border/30 backdrop-blur-sm relative z-10",
-                  // Approche responsive Tailwind
-                  "p-3 md:p-4", // Padding réduit sur mobile
-                  "bg-white md:bg-white/70", // Fond solide sur mobile
-                  "md:rounded-br-2xl", // Coins arrondis seulement sur desktop
-                  isMobile ? "fixed bottom-0 left-0 right-0 w-full min-h-[80px] shadow-lg border-t-2" : "min-h-[120px]"
+                  "flex-shrink-0 border-t border-border/30 relative",
+                  // Approche simplifiée pour mobile
+                  isMobile 
+                    ? "fixed bottom-0 left-0 right-0 w-full z-50 bg-white p-3 shadow-lg border-t-2" 
+                    : "p-4 bg-white/70 backdrop-blur-sm rounded-br-2xl min-h-[100px]"
                 )}>
                   <MessageComposer
                     ref={messageComposerRef}
@@ -1657,7 +1674,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                         handleSendMessage();
                       }
                     }}
-                    className="w-full min-h-[80px]"
+                    className="w-full min-h-[60px]"
                   />
                 </div>
               </>

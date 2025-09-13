@@ -256,11 +256,13 @@ exports.Prisma.MessageTranslationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.MessageReadStatusScalarFieldEnum = {
+exports.Prisma.MessageStatusScalarFieldEnum = {
   id: 'id',
   messageId: 'messageId',
   userId: 'userId',
-  readAt: 'readAt'
+  receivedAt: 'receivedAt',
+  readAt: 'readAt',
+  answer: 'answer'
 };
 
 exports.Prisma.FriendRequestScalarFieldEnum = {
@@ -403,7 +405,7 @@ exports.Prisma.ModelName = {
   AnonymousParticipant: 'AnonymousParticipant',
   Message: 'Message',
   MessageTranslation: 'MessageTranslation',
-  MessageReadStatus: 'MessageReadStatus',
+  MessageStatus: 'MessageStatus',
   FriendRequest: 'FriendRequest',
   TypingIndicator: 'TypingIndicator',
   Notification: 'Notification',

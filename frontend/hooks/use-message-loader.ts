@@ -90,19 +90,35 @@ export function useMessageLoader({
           existingMessages = responseData;
         }
         
-        console.log('✅ Messages existants chargés:', existingMessages.length);
+        console.log(`📥 [FRONTEND] Messages existants chargés: ${existingMessages.length}`);
         
-        // Debug: Afficher le contenu des premiers messages
-        if (existingMessages.length > 0) {
-          console.log('🔍 Debug: Premier message reçu:', existingMessages[0]);
-          console.log('🔍 Debug: Contenu du premier message:', {
-            id: existingMessages[0]?.id,
-            content: existingMessages[0]?.content,
-            senderId: existingMessages[0]?.senderId,
-            sender: existingMessages[0]?.sender,
-            createdAt: existingMessages[0]?.createdAt
-          });
-        }
+        // Debug: Analyser TOUS les messages reçus avec leurs traductions
+        console.log('🔍 [FRONTEND] Analyse complète des messages reçus:');
+        existingMessages.slice(0, 5).forEach((msg: any, index: number) => {
+          console.log(`  [${index}] Message ${msg.id}:`);
+          console.log(`    - Content: ${msg.content?.substring(0, 50)}...`);
+          console.log(`    - Original Language: ${msg.originalLanguage}`);
+          console.log(`    - Translations: ${msg.translations?.length || 0} trouvées`);
+          console.log(`    - Raw translations data:`, msg.translations);
+          
+          if (msg.translations && msg.translations.length > 0) {
+            msg.translations.forEach((t: any, tIndex: number) => {
+              console.log(`      [${tIndex}] ${t.targetLanguage || 'NO_LANG'}: ${t.translatedContent?.substring(0, 40) || 'NO_CONTENT'}...`);
+              console.log(`          Model: ${t.translationModel || 'NO_MODEL'}, Cache: ${t.cacheKey || 'NO_CACHE'}`);
+            });
+          } else {
+            console.log(`      ❌ Aucune traduction dans les données brutes`);
+          }
+          console.log('');
+        });
+
+        // Vérifier le format global de la réponse
+        console.log('🔍 [FRONTEND] Format de réponse détaillé:', {
+          responseDataKeys: Object.keys(responseData),
+          dataKeys: responseData.data ? Object.keys(responseData.data) : 'NO_DATA',
+          messagesType: Array.isArray(existingMessages) ? 'ARRAY' : typeof existingMessages,
+          firstMessageKeys: existingMessages[0] ? Object.keys(existingMessages[0]) : 'NO_FIRST_MESSAGE'
+        });
         
         // Vérifier que la conversation sélectionnée n'a pas changé
         if (conversationId !== targetConversationId) {
@@ -135,17 +151,36 @@ export function useMessageLoader({
         })));
 
         // Utiliser le hook pour traiter les messages avec traductions
+        console.log(`🔄 [MESSAGE_LOADER] Traitement de ${sortedMessages.length} messages...`);
+        
         const bubbleMessages: BubbleStreamMessage[] = sortedMessages
           .map((msg: any, index: number) => {
+            console.log(`📬 [MESSAGE_LOADER] Traitement message ${index + 1}/${sortedMessages.length}:`);
             const processed = processMessageWithTranslations(msg);
-            if (index < 3) {
-              console.log(`📬 Message ${index + 1} (${processed.id}): ${processed.translations.length} traductions`);
-            }
+            
+            console.log(`📬 [MESSAGE_LOADER] Message ${index + 1} traité:`, {
+              id: processed.id,
+              translationsCount: processed.translations.length,
+              isTranslated: processed.isTranslated,
+              originalLanguage: processed.originalLanguage,
+              availableLanguages: processed.translations.map(t => t.language)
+            });
+            
             return processed;
           });
 
         // Mettre à jour les messages traduits
         setTranslatedMessages(bubbleMessages as unknown as TranslatedMessage[]);
+        
+        // Debug: Vérifier les messages stockés dans l'état
+        console.log(`💾 [MESSAGE_LOADER] Messages stockés dans l'état:`, {
+          totalBubbleMessages: bubbleMessages.length,
+          translationsPerMessage: bubbleMessages.map(msg => ({
+            id: msg.id,
+            translationsCount: msg.translations.length,
+            hasTranslations: msg.translations.length > 0
+          }))
+        });
         
         // Compter les traductions disponibles et les traductions manquantes
         const totalTranslations = bubbleMessages.reduce((sum, msg) => sum + (msg.translations?.length ?? 0), 0);

@@ -56,7 +56,7 @@ interface BubbleMessageProps {
   message: Message & {
     location?: string;
     originalLanguage: string;
-    translations: BubbleTranslation[];
+    translations: BubbleTranslation[] | any[]; // Support des deux formats : frontend + backend
     originalContent: string; // Contenu original de l'auteur
     readStatus?: Array<{ userId: string; readAt: Date }>; // Statut de lecture par utilisateur
   };
@@ -273,6 +273,33 @@ function BubbleMessageInner({
     return `il y a ${Math.floor(diffInMinutes / 1440)}j`;
   };
 
+  // Normaliser les traductions pour supporter les formats backend ET frontend
+  const normalizeTranslations = (translations: any[]): BubbleTranslation[] => {
+    return translations.map((t: any) => {
+      // Si c'est déjà le format frontend
+      if (t && t.language && t.content) {
+        return t as BubbleTranslation;
+      }
+      
+      // Si c'est le format backend, convertir
+      if (t && t.targetLanguage && t.translatedContent) {
+        return {
+          language: t.targetLanguage,
+          content: t.translatedContent,
+          status: 'completed' as const,
+          confidence: (t.confidenceScore ? t.confidenceScore / 100 : 0.9),
+          model: (t.translationModel || 'basic') as 'basic' | 'medium' | 'premium',
+          timestamp: new Date(t.createdAt || Date.now())
+        };
+      }
+      
+      return null;
+    }).filter(Boolean) as BubbleTranslation[];
+  };
+
+  // Traductions normalisées pour utilisation dans le composant
+  const normalizedTranslations = normalizeTranslations(message.translations || []);
+
   const handleLanguageSwitch = (langCode: string) => {
     setCurrentDisplayLanguage(langCode);
     setIsTranslationPopoverOpen(false);
@@ -283,7 +310,7 @@ function BubbleMessageInner({
   const getMissingLanguages = () => {
     const translatedLanguages = new Set([
       message.originalLanguage,
-      ...(message.translations?.map(t => t.language) || [])
+      ...normalizedTranslations.map(t => t.language)
     ]);
     
     return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
@@ -291,7 +318,27 @@ function BubbleMessageInner({
 
   // Obtenir les traductions disponibles (pour affichage du badge)
   const getAvailableTranslations = () => {
-    return message.translations?.filter(t => t.status === 'completed') || [];
+    // Utiliser les traductions normalisées
+    const availableTranslations = normalizedTranslations.filter(t => 
+      t && 
+      t.language && 
+      t.content &&
+      (t.status === 'completed' || !t.status) // Inclure les traductions DB (sans status)
+    );
+    
+    // Debug: Vérifier les traductions dans BubbleMessage
+    console.log(`🔍 [BubbleMessage] Message ${message.id} - traductions:`, {
+      totalTranslations: message.translations?.length || 0,
+      normalizedTranslations: normalizedTranslations.length,
+      availableTranslations: availableTranslations.length,
+      rawTranslations: message.translations,
+      normalizedData: normalizedTranslations,
+      availableData: availableTranslations,
+      backendFormat: (message.translations as any[])?.filter(t => t?.targetLanguage)?.length || 0,
+      frontendFormat: (message.translations as any[])?.filter(t => t?.language)?.length || 0
+    });
+    
+    return availableTranslations;
   };
 
   // Vérifier si des traductions sont disponibles
@@ -439,7 +486,7 @@ function BubbleMessageInner({
   };
 
   // Obtenir toutes les versions disponibles (original + traductions complètes)
-  // CORRECTION: Déduplication des traductions pour éviter les doublons
+  // Utiliser les traductions normalisées pour éviter les problèmes de format
   const availableVersions = [
     {
       language: message.originalLanguage,
@@ -447,12 +494,12 @@ function BubbleMessageInner({
       isOriginal: true,
       status: 'completed' as const,
       confidence: 1,
+      model: 'original' as const,
       timestamp: new Date(message.createdAt)
     },
     // Déduplication des traductions par langue - garder la plus récente
     ...Object.values(
-      (message.translations || [])
-        .filter(t => t.status === 'completed' && t.language) // Filtrer les traductions valides
+      normalizedTranslations
         .reduce((acc, t) => {
           // Garder la traduction la plus récente pour chaque langue
           const currentTimestamp = new Date(t.timestamp || 0);
@@ -462,16 +509,29 @@ function BubbleMessageInner({
             acc[t.language] = {
               ...t,
               isOriginal: false,
-              model: (t as any).model || 'basic' // Inclure le modèle de traduction
+              timestamp: currentTimestamp
             };
           }
           return acc;
-        }, {} as Record<string, any>)
+        }, {} as Record<string, BubbleTranslation & { isOriginal: boolean }>)
     )
   ];
 
   const isTranslated = currentDisplayLanguage !== message.originalLanguage;
   
+  // Debug: Vérifier les versions disponibles pour le popover
+  console.log(`🎭 [BubbleMessage] Message ${message.id} - versions popover:`, {
+    totalVersions: availableVersions.length,
+    originalLanguage: message.originalLanguage,
+    currentDisplayLanguage,
+    versions: availableVersions.map(v => ({
+      language: (v as any).language,
+      isOriginal: (v as any).isOriginal,
+      hasContent: !!(v as any).content,
+      status: (v as any).status,
+      model: (v as any).model
+    }))
+  });
   
   // Permettre à l'émetteur de voir les traductions de son propre message
   const canSeeTranslations = availableVersions.length > 1;
@@ -495,13 +555,13 @@ function BubbleMessageInner({
   const filteredVersions = availableVersions.filter(version => {
     if (!translationFilter.trim()) return true;
     
-    const langInfo = getLanguageInfo(version.language);
+    const langInfo = getLanguageInfo((version as any).language);
     const searchTerm = translationFilter.toLowerCase();
     
     return (
       langInfo.name.toLowerCase().includes(searchTerm) ||
       langInfo.code.toLowerCase().includes(searchTerm) ||
-      version.content.toLowerCase().includes(searchTerm)
+      (version as any).content.toLowerCase().includes(searchTerm)
     );
   });
 
@@ -588,7 +648,7 @@ function BubbleMessageInner({
 
             {/* Indicateur de langue originale seulement */}
             <div className="flex items-center space-x-2">
-              {(message.translations?.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
+              {(normalizedTranslations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
                 <div className={cn("flex items-center space-x-1 px-2 py-1 bg-blue-100 rounded-full", isMobile && "language-indicator-mobile")}>
                   <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
                   <span className={cn("text-blue-600 font-medium", isMobile ? "mobile-text-xs" : "text-xs")}>{t('translating')}</span>
@@ -717,7 +777,7 @@ function BubbleMessageInner({
                     }`}
                   >
                     <Languages className={`h-4 w-4 transition-transform duration-200 ${
-                      (hasPendingForcedTranslation || message.translations?.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) ? 'animate-pulse text-blue-600' : ''
+                      (hasPendingForcedTranslation || normalizedTranslations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) ? 'animate-pulse text-blue-600' : ''
                     }`} />
                     {/* Badge pour indiquer le nombre de traductions */}
                     {finalShouldShowBadge && finalBadgeCount > 0 && (
@@ -774,15 +834,16 @@ function BubbleMessageInner({
                     <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin">
                       {filteredVersions.length > 0 ? (
                         filteredVersions.map((version) => {
-                          const langInfo = getLanguageInfo(version.language);
-                          const isCurrentlyDisplayed = currentDisplayLanguage === version.language;
+                          const versionAny = version as any;
+                          const langInfo = getLanguageInfo(versionAny.language);
+                          const isCurrentlyDisplayed = currentDisplayLanguage === versionAny.language;
                           
                           return (
                             <button
-                              key={`${message.id}-${version.language}-${version.timestamp?.getTime() || Date.now()}`}
+                              key={`${message.id}-${versionAny.language}-${versionAny.timestamp?.getTime() || Date.now()}`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleLanguageSwitch(version.language);
+                                handleLanguageSwitch(versionAny.language);
                                 setIsTranslationPopoverOpen(false);
                               }}
                               className={`w-full p-2.5 rounded-lg text-left transition-all duration-200 group ${
@@ -799,7 +860,7 @@ function BubbleMessageInner({
                                   }`}>
                                     {langInfo.name}
                                   </span>
-                                  {version.isOriginal && (
+                                  {versionAny.isOriginal && (
                                     <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
                                       {t('original')}
                                     </span>
@@ -808,16 +869,16 @@ function BubbleMessageInner({
                                     <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
                                   )}
                                 </div>
-                                {!version.isOriginal && (
+                                {!versionAny.isOriginal && (
                                   <div className="flex items-center space-x-1">
                                     {/* Icône d'upgrade vers tier supérieur */}
-                                    {getNextTier(version.model || 'basic') && (
+                                    {getNextTier(versionAny.model || 'basic') && (
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <div
                                             onClick={(e) => {
                                               e.stopPropagation();
-                                              handleUpgradeTier(version.language, version.model || 'basic');
+                                              handleUpgradeTier(versionAny.language, versionAny.model || 'basic');
                                             }}
                                             className="p-1 rounded hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors cursor-pointer"
                                           >
@@ -825,16 +886,16 @@ function BubbleMessageInner({
                                           </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                          {t('improveTranslationQuality')} (modèle {version.model || 'basic'} → {getNextTier(version.model || 'basic')})
+                                          {t('improveTranslationQuality')} (modèle {versionAny.model || 'basic'} → {getNextTier(versionAny.model || 'basic')})
                                         </TooltipContent>
                                       </Tooltip>
                                     )}
                                     <span className="text-xs text-gray-500 bg-gray-100/60 px-1.5 py-0.5 rounded">
-                                      {Math.round(version.confidence * 100)}%
+                                      {Math.round(versionAny.confidence * 100)}%
                                     </span>
-                                    {version.model && (
+                                    {versionAny.model && (
                                       <span className="text-xs text-blue-600 bg-blue-100/60 px-1.5 py-0.5 rounded">
-                                        {version.model}
+                                        {versionAny.model}
                                       </span>
                                     )}
                                   </div>
@@ -842,7 +903,7 @@ function BubbleMessageInner({
                               </div>
                               
                               <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 group-hover:text-gray-800">
-                                {version.content}
+                                {versionAny.content}
                               </p>
                               
                               {/* Indicateur de qualité discret */}
@@ -907,7 +968,7 @@ function BubbleMessageInner({
                       </>
                     )}
                   
-                    {(message.translations?.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
+                    {(normalizedTranslations.some(t => t.status === 'translating') || (isTranslating && isTranslating(message.id, userLanguage))) && (
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center space-x-2 text-sm text-blue-700 bg-blue-50 p-2 rounded">
                           <Loader2 className="h-3 w-3 animate-spin" />

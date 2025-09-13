@@ -67,7 +67,7 @@ export default async function messageRoutes(fastify: FastifyInstance) {
               }
             }
           },
-          readStatus: {
+          status: {
             include: {
               user: {
                 select: {
@@ -354,17 +354,17 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 
       if (status === 'read') {
         // Vérifier si le statut de lecture existe déjà
-        const existingReadStatus = await prisma.messageReadStatus.findFirst({
+        const existingReadStatus = await prisma.messageStatus.findFirst({
           where: {
             messageId: messageId,
             userId: userId
           }
         });
 
-        let readStatus;
+        let status;
         if (existingReadStatus) {
           // Mettre à jour
-          readStatus = await prisma.messageReadStatus.update({
+          status = await prisma.messageStatus.update({
             where: { id: existingReadStatus.id },
             data: { readAt: new Date() },
             include: {
@@ -378,7 +378,7 @@ export default async function messageRoutes(fastify: FastifyInstance) {
           });
         } else {
           // Créer nouveau
-          readStatus = await prisma.messageReadStatus.create({
+          status = await prisma.messageStatus.create({
             data: {
               messageId: messageId,
               userId: userId,
@@ -399,13 +399,13 @@ export default async function messageRoutes(fastify: FastifyInstance) {
         // if (fastify.websocketManager) {
         //   fastify.websocketManager.broadcastToConversation(message.conversationId, {
         //     type: 'message_read',
-        //     data: { messageId, userId, readAt: readStatus.readAt }
+        //     data: { messageId, userId, readAt: status.readAt }
         //   });
         // }
 
         return reply.send({
           success: true,
-          data: readStatus,
+          data: status,
           message: 'Message marqué comme lu'
         });
       }

@@ -84,11 +84,11 @@ export function useMessageTranslations({
    * Traite un message brut et le convertit en BubbleStreamMessage avec traductions
    */
   const processMessageWithTranslations = useCallback((message: any): BubbleStreamMessage => {
-    console.log(`🔄 Traitement message ${message.id}:`, {
-      originalLanguage: message.originalLanguage,
-      translationsCount: message.translations?.length || 0,
-      translationsData: message.translations
-    });
+    console.log(`🔄 [TRANSLATION_PROCESSOR] Début traitement message ${message.id}:`);
+    console.log(`  - Original Language: ${message.originalLanguage}`);
+    console.log(`  - Raw translations count: ${message.translations?.length || 0}`);
+    console.log(`  - Raw translations data:`, message.translations);
+    console.log(`  - Message content: ${message.content?.substring(0, 50)}...`);
 
     // Convertir les traductions backend vers le format BubbleTranslation
     // CORRECTION: Déduplication des traductions par langue pour éviter les doublons
@@ -176,12 +176,12 @@ export function useMessageTranslations({
       translations
     };
 
-    console.log(`  🏁 Résultat traitement:`, {
-      id: result.id,
-      isTranslated: result.isTranslated,
-      translationsCount: result.translations.length,
-      displayContent: result.content.substring(0, 50) + '...'
-    });
+    console.log(`🏁 [TRANSLATION_PROCESSOR] Résultat final message ${result.id}:`);
+    console.log(`  - Is Translated: ${result.isTranslated}`);
+    console.log(`  - Processed translations count: ${result.translations.length}`);
+    console.log(`  - Display content: ${result.content.substring(0, 50)}...`);
+    console.log(`  - Processed translations:`, result.translations);
+    console.log(`  - Available languages:`, result.translations.map(t => t.language));
 
     return result;
   }, [resolveUserPreferredLanguage]);

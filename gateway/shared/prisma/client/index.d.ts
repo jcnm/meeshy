@@ -49,10 +49,10 @@ export type Message = $Result.DefaultSelection<Prisma.$MessagePayload>
  */
 export type MessageTranslation = $Result.DefaultSelection<Prisma.$MessageTranslationPayload>
 /**
- * Model MessageReadStatus
- * Statut de lecture d'un message par un utilisateur
+ * Model MessageStatus
+ * Statut de reception, lecture ou réponse d'un message par un utilisateur
  */
-export type MessageReadStatus = $Result.DefaultSelection<Prisma.$MessageReadStatusPayload>
+export type MessageStatus = $Result.DefaultSelection<Prisma.$MessageStatusPayload>
 /**
  * Model FriendRequest
  * Demande d'amitié entre utilisateurs
@@ -260,14 +260,14 @@ export class PrismaClient<
   get messageTranslation(): Prisma.MessageTranslationDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.messageReadStatus`: Exposes CRUD operations for the **MessageReadStatus** model.
+   * `prisma.messageStatus`: Exposes CRUD operations for the **MessageStatus** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more MessageReadStatuses
-    * const messageReadStatuses = await prisma.messageReadStatus.findMany()
+    * // Fetch zero or more MessageStatuses
+    * const messageStatuses = await prisma.messageStatus.findMany()
     * ```
     */
-  get messageReadStatus(): Prisma.MessageReadStatusDelegate<ExtArgs, ClientOptions>;
+  get messageStatus(): Prisma.MessageStatusDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.friendRequest`: Exposes CRUD operations for the **FriendRequest** model.
@@ -815,7 +815,7 @@ export namespace Prisma {
     AnonymousParticipant: 'AnonymousParticipant',
     Message: 'Message',
     MessageTranslation: 'MessageTranslation',
-    MessageReadStatus: 'MessageReadStatus',
+    MessageStatus: 'MessageStatus',
     FriendRequest: 'FriendRequest',
     TypingIndicator: 'TypingIndicator',
     Notification: 'Notification',
@@ -844,7 +844,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageReadStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation"
       txIsolationLevel: never
     }
     model: {
@@ -1366,77 +1366,77 @@ export namespace Prisma {
           }
         }
       }
-      MessageReadStatus: {
-        payload: Prisma.$MessageReadStatusPayload<ExtArgs>
-        fields: Prisma.MessageReadStatusFieldRefs
+      MessageStatus: {
+        payload: Prisma.$MessageStatusPayload<ExtArgs>
+        fields: Prisma.MessageStatusFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.MessageReadStatusFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload> | null
+            args: Prisma.MessageStatusFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.MessageReadStatusFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           findFirst: {
-            args: Prisma.MessageReadStatusFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload> | null
+            args: Prisma.MessageStatusFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.MessageReadStatusFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           findMany: {
-            args: Prisma.MessageReadStatusFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>[]
+            args: Prisma.MessageStatusFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>[]
           }
           create: {
-            args: Prisma.MessageReadStatusCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           createMany: {
-            args: Prisma.MessageReadStatusCreateManyArgs<ExtArgs>
+            args: Prisma.MessageStatusCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.MessageReadStatusDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           update: {
-            args: Prisma.MessageReadStatusUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           deleteMany: {
-            args: Prisma.MessageReadStatusDeleteManyArgs<ExtArgs>
+            args: Prisma.MessageStatusDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.MessageReadStatusUpdateManyArgs<ExtArgs>
+            args: Prisma.MessageStatusUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.MessageReadStatusUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           aggregate: {
-            args: Prisma.MessageReadStatusAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateMessageReadStatus>
+            args: Prisma.MessageStatusAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMessageStatus>
           }
           groupBy: {
-            args: Prisma.MessageReadStatusGroupByArgs<ExtArgs>
-            result: $Utils.Optional<MessageReadStatusGroupByOutputType>[]
+            args: Prisma.MessageStatusGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MessageStatusGroupByOutputType>[]
           }
           findRaw: {
-            args: Prisma.MessageReadStatusFindRawArgs<ExtArgs>
+            args: Prisma.MessageStatusFindRawArgs<ExtArgs>
             result: JsonObject
           }
           aggregateRaw: {
-            args: Prisma.MessageReadStatusAggregateRawArgs<ExtArgs>
+            args: Prisma.MessageStatusAggregateRawArgs<ExtArgs>
             result: JsonObject
           }
           count: {
-            args: Prisma.MessageReadStatusCountArgs<ExtArgs>
-            result: $Utils.Optional<MessageReadStatusCountAggregateOutputType> | number
+            args: Prisma.MessageStatusCountArgs<ExtArgs>
+            result: $Utils.Optional<MessageStatusCountAggregateOutputType> | number
           }
         }
       }
@@ -2266,7 +2266,7 @@ export namespace Prisma {
     anonymousParticipant?: AnonymousParticipantOmit
     message?: MessageOmit
     messageTranslation?: MessageTranslationOmit
-    messageReadStatus?: MessageReadStatusOmit
+    messageStatus?: MessageStatusOmit
     friendRequest?: FriendRequestOmit
     typingIndicator?: TypingIndicatorOmit
     notification?: NotificationOmit
@@ -2364,7 +2364,7 @@ export namespace Prisma {
     createdShareLinks: number
     receivedFriendRequests: number
     sentFriendRequests: number
-    messageReadStatus: number
+    messageStatus: number
     sentMessages: number
     notifications: number
     typingIndicators: number
@@ -2382,7 +2382,7 @@ export namespace Prisma {
     createdShareLinks?: boolean | UserCountOutputTypeCountCreatedShareLinksArgs
     receivedFriendRequests?: boolean | UserCountOutputTypeCountReceivedFriendRequestsArgs
     sentFriendRequests?: boolean | UserCountOutputTypeCountSentFriendRequestsArgs
-    messageReadStatus?: boolean | UserCountOutputTypeCountMessageReadStatusArgs
+    messageStatus?: boolean | UserCountOutputTypeCountMessageStatusArgs
     sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
     typingIndicators?: boolean | UserCountOutputTypeCountTypingIndicatorsArgs
@@ -2455,8 +2455,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountMessageReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageReadStatusWhereInput
+  export type UserCountOutputTypeCountMessageStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
   }
 
   /**
@@ -2652,13 +2652,15 @@ export namespace Prisma {
    */
 
   export type MessageCountOutputType = {
-    readStatus: number
+    status: number
+    statusResponses: number
     translations: number
     replies: number
   }
 
   export type MessageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    readStatus?: boolean | MessageCountOutputTypeCountReadStatusArgs
+    status?: boolean | MessageCountOutputTypeCountStatusArgs
+    statusResponses?: boolean | MessageCountOutputTypeCountStatusResponsesArgs
     translations?: boolean | MessageCountOutputTypeCountTranslationsArgs
     replies?: boolean | MessageCountOutputTypeCountRepliesArgs
   }
@@ -2677,8 +2679,15 @@ export namespace Prisma {
   /**
    * MessageCountOutputType without action
    */
-  export type MessageCountOutputTypeCountReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageReadStatusWhereInput
+  export type MessageCountOutputTypeCountStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
+  }
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeCountStatusResponsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
   }
 
   /**
@@ -3102,7 +3111,7 @@ export namespace Prisma {
     createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
     receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
     sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
-    messageReadStatus?: boolean | User$messageReadStatusArgs<ExtArgs>
+    messageStatus?: boolean | User$messageStatusArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
@@ -3153,7 +3162,7 @@ export namespace Prisma {
     createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
     receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
     sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
-    messageReadStatus?: boolean | User$messageReadStatusArgs<ExtArgs>
+    messageStatus?: boolean | User$messageStatusArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
@@ -3175,7 +3184,7 @@ export namespace Prisma {
       createdShareLinks: Prisma.$ConversationShareLinkPayload<ExtArgs>[]
       receivedFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
       sentFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
-      messageReadStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
+      messageStatus: Prisma.$MessageStatusPayload<ExtArgs>[]
       sentMessages: Prisma.$MessagePayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
@@ -3584,7 +3593,7 @@ export namespace Prisma {
     createdShareLinks<T extends User$createdShareLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$createdShareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     receivedFriendRequests<T extends User$receivedFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentFriendRequests<T extends User$sentFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$sentFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    messageReadStatus<T extends User$messageReadStatusArgs<ExtArgs> = {}>(args?: Subset<T, User$messageReadStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    messageStatus<T extends User$messageStatusArgs<ExtArgs> = {}>(args?: Subset<T, User$messageStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     typingIndicators<T extends User$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, User$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4185,27 +4194,27 @@ export namespace Prisma {
   }
 
   /**
-   * User.messageReadStatus
+   * User.messageStatus
    */
-  export type User$messageReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$messageStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
-    where?: MessageReadStatusWhereInput
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
-    cursor?: MessageReadStatusWhereUniqueInput
+    include?: MessageStatusInclude<ExtArgs> | null
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
+    cursor?: MessageStatusWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
@@ -9475,7 +9484,8 @@ export namespace Prisma {
     replyToId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    status?: boolean | Message$statusArgs<ExtArgs>
+    statusResponses?: boolean | Message$statusResponsesArgs<ExtArgs>
     translations?: boolean | Message$translationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
@@ -9506,7 +9516,8 @@ export namespace Prisma {
 
   export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "senderId" | "anonymousSenderId" | "content" | "originalLanguage" | "messageType" | "isEdited" | "editedAt" | "isDeleted" | "deletedAt" | "replyToId" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    status?: boolean | Message$statusArgs<ExtArgs>
+    statusResponses?: boolean | Message$statusResponsesArgs<ExtArgs>
     translations?: boolean | Message$translationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
@@ -9519,7 +9530,8 @@ export namespace Prisma {
   export type $MessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Message"
     objects: {
-      readStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
+      status: Prisma.$MessageStatusPayload<ExtArgs>[]
+      statusResponses: Prisma.$MessageStatusPayload<ExtArgs>[]
       translations: Prisma.$MessageTranslationPayload<ExtArgs>[]
       replyTo: Prisma.$MessagePayload<ExtArgs> | null
       replies: Prisma.$MessagePayload<ExtArgs>[]
@@ -9908,7 +9920,8 @@ export namespace Prisma {
    */
   export interface Prisma__MessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    readStatus<T extends Message$readStatusArgs<ExtArgs> = {}>(args?: Subset<T, Message$readStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    status<T extends Message$statusArgs<ExtArgs> = {}>(args?: Subset<T, Message$statusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    statusResponses<T extends Message$statusResponsesArgs<ExtArgs> = {}>(args?: Subset<T, Message$statusResponsesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     translations<T extends Message$translationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$translationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageTranslationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     replyTo<T extends Message$replyToArgs<ExtArgs> = {}>(args?: Subset<T, Message$replyToArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     replies<T extends Message$repliesArgs<ExtArgs> = {}>(args?: Subset<T, Message$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -10328,27 +10341,51 @@ export namespace Prisma {
   }
 
   /**
-   * Message.readStatus
+   * Message.status
    */
-  export type Message$readStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Message$statusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
-    where?: MessageReadStatusWhereInput
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
-    cursor?: MessageReadStatusWhereUniqueInput
+    include?: MessageStatusInclude<ExtArgs> | null
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
+    cursor?: MessageStatusWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
+  }
+
+  /**
+   * Message.statusResponses
+   */
+  export type Message$statusResponsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageStatus
+     */
+    select?: MessageStatusSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageStatus
+     */
+    omit?: MessageStatusOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageStatusInclude<ExtArgs> | null
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
+    cursor?: MessageStatusWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
@@ -11533,328 +11570,360 @@ export namespace Prisma {
 
 
   /**
-   * Model MessageReadStatus
+   * Model MessageStatus
    */
 
-  export type AggregateMessageReadStatus = {
-    _count: MessageReadStatusCountAggregateOutputType | null
-    _min: MessageReadStatusMinAggregateOutputType | null
-    _max: MessageReadStatusMaxAggregateOutputType | null
+  export type AggregateMessageStatus = {
+    _count: MessageStatusCountAggregateOutputType | null
+    _min: MessageStatusMinAggregateOutputType | null
+    _max: MessageStatusMaxAggregateOutputType | null
   }
 
-  export type MessageReadStatusMinAggregateOutputType = {
+  export type MessageStatusMinAggregateOutputType = {
     id: string | null
     messageId: string | null
     userId: string | null
+    receivedAt: Date | null
     readAt: Date | null
+    answer: string | null
   }
 
-  export type MessageReadStatusMaxAggregateOutputType = {
+  export type MessageStatusMaxAggregateOutputType = {
     id: string | null
     messageId: string | null
     userId: string | null
+    receivedAt: Date | null
     readAt: Date | null
+    answer: string | null
   }
 
-  export type MessageReadStatusCountAggregateOutputType = {
+  export type MessageStatusCountAggregateOutputType = {
     id: number
     messageId: number
     userId: number
+    receivedAt: number
     readAt: number
+    answer: number
     _all: number
   }
 
 
-  export type MessageReadStatusMinAggregateInputType = {
+  export type MessageStatusMinAggregateInputType = {
     id?: true
     messageId?: true
     userId?: true
+    receivedAt?: true
     readAt?: true
+    answer?: true
   }
 
-  export type MessageReadStatusMaxAggregateInputType = {
+  export type MessageStatusMaxAggregateInputType = {
     id?: true
     messageId?: true
     userId?: true
+    receivedAt?: true
     readAt?: true
+    answer?: true
   }
 
-  export type MessageReadStatusCountAggregateInputType = {
+  export type MessageStatusCountAggregateInputType = {
     id?: true
     messageId?: true
     userId?: true
+    receivedAt?: true
     readAt?: true
+    answer?: true
     _all?: true
   }
 
-  export type MessageReadStatusAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which MessageReadStatus to aggregate.
+     * Filter which MessageStatus to aggregate.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned MessageReadStatuses
+     * Count returned MessageStatuses
     **/
-    _count?: true | MessageReadStatusCountAggregateInputType
+    _count?: true | MessageStatusCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: MessageReadStatusMinAggregateInputType
+    _min?: MessageStatusMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: MessageReadStatusMaxAggregateInputType
+    _max?: MessageStatusMaxAggregateInputType
   }
 
-  export type GetMessageReadStatusAggregateType<T extends MessageReadStatusAggregateArgs> = {
-        [P in keyof T & keyof AggregateMessageReadStatus]: P extends '_count' | 'count'
+  export type GetMessageStatusAggregateType<T extends MessageStatusAggregateArgs> = {
+        [P in keyof T & keyof AggregateMessageStatus]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateMessageReadStatus[P]>
-      : GetScalarType<T[P], AggregateMessageReadStatus[P]>
+        : GetScalarType<T[P], AggregateMessageStatus[P]>
+      : GetScalarType<T[P], AggregateMessageStatus[P]>
   }
 
 
 
 
-  export type MessageReadStatusGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageReadStatusWhereInput
-    orderBy?: MessageReadStatusOrderByWithAggregationInput | MessageReadStatusOrderByWithAggregationInput[]
-    by: MessageReadStatusScalarFieldEnum[] | MessageReadStatusScalarFieldEnum
-    having?: MessageReadStatusScalarWhereWithAggregatesInput
+  export type MessageStatusGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithAggregationInput | MessageStatusOrderByWithAggregationInput[]
+    by: MessageStatusScalarFieldEnum[] | MessageStatusScalarFieldEnum
+    having?: MessageStatusScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: MessageReadStatusCountAggregateInputType | true
-    _min?: MessageReadStatusMinAggregateInputType
-    _max?: MessageReadStatusMaxAggregateInputType
+    _count?: MessageStatusCountAggregateInputType | true
+    _min?: MessageStatusMinAggregateInputType
+    _max?: MessageStatusMaxAggregateInputType
   }
 
-  export type MessageReadStatusGroupByOutputType = {
+  export type MessageStatusGroupByOutputType = {
     id: string
     messageId: string
     userId: string
-    readAt: Date
-    _count: MessageReadStatusCountAggregateOutputType | null
-    _min: MessageReadStatusMinAggregateOutputType | null
-    _max: MessageReadStatusMaxAggregateOutputType | null
+    receivedAt: Date | null
+    readAt: Date | null
+    answer: string | null
+    _count: MessageStatusCountAggregateOutputType | null
+    _min: MessageStatusMinAggregateOutputType | null
+    _max: MessageStatusMaxAggregateOutputType | null
   }
 
-  type GetMessageReadStatusGroupByPayload<T extends MessageReadStatusGroupByArgs> = Prisma.PrismaPromise<
+  type GetMessageStatusGroupByPayload<T extends MessageStatusGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<MessageReadStatusGroupByOutputType, T['by']> &
+      PickEnumerable<MessageStatusGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof MessageReadStatusGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof MessageStatusGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], MessageReadStatusGroupByOutputType[P]>
-            : GetScalarType<T[P], MessageReadStatusGroupByOutputType[P]>
+              : GetScalarType<T[P], MessageStatusGroupByOutputType[P]>
+            : GetScalarType<T[P], MessageStatusGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type MessageReadStatusSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type MessageStatusSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     messageId?: boolean
     userId?: boolean
+    receivedAt?: boolean
     readAt?: boolean
+    answer?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     message?: boolean | MessageDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["messageReadStatus"]>
+    response?: boolean | MessageStatus$responseArgs<ExtArgs>
+  }, ExtArgs["result"]["messageStatus"]>
 
 
 
-  export type MessageReadStatusSelectScalar = {
+  export type MessageStatusSelectScalar = {
     id?: boolean
     messageId?: boolean
     userId?: boolean
+    receivedAt?: boolean
     readAt?: boolean
+    answer?: boolean
   }
 
-  export type MessageReadStatusOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "userId" | "readAt", ExtArgs["result"]["messageReadStatus"]>
-  export type MessageReadStatusInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "userId" | "receivedAt" | "readAt" | "answer", ExtArgs["result"]["messageStatus"]>
+  export type MessageStatusInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     message?: boolean | MessageDefaultArgs<ExtArgs>
+    response?: boolean | MessageStatus$responseArgs<ExtArgs>
   }
 
-  export type $MessageReadStatusPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "MessageReadStatus"
+  export type $MessageStatusPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MessageStatus"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       message: Prisma.$MessagePayload<ExtArgs>
+      response: Prisma.$MessagePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       messageId: string
       userId: string
-      readAt: Date
-    }, ExtArgs["result"]["messageReadStatus"]>
+      /**
+       * Quand le message a été reçu par l'utilisateur
+       */
+      receivedAt: Date | null
+      /**
+       * Quand le message a été lu par l'utilisateur
+       */
+      readAt: Date | null
+      /**
+       * Last answer to the message by the user
+       */
+      answer: string | null
+    }, ExtArgs["result"]["messageStatus"]>
     composites: {}
   }
 
-  type MessageReadStatusGetPayload<S extends boolean | null | undefined | MessageReadStatusDefaultArgs> = $Result.GetResult<Prisma.$MessageReadStatusPayload, S>
+  type MessageStatusGetPayload<S extends boolean | null | undefined | MessageStatusDefaultArgs> = $Result.GetResult<Prisma.$MessageStatusPayload, S>
 
-  type MessageReadStatusCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<MessageReadStatusFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: MessageReadStatusCountAggregateInputType | true
+  type MessageStatusCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MessageStatusFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MessageStatusCountAggregateInputType | true
     }
 
-  export interface MessageReadStatusDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MessageReadStatus'], meta: { name: 'MessageReadStatus' } }
+  export interface MessageStatusDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MessageStatus'], meta: { name: 'MessageStatus' } }
     /**
-     * Find zero or one MessageReadStatus that matches the filter.
-     * @param {MessageReadStatusFindUniqueArgs} args - Arguments to find a MessageReadStatus
+     * Find zero or one MessageStatus that matches the filter.
+     * @param {MessageStatusFindUniqueArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findUnique({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends MessageReadStatusFindUniqueArgs>(args: SelectSubset<T, MessageReadStatusFindUniqueArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends MessageStatusFindUniqueArgs>(args: SelectSubset<T, MessageStatusFindUniqueArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one MessageReadStatus that matches the filter or throw an error with `error.code='P2025'`
+     * Find one MessageStatus that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {MessageReadStatusFindUniqueOrThrowArgs} args - Arguments to find a MessageReadStatus
+     * @param {MessageStatusFindUniqueOrThrowArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findUniqueOrThrow({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends MessageReadStatusFindUniqueOrThrowArgs>(args: SelectSubset<T, MessageReadStatusFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends MessageStatusFindUniqueOrThrowArgs>(args: SelectSubset<T, MessageStatusFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first MessageReadStatus that matches the filter.
+     * Find the first MessageStatus that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusFindFirstArgs} args - Arguments to find a MessageReadStatus
+     * @param {MessageStatusFindFirstArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findFirst({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends MessageReadStatusFindFirstArgs>(args?: SelectSubset<T, MessageReadStatusFindFirstArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends MessageStatusFindFirstArgs>(args?: SelectSubset<T, MessageStatusFindFirstArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first MessageReadStatus that matches the filter or
+     * Find the first MessageStatus that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusFindFirstOrThrowArgs} args - Arguments to find a MessageReadStatus
+     * @param {MessageStatusFindFirstOrThrowArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findFirstOrThrow({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends MessageReadStatusFindFirstOrThrowArgs>(args?: SelectSubset<T, MessageReadStatusFindFirstOrThrowArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends MessageStatusFindFirstOrThrowArgs>(args?: SelectSubset<T, MessageStatusFindFirstOrThrowArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more MessageReadStatuses that matches the filter.
+     * Find zero or more MessageStatuses that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {MessageStatusFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all MessageReadStatuses
-     * const messageReadStatuses = await prisma.messageReadStatus.findMany()
+     * // Get all MessageStatuses
+     * const messageStatuses = await prisma.messageStatus.findMany()
      * 
-     * // Get first 10 MessageReadStatuses
-     * const messageReadStatuses = await prisma.messageReadStatus.findMany({ take: 10 })
+     * // Get first 10 MessageStatuses
+     * const messageStatuses = await prisma.messageStatus.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const messageReadStatusWithIdOnly = await prisma.messageReadStatus.findMany({ select: { id: true } })
+     * const messageStatusWithIdOnly = await prisma.messageStatus.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends MessageReadStatusFindManyArgs>(args?: SelectSubset<T, MessageReadStatusFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends MessageStatusFindManyArgs>(args?: SelectSubset<T, MessageStatusFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a MessageReadStatus.
-     * @param {MessageReadStatusCreateArgs} args - Arguments to create a MessageReadStatus.
+     * Create a MessageStatus.
+     * @param {MessageStatusCreateArgs} args - Arguments to create a MessageStatus.
      * @example
-     * // Create one MessageReadStatus
-     * const MessageReadStatus = await prisma.messageReadStatus.create({
+     * // Create one MessageStatus
+     * const MessageStatus = await prisma.messageStatus.create({
      *   data: {
-     *     // ... data to create a MessageReadStatus
+     *     // ... data to create a MessageStatus
      *   }
      * })
      * 
      */
-    create<T extends MessageReadStatusCreateArgs>(args: SelectSubset<T, MessageReadStatusCreateArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends MessageStatusCreateArgs>(args: SelectSubset<T, MessageStatusCreateArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many MessageReadStatuses.
-     * @param {MessageReadStatusCreateManyArgs} args - Arguments to create many MessageReadStatuses.
+     * Create many MessageStatuses.
+     * @param {MessageStatusCreateManyArgs} args - Arguments to create many MessageStatuses.
      * @example
-     * // Create many MessageReadStatuses
-     * const messageReadStatus = await prisma.messageReadStatus.createMany({
+     * // Create many MessageStatuses
+     * const messageStatus = await prisma.messageStatus.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends MessageReadStatusCreateManyArgs>(args?: SelectSubset<T, MessageReadStatusCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends MessageStatusCreateManyArgs>(args?: SelectSubset<T, MessageStatusCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a MessageReadStatus.
-     * @param {MessageReadStatusDeleteArgs} args - Arguments to delete one MessageReadStatus.
+     * Delete a MessageStatus.
+     * @param {MessageStatusDeleteArgs} args - Arguments to delete one MessageStatus.
      * @example
-     * // Delete one MessageReadStatus
-     * const MessageReadStatus = await prisma.messageReadStatus.delete({
+     * // Delete one MessageStatus
+     * const MessageStatus = await prisma.messageStatus.delete({
      *   where: {
-     *     // ... filter to delete one MessageReadStatus
+     *     // ... filter to delete one MessageStatus
      *   }
      * })
      * 
      */
-    delete<T extends MessageReadStatusDeleteArgs>(args: SelectSubset<T, MessageReadStatusDeleteArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends MessageStatusDeleteArgs>(args: SelectSubset<T, MessageStatusDeleteArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one MessageReadStatus.
-     * @param {MessageReadStatusUpdateArgs} args - Arguments to update one MessageReadStatus.
+     * Update one MessageStatus.
+     * @param {MessageStatusUpdateArgs} args - Arguments to update one MessageStatus.
      * @example
-     * // Update one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.update({
+     * // Update one MessageStatus
+     * const messageStatus = await prisma.messageStatus.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -11864,30 +11933,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends MessageReadStatusUpdateArgs>(args: SelectSubset<T, MessageReadStatusUpdateArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends MessageStatusUpdateArgs>(args: SelectSubset<T, MessageStatusUpdateArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more MessageReadStatuses.
-     * @param {MessageReadStatusDeleteManyArgs} args - Arguments to filter MessageReadStatuses to delete.
+     * Delete zero or more MessageStatuses.
+     * @param {MessageStatusDeleteManyArgs} args - Arguments to filter MessageStatuses to delete.
      * @example
-     * // Delete a few MessageReadStatuses
-     * const { count } = await prisma.messageReadStatus.deleteMany({
+     * // Delete a few MessageStatuses
+     * const { count } = await prisma.messageStatus.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends MessageReadStatusDeleteManyArgs>(args?: SelectSubset<T, MessageReadStatusDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends MessageStatusDeleteManyArgs>(args?: SelectSubset<T, MessageStatusDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more MessageReadStatuses.
+     * Update zero or more MessageStatuses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {MessageStatusUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many MessageReadStatuses
-     * const messageReadStatus = await prisma.messageReadStatus.updateMany({
+     * // Update many MessageStatuses
+     * const messageStatus = await prisma.messageStatus.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -11897,79 +11966,79 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends MessageReadStatusUpdateManyArgs>(args: SelectSubset<T, MessageReadStatusUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends MessageStatusUpdateManyArgs>(args: SelectSubset<T, MessageStatusUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one MessageReadStatus.
-     * @param {MessageReadStatusUpsertArgs} args - Arguments to update or create a MessageReadStatus.
+     * Create or update one MessageStatus.
+     * @param {MessageStatusUpsertArgs} args - Arguments to update or create a MessageStatus.
      * @example
-     * // Update or create a MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.upsert({
+     * // Update or create a MessageStatus
+     * const messageStatus = await prisma.messageStatus.upsert({
      *   create: {
-     *     // ... data to create a MessageReadStatus
+     *     // ... data to create a MessageStatus
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the MessageReadStatus we want to update
+     *     // ... the filter for the MessageStatus we want to update
      *   }
      * })
      */
-    upsert<T extends MessageReadStatusUpsertArgs>(args: SelectSubset<T, MessageReadStatusUpsertArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends MessageStatusUpsertArgs>(args: SelectSubset<T, MessageStatusUpsertArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more MessageReadStatuses that matches the filter.
-     * @param {MessageReadStatusFindRawArgs} args - Select which filters you would like to apply.
+     * Find zero or more MessageStatuses that matches the filter.
+     * @param {MessageStatusFindRawArgs} args - Select which filters you would like to apply.
      * @example
-     * const messageReadStatus = await prisma.messageReadStatus.findRaw({
+     * const messageStatus = await prisma.messageStatus.findRaw({
      *   filter: { age: { $gt: 25 } }
      * })
      */
-    findRaw(args?: MessageReadStatusFindRawArgs): Prisma.PrismaPromise<JsonObject>
+    findRaw(args?: MessageStatusFindRawArgs): Prisma.PrismaPromise<JsonObject>
 
     /**
-     * Perform aggregation operations on a MessageReadStatus.
-     * @param {MessageReadStatusAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * Perform aggregation operations on a MessageStatus.
+     * @param {MessageStatusAggregateRawArgs} args - Select which aggregations you would like to apply.
      * @example
-     * const messageReadStatus = await prisma.messageReadStatus.aggregateRaw({
+     * const messageStatus = await prisma.messageStatus.aggregateRaw({
      *   pipeline: [
      *     { $match: { status: "registered" } },
      *     { $group: { _id: "$country", total: { $sum: 1 } } }
      *   ]
      * })
      */
-    aggregateRaw(args?: MessageReadStatusAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+    aggregateRaw(args?: MessageStatusAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
-     * Count the number of MessageReadStatuses.
+     * Count the number of MessageStatuses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusCountArgs} args - Arguments to filter MessageReadStatuses to count.
+     * @param {MessageStatusCountArgs} args - Arguments to filter MessageStatuses to count.
      * @example
-     * // Count the number of MessageReadStatuses
-     * const count = await prisma.messageReadStatus.count({
+     * // Count the number of MessageStatuses
+     * const count = await prisma.messageStatus.count({
      *   where: {
-     *     // ... the filter for the MessageReadStatuses we want to count
+     *     // ... the filter for the MessageStatuses we want to count
      *   }
      * })
     **/
-    count<T extends MessageReadStatusCountArgs>(
-      args?: Subset<T, MessageReadStatusCountArgs>,
+    count<T extends MessageStatusCountArgs>(
+      args?: Subset<T, MessageStatusCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], MessageReadStatusCountAggregateOutputType>
+          : GetScalarType<T['select'], MessageStatusCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a MessageReadStatus.
+     * Allows you to perform aggregations operations on a MessageStatus.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {MessageStatusAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -11989,13 +12058,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends MessageReadStatusAggregateArgs>(args: Subset<T, MessageReadStatusAggregateArgs>): Prisma.PrismaPromise<GetMessageReadStatusAggregateType<T>>
+    aggregate<T extends MessageStatusAggregateArgs>(args: Subset<T, MessageStatusAggregateArgs>): Prisma.PrismaPromise<GetMessageStatusAggregateType<T>>
 
     /**
-     * Group by MessageReadStatus.
+     * Group by MessageStatus.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusGroupByArgs} args - Group by arguments.
+     * @param {MessageStatusGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -12010,14 +12079,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends MessageReadStatusGroupByArgs,
+      T extends MessageStatusGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: MessageReadStatusGroupByArgs['orderBy'] }
-        : { orderBy?: MessageReadStatusGroupByArgs['orderBy'] },
+        ? { orderBy: MessageStatusGroupByArgs['orderBy'] }
+        : { orderBy?: MessageStatusGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -12066,23 +12135,24 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, MessageReadStatusGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMessageReadStatusGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, MessageStatusGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMessageStatusGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the MessageReadStatus model
+   * Fields of the MessageStatus model
    */
-  readonly fields: MessageReadStatusFieldRefs;
+  readonly fields: MessageStatusFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for MessageReadStatus.
+   * The delegate class that acts as a "Promise-like" for MessageStatus.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__MessageReadStatusClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__MessageStatusClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     message<T extends MessageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MessageDefaultArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    response<T extends MessageStatus$responseArgs<ExtArgs> = {}>(args?: Subset<T, MessageStatus$responseArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12109,358 +12179,360 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the MessageReadStatus model
+   * Fields of the MessageStatus model
    */
-  interface MessageReadStatusFieldRefs {
-    readonly id: FieldRef<"MessageReadStatus", 'String'>
-    readonly messageId: FieldRef<"MessageReadStatus", 'String'>
-    readonly userId: FieldRef<"MessageReadStatus", 'String'>
-    readonly readAt: FieldRef<"MessageReadStatus", 'DateTime'>
+  interface MessageStatusFieldRefs {
+    readonly id: FieldRef<"MessageStatus", 'String'>
+    readonly messageId: FieldRef<"MessageStatus", 'String'>
+    readonly userId: FieldRef<"MessageStatus", 'String'>
+    readonly receivedAt: FieldRef<"MessageStatus", 'DateTime'>
+    readonly readAt: FieldRef<"MessageStatus", 'DateTime'>
+    readonly answer: FieldRef<"MessageStatus", 'String'>
   }
     
 
   // Custom InputTypes
   /**
-   * MessageReadStatus findUnique
+   * MessageStatus findUnique
    */
-  export type MessageReadStatusFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus findUniqueOrThrow
+   * MessageStatus findUniqueOrThrow
    */
-  export type MessageReadStatusFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus findFirst
+   * MessageStatus findFirst
    */
-  export type MessageReadStatusFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for MessageReadStatuses.
+     * Sets the position for searching for MessageStatuses.
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of MessageReadStatuses.
+     * Filter by unique combinations of MessageStatuses.
      */
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
-   * MessageReadStatus findFirstOrThrow
+   * MessageStatus findFirstOrThrow
    */
-  export type MessageReadStatusFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for MessageReadStatuses.
+     * Sets the position for searching for MessageStatuses.
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of MessageReadStatuses.
+     * Filter by unique combinations of MessageStatuses.
      */
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
-   * MessageReadStatus findMany
+   * MessageStatus findMany
    */
-  export type MessageReadStatusFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatuses to fetch.
+     * Filter, which MessageStatuses to fetch.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing MessageReadStatuses.
+     * Sets the position for listing MessageStatuses.
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
-   * MessageReadStatus create
+   * MessageStatus create
    */
-  export type MessageReadStatusCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * The data needed to create a MessageReadStatus.
+     * The data needed to create a MessageStatus.
      */
-    data: XOR<MessageReadStatusCreateInput, MessageReadStatusUncheckedCreateInput>
+    data: XOR<MessageStatusCreateInput, MessageStatusUncheckedCreateInput>
   }
 
   /**
-   * MessageReadStatus createMany
+   * MessageStatus createMany
    */
-  export type MessageReadStatusCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many MessageReadStatuses.
+     * The data used to create many MessageStatuses.
      */
-    data: MessageReadStatusCreateManyInput | MessageReadStatusCreateManyInput[]
+    data: MessageStatusCreateManyInput | MessageStatusCreateManyInput[]
   }
 
   /**
-   * MessageReadStatus update
+   * MessageStatus update
    */
-  export type MessageReadStatusUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * The data needed to update a MessageReadStatus.
+     * The data needed to update a MessageStatus.
      */
-    data: XOR<MessageReadStatusUpdateInput, MessageReadStatusUncheckedUpdateInput>
+    data: XOR<MessageStatusUpdateInput, MessageStatusUncheckedUpdateInput>
     /**
-     * Choose, which MessageReadStatus to update.
+     * Choose, which MessageStatus to update.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus updateMany
+   * MessageStatus updateMany
    */
-  export type MessageReadStatusUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update MessageReadStatuses.
+     * The data used to update MessageStatuses.
      */
-    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyInput>
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyInput>
     /**
-     * Filter which MessageReadStatuses to update
+     * Filter which MessageStatuses to update
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
-     * Limit how many MessageReadStatuses to update.
+     * Limit how many MessageStatuses to update.
      */
     limit?: number
   }
 
   /**
-   * MessageReadStatus upsert
+   * MessageStatus upsert
    */
-  export type MessageReadStatusUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * The filter to search for the MessageReadStatus to update in case it exists.
+     * The filter to search for the MessageStatus to update in case it exists.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
     /**
-     * In case the MessageReadStatus found by the `where` argument doesn't exist, create a new MessageReadStatus with this data.
+     * In case the MessageStatus found by the `where` argument doesn't exist, create a new MessageStatus with this data.
      */
-    create: XOR<MessageReadStatusCreateInput, MessageReadStatusUncheckedCreateInput>
+    create: XOR<MessageStatusCreateInput, MessageStatusUncheckedCreateInput>
     /**
-     * In case the MessageReadStatus was found with the provided `where` argument, update it with this data.
+     * In case the MessageStatus was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<MessageReadStatusUpdateInput, MessageReadStatusUncheckedUpdateInput>
+    update: XOR<MessageStatusUpdateInput, MessageStatusUncheckedUpdateInput>
   }
 
   /**
-   * MessageReadStatus delete
+   * MessageStatus delete
    */
-  export type MessageReadStatusDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter which MessageReadStatus to delete.
+     * Filter which MessageStatus to delete.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus deleteMany
+   * MessageStatus deleteMany
    */
-  export type MessageReadStatusDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which MessageReadStatuses to delete
+     * Filter which MessageStatuses to delete
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
-     * Limit how many MessageReadStatuses to delete.
+     * Limit how many MessageStatuses to delete.
      */
     limit?: number
   }
 
   /**
-   * MessageReadStatus findRaw
+   * MessageStatus findRaw
    */
-  export type MessageReadStatusFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
      */
@@ -12472,9 +12544,9 @@ export namespace Prisma {
   }
 
   /**
-   * MessageReadStatus aggregateRaw
+   * MessageStatus aggregateRaw
    */
-  export type MessageReadStatusAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
      */
@@ -12486,21 +12558,40 @@ export namespace Prisma {
   }
 
   /**
-   * MessageReadStatus without action
+   * MessageStatus.response
    */
-  export type MessageReadStatusDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatus$responseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the Message
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the Message
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageInclude<ExtArgs> | null
+    where?: MessageWhereInput
+  }
+
+  /**
+   * MessageStatus without action
+   */
+  export type MessageStatusDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageStatus
+     */
+    select?: MessageStatusSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageStatus
+     */
+    omit?: MessageStatusOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageStatusInclude<ExtArgs> | null
   }
 
 
@@ -23161,14 +23252,16 @@ export namespace Prisma {
   export type MessageTranslationScalarFieldEnum = (typeof MessageTranslationScalarFieldEnum)[keyof typeof MessageTranslationScalarFieldEnum]
 
 
-  export const MessageReadStatusScalarFieldEnum: {
+  export const MessageStatusScalarFieldEnum: {
     id: 'id',
     messageId: 'messageId',
     userId: 'userId',
-    readAt: 'readAt'
+    receivedAt: 'receivedAt',
+    readAt: 'readAt',
+    answer: 'answer'
   };
 
-  export type MessageReadStatusScalarFieldEnum = (typeof MessageReadStatusScalarFieldEnum)[keyof typeof MessageReadStatusScalarFieldEnum]
+  export type MessageStatusScalarFieldEnum = (typeof MessageStatusScalarFieldEnum)[keyof typeof MessageStatusScalarFieldEnum]
 
 
   export const FriendRequestScalarFieldEnum: {
@@ -23445,7 +23538,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkListRelationFilter
     receivedFriendRequests?: FriendRequestListRelationFilter
     sentFriendRequests?: FriendRequestListRelationFilter
-    messageReadStatus?: MessageReadStatusListRelationFilter
+    messageStatus?: MessageStatusListRelationFilter
     sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
@@ -23489,7 +23582,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkOrderByRelationAggregateInput
     receivedFriendRequests?: FriendRequestOrderByRelationAggregateInput
     sentFriendRequests?: FriendRequestOrderByRelationAggregateInput
-    messageReadStatus?: MessageReadStatusOrderByRelationAggregateInput
+    messageStatus?: MessageStatusOrderByRelationAggregateInput
     sentMessages?: MessageOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
     typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
@@ -23536,7 +23629,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkListRelationFilter
     receivedFriendRequests?: FriendRequestListRelationFilter
     sentFriendRequests?: FriendRequestListRelationFilter
-    messageReadStatus?: MessageReadStatusListRelationFilter
+    messageStatus?: MessageStatusListRelationFilter
     sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
@@ -24152,7 +24245,8 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
-    readStatus?: MessageReadStatusListRelationFilter
+    status?: MessageStatusListRelationFilter
+    statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
@@ -24176,7 +24270,8 @@ export namespace Prisma {
     replyToId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    readStatus?: MessageReadStatusOrderByRelationAggregateInput
+    status?: MessageStatusOrderByRelationAggregateInput
+    statusResponses?: MessageStatusOrderByRelationAggregateInput
     translations?: MessageTranslationOrderByRelationAggregateInput
     replyTo?: MessageOrderByWithRelationInput
     replies?: MessageOrderByRelationAggregateInput
@@ -24203,7 +24298,8 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
-    readStatus?: MessageReadStatusListRelationFilter
+    status?: MessageStatusListRelationFilter
+    statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
@@ -24329,57 +24425,71 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"MessageTranslation"> | Date | string
   }
 
-  export type MessageReadStatusWhereInput = {
-    AND?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    OR?: MessageReadStatusWhereInput[]
-    NOT?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    id?: StringFilter<"MessageReadStatus"> | string
-    messageId?: StringFilter<"MessageReadStatus"> | string
-    userId?: StringFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+  export type MessageStatusWhereInput = {
+    AND?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    OR?: MessageStatusWhereInput[]
+    NOT?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    id?: StringFilter<"MessageStatus"> | string
+    messageId?: StringFilter<"MessageStatus"> | string
+    userId?: StringFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableFilter<"MessageStatus"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }
 
-  export type MessageReadStatusOrderByWithRelationInput = {
+  export type MessageStatusOrderByWithRelationInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
+    answer?: SortOrder
     user?: UserOrderByWithRelationInput
     message?: MessageOrderByWithRelationInput
+    response?: MessageOrderByWithRelationInput
   }
 
-  export type MessageReadStatusWhereUniqueInput = Prisma.AtLeast<{
+  export type MessageStatusWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    OR?: MessageReadStatusWhereInput[]
-    NOT?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    messageId?: StringFilter<"MessageReadStatus"> | string
-    userId?: StringFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+    messageId_userId?: MessageStatusMessageId_userIdCompoundUniqueInput
+    AND?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    OR?: MessageStatusWhereInput[]
+    NOT?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    messageId?: StringFilter<"MessageStatus"> | string
+    userId?: StringFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableFilter<"MessageStatus"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
-  }, "id">
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
+  }, "id" | "messageId_userId">
 
-  export type MessageReadStatusOrderByWithAggregationInput = {
+  export type MessageStatusOrderByWithAggregationInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
-    _count?: MessageReadStatusCountOrderByAggregateInput
-    _max?: MessageReadStatusMaxOrderByAggregateInput
-    _min?: MessageReadStatusMinOrderByAggregateInput
+    answer?: SortOrder
+    _count?: MessageStatusCountOrderByAggregateInput
+    _max?: MessageStatusMaxOrderByAggregateInput
+    _min?: MessageStatusMinOrderByAggregateInput
   }
 
-  export type MessageReadStatusScalarWhereWithAggregatesInput = {
-    AND?: MessageReadStatusScalarWhereWithAggregatesInput | MessageReadStatusScalarWhereWithAggregatesInput[]
-    OR?: MessageReadStatusScalarWhereWithAggregatesInput[]
-    NOT?: MessageReadStatusScalarWhereWithAggregatesInput | MessageReadStatusScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"MessageReadStatus"> | string
-    messageId?: StringWithAggregatesFilter<"MessageReadStatus"> | string
-    userId?: StringWithAggregatesFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeWithAggregatesFilter<"MessageReadStatus"> | Date | string
+  export type MessageStatusScalarWhereWithAggregatesInput = {
+    AND?: MessageStatusScalarWhereWithAggregatesInput | MessageStatusScalarWhereWithAggregatesInput[]
+    OR?: MessageStatusScalarWhereWithAggregatesInput[]
+    NOT?: MessageStatusScalarWhereWithAggregatesInput | MessageStatusScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MessageStatus"> | string
+    messageId?: StringWithAggregatesFilter<"MessageStatus"> | string
+    userId?: StringWithAggregatesFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableWithAggregatesFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableWithAggregatesFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableWithAggregatesFilter<"MessageStatus"> | string | null
   }
 
   export type FriendRequestWhereInput = {
@@ -25201,7 +25311,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -25245,7 +25355,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -25288,7 +25398,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -25331,7 +25441,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -26046,7 +26156,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -26070,7 +26181,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -26085,7 +26197,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -26108,7 +26221,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -26237,47 +26351,60 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageReadStatusCreateInput = {
+  export type MessageStatusCreateInput = {
     id?: string
-    readAt?: Date | string
-    user: UserCreateNestedOneWithoutMessageReadStatusInput
-    message: MessageCreateNestedOneWithoutReadStatusInput
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    user: UserCreateNestedOneWithoutMessageStatusInput
+    message: MessageCreateNestedOneWithoutStatusInput
+    response?: MessageCreateNestedOneWithoutStatusResponsesInput
   }
 
-  export type MessageReadStatusUncheckedCreateInput = {
-    id?: string
-    messageId: string
-    userId: string
-    readAt?: Date | string
-  }
-
-  export type MessageReadStatusUpdateInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutMessageReadStatusNestedInput
-    message?: MessageUpdateOneRequiredWithoutReadStatusNestedInput
-  }
-
-  export type MessageReadStatusUncheckedUpdateInput = {
-    messageId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MessageReadStatusCreateManyInput = {
+  export type MessageStatusUncheckedCreateInput = {
     id?: string
     messageId: string
     userId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
-  export type MessageReadStatusUpdateManyMutationInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type MessageStatusUpdateInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutMessageStatusNestedInput
+    message?: MessageUpdateOneRequiredWithoutStatusNestedInput
+    response?: MessageUpdateOneWithoutStatusResponsesNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateManyInput = {
+  export type MessageStatusUncheckedUpdateInput = {
     messageId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MessageStatusCreateManyInput = {
+    id?: string
+    messageId: string
+    userId: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
+  }
+
+  export type MessageStatusUpdateManyMutationInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type MessageStatusUncheckedUpdateManyInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type FriendRequestCreateInput = {
@@ -27178,10 +27305,10 @@ export namespace Prisma {
     none?: FriendRequestWhereInput
   }
 
-  export type MessageReadStatusListRelationFilter = {
-    every?: MessageReadStatusWhereInput
-    some?: MessageReadStatusWhereInput
-    none?: MessageReadStatusWhereInput
+  export type MessageStatusListRelationFilter = {
+    every?: MessageStatusWhereInput
+    some?: MessageStatusWhereInput
+    none?: MessageStatusWhereInput
   }
 
   export type MessageListRelationFilter = {
@@ -27249,7 +27376,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type MessageReadStatusOrderByRelationAggregateInput = {
+  export type MessageStatusOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -27953,25 +28080,36 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type MessageReadStatusCountOrderByAggregateInput = {
-    id?: SortOrder
-    messageId?: SortOrder
-    userId?: SortOrder
-    readAt?: SortOrder
+  export type MessageStatusMessageId_userIdCompoundUniqueInput = {
+    messageId: string
+    userId: string
   }
 
-  export type MessageReadStatusMaxOrderByAggregateInput = {
+  export type MessageStatusCountOrderByAggregateInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
+    answer?: SortOrder
   }
 
-  export type MessageReadStatusMinOrderByAggregateInput = {
+  export type MessageStatusMaxOrderByAggregateInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
+    answer?: SortOrder
+  }
+
+  export type MessageStatusMinOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    userId?: SortOrder
+    receivedAt?: SortOrder
+    readAt?: SortOrder
+    answer?: SortOrder
   }
 
   export type FriendRequestCountOrderByAggregateInput = {
@@ -28450,11 +28588,11 @@ export namespace Prisma {
     connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
   }
 
-  export type MessageReadStatusCreateNestedManyWithoutUserInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusCreateNestedManyWithoutUserInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageCreateNestedManyWithoutSenderInput = {
@@ -28561,11 +28699,11 @@ export namespace Prisma {
     connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
   }
 
-  export type MessageReadStatusUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageUncheckedCreateNestedManyWithoutSenderInput = {
@@ -28743,18 +28881,18 @@ export namespace Prisma {
     deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
   }
 
-  export type MessageReadStatusUpdateManyWithoutUserNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutUserInput | MessageReadStatusUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutUserInput | MessageStatusUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutUserInput | MessageStatusUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutUserInput | MessageStatusUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageUpdateManyWithoutSenderNestedInput = {
@@ -28963,18 +29101,18 @@ export namespace Prisma {
     deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutUserInput | MessageReadStatusUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutUserInput | MessageStatusUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutUserInput | MessageStatusUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutUserInput | MessageStatusUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageUncheckedUpdateManyWithoutSenderNestedInput = {
@@ -29565,11 +29703,18 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
-  export type MessageReadStatusCreateNestedManyWithoutMessageInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+  }
+
+  export type MessageStatusCreateNestedManyWithoutResponseInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageTranslationCreateNestedManyWithoutMessageInput = {
@@ -29610,11 +29755,18 @@ export namespace Prisma {
     connect?: ConversationWhereUniqueInput
   }
 
-  export type MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+  }
+
+  export type MessageStatusUncheckedCreateNestedManyWithoutResponseInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageTranslationUncheckedCreateNestedManyWithoutMessageInput = {
@@ -29631,18 +29783,32 @@ export namespace Prisma {
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
-  export type MessageReadStatusUpdateManyWithoutMessageNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput | MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutMessageInput | MessageStatusUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutMessageInput | MessageStatusUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutMessageInput | MessageStatusUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+  }
+
+  export type MessageStatusUpdateManyWithoutResponseNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutResponseInput | MessageStatusUpsertWithWhereUniqueWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutResponseInput | MessageStatusUpdateWithWhereUniqueWithoutResponseInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutResponseInput | MessageStatusUpdateManyWithWhereWithoutResponseInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageTranslationUpdateManyWithoutMessageNestedInput = {
@@ -29711,18 +29877,32 @@ export namespace Prisma {
     update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMessagesInput, ConversationUpdateWithoutMessagesInput>, ConversationUncheckedUpdateWithoutMessagesInput>
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput | MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutMessageInput | MessageStatusUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutMessageInput | MessageStatusUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutMessageInput | MessageStatusUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+  }
+
+  export type MessageStatusUncheckedUpdateManyWithoutResponseNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutResponseInput | MessageStatusUpsertWithWhereUniqueWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutResponseInput | MessageStatusUpdateWithWhereUniqueWithoutResponseInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutResponseInput | MessageStatusUpdateManyWithWhereWithoutResponseInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput = {
@@ -29776,32 +29956,48 @@ export namespace Prisma {
     update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutTranslationsInput, MessageUpdateWithoutTranslationsInput>, MessageUncheckedUpdateWithoutTranslationsInput>
   }
 
-  export type UserCreateNestedOneWithoutMessageReadStatusInput = {
-    create?: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
-    connectOrCreate?: UserCreateOrConnectWithoutMessageReadStatusInput
+  export type UserCreateNestedOneWithoutMessageStatusInput = {
+    create?: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMessageStatusInput
     connect?: UserWhereUniqueInput
   }
 
-  export type MessageCreateNestedOneWithoutReadStatusInput = {
-    create?: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
-    connectOrCreate?: MessageCreateOrConnectWithoutReadStatusInput
+  export type MessageCreateNestedOneWithoutStatusInput = {
+    create?: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusInput
     connect?: MessageWhereUniqueInput
   }
 
-  export type UserUpdateOneRequiredWithoutMessageReadStatusNestedInput = {
-    create?: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
-    connectOrCreate?: UserCreateOrConnectWithoutMessageReadStatusInput
-    upsert?: UserUpsertWithoutMessageReadStatusInput
+  export type MessageCreateNestedOneWithoutStatusResponsesInput = {
+    create?: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusResponsesInput
+    connect?: MessageWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutMessageStatusNestedInput = {
+    create?: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMessageStatusInput
+    upsert?: UserUpsertWithoutMessageStatusInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMessageReadStatusInput, UserUpdateWithoutMessageReadStatusInput>, UserUncheckedUpdateWithoutMessageReadStatusInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMessageStatusInput, UserUpdateWithoutMessageStatusInput>, UserUncheckedUpdateWithoutMessageStatusInput>
   }
 
-  export type MessageUpdateOneRequiredWithoutReadStatusNestedInput = {
-    create?: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
-    connectOrCreate?: MessageCreateOrConnectWithoutReadStatusInput
-    upsert?: MessageUpsertWithoutReadStatusInput
+  export type MessageUpdateOneRequiredWithoutStatusNestedInput = {
+    create?: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusInput
+    upsert?: MessageUpsertWithoutStatusInput
     connect?: MessageWhereUniqueInput
-    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutReadStatusInput, MessageUpdateWithoutReadStatusInput>, MessageUncheckedUpdateWithoutReadStatusInput>
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutStatusInput, MessageUpdateWithoutStatusInput>, MessageUncheckedUpdateWithoutStatusInput>
+  }
+
+  export type MessageUpdateOneWithoutStatusResponsesNestedInput = {
+    create?: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusResponsesInput
+    upsert?: MessageUpsertWithoutStatusResponsesInput
+    disconnect?: boolean
+    delete?: MessageWhereInput | boolean
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutStatusResponsesInput, MessageUpdateWithoutStatusResponsesInput>, MessageUncheckedUpdateWithoutStatusResponsesInput>
   }
 
   export type UserCreateNestedOneWithoutReceivedFriendRequestsInput = {
@@ -30626,25 +30822,29 @@ export namespace Prisma {
     data: FriendRequestCreateManySenderInput | FriendRequestCreateManySenderInput[]
   }
 
-  export type MessageReadStatusCreateWithoutUserInput = {
+  export type MessageStatusCreateWithoutUserInput = {
     id?: string
-    readAt?: Date | string
-    message: MessageCreateNestedOneWithoutReadStatusInput
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    message: MessageCreateNestedOneWithoutStatusInput
+    response?: MessageCreateNestedOneWithoutStatusResponsesInput
   }
 
-  export type MessageReadStatusUncheckedCreateWithoutUserInput = {
+  export type MessageStatusUncheckedCreateWithoutUserInput = {
     id?: string
     messageId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
-  export type MessageReadStatusCreateOrConnectWithoutUserInput = {
-    where: MessageReadStatusWhereUniqueInput
-    create: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput>
+  export type MessageStatusCreateOrConnectWithoutUserInput = {
+    where: MessageStatusWhereUniqueInput
+    create: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput>
   }
 
-  export type MessageReadStatusCreateManyUserInputEnvelope = {
-    data: MessageReadStatusCreateManyUserInput | MessageReadStatusCreateManyUserInput[]
+  export type MessageStatusCreateManyUserInputEnvelope = {
+    data: MessageStatusCreateManyUserInput | MessageStatusCreateManyUserInput[]
   }
 
   export type MessageCreateWithoutSenderInput = {
@@ -30658,7 +30858,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -30680,7 +30881,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -31138,30 +31340,32 @@ export namespace Prisma {
     data: XOR<FriendRequestUpdateManyMutationInput, FriendRequestUncheckedUpdateManyWithoutSenderInput>
   }
 
-  export type MessageReadStatusUpsertWithWhereUniqueWithoutUserInput = {
-    where: MessageReadStatusWhereUniqueInput
-    update: XOR<MessageReadStatusUpdateWithoutUserInput, MessageReadStatusUncheckedUpdateWithoutUserInput>
-    create: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput>
+  export type MessageStatusUpsertWithWhereUniqueWithoutUserInput = {
+    where: MessageStatusWhereUniqueInput
+    update: XOR<MessageStatusUpdateWithoutUserInput, MessageStatusUncheckedUpdateWithoutUserInput>
+    create: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput>
   }
 
-  export type MessageReadStatusUpdateWithWhereUniqueWithoutUserInput = {
-    where: MessageReadStatusWhereUniqueInput
-    data: XOR<MessageReadStatusUpdateWithoutUserInput, MessageReadStatusUncheckedUpdateWithoutUserInput>
+  export type MessageStatusUpdateWithWhereUniqueWithoutUserInput = {
+    where: MessageStatusWhereUniqueInput
+    data: XOR<MessageStatusUpdateWithoutUserInput, MessageStatusUncheckedUpdateWithoutUserInput>
   }
 
-  export type MessageReadStatusUpdateManyWithWhereWithoutUserInput = {
-    where: MessageReadStatusScalarWhereInput
-    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyWithoutUserInput>
+  export type MessageStatusUpdateManyWithWhereWithoutUserInput = {
+    where: MessageStatusScalarWhereInput
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type MessageReadStatusScalarWhereInput = {
-    AND?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
-    OR?: MessageReadStatusScalarWhereInput[]
-    NOT?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
-    id?: StringFilter<"MessageReadStatus"> | string
-    messageId?: StringFilter<"MessageReadStatus"> | string
-    userId?: StringFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+  export type MessageStatusScalarWhereInput = {
+    AND?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+    OR?: MessageStatusScalarWhereInput[]
+    NOT?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+    id?: StringFilter<"MessageStatus"> | string
+    messageId?: StringFilter<"MessageStatus"> | string
+    userId?: StringFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableFilter<"MessageStatus"> | string | null
   }
 
   export type MessageUpsertWithWhereUniqueWithoutSenderInput = {
@@ -31658,7 +31862,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -31680,7 +31885,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -31909,7 +32115,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -31952,7 +32158,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -32057,7 +32263,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -32099,7 +32305,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -32250,7 +32456,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -32293,7 +32499,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -32414,7 +32620,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -32456,7 +32662,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -32639,7 +32845,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -32661,7 +32868,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -32809,25 +33017,54 @@ export namespace Prisma {
     data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutAnonymousSenderInput>
   }
 
-  export type MessageReadStatusCreateWithoutMessageInput = {
+  export type MessageStatusCreateWithoutMessageInput = {
     id?: string
-    readAt?: Date | string
-    user: UserCreateNestedOneWithoutMessageReadStatusInput
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    user: UserCreateNestedOneWithoutMessageStatusInput
+    response?: MessageCreateNestedOneWithoutStatusResponsesInput
   }
 
-  export type MessageReadStatusUncheckedCreateWithoutMessageInput = {
+  export type MessageStatusUncheckedCreateWithoutMessageInput = {
     id?: string
     userId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
-  export type MessageReadStatusCreateOrConnectWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    create: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput>
+  export type MessageStatusCreateOrConnectWithoutMessageInput = {
+    where: MessageStatusWhereUniqueInput
+    create: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput>
   }
 
-  export type MessageReadStatusCreateManyMessageInputEnvelope = {
-    data: MessageReadStatusCreateManyMessageInput | MessageReadStatusCreateManyMessageInput[]
+  export type MessageStatusCreateManyMessageInputEnvelope = {
+    data: MessageStatusCreateManyMessageInput | MessageStatusCreateManyMessageInput[]
+  }
+
+  export type MessageStatusCreateWithoutResponseInput = {
+    id?: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    user: UserCreateNestedOneWithoutMessageStatusInput
+    message: MessageCreateNestedOneWithoutStatusInput
+  }
+
+  export type MessageStatusUncheckedCreateWithoutResponseInput = {
+    id?: string
+    messageId: string
+    userId: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+  }
+
+  export type MessageStatusCreateOrConnectWithoutResponseInput = {
+    where: MessageStatusWhereUniqueInput
+    create: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput>
+  }
+
+  export type MessageStatusCreateManyResponseInputEnvelope = {
+    data: MessageStatusCreateManyResponseInput | MessageStatusCreateManyResponseInput[]
   }
 
   export type MessageTranslationCreateWithoutMessageInput = {
@@ -32872,7 +33109,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -32895,7 +33133,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
   }
 
@@ -32915,7 +33154,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -32937,7 +33177,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -33037,7 +33278,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
@@ -33080,7 +33321,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
@@ -33142,20 +33383,36 @@ export namespace Prisma {
     create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
   }
 
-  export type MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    update: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
-    create: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput>
+  export type MessageStatusUpsertWithWhereUniqueWithoutMessageInput = {
+    where: MessageStatusWhereUniqueInput
+    update: XOR<MessageStatusUpdateWithoutMessageInput, MessageStatusUncheckedUpdateWithoutMessageInput>
+    create: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput>
   }
 
-  export type MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    data: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
+  export type MessageStatusUpdateWithWhereUniqueWithoutMessageInput = {
+    where: MessageStatusWhereUniqueInput
+    data: XOR<MessageStatusUpdateWithoutMessageInput, MessageStatusUncheckedUpdateWithoutMessageInput>
   }
 
-  export type MessageReadStatusUpdateManyWithWhereWithoutMessageInput = {
-    where: MessageReadStatusScalarWhereInput
-    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyWithoutMessageInput>
+  export type MessageStatusUpdateManyWithWhereWithoutMessageInput = {
+    where: MessageStatusScalarWhereInput
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type MessageStatusUpsertWithWhereUniqueWithoutResponseInput = {
+    where: MessageStatusWhereUniqueInput
+    update: XOR<MessageStatusUpdateWithoutResponseInput, MessageStatusUncheckedUpdateWithoutResponseInput>
+    create: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput>
+  }
+
+  export type MessageStatusUpdateWithWhereUniqueWithoutResponseInput = {
+    where: MessageStatusWhereUniqueInput
+    data: XOR<MessageStatusUpdateWithoutResponseInput, MessageStatusUncheckedUpdateWithoutResponseInput>
+  }
+
+  export type MessageStatusUpdateManyWithWhereWithoutResponseInput = {
+    where: MessageStatusScalarWhereInput
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyWithoutResponseInput>
   }
 
   export type MessageTranslationUpsertWithWhereUniqueWithoutMessageInput = {
@@ -33210,7 +33467,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -33232,7 +33490,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
   }
 
@@ -33352,7 +33611,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
@@ -33394,7 +33653,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
@@ -33466,7 +33725,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -33489,7 +33749,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -33519,7 +33780,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -33541,11 +33803,12 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
-  export type UserCreateWithoutMessageReadStatusInput = {
+  export type UserCreateWithoutMessageStatusInput = {
     id?: string
     username: string
     firstName: string
@@ -33588,7 +33851,7 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserUncheckedCreateWithoutMessageReadStatusInput = {
+  export type UserUncheckedCreateWithoutMessageStatusInput = {
     id?: string
     username: string
     firstName: string
@@ -33631,12 +33894,12 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserCreateOrConnectWithoutMessageReadStatusInput = {
+  export type UserCreateOrConnectWithoutMessageStatusInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
+    create: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
   }
 
-  export type MessageCreateWithoutReadStatusInput = {
+  export type MessageCreateWithoutStatusInput = {
     id?: string
     content: string
     originalLanguage?: string
@@ -33647,6 +33910,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -33655,7 +33919,7 @@ export namespace Prisma {
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
-  export type MessageUncheckedCreateWithoutReadStatusInput = {
+  export type MessageUncheckedCreateWithoutStatusInput = {
     id?: string
     conversationId: string
     senderId?: string | null
@@ -33670,27 +33934,73 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
-  export type MessageCreateOrConnectWithoutReadStatusInput = {
+  export type MessageCreateOrConnectWithoutStatusInput = {
     where: MessageWhereUniqueInput
-    create: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
+    create: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
   }
 
-  export type UserUpsertWithoutMessageReadStatusInput = {
-    update: XOR<UserUpdateWithoutMessageReadStatusInput, UserUncheckedUpdateWithoutMessageReadStatusInput>
-    create: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
+  export type MessageCreateWithoutStatusResponsesInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutStatusResponsesInput = {
+    id?: string
+    conversationId: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutStatusResponsesInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+  }
+
+  export type UserUpsertWithoutMessageStatusInput = {
+    update: XOR<UserUpdateWithoutMessageStatusInput, UserUncheckedUpdateWithoutMessageStatusInput>
+    create: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutMessageReadStatusInput = {
+  export type UserUpdateToOneWithWhereWithoutMessageStatusInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutMessageReadStatusInput, UserUncheckedUpdateWithoutMessageReadStatusInput>
+    data: XOR<UserUpdateWithoutMessageStatusInput, UserUncheckedUpdateWithoutMessageStatusInput>
   }
 
-  export type UserUpdateWithoutMessageReadStatusInput = {
+  export type UserUpdateWithoutMessageStatusInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -33732,7 +34042,7 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutMessageReadStatusInput = {
+  export type UserUncheckedUpdateWithoutMessageStatusInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -33774,18 +34084,18 @@ export namespace Prisma {
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type MessageUpsertWithoutReadStatusInput = {
-    update: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
-    create: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
+  export type MessageUpsertWithoutStatusInput = {
+    update: XOR<MessageUpdateWithoutStatusInput, MessageUncheckedUpdateWithoutStatusInput>
+    create: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
     where?: MessageWhereInput
   }
 
-  export type MessageUpdateToOneWithWhereWithoutReadStatusInput = {
+  export type MessageUpdateToOneWithWhereWithoutStatusInput = {
     where?: MessageWhereInput
-    data: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
+    data: XOR<MessageUpdateWithoutStatusInput, MessageUncheckedUpdateWithoutStatusInput>
   }
 
-  export type MessageUpdateWithoutReadStatusInput = {
+  export type MessageUpdateWithoutStatusInput = {
     content?: StringFieldUpdateOperationsInput | string
     originalLanguage?: StringFieldUpdateOperationsInput | string
     messageType?: StringFieldUpdateOperationsInput | string
@@ -33795,6 +34105,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -33803,7 +34114,7 @@ export namespace Prisma {
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
-  export type MessageUncheckedUpdateWithoutReadStatusInput = {
+  export type MessageUncheckedUpdateWithoutStatusInput = {
     conversationId?: StringFieldUpdateOperationsInput | string
     senderId?: NullableStringFieldUpdateOperationsInput | string | null
     anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33817,6 +34128,56 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+  }
+
+  export type MessageUpsertWithoutStatusResponsesInput = {
+    update: XOR<MessageUpdateWithoutStatusResponsesInput, MessageUncheckedUpdateWithoutStatusResponsesInput>
+    create: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutStatusResponsesInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutStatusResponsesInput, MessageUncheckedUpdateWithoutStatusResponsesInput>
+  }
+
+  export type MessageUpdateWithoutStatusResponsesInput = {
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutStatusResponsesInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -33853,7 +34214,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -33896,7 +34257,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -33944,7 +34305,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -33987,7 +34348,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -34045,7 +34406,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -34087,7 +34448,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -34140,7 +34501,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -34182,7 +34543,7 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -34226,7 +34587,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
@@ -34269,7 +34630,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
@@ -34374,7 +34735,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
@@ -34416,7 +34777,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
@@ -34510,7 +34871,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
@@ -34553,7 +34914,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
@@ -34611,7 +34972,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
@@ -34653,7 +35014,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
@@ -34718,7 +35079,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -34761,7 +35122,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -34886,7 +35247,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -34928,7 +35289,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -35006,7 +35367,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -35049,7 +35410,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -35138,7 +35499,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -35180,7 +35541,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -35259,7 +35620,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -35302,7 +35663,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -35360,7 +35721,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -35402,7 +35763,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -35445,7 +35806,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -35488,7 +35849,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -35546,7 +35907,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -35588,7 +35949,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -35630,7 +35991,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -35673,7 +36034,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -35778,7 +36139,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -35820,7 +36181,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -35915,7 +36276,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -35958,7 +36319,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -36043,7 +36404,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -36085,7 +36446,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -36175,7 +36536,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -36218,7 +36579,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -36266,7 +36627,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
@@ -36309,7 +36670,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
@@ -36402,7 +36763,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -36444,7 +36805,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -36497,7 +36858,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
@@ -36539,7 +36900,7 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
@@ -36638,10 +36999,12 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type MessageReadStatusCreateManyUserInput = {
+  export type MessageStatusCreateManyUserInput = {
     id?: string
     messageId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
   export type MessageCreateManySenderInput = {
@@ -36974,19 +37337,25 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageReadStatusUpdateWithoutUserInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    message?: MessageUpdateOneRequiredWithoutReadStatusNestedInput
+  export type MessageStatusUpdateWithoutUserInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    message?: MessageUpdateOneRequiredWithoutStatusNestedInput
+    response?: MessageUpdateOneWithoutStatusResponsesNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateWithoutUserInput = {
+  export type MessageStatusUncheckedUpdateWithoutUserInput = {
     messageId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutUserInput = {
+  export type MessageStatusUncheckedUpdateManyWithoutUserInput = {
     messageId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MessageUpdateWithoutSenderInput = {
@@ -36999,7 +37368,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -37020,7 +37390,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -37548,7 +37919,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -37569,7 +37941,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -37727,7 +38100,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -37748,7 +38122,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -37768,10 +38143,20 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageReadStatusCreateManyMessageInput = {
+  export type MessageStatusCreateManyMessageInput = {
     id?: string
     userId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
+  }
+
+  export type MessageStatusCreateManyResponseInput = {
+    id?: string
+    messageId: string
+    userId: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
   }
 
   export type MessageTranslationCreateManyMessageInput = {
@@ -37801,19 +38186,46 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type MessageReadStatusUpdateWithoutMessageInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutMessageReadStatusNestedInput
+  export type MessageStatusUpdateWithoutMessageInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutMessageStatusNestedInput
+    response?: MessageUpdateOneWithoutStatusResponsesNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateWithoutMessageInput = {
+  export type MessageStatusUncheckedUpdateWithoutMessageInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutMessageInput = {
+  export type MessageStatusUncheckedUpdateManyWithoutMessageInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MessageStatusUpdateWithoutResponseInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutMessageStatusNestedInput
+    message?: MessageUpdateOneRequiredWithoutStatusNestedInput
+  }
+
+  export type MessageStatusUncheckedUpdateWithoutResponseInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type MessageStatusUncheckedUpdateManyWithoutResponseInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type MessageTranslationUpdateWithoutMessageInput = {
@@ -37856,7 +38268,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -37877,7 +38290,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }

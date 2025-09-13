@@ -152,6 +152,17 @@ export function MessagesDisplay({
   const messagesToDisplay = translatedMessages.length > 0 ? translatedMessages : messages;
   const orderedMessages = reverseOrder ? [...messagesToDisplay].reverse() : messagesToDisplay;
 
+  // Debug: Vérifier les traductions dans les messages à afficher
+  console.log('🔍 [MessagesDisplay] Messages à afficher:', {
+    totalMessages: messagesToDisplay.length,
+    usingTranslatedMessages: translatedMessages.length > 0,
+    firstMessageTranslations: messagesToDisplay[0]?.translations?.length || 0
+  });
+
+  if (messagesToDisplay.length > 0 && messagesToDisplay[0]?.translations) {
+    console.log('🌐 [MessagesDisplay] Premier message - traductions:', messagesToDisplay[0].translations);
+  }
+
   return (
     <div className={className}>
       {orderedMessages

@@ -45,7 +45,7 @@ model User {
   createdShareLinks           ConversationShareLink[]  @relation("ShareLinkCreator")
   receivedFriendRequests      FriendRequest[]          @relation("FriendRequestReceiver")
   sentFriendRequests          FriendRequest[]          @relation("FriendRequestSender")
-  messageReadStatus           MessageReadStatus[]
+  messageStatus               MessageStatus[]
   sentMessages                Message[]                @relation("MessageSender")
   notifications               Notification[]
   typingIndicators            TypingIndicator[]
@@ -187,7 +187,8 @@ model Message {
   createdAt         DateTime              @default(now())
   updatedAt         DateTime              @updatedAt
   
-  readStatus        MessageReadStatus[]
+  status            MessageStatus[]       @relation("MessageStatusMessage")
+  statusResponses   MessageStatus[]       @relation("MessageStatusResponse")
   translations      MessageTranslation[]
   replyTo           Message?              @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   replies           Message[]             @relation("MessageReplies")
@@ -211,15 +212,20 @@ model MessageTranslation {
   message           Message  @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// Statut de lecture d'un message par un utilisateur
-model MessageReadStatus {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  messageId String   @db.ObjectId
-  userId    String   @db.ObjectId
-  readAt    DateTime @default(now())
-  
-  user      User     @relation(fields: [userId], references: [id])
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+/// Statut de reception, lecture ou réponse d'un message par un utilisateur
+model MessageStatus {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  messageId  String    @db.ObjectId
+  userId     String    @db.ObjectId
+  receivedAt DateTime? /// Quand le message a été reçu par l'utilisateur
+  readAt     DateTime? /// Quand le message a été lu par l'utilisateur
+  answer     String?   @db.ObjectId /// Last answer to the message by the user
+  user       User      @relation(fields: [userId], references: [id])
+  message    Message   @relation("MessageStatusMessage", fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  response   Message?  @relation("MessageStatusResponse", fields: [answer], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([messageId, userId], name: "messageId_userId")
+  @@map("message_status")
 }
 
 /// Demande d'amitié entre utilisateurs

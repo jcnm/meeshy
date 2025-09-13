@@ -779,7 +779,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
               language: true
             }
           },
-          readStatus: {
+          status: {
             select: {
               userId: true,
               readAt: true
@@ -809,7 +809,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
         content: message.content,
         originalLanguage: message.originalLanguage,
         createdAt: message.createdAt,
-        readStatus: message.readStatus || [],
+        status: message.status || [],
         sender: message.sender ? {
           id: message.sender.id,
           username: message.sender.username,
@@ -1076,7 +1076,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
               language: true
             }
           },
-          readStatus: {
+          status: {
             select: {
               userId: true,
               readAt: true
@@ -1106,7 +1106,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
         replyToId: message.replyToId,
         createdAt: message.createdAt,
         updatedAt: message.updatedAt,
-        readStatus: message.readStatus || [],
+        status: message.status || [],
         // Retourner sender et senderAnonymous distinctement
         sender: message.sender ? {
           id: message.sender.id,
