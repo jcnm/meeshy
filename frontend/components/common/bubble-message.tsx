@@ -306,18 +306,18 @@ function BubbleMessageInner({
     setTranslationFilter(''); // Réinitialiser le filtre lors du changement de langue
   };
 
-  // Obtenir les langues manquantes (supportées mais pas traduites)
-  const getMissingLanguages = () => {
+  // Obtenir les langues manquantes (supportées mais pas traduites) - mémorisé
+  const getMissingLanguages = useCallback(() => {
     const translatedLanguages = new Set([
       message.originalLanguage,
       ...normalizedTranslations.map(t => t.language)
     ]);
     
     return SUPPORTED_LANGUAGES.filter(lang => !translatedLanguages.has(lang.code));
-  };
+  }, [message.originalLanguage, normalizedTranslations]);
 
-  // Obtenir les traductions disponibles (pour affichage du badge)
-  const getAvailableTranslations = () => {
+  // Obtenir les traductions disponibles (pour affichage du badge) - mémorisé
+  const getAvailableTranslations = useCallback(() => {
     // Utiliser les traductions normalisées
     const availableTranslations = normalizedTranslations.filter(t => 
       t && 
@@ -341,10 +341,12 @@ function BubbleMessageInner({
     }
     
     return availableTranslations;
-  };
+  }, [normalizedTranslations, message.translations, message.id]);
 
-  // Vérifier si des traductions sont disponibles
-  const hasAvailableTranslations = getAvailableTranslations().length > 0;
+  // Vérifier si des traductions sont disponibles (mémorisé)
+  const hasAvailableTranslations = useMemo(() => {
+    return getAvailableTranslations().length > 0;
+  }, [getAvailableTranslations]);
 
   const handleForceTranslation = async (targetLanguage: string) => {
     setIsTranslationPopoverOpen(false);
@@ -489,7 +491,7 @@ function BubbleMessageInner({
 
   // Obtenir toutes les versions disponibles (original + traductions complètes)
   // Utiliser les traductions normalisées pour éviter les problèmes de format
-  const availableVersions = [
+  const availableVersions = useMemo(() => [
     {
       language: message.originalLanguage,
       content: message.originalContent || message.content, // TOUJOURS le contenu original de l'auteur
@@ -517,7 +519,7 @@ function BubbleMessageInner({
           return acc;
         }, {} as Record<string, BubbleTranslation & { isOriginal: boolean }>)
     )
-  ];
+  ], [message.originalLanguage, message.originalContent, message.content, message.createdAt, normalizedTranslations]);
 
   const isTranslated = currentDisplayLanguage !== message.originalLanguage;
   
@@ -1093,5 +1095,7 @@ function BubbleMessageInner({
     </TooltipProvider>
   );
 }
+}
 
 export const BubbleMessage = memo(BubbleMessageInner);
+BubbleMessage.displayName = 'BubbleMessage';

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { useMessageSender } from '@/hooks/use-message-sender';
@@ -1631,10 +1631,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     isLoadingMessages={isLoadingMessages}
                     currentUser={user}
                     userLanguage={user.systemLanguage}
-                    usedLanguages={[
+                    usedLanguages={useMemo(() => [
                       user.regionalLanguage,
                       user.customDestinationLanguage
-                    ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage)}
+                    ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage), [user.regionalLanguage, user.customDestinationLanguage, user.systemLanguage])}
                     emptyStateMessage={t('noMessages')}
                     emptyStateDescription={t('noMessagesDescription')}
                     reverseOrder={false}

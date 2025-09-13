@@ -5,11 +5,11 @@ import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { messageTranslationService } from '@/services/message-translation.service';
-import type { User, Message } from '@shared/types';
+import type { User, Message, MessageWithTranslations } from '@shared/types';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 
 interface MessagesDisplayProps {
-  messages: Message[];
+  messages: MessageWithTranslations[];
   translatedMessages: BubbleStreamMessage[];
   isLoadingMessages: boolean;
   currentUser: User;

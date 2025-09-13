@@ -68,9 +68,6 @@ export default function WebVitalsReporter() {
   return null; // Ce composant ne rend rien visuellement
 }
 
-  return null; // Ce composant ne rend rien visuellement
-}
-
 function getThreshold(metricName: string): string {
   const thresholds: Record<string, string> = {
     'CLS': 'Good: ≤0.1, Poor: >0.25',
