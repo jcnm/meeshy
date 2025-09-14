@@ -153,13 +153,6 @@ export class PrismaClient<
    */
   $disconnect(): $Utils.JsPromise<void>;
 
-  /**
-   * Add a middleware
-   * @deprecated since 4.16.0. For new code, prefer client extensions instead.
-   * @see https://pris.ly/d/extensions
-   */
-  $use(cb: Prisma.Middleware): void
-
 /**
    * Allows the running of a sequence of read/write operations that are guaranteed to either succeed or fail as a whole.
    * @example
@@ -433,8 +426,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.13.0
-   * Query Engine version: 393aa359c9ad4a4bb28630fb5613f9c281cde053
+   * Prisma Client JS version: 6.15.0
+   * Query Engine version: 85179d7826409ee107a6ba334b5e305ae3fba9fb
    */
   export type PrismaVersion = {
     client: string
@@ -2342,25 +2335,6 @@ export namespace Prisma {
     | 'findRaw'
     | 'groupBy'
 
-  /**
-   * These options are being passed into the middleware as "params"
-   */
-  export type MiddlewareParams = {
-    model?: ModelName
-    action: PrismaAction
-    args: any
-    dataPath: string[]
-    runInTransaction: boolean
-  }
-
-  /**
-   * The `T` type makes sure, that the `return proceed` is not forgotten in the middleware implementation
-   */
-  export type Middleware<T = any> = (
-    params: MiddlewareParams,
-    next: (params: MiddlewareParams) => $Utils.JsPromise<T>,
-  ) => $Utils.JsPromise<T>
-
   // tested in getLogLevel.test.ts
   export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
 
@@ -3951,6 +3925,10 @@ export namespace Prisma {
      * Filter which Users to update
      */
     where?: UserWhereInput
+    /**
+     * Limit how many Users to update.
+     */
+    limit?: number
   }
 
   /**
@@ -4013,6 +3991,10 @@ export namespace Prisma {
      * Filter which Users to delete
      */
     where?: UserWhereInput
+    /**
+     * Limit how many Users to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -5421,6 +5403,10 @@ export namespace Prisma {
      * Filter which Conversations to update
      */
     where?: ConversationWhereInput
+    /**
+     * Limit how many Conversations to update.
+     */
+    limit?: number
   }
 
   /**
@@ -5483,6 +5469,10 @@ export namespace Prisma {
      * Filter which Conversations to delete
      */
     where?: ConversationWhereInput
+    /**
+     * Limit how many Conversations to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -6661,6 +6651,10 @@ export namespace Prisma {
      * Filter which ConversationMembers to update
      */
     where?: ConversationMemberWhereInput
+    /**
+     * Limit how many ConversationMembers to update.
+     */
+    limit?: number
   }
 
   /**
@@ -6723,6 +6717,10 @@ export namespace Prisma {
      * Filter which ConversationMembers to delete
      */
     where?: ConversationMemberWhereInput
+    /**
+     * Limit how many ConversationMembers to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -7918,6 +7916,10 @@ export namespace Prisma {
      * Filter which ConversationShareLinks to update
      */
     where?: ConversationShareLinkWhereInput
+    /**
+     * Limit how many ConversationShareLinks to update.
+     */
+    limit?: number
   }
 
   /**
@@ -7980,6 +7982,10 @@ export namespace Prisma {
      * Filter which ConversationShareLinks to delete
      */
     where?: ConversationShareLinkWhereInput
+    /**
+     * Limit how many ConversationShareLinks to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -9099,6 +9105,10 @@ export namespace Prisma {
      * Filter which AnonymousParticipants to update
      */
     where?: AnonymousParticipantWhereInput
+    /**
+     * Limit how many AnonymousParticipants to update.
+     */
+    limit?: number
   }
 
   /**
@@ -9161,6 +9171,10 @@ export namespace Prisma {
      * Filter which AnonymousParticipants to delete
      */
     where?: AnonymousParticipantWhereInput
+    /**
+     * Limit how many AnonymousParticipants to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -10226,6 +10240,10 @@ export namespace Prisma {
      * Filter which Messages to update
      */
     where?: MessageWhereInput
+    /**
+     * Limit how many Messages to update.
+     */
+    limit?: number
   }
 
   /**
@@ -10288,6 +10306,10 @@ export namespace Prisma {
      * Filter which Messages to delete
      */
     where?: MessageWhereInput
+    /**
+     * Limit how many Messages to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -11428,6 +11450,10 @@ export namespace Prisma {
      * Filter which MessageTranslations to update
      */
     where?: MessageTranslationWhereInput
+    /**
+     * Limit how many MessageTranslations to update.
+     */
+    limit?: number
   }
 
   /**
@@ -11490,6 +11516,10 @@ export namespace Prisma {
      * Filter which MessageTranslations to delete
      */
     where?: MessageTranslationWhereInput
+    /**
+     * Limit how many MessageTranslations to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -12427,6 +12457,10 @@ export namespace Prisma {
      * Filter which MessageStatuses to update
      */
     where?: MessageStatusWhereInput
+    /**
+     * Limit how many MessageStatuses to update.
+     */
+    limit?: number
   }
 
   /**
@@ -12489,6 +12523,10 @@ export namespace Prisma {
      * Filter which MessageStatuses to delete
      */
     where?: MessageStatusWhereInput
+    /**
+     * Limit how many MessageStatuses to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -13435,6 +13473,10 @@ export namespace Prisma {
      * Filter which FriendRequests to update
      */
     where?: FriendRequestWhereInput
+    /**
+     * Limit how many FriendRequests to update.
+     */
+    limit?: number
   }
 
   /**
@@ -13497,6 +13539,10 @@ export namespace Prisma {
      * Filter which FriendRequests to delete
      */
     where?: FriendRequestWhereInput
+    /**
+     * Limit how many FriendRequests to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -14421,6 +14467,10 @@ export namespace Prisma {
      * Filter which TypingIndicators to update
      */
     where?: TypingIndicatorWhereInput
+    /**
+     * Limit how many TypingIndicators to update.
+     */
+    limit?: number
   }
 
   /**
@@ -14483,6 +14533,10 @@ export namespace Prisma {
      * Filter which TypingIndicators to delete
      */
     where?: TypingIndicatorWhereInput
+    /**
+     * Limit how many TypingIndicators to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -15472,6 +15526,10 @@ export namespace Prisma {
      * Filter which Notifications to update
      */
     where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to update.
+     */
+    limit?: number
   }
 
   /**
@@ -15534,6 +15592,10 @@ export namespace Prisma {
      * Filter which Notifications to delete
      */
     where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -16500,6 +16562,10 @@ export namespace Prisma {
      * Filter which Communities to update
      */
     where?: CommunityWhereInput
+    /**
+     * Limit how many Communities to update.
+     */
+    limit?: number
   }
 
   /**
@@ -16562,6 +16628,10 @@ export namespace Prisma {
      * Filter which Communities to delete
      */
     where?: CommunityWhereInput
+    /**
+     * Limit how many Communities to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -17526,6 +17596,10 @@ export namespace Prisma {
      * Filter which CommunityMembers to update
      */
     where?: CommunityMemberWhereInput
+    /**
+     * Limit how many CommunityMembers to update.
+     */
+    limit?: number
   }
 
   /**
@@ -17588,6 +17662,10 @@ export namespace Prisma {
      * Filter which CommunityMembers to delete
      */
     where?: CommunityMemberWhereInput
+    /**
+     * Limit how many CommunityMembers to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -18737,6 +18815,10 @@ export namespace Prisma {
      * Filter which UserStats to update
      */
     where?: UserStatsWhereInput
+    /**
+     * Limit how many UserStats to update.
+     */
+    limit?: number
   }
 
   /**
@@ -18799,6 +18881,10 @@ export namespace Prisma {
      * Filter which UserStats to delete
      */
     where?: UserStatsWhereInput
+    /**
+     * Limit how many UserStats to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -19741,6 +19827,10 @@ export namespace Prisma {
      * Filter which UserPreferences to update
      */
     where?: UserPreferenceWhereInput
+    /**
+     * Limit how many UserPreferences to update.
+     */
+    limit?: number
   }
 
   /**
@@ -19803,6 +19893,10 @@ export namespace Prisma {
      * Filter which UserPreferences to delete
      */
     where?: UserPreferenceWhereInput
+    /**
+     * Limit how many UserPreferences to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -20760,6 +20854,10 @@ export namespace Prisma {
      * Filter which ConversationPreferences to update
      */
     where?: ConversationPreferenceWhereInput
+    /**
+     * Limit how many ConversationPreferences to update.
+     */
+    limit?: number
   }
 
   /**
@@ -20822,6 +20920,10 @@ export namespace Prisma {
      * Filter which ConversationPreferences to delete
      */
     where?: ConversationPreferenceWhereInput
+    /**
+     * Limit how many ConversationPreferences to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -21830,6 +21932,10 @@ export namespace Prisma {
      * Filter which AffiliateTokens to update
      */
     where?: AffiliateTokenWhereInput
+    /**
+     * Limit how many AffiliateTokens to update.
+     */
+    limit?: number
   }
 
   /**
@@ -21892,6 +21998,10 @@ export namespace Prisma {
      * Filter which AffiliateTokens to delete
      */
     where?: AffiliateTokenWhereInput
+    /**
+     * Limit how many AffiliateTokens to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -22855,6 +22965,10 @@ export namespace Prisma {
      * Filter which AffiliateRelations to update
      */
     where?: AffiliateRelationWhereInput
+    /**
+     * Limit how many AffiliateRelations to update.
+     */
+    limit?: number
   }
 
   /**
@@ -22917,6 +23031,10 @@ export namespace Prisma {
      * Filter which AffiliateRelations to delete
      */
     where?: AffiliateRelationWhereInput
+    /**
+     * Limit how many AffiliateRelations to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -23425,7 +23543,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
-    stats?: XOR<UserStatsNullableRelationFilter, UserStatsWhereInput> | null
+    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
     createdAffiliateTokens?: AffiliateTokenListRelationFilter
     affiliateRelations?: AffiliateRelationListRelationFilter
     referredRelations?: AffiliateRelationListRelationFilter
@@ -23516,7 +23634,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
-    stats?: XOR<UserStatsNullableRelationFilter, UserStatsWhereInput> | null
+    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
     createdAffiliateTokens?: AffiliateTokenListRelationFilter
     affiliateRelations?: AffiliateRelationListRelationFilter
     referredRelations?: AffiliateRelationListRelationFilter
@@ -23605,7 +23723,7 @@ export namespace Prisma {
     members?: ConversationMemberListRelationFilter
     preferences?: ConversationPreferenceListRelationFilter
     shareLinks?: ConversationShareLinkListRelationFilter
-    community?: XOR<CommunityNullableRelationFilter, CommunityWhereInput> | null
+    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
   }
@@ -23654,7 +23772,7 @@ export namespace Prisma {
     members?: ConversationMemberListRelationFilter
     preferences?: ConversationPreferenceListRelationFilter
     shareLinks?: ConversationShareLinkListRelationFilter
-    community?: XOR<CommunityNullableRelationFilter, CommunityWhereInput> | null
+    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
   }, "id" | "identifier">
@@ -23715,8 +23833,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"ConversationMember"> | Date | string
     leftAt?: DateTimeNullableFilter<"ConversationMember"> | Date | string | null
     isActive?: BoolFilter<"ConversationMember"> | boolean
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationMemberOrderByWithRelationInput = {
@@ -23756,8 +23874,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"ConversationMember"> | Date | string
     leftAt?: DateTimeNullableFilter<"ConversationMember"> | Date | string | null
     isActive?: BoolFilter<"ConversationMember"> | boolean
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type ConversationMemberOrderByWithAggregationInput = {
@@ -23831,8 +23949,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     anonymousParticipants?: AnonymousParticipantListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationShareLinkOrderByWithRelationInput = {
@@ -23898,8 +24016,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     anonymousParticipants?: AnonymousParticipantListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id" | "linkId" | "identifier">
 
   export type ConversationShareLinkOrderByWithAggregationInput = {
@@ -23993,8 +24111,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
-    shareLink?: XOR<ConversationShareLinkRelationFilter, ConversationShareLinkWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    shareLink?: XOR<ConversationShareLinkScalarRelationFilter, ConversationShareLinkWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     sentMessages?: MessageListRelationFilter
   }
 
@@ -24050,8 +24168,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
-    shareLink?: XOR<ConversationShareLinkRelationFilter, ConversationShareLinkWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    shareLink?: XOR<ConversationShareLinkScalarRelationFilter, ConversationShareLinkWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     sentMessages?: MessageListRelationFilter
   }, "id" | "sessionToken">
 
@@ -24130,11 +24248,11 @@ export namespace Prisma {
     status?: MessageStatusListRelationFilter
     statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
-    replyTo?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
-    anonymousSender?: XOR<AnonymousParticipantNullableRelationFilter, AnonymousParticipantWhereInput> | null
-    sender?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type MessageOrderByWithRelationInput = {
@@ -24183,11 +24301,11 @@ export namespace Prisma {
     status?: MessageStatusListRelationFilter
     statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
-    replyTo?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
-    anonymousSender?: XOR<AnonymousParticipantNullableRelationFilter, AnonymousParticipantWhereInput> | null
-    sender?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type MessageOrderByWithAggregationInput = {
@@ -24243,7 +24361,7 @@ export namespace Prisma {
     cacheKey?: StringFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }
 
   export type MessageTranslationOrderByWithRelationInput = {
@@ -24272,7 +24390,7 @@ export namespace Prisma {
     translationModel?: StringFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }, "id" | "cacheKey">
 
   export type MessageTranslationOrderByWithAggregationInput = {
@@ -24317,9 +24435,9 @@ export namespace Prisma {
     receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     answer?: StringNullableFilter<"MessageStatus"> | string | null
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
-    response?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }
 
   export type MessageStatusOrderByWithRelationInput = {
@@ -24345,9 +24463,9 @@ export namespace Prisma {
     receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     answer?: StringNullableFilter<"MessageStatus"> | string | null
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
-    response?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }, "id" | "messageId_userId">
 
   export type MessageStatusOrderByWithAggregationInput = {
@@ -24384,8 +24502,8 @@ export namespace Prisma {
     status?: StringFilter<"FriendRequest"> | string
     createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
     updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
-    receiver?: XOR<UserRelationFilter, UserWhereInput>
-    sender?: XOR<UserRelationFilter, UserWhereInput>
+    receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type FriendRequestOrderByWithRelationInput = {
@@ -24409,8 +24527,8 @@ export namespace Prisma {
     status?: StringFilter<"FriendRequest"> | string
     createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
     updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
-    receiver?: XOR<UserRelationFilter, UserWhereInput>
-    sender?: XOR<UserRelationFilter, UserWhereInput>
+    receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type FriendRequestOrderByWithAggregationInput = {
@@ -24447,8 +24565,8 @@ export namespace Prisma {
     isTyping?: BoolFilter<"TypingIndicator"> | boolean
     startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
     updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type TypingIndicatorOrderByWithRelationInput = {
@@ -24472,8 +24590,8 @@ export namespace Prisma {
     isTyping?: BoolFilter<"TypingIndicator"> | boolean
     startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
     updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type TypingIndicatorOrderByWithAggregationInput = {
@@ -24516,7 +24634,7 @@ export namespace Prisma {
     pushSent?: BoolFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type NotificationOrderByWithRelationInput = {
@@ -24551,7 +24669,7 @@ export namespace Prisma {
     pushSent?: BoolFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type NotificationOrderByWithAggregationInput = {
@@ -24604,7 +24722,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Community"> | Date | string
     updatedAt?: DateTimeFilter<"Community"> | Date | string
     members?: CommunityMemberListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     Conversation?: ConversationListRelationFilter
   }
 
@@ -24637,7 +24755,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Community"> | Date | string
     updatedAt?: DateTimeFilter<"Community"> | Date | string
     members?: CommunityMemberListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     Conversation?: ConversationListRelationFilter
   }, "id" | "identifier">
 
@@ -24680,8 +24798,8 @@ export namespace Prisma {
     userId?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
     role?: StringFilter<"CommunityMember"> | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    community?: XOR<CommunityRelationFilter, CommunityWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }
 
   export type CommunityMemberOrderByWithRelationInput = {
@@ -24703,8 +24821,8 @@ export namespace Prisma {
     userId?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
     role?: StringFilter<"CommunityMember"> | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    community?: XOR<CommunityRelationFilter, CommunityWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }, "id">
 
   export type CommunityMemberOrderByWithAggregationInput = {
@@ -24752,7 +24870,7 @@ export namespace Prisma {
     lastActiveAt?: DateTimeFilter<"UserStats"> | Date | string
     createdAt?: DateTimeFilter<"UserStats"> | Date | string
     updatedAt?: DateTimeFilter<"UserStats"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type UserStatsOrderByWithRelationInput = {
@@ -24801,7 +24919,7 @@ export namespace Prisma {
     lastActiveAt?: DateTimeFilter<"UserStats"> | Date | string
     createdAt?: DateTimeFilter<"UserStats"> | Date | string
     updatedAt?: DateTimeFilter<"UserStats"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "userId">
 
   export type UserStatsOrderByWithAggregationInput = {
@@ -24868,7 +24986,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"UserPreference"> | string | null
     createdAt?: DateTimeFilter<"UserPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type UserPreferenceOrderByWithRelationInput = {
@@ -24895,7 +25013,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"UserPreference"> | string | null
     createdAt?: DateTimeFilter<"UserPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type UserPreferenceOrderByWithAggregationInput = {
@@ -24939,8 +25057,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"ConversationPreference"> | string | null
     createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationPreferenceOrderByWithRelationInput = {
@@ -24970,8 +25088,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"ConversationPreference"> | string | null
     createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type ConversationPreferenceOrderByWithAggregationInput = {
@@ -25018,7 +25136,7 @@ export namespace Prisma {
     isActive?: BoolFilter<"AffiliateToken"> | boolean
     createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
     updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     affiliations?: AffiliateRelationListRelationFilter
   }
 
@@ -25051,7 +25169,7 @@ export namespace Prisma {
     isActive?: BoolFilter<"AffiliateToken"> | boolean
     createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
     updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     affiliations?: AffiliateRelationListRelationFilter
   }, "id" | "token">
 
@@ -25100,9 +25218,9 @@ export namespace Prisma {
     status?: StringFilter<"AffiliateRelation"> | string
     createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
     completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
-    affiliateToken?: XOR<AffiliateTokenRelationFilter, AffiliateTokenWhereInput>
-    affiliateUser?: XOR<UserRelationFilter, UserWhereInput>
-    referredUser?: XOR<UserRelationFilter, UserWhereInput>
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type AffiliateRelationOrderByWithRelationInput = {
@@ -25129,9 +25247,9 @@ export namespace Prisma {
     status?: StringFilter<"AffiliateRelation"> | string
     createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
     completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
-    affiliateToken?: XOR<AffiliateTokenRelationFilter, AffiliateTokenWhereInput>
-    affiliateUser?: XOR<UserRelationFilter, UserWhereInput>
-    referredUser?: XOR<UserRelationFilter, UserWhereInput>
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type AffiliateRelationOrderByWithAggregationInput = {
@@ -27217,7 +27335,7 @@ export namespace Prisma {
     none?: UserPreferenceWhereInput
   }
 
-  export type UserStatsNullableRelationFilter = {
+  export type UserStatsNullableScalarRelationFilter = {
     is?: UserStatsWhereInput | null
     isNot?: UserStatsWhereInput | null
   }
@@ -27450,7 +27568,7 @@ export namespace Prisma {
     none?: AnonymousParticipantWhereInput
   }
 
-  export type CommunityNullableRelationFilter = {
+  export type CommunityNullableScalarRelationFilter = {
     is?: CommunityWhereInput | null
     isNot?: CommunityWhereInput | null
   }
@@ -27507,12 +27625,12 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type UserRelationFilter = {
+  export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
   }
 
-  export type ConversationRelationFilter = {
+  export type ConversationScalarRelationFilter = {
     is?: ConversationWhereInput
     isNot?: ConversationWhereInput
   }
@@ -27731,7 +27849,7 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type ConversationShareLinkRelationFilter = {
+  export type ConversationShareLinkScalarRelationFilter = {
     is?: ConversationShareLinkWhereInput
     isNot?: ConversationShareLinkWhereInput
   }
@@ -27814,17 +27932,17 @@ export namespace Prisma {
     none?: MessageTranslationWhereInput
   }
 
-  export type MessageNullableRelationFilter = {
+  export type MessageNullableScalarRelationFilter = {
     is?: MessageWhereInput | null
     isNot?: MessageWhereInput | null
   }
 
-  export type AnonymousParticipantNullableRelationFilter = {
+  export type AnonymousParticipantNullableScalarRelationFilter = {
     is?: AnonymousParticipantWhereInput | null
     isNot?: AnonymousParticipantWhereInput | null
   }
 
-  export type UserNullableRelationFilter = {
+  export type UserNullableScalarRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
   }
@@ -27896,7 +28014,7 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type MessageRelationFilter = {
+  export type MessageScalarRelationFilter = {
     is?: MessageWhereInput
     isNot?: MessageWhereInput
   }
@@ -28139,7 +28257,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type CommunityRelationFilter = {
+  export type CommunityScalarRelationFilter = {
     is?: CommunityWhereInput
     isNot?: CommunityWhereInput
   }
@@ -28386,7 +28504,7 @@ export namespace Prisma {
     currentUses?: SortOrder
   }
 
-  export type AffiliateTokenRelationFilter = {
+  export type AffiliateTokenScalarRelationFilter = {
     is?: AffiliateTokenWhereInput
     isNot?: AffiliateTokenWhereInput
   }
