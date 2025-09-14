@@ -661,7 +661,20 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversation?.id, loadMessages, clearMessages]);
 
-  // Effet 2: marquer les messages comme lus quand une conversation est ouverte
+  // Effet 2: transformer les messages en MessageWithTranslations
+  useEffect(() => {
+    if (messages.length > 0) {
+      const processedMessages = messages.map(message => 
+        processMessageWithTranslations(message)
+      );
+      setTranslatedMessages(processedMessages);
+      console.log('✅ Messages transformés en MessageWithTranslations:', processedMessages.length);
+    } else {
+      setTranslatedMessages([]);
+    }
+  }, [messages, processMessageWithTranslations]);
+
+  // Effet 3: marquer les messages comme lus quand une conversation est ouverte
   useEffect(() => {
     if (selectedConversation?.id && user?.id) {
       // Marquer tous les messages de cette conversation comme lus
@@ -679,7 +692,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversation?.id, user?.id, loadData]);
 
-  // Effet 3: chargement des participants uniquement quand l'ID de conversation change
+  // Effet 4: chargement des participants uniquement quand l'ID de conversation change
   useEffect(() => {
     if (selectedConversation?.id) {
       loadConversationParticipants(selectedConversation.id);

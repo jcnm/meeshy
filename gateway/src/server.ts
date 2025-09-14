@@ -457,23 +457,25 @@ class MeeshyServer {
     // Register authentication test routes for Phase 3.1.1
     await this.server.register(authTestRoutes);
     
-    // Register conversation routes without prefix
-    await this.server.register(conversationRoutes);
+    // Register conversation routes with /api prefix
+    await this.server.register(async (fastify) => {
+      await conversationRoutes(fastify);
+    }, { prefix: '/api' });
     // Register links management routes
-    await this.server.register(linksRoutes);
+    await this.server.register(linksRoutes, { prefix: '/api' });
     
     // Register anonymous participation routes
-    await this.server.register(anonymousRoutes);
+    await this.server.register(anonymousRoutes, { prefix: '/api' });
     
     // Register community routes
-    await this.server.register(communityRoutes);
+    await this.server.register(communityRoutes, { prefix: '/api' });
     
     // Register admin routes with /admin prefix
     await this.server.register(adminRoutes, { prefix: '/admin' });
 
     
     // Register user routes
-    await this.server.register(userRoutes);
+    await this.server.register(userRoutes, { prefix: '/api' });
     
     // Register user preferences routes with /users prefix
     await this.server.register(userPreferencesRoutes, { prefix: '/users' });
