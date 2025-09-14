@@ -442,17 +442,24 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
       // Sélectionner une conversation seulement si spécifiée dans l'URL ou via props
       const conversationIdFromUrl = selectedConversationId || searchParams.get('id');
+      console.log('[DEBUG] Conversation ID from URL/props:', conversationIdFromUrl);
+      console.log('[DEBUG] Available conversations:', conversationsWithAny.map(c => ({ id: c.id, title: c.title })));
+      
       if (conversationIdFromUrl) {
         let conversation = conversationsWithAny.find(c => c.id === conversationIdFromUrl);
+        console.log('[DEBUG] Found conversation:', conversation ? { id: conversation.id, title: conversation.title } : null);
         
         if (conversation) {
           setSelectedConversation(conversation);
+          console.log('[DEBUG] ✅ Conversation sélectionnée:', conversation.title);
         } else {
           // ID non trouvé, désélectionner
+          console.log('[DEBUG] ❌ Conversation non trouvée, désélection');
           setSelectedConversation(null);
         }
       } else {
         // Aucun ID dans l'URL, s'assurer qu'aucune conversation n'est sélectionnée
+        console.log('[DEBUG] ⚠️ Aucun ID de conversation fourni');
         setSelectedConversation(null);
       }
 
@@ -663,13 +670,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Effet 2: transformer les messages en MessageWithTranslations
   useEffect(() => {
+    console.log('[DEBUG] Messages effect - messages.length:', messages.length);
+    console.log('[DEBUG] Selected conversation:', selectedConversation ? { id: selectedConversation.id, title: selectedConversation.title } : null);
+    
     if (messages.length > 0) {
       const processedMessages = messages.map(message => 
         processMessageWithTranslations(message)
       );
       setTranslatedMessages(processedMessages);
-      console.log('✅ Messages transformés en MessageWithTranslations:', processedMessages.length);
+      console.log('[DEBUG] ✅ Messages transformés en MessageWithTranslations:', processedMessages.length);
     } else {
+      console.log('[DEBUG] ⚠️ Aucun message à transformer');
       setTranslatedMessages([]);
     }
   }, [messages, processMessageWithTranslations]);

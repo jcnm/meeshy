@@ -100,7 +100,7 @@ export function useConversationMessages(
       console.log(`[Conversation] 📡 APPEL API - conversationId: ${conversationId}`);
       console.log(`[Conversation] 📡 PARAMÈTRES - limit: ${limit}, offset: ${currentOffset}, isLoadMore: ${isLoadMore}`);
 
-      const response = await apiService.get<{ success: boolean; data: Message[] }>(
+      const response = await apiService.get<{ success: boolean; data: { messages: Message[] } }>(
         `/api/conversations/${conversationId}/messages`,
         {
           limit: limit.toString(),
@@ -111,6 +111,7 @@ export function useConversationMessages(
       const data = response.data;
       
       console.log(`[Conversation] 📡 RÉPONSE API - status: ${response.status}, ok: ${response.ok}`);
+      console.log(`[Conversation] 📡 RÉPONSE DATA - success: ${data.success}, data structure:`, data);
       
       if (!data.success) {
         throw new Error(data.error || 'Erreur lors du chargement des messages');
