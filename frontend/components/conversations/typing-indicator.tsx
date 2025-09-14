@@ -1,13 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { User } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface TypingIndicatorProps {
+  typingUsers: Array<{
+    userId: string;
+    username: string;
+    conversationId: string;
+    timestamp: number;
+  }>;
   chatId: string;
   currentUserId?: string;
   users?: User[];
@@ -15,12 +20,12 @@ interface TypingIndicatorProps {
 }
 
 export function TypingIndicator({ 
+  typingUsers,
   chatId, 
   currentUserId, 
   users = [], 
   className = "" 
 }: TypingIndicatorProps) {
-  const { typingUsers } = useTypingIndicator(chatId, currentUserId || '');
   const [dots, setDots] = useState('');
   const { t } = useTranslations('typingIndicator');
 
@@ -74,15 +79,21 @@ export function TypingIndicator({
 
 // Composant plus simple pour afficher juste un badge
 export function TypingBadge({ 
+  typingUsers,
   userId, 
   chatId, 
   className = "" 
 }: { 
+  typingUsers: Array<{
+    userId: string;
+    username: string;
+    conversationId: string;
+    timestamp: number;
+  }>;
   userId: string; 
   chatId: string; 
   className?: string; 
 }) {
-  const { typingUsers } = useTypingIndicator(chatId, userId);
   const { t } = useTranslations('typingIndicator');
 
   const isUserTyping = typingUsers.some(user => user.userId === userId && user.conversationId === chatId);

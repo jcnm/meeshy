@@ -16,7 +16,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { SocketIOUser as User, ThreadMember, UserRoleEnum } from '@shared/types';
-// import { useTypingIndicator } from '@/hooks/use-typing-indicator';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';

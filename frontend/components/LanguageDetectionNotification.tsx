@@ -8,9 +8,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Languages, Globe } from 'lucide-react';
-import { useBrowserLanguageDetection } from '@/hooks/useBrowserLanguageDetection';
+import { useLanguage as useLanguageHook } from '@/hooks/use-language';
 import { useLanguage } from '@/context/LanguageContext';
-import { useLanguageName } from '@/hooks/useLanguageNames';
 
 interface LanguageDetectionNotificationProps {
   showNotification?: boolean;
@@ -23,18 +22,19 @@ export function LanguageDetectionNotification({
   onLanguageAccepted,
   onLanguageRejected
 }: LanguageDetectionNotificationProps) {
-  const { 
+  const {
     detectedInterfaceLanguage, 
     isDetectionComplete, 
-    browserLanguages 
-  } = useBrowserLanguageDetection();
+    browserLanguages,
+    getTranslatedLanguageName
+  } = useLanguageHook();
   
   const { currentInterfaceLanguage, setInterfaceLanguage } = useLanguage();
   const [shouldShowNotification, setShouldShowNotification] = useState(false);
   const [hasBeenShown, setHasBeenShown] = useState(false);
   
   // Obtenir le nom de la langue détectée traduit dans la langue de l'interface
-  const detectedLanguageName = useLanguageName(detectedInterfaceLanguage);
+  const detectedLanguageName = getTranslatedLanguageName(detectedInterfaceLanguage);
 
   useEffect(() => {
     if (!isDetectionComplete || hasBeenShown || !showNotification) return;

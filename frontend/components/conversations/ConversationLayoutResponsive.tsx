@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
-import { useMessageSender } from '@/hooks/use-message-sender';
+import { useMessaging } from '@/hooks/use-messaging';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ import { detectAll } from 'tinyld';
 import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
-import { useTranslationStats } from '@/hooks/use-translation-stats';
+import { useTranslation } from '@/hooks/use-translation';
 import { messageService } from '@/services/message.service';
 import { UserRoleEnum } from '@shared/types';
 
@@ -205,8 +205,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [refreshMessages]);
 
-  // Hook pour les statistiques de traduction
-  const { stats: translationStats, incrementTranslationCount } = useTranslationStats();
+  // Hook pour les statistiques de traduction (intégré dans useTranslation)
+  const { stats: translationStats, incrementTranslationCount } = useTranslation();
 
   // Fonctions pour gérer l'édition et la suppression des messages
   const handleEditMessage = useCallback(async (messageId: string, newContent: string) => {
@@ -390,7 +390,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     sendMessage: sendMessageToService,
     startTyping,
     stopTyping,
-  } = useMessageSender({
+  } = useMessaging({
     conversationId: selectedConversation?.id,
     currentUser: user!,
     onUserTyping: handleUserTyping,

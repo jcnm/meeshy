@@ -5,7 +5,7 @@
 'use client';
 
 import React from 'react';
-import { useBrowserLanguageDetection, useBrowserLanguageInfo } from '@/hooks/useBrowserLanguageDetection';
+import { useLanguage as useLanguageHook } from '@/hooks/use-language';
 import { useLanguage } from '@/context/LanguageContext';
 import { detectBestInterfaceLanguage, getUserPreferredLanguage } from '@/utils/language-detection';
 import { logLanguageDetectionInfo, testLanguageDetection } from '@/utils/language-detection-logger';
@@ -16,9 +16,7 @@ export default function LanguageTestPage() {
     detectedSystemLanguage, 
     isDetectionComplete,
     browserLanguages 
-  } = useBrowserLanguageDetection();
-  
-  const languageInfo = useBrowserLanguageInfo();
+  } = useLanguageHook();
   const { currentInterfaceLanguage, userLanguageConfig } = useLanguage();
 
   const handleLogInfo = () => {

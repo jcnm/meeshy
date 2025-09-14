@@ -22,9 +22,4 @@ export { useFixRadixZIndex } from './use-fix-z-index';
 export { useAuth } from './use-auth';
 export { useAuthGuard } from './use-auth-guard';
 
-// Hooks legacy (pour compatibilité temporaire)
-export { useMessageSender } from './use-message-sender';
-export { useTypingIndicator } from './use-typing-indicator';
-export { useBrowserLanguageDetection } from './useBrowserLanguageDetection';
-export { useLanguageNames } from './useLanguageNames';
-export { useTranslationStats } from './use-translation-stats';
+// Hooks legacy supprimés - migration vers les nouveaux hooks unifiés terminée

@@ -79,7 +79,7 @@ import { LoadingState } from '@/components/common/LoadingStates';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
-import { useTranslationStats } from '@/hooks/use-translation-stats';
+import { useTranslation } from '@/hooks/use-translation';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -402,7 +402,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, [addMessage, user.id]);
 
   // Hooks
-  const { stats: translationStats, incrementTranslationCount } = useTranslationStats();
+  const { stats: translationStats, incrementTranslationCount } = useTranslation();
   
   const { 
     sendMessage: sendMessageToService,
