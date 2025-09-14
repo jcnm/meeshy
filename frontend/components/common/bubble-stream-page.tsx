@@ -90,7 +90,7 @@ import { conversationsService } from '@/services';
 import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
 import { useMessageLoader } from '@/hooks/use-message-loader';
-import { useBubbleStreamMessages } from '@/hooks/use-bubble-stream-messages';
+import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
@@ -117,7 +117,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     addMessage,
     updateMessage: updateMessageTranslations,
     removeMessage
-  } = useBubbleStreamMessages(conversationId, user, {
+  } = useConversationMessages(conversationId, user, {
     limit: 20,
     enabled: true,
     threshold: 100,

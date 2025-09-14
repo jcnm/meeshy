@@ -88,25 +88,7 @@ export interface ServiceHealth {
   timestamp: Date;
 }
 
-// ===== TYPES POUR L'API REST - LEGACY (DEPRECATED) =====
-// Ces types sont remplacés par ceux dans api-responses.ts
-// Gardés pour rétrocompatibilité temporaire
-
-export interface LegacyApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  timestamp: Date;
-}
-
-export interface PaginatedResponse<T> extends LegacyApiResponse<T[]> {
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-}
+// Legacy API types removed - use api-responses.ts instead
 
 // ===== TYPES POUR LES MESSAGES - LEGACY (DEPRECATED) =====
 // Ces types sont remplacés par ceux dans conversation.ts
