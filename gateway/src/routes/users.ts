@@ -22,8 +22,13 @@ const updateUserSchema = z.object({
 // Schéma de validation pour l'upload d'avatar
 const updateAvatarSchema = z.object({
   avatar: z.string().refine(
-    (data) => data.startsWith('data:image/'),
-    'Invalid image format'
+    (data) => {
+      // Accepter soit les URLs (http/https) soit les data URLs (base64)
+      return data.startsWith('http://') || 
+             data.startsWith('https://') || 
+             data.startsWith('data:image/');
+    },
+    'Invalid avatar format. Must be a valid URL or base64 image'
   )
 });
 

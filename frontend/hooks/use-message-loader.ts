@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
-import type { User, Message, TranslatedMessage, MessageWithTranslations, TranslationData, MessageTranslationCache } from '@shared/types';
+import type { User, Message, TranslatedMessage, MessageWithTranslations, MessageTranslation, TranslationData, MessageTranslationCache } from '@shared/types';
 import type { BubbleStreamMessage } from '@/types/bubble-stream';
 
 interface UseMessageLoaderProps {
@@ -291,6 +291,19 @@ export function useMessageLoader({
     });
   }, [processMessageWithTranslations, conversationId]);
 
+  // Fonction utilitaire pour convertir TranslationData vers MessageTranslation
+  const createMessageTranslation = useCallback((translation: TranslationData, messageId: string): MessageTranslation => ({
+    id: `${messageId}_${translation.targetLanguage}`,
+    messageId,
+    sourceLanguage: translation.sourceLanguage,
+    targetLanguage: translation.targetLanguage,
+    translatedContent: translation.translatedContent,
+    translationModel: (translation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
+    cacheKey: translation.cacheKey || `${messageId}_${translation.targetLanguage}`,
+    confidenceScore: translation.confidenceScore,
+    createdAt: translation.createdAt ? new Date(translation.createdAt) : new Date(),
+  }), []);
+
   // Fonction pour mettre à jour les traductions d'un message existant
   const updateMessageTranslations = useCallback((messageId: string, translations: TranslationData[]) => {
     console.log('🌐 Mise à jour traductions pour message:', messageId, translations);
@@ -298,43 +311,38 @@ export function useMessageLoader({
     // Mettre à jour les messages bruts - FUSION des traductions existantes avec les nouvelles
     setMessages(prev => prev.map(msg => {
       if (msg.id === messageId) {
-        const msgWithTranslations = msg as MessageWithTranslations;
-        const existingTranslations = (msgWithTranslations.translations as unknown as MessageTranslationCache[]) || [];
+        // Obtenir les traductions existantes (s'il y en a)
+        const existingTranslations = (msg as any).translations || [];
         
-        // Fusionner les traductions - garder les existantes et ajouter les nouvelles
-        const mergedTranslations = [...existingTranslations];
+        // Convertir les traductions existantes au bon format si nécessaire
+        const validExistingTranslations: MessageTranslation[] = existingTranslations
+          .filter((t: any) => t && typeof t === 'object')
+          .map((t: any): MessageTranslation => ({
+            id: t.id || `${messageId}_${t.targetLanguage}`,
+            messageId: t.messageId || messageId,
+            sourceLanguage: t.sourceLanguage,
+            targetLanguage: t.targetLanguage,
+            translatedContent: t.translatedContent,
+            translationModel: (t.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
+            cacheKey: t.cacheKey || `${messageId}_${t.targetLanguage}`,
+            confidenceScore: t.confidenceScore,
+            createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
+          }));
         
-        translations.forEach((newTranslation: TranslationData) => {
+        // Fusionner avec les nouvelles traductions
+        const mergedTranslations = [...validExistingTranslations];
+        
+        translations.forEach(newTranslation => {
           const existingIndex = mergedTranslations.findIndex(
             existing => existing.targetLanguage === newTranslation.targetLanguage
           );
           
+          const messageTranslation = createMessageTranslation(newTranslation, messageId);
+          
           if (existingIndex >= 0) {
-            // Remplacer la traduction existante par la nouvelle
-            mergedTranslations[existingIndex] = {
-              messageId,
-              sourceLanguage: newTranslation.sourceLanguage,
-              targetLanguage: newTranslation.targetLanguage,
-              translatedContent: newTranslation.translatedContent,
-              translationModel: (newTranslation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
-              cacheKey: newTranslation.cacheKey,
-              cached: Boolean(newTranslation.cached),
-              createdAt: new Date(),
-              confidenceScore: newTranslation.confidenceScore,
-            };
+            mergedTranslations[existingIndex] = messageTranslation;
           } else {
-            // Ajouter la nouvelle traduction
-            mergedTranslations.push({
-              messageId,
-              sourceLanguage: newTranslation.sourceLanguage,
-              targetLanguage: newTranslation.targetLanguage,
-              translatedContent: newTranslation.translatedContent,
-              translationModel: (newTranslation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
-              cacheKey: newTranslation.cacheKey,
-              cached: Boolean(newTranslation.cached),
-              createdAt: new Date(),
-              confidenceScore: newTranslation.confidenceScore,
-            });
+            mergedTranslations.push(messageTranslation);
           }
         });
         

@@ -109,8 +109,7 @@ export function useMessageTranslations({
             content: t.translatedContent,
             status: 'completed' as const,
             timestamp: currentTimestamp,
-            confidence: t.confidenceScore || 0.9,
-            model: (t.translationModel as 'basic' | 'medium' | 'premium') || 'basic'
+            confidence: t.confidenceScore || 0.9
           };
           
           translationsMap.set(language, translation);

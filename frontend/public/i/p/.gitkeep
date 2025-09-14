@@ -1,0 +1,2 @@
+# Ce fichier assure que la structure de dossiers i/p/ est préservée dans Git
+# Les dossiers year/month seront créés automatiquement lors de l'upload

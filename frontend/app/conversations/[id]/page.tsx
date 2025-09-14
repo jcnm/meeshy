@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { AuthGuard } from '@/components/auth';
+import { AuthGuard } from '@/components/auth/auth-guard';
 import { ConversationLayoutResponsive } from '@/components/conversations/ConversationLayoutResponsive';
 
 export default function ConversationPage() {
@@ -10,7 +10,7 @@ export default function ConversationPage() {
 
   return (
     <AuthGuard>
-      <ConversationLayoutResponsive selectedConversationId={conversationId} />
+      <ConversationLayoutResponsive />
     </AuthGuard>
   );
 }

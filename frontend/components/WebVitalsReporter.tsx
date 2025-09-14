@@ -19,7 +19,7 @@ declare global {
 export default function WebVitalsReporter() {
   useEffect(() => {
     // Importer web-vitals dynamiquement pour éviter les erreurs SSR
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+    import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
       // Fonction pour envoyer les métriques (en production, envoyez vers votre analytics)
       const sendToAnalytics = (metric: WebVitalsData) => {
         // En développement, afficher dans la console
@@ -53,12 +53,12 @@ export default function WebVitalsReporter() {
         }
       };
 
-      // Mesurer toutes les métriques Core Web Vitals
-      getCLS(sendToAnalytics);
-      getFID(sendToAnalytics);
-      getFCP(sendToAnalytics);
-      getLCP(sendToAnalytics);
-      getTTFB(sendToAnalytics);
+      // Mesurer toutes les métriques Core Web Vitals (web-vitals v5)
+      onCLS(sendToAnalytics);
+      onFCP(sendToAnalytics);
+      onLCP(sendToAnalytics);
+      onTTFB(sendToAnalytics);
+      onINP(sendToAnalytics); // INP remplace FID dans web-vitals v5
 
     }).catch(error => {
       console.warn('Web Vitals not available:', error);
@@ -71,7 +71,7 @@ export default function WebVitalsReporter() {
 function getThreshold(metricName: string): string {
   const thresholds: Record<string, string> = {
     'CLS': 'Good: ≤0.1, Poor: >0.25',
-    'FID': 'Good: ≤100ms, Poor: >300ms',
+    'INP': 'Good: ≤200ms, Poor: >500ms', // INP remplace FID
     'FCP': 'Good: ≤1.8s, Poor: >3s',
     'LCP': 'Good: ≤2.5s, Poor: >4s',
     'TTFB': 'Good: ≤800ms, Poor: >1.8s'

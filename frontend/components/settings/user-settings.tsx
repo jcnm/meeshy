@@ -14,6 +14,7 @@ import { Upload, Camera, X } from 'lucide-react';
 import { useTranslations } from '@/hooks/useTranslations';
 import { buildApiUrl } from '@/lib/config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { validateAvatarFile } from '@/utils/avatar-upload';
 
 interface UserSettingsProps {
   user: UserType | null;
@@ -34,6 +35,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -59,11 +61,15 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
   const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('La taille de l\'image ne doit pas dépasser 5MB');
+      // Validation du fichier
+      const validation = validateAvatarFile(file);
+      if (!validation.valid) {
+        toast.error(validation.error || 'Fichier invalide');
         return;
       }
 
+      setSelectedFile(file);
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
@@ -74,25 +80,43 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
   };
 
   const handleAvatarUpload = async () => {
-    if (!avatarPreview || !user) return;
+    if (!selectedFile || !user) return;
 
     setIsUploadingAvatar(true);
     try {
-      const response = await fetch(buildApiUrl('/users/me/avatar'), {
+      // Étape 1: Upload du fichier vers l'API Next.js
+      const formData = new FormData();
+      formData.append('avatar', selectedFile);
+
+      const uploadResponse = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json();
+        throw new Error(errorData.error || 'Erreur lors de l\'upload du fichier');
+      }
+
+      const uploadData = await uploadResponse.json();
+      const imageUrl = uploadData.data.url;
+
+      // Étape 2: Mettre à jour l'avatar dans la base de données via l'API backend
+      const updateResponse = await fetch(buildApiUrl('/users/me/avatar'), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
-        body: JSON.stringify({ avatar: avatarPreview })
+        body: JSON.stringify({ avatar: imageUrl })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'upload de l\'avatar');
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        throw new Error(errorData.error || 'Erreur lors de la mise à jour de l\'avatar');
       }
 
-      const responseData = await response.json();
+      const responseData = await updateResponse.json();
       const updatedUser: UserType = {
         ...user,
         avatar: responseData.data.avatar
@@ -102,6 +126,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
       toast.success('Photo de profil mise à jour avec succès');
       setShowAvatarDialog(false);
       setAvatarPreview(null);
+      setSelectedFile(null);
     } catch (error) {
       console.error('Erreur lors de l\'upload:', error);
       toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'upload de l\'avatar');
