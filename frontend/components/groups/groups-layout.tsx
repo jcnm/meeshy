@@ -752,7 +752,7 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
                             <div
                               key={conversation.id}
                               className="flex items-center gap-3 p-3 rounded-xl border border-border/20 hover:bg-accent/50 transition-colors cursor-pointer"
-                              onClick={() => router.push(`/conversations?id=${conversation.id}`)}
+                              onClick={() => router.push(`/conversations/${conversation.id}`)}
                             >
                               <div className="flex-shrink-0">
                                 <Avatar className="h-10 w-10">

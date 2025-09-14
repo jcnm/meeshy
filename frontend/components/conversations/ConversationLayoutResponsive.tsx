@@ -440,8 +440,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
       setConversationsIfChanged(sanitizeConversations(conversationsWithAny));
 
-      // Sélectionner une conversation seulement si spécifiée dans l'URL
-      const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
+      // Sélectionner une conversation seulement si spécifiée dans l'URL ou via props
+      const conversationIdFromUrl = selectedConversationId || searchParams.get('id');
       if (conversationIdFromUrl) {
         let conversation = conversationsWithAny.find(c => c.id === conversationIdFromUrl);
         
@@ -497,7 +497,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   // Effet séparé pour gérer les changements de paramètres d'URL
   useEffect(() => {
     if (user && conversations.length > 0) {
-      const conversationIdFromUrl = searchParams.get('id') || selectedConversationId;
+      const conversationIdFromUrl = selectedConversationId || searchParams.get('id');
       if (conversationIdFromUrl) {
         let conversation = conversations.find(c => c.id === conversationIdFromUrl);
         
@@ -528,7 +528,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
 
     // Mettre à jour l'URL
-    router.push(`/conversations?id=${conversation.id}`, { scroll: false });
+    router.push(`/conversations/${conversation.id}`, { scroll: false });
   };
 
   // Retour à la liste (mobile uniquement)
@@ -845,7 +845,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             setSelectedConversation(conversationData);
             
             // Rediriger vers la nouvelle conversation
-            router.push(`/conversations?id=${conversationData.id}`);
+            router.push(`/conversations/${conversationData.id}`);
             
             // Affichage mobile : masquer la liste des conversations
             if (isMobile) {
@@ -861,7 +861,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               });
               
               setSelectedConversation(newConversation);
-              router.push(`/conversations?id=${newConversation.id}`);
+              router.push(`/conversations/${newConversation.id}`);
               
               if (isMobile) {
                 setShowConversationList(false);

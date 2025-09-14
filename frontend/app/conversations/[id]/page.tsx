@@ -10,7 +10,7 @@ export default function ConversationPage() {
 
   return (
     <AuthGuard>
-      <ConversationLayoutResponsive />
+      <ConversationLayoutResponsive selectedConversationId={conversationId} />
     </AuthGuard>
   );
 }

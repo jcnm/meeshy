@@ -425,7 +425,7 @@ export class ConversationsService {
     }>;
   }> {
     try {
-      // Récupérer tous les participants via l'endpoint /conversations/:conversationId/participants
+      // Récupérer tous les participants via l'endpoint /api/conversations/:conversationId/participants
       const response = await apiService.get<{
         success: boolean;
         data: Array<User & {
@@ -434,7 +434,7 @@ export class ConversationsService {
           canSendFiles?: boolean;
           canSendImages?: boolean;
         }>;
-      }>(`/conversations/${conversationId}/participants`);
+      }>(`/api/conversations/${conversationId}/participants`);
       
       const allParticipants = response.data.data || [];
       
