@@ -390,7 +390,7 @@ export class ConversationsService {
       console.log('[ConversationsService] Récupération des participants pour conversation:', conversationId, 'avec filtres:', filters);
       
       const response = await apiService.get<{ success: boolean; data: User[] }>(
-        `/conversations/${conversationId}/participants`,
+        `/api/conversations/${conversationId}/participants`,
         params
       );
       
@@ -611,7 +611,7 @@ export class ConversationsService {
         success: boolean;
         message: string;
         markedCount: number;
-      }>(`/conversations/${conversationId}/mark-read`, {}, {
+      }>(`/api/conversations/${conversationId}/mark-read`, {}, {
         signal: controller.signal
       });
       
