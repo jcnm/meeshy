@@ -1,17 +1,18 @@
 /**
  * Interface pour les extensions de Message avec traductions
  * Utilisé dans les composants BubbleMessage et stream pages
+ * @deprecated Utiliser UIMessage de message-types.ts
  */
-import type { Message, User, BubbleTranslation } from '@shared/types';
+import type { User } from '@shared/types';
+import type { UIMessage } from '@shared/types/message-types';
 
-export interface BubbleStreamMessage extends Message {
-  location?: string;
-  originalLanguage: string;
+export interface BubbleStreamMessage extends UIMessage {
   isTranslated: boolean;
   translatedFrom?: string;
-  translations: BubbleTranslation[];
-  originalContent: string; // Contenu original de l'auteur
 }
+
+// Alias pour compatibilité
+export type { UIMessage as BubbleStreamMessageV2 };
 
 export interface BubbleStreamPageProps {
   user: User;

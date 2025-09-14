@@ -1,13 +1,18 @@
 'use client';
 
-import { ConversationLayoutWrapper } from '../../components/conversations/ConversationLayoutWrapper';
+import ConversationLayoutWrapper from '../../components/conversations/ConversationLayoutWrapper';
+import { AuthGuard } from '@/components/auth/auth-guard';
 import { Suspense } from 'react';
 import { useTranslations } from '@/hooks/useTranslations';
 
 // Désactiver le prerendering pour éviter les problèmes avec Sharp
 
 function ConversationsPageContent() {
-  return <ConversationLayoutWrapper />;
+  return (
+    <AuthGuard>
+      <ConversationLayoutWrapper />
+    </AuthGuard>
+  );
 }
 
 function ConversationsPageFallback() {

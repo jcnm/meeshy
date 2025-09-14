@@ -5,7 +5,8 @@
 
 import type { SocketIOUser as User, MessageType, SocketIOMessage } from './socketio-events';
 import type { AnonymousParticipant } from './anonymous';
-import { UserRole } from '.';
+// UserRole will be defined locally to avoid circular dependency
+type UserRole = string;
 
 /**
  * Statistiques d'une conversation
@@ -48,29 +49,10 @@ export interface ConversationIdentifiers {
 
 /**
  * Message unifié entre Gateway et Frontend
- * Contient TOUS les champs des anciens types pour compatibilité
- * Utilise maintenant SocketIOMessage comme base
+ * Utilise maintenant le type unifié depuis unified-message.ts
  */
-export interface Message extends SocketIOMessage {
-  // Champs additionnels pour compatibilité
-  timestamp: Date;  // Alias pour createdAt
-  
-  // Union type pour sender (authentifié ou anonyme)
-  sender?: User | AnonymousParticipant;
-  
-  // Champ pour compatibilité avec l'ancien système
-  anonymousSender?: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    language: string;
-    isMeeshyer: boolean; // false pour les anonymes
-  };
-  
-  // Référence au message de réponse
-  replyTo?: Message;
-}
+import type { Message as UnifiedMessage } from './unified-message';
+export type Message = UnifiedMessage;
 
 /**
  * Conversation unifiée
@@ -126,9 +108,10 @@ export interface ConversationParticipant {
 }
 
 /**
- * Traduction de message
+ * Traduction de message (legacy - utiliser MessageTranslation de message-types.ts)
+ * @deprecated
  */
-export interface MessageTranslation {
+export interface LegacyMessageTranslation {
   id: string;
   messageId: string;
   sourceLanguage: string;
@@ -141,11 +124,10 @@ export interface MessageTranslation {
 }
 
 /**
- * Message avec traductions
+ * Message avec traductions - utilise le type unifié
  */
-export interface MessageWithTranslations extends Message {
-  translations: MessageTranslation[];
-}
+import type { MessageWithTranslations as UnifiedMessageWithTranslations } from './unified-message';
+export type MessageWithTranslations = UnifiedMessageWithTranslations;
 
 /**
  * Statut de lecture de message

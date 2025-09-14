@@ -1,61 +1,64 @@
-/**
- * Composant pour l'état vide des conversations
- * Affiche un message et des actions quand aucune conversation n'est disponible
- */
+'use client';
 
-import React from 'react';
-import { MessageSquare, Plus, Users } from 'lucide-react';
+import { MessageSquare, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CreateLinkButton } from './create-link-button';
 
 interface ConversationEmptyStateProps {
-  onCreateConversation?: () => void;
-  onJoinConversation?: () => void;
-  className?: string;
+  conversationsCount: number;
+  onCreateConversation: () => void;
+  onLinkCreated: () => void;
+  t: (key: string) => string;
 }
 
 export function ConversationEmptyState({
+  conversationsCount,
   onCreateConversation,
-  onJoinConversation,
-  className = ''
+  onLinkCreated,
+  t
 }: ConversationEmptyStateProps) {
   return (
-    <div className={`flex flex-col items-center justify-center p-8 text-center ${className}`}>
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-            <MessageSquare className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <CardTitle className="text-xl">Aucune conversation</CardTitle>
-          <CardDescription>
-            Commencez une nouvelle conversation ou rejoignez une conversation existante
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {onCreateConversation && (
-            <Button 
-              onClick={onCreateConversation}
-              className="w-full"
-              size="lg"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Créer une conversation
-            </Button>
-          )}
-          
-          {onJoinConversation && (
-            <Button 
-              onClick={onJoinConversation}
-              variant="outline"
-              className="w-full"
-              size="lg"
-            >
-              <Users className="mr-2 h-4 w-4" />
-              Rejoindre une conversation
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-white/50 backdrop-blur-sm rounded-r-2xl">
+      <div className="max-w-md">
+        <div className="w-24 h-24 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
+          <MessageSquare className="h-12 w-12 text-primary" />
+        </div>
+
+        {conversationsCount > 0 ? (
+          <>
+            <h3 className="text-xl font-bold text-foreground mb-2 text-center">{t('chooseConversation')}</h3>
+            <p className="text-muted-foreground text-base mb-6 text-center">
+              {t('chooseConversationDescription')}
+            </p>
+          </>
+        ) : (
+          <>
+            <h3 className="text-xl font-bold text-foreground mb-2 text-center">{t('welcome')}</h3>
+            <p className="text-muted-foreground text-base mb-6 text-center">
+              {t('welcomeDescription')}
+            </p>
+          </>
+        )}
+      </div>
+
+      {/* Boutons d'action dans l'état vide */}
+      <div className="flex gap-4 justify-center">
+        <Button
+          onClick={onCreateConversation}
+          className="rounded-2xl px-6 py-3 bg-primary hover:bg-primary/90 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+        >
+          <MessageSquare className="h-5 w-5 mr-2" />
+          {t('createConversation')}
+        </Button>
+        <CreateLinkButton
+          variant="outline"
+          className="rounded-2xl px-6 py-3 border-2 border-primary/20 hover:border-primary/40 font-semibold shadow-md hover:shadow-lg transition-all text-primary hover:text-primary-foreground hover:bg-primary"
+          onLinkCreated={onLinkCreated}
+        >
+          <Link2 className="h-5 w-5 mr-2" />
+          {t('createLink')}
+        </CreateLinkButton>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { GroupsLayout } from '@/components/groups/groups-layout';
 import { Suspense } from 'react';
 import { useTranslations } from '@/hooks/useTranslations';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 function GroupsPageContent() {
   return <GroupsLayout />;
@@ -15,8 +16,10 @@ function GroupsPageFallback() {
 
 export default function GroupsPage() {
   return (
-    <Suspense fallback={<GroupsPageFallback />}>
-      <GroupsPageContent />
-    </Suspense>
+    <AuthGuard>
+      <Suspense fallback={<GroupsPageFallback />}>
+        <GroupsPageContent />
+      </Suspense>
+    </AuthGuard>
   );
 }

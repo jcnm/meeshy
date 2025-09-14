@@ -23,8 +23,9 @@ import { notificationService } from '@/services/notification.service';
 import { NotificationTest } from '@/components/notifications/NotificationTest';
 import { useTranslations } from '@/hooks/useTranslations';
 import type { Notification } from '@/services/notification.service';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
-export default function NotificationsPage() {
+function NotificationsPageContent() {
   const { t } = useTranslations();
   const { 
     notifications, 
@@ -265,5 +266,13 @@ export default function NotificationsPage() {
         </div>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function NotificationsPage() {
+  return (
+    <AuthGuard>
+      <NotificationsPageContent />
+    </AuthGuard>
   );
 }

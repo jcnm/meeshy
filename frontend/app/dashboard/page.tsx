@@ -41,7 +41,9 @@ import { Check, X, Shield, Eye, Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { buildApiUrl } from '@/lib/config';
-export default function DashboardPage() {
+import { AuthGuard } from '@/components/auth/AuthGuard';
+
+function DashboardPageContent() {
   const router = useRouter();
   const { user } = useUser();
   const { t } = useTranslations('dashboard');
@@ -844,5 +846,13 @@ export default function DashboardPage() {
           userLanguage={user?.systemLanguage || 'fr'}
         />
     </DashboardLayout>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <AuthGuard>
+      <DashboardPageContent />
+    </AuthGuard>
   );
 }

@@ -56,9 +56,9 @@ interface BubbleMessageProps {
   message: Message & {
     location?: string;
     originalLanguage: string;
-    translations: BubbleTranslation[] | any[]; // Support des deux formats : frontend + backend
-    originalContent: string; // Contenu original de l'auteur
-    readStatus?: Array<{ userId: string; readAt: Date }>; // Statut de lecture par utilisateur
+    translations: BubbleTranslation[];
+    originalContent: string;
+    readStatus?: Array<{ userId: string; readAt: Date }>;
   };
   currentUser: User;
   userLanguage: string;
@@ -273,32 +273,8 @@ function BubbleMessageInner({
     return `il y a ${Math.floor(diffInMinutes / 1440)}j`;
   };
 
-  // Normaliser les traductions pour supporter les formats backend ET frontend
-  const normalizeTranslations = (translations: any[]): BubbleTranslation[] => {
-    return translations.map((t: any) => {
-      // Si c'est déjà le format frontend
-      if (t && t.language && t.content) {
-        return t as BubbleTranslation;
-      }
-      
-      // Si c'est le format backend, convertir
-      if (t && t.targetLanguage && t.translatedContent) {
-        return {
-          language: t.targetLanguage,
-          content: t.translatedContent,
-          status: 'completed' as const,
-          confidence: (t.confidenceScore ? t.confidenceScore / 100 : 0.9),
-          model: (t.translationModel || 'basic') as 'basic' | 'medium' | 'premium',
-          timestamp: new Date(t.createdAt || Date.now())
-        };
-      }
-      
-      return null;
-    }).filter(Boolean) as BubbleTranslation[];
-  };
-
-  // Traductions normalisées pour utilisation dans le composant
-  const normalizedTranslations = normalizeTranslations(message.translations || []);
+  // Les traductions sont déjà normalisées
+  const normalizedTranslations = message.translations || [];
 
   const handleLanguageSwitch = (langCode: string) => {
     setCurrentDisplayLanguage(langCode);
@@ -499,7 +475,8 @@ function BubbleMessageInner({
       status: 'completed' as const,
       confidence: 1,
       model: 'original' as const,
-      timestamp: new Date(message.createdAt)
+      timestamp: new Date(message.createdAt),
+      fromCache: false
     },
     // Déduplication des traductions par langue - garder la plus récente
     ...Object.values(
@@ -617,7 +594,7 @@ function BubbleMessageInner({
               <Avatar className={cn(isMobile ? "mobile-avatar" : "h-10 w-10")}>
                 <AvatarImage 
                   src={(message.sender as any)?.avatar} 
-                  alt={message.sender?.firstName || message.anonymousSender?.firstName} 
+                  alt={message.sender?.firstName} 
                 />
                 <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
                   {getMessageInitials(message)}
@@ -627,9 +604,9 @@ function BubbleMessageInner({
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
                   <span className={cn("font-medium text-gray-900 participant-name", isMobile && "mobile-text-sm")}>
-                    @{message.sender?.username || message.anonymousSender?.username}
+                    @{message.sender?.username}
                   </span>
-                  {message.anonymousSender && (
+                  {message.anonymousSenderId && (
                     <Ghost className="h-4 w-4 text-gray-400" />
                   )}
                   <span className="text-gray-400">•</span>
@@ -917,7 +894,7 @@ function BubbleMessageInner({
                                   <div className="flex-1 bg-gray-200/40 rounded-full h-0.5">
                                     <div 
                                       className="bg-green-400 h-0.5 rounded-full transition-all duration-300"
-                                      style={{ width: `${Math.round(version.confidence * 100)}%` }}
+                                      style={{ width: `${Math.round((version.confidence || 0.9) * 100)}%` }}
                                     />
                                   </div>
                                 </div>

@@ -6,17 +6,22 @@
 
 // Import des types partagés
 import type {
-  Message,
-  MessageWithTranslations,
   SocketIOUser,
   TranslationData
 } from '@shared/types';
 
-// Ré-export de tous les types partagés
+// Import des nouveaux types de messages
+import type {
+  GatewayMessage,
+  UIMessage,
+  UITranslationState
+} from '@shared/types/message-types';
+
+// Ré-export des types partagés essentiels
 export * from '@shared/types';
 
-// Ré-export des types frontend
-export * from './frontend';
+// Export des types spécifiques frontend
+export type { CreateUserDto, ChatRoom } from './frontend';
 
 // Types spécifiques au frontend uniquement
 export interface FrontendConfig {
@@ -26,28 +31,28 @@ export interface FrontendConfig {
   environment: 'development' | 'production' | 'test';
 }
 
-// Types pour les composants UI spécifiques au frontend
+// Types pour les composants UI spécifiques au frontend (mis à jour)
 export interface BubbleMessageProps {
-  message: MessageWithTranslations;
+  message: UIMessage;
   currentUser: SocketIOUser;
   userLanguage: string;
   usedLanguages: string[];
   onForceTranslation?: (messageId: string, targetLanguage: string) => Promise<void>;
 }
 
-// Types pour les hooks spécifiques au frontend
+// Types pour les hooks spécifiques au frontend (mis à jour)
 export interface UseMessageLoaderOptions {
   currentUser: SocketIOUser;
   conversationId?: string;
 }
 
 export interface UseMessageLoaderReturn {
-  messages: Message[];
-  translatedMessages: MessageWithTranslations[];
+  messages: GatewayMessage[];
+  translatedMessages: UIMessage[];
   isLoadingMessages: boolean;
   loadMessages: (conversationId: string, clearExisting?: boolean) => Promise<void>;
   clearMessages: () => void;
-  addMessage: (message: Message) => void;
+  addMessage: (message: GatewayMessage) => void;
   updateMessageTranslations: (messageId: string, translations: TranslationData[]) => void;
 }
 

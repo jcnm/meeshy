@@ -23,11 +23,12 @@ import {
 import { toast } from 'sonner';
 import type {
   Conversation,
-  Message,
   TranslationData,
   SocketIOUser as User,
   ThreadMember
 } from '@shared/types';
+import type { Message, MessageWithTranslations, MessageTranslation } from '../../../shared/types/unified-message';
+// Force TypeScript recompilation
 import { conversationsService } from '@/services/conversations.service';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { MessageComposer, MessageComposerRef } from '@/components/common/message-composer';
@@ -43,7 +44,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { detectAll } from 'tinyld'; // Importation de tinyld pour la détection de langue
 import { cleanTranslationOutput } from '@/utils/translation-cleaner';
 import { socketIOUserToUser, createDefaultUser } from '@/utils/user-adapter';
-import type { BubbleTranslation } from '@shared/types';
+import type { BubbleTranslation, BubbleStreamMessage } from '@shared/types';
 import { UserRoleEnum } from '@shared/types';
 import { ConversationParticipants } from '@/components/conversations/conversation-participants';
 import { ConversationParticipantsPopover } from '@/components/conversations/conversation-participants-popover';
@@ -56,19 +57,7 @@ import { MessagesDisplay } from '@/components/common/messages-display';
 import { messageService } from '@/services/message.service';
 
 
-// Alias pour la compatibilité avec le code existant
-type TranslatedMessage = Message & {
-  translation?: BubbleTranslation;
-  originalContent?: string;
-  translatedContent?: string;
-  targetLanguage?: string;
-  isTranslated?: boolean;
-  isTranslating?: boolean;
-  showingOriginal?: boolean;
-  translationError?: string;
-  translationFailed?: boolean;
-  translations?: TranslationData[];
-};
+// Utilisation du type unifié MessageWithTranslations
 
 interface ConversationLayoutResponsiveProps {
   selectedConversationId?: string;
@@ -80,6 +69,15 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const { user, isAuthChecking } = useUser(); // user est garanti d'exister grâce au wrapper
   const { t } = useTranslations('conversationLayout'); // Use conversationLayout namespace
   const { t: tSearch } = useTranslations('conversationSearch');
+
+  // Calculer usedLanguages AVANT tout return conditionnel (OBLIGATOIRE pour les règles des hooks)
+  const usedLanguages = useMemo(() => {
+    if (!user) return [];
+    return [
+      user.regionalLanguage,
+      user.customDestinationLanguage
+    ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage);
+  }, [user?.regionalLanguage, user?.customDestinationLanguage, user?.systemLanguage]);
 
   // Si on est en train de vérifier l'authentification, afficher un loader
   if (isAuthChecking) {
@@ -245,7 +243,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // État pour les traductions en cours
   const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
-  const [translatedMessages, setTranslatedMessages] = useState<any[]>([]);
+  const [translatedMessages, setTranslatedMessages] = useState<MessageWithTranslations[]>([]);
 
   // Fonctions pour gérer l'état des traductions en cours
   const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
@@ -821,8 +819,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       });
 
       // Créer le message traduit avec toutes les propriétés requises
-      const translatedMsg: TranslatedMessage = {
+      const translatedMsg: MessageWithTranslations = {
         ...message,
+        // Ensure required fields are present
+        timestamp: message.timestamp || message.createdAt,
+        isEdited: message.isEdited || false,
+        isDeleted: message.isDeleted || false,
         originalLanguage: sourceLanguage, // Mettre à jour avec la langue détectée si applicable
         originalContent: message.content,
         translatedContent: cleanTranslationOutput(translationResult.translatedText),
@@ -833,15 +835,27 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         translationError: undefined,
         translationFailed: false,
         translations: [{
+          id: `${messageId}-${targetLanguage}`,
           messageId: messageId,
           sourceLanguage: message.originalLanguage || 'fr',
           targetLanguage: targetLanguage,
           translatedContent: cleanTranslationOutput(translationResult.translatedText),
-          translationModel: 'basic', // Utiliser le modèle basique par défaut
+          translationModel: 'basic' as const,
           cacheKey: `${messageId}-${targetLanguage}`,
+          createdAt: new Date(),
           cached: false
         }],
-        sender: message.sender || createDefaultUser(message.senderId)
+        sender: message.sender || createDefaultUser(message.senderId),
+        // Champs requis pour MessageWithTranslations
+        uiTranslations: [],
+        translatingLanguages: new Set(),
+        currentDisplayLanguage: targetLanguage,
+        canEdit: false,
+        canDelete: false,
+        canTranslate: true,
+        canReply: true,
+        // Ensure replyTo is properly typed (simplified for now)
+        replyTo: undefined
       };
 
 
@@ -862,11 +876,19 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   };
 
   // Utilitaires
-  const convertToTranslatedMessage = useCallback((message: Message): TranslatedMessage => {
+  const convertToTranslatedMessage = useCallback((message: Message): MessageWithTranslations => {
     return {
       ...message,
-      translatedContent: message.content,
-      targetLanguage: user?.systemLanguage || 'fr',
+      // Champs requis pour MessageWithTranslations
+      uiTranslations: [],
+      translatingLanguages: new Set(),
+      currentDisplayLanguage: user?.systemLanguage || 'fr',
+      showingOriginal: true,
+      originalContent: message.content,
+      canEdit: false,
+      canDelete: false,
+      canTranslate: true,
+      canReply: true
     };
   }, [user?.systemLanguage]);
 
@@ -1187,8 +1209,10 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         </div>
       ) : (
         <div className={cn(
-          "h-[calc(100vh-8rem)] flex bg-transparent",
-          isMobile && "conversation-listing-mobile"
+          "flex bg-transparent",
+          isMobile 
+            ? "conversation-listing-mobile" 
+            : "h-[calc(100vh-8rem)]"
         )}>
           {/* Liste des conversations */}
           <div className={cn(
@@ -1488,9 +1512,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           {/* Zone de messages */}
           <div className={cn(
             "flex flex-col",
-            // Tailwind uniquement - responsive simple
+            // Structure mobile : prendre toute la hauteur disponible
             isMobile 
-              ? (showConversationList ? "hidden" : "w-full h-screen") 
+              ? (showConversationList ? "hidden" : "w-full h-full") 
               : "flex-1 h-full"
           )}>
             {selectedConversation ? (
@@ -1498,9 +1522,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 {/* En-tête de la conversation */}
                 <div className={cn(
                   "flex-shrink-0 border-b border-gray-200",
-                  // Tailwind uniquement - simple et responsive
+                  // En-tête mobile : fixe en haut, pleine largeur
                   isMobile 
-                    ? "p-3 bg-white" 
+                    ? "p-3 bg-white w-full" 
                     : "p-4 bg-white/90 backdrop-blur-sm rounded-tr-2xl"
                 )}>
                   <div className="flex items-center gap-3">
@@ -1610,9 +1634,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                 {/* Messages scrollables */}
                 <div ref={messagesContainerRef} className={cn(
                   "flex-1 overflow-y-auto relative",
-                  // Tailwind uniquement - approche simple et claire
+                  // Zone de messages mobile : utiliser toute la hauteur disponible
                   isMobile 
-                    ? "px-2 py-2 pb-20 bg-white min-h-screen" 
+                    ? "px-2 py-2 pb-20 bg-white h-full" 
                     : "p-4 pb-4 bg-white/50 backdrop-blur-sm"
                 )}>
                   {/* Indicateur de chargement pour la pagination (messages plus anciens) - en haut */}
@@ -1631,10 +1655,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     isLoadingMessages={isLoadingMessages}
                     currentUser={user}
                     userLanguage={user.systemLanguage}
-                    usedLanguages={useMemo(() => [
-                      user.regionalLanguage,
-                      user.customDestinationLanguage
-                    ].filter((lang): lang is string => Boolean(lang)).filter(lang => lang !== user.systemLanguage), [user.regionalLanguage, user.customDestinationLanguage, user.systemLanguage])}
+                    usedLanguages={usedLanguages}
                     emptyStateMessage={t('noMessages')}
                     emptyStateDescription={t('noMessagesDescription')}
                     reverseOrder={false}

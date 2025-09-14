@@ -157,6 +157,18 @@
     -webkit-backdrop-filter: blur(8px); /* Support Safari */
   }
 
+  /* Container principal mobile - prendre toute la hauteur */
+  .conversation-listing-mobile {
+    height: 100vh !important;
+    overflow: hidden;
+  }
+
+  /* Assurer que le contenu des conversations prend toute la place */
+  .conversation-open-mobile {
+    height: 100vh !important;
+    overflow: hidden;
+  }
+
   /* Force hardware acceleration for better performance */
   .scroll-optimized {
     transform: translateZ(0);

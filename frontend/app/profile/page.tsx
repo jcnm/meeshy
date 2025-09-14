@@ -16,24 +16,18 @@ import {
   Edit,
   MessageSquare,
   Users,
-  Globe
+  Globe,
+  Activity
 } from 'lucide-react';
 import { User } from '@/types';
 import { useUser } from '@/context/AppContext';
 import { getUserInitials } from '@/utils/user';
-export default function ProfilePage() {
-  const router = useRouter();
-  const { user, isAuthChecking } = useUser();
-  const [isLoading, setIsLoading] = useState(true);
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
-  useEffect(() => {
-    if (!isAuthChecking && !user) {
-      // Rediriger si pas d'utilisateur après vérification
-      router.push('/');
-    } else if (user) {
-      setIsLoading(false);
-    }
-  }, [user, isAuthChecking, router]);
+function ProfilePageContent() {
+  const router = useRouter();
+  const { user } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const formatDate = (dateString: string) => {
@@ -73,7 +67,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (isAuthChecking) {
+  if (isLoading) {
     return (
       <DashboardLayout title="Profil">
         <div className="max-w-4xl mx-auto">
@@ -270,5 +264,13 @@ export default function ProfilePage() {
         </Card>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <AuthGuard>
+      <ProfilePageContent />
+    </AuthGuard>
   );
 }

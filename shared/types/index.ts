@@ -13,6 +13,9 @@ export * from './anonymous';
 export * from './api-responses';
 export * from './migration-utils';
 
+// Export des nouveaux types de messages unifiés
+export * from './unified-message';
+
 // Export des types unifiés Phase 2 - Messaging
 export * from './messaging';
 
@@ -110,12 +113,11 @@ export interface PaginatedResponse<T> extends LegacyApiResponse<T[]> {
 // Ces types sont remplacés par ceux dans conversation.ts
 // Gardés pour rétrocompatibilité temporaire
 
-// Importation du nouveau type SocketIOMessage unifié
-import type { SocketIOMessage } from './socketio-events';
-import type { MessageWithTranslations as UnifiedMessageWithTranslations } from './conversation';
+// Importation des types de messages unifiés
+import type { Message as UnifiedMessage, MessageWithTranslations as UnifiedMessageWithTranslations } from './unified-message';
 
 // Alias pour rétrocompatibilité
-export type Message = import('./conversation').Message;
+export type Message = UnifiedMessage;
 export type MessageWithTranslations = UnifiedMessageWithTranslations;
 
 export interface BubbleTranslation {
@@ -126,7 +128,7 @@ export interface BubbleTranslation {
   confidence: number; // 0-1 pour la qualité de traduction
 }
 
-export interface TranslatedMessage extends SocketIOMessage {
+export interface TranslatedMessage extends UnifiedMessage {
   translation?: BubbleTranslation;
   originalContent?: string;
   translatedContent?: string;

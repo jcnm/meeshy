@@ -6,11 +6,10 @@ import { MessageSquare } from 'lucide-react';
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { messageTranslationService } from '@/services/message-translation.service';
 import type { User, Message, MessageWithTranslations } from '@shared/types';
-import type { BubbleStreamMessage } from '@/types/bubble-stream';
 
 interface MessagesDisplayProps {
-  messages: MessageWithTranslations[];
-  translatedMessages: BubbleStreamMessage[];
+  messages: Message[];
+  translatedMessages: MessageWithTranslations[];
   isLoadingMessages: boolean;
   currentUser: User;
   userLanguage: string;
@@ -55,6 +54,8 @@ export function MessagesDisplay({
   isTranslating
 }: MessagesDisplayProps) {
 
+  // TOUS LES HOOKS DOIVENT ÊTRE EN HAUT (avant tout return conditionnel)
+  
   // Fonction pour forcer la traduction d'un message
   const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string) => {
     try {
@@ -121,6 +122,17 @@ export function MessagesDisplay({
     }
   }, [messages, onTranslation]);
 
+  // Choisir les messages à afficher et l'ordre (mémorisé)
+  const messagesToDisplay = useMemo(() => {
+    return translatedMessages.length > 0 ? translatedMessages : messages;
+  }, [translatedMessages, messages]);
+
+  const orderedMessages = useMemo(() => {
+    return reverseOrder ? [...messagesToDisplay].reverse() : messagesToDisplay;
+  }, [messagesToDisplay, reverseOrder]);
+
+  // MAINTENANT on peut faire les returns conditionnels
+  
   // État de chargement - seulement si on n'a pas encore de messages
   if (isLoadingMessages && messages.length !== 0) {
     return (
@@ -148,25 +160,16 @@ export function MessagesDisplay({
     );
   }
 
-  // Choisir les messages à afficher et l'ordre (mémorisé)
-  const messagesToDisplay = useMemo(() => {
-    return translatedMessages.length > 0 ? translatedMessages : messages;
-  }, [translatedMessages, messages]);
-
-  const orderedMessages = useMemo(() => {
-    return reverseOrder ? [...messagesToDisplay].reverse() : messagesToDisplay;
-  }, [messagesToDisplay, reverseOrder]);
-
   // Debug: Vérifier les traductions dans les messages à afficher (conditionné)
   if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_MESSAGES === 'true') {
     console.log('🔍 [MessagesDisplay] Messages à afficher:', {
       totalMessages: messagesToDisplay.length,
       usingTranslatedMessages: translatedMessages.length > 0,
-      firstMessageTranslations: messagesToDisplay[0]?.translations?.length || 0
+      firstMessageTranslations: (messagesToDisplay[0] as any)?.translations?.length || 0
     });
 
-    if (messagesToDisplay.length > 0 && messagesToDisplay[0]?.translations) {
-      console.log('🌐 [MessagesDisplay] Premier message - traductions:', messagesToDisplay[0].translations);
+    if (messagesToDisplay.length > 0 && (messagesToDisplay[0] as any)?.translations) {
+      console.log('🌐 [MessagesDisplay] Premier message - traductions:', (messagesToDisplay[0] as any).translations);
     }
   }
 
