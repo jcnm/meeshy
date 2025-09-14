@@ -17,7 +17,7 @@ import {
 import { User } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { toast } from 'sonner';
-import { buildApiUrl } from '@/lib/config';
+import { apiService } from '@/services/api.service';
 import { getUserInitials } from '@/utils/user';
 
 interface InviteUserModalProps {
@@ -51,16 +51,10 @@ export function InviteUserModal({
 
     setIsSearching(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(
-        buildApiUrl(`/users/search?q=${encodeURIComponent(query)}`),
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const response = await apiService.get<User[]>(`/api/users/search?q=${encodeURIComponent(query)}`);
 
-      if (response.ok) {
-        const users = await response.json();
+      if (response.data) {
+        const users = response.data;
         // Filtrer les utilisateurs qui ne sont pas déjà participants
         const filteredUsers = users.filter((user: User) => 
           !currentParticipants.some(participant => participant.id === user.id)
@@ -104,26 +98,16 @@ export function InviteUserModal({
 
     setIsInviting(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      
       // Inviter chaque utilisateur
       const invitePromises = selectedUsers.map(user => 
-        fetch(buildApiUrl(`/conversations/${conversationId}/invite`), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ userId: user.id })
-        })
+        apiService.post(`/api/conversations/${conversationId}/invite`, { userId: user.id })
       );
 
-      const responses = await Promise.all(invitePromises);
-      const results = await Promise.all(responses.map(r => r.json()));
+      const results = await Promise.all(invitePromises);
 
       // Vérifier les résultats
-      const successfulInvites = results.filter(r => r.success);
-      const failedInvites = results.filter(r => !r.success);
+      const successfulInvites = results.filter(r => r.data.success);
+      const failedInvites = results.filter(r => !r.data.success);
 
       if (successfulInvites.length > 0) {
         toast.success(`${successfulInvites.length} utilisateur(s) invité(s) avec succès`);

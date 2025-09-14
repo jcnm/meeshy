@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { buildApiUrl } from '@/lib/config';
+import { apiService } from '@/services/api.service';
 import type { User, Message } from '@shared/types';
 
 export interface ConversationMessagesOptions {
@@ -97,26 +97,18 @@ export function useConversationMessages(
       // Calculer l'offset AVANT de faire l'appel API
       const currentOffset = isLoadMore ? offsetRef.current : 0;
       console.log(`[Conversation] 📊 OFFSET CALCULÉ - isLoadMore: ${isLoadMore}, offset actuel: ${offsetRef.current}, currentOffset: ${currentOffset}`);
-      const url = new URL(buildApiUrl(`/conversations/${conversationId}/messages`));
-      url.searchParams.append('limit', limit.toString());
-      url.searchParams.append('offset', currentOffset.toString());
-
-      console.log(`[Conversation] 📡 APPEL API - URL: ${url.toString()}`);
+      console.log(`[Conversation] 📡 APPEL API - conversationId: ${conversationId}`);
       console.log(`[Conversation] 📡 PARAMÈTRES - limit: ${limit}, offset: ${currentOffset}, isLoadMore: ${isLoadMore}`);
 
-      const response = await fetch(url.toString(), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        signal: controller.signal
-      });
+      const response = await apiService.get<{ success: boolean; data: Message[] }>(
+        `/api/conversations/${conversationId}/messages`,
+        {
+          limit: limit.toString(),
+          offset: currentOffset.toString()
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       
       console.log(`[Conversation] 📡 RÉPONSE API - status: ${response.status}, ok: ${response.ok}`);
       

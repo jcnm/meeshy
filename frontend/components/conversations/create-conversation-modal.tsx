@@ -15,7 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User } from '@/types';
-import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
+import { apiService } from '@/services/api.service';
 import { toast } from 'sonner';
 import { Check, X, Users, Building2, Hash, Search, Plus, Sparkles, UserPlus, Globe, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -138,18 +138,14 @@ export function CreateConversationModal({
   const loadCommunities = useCallback(async (searchQuery: string = '') => {
     setIsLoadingCommunities(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const url = searchQuery.length >= 2 
-        ? `${buildApiUrl('/communities')}?search=${encodeURIComponent(searchQuery)}`
-        : buildApiUrl('/communities');
+      const response = await apiService.get<{ success: boolean; data: any[] }>(
+        searchQuery.length >= 2 
+          ? `/api/communities?search=${encodeURIComponent(searchQuery)}`
+          : '/api/communities'
+      );
       
-      const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCommunities(data.data || []);
+      if (response.data.success) {
+        setCommunities(response.data.data || []);
       } else {
         console.error('Error loading communities');
       }
@@ -169,13 +165,10 @@ export function CreateConversationModal({
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl(`${API_ENDPOINTS.USER.SEARCH}?q=${encodeURIComponent(query)}`), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiService.get<User[]>(`/api/users/search?q=${encodeURIComponent(query)}`);
       
-      if (response.ok) {
-        const users = await response.json();
+      if (response.data) {
+        const users = response.data;
         // Exclure l'utilisateur actuel et les utilisateurs déjà sélectionnés
         const filteredUsers = users.filter((user: User) => 
           user.id !== currentUser.id && 
@@ -297,7 +290,6 @@ export function CreateConversationModal({
 
     setIsCreating(true);
     try {
-      const token = localStorage.getItem('auth_token');
       
       // Determine conversation type and title
       const conversationType = selectedUsers.length === 1 ? 'direct' : 'group';
@@ -326,17 +318,10 @@ export function CreateConversationModal({
         requestBody.communityId = selectedCommunity;
       }
 
-      const response = await fetch(buildApiUrl(API_ENDPOINTS.CONVERSATION.CREATE), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody)
-      });
+      const response = await apiService.post<{ success: boolean; data: any }>('/api/conversations', requestBody);
 
-      if (response.ok) {
-        const responseData = await response.json();
+      if (response.data.success) {
+        const responseData = response.data;
         const conversation = responseData.data;
         toast.success(t('success.conversationCreated'));
         
