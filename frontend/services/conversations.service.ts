@@ -190,7 +190,7 @@ export class ConversationsService {
       lastMessageAt: conv.lastMessageAt ? new Date(String(conv.lastMessageAt)) : new Date(String(conv.updatedAt)),
       createdAt: new Date(String(conv.createdAt)),
       updatedAt: new Date(String(conv.updatedAt)),
-      participants: Array.isArray(conv.participants) ? conv.participants.map((p: unknown) => {
+      participants: Array.isArray(conv.members) ? conv.members.map((p: unknown) => {
         const participant = p as Record<string, unknown>;
         const user = participant.user as Record<string, unknown>;
         
@@ -227,7 +227,7 @@ export class ConversationsService {
       return this.conversationsCache!.data;
     }
     
-    const response = await apiService.get<{ success: boolean; data: unknown[] }>('/conversations');
+    const response = await apiService.get<{ success: boolean; data: unknown[] }>('/api/conversations');
     
     if (!response.data.success || !Array.isArray(response.data.data)) {
       throw new Error('Format de réponse invalide pour les conversations');
@@ -245,7 +245,7 @@ export class ConversationsService {
    * Obtenir une conversation spécifique par ID
    */
   async getConversation(id: string): Promise<Conversation> {
-    const response = await apiService.get<Conversation>(`/conversations/${id}`);
+    const response = await apiService.get<Conversation>(`/api/conversations/${id}`);
     return response.data;
   }
 
@@ -253,7 +253,7 @@ export class ConversationsService {
    * Créer une nouvelle conversation
    */
   async createConversation(data: CreateConversationRequest): Promise<Conversation> {
-    const response = await apiService.post<Conversation>('/conversations', data);
+    const response = await apiService.post<Conversation>('/api/conversations', data);
     return response.data;
   }
 
@@ -261,7 +261,7 @@ export class ConversationsService {
    * Supprimer une conversation
    */
   async deleteConversation(id: string): Promise<void> {
-    await apiService.delete(`/conversations/${id}`);
+    await apiService.delete(`/api/conversations/${id}`);
   }
 
   /**
@@ -331,7 +331,7 @@ export class ConversationsService {
    * Envoyer un message dans une conversation
    */
   async sendMessage(conversationId: string, data: SendMessageRequest): Promise<Message> {
-    const response = await apiService.post<{ success: boolean; data: Message }>(`/conversations/${conversationId}/messages`, data);
+    const response = await apiService.post<{ success: boolean; data: Message }>(`/api/conversations/${conversationId}/messages`, data);
     return response.data.data;
   }
 
@@ -339,28 +339,28 @@ export class ConversationsService {
    * Marquer une conversation comme lue
    */
   async markAsRead(conversationId: string): Promise<void> {
-    await apiService.post(`/conversations/${conversationId}/read`);
+    await apiService.post(`/api/conversations/${conversationId}/read`);
   }
 
   /**
    * Ajouter un participant à une conversation
    */
   async addParticipant(conversationId: string, userId: string): Promise<void> {
-    await apiService.post(`/conversations/${conversationId}/participants`, { userId });
+    await apiService.post(`/api/conversations/${conversationId}/participants`, { userId });
   }
 
   /**
    * Supprimer un participant d'une conversation
    */
   async removeParticipant(conversationId: string, userId: string): Promise<void> {
-    await apiService.delete(`/conversations/${conversationId}/participants/${userId}`);
+    await apiService.delete(`/api/conversations/${conversationId}/participants/${userId}`);
   }
 
   /**
    * Rechercher dans les conversations
    */
   async searchConversations(query: string): Promise<Conversation[]> {
-    const response = await apiService.get<Conversation[]>('/conversations/search', { q: query });
+    const response = await apiService.get<Conversation[]>('/api/conversations/search', { q: query });
     return response.data;
   }
 
@@ -491,7 +491,7 @@ export class ConversationsService {
    * Mettre à jour les paramètres d'une conversation
    */
   async updateConversation(id: string, data: Partial<Conversation>): Promise<Conversation> {
-    const response = await apiService.patch<Conversation>(`/conversations/${id}`, data);
+    const response = await apiService.patch<Conversation>(`/api/conversations/${id}`, data);
     return response.data;
   }
 
@@ -515,7 +515,7 @@ export class ConversationsService {
       const response = await apiService.post<{ 
         success: boolean; 
         data: { link: string; code: string; shareLink: any } 
-      }>(`/conversations/${conversationId}/new-link`, {
+      }>(`/api/conversations/${conversationId}/new-link`, {
         name: linkData?.name || 'Lien d\'invitation',
         description: linkData?.description || 'Rejoignez cette conversation',
         maxUses: linkData?.maxUses,
