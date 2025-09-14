@@ -13,8 +13,7 @@ export * from './anonymous';
 export * from './api-responses';
 export * from './migration-utils';
 
-// Export des nouveaux types de messages unifiés
-export * from './unified-message';
+// Message types are now consolidated in conversation.ts
 
 // Export des types unifiés Phase 2 - Messaging
 export * from './messaging';
@@ -113,12 +112,12 @@ export interface PaginatedResponse<T> extends LegacyApiResponse<T[]> {
 // Ces types sont remplacés par ceux dans conversation.ts
 // Gardés pour rétrocompatibilité temporaire
 
-// Importation des types de messages unifiés
-import type { Message as UnifiedMessage, MessageWithTranslations as UnifiedMessageWithTranslations } from './unified-message';
+// Importation des types de messages consolidés
+import type { Message as ConsolidatedMessage, MessageWithTranslations as ConsolidatedMessageWithTranslations } from './conversation';
 
 // Alias pour rétrocompatibilité
-export type Message = UnifiedMessage;
-export type MessageWithTranslations = UnifiedMessageWithTranslations;
+export type Message = ConsolidatedMessage;
+export type MessageWithTranslations = ConsolidatedMessageWithTranslations;
 
 export interface BubbleTranslation {
   language: string;
@@ -128,7 +127,27 @@ export interface BubbleTranslation {
   confidence: number; // 0-1 pour la qualité de traduction
 }
 
-export interface TranslatedMessage extends UnifiedMessage {
+export interface TranslatedMessage {
+  // Core message properties
+  id: string;
+  conversationId: string;
+  senderId?: string;
+  anonymousSenderId?: string;
+  content: string;
+  originalLanguage: string;
+  messageType: any;
+  isEdited: boolean;
+  editedAt?: Date;
+  isDeleted: boolean;
+  deletedAt?: Date;
+  replyToId?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  timestamp: Date;
+  sender?: any;
+  anonymousSender?: any;
+  
+  // Translation-specific properties
   translation?: BubbleTranslation;
   originalContent?: string;
   translatedContent?: string;

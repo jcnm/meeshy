@@ -10,12 +10,12 @@ import type {
   TranslationData
 } from '@shared/types';
 
-// Import des nouveaux types de messages
+// Import des types de messages consolidés
 import type {
-  GatewayMessage,
-  UIMessage,
+  Message,
+  MessageWithTranslations,
   UITranslationState
-} from '@shared/types/message-types';
+} from '@shared/types';
 
 // Ré-export des types partagés essentiels
 export * from '@shared/types';

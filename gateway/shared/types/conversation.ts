@@ -3,7 +3,7 @@
  * Harmonisation Gateway ↔ Frontend
  */
 
-import type { SocketIOUser as User, MessageType, SocketIOMessage } from './socketio-events';
+import type { SocketIOUser as User, MessageType } from './socketio-events';
 import type { AnonymousParticipant } from './anonymous';
 // UserRole will be defined locally to avoid circular dependency
 type UserRole = string;
@@ -47,71 +47,12 @@ export interface ConversationIdentifiers {
   identifier?: string;  // Human-readable - OPTIONNEL pour URLs
 }
 
-/**
- * Message unifié entre Gateway et Frontend
- * Utilise maintenant le type unifié depuis unified-message.ts
- */
-import type { Message as UnifiedMessage } from './unified-message';
-export type Message = UnifiedMessage;
+// ===== MESSAGE TYPES CONSOLIDATED =====
 
 /**
- * Conversation unifiée
- * Contient TOUS les champs utilisés dans Gateway et Frontend pour compatibilité totale
+ * Type de base pour toutes les traductions
  */
-export interface Conversation extends ConversationIdentifiers {
-  type: 'direct' | 'group' | 'public' | 'global';
-  title?: string;
-  name?: string;  // Alias pour title
-  description?: string;
-  image?: string;
-  avatar?: string;
-  communityId?: string;
-  isActive: boolean;
-  isArchived: boolean;
-  isGroup: boolean;
-  isPrivate: boolean;
-  lastMessageAt: Date;
-  lastMessage?: Message;
-  createdAt: Date;
-  updatedAt: Date;
-  participants: ConversationParticipant[];
-  unreadCount?: number;
-  
-  // Champs additionnels pour compatibilité
-  messages?: Message[];  // Pour certains usages frontend
-  groupId?: string;      // Référence au groupe si c'est une conversation de groupe
-  maxMembers?: number;   // Limite de participants
-  
-  // Champs pour compatibilité avec frontend.ts
-  linkId?: string;       // Pour compatibilité avec ConversationLink
-}
-
-/**
- * Participant de conversation (utilisateur authentifié)
- */
-export interface ConversationParticipant {
-  id: string;
-  conversationId: string;
-  userId: string;
-  role: UserRole;
-  canSendMessage: boolean;
-  canSendFiles: boolean;
-  canSendImages: boolean;
-  canSendVideos: boolean;
-  canSendAudios: boolean;
-  canSendLocations: boolean;
-  canSendLinks: boolean;
-  joinedAt: Date;
-  leftAt?: Date;
-  isActive: boolean;
-  user: User;
-}
-
-/**
- * Traduction de message (legacy - utiliser MessageTranslation de message-types.ts)
- * @deprecated
- */
-export interface LegacyMessageTranslation {
+export interface MessageTranslation {
   id: string;
   messageId: string;
   sourceLanguage: string;
@@ -121,105 +62,248 @@ export interface LegacyMessageTranslation {
   cacheKey: string;
   confidenceScore?: number;
   createdAt: Date;
+  cached: boolean;
 }
 
 /**
- * Message avec traductions - utilise le type unifié
+ * MESSAGE - Type principal pour toutes les communications
+ * Utilisé par :
+ * - Gateway (API, WebSocket, Socket.IO)
+ * - Frontend (affichage, état)
+ * - Translator (traitement)
  */
-import type { MessageWithTranslations as UnifiedMessageWithTranslations } from './unified-message';
-export type MessageWithTranslations = UnifiedMessageWithTranslations;
-
-/**
- * Statut de lecture de message
- */
-export interface MessageReadStatus {
+export interface Message {
+  // ===== IDENTIFIANTS =====
   id: string;
-  messageId: string;
-  userId: string;
-  readAt: Date;
-}
-
-/**
- * Données pour l'envoi d'un message
- */
-export interface SendMessageRequest {
   conversationId: string;
+  senderId?: string;           // ID utilisateur authentifié
+  anonymousSenderId?: string;  // ID utilisateur anonyme
+
+  // ===== CONTENU =====
   content: string;
-  originalLanguage?: string;
-  messageType?: MessageType;
+  originalLanguage: string;
+  messageType: MessageType;
+
+  // ===== ÉTAT DU MESSAGE =====
+  isEdited: boolean;
+  editedAt?: Date;
+  isDeleted: boolean;
+  deletedAt?: Date;
+
+  // ===== RÉPONSE =====
   replyToId?: string;
-}
+  replyTo?: Message;           // Message de réponse (récursif)
 
-/**
- * Données pour la création d'une conversation
- */
-export interface CreateConversationRequest {
-  type: 'direct' | 'group' | 'public' | 'global';
-  title?: string;
-  description?: string;
-  participantIds?: string[];
-  communityId?: string;
-}
+  // ===== MÉTADONNÉES =====
+  createdAt: Date;
+  updatedAt?: Date;
 
-/**
- * Statistiques de conversation
- */
-export interface ConversationStats {
-  messagesPerLanguage: Record<string, number>;
-  participantCount: number;
-  participantsPerLanguage: Record<string, number>;
-  onlineUsers: Array<{
+  // ===== EXPÉDITEUR =====
+  sender?: User | AnonymousParticipant;
+
+  // ===== TRADUCTIONS =====
+  translations: MessageTranslation[];
+
+  // ===== COMPATIBILITÉ =====
+  timestamp: Date;             // Alias pour createdAt (requis pour compatibilité)
+
+  // ===== PARTICIPANT ANONYME =====
+  anonymousSender?: {
     id: string;
     username: string;
     firstName: string;
     lastName: string;
-  }>;
-  updatedAt: Date;
+    language: string;
+    isMeeshyer: boolean;
+  };
 }
 
 /**
- * Préférences de conversation
+ * État de traduction dans l'interface utilisateur
  */
-export interface ConversationPreference {
+export interface UITranslationState {
+  language: string;
+  content: string;
+  status: 'pending' | 'translating' | 'completed' | 'failed';
+  timestamp: Date;
+  confidence?: number;
+  model?: 'basic' | 'medium' | 'premium';
+  error?: string;
+  fromCache: boolean;
+}
+
+/**
+ * MESSAGE AVEC TRADUCTIONS - Message enrichi avec traductions et états UI
+ * Utilisé par le Frontend pour l'affichage et la gestion des traductions
+ */
+export interface MessageWithTranslations extends Message {
+  // ===== TRADUCTIONS UI =====
+  uiTranslations: UITranslationState[];
+  translatingLanguages: Set<string>;
+  currentDisplayLanguage: string;
+  showingOriginal: boolean;
+  originalContent: string;
+
+  // ===== ÉTAT DE LECTURE =====
+  readStatus?: Array<{ userId: string; readAt: Date }>;
+
+  // ===== MÉTADONNÉES SUPPLÉMENTAIRES =====
+  location?: string;
+
+  // ===== PERMISSIONS UI =====
+  canEdit: boolean;
+  canDelete: boolean;
+  canTranslate: boolean;
+  canReply: boolean;
+}
+
+/**
+ * Conversation unifiée
+ * Contient TOUS les champs utilisés dans Gateway et Frontend pour compatibilité totale
+ */
+export interface Conversation {
+  // ===== IDENTIFIANTS =====
+  id: string;
+  identifier?: string;
+
+  // ===== MÉTADONNÉES =====
+  title?: string;
+  description?: string;
+  type: 'direct' | 'group' | 'anonymous' | 'broadcast';
+  status: 'active' | 'archived' | 'deleted';
+  visibility: 'public' | 'private' | 'restricted';
+
+  // ===== PARTICIPANTS =====
+  participants: Array<{
+    userId: string;
+    role: UserRole;
+    joinedAt: Date;
+    isActive: boolean;
+    permissions?: {
+      canInvite: boolean;
+      canRemove: boolean;
+      canEdit: boolean;
+      canDelete: boolean;
+      canModerate: boolean;
+    };
+  }>;
+
+  // ===== MESSAGES =====
+  lastMessage?: Message;
+  messageCount?: number;
+  unreadCount?: number;
+
+  // ===== STATISTIQUES =====
+  stats?: ConversationStats;
+
+  // ===== CONFIGURATION =====
+  settings?: {
+    allowAnonymous: boolean;
+    requireApproval: boolean;
+    maxParticipants?: number;
+    autoArchive?: boolean;
+    translationEnabled: boolean;
+    defaultLanguage?: string;
+    allowedLanguages?: string[];
+  };
+
+  // ===== LIENS ET PARTAGE =====
+  links?: Array<{
+    id: string;
+    type: 'invite' | 'share' | 'embed';
+    url: string;
+    expiresAt?: Date;
+    maxUses?: number;
+    currentUses: number;
+    isActive: boolean;
+    createdBy: string;
+    createdAt: Date;
+  }>;
+
+  // ===== TIMESTAMPS =====
+  createdAt: Date;
+  updatedAt: Date;
+  lastActivityAt?: Date;
+
+  // ===== CRÉATEUR =====
+  createdBy?: string;
+  createdByUser?: User;
+}
+
+/**
+ * Membre d'une conversation (ThreadMember)
+ */
+export interface ThreadMember {
   id: string;
   conversationId: string;
   userId: string;
-  key: string;
-  value: string;
-  valueType: string;
-  description?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  user: User;
+  role: UserRole;
+  joinedAt: Date;
+  isActive: boolean;
+  isAnonymous: boolean;
+  permissions?: {
+    canInvite: boolean;
+    canRemove: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    canModerate: boolean;
+  };
 }
 
 /**
- * Lien de partage pour accès anonyme à une conversation
+ * Données de traduction reçues via Socket.IO
  */
+export interface TranslationData {
+  messageId: string;
+  translations: Array<{
+    targetLanguage: string;
+    translatedContent: string;
+    confidence?: number;
+    model?: 'basic' | 'medium' | 'premium';
+    fromCache: boolean;
+  }>;
+  timestamp: Date;
+}
+
+/**
+ * Message traduit pour l'affichage
+ */
+export interface TranslatedMessage extends Message {
+  translatedContent?: string;
+  targetLanguage?: string;
+  translationConfidence?: number;
+  translationModel?: 'basic' | 'medium' | 'premium';
+  isTranslationCached?: boolean;
+}
+
+// ===== SHARE LINK TYPES =====
 export interface ConversationShareLink {
   id: string;
-  linkId: string;
-  identifier?: string;
-  conversationId: string;
-  createdBy: string;
-  name?: string;
-  description?: string;
+  type: 'invite' | 'share' | 'embed';
+  url: string;
+  expiresAt?: Date;
   maxUses?: number;
   currentUses: number;
-  maxConcurrentUsers?: number;
-  currentConcurrentUsers: number;
-  maxUniqueSessions?: number;
-  currentUniqueSessions: number;
-  expiresAt?: Date;
   isActive: boolean;
-  allowAnonymousMessages: boolean;
-  allowAnonymousFiles: boolean;
-  allowAnonymousImages: boolean;
-  allowViewHistory: boolean;
-  requireNickname: boolean;
-  requireEmail: boolean;
-  allowedCountries: string[];
-  allowedLanguages: string[];
-  allowedIpRanges: string[];
+  createdBy: string;
   createdAt: Date;
-  updatedAt: Date;
 }
+
+// ===== CONVERSATION PARTICIPANT =====
+export interface ConversationParticipant {
+  userId: string;
+  role: UserRole;
+  joinedAt: Date;
+  isActive: boolean;
+  permissions?: {
+    canInvite: boolean;
+    canRemove: boolean;
+    canEdit: boolean;
+    canDelete: boolean;
+    canModerate: boolean;
+  };
+}
+
+// ===== TYPE ALIASES FOR COMPATIBILITY =====
+export type BubbleStreamMessage = MessageWithTranslations;
