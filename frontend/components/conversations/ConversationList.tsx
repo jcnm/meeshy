@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { MessageSquare, Link2, Users, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,13 +15,13 @@ import type {
 import { CreateLinkButton } from './create-link-button';
 
 interface ConversationListProps {
-  conversations: Conversation[];
-  selectedConversation: Conversation | null;
+  conversations: any[];
+  selectedConversation: any | null;
   currentUser: User;
   isLoading: boolean;
   isMobile: boolean;
   showConversationList: boolean;
-  onSelectConversation: (conversation: Conversation) => void;
+  onSelectConversation: (conversation: any) => void;
   onCreateConversation: () => void;
   onLinkCreated: () => void;
   t: (key: string) => string;
@@ -46,9 +46,29 @@ export function ConversationList({
   const [publicSearchFilter, setPublicSearchFilter] = useState('');
   const [privateSearchFilter, setPrivateSearchFilter] = useState('');
 
-  // Fonctions helper pour filtrer les conversations
-  const getFilteredPublicConversations = useCallback(() => {
-    const publicConversations = conversations.filter(conv => 
+  // Synchroniser l'onglet actif avec le type de la conversation sélectionnée
+  // Seulement quand la conversation sélectionnée change, pas quand l'onglet change
+  useEffect(() => {
+    if (selectedConversation) {
+      const conv = selectedConversation as any;
+      const isPublicConversation = conv.type === 'global' || conv.type === 'public';
+      const newActiveTab = isPublicConversation ? 'public' : 'private';
+      
+      if (newActiveTab !== activeTab) {
+        console.log('🔄 [ConversationList] Synchronisation de l\'onglet:', {
+          conversationId: conv.id,
+          conversationType: conv.type,
+          previousTab: activeTab,
+          newTab: newActiveTab
+        });
+        setActiveTab(newActiveTab);
+      }
+    }
+  }, [selectedConversation]); // Supprimé activeTab des dépendances
+
+  // Fonctions helper pour filtrer les conversations - Utilisation de useMemo pour éviter les re-calculs
+  const filteredPublicConversations = useMemo(() => {
+    const publicConversations = conversations.filter((conv: any) => 
       conv.type === 'global' || conv.type === 'public'
     );
     
@@ -62,8 +82,8 @@ export function ConversationList({
     });
   }, [conversations, publicSearchFilter]);
 
-  const getFilteredPrivateConversations = useCallback(() => {
-    const privateConversations = conversations.filter(conv => 
+  const filteredPrivateConversations = useMemo(() => {
+    const privateConversations = conversations.filter((conv: any) => 
       conv.type !== 'global' && conv.type !== 'public'
     );
     
@@ -76,6 +96,18 @@ export function ConversationList({
       return name.includes(searchLower) || description.includes(searchLower);
     });
   }, [conversations, privateSearchFilter]);
+
+  // Debug: Afficher les types de conversations reçus (une seule fois)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && conversations.length > 0) {
+      console.log('🔍 [ConversationList] Types de conversations reçus:', 
+        conversations.map(conv => ({ id: conv.id, type: conv.type, title: conv.title }))
+      );
+      console.log('🔒 [ConversationList] Conversations privées trouvées:', 
+        filteredPrivateConversations.map(conv => ({ id: conv.id, type: conv.type, title: conv.title }))
+      );
+    }
+  }, [conversations, filteredPrivateConversations]);
 
   // Fonction utilitaire pour obtenir le nom d'affichage d'une conversation
   const getConversationDisplayName = useCallback((conversation: Conversation): string => {
@@ -319,11 +351,11 @@ export function ConversationList({
             <TabsList className="grid w-full grid-cols-2 mt-2">
               <TabsTrigger value="public" className="flex items-center gap-1 text-xs px-2">
                 <span>{t('public')}</span>
-                <span className="text-xs">({getFilteredPublicConversations().length})</span>
+                <span className="text-xs">({filteredPublicConversations.length})</span>
               </TabsTrigger>
               <TabsTrigger value="private" className="flex items-center gap-1 text-xs px-2">
                 <span>{t('private')}</span>
-                <span className="text-xs">({getFilteredPrivateConversations().length})</span>
+                <span className="text-xs">({filteredPrivateConversations.length})</span>
               </TabsTrigger>
             </TabsList>
             
@@ -375,7 +407,7 @@ export function ConversationList({
             {/* Liste des conversations publiques */}
             {activeTab === 'public' && (
               <>
-                {getFilteredPublicConversations().length === 0 ? (
+                {filteredPublicConversations.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-8 text-center">
                     <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-3" />
                     <p className="text-muted-foreground text-sm">
@@ -384,7 +416,7 @@ export function ConversationList({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {getFilteredPublicConversations()
+                    {filteredPublicConversations
                       .filter(conversation => conversation && conversation.id)
                       .map((conversation) => (
                       <div
@@ -456,7 +488,7 @@ export function ConversationList({
             {/* Liste des conversations privées */}
             {activeTab === 'private' && (
               <>
-                {getFilteredPrivateConversations().length === 0 ? (
+                {filteredPrivateConversations.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-8 text-center">
                     <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-3" />
                     <p className="text-muted-foreground text-sm">
@@ -465,7 +497,7 @@ export function ConversationList({
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {getFilteredPrivateConversations()
+                    {filteredPrivateConversations
                       .filter(conversation => conversation && conversation.id)
                       .map((conversation) => (
                       <div

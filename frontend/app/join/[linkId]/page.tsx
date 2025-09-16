@@ -327,7 +327,7 @@ export default function JoinConversationPage() {
         }
         
         // Vérifier le type d'utilisateur avec l'endpoint /links/:conversationShareLinkId
-        const chatResponse = await fetch(`${buildApiUrl('/links')}/${conversationShareLinkId}`, {
+        const chatResponse = await fetch(`${buildApiUrl('/api/links')}/${conversationShareLinkId}`, {
           method: 'GET',
           headers
         });

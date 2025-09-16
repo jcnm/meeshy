@@ -108,7 +108,9 @@ export default function LandingPage() {
     
     return (
       <DashboardLayout title={t('navigation.home')}>
-        <BubbleStreamPage user={user} />
+        <div className="h-full">
+          <BubbleStreamPage user={user} />
+        </div>
       </DashboardLayout>
     );
   }

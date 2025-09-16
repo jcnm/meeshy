@@ -1,6 +1,6 @@
 import { apiService } from './api.service';
 import { socketIOUserToUser } from '@/utils/user-adapter';
-import { UserRoleEnum } from '@shared/types';
+import { UserRoleEnum, MessageType } from '@shared/types';
 import type { 
   Conversation, 
   Message, 
@@ -152,33 +152,52 @@ export class ConversationsService {
       isActive: true,
       updatedAt: new Date(),
     };
+
+    // Transformer les traductions si elles existent
+    const translations = Array.isArray(msg.translations) 
+      ? msg.translations.map((t: any) => ({
+          id: String(t.id || ''),
+          messageId: String(msg.id),
+          sourceLanguage: String(t.sourceLanguage || msg.originalLanguage || 'fr'),
+          targetLanguage: String(t.targetLanguage || ''),
+          translatedContent: String(t.translatedContent || ''),
+          translationModel: (t.translationModel || 'basic') as 'basic' | 'medium' | 'premium',
+          cacheKey: String(t.cacheKey || ''),
+          confidenceScore: Number(t.confidenceScore) || undefined,
+          createdAt: new Date(String(t.createdAt || new Date())),
+          cached: Boolean(t.cached)
+        }))
+      : [];
+
+    const createdAt = new Date(String(msg.createdAt));
     
     return {
       id: String(msg.id),
       content: String(msg.content),
       senderId: String(msg.senderId),
       conversationId: String(msg.conversationId),
-      originalLanguage: String(msg.originalLanguage) || 'fr',
-      messageType: String(msg.messageType) || 'text',
+      originalLanguage: msg.originalLanguage ? String(msg.originalLanguage) : 'fr',
+      messageType: (String(msg.messageType) || 'text') as MessageType,
       isEdited: Boolean(msg.isEdited),
       isDeleted: Boolean(msg.isDeleted),
-      createdAt: new Date(String(msg.createdAt)),
+      createdAt,
       updatedAt: new Date(String(msg.updatedAt)),
-      sender: sender ? socketIOUserToUser(sender as any) : defaultSender
+      sender: sender ? socketIOUserToUser(sender as any) : defaultSender,
+      translations,
+      timestamp: createdAt // Alias pour compatibilité
     };
   }
 
   /**
    * Transforme les données de conversation du backend vers le format frontend
    */
-  private transformConversationData(backendConversation: unknown): Conversation {
+  private transformConversationData(backendConversation: unknown): any {
     const conv = backendConversation as Record<string, unknown>;
     
     return {
       id: String(conv.id),
       type: this.mapConversationType(String(conv.type) || 'direct'),
       title: conv.title as string,
-      name: (conv.name as string) || (conv.title as string),
       description: conv.description as string,
       image: conv.image as string,
       avatar: conv.avatar as string,
@@ -566,7 +585,7 @@ export class ConversationsService {
     const response = await apiService.post<{ 
       success: boolean; 
       data: { linkId: string; conversationId: string; shareLink: any } 
-    }>('/links', {
+    }>('/api/links', {
       // Pas de conversationId - le backend créera une nouvelle conversation
       name: linkData.name || 'Nouvelle conversation',
       description: linkData.description || 'Rejoignez cette conversation',
@@ -611,9 +630,7 @@ export class ConversationsService {
         success: boolean;
         message: string;
         markedCount: number;
-      }>(`/api/conversations/${conversationId}/mark-read`, {}, {
-        signal: controller.signal
-      });
+      }>(`/api/conversations/${conversationId}/mark-read`, {});
       
       // Nettoyer le controller une fois la requête terminée
       this.pendingRequests.delete(requestKey);

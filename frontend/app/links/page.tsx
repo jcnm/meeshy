@@ -63,7 +63,7 @@ export default function LinksPage() {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl('/links/my-links'), {
+      const response = await fetch(buildApiUrl('/api/links/my-links'), {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -126,7 +126,7 @@ export default function LinksPage() {
   const handleToggleActive = async (link: ConversationLink) => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl(`/links/${link.linkId}/toggle`), {
+      const response = await fetch(buildApiUrl(`/api/links/${link.linkId}/toggle`), {
         method: 'PATCH',
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -154,7 +154,7 @@ export default function LinksPage() {
       const newExpiresAt = new Date(link.expiresAt || new Date());
       newExpiresAt.setDate(newExpiresAt.getDate() + days);
 
-      const response = await fetch(buildApiUrl(`/links/${link.linkId}/extend`), {
+      const response = await fetch(buildApiUrl(`/api/links/${link.linkId}/extend`), {
         method: 'PATCH',
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -181,7 +181,7 @@ export default function LinksPage() {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl(`/links/${link.linkId}`), {
+      const response = await fetch(buildApiUrl(`/api/links/${link.linkId}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

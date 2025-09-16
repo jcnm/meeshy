@@ -171,22 +171,21 @@ export function ConversationHeader({
   return (
     <div className={cn(
       "flex-shrink-0 border-b border-gray-200",
-      // En-tête mobile : fixe en haut, pleine largeur
+      // En-tête mobile : fixe en haut, pleine largeur, sans marges
       isMobile 
-        ? "p-3 bg-white w-full" 
+        ? "fixed top-0 left-0 right-0 z-50 p-3 bg-white w-full m-0 px-4 shadow-sm" 
         : "p-4 bg-white/90 backdrop-blur-sm rounded-tr-2xl"
     )}>
       <div className="flex items-center gap-3">
-        {isMobile && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onBackToList}
-            className="rounded-full h-10 w-10 p-0 hover:bg-accent/50"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onBackToList}
+          className="rounded-full h-10 w-10 p-0 hover:bg-accent/50"
+          title={t('back')}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <div className="relative">
           <Avatar className={cn(
             "ring-2 ring-primary/20",

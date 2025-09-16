@@ -5,8 +5,9 @@
  * - Ordre chronologique strict (anciens → récents)
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { apiService } from '@/services/api.service';
+import { debounce } from '@/utils/debounce';
 import type { User, Message } from '@shared/types';
 
 export interface ConversationMessagesOptions {
@@ -26,7 +27,7 @@ export interface ConversationMessagesReturn {
   refresh: () => Promise<void>;
   clearMessages: () => void;
   addMessage: (message: Message) => boolean;
-  updateMessage: (messageId: string, updates: Partial<Message>) => void;
+  updateMessage: (messageId: string, updates: Partial<Message> | ((prev: Message) => Message)) => void;
   removeMessage: (messageId: string) => void;
 }
 
@@ -59,7 +60,7 @@ export function useConversationMessages(
   const offsetRef = useRef<number>(0); // Ref pour l'offset pour éviter les problèmes de timing
 
   // Fonction pour charger les messages
-  const loadMessages = useCallback(async (isLoadMore = false) => {
+  const loadMessagesInternal = useCallback(async (isLoadMore = false) => {
     if (!conversationId || !currentUser || !enabled) {
       console.log('[Conversation] loadMessages annulé - conditions non remplies:', {
         conversationId: !!conversationId,
@@ -110,15 +111,15 @@ export function useConversationMessages(
 
       const data = response.data;
       
-      console.log(`[Conversation] 📡 RÉPONSE API - status: ${response.status}, ok: ${response.ok}`);
+      console.log(`[Conversation] 📡 RÉPONSE API - status: ${response.status}`);
       console.log(`[Conversation] 📡 RÉPONSE DATA - success: ${data.success}, data structure:`, data);
       
       if (!data.success) {
-        throw new Error(data.error || 'Erreur lors du chargement des messages');
+        throw new Error('Erreur lors du chargement des messages');
       }
 
       const newMessages = data.data.messages || [];
-      const hasMoreMessages = data.data.hasMore || false;
+      const hasMoreMessages = (data.data as any).hasMore || false;
       
       console.log(`[Conversation] 📡 DONNÉES REÇUES - success: ${data.success}, messages count: ${newMessages.length}, hasMore: ${hasMoreMessages}`);
 
@@ -168,7 +169,13 @@ export function useConversationMessages(
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [conversationId, currentUser, enabled, limit, offset]);
+  }, [conversationId, currentUser, enabled, limit]); // Retirer offset puisqu'on utilise offsetRef
+
+  // Version debounced de loadMessages pour éviter les appels multiples
+  const loadMessages = useMemo(
+    () => debounce(loadMessagesInternal, 300),
+    [loadMessagesInternal]
+  );
 
   // Fonction pour charger plus de messages
   const loadMore = useCallback(async () => {
@@ -189,7 +196,7 @@ export function useConversationMessages(
     lastLoadTimeRef.current = now;
     console.log('[Conversation] 🔄 Chargement de plus de messages anciens...');
     await loadMessages(true);
-  }, [loadMessages, isLoadingMore, hasMore, enabled, messages.length]);
+  }, [loadMessages, isLoadingMore, hasMore, enabled]); // Retirer messages.length
 
   // Fonction pour rafraîchir les messages
   const refresh = useCallback(async () => {
@@ -208,25 +215,103 @@ export function useConversationMessages(
 
   // Fonction pour ajouter un message (nouveaux messages en temps réel)
   const addMessage = useCallback((message: Message): boolean => {
+    console.group('🆕 [USE-CONVERSATION-MESSAGES] AJOUT NOUVEAU MESSAGE');
+    console.log('📬 [USE-CONVERSATION-MESSAGES] addMessage appelé', {
+      messageId: message.id,
+      conversationId: message.conversationId,
+      content: message.content?.substring(0, 50) + '...',
+      senderId: message.senderId,
+      hasId: !!message.id,
+      messageObject: message
+    });
+    
     let wasAdded = false;
     setMessages(prev => {
+      console.log('📊 [USE-CONVERSATION-MESSAGES] Messages actuels:', prev.length);
+      
       // Éviter les doublons
       if (prev.some(m => m.id === message.id)) {
+        console.log('🔄 [USE-CONVERSATION-MESSAGES] Message déjà présent, ignore');
+        console.groupEnd();
         return prev;
       }
 
       wasAdded = true;
-      // Ajouter le nouveau message à la fin (en bas)
-      return [...prev, message];
+      const newMessages = [...prev, message];
+      console.log('✅ [USE-CONVERSATION-MESSAGES] Message ajouté avec succès', {
+        previousCount: prev.length,
+        newCount: newMessages.length,
+        addedMessageId: message.id
+      });
+      
+      console.groupEnd();
+      return newMessages;
     });
+    
+    if (!wasAdded) {
+      console.groupEnd();
+    }
+    
     return wasAdded;
   }, []);
 
-  // Fonction pour mettre à jour un message
-  const updateMessage = useCallback((messageId: string, updates: Partial<Message>) => {
-    setMessages(prev => prev.map(msg => 
-      msg.id === messageId ? { ...msg, ...updates } : msg
-    ));
+  // Fonction pour mettre à jour un message (support des callbacks)
+  const updateMessage = useCallback((messageId: string, updates: Partial<Message> | ((prev: Message) => Message)) => {
+    console.group(`📝 [USE-CONVERSATION-MESSAGES] MISE À JOUR MESSAGE ${messageId}`);
+    console.log('🔄 [USE-CONVERSATION-MESSAGES] updateMessage appelé', {
+      messageId,
+      updatesType: typeof updates,
+      isFunction: typeof updates === 'function'
+    });
+    
+    let messageFound = false;
+    let oldTranslationCount = 0;
+    let newTranslationCount = 0;
+    
+    setMessages(prev => {
+      console.log(`📊 [USE-CONVERSATION-MESSAGES] Messages en cours: ${prev.length}`);
+      
+      const result = prev.map(msg => {
+        if (msg.id === messageId) {
+          messageFound = true;
+          oldTranslationCount = msg.translations?.length || 0;
+          console.log(`✅ [USE-CONVERSATION-MESSAGES] Message trouvé: ${msg.content.substring(0, 50)}...`);
+          console.log(`📊 [USE-CONVERSATION-MESSAGES] Traductions actuelles: ${oldTranslationCount}`);
+          
+          let updatedMessage;
+          if (typeof updates === 'function') {
+            console.log('🔧 [USE-CONVERSATION-MESSAGES] Application fonction de mise à jour...');
+            updatedMessage = updates(msg);
+          } else {
+            console.log('🔧 [USE-CONVERSATION-MESSAGES] Application mise à jour directe...');
+            updatedMessage = { ...msg, ...updates };
+          }
+          
+          newTranslationCount = updatedMessage.translations?.length || 0;
+          console.log(`📊 [USE-CONVERSATION-MESSAGES] Nouvelles traductions: ${newTranslationCount}`);
+          console.log(`📈 [USE-CONVERSATION-MESSAGES] Évolution: ${oldTranslationCount} → ${newTranslationCount} (${newTranslationCount > oldTranslationCount ? '+' : ''}${newTranslationCount - oldTranslationCount})`);
+          
+          if (updatedMessage.translations && updatedMessage.translations.length > 0) {
+            console.log('🌐 [USE-CONVERSATION-MESSAGES] Détail des traductions mises à jour:');
+            updatedMessage.translations.forEach((t, idx) => {
+              console.log(`  ${idx + 1}. ${t.targetLanguage}: "${t.translatedContent?.substring(0, 30)}..." (${t.translationModel})`);
+            });
+          }
+          
+          return updatedMessage;
+        }
+        return msg;
+      });
+      
+      if (!messageFound) {
+        console.warn(`⚠️ [USE-CONVERSATION-MESSAGES] Message ${messageId} non trouvé dans la liste`);
+      } else {
+        console.log(`✅ [USE-CONVERSATION-MESSAGES] Message ${messageId} mis à jour avec succès`);
+      }
+      
+      console.groupEnd();
+      return result;
+    });
   }, []);
 
   // Fonction pour supprimer un message
@@ -236,10 +321,17 @@ export function useConversationMessages(
 
   // Gestion du scroll infini (scroll vers le haut pour charger plus anciens)
   useEffect(() => {
-    if (!enabled || !actualContainerRef.current || !isInitialized) {
-      console.log(`[Conversation] 📜 Scroll listener non attaché - enabled: ${enabled}, container: ${!!actualContainerRef.current}, initialized: ${isInitialized}`);
+    if (!enabled || !actualContainerRef.current) {
+      console.log(`[Conversation] 📜 Scroll listener non attaché - enabled: ${enabled}, container: ${!!actualContainerRef.current}`);
       return;
     }
+
+    // Attendre que le DOM soit prêt avec un délai
+    const timer = setTimeout(() => {
+      if (!actualContainerRef.current) {
+        console.log(`[Conversation] 📜 Scroll listener non attaché - container toujours null après délai`);
+        return;
+      }
 
     const container = actualContainerRef.current;
     console.log(`[Conversation] 📜 Attachement du listener de scroll sur le conteneur:`, {
@@ -303,49 +395,68 @@ export function useConversationMessages(
       }, 100);
     };
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      
+      return () => {
+        container.removeEventListener('scroll', handleScroll);
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+      };
+    }, 100); // Délai de 100ms pour s'assurer que le DOM est prêt
+
     return () => {
-      container.removeEventListener('scroll', handleScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
+      clearTimeout(timer);
     };
-  }, [enabled, isInitialized, isLoadingMore, hasMore, threshold, loadMore]);
+  }, [enabled, actualContainerRef, isLoadingMore, hasMore, threshold, loadMore]);
 
   // Chargement initial
   useEffect(() => {
     if (conversationId && currentUser && enabled && !isInitialized) {
+      console.log('[Conversation] 🔄 Initialisation du chargement des messages');
       loadMessages(false);
-      
-      // Attendre que les messages soient chargés puis vérifier si on a besoin de plus
-      setTimeout(() => {
-        if (actualContainerRef.current) {
-          lastScrollTopRef.current = actualContainerRef.current.scrollTop;
-          
-          // Vérifier si on a besoin de charger plus de messages pour remplir le conteneur
-          const container = actualContainerRef.current;
-          const { scrollHeight, clientHeight } = container;
-          
-          if (scrollHeight <= clientHeight + 100 && hasMore) {
-            loadMore();
-          }
-        }
-      }, 200);
     }
-  }, [conversationId, currentUser, enabled, isInitialized, loadMessages, actualContainerRef, hasMore, loadMore]);
+  }, [conversationId, currentUser, enabled, isInitialized]); // Retirer les callbacks des dépendances
+
+  // Vérification du contenu après initialisation
+  useEffect(() => {
+    if (!isInitialized || !actualContainerRef.current || isLoadingMore) return;
+
+    const checkContentHeight = () => {
+      if (!actualContainerRef.current || isLoadingMore || !hasMore) return;
+      
+      const container = actualContainerRef.current;
+      const { scrollHeight, clientHeight } = container;
+      
+      if (scrollHeight <= clientHeight + 100) {
+        console.log('[Conversation] 📏 Conteneur pas assez rempli, chargement de plus de messages');
+        loadMore();
+      }
+    };
+
+    const timeoutId = setTimeout(checkContentHeight, 300);
+    return () => clearTimeout(timeoutId);
+  }, [isInitialized, hasMore]); // Retirer loadMore des dépendances
 
   // Chargement automatique si le conteneur n'est pas assez rempli
   useEffect(() => {
     if (!isInitialized || isLoadingMore || !hasMore || !actualContainerRef.current) return;
 
-    const container = actualContainerRef.current;
-    const { scrollHeight, clientHeight } = container;
-    
-    if (scrollHeight <= clientHeight + 50 && hasMore) {
-      loadMore();
-    }
-  }, [isInitialized, isLoadingMore, hasMore, loadMore, messages.length]);
+    // Utiliser un timeout pour éviter les appels en boucle
+    const checkAndLoadMore = () => {
+      if (!actualContainerRef.current || isLoadingMore || !hasMore) return;
+      
+      const container = actualContainerRef.current;
+      const { scrollHeight, clientHeight } = container;
+      
+      if (scrollHeight <= clientHeight + 50 && hasMore) {
+        loadMore();
+      }
+    };
+
+    const timeoutId = setTimeout(checkAndLoadMore, 500);
+    return () => clearTimeout(timeoutId);
+  }, [isInitialized, messages.length]); // Retirer loadMore et hasMore des dépendances
 
   // Nettoyage à la destruction
   useEffect(() => {

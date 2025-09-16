@@ -3,7 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
-import { BubbleMessage } from '@/components/common/bubble-message';
+import { BubbleMessage } from './bubble-message';
 import { messageTranslationService } from '@/services/message-translation.service';
 import type { User, Message, MessageWithTranslations } from '@shared/types';
 
@@ -55,6 +55,23 @@ export function MessagesDisplay({
 }: MessagesDisplayProps) {
 
   // TOUS LES HOOKS DOIVENT ÊTRE EN HAUT (avant tout return conditionnel)
+  
+  // 🔍 DEBUG: Logs pour comprendre le problème d'affichage
+  console.log('[MESSAGES_DISPLAY] 🔍 Props reçues:', {
+    messagesLength: messages.length,
+    translatedMessagesLength: translatedMessages.length,
+    isLoadingMessages,
+    currentUser: {
+      id: currentUser?.id,
+      username: currentUser?.username,
+      fullObject: currentUser
+    },
+    userLanguage,
+    reverseOrder,
+    conversationId
+  });
+  console.log('[MESSAGES_DISPLAY] 🔍 Messages bruts:', messages.map(m => ({ id: m.id, content: m.content?.substring(0, 30) + '...' })));
+  console.log('[MESSAGES_DISPLAY] 🔍 Messages traduits:', translatedMessages.map(m => ({ id: m.id, content: m.content?.substring(0, 30) + '...' })));
   
   // Fonction pour forcer la traduction d'un message
   const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string) => {
@@ -122,10 +139,25 @@ export function MessagesDisplay({
     }
   }, [messages, onTranslation]);
 
+  // Normaliser les messages pour s'assurer qu'ils ont tous une originalLanguage
+  const normalizedMessages = useMemo(() => {
+    return messages.map(message => ({
+      ...message,
+      originalLanguage: message.originalLanguage || 'fr'
+    }));
+  }, [messages]);
+
+  const normalizedTranslatedMessages = useMemo(() => {
+    return translatedMessages.map(message => ({
+      ...message,
+      originalLanguage: message.originalLanguage || 'fr'
+    }));
+  }, [translatedMessages]);
+
   // Choisir les messages à afficher et l'ordre (mémorisé)
   const messagesToDisplay = useMemo(() => {
-    return translatedMessages.length > 0 ? translatedMessages : messages;
-  }, [translatedMessages, messages]);
+    return normalizedTranslatedMessages.length > 0 ? normalizedTranslatedMessages : normalizedMessages;
+  }, [normalizedTranslatedMessages, normalizedMessages]);
 
   const orderedMessages = useMemo(() => {
     return reverseOrder ? [...messagesToDisplay].reverse() : messagesToDisplay;
@@ -134,7 +166,7 @@ export function MessagesDisplay({
   // MAINTENANT on peut faire les returns conditionnels
   
   // État de chargement - seulement si on n'a pas encore de messages
-  if (isLoadingMessages && messages.length !== 0) {
+  if (isLoadingMessages && messages.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
@@ -173,12 +205,30 @@ export function MessagesDisplay({
     }
   }
 
+  // 🔍 DEBUG: Vérifier le processus de rendu
+  console.log('🎯 [MessagesDisplay] Processus de rendu:', {
+    messagesToDisplay: messagesToDisplay.length,
+    orderedMessages: orderedMessages.length,
+    filteredMessages: orderedMessages.filter(message => message && message.id).length,
+    currentUserId: currentUser.id,
+    className
+  });
+
+  const filteredMessages = orderedMessages.filter(message => message && message.id);
+  console.log('🔍 [MessagesDisplay] Messages après filtrage:', filteredMessages.map(m => ({ id: m.id, senderId: m.senderId, content: m.content?.substring(0, 30) })));
+
   return (
     <div className={className}>
-      {orderedMessages
-        .filter(message => message && message.id) // Filtrer les messages invalides
-        .map((message) => {
+      {filteredMessages.map((message) => {
           const isOwnMessage = message.senderId === currentUser.id;
+          console.log('🎯 [MessagesDisplay] Rendu message dans map:', {
+            messageId: message.id,
+            senderId: message.senderId,
+            currentUserId: currentUser.id,
+            isOwnMessage,
+            content: message.content?.substring(0, 30)
+          });
+          
           return (
             <div 
               key={`message-container-${message.id}`}
@@ -202,6 +252,9 @@ export function MessagesDisplay({
             </div>
           );
         })}
+      
+      {/* Espace supplémentaire pour éviter que le dernier message soit caché par la zone de saisie */}
+      <div className="h-12" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { SocketIOUser } from '@/types';
 import { UserRoleEnum } from '../shared/types';
+import { buildApiUrl } from '@/lib/config';
 
 
 // Interface pour la réponse d'authentification
@@ -56,7 +57,7 @@ class AuthService {
    */
   async login(username: string, password: string): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/auth/login`, {
+      const response = await fetch(buildApiUrl('/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ class AuthService {
     try {
       const token = this.getToken();
       if (token) {
-        await fetch(`${this.baseUrl}/auth/logout`, {
+        await fetch(buildApiUrl('/auth/logout'), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -123,7 +124,7 @@ class AuthService {
         };
       }
 
-      const response = await fetch(`${this.baseUrl}/auth/me`, {
+      const response = await fetch(buildApiUrl('/auth/me'), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -163,7 +164,7 @@ class AuthService {
         };
       }
 
-      const response = await fetch(`${this.baseUrl}/auth/refresh`, {
+      const response = await fetch(buildApiUrl('/auth/refresh'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

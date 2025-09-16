@@ -109,7 +109,18 @@ export function useMessageTranslations({
             content: t.translatedContent,
             status: 'completed' as const,
             timestamp: currentTimestamp,
-            confidence: t.confidenceScore || 0.9
+            confidence: t.confidenceScore || 0.9,
+            // Support du format MessageTranslation pour BubbleMessage
+            targetLanguage: language,
+            translatedContent: t.translatedContent,
+            confidenceScore: t.confidenceScore || 0.9,
+            translationModel: t.translationModel || 'basic',
+            id: t.id || `${message.id}_${language}_${Date.now()}`,
+            messageId: message.id,
+            sourceLanguage: t.sourceLanguage || message.originalLanguage || 'fr',
+            cacheKey: t.cacheKey || `${message.id}_${message.originalLanguage || 'fr'}_${language}`,
+            createdAt: currentTimestamp,
+            cached: t.cached || false
           };
           
           translationsMap.set(language, translation);

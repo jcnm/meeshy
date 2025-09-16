@@ -178,9 +178,9 @@ export const API_ENDPOINTS = {
     CREATE: '/conversations',
     JOIN: '/conversations/join',
     LINK: '/conversations/link',
-    CREATE_LINK: '/links',
+    CREATE_LINK: '/api/links',
     GET_CONVERSATION_LINKS: (conversationId: string) => `/conversations/${conversationId}/links`,
-    GET_LINK_CONVERSATION: (linkId: string) => `/links/${linkId}/conversations`,
+    GET_LINK_CONVERSATION: (linkId: string) => `/api/links/${linkId}/conversations`,
     MESSAGES: '/conversations/:id/messages',
     GET_GROUP_CONVERSATIONS: (groupId: string) => `/conversations/group/${groupId}`
   },
@@ -234,7 +234,9 @@ export const getWebSocketUrl = (): string => {
 
 // Helper pour construire une URL complète vers l'API - Version unifiée
 export const buildApiUrl = (endpoint: string): string => {
-  return `${getBackendUrl()}${ensureLeadingSlash(endpoint)}`;
+  // Add /api prefix for all API endpoints
+  const apiEndpoint = endpoint.startsWith('/api/') ? endpoint : `/api${ensureLeadingSlash(endpoint)}`;
+  return `${getBackendUrl()}${apiEndpoint}`;
 };
 
 // Helper pour construire une URL WebSocket complète avec path - Version unifiée

@@ -38,6 +38,10 @@ interface UseSocketIOMessagingOptions {
   onTranslation?: (messageId: string, translations: any[]) => void;
   onConversationStats?: (data: { conversationId: string; stats: any }) => void;
   onConversationOnlineStats?: (data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void;
+  // Nouvelles options d'amélioration
+  enableBatchTranslations?: boolean; // Traiter les traductions par batch pour de meilleures performances
+  translationDebounceMs?: number; // Délai de debounce pour éviter les traductions en cascade
+  autoRetryFailedTranslations?: boolean; // Relancer automatiquement les traductions échouées
 }
 
 interface UseSocketIOMessagingReturn {
@@ -219,11 +223,31 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
 
     // Listener pour les traductions
     const unsubscribeTranslation = shouldListenTranslation ? meeshySocketIOService.onTranslation((data) => {
+      console.group('🔗 [USE-SOCKETIO-MESSAGING] TRADUCTION TRANSFÉRÉE');
+      console.log('📨 Hook useSocketIOMessaging: Traductions reçues depuis le service', { 
+        messageId: data.messageId, 
+        translationsCount: data.translations.length,
+        translations: data.translations.map(t => ({
+          id: t.id,
+          targetLanguage: t.targetLanguage,
+          translatedContent: t.translatedContent?.substring(0, 40) + '...',
+          translationModel: t.translationModel
+        }))
+      });
+      
       logger.messaging.debug('useSocketIOMessaging: Traductions reçues', { 
         messageId: data.messageId, 
         translationsCount: data.translations.length 
       });
-      callbacksRef.current.onTranslation?.(data.messageId, data.translations);
+      
+      console.log('🎯 [USE-SOCKETIO-MESSAGING] Appel du callback onTranslation...');
+      if (callbacksRef.current.onTranslation) {
+        callbacksRef.current.onTranslation(data.messageId, data.translations);
+        console.log('✅ [USE-SOCKETIO-MESSAGING] Callback onTranslation exécuté avec succès');
+      } else {
+        console.warn('⚠️ [USE-SOCKETIO-MESSAGING] Aucun callback onTranslation configuré');
+      }
+      console.groupEnd();
     }) : () => {};
 
     const unsubscribeConvStats = shouldListenConvStats ? meeshySocketIOService.onConversationStats((data) => {

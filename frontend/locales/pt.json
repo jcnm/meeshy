@@ -2216,6 +2216,7 @@
     "conversationUI": "Interface da conversa"
   },
   "conversationLayout": {
+    "back": "Voltar",
     "authChecking": "Verificando autenticação...",
     "loadingConversations": "Carregando conversas...",
     "loadingConversationsDescription": "Recuperando suas conversas...",

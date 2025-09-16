@@ -28,6 +28,11 @@ export function useMessageLoader({
   const [translatedMessages, setTranslatedMessages] = useState<TranslatedMessage[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
+  // Cache des messages pour éviter les rechargements inutiles
+  const [messageCache, setMessageCache] = useState<Map<string, Message[]>>(new Map());
+  const [errorCount, setErrorCount] = useState(0);
+  const [lastError, setLastError] = useState<string | null>(null);
+
   // Hook pour la gestion des traductions
   const {
     processMessageWithTranslations,
@@ -300,6 +305,7 @@ export function useMessageLoader({
     translatedContent: translation.translatedContent,
     translationModel: (translation.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
     cacheKey: translation.cacheKey || `${messageId}_${translation.targetLanguage}`,
+    cached: Boolean(translation.cached),
     confidenceScore: translation.confidenceScore,
     createdAt: translation.createdAt ? new Date(translation.createdAt) : new Date(),
   }), []);
@@ -325,6 +331,7 @@ export function useMessageLoader({
             translatedContent: t.translatedContent,
             translationModel: (t.translationModel as 'basic' | 'medium' | 'premium') ?? 'basic',
             cacheKey: t.cacheKey || `${messageId}_${t.targetLanguage}`,
+            cached: Boolean(t.cached),
             confidenceScore: t.confidenceScore,
             createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
           }));

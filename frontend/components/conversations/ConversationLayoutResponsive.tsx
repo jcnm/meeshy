@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/AppContext';
 import { useMessaging } from '@/hooks/use-messaging';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { cn } from '@/lib/utils';
 import type {
@@ -135,6 +135,9 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     });
   }, []);
 
+  // Ref pour le conteneur des messages (créé une seule fois)
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
   // Hook pour la pagination infinie des messages (scroll vers le bas pour charger plus récents)
   const {
     messages,
@@ -152,7 +155,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     limit: 20,
     enabled: !!selectedConversation?.id,
     threshold: 100,
-    containerRef: useRef<HTMLDivElement>(null)
+    containerRef: messagesContainerRef
   });
 
   // Hook pour la gestion des traductions
@@ -359,8 +362,220 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     ));
   }, [selectedConversation?.id, addMessage, setConversationsIfChanged]);
 
-  const handleTranslation = useCallback((messageId: string, translations: TranslationData[]) => {
-    console.log('🌐 [ConversationLayout] Traductions reçues pour message:', messageId, translations);
+    const handleTranslation = useCallback((messageId: string, translations: any[]) => {
+    console.group(`🔤 Traduction reçue pour message ${messageId}`);
+    console.log('  - Données brutes:', { messageId, translations });
+    
+    // Créer un objet data compatible avec l'ancien format
+    const data = {
+      messageId,
+      translations: translations || [],
+      originalText: '', // Sera récupéré du message existant
+      sourceLanguage: 'fr' // Sera récupéré du message existant
+    };
+    
+    console.log(`  - Nombre de traductions: ${translations.length}`);
+    console.log('  - Langues traduites:', translations.map((t: any) => `${t.targetLanguage}(${t.translationModel})`));
+    console.log('  - Contenu original sera récupéré du message existant');
+
+    updateMessageTranslations(messageId, existingMessage => {
+      if (!existingMessage) {
+        console.warn('  ❌ Message non trouvé pour les traductions:', messageId);
+        console.groupEnd();
+        return existingMessage; // Retourner le message tel quel au lieu de null
+      }
+      
+      console.log('  🔍 Message trouvé pour mise à jour:', {
+        messageId: existingMessage.id,
+        currentTranslationsCount: existingMessage.translations?.length || 0,
+        newTranslationsCount: translations.length
+      });
+      
+      console.log('  - Message existant trouvé:', existingMessage.content.substring(0, 50) + '...');
+      console.log('  - Langue originale du message:', existingMessage.originalLanguage);
+      console.log('  - Traductions existantes:', existingMessage.translations?.length || 0);
+      
+      // Déboguer chaque traduction existante
+      if (existingMessage.translations && existingMessage.translations.length > 0) {
+        console.log('  - Détail traductions existantes:');
+        existingMessage.translations.forEach((t, idx) => {
+          console.log(`    ${idx}: ${t.targetLanguage} = "${t.translatedContent?.substring(0, 30)}..." (${t.translationModel})`);
+        });
+      }
+      
+      // Déboguer chaque nouvelle traduction
+      console.log('  - Détail nouvelles traductions:');
+      translations.forEach((t: any, idx: number) => {
+        console.log(`    ${idx}: ${t.targetLanguage} = "${t.translatedContent?.substring(0, 30)}..." (${t.translationModel})`);
+        
+        // ⚠️ DÉBOGAGE CRITIQUE: Vérifier si la traduction est identique au contenu original
+        if (t.translatedContent === existingMessage.content) {
+          console.error(`    ❌ PROBLÈME: Traduction ${t.targetLanguage} identique au contenu original!`);
+          console.error(`    - Original: "${existingMessage.content}"`);
+          console.error(`    - Traduit: "${t.translatedContent}"`);
+          console.error(`    - Langue source: ${t.sourceLanguage || 'undefined'}`);
+          console.error(`    - Langue cible: ${t.targetLanguage}`);
+        }
+        
+        // Vérifier si la traduction est vide ou invalide
+        if (!t.translatedContent || t.translatedContent.trim() === '') {
+          console.error(`    ❌ PROBLÈME: Traduction ${t.targetLanguage} vide!`);
+        }
+      });
+
+      // Fonction pour obtenir la priorité du modèle
+      const getModelPriority = (model: string): number => {
+        switch (model) {
+          case 'premium': return 3;
+          case 'medium': return 2;
+          case 'basic': return 1;
+          default: return 0;
+        }
+      };
+
+      // Créer une structure temporaire pour collecter toutes les traductions
+      interface TranslationWithModel {
+        language: string;
+        content: string;
+        confidence: number;
+        model: string;
+        modelPriority: number;
+        timestamp: Date;
+        source: 'existing' | 'new';
+      }
+
+      const allTranslationsWithModel: TranslationWithModel[] = [];
+
+      // Ajouter les traductions existantes avec leurs modèles
+      if (existingMessage.translations) {
+        existingMessage.translations.forEach(t => {
+          if (t.targetLanguage && t.translatedContent) {
+            allTranslationsWithModel.push({
+              language: t.targetLanguage,
+              content: t.translatedContent,
+              confidence: t.confidenceScore || 0.9,
+              model: t.translationModel || 'basic',
+              modelPriority: getModelPriority(t.translationModel || 'basic'),
+              timestamp: new Date(t.createdAt || Date.now()),
+              source: 'existing'
+            });
+          }
+        });
+      }
+
+      // Ajouter les nouvelles traductions avec leurs modèles
+      translations.forEach((t: any) => {
+        if (t.targetLanguage && t.translatedContent) {
+          allTranslationsWithModel.push({
+            language: t.targetLanguage,
+            content: t.translatedContent,
+            confidence: t.confidenceScore || 0.9,
+            model: t.translationModel || 'basic',
+            modelPriority: getModelPriority(t.translationModel || 'basic'),
+            timestamp: new Date(t.createdAt || Date.now()),
+            source: 'new'
+          });
+        }
+      });
+
+      console.log('  - Toutes les traductions collectées:');
+      allTranslationsWithModel.forEach((t, idx) => {
+        console.log(`    ${idx}: ${t.language} = "${t.content?.substring(0, 30)}..." (${t.model}, priorité:${t.modelPriority}, ${t.source})`);
+        
+        // ⚠️ DÉBOGAGE: Vérifier les contenus identiques au niveau de la collecte
+        if (t.content === existingMessage.content) {
+          console.error(`    ❌ ALERTE: Traduction collectée ${t.language} identique au message original!`);
+        }
+      });
+
+      // Garder seulement la meilleure traduction par langue
+      const bestTranslationsMap = new Map<string, TranslationWithModel>();
+      
+      allTranslationsWithModel.forEach(translation => {
+        console.log(`  🔍 Traitement ${translation.language}: "${translation.content?.substring(0, 20)}..."`);
+        
+        const existing = bestTranslationsMap.get(translation.language);
+        
+        if (!existing) {
+          // Première traduction pour cette langue
+          bestTranslationsMap.set(translation.language, translation);
+          console.log(`  ➕ Première traduction pour ${translation.language}: ${translation.model}`);
+        } else if (translation.modelPriority > existing.modelPriority) {
+          // Meilleur modèle trouvé
+          bestTranslationsMap.set(translation.language, translation);
+          console.log(`  ✅ Amélioration ${translation.language}: ${existing.model}(${existing.modelPriority}) → ${translation.model}(${translation.modelPriority})`);
+        } else if (translation.modelPriority === existing.modelPriority && translation.source === 'new') {
+          // Même modèle mais plus récent
+          bestTranslationsMap.set(translation.language, translation);
+          console.log(`  🔄 Mise à jour ${translation.language}: même modèle ${translation.model} mais plus récent`);
+        } else {
+          console.log(`  ⏭️ Ignoré ${translation.language}: modèle ${translation.model}(${translation.modelPriority}) <= ${existing.model}(${existing.modelPriority})`);
+        }
+      });
+
+      // Créer les traductions finales au format MessageTranslation avec support des deux formats
+      const finalTranslations = Array.from(bestTranslationsMap.values()).map(t => {
+        // Chercher la traduction originale pour récupérer tous les champs
+        const originalExistingTranslation = existingMessage.translations?.find(orig => 
+          (orig.targetLanguage || (orig as any).language) === t.language
+        );
+        const originalNewTranslation = translations.find((orig: any) => 
+          (orig.targetLanguage || orig.language) === t.language
+        );
+        
+        const finalTranslation = {
+          id: originalExistingTranslation?.id || `${messageId}_${t.language}_${Date.now()}`,
+          messageId: messageId,
+          sourceLanguage: originalExistingTranslation?.sourceLanguage || originalNewTranslation?.sourceLanguage || existingMessage.originalLanguage || 'fr',
+          targetLanguage: t.language,
+          translatedContent: t.content,
+          translationModel: t.model as 'basic' | 'medium' | 'premium',
+          cacheKey: originalExistingTranslation?.cacheKey || originalNewTranslation?.cacheKey || `${messageId}_${existingMessage.originalLanguage || 'fr'}_${t.language}`,
+          confidenceScore: t.confidence,
+          createdAt: t.timestamp,
+          cached: originalExistingTranslation?.cached || originalNewTranslation?.cached || false,
+          // Support du format frontend
+          language: t.language,
+          content: t.content,
+          confidence: t.confidence,
+          model: t.model
+        };
+        
+        console.log(`  📄 Traduction finale ${t.language}:`, finalTranslation);
+        
+        // ⚠️ DÉBOGAGE FINAL: Vérifier la traduction finale
+        if (finalTranslation.translatedContent === existingMessage.content) {
+          console.error(`  ❌ ERREUR FINALE: Traduction ${t.language} toujours identique au contenu original!`);
+        }
+        
+        return finalTranslation;
+      });
+      
+      console.log('  - Traductions finales optimisées:', finalTranslations.length);
+      console.log('  - Langues et modèles retenus:', Array.from(bestTranslationsMap.values()).map(t => `${t.language}:${t.model}(${t.confidence.toFixed(2)})`));
+      
+      const updatedMessage = {
+        ...existingMessage,
+        translations: finalTranslations
+      };
+      
+      console.log('  ✅ Message mis à jour avec nouvelles traductions:', {
+        messageId: updatedMessage.id,
+        oldTranslationCount: existingMessage.translations?.length || 0,
+        newTranslationCount: finalTranslations.length,
+        hasNewTranslations: finalTranslations.length > (existingMessage.translations?.length || 0),
+        finalTranslations: finalTranslations.map(t => ({
+          id: t.id,
+          targetLanguage: t.targetLanguage,
+          translatedContent: t.translatedContent?.substring(0, 30) + '...',
+          translationModel: t.translationModel
+        }))
+      });
+      
+      console.groupEnd();
+      
+      return updatedMessage;
+    });
     
     // Incrémenter le compteur de traduction pour les traductions pertinentes
     const userLanguages = [
@@ -369,12 +584,15 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       user?.customDestinationLanguage
     ].filter(Boolean);
 
-    translations.forEach(translation => {
+    translations.forEach((translation: any) => {
       if (userLanguages.includes(translation.targetLanguage)) {
-        incrementTranslationCount(translation.targetLanguage);
+        incrementTranslationCount(translation.sourceLanguage || 'fr', translation.targetLanguage);
       }
+      
+      // Retirer l'état de traduction en cours
+      removeTranslatingState(messageId, translation.targetLanguage);
     });
-  }, [user?.systemLanguage, user?.regionalLanguage, user?.customDestinationLanguage, incrementTranslationCount]);
+  }, [user?.systemLanguage, user?.regionalLanguage, user?.customDestinationLanguage, incrementTranslationCount, updateMessageTranslations, removeTranslatingState]);
 
   const handleMessageSent = useCallback((content: string, language: string) => {
     // Message sent successfully
@@ -396,9 +614,6 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     onUserTyping: handleUserTyping,
     onUserStatus: handleUserStatus,
     onConversationStats: handleConversationStats,
-    onConversationOnlineStats: handleConversationOnlineStats,
-    onConversationJoined: handleConversationJoined,
-    onConversationLeft: handleConversationLeft,
     onNewMessage: handleNewMessage,
     onTranslation: handleTranslation,
     onMessageSent: handleMessageSent,
@@ -519,6 +734,17 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [searchParams, selectedConversationId, conversations, user?.id, selectedConversation?.id]);
 
+  // Effet pour gérer spécifiquement le retour à la liste (quand selectedConversationId devient undefined)
+  useEffect(() => {
+    if (!selectedConversationId && !searchParams.get('id')) {
+      // Si on n'a plus d'ID de conversation dans l'URL, réinitialiser l'état
+      setSelectedConversation(null);
+      if (isMobile) {
+        setShowConversationList(true);
+      }
+    }
+  }, [selectedConversationId, searchParams, isMobile]);
+
   // Sélectionner une conversation
   const handleSelectConversation = (conversation: Conversation) => {
     // Si c'est la même conversation, ne rien faire
@@ -538,27 +764,36 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     router.push(`/conversations/${conversation.id}`, { scroll: false });
   };
 
-  // Retour à la liste (mobile uniquement)
+  // Retour à la liste (mobile et desktop)
   const handleBackToList = () => {
+    console.log('[DEBUG] handleBackToList called, isMobile:', isMobile);
+    
     if (isMobile) {
-      setShowConversationList(true);
+      // Sur mobile : naviguer vers la page de liste des conversations
+      console.log('[DEBUG] Mobile: navigating to /conversations');
+      setShowConversationList(true); // Afficher la liste sur mobile
+      setSelectedConversation(null); // Désélectionner la conversation
+      router.push('/conversations');
+    } else {
+      // Sur desktop : masquer la conversation sélectionnée pour revenir à la liste
+      console.log('[DEBUG] Desktop: clearing selected conversation and navigating to /conversations');
       setSelectedConversation(null);
-      router.push('/conversations', { scroll: false });
+      router.push('/conversations');
     }
   };
 
   // Envoyer un message (simplifié grâce au hook réutilisable)
-  const handleSendMessage = async (e?: React.FormEvent) => {
+  const handleSendMessage = async (content: string, e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
     }
 
-    if (!selectedConversation || !user) {
+    if (!selectedConversation || !user || !content.trim()) {
       return;
     }
 
     // Utiliser le hook réutilisable pour envoyer le message
-    const success = await sendMessageToService('', selectedLanguage);
+    const success = await sendMessageToService(content.trim(), selectedLanguage);
 
     if (success) {
       // Déclencher l'arrêt de l'indicateur de frappe
@@ -674,10 +909,23 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     console.log('[DEBUG] Selected conversation:', selectedConversation ? { id: selectedConversation.id, title: selectedConversation.title } : null);
     
     if (messages.length > 0) {
-      const processedMessages = messages.map(message => 
-        processMessageWithTranslations(message)
-      );
-      setTranslatedMessages(processedMessages);
+      const processedMessages = messages.map(message => {
+        const processed = processMessageWithTranslations(message);
+        
+        // Debug: Vérifier les traductions de chaque message
+        if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_MESSAGES === 'true') {
+          console.log(`🔍 [ConversationLayout] Message ${message.id} - traductions:`, {
+            messageId: message.id,
+            rawTranslationsCount: message.translations?.length || 0,
+            processedTranslationsCount: processed.translations?.length || 0,
+            rawTranslations: message.translations,
+            processedTranslations: processed.translations
+          });
+        }
+        
+        return processed;
+      });
+      setTranslatedMessages(processedMessages as any);
       console.log('[DEBUG] ✅ Messages transformés en MessageWithTranslations:', processedMessages.length);
     } else {
       console.log('[DEBUG] ⚠️ Aucun message à transformer');
@@ -712,6 +960,105 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversation?.id, loadConversationParticipants]);
 
+  // Sur mobile avec une conversation sélectionnée, ne pas utiliser DashboardLayout
+  if (isMobile && selectedConversation) {
+    return (
+      <div className="h-screen w-full bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        {/* Zone de messages en plein écran sur mobile */}
+        <div className="flex flex-col w-full h-full">
+          {selectedConversation ? (
+            <>
+              {/* En-tête de la conversation */}
+              <ConversationHeader
+                conversation={selectedConversation}
+                currentUser={user}
+                conversationParticipants={conversationParticipants}
+                typingUsers={typingUsers}
+                isMobile={isMobile}
+                onBackToList={handleBackToList}
+                onOpenDetails={() => setIsDetailsSidebarOpen(true)}
+                onParticipantRemoved={() => {}}
+                onParticipantAdded={() => {}}
+                onLinkCreated={loadData}
+                t={t}
+              />
+
+              {/* Messages */}
+              <ConversationMessages
+                messages={translatedMessages}
+                translatedMessages={translatedMessages}
+                currentUser={user}
+                userLanguage={user?.systemLanguage || 'fr'}
+                usedLanguages={usedLanguages}
+                isLoadingMessages={isLoadingMessages}
+                isLoadingMore={isLoadingMore}
+                hasMore={hasMore}
+                isMobile={isMobile}
+                onEditMessage={handleEditMessage}
+                onDeleteMessage={handleDeleteMessage}
+                onLoadMore={loadMore}
+                conversationType={selectedConversation.type === 'anonymous' ? 'direct' : selectedConversation.type === 'broadcast' ? 'public' : selectedConversation.type}
+                userRole={user?.role as UserRoleEnum || UserRoleEnum.USER}
+                conversationId={selectedConversation.id}
+                addTranslatingState={addTranslatingState}
+                isTranslating={isTranslating}
+                t={t}
+              />
+
+              {/* Zone de composition */}
+              <ConversationComposer
+                onSendMessage={handleSendMessage}
+                onStartTyping={startTyping}
+                onStopTyping={stopTyping}
+                isSending={isSending}
+                currentUser={user}
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={setSelectedLanguage}
+                isMobile={isMobile}
+                t={t}
+              />
+            </>
+          ) : (
+            <ConversationEmptyState
+              onCreateConversation={() => setIsCreateConversationModalOpen(true)}
+              conversationsCount={conversations.length}
+              onLinkCreated={() => {}}
+              t={t}
+            />
+          )}
+        </div>
+
+        {/* Modales */}
+        {isCreateConversationModalOpen && (
+          <CreateConversationModal
+            isOpen={isCreateConversationModalOpen}
+            onClose={() => setIsCreateConversationModalOpen(false)}
+            onConversationCreated={() => {}}
+            currentUser={user}
+          />
+        )}
+
+        {isCreateLinkModalOpen && selectedConversation && (
+          <CreateLinkModal
+            isOpen={isCreateLinkModalOpen}
+            onClose={() => setIsCreateLinkModalOpen(false)}
+            onLinkCreated={() => {}}
+          />
+        )}
+
+        {isDetailsSidebarOpen && selectedConversation && (
+          <ConversationDetailsSidebar
+            conversation={selectedConversation}
+            currentUser={user}
+            messages={translatedMessages}
+            isOpen={isDetailsSidebarOpen}
+            onClose={() => setIsDetailsSidebarOpen(false)}
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <DashboardLayout 
       title={t('conversations.title')}
@@ -731,7 +1078,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
           "flex bg-transparent",
           isMobile 
             ? "conversation-listing-mobile" 
-            : "h-[calc(100vh-8rem)]"
+            : "h-full"
         )}>
           {/* Liste des conversations */}
           <ConversationList
@@ -792,14 +1139,16 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
                     userLanguage={user.systemLanguage}
                     usedLanguages={usedLanguages}
                   isMobile={isMobile}
-                    conversationType={selectedConversation?.type || 'direct'}
+                    conversationType={selectedConversation?.type === 'anonymous' ? 'direct' : selectedConversation?.type === 'broadcast' ? 'public' : selectedConversation?.type || 'direct'}
                     userRole={(user.role as UserRoleEnum) || UserRoleEnum.USER}
                     conversationId={selectedConversation?.id}
                     addTranslatingState={addTranslatingState}
                     isTranslating={isTranslating}
                   onEditMessage={handleEditMessage}
                   onDeleteMessage={handleDeleteMessage}
+                  onLoadMore={loadMore}
                   t={t}
+                  containerRef={messagesContainerRef as any}
                   />
 
                 {/* Zone de saisie fixe en bas - toujours visible */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, memo } from 'react';
 import { cn } from '@/lib/utils';
 import type { SocketIOUser as User } from '@shared/types';
 import { MessageComposer, MessageComposerRef } from '@/components/common/message-composer';
@@ -10,7 +10,7 @@ interface ConversationComposerProps {
   currentUser: User;
   selectedLanguage: string;
   onLanguageChange: (language: string) => void;
-  onSendMessage: (e?: React.FormEvent) => Promise<void>;
+  onSendMessage: (content: string, e?: React.FormEvent) => Promise<void>;
   onStartTyping: () => void;
   onStopTyping: () => void;
   isSending: boolean;
@@ -18,7 +18,7 @@ interface ConversationComposerProps {
   t: (key: string) => string;
 }
 
-export function ConversationComposer({
+const ConversationComposerComponent = memo(function ConversationComposer({
   currentUser,
   selectedLanguage,
   onLanguageChange,
@@ -57,8 +57,8 @@ export function ConversationComposer({
     const messageContent = newMessage.trim();
     setNewMessage(''); // Vider immédiatement pour éviter les doubles envois
 
-    // Envoyer le message
-    await onSendMessage();
+    // Envoyer le message avec le contenu
+    await onSendMessage(messageContent, e);
   }, [newMessage, onSendMessage]);
 
   // Fonction pour gérer les touches
@@ -74,7 +74,7 @@ export function ConversationComposer({
       "flex-shrink-0 border-t border-gray-200",
       // Tailwind uniquement - simple et efficace
       isMobile 
-        ? "fixed bottom-0 left-0 right-0 w-full z-50 bg-white p-4 shadow-lg" 
+        ? "fixed bottom-0 left-0 right-0 w-full z-50 bg-white p-4 pb-6 shadow-lg" 
         : "p-4 bg-white/70 backdrop-blur-sm rounded-br-2xl min-h-[100px]"
     )}>
       <MessageComposer
@@ -92,4 +92,14 @@ export function ConversationComposer({
       />
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Comparaison personnalisée pour éviter les re-renders inutiles
+  return (
+    prevProps.currentUser?.id === nextProps.currentUser?.id &&
+    prevProps.selectedLanguage === nextProps.selectedLanguage &&
+    prevProps.isSending === nextProps.isSending &&
+    prevProps.isMobile === nextProps.isMobile
+  );
+});
+
+export { ConversationComposerComponent as ConversationComposer };

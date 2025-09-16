@@ -143,7 +143,7 @@ export class LinkConversationService {
     }
     
     // Essayer d'abord avec l'identifiant original
-    let endpoint = `/links/${identifier}`;
+    let endpoint = `/api/links/${identifier}`;
     let url = new URL(buildApiUrl(endpoint));
     url.searchParams.append('limit', limit.toString());
     url.searchParams.append('offset', offset.toString());
@@ -177,7 +177,7 @@ export class LinkConversationService {
         try {
           console.log('[LinkConversationService] Tentative avec fallback:', fallbackIdentifier);
           
-          const fallbackEndpoint = `/links/${fallbackIdentifier}`;
+          const fallbackEndpoint = `/api/links/${fallbackIdentifier}`;
           const fallbackUrl = new URL(buildApiUrl(fallbackEndpoint));
           fallbackUrl.searchParams.append('limit', limit.toString());
           fallbackUrl.searchParams.append('offset', offset.toString());

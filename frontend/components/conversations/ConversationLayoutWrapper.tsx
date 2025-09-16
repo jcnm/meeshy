@@ -32,7 +32,7 @@ const ConversationLayoutWrapper: React.FC<ConversationLayoutWrapperProps> = ({
     );
   }
 
-  return <ConversationLayoutResponsive />;
+  return <ConversationLayoutResponsive selectedConversationId={selectedConversationId} />;
 };
 
 export default ConversationLayoutWrapper;

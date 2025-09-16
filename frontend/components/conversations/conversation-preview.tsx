@@ -16,7 +16,7 @@ interface ConversationPreviewProps {
     name: string;
     isPrivate: boolean;
   };
-  conversationType: 'direct' | 'group';
+  conversationType: 'direct' | 'group' | 'public';
   getUserAccentColor: (userId: string) => string;
 }
 
@@ -35,7 +35,9 @@ export function ConversationPreview({
   const displayTitle = title || (
     conversationType === 'direct' 
       ? `Conversation avec ${selectedUsers[0]?.displayName || selectedUsers[0]?.username}`
-      : `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`
+      : conversationType === 'group'
+      ? `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`
+      : 'Conversation publique'
   );
 
   return (
@@ -52,7 +54,7 @@ export function ConversationPreview({
           <div className="flex items-center gap-2">
             <h4 className="font-medium text-sm">{displayTitle}</h4>
             <Badge variant="outline" className="text-xs">
-              {conversationType === 'direct' ? 'Directe' : 'Groupe'}
+              {conversationType === 'direct' ? 'Directe' : conversationType === 'group' ? 'Groupe' : 'Publique'}
             </Badge>
           </div>
           

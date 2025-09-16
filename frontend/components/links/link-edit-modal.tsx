@@ -55,7 +55,7 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
     setIsLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(buildApiUrl(`/links/${link.linkId}`), {
+      const response = await fetch(buildApiUrl(`/api/links/${link.linkId}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -2208,7 +2208,8 @@
     "conversationUI": "Interface de conversation"
   },
   "conversationLayout": {
-    "authChecking": "Vérification de l'authentification...",
+    "back": "Zurück",
+    "authChecking": "Authentifizierung prüfen...",
     "loadingConversations": "Lädt des conversations...",
     "loadingConversationsDescription": "Récupération de vos conversations...",
     "noConversations": "Keine Gespräche",

@@ -369,7 +369,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Toast pour traduction pertinente
       
       // Incrémenter les statistiques de traduction
-      incrementTranslationCount(relevantTranslation.targetLanguage);
+      incrementTranslationCount(relevantTranslation.sourceLanguage || 'fr', relevantTranslation.targetLanguage);
       
       // Toast de traduction réduit pour éviter le spam
     }
@@ -980,12 +980,41 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         .scroll-hidden::-webkit-scrollbar {
           display: none;
         }
+
+        /* Styles pour mobile */
+        @media (max-width: 768px) {
+          .mobile-fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 40 !important;
+            background: linear-gradient(to-br, #eff6ff, #ffffff, #e0e7ff) !important;
+          }
+          
+          .mobile-messages-container {
+            padding-top: 5rem !important;
+            padding-bottom: 6rem !important;
+            margin-bottom: 2rem !important;
+          }
+          
+          .mobile-input-zone {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 60 !important;
+          }
+        }
       `}</style>
       {/* Layout principal */}
-      <div className="min-h-screen relative">
+      <div className="h-full relative mobile-fullscreen">
         {/* Feed principal - Container avec gestion propre du scroll */}
         <div className="w-full xl:pr-80 relative">{/* Indicateur dynamique - Frappe prioritaire sur connexion */}
-          <div className="fixed top-16 left-0 right-0 xl:right-80 z-[45] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator">
+          <div className="fixed top-16 left-0 right-0 xl:right-80 z-[40] px-4 sm:px-6 lg:px-8 pt-4 pb-2 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none realtime-indicator hidden md:block">
             <div className="pointer-events-auto">
               {/* Priorité à l'indicateur de frappe quand actif */}
               {typingUsers.length > 0 && connectionStatus.isConnected ? (
@@ -1072,67 +1101,61 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           </div>
 
           {/* Feed des messages avec scroll naturel - Padding top pour l'indicateur fixe */}
-          <div className="relative min-h-[calc(100vh-16rem)] pt-20">
-            {/* Container des messages avec padding pour la zone de saisie */}
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-40 pt-4">
-              
-              <div 
-                ref={messagesContainerRef}
-                className="px-4 py-6 messages-container scroll-optimized scrollbar-thin"
-                style={{ background: 'transparent' }}
-              >
-                {/* Indicateur de chargement pour la pagination (messages plus anciens) */}
-                {isLoadingMore && hasMore && (
-                  <div className="flex justify-center py-4">
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      <span>Chargement des messages plus anciens...</span>
-                    </div>
-                  </div>
-                )}
-
-                <MessagesDisplay
-                  messages={messages}
-                  translatedMessages={translatedMessages}
-                  isLoadingMessages={isLoadingMessages}
-                  currentUser={user}
-                  userLanguage={userLanguage}
-                  usedLanguages={usedLanguages}
-                  emptyStateMessage={t('emptyStateMessage')}
-                  emptyStateDescription={t('emptyStateDescription')}
-                  reverseOrder={true}
-                  className="space-y-4"
-                  onTranslation={handleTranslation}
-                  onEditMessage={handleEditMessage}
-                  onDeleteMessage={handleDeleteMessage}
-                  conversationType="public"
-                  userRole={getUserModerationRole() as any}
-                  conversationId={conversationId}
-                  addTranslatingState={addTranslatingState}
-                  isTranslating={isTranslating}
-                />
-
-                {/* Indicateur si plus de messages disponibles - positionné après les messages */}
-                {!hasMore && messages.length > 0 && (
-                  <div className="flex justify-center py-4">
-                    <div className="text-sm text-muted-foreground">
-                      Tous les messages ont été chargés
-                    </div>
-                  </div>
-                )}
-
-                {/* Espace supplémentaire réduit pour éviter que le dernier message soit caché */}
-                <div className="h-8" />
+          <div 
+            ref={messagesContainerRef}
+            className="relative h-full pt-4 md:pt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-40 messages-container scroll-optimized scrollbar-thin overflow-y-auto mobile-messages-container"
+            style={{ background: 'transparent' }}
+          >
+            {/* Indicateur de chargement pour la pagination (messages plus anciens) */}
+            {isLoadingMore && hasMore && (
+              <div className="flex justify-center py-4">
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <span>Chargement des messages plus anciens...</span>
+                </div>
               </div>
-            </div>
-            
-            {/* Dégradé inférieur - Transition progressive vers les couleurs générales de la page */}
-            <div className="absolute bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none z-10" />
+            )}
+
+            <MessagesDisplay
+              messages={messages}
+              translatedMessages={translatedMessages}
+              isLoadingMessages={isLoadingMessages}
+              currentUser={user}
+              userLanguage={userLanguage}
+              usedLanguages={usedLanguages}
+              emptyStateMessage={t('emptyStateMessage')}
+              emptyStateDescription={t('emptyStateDescription')}
+              reverseOrder={true}
+              className="space-y-4"
+              onTranslation={handleTranslation}
+              onEditMessage={handleEditMessage}
+              onDeleteMessage={handleDeleteMessage}
+              conversationType="public"
+              userRole={getUserModerationRole() as any}
+              conversationId={conversationId}
+              addTranslatingState={addTranslatingState}
+              isTranslating={isTranslating}
+            />
+
+            {/* Indicateur si plus de messages disponibles - positionné après les messages */}
+            {!hasMore && messages.length > 0 && (
+              <div className="flex justify-center py-4">
+                <div className="text-sm text-muted-foreground">
+                  Tous les messages ont été chargés
+                </div>
+              </div>
+            )}
+
+            {/* Espace supplémentaire pour éviter que le dernier message soit caché */}
+            <div className="h-16" />
           </div>
         </div>
 
+        {/* Dégradé inférieur fixe - Transition progressive vers les couleurs générales de la page */}
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none z-20" />
+
         {/* Zone de composition flottante - Position fixe avec transparence cohérente aux couleurs de la page */}
-        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30">
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30 mobile-input-zone">
           {/* Dégradé de fond pour transition douce avec les couleurs générales */}
           <div className="h-10 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none" />
           

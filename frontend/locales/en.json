@@ -2203,6 +2203,7 @@
     "conversationUI": "Conversation UI"
   },
   "conversationLayout": {
+    "back": "Back",
     "authChecking": "Checking authentication...",
     "loadingConversations": "Loading conversations...",
     "loadingConversationsDescription": "Retrieving your conversations...",

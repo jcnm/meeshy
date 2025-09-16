@@ -247,9 +247,13 @@ export function DashboardLayout({
       </header>
 
       {/* Contenu principal avec padding-top pour compenser le header fixe */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-8">
-        {children}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 h-screen">
+        <div className="h-full pt-2">
+          {children}
+        </div>
       </main>
     </div>
   );
 }
+
+export default DashboardLayout;

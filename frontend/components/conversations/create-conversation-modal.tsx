@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { User } from '@/types';
 import { apiService } from '@/services/api.service';
 import { toast } from 'sonner';
-import { Check, X, Users, Building2, Hash, Search, Plus, Sparkles, UserPlus, Globe, Lock } from 'lucide-react';
+import { Check, X, Users, User as UserIcon, Building2, Hash, Search, Plus, Sparkles, UserPlus, Globe, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { IdentifierSuggestions } from './identifier-suggestions';
 import { ConversationPreview } from './conversation-preview';
@@ -71,7 +71,7 @@ export function CreateConversationModal({
   const [isLoadingCommunities, setIsLoadingCommunities] = useState(false);
   
   // New modern UI states
-  const [conversationType, setConversationType] = useState<'direct' | 'group'>('direct');
+  const [conversationType, setConversationType] = useState<'direct' | 'group' | 'public'>('direct');
   const [step, setStep] = useState<'members' | 'details'>('members');
 
   // Validation function for identifier
@@ -272,7 +272,8 @@ export function CreateConversationModal({
   };
 
   const createConversation = async () => {
-    if (selectedUsers.length === 0) {
+    // Pour les conversations publiques, les participants ne sont pas obligatoires
+    if (conversationType !== 'public' && selectedUsers.length === 0) {
       toast.error(t('errors.selectAtLeastOneUser'));
       return;
     }
@@ -291,24 +292,35 @@ export function CreateConversationModal({
     setIsCreating(true);
     try {
       
-      // Determine conversation type and title
-      const conversationType = selectedUsers.length === 1 ? 'direct' : 'group';
+      // Determine conversation type and title - use the selected type instead of auto-detection
       let conversationTitle = title;
       
       // For direct messages, use default title if none provided
       if (conversationType === 'direct' && !conversationTitle) {
-        conversationTitle = `Conversation avec ${selectedUsers[0].displayName || selectedUsers[0].username}`;
+        conversationTitle = selectedUsers.length > 0 
+          ? `Conversation avec ${selectedUsers[0].displayName || selectedUsers[0].username}`
+          : 'Conversation directe';
       }
       
       // For group conversations with 2+ users, require title
       if (conversationType === 'group' && !conversationTitle) {
-        conversationTitle = `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`;
+        conversationTitle = selectedUsers.length > 0
+          ? `Conversation avec ${selectedUsers.map(u => u.displayName || u.username).join(', ')}`
+          : 'Conversation de groupe';
       }
+
+      // For public conversations, require title
+      if (conversationType === 'public' && !conversationTitle) {
+        conversationTitle = 'Conversation publique';
+      }
+
+      // Map conversation type for backend compatibility
+      const backendType = conversationType === 'public' ? 'broadcast' : conversationType;
 
       // Prepare request body - identifier is now mandatory
       const requestBody: any = {
         title: conversationTitle,
-        type: conversationType,
+        type: backendType,
         participantIds: selectedUsers.map(u => u.id),
         identifier: customIdentifier // Always include identifier
       };
@@ -329,8 +341,8 @@ export function CreateConversationModal({
         onConversationCreated(conversation.id, conversation);
         handleClose();
       } else {
-        const error = await response.json();
-        toast.error(error.message || t('errors.creationError'));
+        // Handle error response
+        toast.error(t('errors.creationError'));
       }
     } catch (error) {
       console.error('Erreur création conversation:', error);
@@ -603,8 +615,47 @@ placeholder={t('community.searchPlaceholder')}
                 <Hash className="h-4 w-4 text-primary" />
                 <span className="font-medium">{t('conversationDetails.title')}</span>
                 <Badge variant="outline" className="ml-auto">
-                  {conversationType === 'direct' ? t('conversationDetails.typeDirect') : t('conversationDetails.typeGroup')}
+                  {conversationType === 'direct' ? t('conversationDetails.typeDirect') : 
+                   conversationType === 'group' ? t('conversationDetails.typeGroup') : 
+                   'Publique'}
                 </Badge>
+              </div>
+
+              {/* Type de conversation */}
+              <div className="mb-4">
+                <Label className="text-sm font-medium mb-2 block">Type de conversation</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button
+                    type="button"
+                    variant={conversationType === 'direct' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setConversationType('direct')}
+                    className="flex items-center gap-2"
+                  >
+                    <UserIcon className="h-4 w-4" />
+                    Directe
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={conversationType === 'group' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setConversationType('group')}
+                    className="flex items-center gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    Groupe
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={conversationType === 'public' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setConversationType('public')}
+                    className="flex items-center gap-2"
+                  >
+                    <Globe className="h-4 w-4" />
+                    Publique
+                  </Button>
+                </div>
               </div>
               
               <div>
@@ -665,7 +716,7 @@ placeholder={t('community.searchPlaceholder')}
           )}
 
           {/* Aperçu de la conversation */}
-          {selectedUsers.length > 0 && customIdentifier && (
+          {(selectedUsers.length > 0 || conversationType === 'public') && customIdentifier && (
             <ConversationPreview
               title={title}
               identifier={customIdentifier}

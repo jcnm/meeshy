@@ -483,8 +483,9 @@ export default function ChatPage() {
       />
 
       {/* Contenu principal */}
-      <div className="pt-16">
-        <BubbleStreamPage
+      <div className="pt-16 h-screen">
+        <div className="h-full pt-2">
+          <BubbleStreamPage
           user={bubbleUser}
           conversationId={conversationData.conversation.id}
           isAnonymousMode={isAnonymous}
@@ -542,7 +543,8 @@ export default function ChatPage() {
               isMeeshyer: false
             }))
           ] : undefined}
-        />
+          />
+        </div>
       </div>
 
       {/* Modal d'inscription */}

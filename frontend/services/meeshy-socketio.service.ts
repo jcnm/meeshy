@@ -22,43 +22,12 @@ import type {
   SocketIOResponse
 } from '@/types';
 
-// Constantes d'événements Socket.IO (temporaire pour éviter les erreurs d'import)
-const SERVER_EVENTS = {
-  MESSAGE_NEW: 'message:new',
-  MESSAGE_EDITED: 'message:edited', 
-  MESSAGE_DELETED: 'message:deleted',
-  MESSAGE_TRANSLATION: 'message:translation',
-  MESSAGE_TRANSLATED: 'message_translated',
-  TYPING_START: 'typing:start',
-  TYPING_STOP: 'typing:stop',
-  USER_STATUS: 'user:status',
-  CONVERSATION_JOINED: 'conversation:joined',
-  CONVERSATION_LEFT: 'conversation:left',
-  AUTHENTICATED: 'authenticated',
-  MESSAGE_SENT: 'message_sent',
-  ERROR: 'error',
-  TRANSLATION_RECEIVED: 'translation_received',
-  TRANSLATION_ERROR: 'translation_error',
-  NOTIFICATION: 'notification',
-  SYSTEM_MESSAGE: 'system_message',
-  CONVERSATION_STATS: 'conversation:stats',
-  CONVERSATION_ONLINE_STATS: 'conversation:online_stats'
-} as const;
-
-const CLIENT_EVENTS = {
-  MESSAGE_SEND: 'message:send',
-  MESSAGE_EDIT: 'message:edit',
-  MESSAGE_DELETE: 'message:delete',
-  CONVERSATION_JOIN: 'conversation:join',
-  CONVERSATION_LEAVE: 'conversation:leave',
-  TYPING_START: 'typing:start',
-  TYPING_STOP: 'typing:stop',
-  USER_STATUS: 'user:status',
-  AUTHENTICATE: 'authenticate',
-  REQUEST_TRANSLATION: 'request_translation'
-} as const;
+// Import des constantes d'événements depuis les types partagés
+import { SERVER_EVENTS, CLIENT_EVENTS } from '@shared/types/socketio-events';
 
 class MeeshySocketIOService {
+  private static instance: MeeshySocketIOService | null = null;
+  
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
   private isConnected = false;
   private isConnecting = false; // Nouvelle propriété pour éviter les connexions multiples
@@ -81,8 +50,25 @@ class MeeshySocketIOService {
   private conversationStatsListeners: Set<(data: { conversationId: string; stats: any }) => void> = new Set();
   private onlineStatsListeners: Set<(data: { conversationId: string; onlineUsers: any[]; updatedAt: Date }) => void> = new Set();
 
+  // Amélioration: Gestion des traductions en batch et mise en cache
+  private translationCache: Map<string, any> = new Map(); // Cache pour éviter les traductions redondantes
+  private pendingTranslations: Map<string, Promise<any>> = new Map(); // Éviter les traductions simultanées
+  private translationBatch: Map<string, any[]> = new Map(); // Traductions en lot par message
+  private batchTimeout: NodeJS.Timeout | null = null;
+  private readonly BATCH_DELAY = 100; // ms - délai pour grouper les traductions
+
   constructor() {
     // La connexion sera initialisée quand l'utilisateur sera défini
+  }
+
+  /**
+   * Obtenir l'instance singleton du service Socket.IO
+   */
+  static getInstance(): MeeshySocketIOService {
+    if (!MeeshySocketIOService.instance) {
+      MeeshySocketIOService.instance = new MeeshySocketIOService();
+    }
+    return MeeshySocketIOService.instance;
   }
 
   /**
@@ -106,7 +92,7 @@ class MeeshySocketIOService {
 
     // Empêcher les connexions multiples
     if (this.isConnecting || (this.socket && this.isConnected)) {
-      logger.socketio.debug('MeeshySocketIOService: Connexion déjà en cours ou établie, ignorée');
+      console.log('🔌 Connexion déjà active, ignorée');
       return;
     }
 
@@ -291,12 +277,48 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data) => {
+      console.group('🚀 [SOCKETIO-SERVICE] NOUVELLE TRADUCTION REÇUE');
+      console.log('📥 [FRONTEND] Traduction reçue via Socket.IO:', {
+        messageId: data.messageId,
+        translationsCount: data.translations.length,
+        firstTranslation: data.translations[0] ? {
+          id: data.translations[0].id,
+          targetLanguage: data.translations[0].targetLanguage,
+          translatedContent: data.translations[0].translatedContent?.substring(0, 50) + '...',
+          confidenceScore: data.translations[0].confidenceScore,
+          translationModel: data.translations[0].translationModel,
+          cacheKey: data.translations[0].cacheKey,
+          cached: data.translations[0].cached,
+          createdAt: data.translations[0].createdAt
+        } : null
+      });
+      
       logger.socketio.debug('MeeshySocketIOService: Traduction reçue', {
         messageId: data.messageId,
-        translationsCount: data.translations.length
+        translationsCount: data.translations.length,
+        translations: data.translations
       });
 
-      this.translationListeners.forEach(listener => listener(data));
+      // Mise en cache de la traduction reçue
+      if (data.translations && data.translations.length > 0) {
+        console.log('🔄 [SOCKETIO-SERVICE] Mise en cache des traductions...');
+        data.translations.forEach((translation, index) => {
+          const cacheKey = `${data.messageId}_${translation.targetLanguage}`;
+          this.translationCache.set(cacheKey, translation);
+          console.log(`  ${index + 1}. Cache: ${cacheKey} → ${translation.translatedContent?.substring(0, 30)}...`);
+        });
+      }
+
+      console.log(`📡 [SOCKETIO-SERVICE] Notification à ${this.translationListeners.size} listeners...`);
+      // Notifier tous les listeners
+      let listenerIndex = 0;
+      this.translationListeners.forEach((listener) => {
+        listenerIndex++;
+        console.log(`  → Listener ${listenerIndex}: Envoi des données...`);
+        listener(data);
+      });
+      
+      console.groupEnd();
     });
 
     // Événements de statistiques de conversation
@@ -408,11 +430,14 @@ class MeeshySocketIOService {
       conversationId: socketMessage.conversationId,
       senderId: socketMessage.senderId || '',
       content: socketMessage.content,
-      originalLanguage: socketMessage.originalLanguage,
+      originalLanguage: socketMessage.originalLanguage || 'fr',
       messageType: socketMessage.messageType,
       timestamp: socketMessage.createdAt,
       createdAt: socketMessage.createdAt,
       updatedAt: socketMessage.updatedAt,
+      isEdited: false,
+      isDeleted: false,
+      translations: [],
       sender: socketMessage.sender || {
         id: socketMessage.senderId || '',
         username: 'Utilisateur inconnu',
@@ -872,6 +897,13 @@ class MeeshySocketIOService {
   }
 
   /**
+   * Obtient l'instance Socket directe (pour usage avancé)
+   */
+  public getSocket(): Socket<ServerToClientEvents, ClientToServerEvents> | null {
+    return this.socket;
+  }
+
+  /**
    * Obtient des diagnostics de connexion
    */
   public getConnectionDiagnostics(): any {
@@ -930,4 +962,4 @@ class MeeshySocketIOService {
 }
 
 // Instance singleton
-export const meeshySocketIOService = new MeeshySocketIOService();
+export const meeshySocketIOService = MeeshySocketIOService.getInstance();

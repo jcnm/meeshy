@@ -14,6 +14,13 @@ import {
 } from '@/utils/auth';
 import { useUser } from '@/context/AppContext';
 
+// Cache global pour éviter les vérifications d'authentification multiples
+const authCache = {
+  lastCheck: 0,
+  cacheDuration: 5000, // 5 secondes
+  result: null as AuthState | null
+};
+
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
@@ -35,14 +42,35 @@ export function useAuth() {
     setUserRef.current = setUser;
   }, [setUser]);
 
-  // Vérifier l'état d'authentification
+  // Vérifier l'état d'authentification avec cache
   const checkAuth = useCallback(async () => {
+    const now = Date.now();
+    
+    // Utiliser le cache si récent
+    if (authCache.result && (now - authCache.lastCheck) < authCache.cacheDuration) {
+      console.log('[USE_AUTH] Utilisation du cache d\'authentification');
+      setAuthState(authCache.result);
+      
+      // Synchroniser avec le contexte global
+      if (authCache.result.isAuthenticated && authCache.result.user) {
+        setUserRef.current(authCache.result.user);
+      } else {
+        setUserRef.current(null);
+      }
+      
+      return authCache.result;
+    }
+    
     console.log('[USE_AUTH] Début de la vérification d\'authentification');
     setAuthState(prev => ({ ...prev, isChecking: true }));
     
     try {
       const newAuthState = await checkAuthStatus();
       console.log('[USE_AUTH] État d\'authentification:', newAuthState);
+      
+      // Mettre à jour le cache
+      authCache.result = newAuthState;
+      authCache.lastCheck = now;
       
       // Synchroniser avec le contexte global
       if (newAuthState.isAuthenticated && newAuthState.user) {
@@ -62,6 +90,11 @@ export function useAuth() {
         isChecking: false,
         isAnonymous: false
       };
+      
+      // Mettre à jour le cache avec l'état d'erreur
+      authCache.result = errorState;
+      authCache.lastCheck = now;
+      
       setAuthState(errorState);
       setUserRef.current(null);
       return errorState;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, memo } from 'react';
 import { cn } from '@/lib/utils';
 import type {
   Message,
@@ -28,10 +28,12 @@ interface ConversationMessagesProps {
   isTranslating: (messageId: string, targetLanguage: string) => boolean;
   onEditMessage: (messageId: string, newContent: string) => Promise<void>;
   onDeleteMessage: (messageId: string) => Promise<void>;
+  onLoadMore?: () => void; // Fonction pour charger plus de messages
   t: (key: string) => string;
+  containerRef?: React.RefObject<HTMLDivElement>; // Ref externe pour le scroll infini
 }
 
-export function ConversationMessages({
+const ConversationMessagesComponent = memo(function ConversationMessages({
   messages,
   translatedMessages,
   isLoadingMessages,
@@ -48,11 +50,14 @@ export function ConversationMessages({
   isTranslating,
   onEditMessage,
   onDeleteMessage,
-  t
+  onLoadMore,
+  t,
+  containerRef
 }: ConversationMessagesProps) {
   // Ref pour le scroll automatique vers le dernier message
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  // Utiliser le ref externe si fourni, sinon créer un ref local
+  const messagesContainerRef = containerRef || useRef<HTMLDivElement>(null);
 
   // Ref pour tracker le nombre de messages précédent
   const previousMessageCountRef = useRef(0);
@@ -90,6 +95,32 @@ export function ConversationMessages({
     }, isSafari ? 150 : (force ? 50 : 100)); // Délai plus long pour Safari
   }, []);
 
+  // Gestionnaire de scroll pour le chargement infini
+  const handleScroll = useCallback(() => {
+    if (!messagesContainerRef.current || !onLoadMore || !hasMore || isLoadingMore) {
+      return;
+    }
+
+    const container = messagesContainerRef.current;
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    
+    // Déclencher le chargement quand on est proche du haut (messages plus anciens)
+    const threshold = 100; // pixels du haut
+    if (scrollTop <= threshold) {
+      console.log('[DEBUG] Triggering loadMore - scrollTop:', scrollTop, 'threshold:', threshold);
+      onLoadMore();
+    }
+  }, [onLoadMore, hasMore, isLoadingMore]);
+
+  // Ajouter l'écouteur de scroll
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll, { passive: true });
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
+
   // Scroll automatique SEULEMENT pour les nouveaux messages (pas le chargement infini)
   useEffect(() => {
     if (messages.length > 0) {
@@ -120,8 +151,9 @@ export function ConversationMessages({
     <div ref={messagesContainerRef} className={cn(
       "flex-1 overflow-y-auto relative",
       // Zone de messages mobile : utiliser toute la hauteur disponible
+      // Ajouter un padding-top pour compenser l'en-tête fixe (environ 88px)
       isMobile 
-        ? "px-2 py-2 pb-20 bg-white h-full" 
+        ? "px-2 pt-[88px] pb-24 bg-white h-full" 
         : "p-4 pb-4 bg-white/50 backdrop-blur-sm"
     )}>
       {/* Indicateur de chargement pour la pagination (messages plus anciens) - en haut */}
@@ -161,4 +193,22 @@ export function ConversationMessages({
       <div ref={messagesEndRef} />
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Comparaison personnalisée pour éviter les re-renders inutiles
+  return (
+    prevProps.messages.length === nextProps.messages.length &&
+    prevProps.translatedMessages.length === nextProps.translatedMessages.length &&
+    prevProps.isLoadingMessages === nextProps.isLoadingMessages &&
+    prevProps.isLoadingMore === nextProps.isLoadingMore &&
+    prevProps.hasMore === nextProps.hasMore &&
+    prevProps.currentUser?.id === nextProps.currentUser?.id &&
+    prevProps.userLanguage === nextProps.userLanguage &&
+    prevProps.usedLanguages.length === nextProps.usedLanguages.length &&
+    prevProps.isMobile === nextProps.isMobile &&
+    prevProps.conversationType === nextProps.conversationType &&
+    prevProps.userRole === nextProps.userRole &&
+    prevProps.conversationId === nextProps.conversationId
+  );
+});
+
+export { ConversationMessagesComponent as ConversationMessages };

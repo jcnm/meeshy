@@ -178,7 +178,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
 
     try {
       // Préparer les métadonnées
-      const metadata = prepareMessageMetadata(currentUser, originalLanguage);
+      const metadata = prepareMessageMetadata(content, originalLanguage);
       
       // Log de l'envoi
       logMessageSend(content, conversationId, currentUser);
@@ -194,7 +194,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
         logMessageSuccess(content, conversationId);
         
         // Callback de succès
-        onMessageSent?.(content, originalLanguage || metadata.detectedLanguage);
+        onMessageSent?.(content, originalLanguage || metadata.sourceLanguage);
         
         return true;
       } else {
