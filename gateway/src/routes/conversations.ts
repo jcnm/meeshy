@@ -370,6 +370,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             }
           },
           messages: {
+            where: {
+              isDeleted: false
+            },
             orderBy: { createdAt: 'desc' },
             take: 1,
             include: {
@@ -398,6 +401,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           const unreadCount = await prisma.message.count({
             where: {
               conversationId: conversation.id,
+              isDeleted: false,
               NOT: {
                 status: {
                   some: {

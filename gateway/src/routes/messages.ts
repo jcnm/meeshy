@@ -277,6 +277,23 @@ export default async function messageRoutes(fastify: FastifyInstance) {
         }
       });
 
+      // Mettre à jour le lastMessageAt de la conversation avec le dernier message non supprimé
+      const lastNonDeletedMessage = await prisma.message.findFirst({
+        where: {
+          conversationId: message.conversationId,
+          isDeleted: false
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true }
+      });
+
+      await prisma.conversation.update({
+        where: { id: message.conversationId },
+        data: { 
+          lastMessageAt: lastNonDeletedMessage?.createdAt || message.conversation.createdAt
+        }
+      });
+
       // TODO: Diffuser la suppression via WebSocket quand websocketManager sera disponible
       // if (fastify.websocketManager) {
       //   fastify.websocketManager.broadcastToConversation(message.conversationId, {
