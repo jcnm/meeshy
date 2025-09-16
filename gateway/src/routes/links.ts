@@ -807,7 +807,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
       const formattedMessages = messages.map((message: any) => ({
         id: message.id,
         content: message.content,
-        originalLanguage: message.originalLanguage,
+        originalLanguage: message.originalLanguage || 'fr',
         createdAt: message.createdAt,
         status: message.status || [],
         sender: message.sender ? {
@@ -1097,7 +1097,7 @@ export async function linksRoutes(fastify: FastifyInstance) {
       const formattedMessages = messages.map(message => ({
         id: message.id,
         content: message.content,
-        originalLanguage: message.originalLanguage,
+        originalLanguage: message.originalLanguage || 'fr',
         messageType: message.messageType,
         isEdited: message.isEdited,
         editedAt: message.editedAt,

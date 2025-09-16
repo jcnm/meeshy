@@ -852,12 +852,14 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         if (message.replyTo) {
           adaptedReplyTo = {
             ...message.replyTo,
+            originalLanguage: message.replyTo.originalLanguage || 'fr', // Garantir une langue par défaut
             translations: message.replyTo.translations // Garder toutes les traductions
           };
         }
 
         return {
           ...message,
+          originalLanguage: message.originalLanguage || 'fr', // Garantir une langue par défaut
           translations: message.translations, // Garder toutes les traductions
           replyTo: adaptedReplyTo,
           userPreferredLanguage: userPreferredLanguage // Indiquer au frontend la langue préférée

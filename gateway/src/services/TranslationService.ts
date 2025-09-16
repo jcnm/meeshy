@@ -539,9 +539,10 @@ export class TranslationService extends EventEmitter {
       this.stats.translations_received++;
       
       // SAUVEGARDE EN BASE DE DONNÉES (traduction validée par le Translator)
+      let translationId: string | null = null;
       try {
-        await this._saveTranslationToDatabase(data.result, data.metadata);
-        console.log(`💾 [TranslationService] Traduction sauvegardée en base: ${data.result.messageId} -> ${data.targetLanguage}`);
+        translationId = await this._saveTranslationToDatabase(data.result, data.metadata);
+        console.log(`💾 [TranslationService] Traduction sauvegardée en base: ${data.result.messageId} -> ${data.targetLanguage} (ID: ${translationId})`);
       } catch (error) {
         console.error(`❌ [TranslationService] Erreur sauvegarde traduction: ${error}`);
         // Continuer même si la sauvegarde échoue
@@ -554,12 +555,13 @@ export class TranslationService extends EventEmitter {
       // Incrémenter le compteur de traductions pour l'utilisateur
       await this._incrementUserTranslationStats(data.result.messageId);
       
-      // Émettre événement avec métadonnées
-      console.log(`📡 [TranslationService] Émission événement translationReady pour ${data.result.messageId} -> ${data.targetLanguage}`);
+      // Émettre événement avec métadonnées et ID de traduction
+      console.log(`📡 [TranslationService] Émission événement translationReady pour ${data.result.messageId} -> ${data.targetLanguage} (ID: ${translationId})`);
       this.emit('translationReady', {
         taskId: data.taskId,
         result: data.result,
         targetLanguage: data.targetLanguage,
+        translationId: translationId, // Ajouter l'ID de la traduction
         metadata: data.metadata || {}
       });
       console.log(`✅ [TranslationService] Événement translationReady émis avec métadonnées`);
@@ -632,7 +634,7 @@ export class TranslationService extends EventEmitter {
    */
 
 
-  private async _saveTranslationToDatabase(result: TranslationResult, metadata?: any) {
+  private async _saveTranslationToDatabase(result: TranslationResult, metadata?: any): Promise<string> {
     try {
       console.log(`💾 [TranslationService] Sauvegarde traduction en base: ${result.messageId} -> ${result.targetLanguage}`);
       
@@ -671,7 +673,7 @@ export class TranslationService extends EventEmitter {
         
         // Mettre à jour la traduction existante (la plus récente)
         const latestTranslation = existingTranslations[0];
-        await this.prisma.messageTranslation.update({
+        const updatedTranslation = await this.prisma.messageTranslation.update({
           where: {
             id: latestTranslation.id
           },
@@ -683,10 +685,11 @@ export class TranslationService extends EventEmitter {
           }
         });
         
-        console.log(`🔄 [TranslationService] Traduction mise à jour: ${result.messageId} -> ${result.targetLanguage}`);
+        console.log(`🔄 [TranslationService] Traduction mise à jour: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id})`);
+        return updatedTranslation.id;
       } else {
         // Créer une nouvelle traduction
-        await this.prisma.messageTranslation.create({
+        const newTranslation = await this.prisma.messageTranslation.create({
           data: {
             messageId: result.messageId,
             sourceLanguage: result.sourceLanguage,
@@ -698,7 +701,8 @@ export class TranslationService extends EventEmitter {
           }
         });
         
-        console.log(`✅ [TranslationService] Nouvelle traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage}`);
+        console.log(`✅ [TranslationService] Nouvelle traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage} (ID: ${newTranslation.id})`);
+        return newTranslation.id;
       }
 
     } catch (error) {

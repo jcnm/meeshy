@@ -172,6 +172,7 @@ export interface TranslationEvent {
 }
 
 export interface TranslationData {
+  id: string; // ID de la traduction en base de données
   messageId: string;
   sourceLanguage: string;
   targetLanguage: string;

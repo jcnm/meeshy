@@ -449,13 +449,13 @@ class MeeshyServer {
       
       // Enregistrer les routes de traduction
       await fastify.register(translationRoutes);
-    }, { prefix: '' });
+    }, { prefix: '/api' });
     
-    // Register authentication routes with /auth prefix
-    await this.server.register(authRoutes, { prefix: '/auth' });
+    // Register authentication routes with /api prefix
+    await this.server.register(authRoutes, { prefix: '/api/auth' });
     
     // Register authentication test routes for Phase 3.1.1
-    await this.server.register(authTestRoutes);
+    await this.server.register(authTestRoutes, { prefix: '/api' });
     
     // Register conversation routes with /api prefix
     await this.server.register(async (fastify) => {
@@ -470,22 +470,22 @@ class MeeshyServer {
     // Register community routes
     await this.server.register(communityRoutes, { prefix: '/api' });
     
-    // Register admin routes with /admin prefix
-    await this.server.register(adminRoutes, { prefix: '/admin' });
+    // Register admin routes with /api prefix
+    await this.server.register(adminRoutes, { prefix: '/api/admin' });
 
     
     // Register user routes
     await this.server.register(userRoutes, { prefix: '/api' });
     
-    // Register user preferences routes with /users prefix
-    await this.server.register(userPreferencesRoutes, { prefix: '/users' });
+    // Register user preferences routes with /api prefix
+    await this.server.register(userPreferencesRoutes, { prefix: '/api/users' });
     
     // Register affiliate routes
-    await this.server.register(affiliateRoutes);
+    await this.server.register(affiliateRoutes, { prefix: '/api' });
 
 
-    // Register maintenance routes with /maintenance prefix
-    await this.server.register(maintenanceRoutes, { prefix: '/maintenance' });
+    // Register maintenance routes with /api prefix
+    await this.server.register(maintenanceRoutes, { prefix: '/api/maintenance' });
     
     logger.info('✓ REST API routes configured successfully');
   }

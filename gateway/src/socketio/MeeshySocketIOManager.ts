@@ -72,7 +72,7 @@ export class MeeshySocketIOManager {
       cors: {
         origin: '*',
         methods: ["GET", "POST"],
-        allowedHeaders: ['authorization', 'content-type','websocket', 'polling'],
+        allowedHeaders: ['authorization', 'content-type', 'x-session-token', 'websocket', 'polling'],
         credentials: true
       }
     });
@@ -844,7 +844,7 @@ export class MeeshySocketIOManager {
     }
   }
 
-  private async _handleTranslationReady(data: { taskId: string; result: any; targetLanguage: string }) {
+  private async _handleTranslationReady(data: { taskId: string; result: any; targetLanguage: string; translationId?: string; id?: string }) {
     try {
       const { result, targetLanguage } = data;
       
@@ -856,61 +856,72 @@ export class MeeshySocketIOManager {
         confidenceScore: result.confidenceScore
       });
       
-      // Récupérer les utilisateurs qui ont besoin de cette traduction
-      const targetUsers = this._findUsersForLanguage(targetLanguage);
+      // Récupérer la conversation du message pour broadcast
       let conversationIdForBroadcast: string | null = null;
-      
-      // Récupérer la conversation du message pour broadcast de room
-      // (pour garantir réception côté front même si la langue ne matche pas strictement)
-      // Cette info est aussi utile pour clients multi-langues
       try {
         const msg = await this.prisma.message.findUnique({
           where: { id: result.messageId },
           select: { conversationId: true }
         });
         conversationIdForBroadcast = msg?.conversationId || null;
-      } catch {}
+      } catch (error) {
+        console.error(`❌ [SocketIOManager] Erreur récupération conversation:`, error);
+      }
       
-      // Envoyer la traduction aux utilisateurs concernés
+      // Préparer les données de traduction au format correct pour le frontend
+      const translationData = {
+        messageId: result.messageId,
+        translations: [{
+          id: data.translationId || data.id || `${result.messageId}_${targetLanguage}_${Date.now()}`, // Utiliser l'ID de la traduction
+          messageId: result.messageId,
+          sourceLanguage: result.sourceLanguage || 'auto', // Utiliser la langue source réelle
+          targetLanguage: targetLanguage,
+          translatedContent: result.translatedText,
+          translationModel: result.translationModel || result.modelType || 'medium',
+          cacheKey: `${result.messageId}_${result.sourceLanguage || 'auto'}_${targetLanguage}`,
+          cached: false,
+          confidenceScore: result.confidenceScore || 0.85,
+          createdAt: new Date()
+        }]
+      };
+      
+      console.log(`🔍 [SocketIOManager] Format de traduction préparé:`, {
+        messageId: translationData.messageId,
+        translationCount: translationData.translations.length,
+        firstTranslation: translationData.translations[0]
+      });
+      
+      // Diffuser dans la room de conversation (méthode principale)
+      if (conversationIdForBroadcast) {
+        const roomName = `conversation_${conversationIdForBroadcast}`;
+        const roomClients = this.io.sockets.adapter.rooms.get(roomName);
+        const clientCount = roomClients ? roomClients.size : 0;
+        
+        console.log(`📡 [SocketIOManager] Broadcasting traduction vers room ${roomName} (${clientCount} clients)`);
+        
+        this.io.to(roomName).emit('message:translation', translationData);
+        this.stats.translations_sent += clientCount;
+        
+        console.log(`✅ [SocketIOManager] Traduction ${result.messageId} -> ${targetLanguage} diffusée vers ${clientCount} clients dans la room`);
+      } else {
+        console.warn(`⚠️ [SocketIOManager] Aucune conversation trouvée pour le message ${result.messageId}`);
+      }
+      
+      // Fallback: Envoi direct aux utilisateurs connectés pour cette langue
+      const targetUsers = this._findUsersForLanguage(targetLanguage);
+      let directSendCount = 0;
+      
       for (const user of targetUsers) {
         const userSocket = this.io.sockets.sockets.get(user.socketId);
         if (userSocket) {
-          userSocket.emit('message:translation', {
-            messageId: result.messageId,
-            translations: [{
-              messageId: result.messageId,
-              sourceLanguage: 'auto',
-              targetLanguage: targetLanguage,
-              translatedContent: result.translatedText,
-              translationModel: 'basic',
-              cacheKey: `${result.messageId}_auto_${targetLanguage}`,
-              cached: false,
-              confidenceScore: result.confidenceScore
-            }]
-          });
-          
-          this.stats.translations_sent++;
+          userSocket.emit('message:translation', translationData);
+          directSendCount++;
         }
       }
       
-      // Diffuser également dans la room de conversation (fallback efficace)
-      if (conversationIdForBroadcast) {
-        this.io.to(`conversation_${conversationIdForBroadcast}`).emit('message:translation', {
-          messageId: result.messageId,
-          translations: [{
-            messageId: result.messageId,
-            sourceLanguage: 'auto',
-            targetLanguage: targetLanguage,
-            translatedContent: result.translatedText,
-            translationModel: 'basic',
-            cacheKey: `${result.messageId}_auto_${targetLanguage}`,
-            cached: false,
-            confidenceScore: result.confidenceScore
-          }]
-        });
+      if (directSendCount > 0) {
+        console.log(`📡 [SocketIOManager] Traduction aussi envoyée directement à ${directSendCount} utilisateurs spécifiques`);
       }
-      
-      console.log(`✅ Traduction ${result.messageId} -> ${targetLanguage} envoyée à ${targetUsers.length} utilisateurs`);
       
       // Envoyer les notifications de traduction pour les utilisateurs non connectés
       if (conversationIdForBroadcast) {

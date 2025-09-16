@@ -105,7 +105,7 @@ export interface UIMessage extends GatewayMessage {
   originalContent: string;
   
   // Statuts de lecture (pour conversations de groupe)
-  readStatus?: Array<{ userId: string; readAt: Date }>;
+  readStatus?: Array<{ userId: string; readAt?: Date; receivedAt?: Date }>;
   
   // Localisation (pour messages géolocalisés)
   location?: string;
