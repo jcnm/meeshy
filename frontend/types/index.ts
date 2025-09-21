@@ -23,6 +23,9 @@ export * from '@shared/types';
 // Export des types spécifiques frontend
 export type { CreateUserDto, ChatRoom } from './frontend';
 
+// Export des constantes spécifiques frontend
+export { INTERFACE_LANGUAGES } from './frontend';
+
 // Types spécifiques au frontend uniquement
 export interface FrontendConfig {
   apiUrl: string;

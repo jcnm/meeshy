@@ -12,7 +12,7 @@ import {
   redirectToAuth,
   redirectToHome
 } from '@/utils/auth';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 
 // Cache global pour éviter les vérifications d'authentification multiples
 const authCache = {

@@ -9,7 +9,7 @@ import { LinkSummaryModal } from './link-summary-modal';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { copyToClipboard } from '@/lib/clipboard';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 
 interface CreateLinkButtonProps {
   onLinkCreated?: () => void;

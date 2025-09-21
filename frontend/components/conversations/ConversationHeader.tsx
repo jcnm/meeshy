@@ -54,9 +54,9 @@ export function ConversationHeader({
   // Fonction spécifique pour obtenir le nom d'affichage dans l'en-tête (utilise les participants chargés)
   const getConversationHeaderName = useCallback((conversation: Conversation): string => {
     if (conversation.type !== 'direct') {
-      return conversation.name || conversation.title || 'Groupe sans nom';
+      return conversation.title || 'Groupe sans nom';
     } else {
-      // Pour les conversations directes, utiliser les participants chargés
+      // Pour les conversations directes, utiliser les participants chargés en priorité
       const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       if (otherParticipant?.user) {
         // Prioriser le displayName, sinon prénom/nom, sinon username
@@ -64,42 +64,39 @@ export function ConversationHeader({
                `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
                otherParticipant.user.username;
       }
-      return conversation.name || conversation.title || 'Conversation privée';
+      
+      return conversation.title || 'Conversation privée';
     }
   }, [currentUser, conversationParticipants]);
 
   // Fonction pour obtenir l'URL de l'avatar d'une conversation
   const getConversationAvatarUrl = useCallback((conversation: Conversation): string | undefined => {
     // Déterminer si c'est une conversation directe
-    const isDirectConversation = conversation.type === 'direct' || 
-                                 (!conversation.isGroup && conversation.participants?.length === 2) ||
-                                 (!conversation.isGroup && !conversation.name && !conversation.title);
+    const isDirectConversation = conversation.type === 'direct';
 
     if (isDirectConversation) {
-      // Pour les conversations privées, utiliser l'avatar de l'autre participant
-      const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+      // Pour les conversations privées, utiliser l'avatar de l'autre participant depuis conversationParticipants
+      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       if (otherParticipant?.user?.avatar) {
         return otherParticipant.user.avatar;
       }
     }
     // Pour les groupes, on pourrait avoir un avatar de groupe dans le futur
     return undefined;
-  }, [currentUser]);
+  }, [currentUser, conversationParticipants]);
 
   // Fonction utilitaire pour obtenir l'avatar d'une conversation
   const getConversationAvatar = useCallback((conversation: Conversation): string => {
     // Déterminer si c'est une conversation directe
-    const isDirectConversation = conversation.type === 'direct' || 
-                                 (!conversation.isGroup && conversation.participants?.length === 2) ||
-                                 (!conversation.isGroup && !conversation.name && !conversation.title);
+    const isDirectConversation = conversation.type === 'direct';
 
     if (!isDirectConversation) {
       // Pour les groupes, utiliser le nom ou titre
-      const groupName = conversation.name || conversation.title || 'Groupe';
+      const groupName = conversation.title || 'Groupe';
       return groupName.slice(0, 2).toUpperCase();
     } else {
-      // Pour les conversations directes, d'abord essayer les participants
-      const otherParticipant = conversation.participants?.find(p => p.userId !== currentUser?.id);
+      // Pour les conversations directes, utiliser les participants chargés
+      const otherParticipant = conversationParticipants.find(p => p.userId !== currentUser?.id);
       if (otherParticipant?.user) {
         const displayName = otherParticipant.user.displayName ||
                `${otherParticipant.user.firstName || ''} ${otherParticipant.user.lastName || ''}`.trim() ||
@@ -110,8 +107,8 @@ export function ConversationHeader({
         }
       }
       
-      // Fallback : utiliser le nom nettoyé de la conversation (même logique que getConversationDisplayName)
-      const conversationName = conversation.name || conversation.title;
+      // Fallback : utiliser le titre de la conversation
+      const conversationName = conversation.title;
       if (conversationName && conversationName !== 'Conversation privée') {
         let cleanName = conversationName;
         
@@ -125,7 +122,7 @@ export function ConversationHeader({
           const parts = cleanName.split(' & ');
           // Prendre la partie qui n'est pas l'utilisateur actuel
           const currentUserName = currentUser?.displayName || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || currentUser?.username;
-          cleanName = parts.find(part => part.trim() !== currentUserName) || parts[0];
+          cleanName = parts.find((part: string) => part.trim() !== currentUserName) || parts[0];
         }
         
         // Pour les noms séparés par des virgules, filtrer l'utilisateur actuel
@@ -134,7 +131,7 @@ export function ConversationHeader({
           const currentUserName = currentUser?.displayName || `${currentUser?.firstName || ''} ${currentUser?.lastName || ''}`.trim() || currentUser?.username;
           
           // Filtrer les noms pour exclure l'utilisateur actuel
-          const otherNames = names.filter(name => name.trim() !== currentUserName);
+          const otherNames = names.filter((name: string) => name.trim() !== currentUserName);
           
           // Prendre le premier nom qui n'est pas l'utilisateur actuel
           cleanName = otherNames.length > 0 ? otherNames[0] : names[0];
@@ -151,15 +148,15 @@ export function ConversationHeader({
       
       return 'CP'; // Conversation Privée
     }
-  }, [currentUser]);
+  }, [currentUser, conversationParticipants]);
 
   // Fonction utilitaire pour obtenir l'icône d'une conversation par type
   const getConversationIcon = useCallback((conversation: Conversation): React.ReactNode | null => {
-    // Pour les conversations publiques et globales, utiliser des icônes spécifiques
-    if (conversation.type === 'public') {
+    // Pour les conversations de groupe, utiliser des icônes spécifiques
+    if (conversation.type === 'group') {
       return <UserPlus className="h-6 w-6" />;
     }
-    if (conversation.type === 'global') {
+    if (conversation.type === 'broadcast') {
       return <Info className="h-6 w-6" />;
     }
     if (conversation.type !== 'direct') {
@@ -225,47 +222,32 @@ export function ConversationHeader({
           </div>
         </div>
         
-        {/* Boutons d'action rapides - masqués sur mobile */}
-        <div className="hidden md:flex items-center gap-1">
-          
-          {/* Bouton pour ajouter un participant */}
+        {/* Actions dans la barre de titre */}
+        <div className="flex items-center gap-1">
+          {/* Bouton pour afficher les participants - maintenant dans la barre de titre */}
+          <ConversationParticipantsPopover
+            conversationId={conversation.id}
+            participants={conversationParticipants}
+            currentUser={currentUser}
+            isGroup={conversation.type !== 'direct'}
+            conversationType={conversation.type}
+            userConversationRole={getCurrentUserRole()}
+            onParticipantRemoved={onParticipantRemoved}
+            onParticipantAdded={onParticipantAdded}
+            onLinkCreated={onLinkCreated}
+          />
+
+          {/* Bouton pour ouvrir les détails */}
           <Button
-            variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 rounded-full hover:bg-accent/50 border border-border/30 hover:border-primary/50 transition-colors"
-            title={t('addParticipant')}
-            onClick={() => {
-              // Ouvrir le modal d'invitation
-              // TODO: Implémenter l'ouverture du modal d'invitation
-            }}
+            variant="ghost"
+            onClick={onOpenDetails}
+            className="rounded-full h-10 w-10 p-0 hover:bg-accent/50"
+            title={t('conversationDetails')}
           >
-            <UserPlus className="h-4 w-4 text-primary" />
+            <Info className="h-5 w-5" />
           </Button>
         </div>
-        
-        {/* Bouton pour afficher les participants */}
-        <ConversationParticipantsPopover
-          conversationId={conversation.id}
-          participants={conversationParticipants}
-          currentUser={currentUser}
-          isGroup={conversation.type !== 'direct'}
-          conversationType={conversation.type}
-          userConversationRole={getCurrentUserRole()}
-          onParticipantRemoved={onParticipantRemoved}
-          onParticipantAdded={onParticipantAdded}
-          onLinkCreated={onLinkCreated}
-        />
-
-        {/* Bouton pour ouvrir les détails */}
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={onOpenDetails}
-          className="rounded-full h-10 w-10 p-0 hover:bg-accent/50"
-          title={t('conversationDetails')}
-        >
-          <Info className="h-5 w-5" />
-        </Button>
       </div>
     </div>
   );

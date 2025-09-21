@@ -77,17 +77,38 @@ export class ConversationsService {
   /**
    * Convertir un type de conversation en format valide
    */
-  private mapConversationType(type: string): 'direct' | 'group' | 'public' | 'global' {
+  private mapConversationType(type: string): 'direct' | 'group' | 'anonymous' | 'broadcast' {
     switch (type.toLowerCase()) {
       case 'group':
         return 'group';
       case 'public':
-        return 'public';
+        return 'broadcast'; // Map 'public' vers 'broadcast' pour correspondre aux types TypeScript
       case 'global':
-        return 'global';
+        return 'broadcast'; // Map 'global' vers 'broadcast' pour correspondre aux types TypeScript
       case 'direct':
+        return 'direct';
+      case 'anonymous':
+        return 'anonymous';
+      case 'broadcast':
+        return 'broadcast';
       default:
         return 'direct';
+    }
+  }
+
+  /**
+   * Convertir un type de conversation en visibility
+   */
+  private mapConversationVisibility(type: string): 'public' | 'private' | 'restricted' {
+    switch (type.toLowerCase()) {
+      case 'public':
+      case 'global':
+        return 'public';
+      case 'direct':
+      case 'group':
+      case 'anonymous':
+      default:
+        return 'private';
     }
   }
 
@@ -197,6 +218,8 @@ export class ConversationsService {
     return {
       id: String(conv.id),
       type: this.mapConversationType(String(conv.type) || 'direct'),
+      visibility: this.mapConversationVisibility(String(conv.type) || 'direct'),
+      status: 'active' as const,
       title: conv.title as string,
       description: conv.description as string,
       image: conv.image as string,
@@ -264,8 +287,14 @@ export class ConversationsService {
    * Obtenir une conversation spécifique par ID
    */
   async getConversation(id: string): Promise<Conversation> {
-    const response = await apiService.get<Conversation>(`/api/conversations/${id}`);
-    return response.data;
+    const response = await apiService.get<{ success: boolean; data: unknown }>(`/api/conversations/${id}`);
+    
+    if (!response.data.success || !response.data.data) {
+      throw new Error('Conversation non trouvée');
+    }
+    
+    // Transformer les données comme pour getConversations
+    return this.transformConversationData(response.data.data);
   }
 
   /**

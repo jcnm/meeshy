@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useState, useEffect } from 'react';

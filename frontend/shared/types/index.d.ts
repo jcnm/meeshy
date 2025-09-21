@@ -64,24 +64,9 @@ export interface ServiceHealth {
     };
     timestamp: Date;
 }
-export interface LegacyApiResponse<T = unknown> {
-    success: boolean;
-    data?: T;
-    error?: string;
-    timestamp: Date;
-}
-export interface PaginatedResponse<T> extends LegacyApiResponse<T[]> {
-    pagination: {
-        page: number;
-        limit: number;
-        total: number;
-        pages: number;
-    };
-}
-import type { SocketIOMessage } from './socketio-events';
-import type { MessageWithTranslations as UnifiedMessageWithTranslations } from './conversation';
-export type Message = import('./conversation').Message;
-export type MessageWithTranslations = UnifiedMessageWithTranslations;
+import type { Message as ConsolidatedMessage, MessageWithTranslations as ConsolidatedMessageWithTranslations } from './conversation';
+export type Message = ConsolidatedMessage;
+export type MessageWithTranslations = ConsolidatedMessageWithTranslations;
 export interface BubbleTranslation {
     language: string;
     content: string;
@@ -89,7 +74,24 @@ export interface BubbleTranslation {
     timestamp: Date;
     confidence: number;
 }
-export interface TranslatedMessage extends SocketIOMessage {
+export interface TranslatedMessage {
+    id: string;
+    conversationId: string;
+    senderId?: string;
+    anonymousSenderId?: string;
+    content: string;
+    originalLanguage: string;
+    messageType: any;
+    isEdited: boolean;
+    editedAt?: Date;
+    isDeleted: boolean;
+    deletedAt?: Date;
+    replyToId?: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    timestamp: Date;
+    sender?: any;
+    anonymousSender?: any;
     translation?: BubbleTranslation;
     originalContent?: string;
     translatedContent?: string;
@@ -236,13 +238,105 @@ export interface ValidationError {
     message: string;
     value?: unknown;
 }
+export declare const SUPPORTED_LANGUAGES: readonly [{
+    readonly code: "fr";
+    readonly name: "Français";
+    readonly flag: "🇫🇷";
+    readonly color: "bg-blue-500";
+    readonly translateText: "Traduire ce message en français";
+}, {
+    readonly code: "en";
+    readonly name: "English";
+    readonly flag: "🇬🇧";
+    readonly color: "bg-red-500";
+    readonly translateText: "Translate this message to English";
+}, {
+    readonly code: "es";
+    readonly name: "Español";
+    readonly flag: "🇪🇸";
+    readonly color: "bg-yellow-500";
+    readonly translateText: "Traducir este mensaje al español";
+}, {
+    readonly code: "de";
+    readonly name: "Deutsch";
+    readonly flag: "🇩🇪";
+    readonly color: "bg-gray-800";
+    readonly translateText: "Diese Nachricht ins Deutsche übersetzen";
+}, {
+    readonly code: "pt";
+    readonly name: "Português";
+    readonly flag: "🇵🇹";
+    readonly color: "bg-green-500";
+    readonly translateText: "Traduzir esta mensagem para português";
+}, {
+    readonly code: "zh";
+    readonly name: "中文";
+    readonly flag: "🇨🇳";
+    readonly color: "bg-red-600";
+    readonly translateText: "将此消息翻译成中文";
+}, {
+    readonly code: "ja";
+    readonly name: "日本語";
+    readonly flag: "🇯🇵";
+    readonly color: "bg-white border";
+    readonly translateText: "このメッセージを日本語に翻訳";
+}, {
+    readonly code: "ar";
+    readonly name: "العربية";
+    readonly flag: "🇸🇦";
+    readonly color: "bg-green-600";
+    readonly translateText: "ترجمة هذه الرسالة إلى العربية";
+}];
 export interface LanguageCode {
     code: string;
     name: string;
     flag: string;
+    translateText: string;
 }
-export declare const SUPPORTED_LANGUAGES: LanguageCode[];
 export type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number]['code'];
+/**
+ * Interface complète pour une langue supportée (avec toutes les propriétés)
+ */
+export interface SupportedLanguageInfo {
+    code: string;
+    name: string;
+    flag: string;
+    color?: string;
+    translateText?: string;
+}
+/**
+ * Obtient les informations complètes d'une langue par son code
+ * Version optimisée avec cache et fallback robuste
+ */
+export declare function getLanguageInfo(code: string | undefined): SupportedLanguageInfo;
+/**
+ * Obtient le nom d'une langue par son code
+ */
+export declare function getLanguageName(code: string | undefined): string;
+/**
+ * Obtient le drapeau d'une langue par son code
+ */
+export declare function getLanguageFlag(code: string | undefined): string;
+/**
+ * Obtient la couleur d'une langue par son code
+ */
+export declare function getLanguageColor(code: string | undefined): string;
+/**
+ * Obtient le texte de traduction d'une langue par son code
+ */
+export declare function getLanguageTranslateText(code: string | undefined): string;
+/**
+ * Vérifie si un code de langue est supporté
+ */
+export declare function isSupportedLanguage(code: string | undefined): boolean;
+/**
+ * Obtient tous les codes de langue supportés
+ */
+export declare function getSupportedLanguageCodes(): string[];
+/**
+ * Filtre les langues supportées selon un critère
+ */
+export declare function filterSupportedLanguages(predicate: (lang: SupportedLanguageInfo) => boolean): SupportedLanguageInfo[];
 export declare const TRANSLATION_MODELS: readonly ["basic", "medium", "premium"];
 export type TranslationModel = typeof TRANSLATION_MODELS[number];
 export declare const MESSAGE_TYPES: readonly ["text", "image", "file", "system"];

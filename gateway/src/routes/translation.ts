@@ -57,7 +57,7 @@ export async function translationRoutes(fastify: FastifyInstance) {
   }
   
   // Route principale de traduction
-  fastify.post<{ Body: TranslateRequest }>('/translate', async (request: FastifyRequest<{ Body: TranslateRequest }>, reply: FastifyReply) => {
+  fastify.post<{ Body: TranslateRequest }>('/translate-blocking', async (request: FastifyRequest<{ Body: TranslateRequest }>, reply: FastifyReply) => {
     try {
       const validatedData = TranslateRequestSchema.parse(request.body);
       

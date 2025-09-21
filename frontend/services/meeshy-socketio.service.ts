@@ -54,6 +54,7 @@ class MeeshySocketIOService {
   private translationCache: Map<string, any> = new Map(); // Cache pour éviter les traductions redondantes
   private pendingTranslations: Map<string, Promise<any>> = new Map(); // Éviter les traductions simultanées
   private translationBatch: Map<string, any[]> = new Map(); // Traductions en lot par message
+  private processedTranslationEvents: Set<string> = new Set(); // Déduplication des événements de traduction
   private batchTimeout: NodeJS.Timeout | null = null;
   private readonly BATCH_DELAY = 100; // ms - délai pour grouper les traductions
 
@@ -237,13 +238,19 @@ class MeeshySocketIOService {
 
     // Événements de messages
     this.socket.on(SERVER_EVENTS.MESSAGE_NEW, (socketMessage) => {
-      logger.socketio.debug('MeeshySocketIOService: Nouveau message reçu', {
+      console.log('📨 MeeshySocketIOService: Nouveau message reçu', {
         messageId: socketMessage.id,
-        conversationId: socketMessage.conversationId
+        conversationId: socketMessage.conversationId,
+        senderId: socketMessage.senderId,
+        content: socketMessage.content?.substring(0, 50) + '...',
+        receivedOnPage: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+        listenersCount: this.messageListeners.size,
+        timestamp: new Date().toISOString()
       });
 
       // Convertir en format Message standard
       const message: Message = this.convertSocketMessageToMessage(socketMessage);
+      console.log('🔄 Broadcasting message to', this.messageListeners.size, 'listeners');
       this.messageListeners.forEach(listener => listener(message));
 
       // Remonter les stats si incluses dans les métadonnées du message
@@ -277,10 +284,28 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data) => {
+      // Déduplication des événements basée sur messageId + timestamp des traductions
+      const firstTranslation = data.translations[0];
+      const eventKey = `${data.messageId}_${firstTranslation?.id || firstTranslation?.createdAt || Date.now()}`;
+      
+      if (this.processedTranslationEvents.has(eventKey)) {
+        console.log('🔄 [SOCKETIO-SERVICE] Événement de traduction déjà traité, ignoré:', eventKey);
+        return;
+      }
+      
+      this.processedTranslationEvents.add(eventKey);
+      
+      // Nettoyer les anciens événements (garder seulement les 100 derniers)
+      if (this.processedTranslationEvents.size > 100) {
+        const oldEvents = Array.from(this.processedTranslationEvents).slice(0, 50);
+        oldEvents.forEach(oldEventKey => this.processedTranslationEvents.delete(oldEventKey));
+      }
+      
       console.group('🚀 [SOCKETIO-SERVICE] NOUVELLE TRADUCTION REÇUE');
       console.log('📥 [FRONTEND] Traduction reçue via Socket.IO:', {
         messageId: data.messageId,
         translationsCount: data.translations.length,
+        eventKey,
         firstTranslation: data.translations[0] ? {
           id: data.translations[0].id,
           targetLanguage: data.translations[0].targetLanguage,
@@ -470,8 +495,8 @@ class MeeshySocketIOService {
    */
   private scheduleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('❌ MeeshySocketIOService: Nombre maximum de tentatives de reconnexion atteint');
-      toast.error('Impossible de se reconnecter. Veuillez recharger la page.');
+      console.warn('⚠️ MeeshySocketIOService: Nombre maximum de tentatives de reconnexion atteint (backend non disponible)');
+      // toast.error('Impossible de se reconnecter. Veuillez recharger la page.'); // Désactivé temporairement
       return;
     }
 
@@ -574,7 +599,9 @@ class MeeshySocketIOService {
         conversationOrId,
         conversationId,
         socketId: this.socket.id,
-        isConnected: this.isConnected
+        isConnected: this.isConnected,
+        currentUrl: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+        timestamp: new Date().toISOString()
       });
       
       // Utiliser l'ID pour les communications WebSocket
@@ -693,7 +720,9 @@ class MeeshySocketIOService {
           conversationOrId,
           conversationId,
           contentLength: content.length,
-          originalLanguage
+          originalLanguage,
+          fromPage: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+          timestamp: new Date().toISOString()
         });
 
         // Utiliser l'ObjectId pour l'envoi au backend

@@ -137,14 +137,16 @@ const LANGUAGE_FLAGS: Record<string, string> = {
 /**
  * Obtient le nom d'affichage d'une langue à partir de son code
  */
-export function getLanguageDisplayName(languageCode: string): string {
+export function getLanguageDisplayName(languageCode: string | null | undefined): string {
+  if (!languageCode) return 'Français'; // Valeur par défaut
   return LANGUAGE_NAMES[languageCode] || languageCode.toUpperCase();
 }
 
 /**
  * Obtient le drapeau emoji d'une langue à partir de son code
  */
-export function getLanguageFlag(languageCode: string): string {
+export function getLanguageFlag(languageCode: string | null | undefined): string {
+  if (!languageCode) return '🇫🇷'; // Drapeau français par défaut
   return LANGUAGE_FLAGS[languageCode] || '🌐';
 }
 

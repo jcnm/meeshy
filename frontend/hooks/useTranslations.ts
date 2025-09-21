@@ -1,77 +1,180 @@
 /**
- * Hook personnalisé pour les traductions - VERSION ULTRA-STABLE
- * Support du changement de langue sans boucles infinies
+ * Hook personnalisé pour les traductions - VERSION ULTRA OPTIMISÉE
+ * Détection automatique de langue + Chargement synchrone avec fallback intelligent
  */
 
-import { useCallback, useMemo } from 'react';
-import { useLanguage } from '@/context/LanguageContext';
-import frTranslations from '@/locales/fr.json';
-import enTranslations from '@/locales/en.json';
-import ptTranslations from '@/locales/pt.json';
-import esTranslations from '@/locales/es.json';
-import deTranslations from '@/locales/de.json';
-import itTranslations from '@/locales/it.json';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 
 interface TranslationMessages {
   [key: string]: any;
 }
 
-// Vraies traductions importées statiquement
-const REAL_TRANSLATIONS = {
-  fr: frTranslations,
-  en: enTranslations,
-  pt: ptTranslations,
-  es: esTranslations,
-  de: deTranslations,
-  it: itTranslations,
-};
+// Cache global persistant (survit aux re-renders)
+const translationCache: Record<string, TranslationMessages> = {};
+let detectedBrowserLanguage: string | null = null;
+
+// Détecter la langue du navigateur une seule fois
+function detectBrowserLanguage(): string {
+  if (detectedBrowserLanguage) return detectedBrowserLanguage;
+  
+  if (typeof window === 'undefined') return 'fr';
+  
+  // Langues supportées
+  const supportedLanguages = ['fr', 'en', 'es', 'de', 'pt', 'zh', 'ja', 'ar'];
+  
+  // 1. Langue du navigateur
+  const browserLang = navigator.language.split('-')[0];
+  if (supportedLanguages.includes(browserLang)) {
+    detectedBrowserLanguage = browserLang;
+    return browserLang;
+  }
+  
+  // 2. Langues préférées du navigateur
+  const preferredLanguages = navigator.languages || [];
+  for (const lang of preferredLanguages) {
+    const shortLang = lang.split('-')[0];
+    if (supportedLanguages.includes(shortLang)) {
+      detectedBrowserLanguage = shortLang;
+      return shortLang;
+    }
+  }
+  
+  // 3. Fallback français
+  detectedBrowserLanguage = 'fr';
+  return 'fr';
+}
+
+// Charger une langue de façon optimisée
+async function loadLanguageOptimized(lang: string): Promise<TranslationMessages> {
+  // 1. Vérifier le cache en premier
+  if (translationCache[lang]) {
+    return translationCache[lang];
+  }
+
+  try {
+    // 2. Import dynamique avec timeout
+    const loadPromise = import(`@/locales/${lang}.json`);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), 2000)
+    );
+
+    const translations = await Promise.race([loadPromise, timeoutPromise]) as any;
+    translationCache[lang] = translations.default;
+    
+    // 3. Sauvegarder dans localStorage pour la prochaine visite
+    try {
+      localStorage.setItem(`translations_${lang}`, JSON.stringify(translations.default));
+    } catch (e) {
+      // Ignore localStorage errors (quota, private mode, etc.)
+    }
+    
+    return translations.default;
+  } catch (error) {
+    console.warn(`[useTranslations] Échec chargement ${lang}:`, error);
+    
+    // 4. Essayer de charger depuis localStorage
+    try {
+      const cached = localStorage.getItem(`translations_${lang}`);
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        translationCache[lang] = parsedCache;
+        return parsedCache;
+      }
+    } catch (e) {
+      // Ignore localStorage errors
+    }
+    
+    // 5. Fallback intelligent
+    if (lang !== 'fr' && lang !== 'en') {
+      return loadLanguageOptimized('en'); // Fallback vers anglais
+    }
+    if (lang !== 'fr') {
+      return loadLanguageOptimized('fr'); // Fallback vers français
+    }
+    
+    // 6. Dernier recours - traductions vides
+    return {};
+  }
+}
+
+// Pré-charger la langue détectée au premier import
+const preloadPromise = (() => {
+  const detectedLang = detectBrowserLanguage();
+  return loadLanguageOptimized(detectedLang);
+})();
 
 export function useTranslations(namespace?: string) {
-  // STABLE: pas de useState, juste useLanguage pour la langue courante
-  const { currentInterfaceLanguage } = useLanguage();
+  const [currentLanguage] = useState(() => detectBrowserLanguage());
+  const [currentMessages, setCurrentMessages] = useState<TranslationMessages>(() => {
+    // Retourner le cache immédiatement si disponible
+    return translationCache[currentLanguage] || {};
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    // Pas de loading si déjà en cache
+    return !translationCache[currentLanguage];
+  });
   
-  // STABLE: useMemo pour éviter les recalculs inutiles
-  const currentMessages = useMemo(() => {
-    const lang = currentInterfaceLanguage || 'fr';
-    return REAL_TRANSLATIONS[lang as keyof typeof REAL_TRANSLATIONS] || REAL_TRANSLATIONS.fr;
-  }, [currentInterfaceLanguage]);
+  // Charger la langue détectée
+  useEffect(() => {
+    if (translationCache[currentLanguage]) {
+      // Déjà en cache
+      setCurrentMessages(translationCache[currentLanguage]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Utiliser la promesse de pré-chargement
+    preloadPromise
+      .then(messages => {
+        setCurrentMessages(messages);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  }, [currentLanguage]);
 
-  // Fonction de traduction STABLE avec useCallback
+  // Fonction de traduction optimisée
   const t = useCallback((key: string, variables?: Record<string, string | number>): string => {
+    if (isLoading) {
+      return key; // Retourne la clé en attendant le chargement
+    }
+
     try {
-      // Extraire le message selon le namespace et la clé
       let message: any = currentMessages;
       
       if (namespace) {
-        // Navigation vers le namespace
+        // Valider le namespace
+        if (typeof namespace !== 'string' || namespace.trim() === '') {
+          console.warn(`[useTranslations] Invalid namespace: ${namespace}`);
+          return `Invalid namespace: ${namespace}`;
+        }
+        
         const namespaceParts = namespace.split('.');
         for (const part of namespaceParts) {
           if (message && typeof message === 'object' && part in message) {
             message = message[part];
           } else {
-            console.warn(`[useTranslations] Namespace "${namespace}" non trouvé pour la langue ${currentInterfaceLanguage}`);
+            console.warn(`[useTranslations] Missing namespace part "${part}" in "${namespace}"`);
             return `Missing namespace: ${namespace}`;
           }
         }
       }
       
-      // Navigation vers la clé finale
       const keyParts = key.split('.');
       for (const part of keyParts) {
         if (message && typeof message === 'object' && part in message) {
           message = message[part];
         } else {
-          console.warn(`[useTranslations] Clé "${key}" non trouvée dans le namespace "${namespace || 'root'}" pour la langue ${currentInterfaceLanguage}`);
           return `Missing: ${key}`;
         }
       }
       
       if (typeof message !== 'string') {
-        console.warn(`[useTranslations] La clé "${key}" ne pointe pas vers une chaîne de caractères`);
         return `Invalid: ${key}`;
       }
       
-      // Interpolation des variables si fournies
+      // Interpolation des variables
       if (variables && Object.keys(variables).length > 0) {
         return message.replace(/\{(\w+)\}/g, (match: string, varName: string) => {
           return variables[varName]?.toString() || match;
@@ -83,112 +186,7 @@ export function useTranslations(namespace?: string) {
       console.error('[useTranslations] Erreur:', error);
       return `Error: ${key}`;
     }
-  }, [currentMessages, namespace, currentInterfaceLanguage]);
+  }, [currentMessages, namespace, isLoading]);
 
-  // Fonction pour récupérer des tableaux de traductions
-  const tArray = useCallback((key: string, variables?: Record<string, string | number>): string[] => {
-    try {
-      let message: any = currentMessages;
-      
-      if (namespace) {
-        const namespaceParts = namespace.split('.');
-        for (const part of namespaceParts) {
-          if (message && typeof message === 'object' && part in message) {
-            message = message[part];
-          } else {
-            console.warn(`[useTranslations] Namespace "${namespace}" non trouvé pour la langue ${currentInterfaceLanguage}`);
-            return [];
-          }
-        }
-      }
-      
-      const keyParts = key.split('.');
-      for (const part of keyParts) {
-        if (message && typeof message === 'object' && part in message) {
-          message = message[part];
-        } else {
-          console.warn(`[useTranslations] Clé de tableau "${key}" non trouvée dans le namespace "${namespace || 'root'}" pour la langue ${currentInterfaceLanguage}`);
-          return [];
-        }
-      }
-      
-      if (!Array.isArray(message)) {
-        console.warn(`[useTranslations] La clé "${key}" n'est pas un tableau`);
-        return [];
-      }
-      
-      // Gestion des variables pour chaque élément du tableau
-      if (variables && Object.keys(variables).length > 0) {
-        return message.map((item: any) => {
-          if (typeof item === 'string') {
-            return item.replace(/\{(\w+)\}/g, (match: string, varName: string) => {
-              return variables[varName]?.toString() || match;
-            });
-          }
-          return item;
-        });
-      }
-      
-      return message;
-    } catch (error) {
-      console.error('[useTranslations] Erreur lors de la récupération du tableau:', error);
-      return [];
-    }
-  }, [currentMessages, namespace, currentInterfaceLanguage]);
-
-  // Fonction pour récupérer des objets de traductions
-  const tObject = useCallback((key: string, variables?: Record<string, string | number>): any => {
-    try {
-      let message: any = currentMessages;
-      
-      if (namespace) {
-        const namespaceParts = namespace.split('.');
-        for (const part of namespaceParts) {
-          if (message && typeof message === 'object' && part in message) {
-            message = message[part];
-          } else {
-            console.warn(`[useTranslations] Namespace "${namespace}" non trouvé pour la langue ${currentInterfaceLanguage}`);
-            return {};
-          }
-        }
-      }
-      
-      const keyParts = key.split('.');
-      for (const part of keyParts) {
-        if (message && typeof message === 'object' && part in message) {
-          message = message[part];
-        } else {
-          console.warn(`[useTranslations] Clé d'objet "${key}" non trouvée dans le namespace "${namespace || 'root'}" pour la langue ${currentInterfaceLanguage}`);
-          return {};
-        }
-      }
-      
-      if (typeof message !== 'object' || Array.isArray(message)) {
-        console.warn(`[useTranslations] La clé "${key}" n'est pas un objet`);
-        return {};
-      }
-      
-      // Gestion des variables pour les propriétés de l'objet
-      if (variables && Object.keys(variables).length > 0) {
-        const result: any = {};
-        for (const [objKey, objValue] of Object.entries(message)) {
-          if (typeof objValue === 'string') {
-            result[objKey] = objValue.replace(/\{(\w+)\}/g, (match: string, varName: string) => {
-              return variables[varName]?.toString() || match;
-            });
-          } else {
-            result[objKey] = objValue;
-          }
-        }
-        return result;
-      }
-      
-      return message;
-    } catch (error) {
-      console.error('[useTranslations] Erreur lors de la récupération de l\'objet:', error);
-      return {};
-    }
-  }, [currentMessages, namespace, currentInterfaceLanguage]);
-
-  return { t, tArray, tObject };
+  return { t, isLoading };
 }

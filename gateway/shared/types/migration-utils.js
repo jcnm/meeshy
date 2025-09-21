@@ -140,6 +140,7 @@ function normalizeMessage(rawMessage) {
         timestamp: new Date(rawMessage.createdAt || rawMessage.timestamp),
         sender: rawMessage.sender || rawMessage.anonymousSender,
         anonymousSender: rawMessage.anonymousSender,
+        translations: rawMessage.translations || [],
         replyTo: rawMessage.replyTo ? normalizeMessage(rawMessage.replyTo) : undefined
     };
     return normalizedMessage;
@@ -154,26 +155,17 @@ function normalizeConversation(rawConversation) {
         identifier: rawConversation.identifier,
         type: rawConversation.type || 'direct',
         title: rawConversation.title,
-        name: rawConversation.name || rawConversation.title,
         description: rawConversation.description,
-        image: rawConversation.image,
-        avatar: rawConversation.avatar,
-        communityId: rawConversation.communityId,
-        isActive: Boolean(rawConversation.isActive ?? true),
-        isArchived: Boolean(rawConversation.isArchived),
-        isGroup: Boolean(rawConversation.isGroup || rawConversation.type === 'group'),
-        isPrivate: Boolean(rawConversation.isPrivate),
-        lastMessageAt: new Date(rawConversation.lastMessageAt || rawConversation.updatedAt),
+        status: rawConversation.status || 'active',
+        visibility: rawConversation.visibility || 'private',
         lastMessage: rawConversation.lastMessage ? normalizeMessage(rawConversation.lastMessage) : undefined,
+        messageCount: Number(rawConversation.messageCount || 0),
+        unreadCount: Number(rawConversation.unreadCount || 0),
+        participants: Array.isArray(rawConversation.participants) ? rawConversation.participants : [],
         createdAt: new Date(rawConversation.createdAt),
         updatedAt: new Date(rawConversation.updatedAt),
-        participants: Array.isArray(rawConversation.participants) ? rawConversation.participants : [],
-        unreadCount: Number(rawConversation.unreadCount || 0),
-        // Champs additionnels pour compatibilité
-        messages: Array.isArray(rawConversation.messages) ? rawConversation.messages.map(normalizeMessage) : undefined,
-        groupId: rawConversation.groupId,
-        maxMembers: rawConversation.maxMembers,
-        linkId: rawConversation.linkId
+        lastActivityAt: rawConversation.lastActivityAt ? new Date(rawConversation.lastActivityAt) : undefined,
+        createdBy: rawConversation.createdBy
     };
     return normalizedConversation;
 }

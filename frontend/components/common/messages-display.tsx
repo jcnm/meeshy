@@ -1,10 +1,11 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { MessageSquare } from 'lucide-react';
 import { BubbleMessage } from './bubble-message';
 import { messageTranslationService } from '@/services/message-translation.service';
+import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import type { User, Message, MessageWithTranslations } from '@shared/types';
 
 interface MessagesDisplayProps {
@@ -16,23 +17,23 @@ interface MessagesDisplayProps {
   usedLanguages: string[];
   emptyStateMessage?: string;
   emptyStateDescription?: string;
-  reverseOrder?: boolean; // Pour stream mode (nouveaux messages en haut)
+  reverseOrder?: boolean;
   className?: string;
   onTranslation?: (messageId: string, translations: any[]) => void;
   onEditMessage?: (messageId: string, newContent: string) => Promise<void>;
   onDeleteMessage?: (messageId: string) => Promise<void>;
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
-  conversationId?: string;
-  // Nouvelles props pour gérer l'état des traductions en cours
+  
+  // Additional props for unified handling
   addTranslatingState?: (messageId: string, targetLanguage: string) => void;
   isTranslating?: (messageId: string, targetLanguage: string) => boolean;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
 }
 
-/**
- * Composant factorized pour afficher une liste de messages avec traductions
- * Utilisable dans BubbleStreamPage, ConversationLayoutResponsive et autres
- */
 export function MessagesDisplay({
   messages,
   translatedMessages,
@@ -49,212 +50,291 @@ export function MessagesDisplay({
   onDeleteMessage,
   conversationType = 'direct',
   userRole = 'USER',
-  conversationId,
   addTranslatingState,
-  isTranslating
+  isTranslating,
+  containerRef,
+  onLoadMore,
+  hasMore = false,
+  isLoadingMore = false
 }: MessagesDisplayProps) {
 
-  // TOUS LES HOOKS DOIVENT ÊTRE EN HAUT (avant tout return conditionnel)
-  
-  // 🔍 DEBUG: Logs pour comprendre le problème d'affichage
-  console.log('[MESSAGES_DISPLAY] 🔍 Props reçues:', {
-    messagesLength: messages.length,
-    translatedMessagesLength: translatedMessages.length,
-    isLoadingMessages,
-    currentUser: {
-      id: currentUser?.id,
-      username: currentUser?.username,
-      fullObject: currentUser
-    },
-    userLanguage,
-    reverseOrder,
-    conversationId
-  });
-  console.log('[MESSAGES_DISPLAY] 🔍 Messages bruts:', messages.map(m => ({ id: m.id, content: m.content?.substring(0, 30) + '...' })));
-  console.log('[MESSAGES_DISPLAY] 🔍 Messages traduits:', translatedMessages.map(m => ({ id: m.id, content: m.content?.substring(0, 30) + '...' })));
-  
-  // Fonction pour forcer la traduction d'un message
+  // Hook pour fixer les z-index des popovers Radix UI
+  useFixRadixZIndex();
+
+  // États pour contrôler l'affichage des messages depuis le parent
+  const [messageDisplayStates, setMessageDisplayStates] = useState<Record<string, {
+    currentDisplayLanguage: string;
+    isTranslating: boolean;
+    translationError?: string;
+  }>>({});
+
+  // États des traductions en cours (fallback si pas fourni par le parent)
+  const [localTranslatingStates, setLocalTranslatingStates] = useState<Set<string>>(new Set());
+
+  // Fonction pour déterminer la langue d'affichage préférée pour un message
+  const getPreferredDisplayLanguage = useCallback((message: any): string => {
+    // Si le message est dans la langue de l'utilisateur, l'afficher tel quel
+    if (message.originalLanguage === userLanguage) {
+      return message.originalLanguage;
+    }
+    
+    // Chercher une traduction dans la langue de l'utilisateur
+    const userLanguageTranslation = message.translations?.find((t: any) => 
+      (t.language || t.targetLanguage) === userLanguage
+    );
+    
+    if (userLanguageTranslation) {
+      console.log(`🌐 [AUTO-TRANSLATION] Traduction trouvée pour ${message.id} en ${userLanguage}`);
+      return userLanguage;
+    }
+    
+    // Sinon, afficher dans la langue originale
+    return message.originalLanguage || 'fr';
+  }, [userLanguage]);
+
+  // Initialiser l'état d'affichage pour les nouveaux messages
+  const initializeMessageState = useCallback((messageId: string, originalLanguage: string, message?: any) => {
+    if (!messageDisplayStates[messageId]) {
+      const preferredLanguage = message ? getPreferredDisplayLanguage(message) : originalLanguage;
+      
+      setMessageDisplayStates(prev => ({
+        ...prev,
+        [messageId]: {
+          currentDisplayLanguage: preferredLanguage,
+          isTranslating: false
+        }
+      }));
+      
+      if (preferredLanguage !== originalLanguage) {
+        console.log(`🎯 [AUTO-TRANSLATION] Message ${messageId} initialisé en ${preferredLanguage} au lieu de ${originalLanguage}`);
+      }
+    }
+  }, [messageDisplayStates, getPreferredDisplayLanguage]);
+
+  // Fonction pour forcer la traduction
   const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string) => {
     try {
-      console.log('Forcer la traduction:', { messageId, targetLanguage });
-      
-      // Récupérer la langue source du message
+      // Marquer comme en cours de traduction
+      setMessageDisplayStates(prev => ({
+        ...prev,
+        [messageId]: {
+          ...prev[messageId],
+          isTranslating: true,
+          translationError: undefined
+        }
+      }));
+
+      // Utiliser le callback du parent si disponible, sinon gérer localement
+      if (addTranslatingState) {
+        addTranslatingState(messageId, targetLanguage);
+      } else {
+        setLocalTranslatingStates(prev => new Set(prev).add(`${messageId}-${targetLanguage}`));
+      }
+
       const message = messages.find(m => m.id === messageId);
       const sourceLanguage = message?.originalLanguage || 'fr';
-      
-      console.log('Détails de la traduction forcée:', {
-        messageId,
-        targetLanguage,
-        sourceLanguage,
-        messageFound: !!message,
-        messageContent: message?.content?.substring(0, 50) + '...'
-      });
 
-      // CORRECTION: Utiliser la logique de progression des modèles
-      // Trouver la traduction existante pour déterminer le modèle actuel
-      const existingTranslation = (message as any)?.translations?.find((t: any) => 
-        t.language === targetLanguage && t.status === 'completed'
-      );
-      
-      const currentModel = existingTranslation?.model || 'basic';
-      const tiers = ['basic', 'medium', 'premium'];
-      const currentIndex = tiers.indexOf(currentModel);
-      const nextModel = currentIndex < tiers.length - 1 ? tiers[currentIndex + 1] : 'premium';
-      
-      console.log(`🔄 Progression modèle: ${currentModel} → ${nextModel}`);
-      
       const result = await messageTranslationService.requestTranslation({
         messageId,
         targetLanguage,
         sourceLanguage,
-        model: nextModel as 'basic' | 'medium' | 'premium'
+        model: 'basic'
       });
-      
-      console.log('✅ Traduction forcée demandée:', result);
-      console.log(`🔄 Retraduction en cours avec modèle ${nextModel}...`);
-      
-      // CORRECTION: Utiliser l'état persistant pour les traductions en cours
-      if (addTranslatingState) {
-        addTranslatingState(messageId, targetLanguage);
-        console.log(`🔄 État de traduction ajouté pour ${messageId} → ${targetLanguage}`);
-      }
-      
-      // Créer une traduction avec le statut 'translating' pour déclencher l'icône qui scintille
+
+      // Notification de succès
+      toast.success(`Traduction vers ${targetLanguage} demandée`);
+
+      // Simuler la réception de traduction si onTranslation est fourni
       if (onTranslation) {
-        const translatingState = {
-          language: targetLanguage,
-          content: '', // Contenu vide pendant la traduction
-          status: 'translating' as const,
-          timestamp: new Date(),
-          confidence: 0.0, // Pas de confiance car pas encore traduit
-          model: nextModel as 'basic' | 'medium' | 'premium'
-        };
-        
-        console.log('🔄 Création état de traduction en cours:', translatingState);
-        onTranslation(messageId, [translatingState]);
+        setTimeout(() => {
+          onTranslation(messageId, [{
+            id: `trans-${messageId}-${targetLanguage}`,
+            messageId,
+            targetLanguage,
+            translatedContent: result.translationId ? 'Translation in progress...' : 'Translation requested',
+            sourceLanguage,
+            translationModel: 'basic' as const,
+            cacheKey: '',
+            confidenceScore: 0.95,
+            createdAt: new Date(),
+            cached: false
+          }]);
+          
+          // Arrêter l'état de traduction
+          setMessageDisplayStates(prev => ({
+            ...prev,
+            [messageId]: {
+              ...prev[messageId],
+              isTranslating: false
+            }
+          }));
+        }, 1000);
       }
+
     } catch (error) {
-      console.error('❌ Erreur traduction forcée:', error);
+      console.error('Erreur traduction forcée:', error);
+      
+      // Marquer l'erreur
+      setMessageDisplayStates(prev => ({
+        ...prev,
+        [messageId]: {
+          ...prev[messageId],
+          isTranslating: false,
+          translationError: 'Erreur lors de la traduction'
+        }
+      }));
+
+      // Nettoyer l'état local
+      if (!addTranslatingState) {
+        setLocalTranslatingStates(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(`${messageId}-${targetLanguage}`);
+          return newSet;
+        });
+      }
+
       toast.error('Erreur lors de la demande de traduction');
     }
-  }, [messages, onTranslation]);
+  }, [messages, addTranslatingState, onTranslation]);
 
-  // Normaliser les messages pour s'assurer qu'ils ont tous une originalLanguage
-  const normalizedMessages = useMemo(() => {
-    return messages.map(message => ({
-      ...message,
-      originalLanguage: message.originalLanguage || 'fr'
+  // Gérer le changement de langue d'affichage
+  const handleLanguageSwitch = useCallback((messageId: string, language: string) => {
+    setMessageDisplayStates(prev => ({
+      ...prev,
+      [messageId]: {
+        ...prev[messageId],
+        currentDisplayLanguage: language
+      }
     }));
-  }, [messages]);
+  }, []);
 
-  const normalizedTranslatedMessages = useMemo(() => {
-    return translatedMessages.map(message => ({
-      ...message,
-      originalLanguage: message.originalLanguage || 'fr'
-    }));
-  }, [translatedMessages]);
-
-  // Choisir les messages à afficher et l'ordre (mémorisé)
-  const messagesToDisplay = useMemo(() => {
-    return normalizedTranslatedMessages.length > 0 ? normalizedTranslatedMessages : normalizedMessages;
-  }, [normalizedTranslatedMessages, normalizedMessages]);
-
-  const orderedMessages = useMemo(() => {
-    return reverseOrder ? [...messagesToDisplay].reverse() : messagesToDisplay;
-  }, [messagesToDisplay, reverseOrder]);
-
-  // MAINTENANT on peut faire les returns conditionnels
-  
-  // État de chargement - seulement si on n'a pas encore de messages
-  if (isLoadingMessages && messages.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Chargement des messages...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // État vide
-  if (translatedMessages.length === 0 && messages.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          {emptyStateMessage}
-        </h3>
-        <p className="text-gray-500">
-          {emptyStateDescription}
-        </p>
-      </div>
-    );
-  }
-
-  // Debug: Vérifier les traductions dans les messages à afficher (conditionné)
-  if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEBUG_MESSAGES === 'true') {
-    console.log('🔍 [MessagesDisplay] Messages à afficher:', {
-      totalMessages: messagesToDisplay.length,
-      usingTranslatedMessages: translatedMessages.length > 0,
-      firstMessageTranslations: (messagesToDisplay[0] as any)?.translations?.length || 0
-    });
-
-    if (messagesToDisplay.length > 0 && (messagesToDisplay[0] as any)?.translations) {
-      console.log('🌐 [MessagesDisplay] Premier message - traductions:', (messagesToDisplay[0] as any).translations);
+  // Fonction pour vérifier si un message est en cours de traduction
+  const checkIsTranslating = useCallback((messageId: string, targetLanguage: string): boolean => {
+    if (isTranslating) {
+      return isTranslating(messageId, targetLanguage);
     }
+    return localTranslatingStates.has(`${messageId}-${targetLanguage}`);
+  }, [isTranslating, localTranslatingStates]);
+
+  // Messages à afficher - transformer les messages pour BubbleMessage
+  const displayMessages = useMemo(() => {
+    const messagesToUse = translatedMessages.length > 0 ? translatedMessages : messages;
+    
+    // Transform messages to match BubbleMessage expected format
+    const transformedMessages = messagesToUse.map(message => ({
+      ...message,
+      originalContent: message.content, // BubbleMessage expects originalContent
+      originalLanguage: message.originalLanguage || 'fr', // Ensure originalLanguage exists
+      translations: message.translations || [], // Ensure translations array exists
+      readStatus: (message as any).status || [] // Map status to readStatus
+    }));
+    
+    return reverseOrder ? [...transformedMessages].reverse() : transformedMessages;
+  }, [messages, translatedMessages, reverseOrder]);
+
+  // Effet pour détecter les nouvelles traductions et changer automatiquement l'affichage
+  useEffect(() => {
+    const messagesToUpdate: { [messageId: string]: string } = {};
+    
+    // Parcourir tous les messages pour voir si de nouvelles traductions sont disponibles
+    displayMessages.forEach(message => {
+      const currentState = messageDisplayStates[message.id];
+      if (!currentState) return;
+      
+      // Si le message n'est pas dans la langue utilisateur et qu'une traduction est disponible
+      if (message.originalLanguage !== userLanguage) {
+        const userLanguageTranslation = message.translations?.find((t: any) => 
+          (t.language || t.targetLanguage) === userLanguage
+        );
+        
+        // Si une traduction dans la langue utilisateur est disponible et qu'on ne l'affiche pas encore
+        if (userLanguageTranslation && currentState.currentDisplayLanguage !== userLanguage) {
+          console.log(`🔄 [AUTO-TRANSLATION] Nouvelle traduction détectée pour ${message.id} en ${userLanguage}`);
+          messagesToUpdate[message.id] = userLanguage;
+        }
+      }
+    });
+    
+    // Mettre à jour tous les messages qui ont de nouvelles traductions
+    if (Object.keys(messagesToUpdate).length > 0) {
+      console.log(`🎯 [AUTO-TRANSLATION] Mise à jour automatique de ${Object.keys(messagesToUpdate).length} messages`);
+      
+      setMessageDisplayStates(prev => {
+        const newState = { ...prev };
+        Object.entries(messagesToUpdate).forEach(([messageId, language]) => {
+          newState[messageId] = {
+            ...prev[messageId],
+            currentDisplayLanguage: language
+          };
+        });
+        return newState;
+      });
+    }
+  }, [displayMessages, messageDisplayStates, userLanguage]);
+
+  if (isLoadingMessages && displayMessages.length === 0) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
-  // 🔍 DEBUG: Vérifier le processus de rendu
-  console.log('🎯 [MessagesDisplay] Processus de rendu:', {
-    messagesToDisplay: messagesToDisplay.length,
-    orderedMessages: orderedMessages.length,
-    filteredMessages: orderedMessages.filter(message => message && message.id).length,
-    currentUserId: currentUser.id,
-    className
-  });
-
-  const filteredMessages = orderedMessages.filter(message => message && message.id);
-  console.log('🔍 [MessagesDisplay] Messages après filtrage:', filteredMessages.map(m => ({ id: m.id, senderId: m.senderId, content: m.content?.substring(0, 30) })));
+  if (!displayMessages.length) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-medium mb-2">{emptyStateMessage}</h3>
+        <p className="text-sm text-muted-foreground">{emptyStateDescription}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className={className}>
-      {filteredMessages.map((message) => {
-          const isOwnMessage = message.senderId === currentUser.id;
-          console.log('🎯 [MessagesDisplay] Rendu message dans map:', {
-            messageId: message.id,
-            senderId: message.senderId,
-            currentUserId: currentUser.id,
-            isOwnMessage,
-            content: message.content?.substring(0, 30)
-          });
-          
-          return (
-            <div 
-              key={`message-container-${message.id}`}
-              className={`w-full flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-4`}
-            >
-              <div className={`${isOwnMessage ? 'ml-[8%]' : 'mr-[8%]'} w-[92%] max-w-[92%]`}>
-                <BubbleMessage
-                  key={`message-${message.id}`}
-                  message={message as any}
-                  currentUser={currentUser}
-                  userLanguage={userLanguage}
-                  usedLanguages={usedLanguages}
-                  onForceTranslation={handleForceTranslation}
-                  onEditMessage={onEditMessage}
-                  onDeleteMessage={onDeleteMessage}
-                  conversationType={conversationType}
-                  userRole={userRole}
-                  isTranslating={isTranslating}
-                />
-              </div>
-            </div>
-          );
-        })}
-      
-      {/* Espace supplémentaire pour éviter que le dernier message soit caché par la zone de saisie */}
-      <div className="h-12" />
+    <div className={`${className} bubble-message-container`}>
+      {/* Load more button for infinite scroll */}
+      {hasMore && onLoadMore && (
+        <div className="flex justify-center py-4">
+          <button
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
+          >
+            {isLoadingMore ? 'Loading...' : 'Load more messages'}
+          </button>
+        </div>
+      )}
+
+      {displayMessages.map((message) => {
+        // Initialiser l'état du message
+        if (!messageDisplayStates[message.id]) {
+          initializeMessageState(message.id, message.originalLanguage, message);
+        }
+
+        const state = messageDisplayStates[message.id] || {
+          currentDisplayLanguage: message.originalLanguage,
+          isTranslating: false
+        };
+
+        return (
+          <BubbleMessage
+            key={message.id}
+            message={message as any}
+            currentUser={currentUser}
+            userLanguage={userLanguage}
+            usedLanguages={usedLanguages}
+            onForceTranslation={handleForceTranslation}
+            onEditMessage={onEditMessage}
+            onDeleteMessage={onDeleteMessage}
+            onLanguageSwitch={handleLanguageSwitch}
+            currentDisplayLanguage={state.currentDisplayLanguage}
+            isTranslating={state.isTranslating || checkIsTranslating(message.id, state.currentDisplayLanguage)}
+            translationError={state.translationError}
+            conversationType={conversationType}
+            userRole={userRole}
+          />
+        );
+      })}
     </div>
   );
 }

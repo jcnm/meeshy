@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
 import { useTranslations } from '@/hooks/useTranslations';

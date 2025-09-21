@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useAuth } from '@/hooks/use-auth';
 
 interface DashboardLayoutProps {
@@ -40,19 +40,30 @@ interface DashboardLayoutProps {
   title?: string;
   hideSearch?: boolean;
   className?: string;
+  hideHeaderOnMobile?: boolean;
 }
 
 export function DashboardLayout({ 
   children, 
   title,
   hideSearch = false,
-  className = ""
+  className = "",
+  hideHeaderOnMobile = false
 }: DashboardLayoutProps) {
   const router = useRouter();
   const { user, isAuthChecking } = useUser();
   const { logout } = useAuth();
   const { t } = useTranslations('layout');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Gérer l'état de chargement basé sur l'utilisateur du hook
   useEffect(() => {
@@ -120,8 +131,9 @@ export function DashboardLayout({
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 ${className}`}>
-      {/* Header fixe */}
-      <header className="fixed top-0 left-0 right-0 z-[50] bg-white shadow-sm border-b">
+      {/* Header fixe - masqué sur mobile si demandé */}
+      {!(isMobile && hideHeaderOnMobile) && (
+        <header className="fixed top-0 left-0 right-0 z-[50] bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo et titre */}
@@ -244,10 +256,13 @@ export function DashboardLayout({
             </div>
           </div>
         </div>
-      </header>
+        </header>
+      )}
 
-      {/* Contenu principal avec padding-top pour compenser le header fixe */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 h-screen">
+      {/* Contenu principal avec padding-top conditionnel */}
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen ${
+        !(isMobile && hideHeaderOnMobile) ? 'pt-16' : 'pt-0'
+      }`}>
         <div className="h-full pt-2">
           {children}
         </div>

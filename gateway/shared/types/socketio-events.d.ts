@@ -206,6 +206,7 @@ export interface TranslationEvent {
     translations: TranslationData[];
 }
 export interface TranslationData {
+    id: string;
     messageId: string;
     sourceLanguage: string;
     targetLanguage: string;

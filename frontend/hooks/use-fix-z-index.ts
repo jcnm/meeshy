@@ -14,12 +14,12 @@ export function useFixRadixZIndex() {
       // Popovers
       const popoverWrappers = document.querySelectorAll('[data-radix-popper-content-wrapper]');
       popoverWrappers.forEach((element) => {
-        (element as HTMLElement).style.zIndex = Z_INDEX.POPOVER.toString();
+        (element as HTMLElement).style.zIndex = Z_INDEX.MAX.toString();
       });
 
       const popoverContents = document.querySelectorAll('[data-radix-popover-content]');
       popoverContents.forEach((element) => {
-        (element as HTMLElement).style.zIndex = Z_INDEX.POPOVER.toString();
+        (element as HTMLElement).style.zIndex = Z_INDEX.MAX.toString();
       });
 
       // Dropdown Menus
@@ -97,11 +97,17 @@ export function useFixTranslationPopoverZIndex() {
       
       translationPopovers.forEach((element) => {
         const htmlElement = element as HTMLElement;
-        htmlElement.style.zIndex = Z_INDEX.TRANSLATION_POPOVER.toString();
+        htmlElement.style.zIndex = Z_INDEX.MAX.toString();
         htmlElement.style.position = 'fixed'; // S'assurer que le positionnement est correct
         
         // Ajouter une classe pour identification
         htmlElement.classList.add('translation-popover');
+      });
+
+      // Aussi forcer les wrappers
+      const translationWrappers = document.querySelectorAll('.bubble-message [data-radix-popper-content-wrapper]');
+      translationWrappers.forEach((element) => {
+        (element as HTMLElement).style.zIndex = Z_INDEX.MAX.toString();
       });
 
       console.log(`🌐 ${translationPopovers.length} popovers de traduction fixés`);

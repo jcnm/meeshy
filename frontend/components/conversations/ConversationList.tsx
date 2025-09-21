@@ -423,12 +423,13 @@ export function ConversationList({
                         key={`public-${conversation.id}`}
                         onClick={() => {
                           debugConversationData(conversation);
+                          console.log(`[CONVERSATION_LIST] Sélection: ${conversation.id}, Actuelle: ${selectedConversation?.id}, Match: ${selectedConversation?.id === conversation.id}`);
                           onSelectConversation(conversation);
                         }}
                         className={cn(
                           "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2 conversation-list-item mobile-compact",
                           selectedConversation?.id === conversation.id
-                            ? "bg-primary/20 border-primary/40 shadow-md"
+                            ? "bg-primary/20 border-primary/40 shadow-md ring-2 ring-primary/20"
                             : "hover:bg-accent/50 border-transparent hover:border-border/30"
                         )}
                       >
@@ -504,12 +505,13 @@ export function ConversationList({
                         key={`private-${conversation.id}`}
                         onClick={() => {
                           debugConversationData(conversation);
+                          console.log(`[CONVERSATION_LIST] Sélection: ${conversation.id}, Actuelle: ${selectedConversation?.id}, Match: ${selectedConversation?.id === conversation.id}`);
                           onSelectConversation(conversation);
                         }}
                         className={cn(
                           "flex items-center p-4 rounded-2xl cursor-pointer transition-all border-2 conversation-list-item mobile-compact",
                           selectedConversation?.id === conversation.id
-                            ? "bg-primary/20 border-primary/40 shadow-md"
+                            ? "bg-primary/20 border-primary/40 shadow-md ring-2 ring-primary/20"
                             : "hover:bg-accent/50 border-transparent hover:border-border/30"
                         )}
                       >

@@ -30,7 +30,7 @@ import { ShareAffiliateButton } from '@/components/affiliate/share-affiliate-but
 import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { User, Conversation } from '@/types';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { dashboardService, type DashboardData } from '@/services/dashboard.service';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';

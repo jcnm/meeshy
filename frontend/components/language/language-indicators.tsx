@@ -1,8 +1,8 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { getLanguageInfo } from '@/lib/constants/languages';
-import type { LanguageStats } from '@/lib/constants/languages';
+import { getLanguageInfo } from '@shared/types';
+import type { LanguageStats } from '@shared/types';
 
 /**
  * Composant pour afficher les indicateurs de langues

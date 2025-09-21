@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useAuth } from '@/hooks/use-auth';
 import { AuthGuard } from '@/components/auth';
 import { Button } from '@/components/ui/button';

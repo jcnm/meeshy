@@ -30,9 +30,13 @@ import { adminRoutes } from './routes/admin';
 import { userRoutes } from './routes/users';
 import userPreferencesRoutes from './routes/user-preferences';
 import { translationRoutes } from './routes/translation-non-blocking';
+import { translationRoutes as translationBlockingRoutes } from './routes/translation';
 import { maintenanceRoutes } from './routes/maintenance';
 import { authTestRoutes } from './routes/auth-test';
 import affiliateRoutes from './routes/affiliate';
+import messageRoutes from './routes/messages';
+import { notificationRoutes } from './routes/notifications';
+import { friendRequestRoutes } from './routes/friends';
 import { InitService } from './services/init.service';
 import { MeeshySocketIOHandler } from './socketio/MeeshySocketIOHandler';
 
@@ -439,19 +443,20 @@ class MeeshyServer {
       };
     });
 
-    // Register translation routes with the translation service
+        // Register translation routes with the translation service
     await this.server.register(async (fastify) => {
-      // Attacher le service de traduction à l'instance fastify
-      (fastify as any).translationService = this.translationService;
+      // Décorer le serveur avec le service de traduction et messaging
+      fastify.decorate('translationService', this.translationService);
+      fastify.decorate('messagingService', this.messagingService);
       
-      // Attacher le service de messaging à l'instance fastify
-      (fastify as any).messagingService = this.messagingService;
-      
-      // Enregistrer les routes de traduction
+      // Enregistrer les routes de traduction (non-blocking)
       await fastify.register(translationRoutes);
+      
+      // Enregistrer les routes de traduction (blocking)
+      await fastify.register(translationBlockingRoutes);
     }, { prefix: '/api' });
     
-    // Register authentication routes with /api prefix
+    // Register authentication routes with /api/auth prefix
     await this.server.register(authRoutes, { prefix: '/api/auth' });
     
     // Register authentication test routes for Phase 3.1.1
@@ -470,7 +475,7 @@ class MeeshyServer {
     // Register community routes
     await this.server.register(communityRoutes, { prefix: '/api' });
     
-    // Register admin routes with /api prefix
+    // Register admin routes with /api/admin prefix
     await this.server.register(adminRoutes, { prefix: '/api/admin' });
 
     
@@ -478,14 +483,23 @@ class MeeshyServer {
     await this.server.register(userRoutes, { prefix: '/api' });
     
     // Register user preferences routes with /api prefix
-    await this.server.register(userPreferencesRoutes, { prefix: '/api/users' });
+    await this.server.register(userPreferencesRoutes, { prefix: '/api' });
     
     // Register affiliate routes
     await this.server.register(affiliateRoutes, { prefix: '/api' });
 
 
     // Register maintenance routes with /api prefix
-    await this.server.register(maintenanceRoutes, { prefix: '/api/maintenance' });
+    await this.server.register(maintenanceRoutes, { prefix: '/api' });
+    
+    // Register message routes with /api prefix
+    await this.server.register(messageRoutes, { prefix: '/api' });
+    
+    // Register notification routes with /api prefix
+    await this.server.register(notificationRoutes, { prefix: '/api' });
+    
+    // Register friend request routes with /api prefix
+    await this.server.register(friendRequestRoutes, { prefix: '/api' });
     
     logger.info('✓ REST API routes configured successfully');
   }

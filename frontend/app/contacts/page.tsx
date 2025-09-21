@@ -39,7 +39,7 @@ import {
 import { User } from '@/types';
 import { usersService, conversationsService, type ParticipantsFilters } from '@/services';
 import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface FriendRequest {

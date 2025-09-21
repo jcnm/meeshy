@@ -41,7 +41,7 @@ import { LinkEditModal } from '@/components/links/link-edit-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
 import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
 import { copyToClipboard } from '@/lib/clipboard';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useRouter } from 'next/navigation';
 
 export default function LinksPage() {

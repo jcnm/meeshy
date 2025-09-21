@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, formatLanguageName } from '@/utils/language-detection';
-import { INTERFACE_LANGUAGES } from '@/types';
+import { INTERFACE_LANGUAGES } from '@/types/frontend';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 
 interface LanguageFlagSelectorProps {

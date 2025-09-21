@@ -25,7 +25,7 @@ export const Z_INDEX = {
   TOOLTIP: 60,
   DROPDOWN_MENU: 65,
   POPOVER: 70,
-  TRANSLATION_POPOVER: 70, // Même niveau que popover standard
+  TRANSLATION_POPOVER: 75, // Plus élevé que popover standard
   
   // Modals: 80-99
   MODAL: 80,

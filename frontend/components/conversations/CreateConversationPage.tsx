@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { CreateConversationModal } from './create-conversation-modal';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';

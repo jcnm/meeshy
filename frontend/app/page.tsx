@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { AnonymousRedirect } from '@/components/auth/AnonymousRedirect';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
@@ -39,14 +40,14 @@ import { JoinConversationForm } from '@/components/auth/join-conversation-form';
 import { BubbleStreamPage } from '@/components/common';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Header } from '@/components/layout/Header';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useAuth } from '@/hooks/use-auth';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { isCurrentUserAnonymous } from '@/utils/auth';
 import { useTranslations } from '@/hooks/useTranslations';
 import Link from 'next/link';
-export default function LandingPage() {
+function LandingPageContent() {
   const { user, isAuthChecking } = useUser();
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
@@ -492,5 +493,13 @@ export default function LandingPage() {
       </footer>
     </div>
     </>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <AnonymousRedirect redirectToChat={true}>
+      <LandingPageContent />
+    </AnonymousRedirect>
   );
 }

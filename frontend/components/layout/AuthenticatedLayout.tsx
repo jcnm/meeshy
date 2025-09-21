@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { LoginForm } from '@/components/auth/login-form';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

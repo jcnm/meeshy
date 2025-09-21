@@ -1,7 +1,6 @@
-import { APP_CONFIG } from '@/lib/config';
+import { buildApiUrl } from '@/lib/config';
 
 interface ApiConfig {
-  baseUrl: string;
   timeout: number;
   headers: Record<string, string>;
 }
@@ -34,8 +33,7 @@ class ApiService {
   private config: ApiConfig;
   constructor(config: Partial<ApiConfig> = {}) {
     this.config = {
-      baseUrl: APP_CONFIG.getBackendUrl(),
-      timeout: 5000, // Increased from 10s to 30s
+      timeout: 5000, // 5 seconds is enough - backend should be fast
       headers: {
         'Content-Type': 'application/json',
       },
@@ -47,7 +45,7 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const url = `${this.config.baseUrl}${endpoint}`;
+    const url = buildApiUrl(endpoint);
     
     // Get token from localStorage
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;

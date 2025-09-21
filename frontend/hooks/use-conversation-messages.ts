@@ -102,7 +102,7 @@ export function useConversationMessages(
       console.log(`[Conversation] 📡 PARAMÈTRES - limit: ${limit}, offset: ${currentOffset}, isLoadMore: ${isLoadMore}`);
 
       const response = await apiService.get<{ success: boolean; data: { messages: Message[] } }>(
-        `/api/conversations/${conversationId}/messages`,
+        `/conversations/${conversationId}/messages`,
         {
           limit: limit.toString(),
           offset: currentOffset.toString()
@@ -111,8 +111,11 @@ export function useConversationMessages(
 
       const data = response.data;
       
-      console.log(`[Conversation] 📡 RÉPONSE API - status: ${response.status}`);
-      console.log(`[Conversation] 📡 RÉPONSE DATA - success: ${data.success}, data structure:`, data);
+      // Log uniquement en cas d'erreur ou en mode développement
+      if (process.env.NODE_ENV === 'development' && (!data.success || response.status !== 200)) {
+        console.log(`[Conversation] 📡 RÉPONSE API - status: ${response.status}`);
+        console.log(`[Conversation] 📡 RÉPONSE DATA - success: ${data.success}, data structure:`, data);
+      }
       
       if (!data.success) {
         throw new Error('Erreur lors du chargement des messages');
@@ -121,34 +124,30 @@ export function useConversationMessages(
       const newMessages = data.data.messages || [];
       const hasMoreMessages = (data.data as any).hasMore || false;
       
-      console.log(`[Conversation] 📡 DONNÉES REÇUES - success: ${data.success}, messages count: ${newMessages.length}, hasMore: ${hasMoreMessages}`);
+      // Log seulement les informations importantes
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Conversation] Messages loaded: ${newMessages.length}, hasMore: ${hasMoreMessages}`);
+      }
 
       if (isLoadMore) {
         // Pour ConversationLayoutResponsive : ajouter les messages plus anciens au début
-        console.log(`[Conversation] 📝 TRAITEMENT loadMore - nouveaux messages: ${newMessages.length}`);
         setMessages(prev => {
           // Éviter les doublons
           const existingIds = new Set(prev.map(m => m.id));
           const uniqueNewMessages = newMessages.filter((m: Message) => !existingIds.has(m.id));
           
-          console.log(`[Conversation] 📝 FILTRAGE DOUBLONS - existants: ${prev.length}, nouveaux: ${newMessages.length}, uniques: ${uniqueNewMessages.length}`);
-          
           if (uniqueNewMessages.length === 0) {
-            console.log('[Conversation] 📝 Aucun nouveau message unique, pas de mise à jour');
             return prev;
           }
           
           // Ajouter les nouveaux messages au début (les plus anciens)
-          const result = [...uniqueNewMessages, ...prev];
-          console.log(`[Conversation] 📝 MISE À JOUR MESSAGES - total: ${result.length}`);
-          return result;
+          return [...uniqueNewMessages, ...prev];
         });
         setOffset(prev => prev + limit);
         offsetRef.current += limit; // Mettre à jour la ref immédiatement
       } else {
         // Premier chargement : garder l'ordre du backend (récents en premier)
         // MessagesDisplay avec reverseOrder=true va inverser pour afficher anciens en haut, récents en bas
-        console.log(`[Conversation] 📝 PREMIER CHARGEMENT - messages: ${newMessages.length}`);
         setMessages(newMessages);
         setOffset(limit);
         offsetRef.current = limit; // Mettre à jour la ref immédiatement
@@ -156,7 +155,10 @@ export function useConversationMessages(
       }
 
       setHasMore(hasMoreMessages);
-      console.log(`[Conversation] ✅ FIN loadMessages - hasMore: ${hasMoreMessages}, total messages: ${messages.length + newMessages.length}`);
+      // Log final seulement en mode développement
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Conversation] Load complete - hasMore: ${hasMoreMessages}, total: ${messages.length + newMessages.length}`);
+      }
 
     } catch (error: any) {
       if (error.name === 'AbortError') {

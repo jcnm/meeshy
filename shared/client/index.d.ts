@@ -49,10 +49,10 @@ export type Message = $Result.DefaultSelection<Prisma.$MessagePayload>
  */
 export type MessageTranslation = $Result.DefaultSelection<Prisma.$MessageTranslationPayload>
 /**
- * Model MessageReadStatus
- * Statut de lecture d'un message par un utilisateur
+ * Model MessageStatus
+ * Statut de reception, lecture ou réponse d'un message par un utilisateur
  */
-export type MessageReadStatus = $Result.DefaultSelection<Prisma.$MessageReadStatusPayload>
+export type MessageStatus = $Result.DefaultSelection<Prisma.$MessageStatusPayload>
 /**
  * Model FriendRequest
  * Demande d'amitié entre utilisateurs
@@ -75,7 +75,7 @@ export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
 export type Community = $Result.DefaultSelection<Prisma.$CommunityPayload>
 /**
  * Model CommunityMember
- * Appartenance aux communautés (legacy)
+ * Appartenance aux communautés 
  */
 export type CommunityMember = $Result.DefaultSelection<Prisma.$CommunityMemberPayload>
 /**
@@ -94,15 +94,15 @@ export type UserPreference = $Result.DefaultSelection<Prisma.$UserPreferencePayl
  */
 export type ConversationPreference = $Result.DefaultSelection<Prisma.$ConversationPreferencePayload>
 /**
- * Model CommunityAdmin
- * Relation many-to-many pour les administrateurs de communauté
+ * Model AffiliateToken
+ * Token d'affiliation pour inviter des utilisateurs
  */
-export type CommunityAdmin = $Result.DefaultSelection<Prisma.$CommunityAdminPayload>
+export type AffiliateToken = $Result.DefaultSelection<Prisma.$AffiliateTokenPayload>
 /**
- * Model CommunityModerator
- * Relation many-to-many pour les modérateurs de communauté
+ * Model AffiliateRelation
+ * Relation d'affiliation entre utilisateurs
  */
-export type CommunityModerator = $Result.DefaultSelection<Prisma.$CommunityModeratorPayload>
+export type AffiliateRelation = $Result.DefaultSelection<Prisma.$AffiliateRelationPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -267,14 +267,14 @@ export class PrismaClient<
   get messageTranslation(): Prisma.MessageTranslationDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.messageReadStatus`: Exposes CRUD operations for the **MessageReadStatus** model.
+   * `prisma.messageStatus`: Exposes CRUD operations for the **MessageStatus** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more MessageReadStatuses
-    * const messageReadStatuses = await prisma.messageReadStatus.findMany()
+    * // Fetch zero or more MessageStatuses
+    * const messageStatuses = await prisma.messageStatus.findMany()
     * ```
     */
-  get messageReadStatus(): Prisma.MessageReadStatusDelegate<ExtArgs, ClientOptions>;
+  get messageStatus(): Prisma.MessageStatusDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.friendRequest`: Exposes CRUD operations for the **FriendRequest** model.
@@ -357,24 +357,24 @@ export class PrismaClient<
   get conversationPreference(): Prisma.ConversationPreferenceDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.communityAdmin`: Exposes CRUD operations for the **CommunityAdmin** model.
+   * `prisma.affiliateToken`: Exposes CRUD operations for the **AffiliateToken** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more CommunityAdmins
-    * const communityAdmins = await prisma.communityAdmin.findMany()
+    * // Fetch zero or more AffiliateTokens
+    * const affiliateTokens = await prisma.affiliateToken.findMany()
     * ```
     */
-  get communityAdmin(): Prisma.CommunityAdminDelegate<ExtArgs, ClientOptions>;
+  get affiliateToken(): Prisma.AffiliateTokenDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.communityModerator`: Exposes CRUD operations for the **CommunityModerator** model.
+   * `prisma.affiliateRelation`: Exposes CRUD operations for the **AffiliateRelation** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more CommunityModerators
-    * const communityModerators = await prisma.communityModerator.findMany()
+    * // Fetch zero or more AffiliateRelations
+    * const affiliateRelations = await prisma.affiliateRelation.findMany()
     * ```
     */
-  get communityModerator(): Prisma.CommunityModeratorDelegate<ExtArgs, ClientOptions>;
+  get affiliateRelation(): Prisma.AffiliateRelationDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -822,7 +822,7 @@ export namespace Prisma {
     AnonymousParticipant: 'AnonymousParticipant',
     Message: 'Message',
     MessageTranslation: 'MessageTranslation',
-    MessageReadStatus: 'MessageReadStatus',
+    MessageStatus: 'MessageStatus',
     FriendRequest: 'FriendRequest',
     TypingIndicator: 'TypingIndicator',
     Notification: 'Notification',
@@ -831,8 +831,8 @@ export namespace Prisma {
     UserStats: 'UserStats',
     UserPreference: 'UserPreference',
     ConversationPreference: 'ConversationPreference',
-    CommunityAdmin: 'CommunityAdmin',
-    CommunityModerator: 'CommunityModerator'
+    AffiliateToken: 'AffiliateToken',
+    AffiliateRelation: 'AffiliateRelation'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -851,7 +851,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageReadStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "communityAdmin" | "communityModerator"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation"
       txIsolationLevel: never
     }
     model: {
@@ -1373,77 +1373,77 @@ export namespace Prisma {
           }
         }
       }
-      MessageReadStatus: {
-        payload: Prisma.$MessageReadStatusPayload<ExtArgs>
-        fields: Prisma.MessageReadStatusFieldRefs
+      MessageStatus: {
+        payload: Prisma.$MessageStatusPayload<ExtArgs>
+        fields: Prisma.MessageStatusFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.MessageReadStatusFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload> | null
+            args: Prisma.MessageStatusFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.MessageReadStatusFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           findFirst: {
-            args: Prisma.MessageReadStatusFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload> | null
+            args: Prisma.MessageStatusFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.MessageReadStatusFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           findMany: {
-            args: Prisma.MessageReadStatusFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>[]
+            args: Prisma.MessageStatusFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>[]
           }
           create: {
-            args: Prisma.MessageReadStatusCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           createMany: {
-            args: Prisma.MessageReadStatusCreateManyArgs<ExtArgs>
+            args: Prisma.MessageStatusCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.MessageReadStatusDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           update: {
-            args: Prisma.MessageReadStatusUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           deleteMany: {
-            args: Prisma.MessageReadStatusDeleteManyArgs<ExtArgs>
+            args: Prisma.MessageStatusDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.MessageReadStatusUpdateManyArgs<ExtArgs>
+            args: Prisma.MessageStatusUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.MessageReadStatusUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MessageReadStatusPayload>
+            args: Prisma.MessageStatusUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageStatusPayload>
           }
           aggregate: {
-            args: Prisma.MessageReadStatusAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateMessageReadStatus>
+            args: Prisma.MessageStatusAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMessageStatus>
           }
           groupBy: {
-            args: Prisma.MessageReadStatusGroupByArgs<ExtArgs>
-            result: $Utils.Optional<MessageReadStatusGroupByOutputType>[]
+            args: Prisma.MessageStatusGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MessageStatusGroupByOutputType>[]
           }
           findRaw: {
-            args: Prisma.MessageReadStatusFindRawArgs<ExtArgs>
+            args: Prisma.MessageStatusFindRawArgs<ExtArgs>
             result: JsonObject
           }
           aggregateRaw: {
-            args: Prisma.MessageReadStatusAggregateRawArgs<ExtArgs>
+            args: Prisma.MessageStatusAggregateRawArgs<ExtArgs>
             result: JsonObject
           }
           count: {
-            args: Prisma.MessageReadStatusCountArgs<ExtArgs>
-            result: $Utils.Optional<MessageReadStatusCountAggregateOutputType> | number
+            args: Prisma.MessageStatusCountArgs<ExtArgs>
+            result: $Utils.Optional<MessageStatusCountAggregateOutputType> | number
           }
         }
       }
@@ -2039,151 +2039,151 @@ export namespace Prisma {
           }
         }
       }
-      CommunityAdmin: {
-        payload: Prisma.$CommunityAdminPayload<ExtArgs>
-        fields: Prisma.CommunityAdminFieldRefs
+      AffiliateToken: {
+        payload: Prisma.$AffiliateTokenPayload<ExtArgs>
+        fields: Prisma.AffiliateTokenFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.CommunityAdminFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload> | null
+            args: Prisma.AffiliateTokenFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.CommunityAdminFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload>
+            args: Prisma.AffiliateTokenFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
           }
           findFirst: {
-            args: Prisma.CommunityAdminFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload> | null
+            args: Prisma.AffiliateTokenFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.CommunityAdminFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload>
+            args: Prisma.AffiliateTokenFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
           }
           findMany: {
-            args: Prisma.CommunityAdminFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload>[]
+            args: Prisma.AffiliateTokenFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>[]
           }
           create: {
-            args: Prisma.CommunityAdminCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload>
+            args: Prisma.AffiliateTokenCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
           }
           createMany: {
-            args: Prisma.CommunityAdminCreateManyArgs<ExtArgs>
+            args: Prisma.AffiliateTokenCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.CommunityAdminDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload>
+            args: Prisma.AffiliateTokenDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
           }
           update: {
-            args: Prisma.CommunityAdminUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload>
+            args: Prisma.AffiliateTokenUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
           }
           deleteMany: {
-            args: Prisma.CommunityAdminDeleteManyArgs<ExtArgs>
+            args: Prisma.AffiliateTokenDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.CommunityAdminUpdateManyArgs<ExtArgs>
+            args: Prisma.AffiliateTokenUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.CommunityAdminUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityAdminPayload>
+            args: Prisma.AffiliateTokenUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateTokenPayload>
           }
           aggregate: {
-            args: Prisma.CommunityAdminAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateCommunityAdmin>
+            args: Prisma.AffiliateTokenAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAffiliateToken>
           }
           groupBy: {
-            args: Prisma.CommunityAdminGroupByArgs<ExtArgs>
-            result: $Utils.Optional<CommunityAdminGroupByOutputType>[]
+            args: Prisma.AffiliateTokenGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateTokenGroupByOutputType>[]
           }
           findRaw: {
-            args: Prisma.CommunityAdminFindRawArgs<ExtArgs>
+            args: Prisma.AffiliateTokenFindRawArgs<ExtArgs>
             result: JsonObject
           }
           aggregateRaw: {
-            args: Prisma.CommunityAdminAggregateRawArgs<ExtArgs>
+            args: Prisma.AffiliateTokenAggregateRawArgs<ExtArgs>
             result: JsonObject
           }
           count: {
-            args: Prisma.CommunityAdminCountArgs<ExtArgs>
-            result: $Utils.Optional<CommunityAdminCountAggregateOutputType> | number
+            args: Prisma.AffiliateTokenCountArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateTokenCountAggregateOutputType> | number
           }
         }
       }
-      CommunityModerator: {
-        payload: Prisma.$CommunityModeratorPayload<ExtArgs>
-        fields: Prisma.CommunityModeratorFieldRefs
+      AffiliateRelation: {
+        payload: Prisma.$AffiliateRelationPayload<ExtArgs>
+        fields: Prisma.AffiliateRelationFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.CommunityModeratorFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload> | null
+            args: Prisma.AffiliateRelationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.CommunityModeratorFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload>
+            args: Prisma.AffiliateRelationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
           }
           findFirst: {
-            args: Prisma.CommunityModeratorFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload> | null
+            args: Prisma.AffiliateRelationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.CommunityModeratorFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload>
+            args: Prisma.AffiliateRelationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
           }
           findMany: {
-            args: Prisma.CommunityModeratorFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload>[]
+            args: Prisma.AffiliateRelationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>[]
           }
           create: {
-            args: Prisma.CommunityModeratorCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload>
+            args: Prisma.AffiliateRelationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
           }
           createMany: {
-            args: Prisma.CommunityModeratorCreateManyArgs<ExtArgs>
+            args: Prisma.AffiliateRelationCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           delete: {
-            args: Prisma.CommunityModeratorDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload>
+            args: Prisma.AffiliateRelationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
           }
           update: {
-            args: Prisma.CommunityModeratorUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload>
+            args: Prisma.AffiliateRelationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
           }
           deleteMany: {
-            args: Prisma.CommunityModeratorDeleteManyArgs<ExtArgs>
+            args: Prisma.AffiliateRelationDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.CommunityModeratorUpdateManyArgs<ExtArgs>
+            args: Prisma.AffiliateRelationUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           upsert: {
-            args: Prisma.CommunityModeratorUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$CommunityModeratorPayload>
+            args: Prisma.AffiliateRelationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AffiliateRelationPayload>
           }
           aggregate: {
-            args: Prisma.CommunityModeratorAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateCommunityModerator>
+            args: Prisma.AffiliateRelationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAffiliateRelation>
           }
           groupBy: {
-            args: Prisma.CommunityModeratorGroupByArgs<ExtArgs>
-            result: $Utils.Optional<CommunityModeratorGroupByOutputType>[]
+            args: Prisma.AffiliateRelationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateRelationGroupByOutputType>[]
           }
           findRaw: {
-            args: Prisma.CommunityModeratorFindRawArgs<ExtArgs>
+            args: Prisma.AffiliateRelationFindRawArgs<ExtArgs>
             result: JsonObject
           }
           aggregateRaw: {
-            args: Prisma.CommunityModeratorAggregateRawArgs<ExtArgs>
+            args: Prisma.AffiliateRelationAggregateRawArgs<ExtArgs>
             result: JsonObject
           }
           count: {
-            args: Prisma.CommunityModeratorCountArgs<ExtArgs>
-            result: $Utils.Optional<CommunityModeratorCountAggregateOutputType> | number
+            args: Prisma.AffiliateRelationCountArgs<ExtArgs>
+            result: $Utils.Optional<AffiliateRelationCountAggregateOutputType> | number
           }
         }
       }
@@ -2273,7 +2273,7 @@ export namespace Prisma {
     anonymousParticipant?: AnonymousParticipantOmit
     message?: MessageOmit
     messageTranslation?: MessageTranslationOmit
-    messageReadStatus?: MessageReadStatusOmit
+    messageStatus?: MessageStatusOmit
     friendRequest?: FriendRequestOmit
     typingIndicator?: TypingIndicatorOmit
     notification?: NotificationOmit
@@ -2282,8 +2282,8 @@ export namespace Prisma {
     userStats?: UserStatsOmit
     userPreference?: UserPreferenceOmit
     conversationPreference?: ConversationPreferenceOmit
-    communityAdmin?: CommunityAdminOmit
-    communityModerator?: CommunityModeratorOmit
+    affiliateToken?: AffiliateTokenOmit
+    affiliateRelation?: AffiliateRelationOmit
   }
 
   /* Types for Logging */
@@ -2390,13 +2390,14 @@ export namespace Prisma {
     createdShareLinks: number
     receivedFriendRequests: number
     sentFriendRequests: number
-    messageReadStatus: number
+    messageStatus: number
     sentMessages: number
     notifications: number
     typingIndicators: number
     preferences: number
-    communityAdmins: number
-    communityModerators: number
+    createdAffiliateTokens: number
+    affiliateRelations: number
+    referredRelations: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2407,13 +2408,14 @@ export namespace Prisma {
     createdShareLinks?: boolean | UserCountOutputTypeCountCreatedShareLinksArgs
     receivedFriendRequests?: boolean | UserCountOutputTypeCountReceivedFriendRequestsArgs
     sentFriendRequests?: boolean | UserCountOutputTypeCountSentFriendRequestsArgs
-    messageReadStatus?: boolean | UserCountOutputTypeCountMessageReadStatusArgs
+    messageStatus?: boolean | UserCountOutputTypeCountMessageStatusArgs
     sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
     typingIndicators?: boolean | UserCountOutputTypeCountTypingIndicatorsArgs
     preferences?: boolean | UserCountOutputTypeCountPreferencesArgs
-    communityAdmins?: boolean | UserCountOutputTypeCountCommunityAdminsArgs
-    communityModerators?: boolean | UserCountOutputTypeCountCommunityModeratorsArgs
+    createdAffiliateTokens?: boolean | UserCountOutputTypeCountCreatedAffiliateTokensArgs
+    affiliateRelations?: boolean | UserCountOutputTypeCountAffiliateRelationsArgs
+    referredRelations?: boolean | UserCountOutputTypeCountReferredRelationsArgs
   }
 
   // Custom InputTypes
@@ -2479,8 +2481,8 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountMessageReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageReadStatusWhereInput
+  export type UserCountOutputTypeCountMessageStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
   }
 
   /**
@@ -2514,15 +2516,22 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountCommunityAdminsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityAdminWhereInput
+  export type UserCountOutputTypeCountCreatedAffiliateTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateTokenWhereInput
   }
 
   /**
    * UserCountOutputType without action
    */
-  export type UserCountOutputTypeCountCommunityModeratorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityModeratorWhereInput
+  export type UserCountOutputTypeCountAffiliateRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountReferredRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
   }
 
 
@@ -2669,13 +2678,15 @@ export namespace Prisma {
    */
 
   export type MessageCountOutputType = {
-    readStatus: number
+    status: number
+    statusResponses: number
     translations: number
     replies: number
   }
 
   export type MessageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    readStatus?: boolean | MessageCountOutputTypeCountReadStatusArgs
+    status?: boolean | MessageCountOutputTypeCountStatusArgs
+    statusResponses?: boolean | MessageCountOutputTypeCountStatusResponsesArgs
     translations?: boolean | MessageCountOutputTypeCountTranslationsArgs
     replies?: boolean | MessageCountOutputTypeCountRepliesArgs
   }
@@ -2694,8 +2705,15 @@ export namespace Prisma {
   /**
    * MessageCountOutputType without action
    */
-  export type MessageCountOutputTypeCountReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageReadStatusWhereInput
+  export type MessageCountOutputTypeCountStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
+  }
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeCountStatusResponsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
   }
 
   /**
@@ -2719,15 +2737,11 @@ export namespace Prisma {
 
   export type CommunityCountOutputType = {
     members: number
-    admins: number
-    moderators: number
     Conversation: number
   }
 
   export type CommunityCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | CommunityCountOutputTypeCountMembersArgs
-    admins?: boolean | CommunityCountOutputTypeCountAdminsArgs
-    moderators?: boolean | CommunityCountOutputTypeCountModeratorsArgs
     Conversation?: boolean | CommunityCountOutputTypeCountConversationArgs
   }
 
@@ -2752,22 +2766,39 @@ export namespace Prisma {
   /**
    * CommunityCountOutputType without action
    */
-  export type CommunityCountOutputTypeCountAdminsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityAdminWhereInput
-  }
-
-  /**
-   * CommunityCountOutputType without action
-   */
-  export type CommunityCountOutputTypeCountModeratorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityModeratorWhereInput
-  }
-
-  /**
-   * CommunityCountOutputType without action
-   */
   export type CommunityCountOutputTypeCountConversationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ConversationWhereInput
+  }
+
+
+  /**
+   * Count Type AffiliateTokenCountOutputType
+   */
+
+  export type AffiliateTokenCountOutputType = {
+    affiliations: number
+  }
+
+  export type AffiliateTokenCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    affiliations?: boolean | AffiliateTokenCountOutputTypeCountAffiliationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * AffiliateTokenCountOutputType without action
+   */
+  export type AffiliateTokenCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateTokenCountOutputType
+     */
+    select?: AffiliateTokenCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * AffiliateTokenCountOutputType without action
+   */
+  export type AffiliateTokenCountOutputTypeCountAffiliationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
   }
 
 
@@ -2790,6 +2821,7 @@ export namespace Prisma {
     username: string | null
     firstName: string | null
     lastName: string | null
+    bio: string | null
     email: string | null
     phoneNumber: string | null
     password: string | null
@@ -2817,6 +2849,7 @@ export namespace Prisma {
     username: string | null
     firstName: string | null
     lastName: string | null
+    bio: string | null
     email: string | null
     phoneNumber: string | null
     password: string | null
@@ -2844,6 +2877,7 @@ export namespace Prisma {
     username: number
     firstName: number
     lastName: number
+    bio: number
     email: number
     phoneNumber: number
     password: number
@@ -2873,6 +2907,7 @@ export namespace Prisma {
     username?: true
     firstName?: true
     lastName?: true
+    bio?: true
     email?: true
     phoneNumber?: true
     password?: true
@@ -2900,6 +2935,7 @@ export namespace Prisma {
     username?: true
     firstName?: true
     lastName?: true
+    bio?: true
     email?: true
     phoneNumber?: true
     password?: true
@@ -2927,6 +2963,7 @@ export namespace Prisma {
     username?: true
     firstName?: true
     lastName?: true
+    bio?: true
     email?: true
     phoneNumber?: true
     password?: true
@@ -3027,6 +3064,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio: string
     email: string
     phoneNumber: string | null
     password: string
@@ -3071,6 +3109,7 @@ export namespace Prisma {
     username?: boolean
     firstName?: boolean
     lastName?: boolean
+    bio?: boolean
     email?: boolean
     phoneNumber?: boolean
     password?: boolean
@@ -3098,14 +3137,15 @@ export namespace Prisma {
     createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
     receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
     sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
-    messageReadStatus?: boolean | User$messageReadStatusArgs<ExtArgs>
+    messageStatus?: boolean | User$messageStatusArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     preferences?: boolean | User$preferencesArgs<ExtArgs>
     stats?: boolean | User$statsArgs<ExtArgs>
-    communityAdmins?: boolean | User$communityAdminsArgs<ExtArgs>
-    communityModerators?: boolean | User$communityModeratorsArgs<ExtArgs>
+    createdAffiliateTokens?: boolean | User$createdAffiliateTokensArgs<ExtArgs>
+    affiliateRelations?: boolean | User$affiliateRelationsArgs<ExtArgs>
+    referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3116,6 +3156,7 @@ export namespace Prisma {
     username?: boolean
     firstName?: boolean
     lastName?: boolean
+    bio?: boolean
     email?: boolean
     phoneNumber?: boolean
     password?: boolean
@@ -3138,7 +3179,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "firstName" | "lastName" | "email" | "phoneNumber" | "password" | "displayName" | "avatar" | "isOnline" | "lastSeen" | "lastActiveAt" | "systemLanguage" | "regionalLanguage" | "customDestinationLanguage" | "autoTranslateEnabled" | "translateToSystemLanguage" | "translateToRegionalLanguage" | "useCustomDestination" | "role" | "isActive" | "deactivatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "firstName" | "lastName" | "bio" | "email" | "phoneNumber" | "password" | "displayName" | "avatar" | "isOnline" | "lastSeen" | "lastActiveAt" | "systemLanguage" | "regionalLanguage" | "customDestinationLanguage" | "autoTranslateEnabled" | "translateToSystemLanguage" | "translateToRegionalLanguage" | "useCustomDestination" | "role" | "isActive" | "deactivatedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdCommunities?: boolean | User$createdCommunitiesArgs<ExtArgs>
     communityMemberships?: boolean | User$communityMembershipsArgs<ExtArgs>
@@ -3147,14 +3188,15 @@ export namespace Prisma {
     createdShareLinks?: boolean | User$createdShareLinksArgs<ExtArgs>
     receivedFriendRequests?: boolean | User$receivedFriendRequestsArgs<ExtArgs>
     sentFriendRequests?: boolean | User$sentFriendRequestsArgs<ExtArgs>
-    messageReadStatus?: boolean | User$messageReadStatusArgs<ExtArgs>
+    messageStatus?: boolean | User$messageStatusArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     typingIndicators?: boolean | User$typingIndicatorsArgs<ExtArgs>
     preferences?: boolean | User$preferencesArgs<ExtArgs>
     stats?: boolean | User$statsArgs<ExtArgs>
-    communityAdmins?: boolean | User$communityAdminsArgs<ExtArgs>
-    communityModerators?: boolean | User$communityModeratorsArgs<ExtArgs>
+    createdAffiliateTokens?: boolean | User$createdAffiliateTokensArgs<ExtArgs>
+    affiliateRelations?: boolean | User$affiliateRelationsArgs<ExtArgs>
+    referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3168,20 +3210,22 @@ export namespace Prisma {
       createdShareLinks: Prisma.$ConversationShareLinkPayload<ExtArgs>[]
       receivedFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
       sentFriendRequests: Prisma.$FriendRequestPayload<ExtArgs>[]
-      messageReadStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
+      messageStatus: Prisma.$MessageStatusPayload<ExtArgs>[]
       sentMessages: Prisma.$MessagePayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       typingIndicators: Prisma.$TypingIndicatorPayload<ExtArgs>[]
       preferences: Prisma.$UserPreferencePayload<ExtArgs>[]
       stats: Prisma.$UserStatsPayload<ExtArgs> | null
-      communityAdmins: Prisma.$CommunityAdminPayload<ExtArgs>[]
-      communityModerators: Prisma.$CommunityModeratorPayload<ExtArgs>[]
+      createdAffiliateTokens: Prisma.$AffiliateTokenPayload<ExtArgs>[]
+      affiliateRelations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
+      referredRelations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       username: string
       firstName: string
       lastName: string
+      bio: string
       email: string
       phoneNumber: string | null
       password: string
@@ -3575,14 +3619,15 @@ export namespace Prisma {
     createdShareLinks<T extends User$createdShareLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$createdShareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     receivedFriendRequests<T extends User$receivedFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentFriendRequests<T extends User$sentFriendRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$sentFriendRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FriendRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    messageReadStatus<T extends User$messageReadStatusArgs<ExtArgs> = {}>(args?: Subset<T, User$messageReadStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    messageStatus<T extends User$messageStatusArgs<ExtArgs> = {}>(args?: Subset<T, User$messageStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     typingIndicators<T extends User$typingIndicatorsArgs<ExtArgs> = {}>(args?: Subset<T, User$typingIndicatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TypingIndicatorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     preferences<T extends User$preferencesArgs<ExtArgs> = {}>(args?: Subset<T, User$preferencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPreferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stats<T extends User$statsArgs<ExtArgs> = {}>(args?: Subset<T, User$statsArgs<ExtArgs>>): Prisma__UserStatsClient<$Result.GetResult<Prisma.$UserStatsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-    communityAdmins<T extends User$communityAdminsArgs<ExtArgs> = {}>(args?: Subset<T, User$communityAdminsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    communityModerators<T extends User$communityModeratorsArgs<ExtArgs> = {}>(args?: Subset<T, User$communityModeratorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    createdAffiliateTokens<T extends User$createdAffiliateTokensArgs<ExtArgs> = {}>(args?: Subset<T, User$createdAffiliateTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    affiliateRelations<T extends User$affiliateRelationsArgs<ExtArgs> = {}>(args?: Subset<T, User$affiliateRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    referredRelations<T extends User$referredRelationsArgs<ExtArgs> = {}>(args?: Subset<T, User$referredRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3616,6 +3661,7 @@ export namespace Prisma {
     readonly username: FieldRef<"User", 'String'>
     readonly firstName: FieldRef<"User", 'String'>
     readonly lastName: FieldRef<"User", 'String'>
+    readonly bio: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly phoneNumber: FieldRef<"User", 'String'>
     readonly password: FieldRef<"User", 'String'>
@@ -4174,27 +4220,27 @@ export namespace Prisma {
   }
 
   /**
-   * User.messageReadStatus
+   * User.messageStatus
    */
-  export type User$messageReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$messageStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
-    where?: MessageReadStatusWhereInput
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
-    cursor?: MessageReadStatusWhereUniqueInput
+    include?: MessageStatusInclude<ExtArgs> | null
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
+    cursor?: MessageStatusWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
@@ -4313,51 +4359,75 @@ export namespace Prisma {
   }
 
   /**
-   * User.communityAdmins
+   * User.createdAffiliateTokens
    */
-  export type User$communityAdminsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$createdAffiliateTokensArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
-    where?: CommunityAdminWhereInput
-    orderBy?: CommunityAdminOrderByWithRelationInput | CommunityAdminOrderByWithRelationInput[]
-    cursor?: CommunityAdminWhereUniqueInput
+    include?: AffiliateTokenInclude<ExtArgs> | null
+    where?: AffiliateTokenWhereInput
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
+    cursor?: AffiliateTokenWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: CommunityAdminScalarFieldEnum | CommunityAdminScalarFieldEnum[]
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
   }
 
   /**
-   * User.communityModerators
+   * User.affiliateRelations
    */
-  export type User$communityModeratorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$affiliateRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
-    where?: CommunityModeratorWhereInput
-    orderBy?: CommunityModeratorOrderByWithRelationInput | CommunityModeratorOrderByWithRelationInput[]
-    cursor?: CommunityModeratorWhereUniqueInput
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    cursor?: AffiliateRelationWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: CommunityModeratorScalarFieldEnum | CommunityModeratorScalarFieldEnum[]
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * User.referredRelations
+   */
+  export type User$referredRelationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateRelation
+     */
+    select?: AffiliateRelationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateRelation
+     */
+    omit?: AffiliateRelationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    cursor?: AffiliateRelationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
   }
 
   /**
@@ -4661,7 +4731,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       /**
-       * Identifiant lisible par l'homme (ex: "meeshy", "general", "support")
+       * Identifiant lisible par l'homme (ex: "mee_meeshy", "general", "mee_support")
        */
       identifier: string | null
       /**
@@ -7156,7 +7226,7 @@ export namespace Prisma {
       id: string
       linkId: string
       /**
-       * Identifiant lisible par l'homme (ex: "meeshy-public", "support-link")
+       * Identifiant lisible par l'homme (ex: "mshy_meeshy-public", "mshy_support-link")
        */
       identifier: string | null
       conversationId: string
@@ -9440,7 +9510,8 @@ export namespace Prisma {
     replyToId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    status?: boolean | Message$statusArgs<ExtArgs>
+    statusResponses?: boolean | Message$statusResponsesArgs<ExtArgs>
     translations?: boolean | Message$translationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
@@ -9471,7 +9542,8 @@ export namespace Prisma {
 
   export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "senderId" | "anonymousSenderId" | "content" | "originalLanguage" | "messageType" | "isEdited" | "editedAt" | "isDeleted" | "deletedAt" | "replyToId" | "createdAt" | "updatedAt", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    readStatus?: boolean | Message$readStatusArgs<ExtArgs>
+    status?: boolean | Message$statusArgs<ExtArgs>
+    statusResponses?: boolean | Message$statusResponsesArgs<ExtArgs>
     translations?: boolean | Message$translationsArgs<ExtArgs>
     replyTo?: boolean | Message$replyToArgs<ExtArgs>
     replies?: boolean | Message$repliesArgs<ExtArgs>
@@ -9484,7 +9556,8 @@ export namespace Prisma {
   export type $MessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Message"
     objects: {
-      readStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
+      status: Prisma.$MessageStatusPayload<ExtArgs>[]
+      statusResponses: Prisma.$MessageStatusPayload<ExtArgs>[]
       translations: Prisma.$MessageTranslationPayload<ExtArgs>[]
       replyTo: Prisma.$MessagePayload<ExtArgs> | null
       replies: Prisma.$MessagePayload<ExtArgs>[]
@@ -9873,7 +9946,8 @@ export namespace Prisma {
    */
   export interface Prisma__MessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    readStatus<T extends Message$readStatusArgs<ExtArgs> = {}>(args?: Subset<T, Message$readStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    status<T extends Message$statusArgs<ExtArgs> = {}>(args?: Subset<T, Message$statusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    statusResponses<T extends Message$statusResponsesArgs<ExtArgs> = {}>(args?: Subset<T, Message$statusResponsesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     translations<T extends Message$translationsArgs<ExtArgs> = {}>(args?: Subset<T, Message$translationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageTranslationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     replyTo<T extends Message$replyToArgs<ExtArgs> = {}>(args?: Subset<T, Message$replyToArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     replies<T extends Message$repliesArgs<ExtArgs> = {}>(args?: Subset<T, Message$repliesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -10293,27 +10367,51 @@ export namespace Prisma {
   }
 
   /**
-   * Message.readStatus
+   * Message.status
    */
-  export type Message$readStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Message$statusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
-    where?: MessageReadStatusWhereInput
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
-    cursor?: MessageReadStatusWhereUniqueInput
+    include?: MessageStatusInclude<ExtArgs> | null
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
+    cursor?: MessageStatusWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
+  }
+
+  /**
+   * Message.statusResponses
+   */
+  export type Message$statusResponsesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageStatus
+     */
+    select?: MessageStatusSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageStatus
+     */
+    omit?: MessageStatusOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageStatusInclude<ExtArgs> | null
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
+    cursor?: MessageStatusWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
@@ -11498,328 +11596,360 @@ export namespace Prisma {
 
 
   /**
-   * Model MessageReadStatus
+   * Model MessageStatus
    */
 
-  export type AggregateMessageReadStatus = {
-    _count: MessageReadStatusCountAggregateOutputType | null
-    _min: MessageReadStatusMinAggregateOutputType | null
-    _max: MessageReadStatusMaxAggregateOutputType | null
+  export type AggregateMessageStatus = {
+    _count: MessageStatusCountAggregateOutputType | null
+    _min: MessageStatusMinAggregateOutputType | null
+    _max: MessageStatusMaxAggregateOutputType | null
   }
 
-  export type MessageReadStatusMinAggregateOutputType = {
+  export type MessageStatusMinAggregateOutputType = {
     id: string | null
     messageId: string | null
     userId: string | null
+    receivedAt: Date | null
     readAt: Date | null
+    answer: string | null
   }
 
-  export type MessageReadStatusMaxAggregateOutputType = {
+  export type MessageStatusMaxAggregateOutputType = {
     id: string | null
     messageId: string | null
     userId: string | null
+    receivedAt: Date | null
     readAt: Date | null
+    answer: string | null
   }
 
-  export type MessageReadStatusCountAggregateOutputType = {
+  export type MessageStatusCountAggregateOutputType = {
     id: number
     messageId: number
     userId: number
+    receivedAt: number
     readAt: number
+    answer: number
     _all: number
   }
 
 
-  export type MessageReadStatusMinAggregateInputType = {
+  export type MessageStatusMinAggregateInputType = {
     id?: true
     messageId?: true
     userId?: true
+    receivedAt?: true
     readAt?: true
+    answer?: true
   }
 
-  export type MessageReadStatusMaxAggregateInputType = {
+  export type MessageStatusMaxAggregateInputType = {
     id?: true
     messageId?: true
     userId?: true
+    receivedAt?: true
     readAt?: true
+    answer?: true
   }
 
-  export type MessageReadStatusCountAggregateInputType = {
+  export type MessageStatusCountAggregateInputType = {
     id?: true
     messageId?: true
     userId?: true
+    receivedAt?: true
     readAt?: true
+    answer?: true
     _all?: true
   }
 
-  export type MessageReadStatusAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which MessageReadStatus to aggregate.
+     * Filter which MessageStatus to aggregate.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned MessageReadStatuses
+     * Count returned MessageStatuses
     **/
-    _count?: true | MessageReadStatusCountAggregateInputType
+    _count?: true | MessageStatusCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: MessageReadStatusMinAggregateInputType
+    _min?: MessageStatusMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: MessageReadStatusMaxAggregateInputType
+    _max?: MessageStatusMaxAggregateInputType
   }
 
-  export type GetMessageReadStatusAggregateType<T extends MessageReadStatusAggregateArgs> = {
-        [P in keyof T & keyof AggregateMessageReadStatus]: P extends '_count' | 'count'
+  export type GetMessageStatusAggregateType<T extends MessageStatusAggregateArgs> = {
+        [P in keyof T & keyof AggregateMessageStatus]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateMessageReadStatus[P]>
-      : GetScalarType<T[P], AggregateMessageReadStatus[P]>
+        : GetScalarType<T[P], AggregateMessageStatus[P]>
+      : GetScalarType<T[P], AggregateMessageStatus[P]>
   }
 
 
 
 
-  export type MessageReadStatusGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MessageReadStatusWhereInput
-    orderBy?: MessageReadStatusOrderByWithAggregationInput | MessageReadStatusOrderByWithAggregationInput[]
-    by: MessageReadStatusScalarFieldEnum[] | MessageReadStatusScalarFieldEnum
-    having?: MessageReadStatusScalarWhereWithAggregatesInput
+  export type MessageStatusGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageStatusWhereInput
+    orderBy?: MessageStatusOrderByWithAggregationInput | MessageStatusOrderByWithAggregationInput[]
+    by: MessageStatusScalarFieldEnum[] | MessageStatusScalarFieldEnum
+    having?: MessageStatusScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: MessageReadStatusCountAggregateInputType | true
-    _min?: MessageReadStatusMinAggregateInputType
-    _max?: MessageReadStatusMaxAggregateInputType
+    _count?: MessageStatusCountAggregateInputType | true
+    _min?: MessageStatusMinAggregateInputType
+    _max?: MessageStatusMaxAggregateInputType
   }
 
-  export type MessageReadStatusGroupByOutputType = {
+  export type MessageStatusGroupByOutputType = {
     id: string
     messageId: string
     userId: string
-    readAt: Date
-    _count: MessageReadStatusCountAggregateOutputType | null
-    _min: MessageReadStatusMinAggregateOutputType | null
-    _max: MessageReadStatusMaxAggregateOutputType | null
+    receivedAt: Date | null
+    readAt: Date | null
+    answer: string | null
+    _count: MessageStatusCountAggregateOutputType | null
+    _min: MessageStatusMinAggregateOutputType | null
+    _max: MessageStatusMaxAggregateOutputType | null
   }
 
-  type GetMessageReadStatusGroupByPayload<T extends MessageReadStatusGroupByArgs> = Prisma.PrismaPromise<
+  type GetMessageStatusGroupByPayload<T extends MessageStatusGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<MessageReadStatusGroupByOutputType, T['by']> &
+      PickEnumerable<MessageStatusGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof MessageReadStatusGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof MessageStatusGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], MessageReadStatusGroupByOutputType[P]>
-            : GetScalarType<T[P], MessageReadStatusGroupByOutputType[P]>
+              : GetScalarType<T[P], MessageStatusGroupByOutputType[P]>
+            : GetScalarType<T[P], MessageStatusGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type MessageReadStatusSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type MessageStatusSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     messageId?: boolean
     userId?: boolean
+    receivedAt?: boolean
     readAt?: boolean
+    answer?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     message?: boolean | MessageDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["messageReadStatus"]>
+    response?: boolean | MessageStatus$responseArgs<ExtArgs>
+  }, ExtArgs["result"]["messageStatus"]>
 
 
 
-  export type MessageReadStatusSelectScalar = {
+  export type MessageStatusSelectScalar = {
     id?: boolean
     messageId?: boolean
     userId?: boolean
+    receivedAt?: boolean
     readAt?: boolean
+    answer?: boolean
   }
 
-  export type MessageReadStatusOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "userId" | "readAt", ExtArgs["result"]["messageReadStatus"]>
-  export type MessageReadStatusInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "userId" | "receivedAt" | "readAt" | "answer", ExtArgs["result"]["messageStatus"]>
+  export type MessageStatusInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     message?: boolean | MessageDefaultArgs<ExtArgs>
+    response?: boolean | MessageStatus$responseArgs<ExtArgs>
   }
 
-  export type $MessageReadStatusPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "MessageReadStatus"
+  export type $MessageStatusPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MessageStatus"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       message: Prisma.$MessagePayload<ExtArgs>
+      response: Prisma.$MessagePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       messageId: string
       userId: string
-      readAt: Date
-    }, ExtArgs["result"]["messageReadStatus"]>
+      /**
+       * Quand le message a été reçu par l'utilisateur
+       */
+      receivedAt: Date | null
+      /**
+       * Quand le message a été lu par l'utilisateur
+       */
+      readAt: Date | null
+      /**
+       * Last answer to the message by the user
+       */
+      answer: string | null
+    }, ExtArgs["result"]["messageStatus"]>
     composites: {}
   }
 
-  type MessageReadStatusGetPayload<S extends boolean | null | undefined | MessageReadStatusDefaultArgs> = $Result.GetResult<Prisma.$MessageReadStatusPayload, S>
+  type MessageStatusGetPayload<S extends boolean | null | undefined | MessageStatusDefaultArgs> = $Result.GetResult<Prisma.$MessageStatusPayload, S>
 
-  type MessageReadStatusCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<MessageReadStatusFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: MessageReadStatusCountAggregateInputType | true
+  type MessageStatusCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MessageStatusFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MessageStatusCountAggregateInputType | true
     }
 
-  export interface MessageReadStatusDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MessageReadStatus'], meta: { name: 'MessageReadStatus' } }
+  export interface MessageStatusDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MessageStatus'], meta: { name: 'MessageStatus' } }
     /**
-     * Find zero or one MessageReadStatus that matches the filter.
-     * @param {MessageReadStatusFindUniqueArgs} args - Arguments to find a MessageReadStatus
+     * Find zero or one MessageStatus that matches the filter.
+     * @param {MessageStatusFindUniqueArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findUnique({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends MessageReadStatusFindUniqueArgs>(args: SelectSubset<T, MessageReadStatusFindUniqueArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends MessageStatusFindUniqueArgs>(args: SelectSubset<T, MessageStatusFindUniqueArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one MessageReadStatus that matches the filter or throw an error with `error.code='P2025'`
+     * Find one MessageStatus that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {MessageReadStatusFindUniqueOrThrowArgs} args - Arguments to find a MessageReadStatus
+     * @param {MessageStatusFindUniqueOrThrowArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findUniqueOrThrow({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends MessageReadStatusFindUniqueOrThrowArgs>(args: SelectSubset<T, MessageReadStatusFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends MessageStatusFindUniqueOrThrowArgs>(args: SelectSubset<T, MessageStatusFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first MessageReadStatus that matches the filter.
+     * Find the first MessageStatus that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusFindFirstArgs} args - Arguments to find a MessageReadStatus
+     * @param {MessageStatusFindFirstArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findFirst({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends MessageReadStatusFindFirstArgs>(args?: SelectSubset<T, MessageReadStatusFindFirstArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends MessageStatusFindFirstArgs>(args?: SelectSubset<T, MessageStatusFindFirstArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first MessageReadStatus that matches the filter or
+     * Find the first MessageStatus that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusFindFirstOrThrowArgs} args - Arguments to find a MessageReadStatus
+     * @param {MessageStatusFindFirstOrThrowArgs} args - Arguments to find a MessageStatus
      * @example
-     * // Get one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.findFirstOrThrow({
+     * // Get one MessageStatus
+     * const messageStatus = await prisma.messageStatus.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends MessageReadStatusFindFirstOrThrowArgs>(args?: SelectSubset<T, MessageReadStatusFindFirstOrThrowArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends MessageStatusFindFirstOrThrowArgs>(args?: SelectSubset<T, MessageStatusFindFirstOrThrowArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more MessageReadStatuses that matches the filter.
+     * Find zero or more MessageStatuses that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {MessageStatusFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all MessageReadStatuses
-     * const messageReadStatuses = await prisma.messageReadStatus.findMany()
+     * // Get all MessageStatuses
+     * const messageStatuses = await prisma.messageStatus.findMany()
      * 
-     * // Get first 10 MessageReadStatuses
-     * const messageReadStatuses = await prisma.messageReadStatus.findMany({ take: 10 })
+     * // Get first 10 MessageStatuses
+     * const messageStatuses = await prisma.messageStatus.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const messageReadStatusWithIdOnly = await prisma.messageReadStatus.findMany({ select: { id: true } })
+     * const messageStatusWithIdOnly = await prisma.messageStatus.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends MessageReadStatusFindManyArgs>(args?: SelectSubset<T, MessageReadStatusFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends MessageStatusFindManyArgs>(args?: SelectSubset<T, MessageStatusFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a MessageReadStatus.
-     * @param {MessageReadStatusCreateArgs} args - Arguments to create a MessageReadStatus.
+     * Create a MessageStatus.
+     * @param {MessageStatusCreateArgs} args - Arguments to create a MessageStatus.
      * @example
-     * // Create one MessageReadStatus
-     * const MessageReadStatus = await prisma.messageReadStatus.create({
+     * // Create one MessageStatus
+     * const MessageStatus = await prisma.messageStatus.create({
      *   data: {
-     *     // ... data to create a MessageReadStatus
+     *     // ... data to create a MessageStatus
      *   }
      * })
      * 
      */
-    create<T extends MessageReadStatusCreateArgs>(args: SelectSubset<T, MessageReadStatusCreateArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends MessageStatusCreateArgs>(args: SelectSubset<T, MessageStatusCreateArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many MessageReadStatuses.
-     * @param {MessageReadStatusCreateManyArgs} args - Arguments to create many MessageReadStatuses.
+     * Create many MessageStatuses.
+     * @param {MessageStatusCreateManyArgs} args - Arguments to create many MessageStatuses.
      * @example
-     * // Create many MessageReadStatuses
-     * const messageReadStatus = await prisma.messageReadStatus.createMany({
+     * // Create many MessageStatuses
+     * const messageStatus = await prisma.messageStatus.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends MessageReadStatusCreateManyArgs>(args?: SelectSubset<T, MessageReadStatusCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends MessageStatusCreateManyArgs>(args?: SelectSubset<T, MessageStatusCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a MessageReadStatus.
-     * @param {MessageReadStatusDeleteArgs} args - Arguments to delete one MessageReadStatus.
+     * Delete a MessageStatus.
+     * @param {MessageStatusDeleteArgs} args - Arguments to delete one MessageStatus.
      * @example
-     * // Delete one MessageReadStatus
-     * const MessageReadStatus = await prisma.messageReadStatus.delete({
+     * // Delete one MessageStatus
+     * const MessageStatus = await prisma.messageStatus.delete({
      *   where: {
-     *     // ... filter to delete one MessageReadStatus
+     *     // ... filter to delete one MessageStatus
      *   }
      * })
      * 
      */
-    delete<T extends MessageReadStatusDeleteArgs>(args: SelectSubset<T, MessageReadStatusDeleteArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends MessageStatusDeleteArgs>(args: SelectSubset<T, MessageStatusDeleteArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one MessageReadStatus.
-     * @param {MessageReadStatusUpdateArgs} args - Arguments to update one MessageReadStatus.
+     * Update one MessageStatus.
+     * @param {MessageStatusUpdateArgs} args - Arguments to update one MessageStatus.
      * @example
-     * // Update one MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.update({
+     * // Update one MessageStatus
+     * const messageStatus = await prisma.messageStatus.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -11829,30 +11959,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends MessageReadStatusUpdateArgs>(args: SelectSubset<T, MessageReadStatusUpdateArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends MessageStatusUpdateArgs>(args: SelectSubset<T, MessageStatusUpdateArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more MessageReadStatuses.
-     * @param {MessageReadStatusDeleteManyArgs} args - Arguments to filter MessageReadStatuses to delete.
+     * Delete zero or more MessageStatuses.
+     * @param {MessageStatusDeleteManyArgs} args - Arguments to filter MessageStatuses to delete.
      * @example
-     * // Delete a few MessageReadStatuses
-     * const { count } = await prisma.messageReadStatus.deleteMany({
+     * // Delete a few MessageStatuses
+     * const { count } = await prisma.messageStatus.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends MessageReadStatusDeleteManyArgs>(args?: SelectSubset<T, MessageReadStatusDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends MessageStatusDeleteManyArgs>(args?: SelectSubset<T, MessageStatusDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more MessageReadStatuses.
+     * Update zero or more MessageStatuses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {MessageStatusUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many MessageReadStatuses
-     * const messageReadStatus = await prisma.messageReadStatus.updateMany({
+     * // Update many MessageStatuses
+     * const messageStatus = await prisma.messageStatus.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -11862,79 +11992,79 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends MessageReadStatusUpdateManyArgs>(args: SelectSubset<T, MessageReadStatusUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends MessageStatusUpdateManyArgs>(args: SelectSubset<T, MessageStatusUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one MessageReadStatus.
-     * @param {MessageReadStatusUpsertArgs} args - Arguments to update or create a MessageReadStatus.
+     * Create or update one MessageStatus.
+     * @param {MessageStatusUpsertArgs} args - Arguments to update or create a MessageStatus.
      * @example
-     * // Update or create a MessageReadStatus
-     * const messageReadStatus = await prisma.messageReadStatus.upsert({
+     * // Update or create a MessageStatus
+     * const messageStatus = await prisma.messageStatus.upsert({
      *   create: {
-     *     // ... data to create a MessageReadStatus
+     *     // ... data to create a MessageStatus
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the MessageReadStatus we want to update
+     *     // ... the filter for the MessageStatus we want to update
      *   }
      * })
      */
-    upsert<T extends MessageReadStatusUpsertArgs>(args: SelectSubset<T, MessageReadStatusUpsertArgs<ExtArgs>>): Prisma__MessageReadStatusClient<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends MessageStatusUpsertArgs>(args: SelectSubset<T, MessageStatusUpsertArgs<ExtArgs>>): Prisma__MessageStatusClient<$Result.GetResult<Prisma.$MessageStatusPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more MessageReadStatuses that matches the filter.
-     * @param {MessageReadStatusFindRawArgs} args - Select which filters you would like to apply.
+     * Find zero or more MessageStatuses that matches the filter.
+     * @param {MessageStatusFindRawArgs} args - Select which filters you would like to apply.
      * @example
-     * const messageReadStatus = await prisma.messageReadStatus.findRaw({
+     * const messageStatus = await prisma.messageStatus.findRaw({
      *   filter: { age: { $gt: 25 } }
      * })
      */
-    findRaw(args?: MessageReadStatusFindRawArgs): Prisma.PrismaPromise<JsonObject>
+    findRaw(args?: MessageStatusFindRawArgs): Prisma.PrismaPromise<JsonObject>
 
     /**
-     * Perform aggregation operations on a MessageReadStatus.
-     * @param {MessageReadStatusAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * Perform aggregation operations on a MessageStatus.
+     * @param {MessageStatusAggregateRawArgs} args - Select which aggregations you would like to apply.
      * @example
-     * const messageReadStatus = await prisma.messageReadStatus.aggregateRaw({
+     * const messageStatus = await prisma.messageStatus.aggregateRaw({
      *   pipeline: [
      *     { $match: { status: "registered" } },
      *     { $group: { _id: "$country", total: { $sum: 1 } } }
      *   ]
      * })
      */
-    aggregateRaw(args?: MessageReadStatusAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+    aggregateRaw(args?: MessageStatusAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
-     * Count the number of MessageReadStatuses.
+     * Count the number of MessageStatuses.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusCountArgs} args - Arguments to filter MessageReadStatuses to count.
+     * @param {MessageStatusCountArgs} args - Arguments to filter MessageStatuses to count.
      * @example
-     * // Count the number of MessageReadStatuses
-     * const count = await prisma.messageReadStatus.count({
+     * // Count the number of MessageStatuses
+     * const count = await prisma.messageStatus.count({
      *   where: {
-     *     // ... the filter for the MessageReadStatuses we want to count
+     *     // ... the filter for the MessageStatuses we want to count
      *   }
      * })
     **/
-    count<T extends MessageReadStatusCountArgs>(
-      args?: Subset<T, MessageReadStatusCountArgs>,
+    count<T extends MessageStatusCountArgs>(
+      args?: Subset<T, MessageStatusCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], MessageReadStatusCountAggregateOutputType>
+          : GetScalarType<T['select'], MessageStatusCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a MessageReadStatus.
+     * Allows you to perform aggregations operations on a MessageStatus.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {MessageStatusAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -11954,13 +12084,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends MessageReadStatusAggregateArgs>(args: Subset<T, MessageReadStatusAggregateArgs>): Prisma.PrismaPromise<GetMessageReadStatusAggregateType<T>>
+    aggregate<T extends MessageStatusAggregateArgs>(args: Subset<T, MessageStatusAggregateArgs>): Prisma.PrismaPromise<GetMessageStatusAggregateType<T>>
 
     /**
-     * Group by MessageReadStatus.
+     * Group by MessageStatus.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {MessageReadStatusGroupByArgs} args - Group by arguments.
+     * @param {MessageStatusGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -11975,14 +12105,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends MessageReadStatusGroupByArgs,
+      T extends MessageStatusGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: MessageReadStatusGroupByArgs['orderBy'] }
-        : { orderBy?: MessageReadStatusGroupByArgs['orderBy'] },
+        ? { orderBy: MessageStatusGroupByArgs['orderBy'] }
+        : { orderBy?: MessageStatusGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -12031,23 +12161,24 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, MessageReadStatusGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMessageReadStatusGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, MessageStatusGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMessageStatusGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the MessageReadStatus model
+   * Fields of the MessageStatus model
    */
-  readonly fields: MessageReadStatusFieldRefs;
+  readonly fields: MessageStatusFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for MessageReadStatus.
+   * The delegate class that acts as a "Promise-like" for MessageStatus.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__MessageReadStatusClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__MessageStatusClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     message<T extends MessageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MessageDefaultArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    response<T extends MessageStatus$responseArgs<ExtArgs> = {}>(args?: Subset<T, MessageStatus$responseArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12074,358 +12205,360 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the MessageReadStatus model
+   * Fields of the MessageStatus model
    */
-  interface MessageReadStatusFieldRefs {
-    readonly id: FieldRef<"MessageReadStatus", 'String'>
-    readonly messageId: FieldRef<"MessageReadStatus", 'String'>
-    readonly userId: FieldRef<"MessageReadStatus", 'String'>
-    readonly readAt: FieldRef<"MessageReadStatus", 'DateTime'>
+  interface MessageStatusFieldRefs {
+    readonly id: FieldRef<"MessageStatus", 'String'>
+    readonly messageId: FieldRef<"MessageStatus", 'String'>
+    readonly userId: FieldRef<"MessageStatus", 'String'>
+    readonly receivedAt: FieldRef<"MessageStatus", 'DateTime'>
+    readonly readAt: FieldRef<"MessageStatus", 'DateTime'>
+    readonly answer: FieldRef<"MessageStatus", 'String'>
   }
     
 
   // Custom InputTypes
   /**
-   * MessageReadStatus findUnique
+   * MessageStatus findUnique
    */
-  export type MessageReadStatusFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus findUniqueOrThrow
+   * MessageStatus findUniqueOrThrow
    */
-  export type MessageReadStatusFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus findFirst
+   * MessageStatus findFirst
    */
-  export type MessageReadStatusFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for MessageReadStatuses.
+     * Sets the position for searching for MessageStatuses.
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of MessageReadStatuses.
+     * Filter by unique combinations of MessageStatuses.
      */
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
-   * MessageReadStatus findFirstOrThrow
+   * MessageStatus findFirstOrThrow
    */
-  export type MessageReadStatusFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatus to fetch.
+     * Filter, which MessageStatus to fetch.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for MessageReadStatuses.
+     * Sets the position for searching for MessageStatuses.
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of MessageReadStatuses.
+     * Filter by unique combinations of MessageStatuses.
      */
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
-   * MessageReadStatus findMany
+   * MessageStatus findMany
    */
-  export type MessageReadStatusFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter, which MessageReadStatuses to fetch.
+     * Filter, which MessageStatuses to fetch.
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of MessageReadStatuses to fetch.
+     * Determine the order of MessageStatuses to fetch.
      */
-    orderBy?: MessageReadStatusOrderByWithRelationInput | MessageReadStatusOrderByWithRelationInput[]
+    orderBy?: MessageStatusOrderByWithRelationInput | MessageStatusOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing MessageReadStatuses.
+     * Sets the position for listing MessageStatuses.
      */
-    cursor?: MessageReadStatusWhereUniqueInput
+    cursor?: MessageStatusWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` MessageReadStatuses from the position of the cursor.
+     * Take `±n` MessageStatuses from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` MessageReadStatuses.
+     * Skip the first `n` MessageStatuses.
      */
     skip?: number
-    distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+    distinct?: MessageStatusScalarFieldEnum | MessageStatusScalarFieldEnum[]
   }
 
   /**
-   * MessageReadStatus create
+   * MessageStatus create
    */
-  export type MessageReadStatusCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * The data needed to create a MessageReadStatus.
+     * The data needed to create a MessageStatus.
      */
-    data: XOR<MessageReadStatusCreateInput, MessageReadStatusUncheckedCreateInput>
+    data: XOR<MessageStatusCreateInput, MessageStatusUncheckedCreateInput>
   }
 
   /**
-   * MessageReadStatus createMany
+   * MessageStatus createMany
    */
-  export type MessageReadStatusCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many MessageReadStatuses.
+     * The data used to create many MessageStatuses.
      */
-    data: MessageReadStatusCreateManyInput | MessageReadStatusCreateManyInput[]
+    data: MessageStatusCreateManyInput | MessageStatusCreateManyInput[]
   }
 
   /**
-   * MessageReadStatus update
+   * MessageStatus update
    */
-  export type MessageReadStatusUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * The data needed to update a MessageReadStatus.
+     * The data needed to update a MessageStatus.
      */
-    data: XOR<MessageReadStatusUpdateInput, MessageReadStatusUncheckedUpdateInput>
+    data: XOR<MessageStatusUpdateInput, MessageStatusUncheckedUpdateInput>
     /**
-     * Choose, which MessageReadStatus to update.
+     * Choose, which MessageStatus to update.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus updateMany
+   * MessageStatus updateMany
    */
-  export type MessageReadStatusUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update MessageReadStatuses.
+     * The data used to update MessageStatuses.
      */
-    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyInput>
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyInput>
     /**
-     * Filter which MessageReadStatuses to update
+     * Filter which MessageStatuses to update
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
-     * Limit how many MessageReadStatuses to update.
+     * Limit how many MessageStatuses to update.
      */
     limit?: number
   }
 
   /**
-   * MessageReadStatus upsert
+   * MessageStatus upsert
    */
-  export type MessageReadStatusUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * The filter to search for the MessageReadStatus to update in case it exists.
+     * The filter to search for the MessageStatus to update in case it exists.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
     /**
-     * In case the MessageReadStatus found by the `where` argument doesn't exist, create a new MessageReadStatus with this data.
+     * In case the MessageStatus found by the `where` argument doesn't exist, create a new MessageStatus with this data.
      */
-    create: XOR<MessageReadStatusCreateInput, MessageReadStatusUncheckedCreateInput>
+    create: XOR<MessageStatusCreateInput, MessageStatusUncheckedCreateInput>
     /**
-     * In case the MessageReadStatus was found with the provided `where` argument, update it with this data.
+     * In case the MessageStatus was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<MessageReadStatusUpdateInput, MessageReadStatusUncheckedUpdateInput>
+    update: XOR<MessageStatusUpdateInput, MessageStatusUncheckedUpdateInput>
   }
 
   /**
-   * MessageReadStatus delete
+   * MessageStatus delete
    */
-  export type MessageReadStatusDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the MessageStatus
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageStatusSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the MessageStatus
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageStatusOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageStatusInclude<ExtArgs> | null
     /**
-     * Filter which MessageReadStatus to delete.
+     * Filter which MessageStatus to delete.
      */
-    where: MessageReadStatusWhereUniqueInput
+    where: MessageStatusWhereUniqueInput
   }
 
   /**
-   * MessageReadStatus deleteMany
+   * MessageStatus deleteMany
    */
-  export type MessageReadStatusDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which MessageReadStatuses to delete
+     * Filter which MessageStatuses to delete
      */
-    where?: MessageReadStatusWhereInput
+    where?: MessageStatusWhereInput
     /**
-     * Limit how many MessageReadStatuses to delete.
+     * Limit how many MessageStatuses to delete.
      */
     limit?: number
   }
 
   /**
-   * MessageReadStatus findRaw
+   * MessageStatus findRaw
    */
-  export type MessageReadStatusFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
      */
@@ -12437,9 +12570,9 @@ export namespace Prisma {
   }
 
   /**
-   * MessageReadStatus aggregateRaw
+   * MessageStatus aggregateRaw
    */
-  export type MessageReadStatusAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatusAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
      */
@@ -12451,21 +12584,40 @@ export namespace Prisma {
   }
 
   /**
-   * MessageReadStatus without action
+   * MessageStatus.response
    */
-  export type MessageReadStatusDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type MessageStatus$responseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the MessageReadStatus
+     * Select specific fields to fetch from the Message
      */
-    select?: MessageReadStatusSelect<ExtArgs> | null
+    select?: MessageSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the MessageReadStatus
+     * Omit specific fields from the Message
      */
-    omit?: MessageReadStatusOmit<ExtArgs> | null
+    omit?: MessageOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: MessageReadStatusInclude<ExtArgs> | null
+    include?: MessageInclude<ExtArgs> | null
+    where?: MessageWhereInput
+  }
+
+  /**
+   * MessageStatus without action
+   */
+  export type MessageStatusDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageStatus
+     */
+    select?: MessageStatusSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageStatus
+     */
+    omit?: MessageStatusOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageStatusInclude<ExtArgs> | null
   }
 
 
@@ -15531,6 +15683,7 @@ export namespace Prisma {
 
   export type CommunityMinAggregateOutputType = {
     id: string | null
+    identifier: string | null
     name: string | null
     description: string | null
     avatar: string | null
@@ -15542,6 +15695,7 @@ export namespace Prisma {
 
   export type CommunityMaxAggregateOutputType = {
     id: string | null
+    identifier: string | null
     name: string | null
     description: string | null
     avatar: string | null
@@ -15553,6 +15707,7 @@ export namespace Prisma {
 
   export type CommunityCountAggregateOutputType = {
     id: number
+    identifier: number
     name: number
     description: number
     avatar: number
@@ -15566,6 +15721,7 @@ export namespace Prisma {
 
   export type CommunityMinAggregateInputType = {
     id?: true
+    identifier?: true
     name?: true
     description?: true
     avatar?: true
@@ -15577,6 +15733,7 @@ export namespace Prisma {
 
   export type CommunityMaxAggregateInputType = {
     id?: true
+    identifier?: true
     name?: true
     description?: true
     avatar?: true
@@ -15588,6 +15745,7 @@ export namespace Prisma {
 
   export type CommunityCountAggregateInputType = {
     id?: true
+    identifier?: true
     name?: true
     description?: true
     avatar?: true
@@ -15672,6 +15830,7 @@ export namespace Prisma {
 
   export type CommunityGroupByOutputType = {
     id: string
+    identifier: string | null
     name: string
     description: string | null
     avatar: string | null
@@ -15700,6 +15859,7 @@ export namespace Prisma {
 
   export type CommunitySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    identifier?: boolean
     name?: boolean
     description?: boolean
     avatar?: boolean
@@ -15709,8 +15869,6 @@ export namespace Prisma {
     updatedAt?: boolean
     members?: boolean | Community$membersArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    admins?: boolean | Community$adminsArgs<ExtArgs>
-    moderators?: boolean | Community$moderatorsArgs<ExtArgs>
     Conversation?: boolean | Community$ConversationArgs<ExtArgs>
     _count?: boolean | CommunityCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["community"]>
@@ -15719,6 +15877,7 @@ export namespace Prisma {
 
   export type CommunitySelectScalar = {
     id?: boolean
+    identifier?: boolean
     name?: boolean
     description?: boolean
     avatar?: boolean
@@ -15728,12 +15887,10 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type CommunityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "avatar" | "isPrivate" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["community"]>
+  export type CommunityOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "identifier" | "name" | "description" | "avatar" | "isPrivate" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["community"]>
   export type CommunityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | Community$membersArgs<ExtArgs>
     creator?: boolean | UserDefaultArgs<ExtArgs>
-    admins?: boolean | Community$adminsArgs<ExtArgs>
-    moderators?: boolean | Community$moderatorsArgs<ExtArgs>
     Conversation?: boolean | Community$ConversationArgs<ExtArgs>
     _count?: boolean | CommunityCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -15743,12 +15900,14 @@ export namespace Prisma {
     objects: {
       members: Prisma.$CommunityMemberPayload<ExtArgs>[]
       creator: Prisma.$UserPayload<ExtArgs>
-      admins: Prisma.$CommunityAdminPayload<ExtArgs>[]
-      moderators: Prisma.$CommunityModeratorPayload<ExtArgs>[]
       Conversation: Prisma.$ConversationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      /**
+       * Identifiant lisible par l'homme (ex: "mshy_meeshy-paris", "mshy_support-lycee-njanda")
+       */
+      identifier: string | null
       name: string
       description: string | null
       avatar: string | null
@@ -16121,8 +16280,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     members<T extends Community$membersArgs<ExtArgs> = {}>(args?: Subset<T, Community$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    admins<T extends Community$adminsArgs<ExtArgs> = {}>(args?: Subset<T, Community$adminsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    moderators<T extends Community$moderatorsArgs<ExtArgs> = {}>(args?: Subset<T, Community$moderatorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     Conversation<T extends Community$ConversationArgs<ExtArgs> = {}>(args?: Subset<T, Community$ConversationArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -16154,6 +16311,7 @@ export namespace Prisma {
    */
   interface CommunityFieldRefs {
     readonly id: FieldRef<"Community", 'String'>
+    readonly identifier: FieldRef<"Community", 'String'>
     readonly name: FieldRef<"Community", 'String'>
     readonly description: FieldRef<"Community", 'String'>
     readonly avatar: FieldRef<"Community", 'String'>
@@ -16555,54 +16713,6 @@ export namespace Prisma {
   }
 
   /**
-   * Community.admins
-   */
-  export type Community$adminsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CommunityAdmin
-     */
-    select?: CommunityAdminSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the CommunityAdmin
-     */
-    omit?: CommunityAdminOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CommunityAdminInclude<ExtArgs> | null
-    where?: CommunityAdminWhereInput
-    orderBy?: CommunityAdminOrderByWithRelationInput | CommunityAdminOrderByWithRelationInput[]
-    cursor?: CommunityAdminWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: CommunityAdminScalarFieldEnum | CommunityAdminScalarFieldEnum[]
-  }
-
-  /**
-   * Community.moderators
-   */
-  export type Community$moderatorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the CommunityModerator
-     */
-    select?: CommunityModeratorSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the CommunityModerator
-     */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CommunityModeratorInclude<ExtArgs> | null
-    where?: CommunityModeratorWhereInput
-    orderBy?: CommunityModeratorOrderByWithRelationInput | CommunityModeratorOrderByWithRelationInput[]
-    cursor?: CommunityModeratorWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: CommunityModeratorScalarFieldEnum | CommunityModeratorScalarFieldEnum[]
-  }
-
-  /**
    * Community.Conversation
    */
   export type Community$ConversationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16660,6 +16770,7 @@ export namespace Prisma {
     communityId: string | null
     userId: string | null
     joinedAt: Date | null
+    role: string | null
   }
 
   export type CommunityMemberMaxAggregateOutputType = {
@@ -16667,6 +16778,7 @@ export namespace Prisma {
     communityId: string | null
     userId: string | null
     joinedAt: Date | null
+    role: string | null
   }
 
   export type CommunityMemberCountAggregateOutputType = {
@@ -16674,6 +16786,7 @@ export namespace Prisma {
     communityId: number
     userId: number
     joinedAt: number
+    role: number
     _all: number
   }
 
@@ -16683,6 +16796,7 @@ export namespace Prisma {
     communityId?: true
     userId?: true
     joinedAt?: true
+    role?: true
   }
 
   export type CommunityMemberMaxAggregateInputType = {
@@ -16690,6 +16804,7 @@ export namespace Prisma {
     communityId?: true
     userId?: true
     joinedAt?: true
+    role?: true
   }
 
   export type CommunityMemberCountAggregateInputType = {
@@ -16697,6 +16812,7 @@ export namespace Prisma {
     communityId?: true
     userId?: true
     joinedAt?: true
+    role?: true
     _all?: true
   }
 
@@ -16777,6 +16893,7 @@ export namespace Prisma {
     communityId: string
     userId: string
     joinedAt: Date
+    role: string
     _count: CommunityMemberCountAggregateOutputType | null
     _min: CommunityMemberMinAggregateOutputType | null
     _max: CommunityMemberMaxAggregateOutputType | null
@@ -16801,6 +16918,7 @@ export namespace Prisma {
     communityId?: boolean
     userId?: boolean
     joinedAt?: boolean
+    role?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     community?: boolean | CommunityDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["communityMember"]>
@@ -16812,9 +16930,10 @@ export namespace Prisma {
     communityId?: boolean
     userId?: boolean
     joinedAt?: boolean
+    role?: boolean
   }
 
-  export type CommunityMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "communityId" | "userId" | "joinedAt", ExtArgs["result"]["communityMember"]>
+  export type CommunityMemberOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "communityId" | "userId" | "joinedAt" | "role", ExtArgs["result"]["communityMember"]>
   export type CommunityMemberInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     community?: boolean | CommunityDefaultArgs<ExtArgs>
@@ -16831,6 +16950,10 @@ export namespace Prisma {
       communityId: string
       userId: string
       joinedAt: Date
+      /**
+       * admin, moderator, member
+       */
+      role: string
     }, ExtArgs["result"]["communityMember"]>
     composites: {}
   }
@@ -17229,6 +17352,7 @@ export namespace Prisma {
     readonly communityId: FieldRef<"CommunityMember", 'String'>
     readonly userId: FieldRef<"CommunityMember", 'String'>
     readonly joinedAt: FieldRef<"CommunityMember", 'DateTime'>
+    readonly role: FieldRef<"CommunityMember", 'String'>
   }
     
 
@@ -20876,328 +21000,428 @@ export namespace Prisma {
 
 
   /**
-   * Model CommunityAdmin
+   * Model AffiliateToken
    */
 
-  export type AggregateCommunityAdmin = {
-    _count: CommunityAdminCountAggregateOutputType | null
-    _min: CommunityAdminMinAggregateOutputType | null
-    _max: CommunityAdminMaxAggregateOutputType | null
+  export type AggregateAffiliateToken = {
+    _count: AffiliateTokenCountAggregateOutputType | null
+    _avg: AffiliateTokenAvgAggregateOutputType | null
+    _sum: AffiliateTokenSumAggregateOutputType | null
+    _min: AffiliateTokenMinAggregateOutputType | null
+    _max: AffiliateTokenMaxAggregateOutputType | null
   }
 
-  export type CommunityAdminMinAggregateOutputType = {
+  export type AffiliateTokenAvgAggregateOutputType = {
+    maxUses: number | null
+    currentUses: number | null
+  }
+
+  export type AffiliateTokenSumAggregateOutputType = {
+    maxUses: number | null
+    currentUses: number | null
+  }
+
+  export type AffiliateTokenMinAggregateOutputType = {
     id: string | null
-    communityId: string | null
-    userId: string | null
-    assignedAt: Date | null
+    token: string | null
+    name: string | null
+    createdBy: string | null
+    maxUses: number | null
+    currentUses: number | null
+    expiresAt: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
-  export type CommunityAdminMaxAggregateOutputType = {
+  export type AffiliateTokenMaxAggregateOutputType = {
     id: string | null
-    communityId: string | null
-    userId: string | null
-    assignedAt: Date | null
+    token: string | null
+    name: string | null
+    createdBy: string | null
+    maxUses: number | null
+    currentUses: number | null
+    expiresAt: Date | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
-  export type CommunityAdminCountAggregateOutputType = {
+  export type AffiliateTokenCountAggregateOutputType = {
     id: number
-    communityId: number
-    userId: number
-    assignedAt: number
+    token: number
+    name: number
+    createdBy: number
+    maxUses: number
+    currentUses: number
+    expiresAt: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
 
-  export type CommunityAdminMinAggregateInputType = {
-    id?: true
-    communityId?: true
-    userId?: true
-    assignedAt?: true
+  export type AffiliateTokenAvgAggregateInputType = {
+    maxUses?: true
+    currentUses?: true
   }
 
-  export type CommunityAdminMaxAggregateInputType = {
-    id?: true
-    communityId?: true
-    userId?: true
-    assignedAt?: true
+  export type AffiliateTokenSumAggregateInputType = {
+    maxUses?: true
+    currentUses?: true
   }
 
-  export type CommunityAdminCountAggregateInputType = {
+  export type AffiliateTokenMinAggregateInputType = {
     id?: true
-    communityId?: true
-    userId?: true
-    assignedAt?: true
+    token?: true
+    name?: true
+    createdBy?: true
+    maxUses?: true
+    currentUses?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AffiliateTokenMaxAggregateInputType = {
+    id?: true
+    token?: true
+    name?: true
+    createdBy?: true
+    maxUses?: true
+    currentUses?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AffiliateTokenCountAggregateInputType = {
+    id?: true
+    token?: true
+    name?: true
+    createdBy?: true
+    maxUses?: true
+    currentUses?: true
+    expiresAt?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
-  export type CommunityAdminAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which CommunityAdmin to aggregate.
+     * Filter which AffiliateToken to aggregate.
      */
-    where?: CommunityAdminWhereInput
+    where?: AffiliateTokenWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityAdmins to fetch.
+     * Determine the order of AffiliateTokens to fetch.
      */
-    orderBy?: CommunityAdminOrderByWithRelationInput | CommunityAdminOrderByWithRelationInput[]
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: CommunityAdminWhereUniqueInput
+    cursor?: AffiliateTokenWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityAdmins from the position of the cursor.
+     * Take `±n` AffiliateTokens from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityAdmins.
+     * Skip the first `n` AffiliateTokens.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned CommunityAdmins
+     * Count returned AffiliateTokens
     **/
-    _count?: true | CommunityAdminCountAggregateInputType
+    _count?: true | AffiliateTokenCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AffiliateTokenAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AffiliateTokenSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: CommunityAdminMinAggregateInputType
+    _min?: AffiliateTokenMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: CommunityAdminMaxAggregateInputType
+    _max?: AffiliateTokenMaxAggregateInputType
   }
 
-  export type GetCommunityAdminAggregateType<T extends CommunityAdminAggregateArgs> = {
-        [P in keyof T & keyof AggregateCommunityAdmin]: P extends '_count' | 'count'
+  export type GetAffiliateTokenAggregateType<T extends AffiliateTokenAggregateArgs> = {
+        [P in keyof T & keyof AggregateAffiliateToken]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateCommunityAdmin[P]>
-      : GetScalarType<T[P], AggregateCommunityAdmin[P]>
+        : GetScalarType<T[P], AggregateAffiliateToken[P]>
+      : GetScalarType<T[P], AggregateAffiliateToken[P]>
   }
 
 
 
 
-  export type CommunityAdminGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityAdminWhereInput
-    orderBy?: CommunityAdminOrderByWithAggregationInput | CommunityAdminOrderByWithAggregationInput[]
-    by: CommunityAdminScalarFieldEnum[] | CommunityAdminScalarFieldEnum
-    having?: CommunityAdminScalarWhereWithAggregatesInput
+  export type AffiliateTokenGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateTokenWhereInput
+    orderBy?: AffiliateTokenOrderByWithAggregationInput | AffiliateTokenOrderByWithAggregationInput[]
+    by: AffiliateTokenScalarFieldEnum[] | AffiliateTokenScalarFieldEnum
+    having?: AffiliateTokenScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: CommunityAdminCountAggregateInputType | true
-    _min?: CommunityAdminMinAggregateInputType
-    _max?: CommunityAdminMaxAggregateInputType
+    _count?: AffiliateTokenCountAggregateInputType | true
+    _avg?: AffiliateTokenAvgAggregateInputType
+    _sum?: AffiliateTokenSumAggregateInputType
+    _min?: AffiliateTokenMinAggregateInputType
+    _max?: AffiliateTokenMaxAggregateInputType
   }
 
-  export type CommunityAdminGroupByOutputType = {
+  export type AffiliateTokenGroupByOutputType = {
     id: string
-    communityId: string
-    userId: string
-    assignedAt: Date
-    _count: CommunityAdminCountAggregateOutputType | null
-    _min: CommunityAdminMinAggregateOutputType | null
-    _max: CommunityAdminMaxAggregateOutputType | null
+    token: string
+    name: string
+    createdBy: string
+    maxUses: number | null
+    currentUses: number
+    expiresAt: Date | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: AffiliateTokenCountAggregateOutputType | null
+    _avg: AffiliateTokenAvgAggregateOutputType | null
+    _sum: AffiliateTokenSumAggregateOutputType | null
+    _min: AffiliateTokenMinAggregateOutputType | null
+    _max: AffiliateTokenMaxAggregateOutputType | null
   }
 
-  type GetCommunityAdminGroupByPayload<T extends CommunityAdminGroupByArgs> = Prisma.PrismaPromise<
+  type GetAffiliateTokenGroupByPayload<T extends AffiliateTokenGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<CommunityAdminGroupByOutputType, T['by']> &
+      PickEnumerable<AffiliateTokenGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof CommunityAdminGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof AffiliateTokenGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], CommunityAdminGroupByOutputType[P]>
-            : GetScalarType<T[P], CommunityAdminGroupByOutputType[P]>
+              : GetScalarType<T[P], AffiliateTokenGroupByOutputType[P]>
+            : GetScalarType<T[P], AffiliateTokenGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type CommunityAdminSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type AffiliateTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    communityId?: boolean
-    userId?: boolean
-    assignedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["communityAdmin"]>
+    token?: boolean
+    name?: boolean
+    createdBy?: boolean
+    maxUses?: boolean
+    currentUses?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    affiliations?: boolean | AffiliateToken$affiliationsArgs<ExtArgs>
+    _count?: boolean | AffiliateTokenCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["affiliateToken"]>
 
 
 
-  export type CommunityAdminSelectScalar = {
+  export type AffiliateTokenSelectScalar = {
     id?: boolean
-    communityId?: boolean
-    userId?: boolean
-    assignedAt?: boolean
+    token?: boolean
+    name?: boolean
+    createdBy?: boolean
+    maxUses?: boolean
+    currentUses?: boolean
+    expiresAt?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type CommunityAdminOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "communityId" | "userId" | "assignedAt", ExtArgs["result"]["communityAdmin"]>
-  export type CommunityAdminInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
+  export type AffiliateTokenOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "token" | "name" | "createdBy" | "maxUses" | "currentUses" | "expiresAt" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["affiliateToken"]>
+  export type AffiliateTokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    creator?: boolean | UserDefaultArgs<ExtArgs>
+    affiliations?: boolean | AffiliateToken$affiliationsArgs<ExtArgs>
+    _count?: boolean | AffiliateTokenCountOutputTypeDefaultArgs<ExtArgs>
   }
 
-  export type $CommunityAdminPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "CommunityAdmin"
+  export type $AffiliateTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AffiliateToken"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      community: Prisma.$CommunityPayload<ExtArgs>
+      creator: Prisma.$UserPayload<ExtArgs>
+      affiliations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      communityId: string
-      userId: string
-      assignedAt: Date
-    }, ExtArgs["result"]["communityAdmin"]>
+      token: string
+      name: string
+      createdBy: string
+      maxUses: number | null
+      currentUses: number
+      expiresAt: Date | null
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["affiliateToken"]>
     composites: {}
   }
 
-  type CommunityAdminGetPayload<S extends boolean | null | undefined | CommunityAdminDefaultArgs> = $Result.GetResult<Prisma.$CommunityAdminPayload, S>
+  type AffiliateTokenGetPayload<S extends boolean | null | undefined | AffiliateTokenDefaultArgs> = $Result.GetResult<Prisma.$AffiliateTokenPayload, S>
 
-  type CommunityAdminCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<CommunityAdminFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: CommunityAdminCountAggregateInputType | true
+  type AffiliateTokenCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AffiliateTokenFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AffiliateTokenCountAggregateInputType | true
     }
 
-  export interface CommunityAdminDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CommunityAdmin'], meta: { name: 'CommunityAdmin' } }
+  export interface AffiliateTokenDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AffiliateToken'], meta: { name: 'AffiliateToken' } }
     /**
-     * Find zero or one CommunityAdmin that matches the filter.
-     * @param {CommunityAdminFindUniqueArgs} args - Arguments to find a CommunityAdmin
+     * Find zero or one AffiliateToken that matches the filter.
+     * @param {AffiliateTokenFindUniqueArgs} args - Arguments to find a AffiliateToken
      * @example
-     * // Get one CommunityAdmin
-     * const communityAdmin = await prisma.communityAdmin.findUnique({
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends CommunityAdminFindUniqueArgs>(args: SelectSubset<T, CommunityAdminFindUniqueArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends AffiliateTokenFindUniqueArgs>(args: SelectSubset<T, AffiliateTokenFindUniqueArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one CommunityAdmin that matches the filter or throw an error with `error.code='P2025'`
+     * Find one AffiliateToken that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {CommunityAdminFindUniqueOrThrowArgs} args - Arguments to find a CommunityAdmin
+     * @param {AffiliateTokenFindUniqueOrThrowArgs} args - Arguments to find a AffiliateToken
      * @example
-     * // Get one CommunityAdmin
-     * const communityAdmin = await prisma.communityAdmin.findUniqueOrThrow({
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends CommunityAdminFindUniqueOrThrowArgs>(args: SelectSubset<T, CommunityAdminFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends AffiliateTokenFindUniqueOrThrowArgs>(args: SelectSubset<T, AffiliateTokenFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first CommunityAdmin that matches the filter.
+     * Find the first AffiliateToken that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityAdminFindFirstArgs} args - Arguments to find a CommunityAdmin
+     * @param {AffiliateTokenFindFirstArgs} args - Arguments to find a AffiliateToken
      * @example
-     * // Get one CommunityAdmin
-     * const communityAdmin = await prisma.communityAdmin.findFirst({
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends CommunityAdminFindFirstArgs>(args?: SelectSubset<T, CommunityAdminFindFirstArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends AffiliateTokenFindFirstArgs>(args?: SelectSubset<T, AffiliateTokenFindFirstArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first CommunityAdmin that matches the filter or
+     * Find the first AffiliateToken that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityAdminFindFirstOrThrowArgs} args - Arguments to find a CommunityAdmin
+     * @param {AffiliateTokenFindFirstOrThrowArgs} args - Arguments to find a AffiliateToken
      * @example
-     * // Get one CommunityAdmin
-     * const communityAdmin = await prisma.communityAdmin.findFirstOrThrow({
+     * // Get one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends CommunityAdminFindFirstOrThrowArgs>(args?: SelectSubset<T, CommunityAdminFindFirstOrThrowArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends AffiliateTokenFindFirstOrThrowArgs>(args?: SelectSubset<T, AffiliateTokenFindFirstOrThrowArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more CommunityAdmins that matches the filter.
+     * Find zero or more AffiliateTokens that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityAdminFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {AffiliateTokenFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all CommunityAdmins
-     * const communityAdmins = await prisma.communityAdmin.findMany()
+     * // Get all AffiliateTokens
+     * const affiliateTokens = await prisma.affiliateToken.findMany()
      * 
-     * // Get first 10 CommunityAdmins
-     * const communityAdmins = await prisma.communityAdmin.findMany({ take: 10 })
+     * // Get first 10 AffiliateTokens
+     * const affiliateTokens = await prisma.affiliateToken.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const communityAdminWithIdOnly = await prisma.communityAdmin.findMany({ select: { id: true } })
+     * const affiliateTokenWithIdOnly = await prisma.affiliateToken.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends CommunityAdminFindManyArgs>(args?: SelectSubset<T, CommunityAdminFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends AffiliateTokenFindManyArgs>(args?: SelectSubset<T, AffiliateTokenFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a CommunityAdmin.
-     * @param {CommunityAdminCreateArgs} args - Arguments to create a CommunityAdmin.
+     * Create a AffiliateToken.
+     * @param {AffiliateTokenCreateArgs} args - Arguments to create a AffiliateToken.
      * @example
-     * // Create one CommunityAdmin
-     * const CommunityAdmin = await prisma.communityAdmin.create({
+     * // Create one AffiliateToken
+     * const AffiliateToken = await prisma.affiliateToken.create({
      *   data: {
-     *     // ... data to create a CommunityAdmin
+     *     // ... data to create a AffiliateToken
      *   }
      * })
      * 
      */
-    create<T extends CommunityAdminCreateArgs>(args: SelectSubset<T, CommunityAdminCreateArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends AffiliateTokenCreateArgs>(args: SelectSubset<T, AffiliateTokenCreateArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many CommunityAdmins.
-     * @param {CommunityAdminCreateManyArgs} args - Arguments to create many CommunityAdmins.
+     * Create many AffiliateTokens.
+     * @param {AffiliateTokenCreateManyArgs} args - Arguments to create many AffiliateTokens.
      * @example
-     * // Create many CommunityAdmins
-     * const communityAdmin = await prisma.communityAdmin.createMany({
+     * // Create many AffiliateTokens
+     * const affiliateToken = await prisma.affiliateToken.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends CommunityAdminCreateManyArgs>(args?: SelectSubset<T, CommunityAdminCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends AffiliateTokenCreateManyArgs>(args?: SelectSubset<T, AffiliateTokenCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a CommunityAdmin.
-     * @param {CommunityAdminDeleteArgs} args - Arguments to delete one CommunityAdmin.
+     * Delete a AffiliateToken.
+     * @param {AffiliateTokenDeleteArgs} args - Arguments to delete one AffiliateToken.
      * @example
-     * // Delete one CommunityAdmin
-     * const CommunityAdmin = await prisma.communityAdmin.delete({
+     * // Delete one AffiliateToken
+     * const AffiliateToken = await prisma.affiliateToken.delete({
      *   where: {
-     *     // ... filter to delete one CommunityAdmin
+     *     // ... filter to delete one AffiliateToken
      *   }
      * })
      * 
      */
-    delete<T extends CommunityAdminDeleteArgs>(args: SelectSubset<T, CommunityAdminDeleteArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends AffiliateTokenDeleteArgs>(args: SelectSubset<T, AffiliateTokenDeleteArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one CommunityAdmin.
-     * @param {CommunityAdminUpdateArgs} args - Arguments to update one CommunityAdmin.
+     * Update one AffiliateToken.
+     * @param {AffiliateTokenUpdateArgs} args - Arguments to update one AffiliateToken.
      * @example
-     * // Update one CommunityAdmin
-     * const communityAdmin = await prisma.communityAdmin.update({
+     * // Update one AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -21207,30 +21431,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends CommunityAdminUpdateArgs>(args: SelectSubset<T, CommunityAdminUpdateArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends AffiliateTokenUpdateArgs>(args: SelectSubset<T, AffiliateTokenUpdateArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more CommunityAdmins.
-     * @param {CommunityAdminDeleteManyArgs} args - Arguments to filter CommunityAdmins to delete.
+     * Delete zero or more AffiliateTokens.
+     * @param {AffiliateTokenDeleteManyArgs} args - Arguments to filter AffiliateTokens to delete.
      * @example
-     * // Delete a few CommunityAdmins
-     * const { count } = await prisma.communityAdmin.deleteMany({
+     * // Delete a few AffiliateTokens
+     * const { count } = await prisma.affiliateToken.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends CommunityAdminDeleteManyArgs>(args?: SelectSubset<T, CommunityAdminDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends AffiliateTokenDeleteManyArgs>(args?: SelectSubset<T, AffiliateTokenDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more CommunityAdmins.
+     * Update zero or more AffiliateTokens.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityAdminUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {AffiliateTokenUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many CommunityAdmins
-     * const communityAdmin = await prisma.communityAdmin.updateMany({
+     * // Update many AffiliateTokens
+     * const affiliateToken = await prisma.affiliateToken.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -21240,79 +21464,79 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends CommunityAdminUpdateManyArgs>(args: SelectSubset<T, CommunityAdminUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends AffiliateTokenUpdateManyArgs>(args: SelectSubset<T, AffiliateTokenUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one CommunityAdmin.
-     * @param {CommunityAdminUpsertArgs} args - Arguments to update or create a CommunityAdmin.
+     * Create or update one AffiliateToken.
+     * @param {AffiliateTokenUpsertArgs} args - Arguments to update or create a AffiliateToken.
      * @example
-     * // Update or create a CommunityAdmin
-     * const communityAdmin = await prisma.communityAdmin.upsert({
+     * // Update or create a AffiliateToken
+     * const affiliateToken = await prisma.affiliateToken.upsert({
      *   create: {
-     *     // ... data to create a CommunityAdmin
+     *     // ... data to create a AffiliateToken
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the CommunityAdmin we want to update
+     *     // ... the filter for the AffiliateToken we want to update
      *   }
      * })
      */
-    upsert<T extends CommunityAdminUpsertArgs>(args: SelectSubset<T, CommunityAdminUpsertArgs<ExtArgs>>): Prisma__CommunityAdminClient<$Result.GetResult<Prisma.$CommunityAdminPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends AffiliateTokenUpsertArgs>(args: SelectSubset<T, AffiliateTokenUpsertArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more CommunityAdmins that matches the filter.
-     * @param {CommunityAdminFindRawArgs} args - Select which filters you would like to apply.
+     * Find zero or more AffiliateTokens that matches the filter.
+     * @param {AffiliateTokenFindRawArgs} args - Select which filters you would like to apply.
      * @example
-     * const communityAdmin = await prisma.communityAdmin.findRaw({
+     * const affiliateToken = await prisma.affiliateToken.findRaw({
      *   filter: { age: { $gt: 25 } }
      * })
      */
-    findRaw(args?: CommunityAdminFindRawArgs): Prisma.PrismaPromise<JsonObject>
+    findRaw(args?: AffiliateTokenFindRawArgs): Prisma.PrismaPromise<JsonObject>
 
     /**
-     * Perform aggregation operations on a CommunityAdmin.
-     * @param {CommunityAdminAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * Perform aggregation operations on a AffiliateToken.
+     * @param {AffiliateTokenAggregateRawArgs} args - Select which aggregations you would like to apply.
      * @example
-     * const communityAdmin = await prisma.communityAdmin.aggregateRaw({
+     * const affiliateToken = await prisma.affiliateToken.aggregateRaw({
      *   pipeline: [
      *     { $match: { status: "registered" } },
      *     { $group: { _id: "$country", total: { $sum: 1 } } }
      *   ]
      * })
      */
-    aggregateRaw(args?: CommunityAdminAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+    aggregateRaw(args?: AffiliateTokenAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
-     * Count the number of CommunityAdmins.
+     * Count the number of AffiliateTokens.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityAdminCountArgs} args - Arguments to filter CommunityAdmins to count.
+     * @param {AffiliateTokenCountArgs} args - Arguments to filter AffiliateTokens to count.
      * @example
-     * // Count the number of CommunityAdmins
-     * const count = await prisma.communityAdmin.count({
+     * // Count the number of AffiliateTokens
+     * const count = await prisma.affiliateToken.count({
      *   where: {
-     *     // ... the filter for the CommunityAdmins we want to count
+     *     // ... the filter for the AffiliateTokens we want to count
      *   }
      * })
     **/
-    count<T extends CommunityAdminCountArgs>(
-      args?: Subset<T, CommunityAdminCountArgs>,
+    count<T extends AffiliateTokenCountArgs>(
+      args?: Subset<T, AffiliateTokenCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], CommunityAdminCountAggregateOutputType>
+          : GetScalarType<T['select'], AffiliateTokenCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a CommunityAdmin.
+     * Allows you to perform aggregations operations on a AffiliateToken.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityAdminAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {AffiliateTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -21332,13 +21556,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends CommunityAdminAggregateArgs>(args: Subset<T, CommunityAdminAggregateArgs>): Prisma.PrismaPromise<GetCommunityAdminAggregateType<T>>
+    aggregate<T extends AffiliateTokenAggregateArgs>(args: Subset<T, AffiliateTokenAggregateArgs>): Prisma.PrismaPromise<GetAffiliateTokenAggregateType<T>>
 
     /**
-     * Group by CommunityAdmin.
+     * Group by AffiliateToken.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityAdminGroupByArgs} args - Group by arguments.
+     * @param {AffiliateTokenGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -21353,14 +21577,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends CommunityAdminGroupByArgs,
+      T extends AffiliateTokenGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: CommunityAdminGroupByArgs['orderBy'] }
-        : { orderBy?: CommunityAdminGroupByArgs['orderBy'] },
+        ? { orderBy: AffiliateTokenGroupByArgs['orderBy'] }
+        : { orderBy?: AffiliateTokenGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -21409,23 +21633,23 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, CommunityAdminGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCommunityAdminGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, AffiliateTokenGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAffiliateTokenGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the CommunityAdmin model
+   * Fields of the AffiliateToken model
    */
-  readonly fields: CommunityAdminFieldRefs;
+  readonly fields: AffiliateTokenFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for CommunityAdmin.
+   * The delegate class that acts as a "Promise-like" for AffiliateToken.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__CommunityAdminClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__AffiliateTokenClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    community<T extends CommunityDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CommunityDefaultArgs<ExtArgs>>): Prisma__CommunityClient<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    creator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    affiliations<T extends AffiliateToken$affiliationsArgs<ExtArgs> = {}>(args?: Subset<T, AffiliateToken$affiliationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -21452,358 +21676,364 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the CommunityAdmin model
+   * Fields of the AffiliateToken model
    */
-  interface CommunityAdminFieldRefs {
-    readonly id: FieldRef<"CommunityAdmin", 'String'>
-    readonly communityId: FieldRef<"CommunityAdmin", 'String'>
-    readonly userId: FieldRef<"CommunityAdmin", 'String'>
-    readonly assignedAt: FieldRef<"CommunityAdmin", 'DateTime'>
+  interface AffiliateTokenFieldRefs {
+    readonly id: FieldRef<"AffiliateToken", 'String'>
+    readonly token: FieldRef<"AffiliateToken", 'String'>
+    readonly name: FieldRef<"AffiliateToken", 'String'>
+    readonly createdBy: FieldRef<"AffiliateToken", 'String'>
+    readonly maxUses: FieldRef<"AffiliateToken", 'Int'>
+    readonly currentUses: FieldRef<"AffiliateToken", 'Int'>
+    readonly expiresAt: FieldRef<"AffiliateToken", 'DateTime'>
+    readonly isActive: FieldRef<"AffiliateToken", 'Boolean'>
+    readonly createdAt: FieldRef<"AffiliateToken", 'DateTime'>
+    readonly updatedAt: FieldRef<"AffiliateToken", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * CommunityAdmin findUnique
+   * AffiliateToken findUnique
    */
-  export type CommunityAdminFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityAdmin to fetch.
+     * Filter, which AffiliateToken to fetch.
      */
-    where: CommunityAdminWhereUniqueInput
+    where: AffiliateTokenWhereUniqueInput
   }
 
   /**
-   * CommunityAdmin findUniqueOrThrow
+   * AffiliateToken findUniqueOrThrow
    */
-  export type CommunityAdminFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityAdmin to fetch.
+     * Filter, which AffiliateToken to fetch.
      */
-    where: CommunityAdminWhereUniqueInput
+    where: AffiliateTokenWhereUniqueInput
   }
 
   /**
-   * CommunityAdmin findFirst
+   * AffiliateToken findFirst
    */
-  export type CommunityAdminFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityAdmin to fetch.
+     * Filter, which AffiliateToken to fetch.
      */
-    where?: CommunityAdminWhereInput
+    where?: AffiliateTokenWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityAdmins to fetch.
+     * Determine the order of AffiliateTokens to fetch.
      */
-    orderBy?: CommunityAdminOrderByWithRelationInput | CommunityAdminOrderByWithRelationInput[]
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for CommunityAdmins.
+     * Sets the position for searching for AffiliateTokens.
      */
-    cursor?: CommunityAdminWhereUniqueInput
+    cursor?: AffiliateTokenWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityAdmins from the position of the cursor.
+     * Take `±n` AffiliateTokens from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityAdmins.
+     * Skip the first `n` AffiliateTokens.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of CommunityAdmins.
+     * Filter by unique combinations of AffiliateTokens.
      */
-    distinct?: CommunityAdminScalarFieldEnum | CommunityAdminScalarFieldEnum[]
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
   }
 
   /**
-   * CommunityAdmin findFirstOrThrow
+   * AffiliateToken findFirstOrThrow
    */
-  export type CommunityAdminFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityAdmin to fetch.
+     * Filter, which AffiliateToken to fetch.
      */
-    where?: CommunityAdminWhereInput
+    where?: AffiliateTokenWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityAdmins to fetch.
+     * Determine the order of AffiliateTokens to fetch.
      */
-    orderBy?: CommunityAdminOrderByWithRelationInput | CommunityAdminOrderByWithRelationInput[]
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for CommunityAdmins.
+     * Sets the position for searching for AffiliateTokens.
      */
-    cursor?: CommunityAdminWhereUniqueInput
+    cursor?: AffiliateTokenWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityAdmins from the position of the cursor.
+     * Take `±n` AffiliateTokens from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityAdmins.
+     * Skip the first `n` AffiliateTokens.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of CommunityAdmins.
+     * Filter by unique combinations of AffiliateTokens.
      */
-    distinct?: CommunityAdminScalarFieldEnum | CommunityAdminScalarFieldEnum[]
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
   }
 
   /**
-   * CommunityAdmin findMany
+   * AffiliateToken findMany
    */
-  export type CommunityAdminFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityAdmins to fetch.
+     * Filter, which AffiliateTokens to fetch.
      */
-    where?: CommunityAdminWhereInput
+    where?: AffiliateTokenWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityAdmins to fetch.
+     * Determine the order of AffiliateTokens to fetch.
      */
-    orderBy?: CommunityAdminOrderByWithRelationInput | CommunityAdminOrderByWithRelationInput[]
+    orderBy?: AffiliateTokenOrderByWithRelationInput | AffiliateTokenOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing CommunityAdmins.
+     * Sets the position for listing AffiliateTokens.
      */
-    cursor?: CommunityAdminWhereUniqueInput
+    cursor?: AffiliateTokenWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityAdmins from the position of the cursor.
+     * Take `±n` AffiliateTokens from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityAdmins.
+     * Skip the first `n` AffiliateTokens.
      */
     skip?: number
-    distinct?: CommunityAdminScalarFieldEnum | CommunityAdminScalarFieldEnum[]
+    distinct?: AffiliateTokenScalarFieldEnum | AffiliateTokenScalarFieldEnum[]
   }
 
   /**
-   * CommunityAdmin create
+   * AffiliateToken create
    */
-  export type CommunityAdminCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * The data needed to create a CommunityAdmin.
+     * The data needed to create a AffiliateToken.
      */
-    data: XOR<CommunityAdminCreateInput, CommunityAdminUncheckedCreateInput>
+    data: XOR<AffiliateTokenCreateInput, AffiliateTokenUncheckedCreateInput>
   }
 
   /**
-   * CommunityAdmin createMany
+   * AffiliateToken createMany
    */
-  export type CommunityAdminCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many CommunityAdmins.
+     * The data used to create many AffiliateTokens.
      */
-    data: CommunityAdminCreateManyInput | CommunityAdminCreateManyInput[]
+    data: AffiliateTokenCreateManyInput | AffiliateTokenCreateManyInput[]
   }
 
   /**
-   * CommunityAdmin update
+   * AffiliateToken update
    */
-  export type CommunityAdminUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * The data needed to update a CommunityAdmin.
+     * The data needed to update a AffiliateToken.
      */
-    data: XOR<CommunityAdminUpdateInput, CommunityAdminUncheckedUpdateInput>
+    data: XOR<AffiliateTokenUpdateInput, AffiliateTokenUncheckedUpdateInput>
     /**
-     * Choose, which CommunityAdmin to update.
+     * Choose, which AffiliateToken to update.
      */
-    where: CommunityAdminWhereUniqueInput
+    where: AffiliateTokenWhereUniqueInput
   }
 
   /**
-   * CommunityAdmin updateMany
+   * AffiliateToken updateMany
    */
-  export type CommunityAdminUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update CommunityAdmins.
+     * The data used to update AffiliateTokens.
      */
-    data: XOR<CommunityAdminUpdateManyMutationInput, CommunityAdminUncheckedUpdateManyInput>
+    data: XOR<AffiliateTokenUpdateManyMutationInput, AffiliateTokenUncheckedUpdateManyInput>
     /**
-     * Filter which CommunityAdmins to update
+     * Filter which AffiliateTokens to update
      */
-    where?: CommunityAdminWhereInput
+    where?: AffiliateTokenWhereInput
     /**
-     * Limit how many CommunityAdmins to update.
+     * Limit how many AffiliateTokens to update.
      */
     limit?: number
   }
 
   /**
-   * CommunityAdmin upsert
+   * AffiliateToken upsert
    */
-  export type CommunityAdminUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * The filter to search for the CommunityAdmin to update in case it exists.
+     * The filter to search for the AffiliateToken to update in case it exists.
      */
-    where: CommunityAdminWhereUniqueInput
+    where: AffiliateTokenWhereUniqueInput
     /**
-     * In case the CommunityAdmin found by the `where` argument doesn't exist, create a new CommunityAdmin with this data.
+     * In case the AffiliateToken found by the `where` argument doesn't exist, create a new AffiliateToken with this data.
      */
-    create: XOR<CommunityAdminCreateInput, CommunityAdminUncheckedCreateInput>
+    create: XOR<AffiliateTokenCreateInput, AffiliateTokenUncheckedCreateInput>
     /**
-     * In case the CommunityAdmin was found with the provided `where` argument, update it with this data.
+     * In case the AffiliateToken was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<CommunityAdminUpdateInput, CommunityAdminUncheckedUpdateInput>
+    update: XOR<AffiliateTokenUpdateInput, AffiliateTokenUncheckedUpdateInput>
   }
 
   /**
-   * CommunityAdmin delete
+   * AffiliateToken delete
    */
-  export type CommunityAdminDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateToken
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateTokenSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateToken
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateTokenOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateTokenInclude<ExtArgs> | null
     /**
-     * Filter which CommunityAdmin to delete.
+     * Filter which AffiliateToken to delete.
      */
-    where: CommunityAdminWhereUniqueInput
+    where: AffiliateTokenWhereUniqueInput
   }
 
   /**
-   * CommunityAdmin deleteMany
+   * AffiliateToken deleteMany
    */
-  export type CommunityAdminDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which CommunityAdmins to delete
+     * Filter which AffiliateTokens to delete
      */
-    where?: CommunityAdminWhereInput
+    where?: AffiliateTokenWhereInput
     /**
-     * Limit how many CommunityAdmins to delete.
+     * Limit how many AffiliateTokens to delete.
      */
     limit?: number
   }
 
   /**
-   * CommunityAdmin findRaw
+   * AffiliateToken findRaw
    */
-  export type CommunityAdminFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
      */
@@ -21815,9 +22045,9 @@ export namespace Prisma {
   }
 
   /**
-   * CommunityAdmin aggregateRaw
+   * AffiliateToken aggregateRaw
    */
-  export type CommunityAdminAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateTokenAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
      */
@@ -21829,347 +22059,404 @@ export namespace Prisma {
   }
 
   /**
-   * CommunityAdmin without action
+   * AffiliateToken.affiliations
    */
-  export type CommunityAdminDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateToken$affiliationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityAdmin
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityAdminSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityAdmin
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityAdminOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityAdminInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
+    cursor?: AffiliateRelationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * AffiliateToken without action
+   */
+  export type AffiliateTokenDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AffiliateToken
+     */
+    select?: AffiliateTokenSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AffiliateToken
+     */
+    omit?: AffiliateTokenOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AffiliateTokenInclude<ExtArgs> | null
   }
 
 
   /**
-   * Model CommunityModerator
+   * Model AffiliateRelation
    */
 
-  export type AggregateCommunityModerator = {
-    _count: CommunityModeratorCountAggregateOutputType | null
-    _min: CommunityModeratorMinAggregateOutputType | null
-    _max: CommunityModeratorMaxAggregateOutputType | null
+  export type AggregateAffiliateRelation = {
+    _count: AffiliateRelationCountAggregateOutputType | null
+    _min: AffiliateRelationMinAggregateOutputType | null
+    _max: AffiliateRelationMaxAggregateOutputType | null
   }
 
-  export type CommunityModeratorMinAggregateOutputType = {
+  export type AffiliateRelationMinAggregateOutputType = {
     id: string | null
-    communityId: string | null
-    userId: string | null
-    assignedAt: Date | null
+    affiliateTokenId: string | null
+    affiliateUserId: string | null
+    referredUserId: string | null
+    status: string | null
+    createdAt: Date | null
+    completedAt: Date | null
   }
 
-  export type CommunityModeratorMaxAggregateOutputType = {
+  export type AffiliateRelationMaxAggregateOutputType = {
     id: string | null
-    communityId: string | null
-    userId: string | null
-    assignedAt: Date | null
+    affiliateTokenId: string | null
+    affiliateUserId: string | null
+    referredUserId: string | null
+    status: string | null
+    createdAt: Date | null
+    completedAt: Date | null
   }
 
-  export type CommunityModeratorCountAggregateOutputType = {
+  export type AffiliateRelationCountAggregateOutputType = {
     id: number
-    communityId: number
-    userId: number
-    assignedAt: number
+    affiliateTokenId: number
+    affiliateUserId: number
+    referredUserId: number
+    status: number
+    createdAt: number
+    completedAt: number
     _all: number
   }
 
 
-  export type CommunityModeratorMinAggregateInputType = {
+  export type AffiliateRelationMinAggregateInputType = {
     id?: true
-    communityId?: true
-    userId?: true
-    assignedAt?: true
+    affiliateTokenId?: true
+    affiliateUserId?: true
+    referredUserId?: true
+    status?: true
+    createdAt?: true
+    completedAt?: true
   }
 
-  export type CommunityModeratorMaxAggregateInputType = {
+  export type AffiliateRelationMaxAggregateInputType = {
     id?: true
-    communityId?: true
-    userId?: true
-    assignedAt?: true
+    affiliateTokenId?: true
+    affiliateUserId?: true
+    referredUserId?: true
+    status?: true
+    createdAt?: true
+    completedAt?: true
   }
 
-  export type CommunityModeratorCountAggregateInputType = {
+  export type AffiliateRelationCountAggregateInputType = {
     id?: true
-    communityId?: true
-    userId?: true
-    assignedAt?: true
+    affiliateTokenId?: true
+    affiliateUserId?: true
+    referredUserId?: true
+    status?: true
+    createdAt?: true
+    completedAt?: true
     _all?: true
   }
 
-  export type CommunityModeratorAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which CommunityModerator to aggregate.
+     * Filter which AffiliateRelation to aggregate.
      */
-    where?: CommunityModeratorWhereInput
+    where?: AffiliateRelationWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityModerators to fetch.
+     * Determine the order of AffiliateRelations to fetch.
      */
-    orderBy?: CommunityModeratorOrderByWithRelationInput | CommunityModeratorOrderByWithRelationInput[]
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
      * Sets the start position
      */
-    cursor?: CommunityModeratorWhereUniqueInput
+    cursor?: AffiliateRelationWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityModerators from the position of the cursor.
+     * Take `±n` AffiliateRelations from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityModerators.
+     * Skip the first `n` AffiliateRelations.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Count returned CommunityModerators
+     * Count returned AffiliateRelations
     **/
-    _count?: true | CommunityModeratorCountAggregateInputType
+    _count?: true | AffiliateRelationCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the minimum value
     **/
-    _min?: CommunityModeratorMinAggregateInputType
+    _min?: AffiliateRelationMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
      * Select which fields to find the maximum value
     **/
-    _max?: CommunityModeratorMaxAggregateInputType
+    _max?: AffiliateRelationMaxAggregateInputType
   }
 
-  export type GetCommunityModeratorAggregateType<T extends CommunityModeratorAggregateArgs> = {
-        [P in keyof T & keyof AggregateCommunityModerator]: P extends '_count' | 'count'
+  export type GetAffiliateRelationAggregateType<T extends AffiliateRelationAggregateArgs> = {
+        [P in keyof T & keyof AggregateAffiliateRelation]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateCommunityModerator[P]>
-      : GetScalarType<T[P], AggregateCommunityModerator[P]>
+        : GetScalarType<T[P], AggregateAffiliateRelation[P]>
+      : GetScalarType<T[P], AggregateAffiliateRelation[P]>
   }
 
 
 
 
-  export type CommunityModeratorGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommunityModeratorWhereInput
-    orderBy?: CommunityModeratorOrderByWithAggregationInput | CommunityModeratorOrderByWithAggregationInput[]
-    by: CommunityModeratorScalarFieldEnum[] | CommunityModeratorScalarFieldEnum
-    having?: CommunityModeratorScalarWhereWithAggregatesInput
+  export type AffiliateRelationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AffiliateRelationWhereInput
+    orderBy?: AffiliateRelationOrderByWithAggregationInput | AffiliateRelationOrderByWithAggregationInput[]
+    by: AffiliateRelationScalarFieldEnum[] | AffiliateRelationScalarFieldEnum
+    having?: AffiliateRelationScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: CommunityModeratorCountAggregateInputType | true
-    _min?: CommunityModeratorMinAggregateInputType
-    _max?: CommunityModeratorMaxAggregateInputType
+    _count?: AffiliateRelationCountAggregateInputType | true
+    _min?: AffiliateRelationMinAggregateInputType
+    _max?: AffiliateRelationMaxAggregateInputType
   }
 
-  export type CommunityModeratorGroupByOutputType = {
+  export type AffiliateRelationGroupByOutputType = {
     id: string
-    communityId: string
-    userId: string
-    assignedAt: Date
-    _count: CommunityModeratorCountAggregateOutputType | null
-    _min: CommunityModeratorMinAggregateOutputType | null
-    _max: CommunityModeratorMaxAggregateOutputType | null
+    affiliateTokenId: string
+    affiliateUserId: string
+    referredUserId: string
+    status: string
+    createdAt: Date
+    completedAt: Date | null
+    _count: AffiliateRelationCountAggregateOutputType | null
+    _min: AffiliateRelationMinAggregateOutputType | null
+    _max: AffiliateRelationMaxAggregateOutputType | null
   }
 
-  type GetCommunityModeratorGroupByPayload<T extends CommunityModeratorGroupByArgs> = Prisma.PrismaPromise<
+  type GetAffiliateRelationGroupByPayload<T extends AffiliateRelationGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<CommunityModeratorGroupByOutputType, T['by']> &
+      PickEnumerable<AffiliateRelationGroupByOutputType, T['by']> &
         {
-          [P in ((keyof T) & (keyof CommunityModeratorGroupByOutputType))]: P extends '_count'
+          [P in ((keyof T) & (keyof AffiliateRelationGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
               ? number
-              : GetScalarType<T[P], CommunityModeratorGroupByOutputType[P]>
-            : GetScalarType<T[P], CommunityModeratorGroupByOutputType[P]>
+              : GetScalarType<T[P], AffiliateRelationGroupByOutputType[P]>
+            : GetScalarType<T[P], AffiliateRelationGroupByOutputType[P]>
         }
       >
     >
 
 
-  export type CommunityModeratorSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+  export type AffiliateRelationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    communityId?: boolean
-    userId?: boolean
-    assignedAt?: boolean
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["communityModerator"]>
+    affiliateTokenId?: boolean
+    affiliateUserId?: boolean
+    referredUserId?: boolean
+    status?: boolean
+    createdAt?: boolean
+    completedAt?: boolean
+    affiliateToken?: boolean | AffiliateTokenDefaultArgs<ExtArgs>
+    affiliateUser?: boolean | UserDefaultArgs<ExtArgs>
+    referredUser?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["affiliateRelation"]>
 
 
 
-  export type CommunityModeratorSelectScalar = {
+  export type AffiliateRelationSelectScalar = {
     id?: boolean
-    communityId?: boolean
-    userId?: boolean
-    assignedAt?: boolean
+    affiliateTokenId?: boolean
+    affiliateUserId?: boolean
+    referredUserId?: boolean
+    status?: boolean
+    createdAt?: boolean
+    completedAt?: boolean
   }
 
-  export type CommunityModeratorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "communityId" | "userId" | "assignedAt", ExtArgs["result"]["communityModerator"]>
-  export type CommunityModeratorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    user?: boolean | UserDefaultArgs<ExtArgs>
-    community?: boolean | CommunityDefaultArgs<ExtArgs>
+  export type AffiliateRelationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "affiliateTokenId" | "affiliateUserId" | "referredUserId" | "status" | "createdAt" | "completedAt", ExtArgs["result"]["affiliateRelation"]>
+  export type AffiliateRelationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    affiliateToken?: boolean | AffiliateTokenDefaultArgs<ExtArgs>
+    affiliateUser?: boolean | UserDefaultArgs<ExtArgs>
+    referredUser?: boolean | UserDefaultArgs<ExtArgs>
   }
 
-  export type $CommunityModeratorPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "CommunityModerator"
+  export type $AffiliateRelationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AffiliateRelation"
     objects: {
-      user: Prisma.$UserPayload<ExtArgs>
-      community: Prisma.$CommunityPayload<ExtArgs>
+      affiliateToken: Prisma.$AffiliateTokenPayload<ExtArgs>
+      affiliateUser: Prisma.$UserPayload<ExtArgs>
+      referredUser: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      communityId: string
-      userId: string
-      assignedAt: Date
-    }, ExtArgs["result"]["communityModerator"]>
+      affiliateTokenId: string
+      affiliateUserId: string
+      referredUserId: string
+      status: string
+      createdAt: Date
+      completedAt: Date | null
+    }, ExtArgs["result"]["affiliateRelation"]>
     composites: {}
   }
 
-  type CommunityModeratorGetPayload<S extends boolean | null | undefined | CommunityModeratorDefaultArgs> = $Result.GetResult<Prisma.$CommunityModeratorPayload, S>
+  type AffiliateRelationGetPayload<S extends boolean | null | undefined | AffiliateRelationDefaultArgs> = $Result.GetResult<Prisma.$AffiliateRelationPayload, S>
 
-  type CommunityModeratorCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<CommunityModeratorFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: CommunityModeratorCountAggregateInputType | true
+  type AffiliateRelationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AffiliateRelationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AffiliateRelationCountAggregateInputType | true
     }
 
-  export interface CommunityModeratorDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CommunityModerator'], meta: { name: 'CommunityModerator' } }
+  export interface AffiliateRelationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AffiliateRelation'], meta: { name: 'AffiliateRelation' } }
     /**
-     * Find zero or one CommunityModerator that matches the filter.
-     * @param {CommunityModeratorFindUniqueArgs} args - Arguments to find a CommunityModerator
+     * Find zero or one AffiliateRelation that matches the filter.
+     * @param {AffiliateRelationFindUniqueArgs} args - Arguments to find a AffiliateRelation
      * @example
-     * // Get one CommunityModerator
-     * const communityModerator = await prisma.communityModerator.findUnique({
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends CommunityModeratorFindUniqueArgs>(args: SelectSubset<T, CommunityModeratorFindUniqueArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findUnique<T extends AffiliateRelationFindUniqueArgs>(args: SelectSubset<T, AffiliateRelationFindUniqueArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one CommunityModerator that matches the filter or throw an error with `error.code='P2025'`
+     * Find one AffiliateRelation that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {CommunityModeratorFindUniqueOrThrowArgs} args - Arguments to find a CommunityModerator
+     * @param {AffiliateRelationFindUniqueOrThrowArgs} args - Arguments to find a AffiliateRelation
      * @example
-     * // Get one CommunityModerator
-     * const communityModerator = await prisma.communityModerator.findUniqueOrThrow({
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends CommunityModeratorFindUniqueOrThrowArgs>(args: SelectSubset<T, CommunityModeratorFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findUniqueOrThrow<T extends AffiliateRelationFindUniqueOrThrowArgs>(args: SelectSubset<T, AffiliateRelationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first CommunityModerator that matches the filter.
+     * Find the first AffiliateRelation that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityModeratorFindFirstArgs} args - Arguments to find a CommunityModerator
+     * @param {AffiliateRelationFindFirstArgs} args - Arguments to find a AffiliateRelation
      * @example
-     * // Get one CommunityModerator
-     * const communityModerator = await prisma.communityModerator.findFirst({
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends CommunityModeratorFindFirstArgs>(args?: SelectSubset<T, CommunityModeratorFindFirstArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    findFirst<T extends AffiliateRelationFindFirstArgs>(args?: SelectSubset<T, AffiliateRelationFindFirstArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first CommunityModerator that matches the filter or
+     * Find the first AffiliateRelation that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityModeratorFindFirstOrThrowArgs} args - Arguments to find a CommunityModerator
+     * @param {AffiliateRelationFindFirstOrThrowArgs} args - Arguments to find a AffiliateRelation
      * @example
-     * // Get one CommunityModerator
-     * const communityModerator = await prisma.communityModerator.findFirstOrThrow({
+     * // Get one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends CommunityModeratorFindFirstOrThrowArgs>(args?: SelectSubset<T, CommunityModeratorFindFirstOrThrowArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    findFirstOrThrow<T extends AffiliateRelationFindFirstOrThrowArgs>(args?: SelectSubset<T, AffiliateRelationFindFirstOrThrowArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more CommunityModerators that matches the filter.
+     * Find zero or more AffiliateRelations that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityModeratorFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {AffiliateRelationFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all CommunityModerators
-     * const communityModerators = await prisma.communityModerator.findMany()
+     * // Get all AffiliateRelations
+     * const affiliateRelations = await prisma.affiliateRelation.findMany()
      * 
-     * // Get first 10 CommunityModerators
-     * const communityModerators = await prisma.communityModerator.findMany({ take: 10 })
+     * // Get first 10 AffiliateRelations
+     * const affiliateRelations = await prisma.affiliateRelation.findMany({ take: 10 })
      * 
      * // Only select the `id`
-     * const communityModeratorWithIdOnly = await prisma.communityModerator.findMany({ select: { id: true } })
+     * const affiliateRelationWithIdOnly = await prisma.affiliateRelation.findMany({ select: { id: true } })
      * 
      */
-    findMany<T extends CommunityModeratorFindManyArgs>(args?: SelectSubset<T, CommunityModeratorFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+    findMany<T extends AffiliateRelationFindManyArgs>(args?: SelectSubset<T, AffiliateRelationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a CommunityModerator.
-     * @param {CommunityModeratorCreateArgs} args - Arguments to create a CommunityModerator.
+     * Create a AffiliateRelation.
+     * @param {AffiliateRelationCreateArgs} args - Arguments to create a AffiliateRelation.
      * @example
-     * // Create one CommunityModerator
-     * const CommunityModerator = await prisma.communityModerator.create({
+     * // Create one AffiliateRelation
+     * const AffiliateRelation = await prisma.affiliateRelation.create({
      *   data: {
-     *     // ... data to create a CommunityModerator
+     *     // ... data to create a AffiliateRelation
      *   }
      * })
      * 
      */
-    create<T extends CommunityModeratorCreateArgs>(args: SelectSubset<T, CommunityModeratorCreateArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    create<T extends AffiliateRelationCreateArgs>(args: SelectSubset<T, AffiliateRelationCreateArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many CommunityModerators.
-     * @param {CommunityModeratorCreateManyArgs} args - Arguments to create many CommunityModerators.
+     * Create many AffiliateRelations.
+     * @param {AffiliateRelationCreateManyArgs} args - Arguments to create many AffiliateRelations.
      * @example
-     * // Create many CommunityModerators
-     * const communityModerator = await prisma.communityModerator.createMany({
+     * // Create many AffiliateRelations
+     * const affiliateRelation = await prisma.affiliateRelation.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
      *     
      */
-    createMany<T extends CommunityModeratorCreateManyArgs>(args?: SelectSubset<T, CommunityModeratorCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends AffiliateRelationCreateManyArgs>(args?: SelectSubset<T, AffiliateRelationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Delete a CommunityModerator.
-     * @param {CommunityModeratorDeleteArgs} args - Arguments to delete one CommunityModerator.
+     * Delete a AffiliateRelation.
+     * @param {AffiliateRelationDeleteArgs} args - Arguments to delete one AffiliateRelation.
      * @example
-     * // Delete one CommunityModerator
-     * const CommunityModerator = await prisma.communityModerator.delete({
+     * // Delete one AffiliateRelation
+     * const AffiliateRelation = await prisma.affiliateRelation.delete({
      *   where: {
-     *     // ... filter to delete one CommunityModerator
+     *     // ... filter to delete one AffiliateRelation
      *   }
      * })
      * 
      */
-    delete<T extends CommunityModeratorDeleteArgs>(args: SelectSubset<T, CommunityModeratorDeleteArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    delete<T extends AffiliateRelationDeleteArgs>(args: SelectSubset<T, AffiliateRelationDeleteArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one CommunityModerator.
-     * @param {CommunityModeratorUpdateArgs} args - Arguments to update one CommunityModerator.
+     * Update one AffiliateRelation.
+     * @param {AffiliateRelationUpdateArgs} args - Arguments to update one AffiliateRelation.
      * @example
-     * // Update one CommunityModerator
-     * const communityModerator = await prisma.communityModerator.update({
+     * // Update one AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -22179,30 +22466,30 @@ export namespace Prisma {
      * })
      * 
      */
-    update<T extends CommunityModeratorUpdateArgs>(args: SelectSubset<T, CommunityModeratorUpdateArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    update<T extends AffiliateRelationUpdateArgs>(args: SelectSubset<T, AffiliateRelationUpdateArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more CommunityModerators.
-     * @param {CommunityModeratorDeleteManyArgs} args - Arguments to filter CommunityModerators to delete.
+     * Delete zero or more AffiliateRelations.
+     * @param {AffiliateRelationDeleteManyArgs} args - Arguments to filter AffiliateRelations to delete.
      * @example
-     * // Delete a few CommunityModerators
-     * const { count } = await prisma.communityModerator.deleteMany({
+     * // Delete a few AffiliateRelations
+     * const { count } = await prisma.affiliateRelation.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      * 
      */
-    deleteMany<T extends CommunityModeratorDeleteManyArgs>(args?: SelectSubset<T, CommunityModeratorDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends AffiliateRelationDeleteManyArgs>(args?: SelectSubset<T, AffiliateRelationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more CommunityModerators.
+     * Update zero or more AffiliateRelations.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityModeratorUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {AffiliateRelationUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many CommunityModerators
-     * const communityModerator = await prisma.communityModerator.updateMany({
+     * // Update many AffiliateRelations
+     * const affiliateRelation = await prisma.affiliateRelation.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -22212,79 +22499,79 @@ export namespace Prisma {
      * })
      * 
      */
-    updateMany<T extends CommunityModeratorUpdateManyArgs>(args: SelectSubset<T, CommunityModeratorUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends AffiliateRelationUpdateManyArgs>(args: SelectSubset<T, AffiliateRelationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create or update one CommunityModerator.
-     * @param {CommunityModeratorUpsertArgs} args - Arguments to update or create a CommunityModerator.
+     * Create or update one AffiliateRelation.
+     * @param {AffiliateRelationUpsertArgs} args - Arguments to update or create a AffiliateRelation.
      * @example
-     * // Update or create a CommunityModerator
-     * const communityModerator = await prisma.communityModerator.upsert({
+     * // Update or create a AffiliateRelation
+     * const affiliateRelation = await prisma.affiliateRelation.upsert({
      *   create: {
-     *     // ... data to create a CommunityModerator
+     *     // ... data to create a AffiliateRelation
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the CommunityModerator we want to update
+     *     // ... the filter for the AffiliateRelation we want to update
      *   }
      * })
      */
-    upsert<T extends CommunityModeratorUpsertArgs>(args: SelectSubset<T, CommunityModeratorUpsertArgs<ExtArgs>>): Prisma__CommunityModeratorClient<$Result.GetResult<Prisma.$CommunityModeratorPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+    upsert<T extends AffiliateRelationUpsertArgs>(args: SelectSubset<T, AffiliateRelationUpsertArgs<ExtArgs>>): Prisma__AffiliateRelationClient<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more CommunityModerators that matches the filter.
-     * @param {CommunityModeratorFindRawArgs} args - Select which filters you would like to apply.
+     * Find zero or more AffiliateRelations that matches the filter.
+     * @param {AffiliateRelationFindRawArgs} args - Select which filters you would like to apply.
      * @example
-     * const communityModerator = await prisma.communityModerator.findRaw({
+     * const affiliateRelation = await prisma.affiliateRelation.findRaw({
      *   filter: { age: { $gt: 25 } }
      * })
      */
-    findRaw(args?: CommunityModeratorFindRawArgs): Prisma.PrismaPromise<JsonObject>
+    findRaw(args?: AffiliateRelationFindRawArgs): Prisma.PrismaPromise<JsonObject>
 
     /**
-     * Perform aggregation operations on a CommunityModerator.
-     * @param {CommunityModeratorAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * Perform aggregation operations on a AffiliateRelation.
+     * @param {AffiliateRelationAggregateRawArgs} args - Select which aggregations you would like to apply.
      * @example
-     * const communityModerator = await prisma.communityModerator.aggregateRaw({
+     * const affiliateRelation = await prisma.affiliateRelation.aggregateRaw({
      *   pipeline: [
      *     { $match: { status: "registered" } },
      *     { $group: { _id: "$country", total: { $sum: 1 } } }
      *   ]
      * })
      */
-    aggregateRaw(args?: CommunityModeratorAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+    aggregateRaw(args?: AffiliateRelationAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
 
 
     /**
-     * Count the number of CommunityModerators.
+     * Count the number of AffiliateRelations.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityModeratorCountArgs} args - Arguments to filter CommunityModerators to count.
+     * @param {AffiliateRelationCountArgs} args - Arguments to filter AffiliateRelations to count.
      * @example
-     * // Count the number of CommunityModerators
-     * const count = await prisma.communityModerator.count({
+     * // Count the number of AffiliateRelations
+     * const count = await prisma.affiliateRelation.count({
      *   where: {
-     *     // ... the filter for the CommunityModerators we want to count
+     *     // ... the filter for the AffiliateRelations we want to count
      *   }
      * })
     **/
-    count<T extends CommunityModeratorCountArgs>(
-      args?: Subset<T, CommunityModeratorCountArgs>,
+    count<T extends AffiliateRelationCountArgs>(
+      args?: Subset<T, AffiliateRelationCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], CommunityModeratorCountAggregateOutputType>
+          : GetScalarType<T['select'], AffiliateRelationCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a CommunityModerator.
+     * Allows you to perform aggregations operations on a AffiliateRelation.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityModeratorAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {AffiliateRelationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -22304,13 +22591,13 @@ export namespace Prisma {
      *   take: 10,
      * })
     **/
-    aggregate<T extends CommunityModeratorAggregateArgs>(args: Subset<T, CommunityModeratorAggregateArgs>): Prisma.PrismaPromise<GetCommunityModeratorAggregateType<T>>
+    aggregate<T extends AffiliateRelationAggregateArgs>(args: Subset<T, AffiliateRelationAggregateArgs>): Prisma.PrismaPromise<GetAffiliateRelationAggregateType<T>>
 
     /**
-     * Group by CommunityModerator.
+     * Group by AffiliateRelation.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {CommunityModeratorGroupByArgs} args - Group by arguments.
+     * @param {AffiliateRelationGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -22325,14 +22612,14 @@ export namespace Prisma {
      * 
     **/
     groupBy<
-      T extends CommunityModeratorGroupByArgs,
+      T extends AffiliateRelationGroupByArgs,
       HasSelectOrTake extends Or<
         Extends<'skip', Keys<T>>,
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: CommunityModeratorGroupByArgs['orderBy'] }
-        : { orderBy?: CommunityModeratorGroupByArgs['orderBy'] },
+        ? { orderBy: AffiliateRelationGroupByArgs['orderBy'] }
+        : { orderBy?: AffiliateRelationGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -22381,23 +22668,24 @@ export namespace Prisma {
             ? never
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
-    >(args: SubsetIntersection<T, CommunityModeratorGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCommunityModeratorGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+    >(args: SubsetIntersection<T, AffiliateRelationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAffiliateRelationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
   /**
-   * Fields of the CommunityModerator model
+   * Fields of the AffiliateRelation model
    */
-  readonly fields: CommunityModeratorFieldRefs;
+  readonly fields: AffiliateRelationFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for CommunityModerator.
+   * The delegate class that acts as a "Promise-like" for AffiliateRelation.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__CommunityModeratorClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+  export interface Prisma__AffiliateRelationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    community<T extends CommunityDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CommunityDefaultArgs<ExtArgs>>): Prisma__CommunityClient<$Result.GetResult<Prisma.$CommunityPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    affiliateToken<T extends AffiliateTokenDefaultArgs<ExtArgs> = {}>(args?: Subset<T, AffiliateTokenDefaultArgs<ExtArgs>>): Prisma__AffiliateTokenClient<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    affiliateUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    referredUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -22424,358 +22712,361 @@ export namespace Prisma {
 
 
   /**
-   * Fields of the CommunityModerator model
+   * Fields of the AffiliateRelation model
    */
-  interface CommunityModeratorFieldRefs {
-    readonly id: FieldRef<"CommunityModerator", 'String'>
-    readonly communityId: FieldRef<"CommunityModerator", 'String'>
-    readonly userId: FieldRef<"CommunityModerator", 'String'>
-    readonly assignedAt: FieldRef<"CommunityModerator", 'DateTime'>
+  interface AffiliateRelationFieldRefs {
+    readonly id: FieldRef<"AffiliateRelation", 'String'>
+    readonly affiliateTokenId: FieldRef<"AffiliateRelation", 'String'>
+    readonly affiliateUserId: FieldRef<"AffiliateRelation", 'String'>
+    readonly referredUserId: FieldRef<"AffiliateRelation", 'String'>
+    readonly status: FieldRef<"AffiliateRelation", 'String'>
+    readonly createdAt: FieldRef<"AffiliateRelation", 'DateTime'>
+    readonly completedAt: FieldRef<"AffiliateRelation", 'DateTime'>
   }
     
 
   // Custom InputTypes
   /**
-   * CommunityModerator findUnique
+   * AffiliateRelation findUnique
    */
-  export type CommunityModeratorFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityModerator to fetch.
+     * Filter, which AffiliateRelation to fetch.
      */
-    where: CommunityModeratorWhereUniqueInput
+    where: AffiliateRelationWhereUniqueInput
   }
 
   /**
-   * CommunityModerator findUniqueOrThrow
+   * AffiliateRelation findUniqueOrThrow
    */
-  export type CommunityModeratorFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityModerator to fetch.
+     * Filter, which AffiliateRelation to fetch.
      */
-    where: CommunityModeratorWhereUniqueInput
+    where: AffiliateRelationWhereUniqueInput
   }
 
   /**
-   * CommunityModerator findFirst
+   * AffiliateRelation findFirst
    */
-  export type CommunityModeratorFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityModerator to fetch.
+     * Filter, which AffiliateRelation to fetch.
      */
-    where?: CommunityModeratorWhereInput
+    where?: AffiliateRelationWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityModerators to fetch.
+     * Determine the order of AffiliateRelations to fetch.
      */
-    orderBy?: CommunityModeratorOrderByWithRelationInput | CommunityModeratorOrderByWithRelationInput[]
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for CommunityModerators.
+     * Sets the position for searching for AffiliateRelations.
      */
-    cursor?: CommunityModeratorWhereUniqueInput
+    cursor?: AffiliateRelationWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityModerators from the position of the cursor.
+     * Take `±n` AffiliateRelations from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityModerators.
+     * Skip the first `n` AffiliateRelations.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of CommunityModerators.
+     * Filter by unique combinations of AffiliateRelations.
      */
-    distinct?: CommunityModeratorScalarFieldEnum | CommunityModeratorScalarFieldEnum[]
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
   }
 
   /**
-   * CommunityModerator findFirstOrThrow
+   * AffiliateRelation findFirstOrThrow
    */
-  export type CommunityModeratorFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityModerator to fetch.
+     * Filter, which AffiliateRelation to fetch.
      */
-    where?: CommunityModeratorWhereInput
+    where?: AffiliateRelationWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityModerators to fetch.
+     * Determine the order of AffiliateRelations to fetch.
      */
-    orderBy?: CommunityModeratorOrderByWithRelationInput | CommunityModeratorOrderByWithRelationInput[]
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for searching for CommunityModerators.
+     * Sets the position for searching for AffiliateRelations.
      */
-    cursor?: CommunityModeratorWhereUniqueInput
+    cursor?: AffiliateRelationWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityModerators from the position of the cursor.
+     * Take `±n` AffiliateRelations from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityModerators.
+     * Skip the first `n` AffiliateRelations.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
      * 
-     * Filter by unique combinations of CommunityModerators.
+     * Filter by unique combinations of AffiliateRelations.
      */
-    distinct?: CommunityModeratorScalarFieldEnum | CommunityModeratorScalarFieldEnum[]
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
   }
 
   /**
-   * CommunityModerator findMany
+   * AffiliateRelation findMany
    */
-  export type CommunityModeratorFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * Filter, which CommunityModerators to fetch.
+     * Filter, which AffiliateRelations to fetch.
      */
-    where?: CommunityModeratorWhereInput
+    where?: AffiliateRelationWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
      * 
-     * Determine the order of CommunityModerators to fetch.
+     * Determine the order of AffiliateRelations to fetch.
      */
-    orderBy?: CommunityModeratorOrderByWithRelationInput | CommunityModeratorOrderByWithRelationInput[]
+    orderBy?: AffiliateRelationOrderByWithRelationInput | AffiliateRelationOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
-     * Sets the position for listing CommunityModerators.
+     * Sets the position for listing AffiliateRelations.
      */
-    cursor?: CommunityModeratorWhereUniqueInput
+    cursor?: AffiliateRelationWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Take `±n` CommunityModerators from the position of the cursor.
+     * Take `±n` AffiliateRelations from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
      * 
-     * Skip the first `n` CommunityModerators.
+     * Skip the first `n` AffiliateRelations.
      */
     skip?: number
-    distinct?: CommunityModeratorScalarFieldEnum | CommunityModeratorScalarFieldEnum[]
+    distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
   }
 
   /**
-   * CommunityModerator create
+   * AffiliateRelation create
    */
-  export type CommunityModeratorCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * The data needed to create a CommunityModerator.
+     * The data needed to create a AffiliateRelation.
      */
-    data: XOR<CommunityModeratorCreateInput, CommunityModeratorUncheckedCreateInput>
+    data: XOR<AffiliateRelationCreateInput, AffiliateRelationUncheckedCreateInput>
   }
 
   /**
-   * CommunityModerator createMany
+   * AffiliateRelation createMany
    */
-  export type CommunityModeratorCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many CommunityModerators.
+     * The data used to create many AffiliateRelations.
      */
-    data: CommunityModeratorCreateManyInput | CommunityModeratorCreateManyInput[]
+    data: AffiliateRelationCreateManyInput | AffiliateRelationCreateManyInput[]
   }
 
   /**
-   * CommunityModerator update
+   * AffiliateRelation update
    */
-  export type CommunityModeratorUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * The data needed to update a CommunityModerator.
+     * The data needed to update a AffiliateRelation.
      */
-    data: XOR<CommunityModeratorUpdateInput, CommunityModeratorUncheckedUpdateInput>
+    data: XOR<AffiliateRelationUpdateInput, AffiliateRelationUncheckedUpdateInput>
     /**
-     * Choose, which CommunityModerator to update.
+     * Choose, which AffiliateRelation to update.
      */
-    where: CommunityModeratorWhereUniqueInput
+    where: AffiliateRelationWhereUniqueInput
   }
 
   /**
-   * CommunityModerator updateMany
+   * AffiliateRelation updateMany
    */
-  export type CommunityModeratorUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update CommunityModerators.
+     * The data used to update AffiliateRelations.
      */
-    data: XOR<CommunityModeratorUpdateManyMutationInput, CommunityModeratorUncheckedUpdateManyInput>
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyInput>
     /**
-     * Filter which CommunityModerators to update
+     * Filter which AffiliateRelations to update
      */
-    where?: CommunityModeratorWhereInput
+    where?: AffiliateRelationWhereInput
     /**
-     * Limit how many CommunityModerators to update.
+     * Limit how many AffiliateRelations to update.
      */
     limit?: number
   }
 
   /**
-   * CommunityModerator upsert
+   * AffiliateRelation upsert
    */
-  export type CommunityModeratorUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * The filter to search for the CommunityModerator to update in case it exists.
+     * The filter to search for the AffiliateRelation to update in case it exists.
      */
-    where: CommunityModeratorWhereUniqueInput
+    where: AffiliateRelationWhereUniqueInput
     /**
-     * In case the CommunityModerator found by the `where` argument doesn't exist, create a new CommunityModerator with this data.
+     * In case the AffiliateRelation found by the `where` argument doesn't exist, create a new AffiliateRelation with this data.
      */
-    create: XOR<CommunityModeratorCreateInput, CommunityModeratorUncheckedCreateInput>
+    create: XOR<AffiliateRelationCreateInput, AffiliateRelationUncheckedCreateInput>
     /**
-     * In case the CommunityModerator was found with the provided `where` argument, update it with this data.
+     * In case the AffiliateRelation was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<CommunityModeratorUpdateInput, CommunityModeratorUncheckedUpdateInput>
+    update: XOR<AffiliateRelationUpdateInput, AffiliateRelationUncheckedUpdateInput>
   }
 
   /**
-   * CommunityModerator delete
+   * AffiliateRelation delete
    */
-  export type CommunityModeratorDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
     /**
-     * Filter which CommunityModerator to delete.
+     * Filter which AffiliateRelation to delete.
      */
-    where: CommunityModeratorWhereUniqueInput
+    where: AffiliateRelationWhereUniqueInput
   }
 
   /**
-   * CommunityModerator deleteMany
+   * AffiliateRelation deleteMany
    */
-  export type CommunityModeratorDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which CommunityModerators to delete
+     * Filter which AffiliateRelations to delete
      */
-    where?: CommunityModeratorWhereInput
+    where?: AffiliateRelationWhereInput
     /**
-     * Limit how many CommunityModerators to delete.
+     * Limit how many AffiliateRelations to delete.
      */
     limit?: number
   }
 
   /**
-   * CommunityModerator findRaw
+   * AffiliateRelation findRaw
    */
-  export type CommunityModeratorFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
      */
@@ -22787,9 +23078,9 @@ export namespace Prisma {
   }
 
   /**
-   * CommunityModerator aggregateRaw
+   * AffiliateRelation aggregateRaw
    */
-  export type CommunityModeratorAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
      */
@@ -22801,21 +23092,21 @@ export namespace Prisma {
   }
 
   /**
-   * CommunityModerator without action
+   * AffiliateRelation without action
    */
-  export type CommunityModeratorDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type AffiliateRelationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the CommunityModerator
+     * Select specific fields to fetch from the AffiliateRelation
      */
-    select?: CommunityModeratorSelect<ExtArgs> | null
+    select?: AffiliateRelationSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the CommunityModerator
+     * Omit specific fields from the AffiliateRelation
      */
-    omit?: CommunityModeratorOmit<ExtArgs> | null
+    omit?: AffiliateRelationOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: CommunityModeratorInclude<ExtArgs> | null
+    include?: AffiliateRelationInclude<ExtArgs> | null
   }
 
 
@@ -22828,6 +23119,7 @@ export namespace Prisma {
     username: 'username',
     firstName: 'firstName',
     lastName: 'lastName',
+    bio: 'bio',
     email: 'email',
     phoneNumber: 'phoneNumber',
     password: 'password',
@@ -22986,14 +23278,16 @@ export namespace Prisma {
   export type MessageTranslationScalarFieldEnum = (typeof MessageTranslationScalarFieldEnum)[keyof typeof MessageTranslationScalarFieldEnum]
 
 
-  export const MessageReadStatusScalarFieldEnum: {
+  export const MessageStatusScalarFieldEnum: {
     id: 'id',
     messageId: 'messageId',
     userId: 'userId',
-    readAt: 'readAt'
+    receivedAt: 'receivedAt',
+    readAt: 'readAt',
+    answer: 'answer'
   };
 
-  export type MessageReadStatusScalarFieldEnum = (typeof MessageReadStatusScalarFieldEnum)[keyof typeof MessageReadStatusScalarFieldEnum]
+  export type MessageStatusScalarFieldEnum = (typeof MessageStatusScalarFieldEnum)[keyof typeof MessageStatusScalarFieldEnum]
 
 
   export const FriendRequestScalarFieldEnum: {
@@ -23040,6 +23334,7 @@ export namespace Prisma {
 
   export const CommunityScalarFieldEnum: {
     id: 'id',
+    identifier: 'identifier',
     name: 'name',
     description: 'description',
     avatar: 'avatar',
@@ -23056,7 +23351,8 @@ export namespace Prisma {
     id: 'id',
     communityId: 'communityId',
     userId: 'userId',
-    joinedAt: 'joinedAt'
+    joinedAt: 'joinedAt',
+    role: 'role'
   };
 
   export type CommunityMemberScalarFieldEnum = (typeof CommunityMemberScalarFieldEnum)[keyof typeof CommunityMemberScalarFieldEnum]
@@ -23116,24 +23412,33 @@ export namespace Prisma {
   export type ConversationPreferenceScalarFieldEnum = (typeof ConversationPreferenceScalarFieldEnum)[keyof typeof ConversationPreferenceScalarFieldEnum]
 
 
-  export const CommunityAdminScalarFieldEnum: {
+  export const AffiliateTokenScalarFieldEnum: {
     id: 'id',
-    communityId: 'communityId',
-    userId: 'userId',
-    assignedAt: 'assignedAt'
+    token: 'token',
+    name: 'name',
+    createdBy: 'createdBy',
+    maxUses: 'maxUses',
+    currentUses: 'currentUses',
+    expiresAt: 'expiresAt',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
-  export type CommunityAdminScalarFieldEnum = (typeof CommunityAdminScalarFieldEnum)[keyof typeof CommunityAdminScalarFieldEnum]
+  export type AffiliateTokenScalarFieldEnum = (typeof AffiliateTokenScalarFieldEnum)[keyof typeof AffiliateTokenScalarFieldEnum]
 
 
-  export const CommunityModeratorScalarFieldEnum: {
+  export const AffiliateRelationScalarFieldEnum: {
     id: 'id',
-    communityId: 'communityId',
-    userId: 'userId',
-    assignedAt: 'assignedAt'
+    affiliateTokenId: 'affiliateTokenId',
+    affiliateUserId: 'affiliateUserId',
+    referredUserId: 'referredUserId',
+    status: 'status',
+    createdAt: 'createdAt',
+    completedAt: 'completedAt'
   };
 
-  export type CommunityModeratorScalarFieldEnum = (typeof CommunityModeratorScalarFieldEnum)[keyof typeof CommunityModeratorScalarFieldEnum]
+  export type AffiliateRelationScalarFieldEnum = (typeof AffiliateRelationScalarFieldEnum)[keyof typeof AffiliateRelationScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -23231,6 +23536,7 @@ export namespace Prisma {
     username?: StringFilter<"User"> | string
     firstName?: StringFilter<"User"> | string
     lastName?: StringFilter<"User"> | string
+    bio?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     phoneNumber?: StringNullableFilter<"User"> | string | null
     password?: StringFilter<"User"> | string
@@ -23258,14 +23564,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkListRelationFilter
     receivedFriendRequests?: FriendRequestListRelationFilter
     sentFriendRequests?: FriendRequestListRelationFilter
-    messageReadStatus?: MessageReadStatusListRelationFilter
+    messageStatus?: MessageStatusListRelationFilter
     sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
     stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
-    communityAdmins?: CommunityAdminListRelationFilter
-    communityModerators?: CommunityModeratorListRelationFilter
+    createdAffiliateTokens?: AffiliateTokenListRelationFilter
+    affiliateRelations?: AffiliateRelationListRelationFilter
+    referredRelations?: AffiliateRelationListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -23273,6 +23580,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -23300,14 +23608,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkOrderByRelationAggregateInput
     receivedFriendRequests?: FriendRequestOrderByRelationAggregateInput
     sentFriendRequests?: FriendRequestOrderByRelationAggregateInput
-    messageReadStatus?: MessageReadStatusOrderByRelationAggregateInput
+    messageStatus?: MessageStatusOrderByRelationAggregateInput
     sentMessages?: MessageOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
     typingIndicators?: TypingIndicatorOrderByRelationAggregateInput
     preferences?: UserPreferenceOrderByRelationAggregateInput
     stats?: UserStatsOrderByWithRelationInput
-    communityAdmins?: CommunityAdminOrderByRelationAggregateInput
-    communityModerators?: CommunityModeratorOrderByRelationAggregateInput
+    createdAffiliateTokens?: AffiliateTokenOrderByRelationAggregateInput
+    affiliateRelations?: AffiliateRelationOrderByRelationAggregateInput
+    referredRelations?: AffiliateRelationOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -23319,6 +23628,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     firstName?: StringFilter<"User"> | string
     lastName?: StringFilter<"User"> | string
+    bio?: StringFilter<"User"> | string
     phoneNumber?: StringNullableFilter<"User"> | string | null
     password?: StringFilter<"User"> | string
     displayName?: StringNullableFilter<"User"> | string | null
@@ -23345,14 +23655,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkListRelationFilter
     receivedFriendRequests?: FriendRequestListRelationFilter
     sentFriendRequests?: FriendRequestListRelationFilter
-    messageReadStatus?: MessageReadStatusListRelationFilter
+    messageStatus?: MessageStatusListRelationFilter
     sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
     stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
-    communityAdmins?: CommunityAdminListRelationFilter
-    communityModerators?: CommunityModeratorListRelationFilter
+    createdAffiliateTokens?: AffiliateTokenListRelationFilter
+    affiliateRelations?: AffiliateRelationListRelationFilter
+    referredRelations?: AffiliateRelationListRelationFilter
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -23360,6 +23671,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -23393,6 +23705,7 @@ export namespace Prisma {
     username?: StringWithAggregatesFilter<"User"> | string
     firstName?: StringWithAggregatesFilter<"User"> | string
     lastName?: StringWithAggregatesFilter<"User"> | string
+    bio?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     phoneNumber?: StringNullableWithAggregatesFilter<"User"> | string | null
     password?: StringWithAggregatesFilter<"User"> | string
@@ -23958,7 +24271,8 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
-    readStatus?: MessageReadStatusListRelationFilter
+    status?: MessageStatusListRelationFilter
+    statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
@@ -23982,7 +24296,8 @@ export namespace Prisma {
     replyToId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    readStatus?: MessageReadStatusOrderByRelationAggregateInput
+    status?: MessageStatusOrderByRelationAggregateInput
+    statusResponses?: MessageStatusOrderByRelationAggregateInput
     translations?: MessageTranslationOrderByRelationAggregateInput
     replyTo?: MessageOrderByWithRelationInput
     replies?: MessageOrderByRelationAggregateInput
@@ -24009,7 +24324,8 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
-    readStatus?: MessageReadStatusListRelationFilter
+    status?: MessageStatusListRelationFilter
+    statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
     replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
@@ -24135,57 +24451,71 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"MessageTranslation"> | Date | string
   }
 
-  export type MessageReadStatusWhereInput = {
-    AND?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    OR?: MessageReadStatusWhereInput[]
-    NOT?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    id?: StringFilter<"MessageReadStatus"> | string
-    messageId?: StringFilter<"MessageReadStatus"> | string
-    userId?: StringFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+  export type MessageStatusWhereInput = {
+    AND?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    OR?: MessageStatusWhereInput[]
+    NOT?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    id?: StringFilter<"MessageStatus"> | string
+    messageId?: StringFilter<"MessageStatus"> | string
+    userId?: StringFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableFilter<"MessageStatus"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }
 
-  export type MessageReadStatusOrderByWithRelationInput = {
+  export type MessageStatusOrderByWithRelationInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
+    answer?: SortOrder
     user?: UserOrderByWithRelationInput
     message?: MessageOrderByWithRelationInput
+    response?: MessageOrderByWithRelationInput
   }
 
-  export type MessageReadStatusWhereUniqueInput = Prisma.AtLeast<{
+  export type MessageStatusWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    OR?: MessageReadStatusWhereInput[]
-    NOT?: MessageReadStatusWhereInput | MessageReadStatusWhereInput[]
-    messageId?: StringFilter<"MessageReadStatus"> | string
-    userId?: StringFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+    messageId_userId?: MessageStatusMessageId_userIdCompoundUniqueInput
+    AND?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    OR?: MessageStatusWhereInput[]
+    NOT?: MessageStatusWhereInput | MessageStatusWhereInput[]
+    messageId?: StringFilter<"MessageStatus"> | string
+    userId?: StringFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableFilter<"MessageStatus"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
-  }, "id">
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
+  }, "id" | "messageId_userId">
 
-  export type MessageReadStatusOrderByWithAggregationInput = {
+  export type MessageStatusOrderByWithAggregationInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
-    _count?: MessageReadStatusCountOrderByAggregateInput
-    _max?: MessageReadStatusMaxOrderByAggregateInput
-    _min?: MessageReadStatusMinOrderByAggregateInput
+    answer?: SortOrder
+    _count?: MessageStatusCountOrderByAggregateInput
+    _max?: MessageStatusMaxOrderByAggregateInput
+    _min?: MessageStatusMinOrderByAggregateInput
   }
 
-  export type MessageReadStatusScalarWhereWithAggregatesInput = {
-    AND?: MessageReadStatusScalarWhereWithAggregatesInput | MessageReadStatusScalarWhereWithAggregatesInput[]
-    OR?: MessageReadStatusScalarWhereWithAggregatesInput[]
-    NOT?: MessageReadStatusScalarWhereWithAggregatesInput | MessageReadStatusScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"MessageReadStatus"> | string
-    messageId?: StringWithAggregatesFilter<"MessageReadStatus"> | string
-    userId?: StringWithAggregatesFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeWithAggregatesFilter<"MessageReadStatus"> | Date | string
+  export type MessageStatusScalarWhereWithAggregatesInput = {
+    AND?: MessageStatusScalarWhereWithAggregatesInput | MessageStatusScalarWhereWithAggregatesInput[]
+    OR?: MessageStatusScalarWhereWithAggregatesInput[]
+    NOT?: MessageStatusScalarWhereWithAggregatesInput | MessageStatusScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MessageStatus"> | string
+    messageId?: StringWithAggregatesFilter<"MessageStatus"> | string
+    userId?: StringWithAggregatesFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableWithAggregatesFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableWithAggregatesFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableWithAggregatesFilter<"MessageStatus"> | string | null
   }
 
   export type FriendRequestWhereInput = {
@@ -24409,6 +24739,7 @@ export namespace Prisma {
     OR?: CommunityWhereInput[]
     NOT?: CommunityWhereInput | CommunityWhereInput[]
     id?: StringFilter<"Community"> | string
+    identifier?: StringNullableFilter<"Community"> | string | null
     name?: StringFilter<"Community"> | string
     description?: StringNullableFilter<"Community"> | string | null
     avatar?: StringNullableFilter<"Community"> | string | null
@@ -24418,13 +24749,12 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Community"> | Date | string
     members?: CommunityMemberListRelationFilter
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
-    admins?: CommunityAdminListRelationFilter
-    moderators?: CommunityModeratorListRelationFilter
     Conversation?: ConversationListRelationFilter
   }
 
   export type CommunityOrderByWithRelationInput = {
     id?: SortOrder
+    identifier?: SortOrder
     name?: SortOrder
     description?: SortOrder
     avatar?: SortOrder
@@ -24434,13 +24764,12 @@ export namespace Prisma {
     updatedAt?: SortOrder
     members?: CommunityMemberOrderByRelationAggregateInput
     creator?: UserOrderByWithRelationInput
-    admins?: CommunityAdminOrderByRelationAggregateInput
-    moderators?: CommunityModeratorOrderByRelationAggregateInput
     Conversation?: ConversationOrderByRelationAggregateInput
   }
 
   export type CommunityWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    identifier?: string
     AND?: CommunityWhereInput | CommunityWhereInput[]
     OR?: CommunityWhereInput[]
     NOT?: CommunityWhereInput | CommunityWhereInput[]
@@ -24453,13 +24782,12 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Community"> | Date | string
     members?: CommunityMemberListRelationFilter
     creator?: XOR<UserScalarRelationFilter, UserWhereInput>
-    admins?: CommunityAdminListRelationFilter
-    moderators?: CommunityModeratorListRelationFilter
     Conversation?: ConversationListRelationFilter
-  }, "id">
+  }, "id" | "identifier">
 
   export type CommunityOrderByWithAggregationInput = {
     id?: SortOrder
+    identifier?: SortOrder
     name?: SortOrder
     description?: SortOrder
     avatar?: SortOrder
@@ -24477,6 +24805,7 @@ export namespace Prisma {
     OR?: CommunityScalarWhereWithAggregatesInput[]
     NOT?: CommunityScalarWhereWithAggregatesInput | CommunityScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Community"> | string
+    identifier?: StringNullableWithAggregatesFilter<"Community"> | string | null
     name?: StringWithAggregatesFilter<"Community"> | string
     description?: StringNullableWithAggregatesFilter<"Community"> | string | null
     avatar?: StringNullableWithAggregatesFilter<"Community"> | string | null
@@ -24494,6 +24823,7 @@ export namespace Prisma {
     communityId?: StringFilter<"CommunityMember"> | string
     userId?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
+    role?: StringFilter<"CommunityMember"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }
@@ -24503,6 +24833,7 @@ export namespace Prisma {
     communityId?: SortOrder
     userId?: SortOrder
     joinedAt?: SortOrder
+    role?: SortOrder
     user?: UserOrderByWithRelationInput
     community?: CommunityOrderByWithRelationInput
   }
@@ -24515,6 +24846,7 @@ export namespace Prisma {
     communityId?: StringFilter<"CommunityMember"> | string
     userId?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
+    role?: StringFilter<"CommunityMember"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }, "id">
@@ -24524,6 +24856,7 @@ export namespace Prisma {
     communityId?: SortOrder
     userId?: SortOrder
     joinedAt?: SortOrder
+    role?: SortOrder
     _count?: CommunityMemberCountOrderByAggregateInput
     _max?: CommunityMemberMaxOrderByAggregateInput
     _min?: CommunityMemberMinOrderByAggregateInput
@@ -24537,6 +24870,7 @@ export namespace Prisma {
     communityId?: StringWithAggregatesFilter<"CommunityMember"> | string
     userId?: StringWithAggregatesFilter<"CommunityMember"> | string
     joinedAt?: DateTimeWithAggregatesFilter<"CommunityMember"> | Date | string
+    role?: StringWithAggregatesFilter<"CommunityMember"> | string
   }
 
   export type UserStatsWhereInput = {
@@ -24814,110 +25148,160 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"ConversationPreference"> | Date | string
   }
 
-  export type CommunityAdminWhereInput = {
-    AND?: CommunityAdminWhereInput | CommunityAdminWhereInput[]
-    OR?: CommunityAdminWhereInput[]
-    NOT?: CommunityAdminWhereInput | CommunityAdminWhereInput[]
-    id?: StringFilter<"CommunityAdmin"> | string
-    communityId?: StringFilter<"CommunityAdmin"> | string
-    userId?: StringFilter<"CommunityAdmin"> | string
-    assignedAt?: DateTimeFilter<"CommunityAdmin"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
+  export type AffiliateTokenWhereInput = {
+    AND?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    OR?: AffiliateTokenWhereInput[]
+    NOT?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    id?: StringFilter<"AffiliateToken"> | string
+    token?: StringFilter<"AffiliateToken"> | string
+    name?: StringFilter<"AffiliateToken"> | string
+    createdBy?: StringFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableFilter<"AffiliateToken"> | number | null
+    currentUses?: IntFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    affiliations?: AffiliateRelationListRelationFilter
   }
 
-  export type CommunityAdminOrderByWithRelationInput = {
+  export type AffiliateTokenOrderByWithRelationInput = {
     id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    community?: CommunityOrderByWithRelationInput
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    creator?: UserOrderByWithRelationInput
+    affiliations?: AffiliateRelationOrderByRelationAggregateInput
   }
 
-  export type CommunityAdminWhereUniqueInput = Prisma.AtLeast<{
+  export type AffiliateTokenWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    AND?: CommunityAdminWhereInput | CommunityAdminWhereInput[]
-    OR?: CommunityAdminWhereInput[]
-    NOT?: CommunityAdminWhereInput | CommunityAdminWhereInput[]
-    communityId?: StringFilter<"CommunityAdmin"> | string
-    userId?: StringFilter<"CommunityAdmin"> | string
-    assignedAt?: DateTimeFilter<"CommunityAdmin"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
+    token?: string
+    AND?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    OR?: AffiliateTokenWhereInput[]
+    NOT?: AffiliateTokenWhereInput | AffiliateTokenWhereInput[]
+    name?: StringFilter<"AffiliateToken"> | string
+    createdBy?: StringFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableFilter<"AffiliateToken"> | number | null
+    currentUses?: IntFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    affiliations?: AffiliateRelationListRelationFilter
+  }, "id" | "token">
+
+  export type AffiliateTokenOrderByWithAggregationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AffiliateTokenCountOrderByAggregateInput
+    _avg?: AffiliateTokenAvgOrderByAggregateInput
+    _max?: AffiliateTokenMaxOrderByAggregateInput
+    _min?: AffiliateTokenMinOrderByAggregateInput
+    _sum?: AffiliateTokenSumOrderByAggregateInput
+  }
+
+  export type AffiliateTokenScalarWhereWithAggregatesInput = {
+    AND?: AffiliateTokenScalarWhereWithAggregatesInput | AffiliateTokenScalarWhereWithAggregatesInput[]
+    OR?: AffiliateTokenScalarWhereWithAggregatesInput[]
+    NOT?: AffiliateTokenScalarWhereWithAggregatesInput | AffiliateTokenScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    token?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    name?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    createdBy?: StringWithAggregatesFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableWithAggregatesFilter<"AffiliateToken"> | number | null
+    currentUses?: IntWithAggregatesFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableWithAggregatesFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolWithAggregatesFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AffiliateToken"> | Date | string
+  }
+
+  export type AffiliateRelationWhereInput = {
+    AND?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    OR?: AffiliateRelationWhereInput[]
+    NOT?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    id?: StringFilter<"AffiliateRelation"> | string
+    affiliateTokenId?: StringFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringFilter<"AffiliateRelation"> | string
+    referredUserId?: StringFilter<"AffiliateRelation"> | string
+    status?: StringFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type AffiliateRelationOrderByWithRelationInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+    affiliateToken?: AffiliateTokenOrderByWithRelationInput
+    affiliateUser?: UserOrderByWithRelationInput
+    referredUser?: UserOrderByWithRelationInput
+  }
+
+  export type AffiliateRelationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    OR?: AffiliateRelationWhereInput[]
+    NOT?: AffiliateRelationWhereInput | AffiliateRelationWhereInput[]
+    affiliateTokenId?: StringFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringFilter<"AffiliateRelation"> | string
+    referredUserId?: StringFilter<"AffiliateRelation"> | string
+    status?: StringFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
-  export type CommunityAdminOrderByWithAggregationInput = {
+  export type AffiliateRelationOrderByWithAggregationInput = {
     id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
-    _count?: CommunityAdminCountOrderByAggregateInput
-    _max?: CommunityAdminMaxOrderByAggregateInput
-    _min?: CommunityAdminMinOrderByAggregateInput
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+    _count?: AffiliateRelationCountOrderByAggregateInput
+    _max?: AffiliateRelationMaxOrderByAggregateInput
+    _min?: AffiliateRelationMinOrderByAggregateInput
   }
 
-  export type CommunityAdminScalarWhereWithAggregatesInput = {
-    AND?: CommunityAdminScalarWhereWithAggregatesInput | CommunityAdminScalarWhereWithAggregatesInput[]
-    OR?: CommunityAdminScalarWhereWithAggregatesInput[]
-    NOT?: CommunityAdminScalarWhereWithAggregatesInput | CommunityAdminScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"CommunityAdmin"> | string
-    communityId?: StringWithAggregatesFilter<"CommunityAdmin"> | string
-    userId?: StringWithAggregatesFilter<"CommunityAdmin"> | string
-    assignedAt?: DateTimeWithAggregatesFilter<"CommunityAdmin"> | Date | string
-  }
-
-  export type CommunityModeratorWhereInput = {
-    AND?: CommunityModeratorWhereInput | CommunityModeratorWhereInput[]
-    OR?: CommunityModeratorWhereInput[]
-    NOT?: CommunityModeratorWhereInput | CommunityModeratorWhereInput[]
-    id?: StringFilter<"CommunityModerator"> | string
-    communityId?: StringFilter<"CommunityModerator"> | string
-    userId?: StringFilter<"CommunityModerator"> | string
-    assignedAt?: DateTimeFilter<"CommunityModerator"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
-  }
-
-  export type CommunityModeratorOrderByWithRelationInput = {
-    id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
-    user?: UserOrderByWithRelationInput
-    community?: CommunityOrderByWithRelationInput
-  }
-
-  export type CommunityModeratorWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: CommunityModeratorWhereInput | CommunityModeratorWhereInput[]
-    OR?: CommunityModeratorWhereInput[]
-    NOT?: CommunityModeratorWhereInput | CommunityModeratorWhereInput[]
-    communityId?: StringFilter<"CommunityModerator"> | string
-    userId?: StringFilter<"CommunityModerator"> | string
-    assignedAt?: DateTimeFilter<"CommunityModerator"> | Date | string
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
-  }, "id">
-
-  export type CommunityModeratorOrderByWithAggregationInput = {
-    id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
-    _count?: CommunityModeratorCountOrderByAggregateInput
-    _max?: CommunityModeratorMaxOrderByAggregateInput
-    _min?: CommunityModeratorMinOrderByAggregateInput
-  }
-
-  export type CommunityModeratorScalarWhereWithAggregatesInput = {
-    AND?: CommunityModeratorScalarWhereWithAggregatesInput | CommunityModeratorScalarWhereWithAggregatesInput[]
-    OR?: CommunityModeratorScalarWhereWithAggregatesInput[]
-    NOT?: CommunityModeratorScalarWhereWithAggregatesInput | CommunityModeratorScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"CommunityModerator"> | string
-    communityId?: StringWithAggregatesFilter<"CommunityModerator"> | string
-    userId?: StringWithAggregatesFilter<"CommunityModerator"> | string
-    assignedAt?: DateTimeWithAggregatesFilter<"CommunityModerator"> | Date | string
+  export type AffiliateRelationScalarWhereWithAggregatesInput = {
+    AND?: AffiliateRelationScalarWhereWithAggregatesInput | AffiliateRelationScalarWhereWithAggregatesInput[]
+    OR?: AffiliateRelationScalarWhereWithAggregatesInput[]
+    NOT?: AffiliateRelationScalarWhereWithAggregatesInput | AffiliateRelationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    affiliateTokenId?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    referredUserId?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    status?: StringWithAggregatesFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableWithAggregatesFilter<"AffiliateRelation"> | Date | string | null
   }
 
   export type UserCreateInput = {
@@ -24925,6 +25309,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -24952,14 +25337,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -24967,6 +25353,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -24994,20 +25381,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUpdateInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -25035,20 +25424,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -25076,14 +25467,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -25091,6 +25483,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -25117,6 +25510,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -25143,6 +25537,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -25787,7 +26182,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -25811,7 +26207,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -25826,7 +26223,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -25849,7 +26247,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -25978,47 +26377,60 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageReadStatusCreateInput = {
+  export type MessageStatusCreateInput = {
     id?: string
-    readAt?: Date | string
-    user: UserCreateNestedOneWithoutMessageReadStatusInput
-    message: MessageCreateNestedOneWithoutReadStatusInput
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    user: UserCreateNestedOneWithoutMessageStatusInput
+    message: MessageCreateNestedOneWithoutStatusInput
+    response?: MessageCreateNestedOneWithoutStatusResponsesInput
   }
 
-  export type MessageReadStatusUncheckedCreateInput = {
-    id?: string
-    messageId: string
-    userId: string
-    readAt?: Date | string
-  }
-
-  export type MessageReadStatusUpdateInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutMessageReadStatusNestedInput
-    message?: MessageUpdateOneRequiredWithoutReadStatusNestedInput
-  }
-
-  export type MessageReadStatusUncheckedUpdateInput = {
-    messageId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MessageReadStatusCreateManyInput = {
+  export type MessageStatusUncheckedCreateInput = {
     id?: string
     messageId: string
     userId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
-  export type MessageReadStatusUpdateManyMutationInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type MessageStatusUpdateInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutMessageStatusNestedInput
+    message?: MessageUpdateOneRequiredWithoutStatusNestedInput
+    response?: MessageUpdateOneWithoutStatusResponsesNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateManyInput = {
+  export type MessageStatusUncheckedUpdateInput = {
     messageId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MessageStatusCreateManyInput = {
+    id?: string
+    messageId: string
+    userId: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
+  }
+
+  export type MessageStatusUpdateManyMutationInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type MessageStatusUncheckedUpdateManyInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type FriendRequestCreateInput = {
@@ -26237,6 +26649,7 @@ export namespace Prisma {
 
   export type CommunityCreateInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -26245,13 +26658,12 @@ export namespace Prisma {
     updatedAt?: Date | string
     members?: CommunityMemberCreateNestedManyWithoutCommunityInput
     creator: UserCreateNestedOneWithoutCreatedCommunitiesInput
-    admins?: CommunityAdminCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorCreateNestedManyWithoutCommunityInput
     Conversation?: ConversationCreateNestedManyWithoutCommunityInput
   }
 
   export type CommunityUncheckedCreateInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -26260,12 +26672,11 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
-    admins?: CommunityAdminUncheckedCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorUncheckedCreateNestedManyWithoutCommunityInput
     Conversation?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
   }
 
   export type CommunityUpdateInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26274,12 +26685,11 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
-    admins?: CommunityAdminUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUpdateManyWithoutCommunityNestedInput
     Conversation?: ConversationUpdateManyWithoutCommunityNestedInput
   }
 
   export type CommunityUncheckedUpdateInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26288,13 +26698,12 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
-    admins?: CommunityAdminUncheckedUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUncheckedUpdateManyWithoutCommunityNestedInput
     Conversation?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
   }
 
   export type CommunityCreateManyInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -26305,6 +26714,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateManyMutationInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26314,6 +26724,7 @@ export namespace Prisma {
   }
 
   export type CommunityUncheckedUpdateManyInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26326,6 +26737,7 @@ export namespace Prisma {
   export type CommunityMemberCreateInput = {
     id?: string
     joinedAt?: Date | string
+    role?: string
     user: UserCreateNestedOneWithoutCommunityMembershipsInput
     community: CommunityCreateNestedOneWithoutMembersInput
   }
@@ -26335,10 +26747,12 @@ export namespace Prisma {
     communityId: string
     userId: string
     joinedAt?: Date | string
+    role?: string
   }
 
   export type CommunityMemberUpdateInput = {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
     user?: UserUpdateOneRequiredWithoutCommunityMembershipsNestedInput
     community?: CommunityUpdateOneRequiredWithoutMembersNestedInput
   }
@@ -26347,6 +26761,7 @@ export namespace Prisma {
     communityId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
   }
 
   export type CommunityMemberCreateManyInput = {
@@ -26354,16 +26769,19 @@ export namespace Prisma {
     communityId: string
     userId: string
     joinedAt?: Date | string
+    role?: string
   }
 
   export type CommunityMemberUpdateManyMutationInput = {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
   }
 
   export type CommunityMemberUncheckedUpdateManyInput = {
     communityId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserStatsCreateInput = {
@@ -26665,90 +27083,157 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommunityAdminCreateInput = {
+  export type AffiliateTokenCreateInput = {
     id?: string
-    assignedAt?: Date | string
-    user: UserCreateNestedOneWithoutCommunityAdminsInput
-    community: CommunityCreateNestedOneWithoutAdminsInput
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedAffiliateTokensInput
+    affiliations?: AffiliateRelationCreateNestedManyWithoutAffiliateTokenInput
   }
 
-  export type CommunityAdminUncheckedCreateInput = {
+  export type AffiliateTokenUncheckedCreateInput = {
     id?: string
-    communityId: string
-    userId: string
-    assignedAt?: Date | string
+    token: string
+    name: string
+    createdBy: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    affiliations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateTokenInput
   }
 
-  export type CommunityAdminUpdateInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutCommunityAdminsNestedInput
-    community?: CommunityUpdateOneRequiredWithoutAdminsNestedInput
+  export type AffiliateTokenUpdateInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedAffiliateTokensNestedInput
+    affiliations?: AffiliateRelationUpdateManyWithoutAffiliateTokenNestedInput
   }
 
-  export type CommunityAdminUncheckedUpdateInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateTokenUncheckedUpdateInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    affiliations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenNestedInput
   }
 
-  export type CommunityAdminCreateManyInput = {
+  export type AffiliateTokenCreateManyInput = {
     id?: string
-    communityId: string
-    userId: string
-    assignedAt?: Date | string
+    token: string
+    name: string
+    createdBy: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
-  export type CommunityAdminUpdateManyMutationInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateTokenUpdateManyMutationInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommunityAdminUncheckedUpdateManyInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateTokenUncheckedUpdateManyInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommunityModeratorCreateInput = {
+  export type AffiliateRelationCreateInput = {
     id?: string
-    assignedAt?: Date | string
-    user: UserCreateNestedOneWithoutCommunityModeratorsInput
-    community: CommunityCreateNestedOneWithoutModeratorsInput
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+    affiliateToken: AffiliateTokenCreateNestedOneWithoutAffiliationsInput
+    affiliateUser: UserCreateNestedOneWithoutAffiliateRelationsInput
+    referredUser: UserCreateNestedOneWithoutReferredRelationsInput
   }
 
-  export type CommunityModeratorUncheckedCreateInput = {
+  export type AffiliateRelationUncheckedCreateInput = {
     id?: string
-    communityId: string
-    userId: string
-    assignedAt?: Date | string
+    affiliateTokenId: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
   }
 
-  export type CommunityModeratorUpdateInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutCommunityModeratorsNestedInput
-    community?: CommunityUpdateOneRequiredWithoutModeratorsNestedInput
+  export type AffiliateRelationUpdateInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateToken?: AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput
+    affiliateUser?: UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput
+    referredUser?: UserUpdateOneRequiredWithoutReferredRelationsNestedInput
   }
 
-  export type CommunityModeratorUncheckedUpdateInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateRelationUncheckedUpdateInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type CommunityModeratorCreateManyInput = {
+  export type AffiliateRelationCreateManyInput = {
     id?: string
-    communityId: string
-    userId: string
-    assignedAt?: Date | string
+    affiliateTokenId: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
   }
 
-  export type CommunityModeratorUpdateManyMutationInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateRelationUpdateManyMutationInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type CommunityModeratorUncheckedUpdateManyInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateRelationUncheckedUpdateManyInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -26846,10 +27331,10 @@ export namespace Prisma {
     none?: FriendRequestWhereInput
   }
 
-  export type MessageReadStatusListRelationFilter = {
-    every?: MessageReadStatusWhereInput
-    some?: MessageReadStatusWhereInput
-    none?: MessageReadStatusWhereInput
+  export type MessageStatusListRelationFilter = {
+    every?: MessageStatusWhereInput
+    some?: MessageStatusWhereInput
+    none?: MessageStatusWhereInput
   }
 
   export type MessageListRelationFilter = {
@@ -26881,16 +27366,16 @@ export namespace Prisma {
     isNot?: UserStatsWhereInput | null
   }
 
-  export type CommunityAdminListRelationFilter = {
-    every?: CommunityAdminWhereInput
-    some?: CommunityAdminWhereInput
-    none?: CommunityAdminWhereInput
+  export type AffiliateTokenListRelationFilter = {
+    every?: AffiliateTokenWhereInput
+    some?: AffiliateTokenWhereInput
+    none?: AffiliateTokenWhereInput
   }
 
-  export type CommunityModeratorListRelationFilter = {
-    every?: CommunityModeratorWhereInput
-    some?: CommunityModeratorWhereInput
-    none?: CommunityModeratorWhereInput
+  export type AffiliateRelationListRelationFilter = {
+    every?: AffiliateRelationWhereInput
+    some?: AffiliateRelationWhereInput
+    none?: AffiliateRelationWhereInput
   }
 
   export type CommunityOrderByRelationAggregateInput = {
@@ -26917,7 +27402,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type MessageReadStatusOrderByRelationAggregateInput = {
+  export type MessageStatusOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -26937,11 +27422,11 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type CommunityAdminOrderByRelationAggregateInput = {
+  export type AffiliateTokenOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type CommunityModeratorOrderByRelationAggregateInput = {
+  export type AffiliateRelationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -26950,6 +27435,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -26977,6 +27463,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -27004,6 +27491,7 @@ export namespace Prisma {
     username?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
+    bio?: SortOrder
     email?: SortOrder
     phoneNumber?: SortOrder
     password?: SortOrder
@@ -27618,25 +28106,36 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type MessageReadStatusCountOrderByAggregateInput = {
-    id?: SortOrder
-    messageId?: SortOrder
-    userId?: SortOrder
-    readAt?: SortOrder
+  export type MessageStatusMessageId_userIdCompoundUniqueInput = {
+    messageId: string
+    userId: string
   }
 
-  export type MessageReadStatusMaxOrderByAggregateInput = {
+  export type MessageStatusCountOrderByAggregateInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
+    answer?: SortOrder
   }
 
-  export type MessageReadStatusMinOrderByAggregateInput = {
+  export type MessageStatusMaxOrderByAggregateInput = {
     id?: SortOrder
     messageId?: SortOrder
     userId?: SortOrder
+    receivedAt?: SortOrder
     readAt?: SortOrder
+    answer?: SortOrder
+  }
+
+  export type MessageStatusMinOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    userId?: SortOrder
+    receivedAt?: SortOrder
+    readAt?: SortOrder
+    answer?: SortOrder
   }
 
   export type FriendRequestCountOrderByAggregateInput = {
@@ -27750,6 +28249,7 @@ export namespace Prisma {
 
   export type CommunityCountOrderByAggregateInput = {
     id?: SortOrder
+    identifier?: SortOrder
     name?: SortOrder
     description?: SortOrder
     avatar?: SortOrder
@@ -27761,6 +28261,7 @@ export namespace Prisma {
 
   export type CommunityMaxOrderByAggregateInput = {
     id?: SortOrder
+    identifier?: SortOrder
     name?: SortOrder
     description?: SortOrder
     avatar?: SortOrder
@@ -27772,6 +28273,7 @@ export namespace Prisma {
 
   export type CommunityMinOrderByAggregateInput = {
     id?: SortOrder
+    identifier?: SortOrder
     name?: SortOrder
     description?: SortOrder
     avatar?: SortOrder
@@ -27791,6 +28293,7 @@ export namespace Prisma {
     communityId?: SortOrder
     userId?: SortOrder
     joinedAt?: SortOrder
+    role?: SortOrder
   }
 
   export type CommunityMemberMaxOrderByAggregateInput = {
@@ -27798,6 +28301,7 @@ export namespace Prisma {
     communityId?: SortOrder
     userId?: SortOrder
     joinedAt?: SortOrder
+    role?: SortOrder
   }
 
   export type CommunityMemberMinOrderByAggregateInput = {
@@ -27805,6 +28309,7 @@ export namespace Prisma {
     communityId?: SortOrder
     userId?: SortOrder
     joinedAt?: SortOrder
+    role?: SortOrder
   }
 
   export type UserStatsCountOrderByAggregateInput = {
@@ -27976,46 +28481,88 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type CommunityAdminCountOrderByAggregateInput = {
+  export type AffiliateTokenCountOrderByAggregateInput = {
     id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type CommunityAdminMaxOrderByAggregateInput = {
-    id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
+  export type AffiliateTokenAvgOrderByAggregateInput = {
+    maxUses?: SortOrder
+    currentUses?: SortOrder
   }
 
-  export type CommunityAdminMinOrderByAggregateInput = {
+  export type AffiliateTokenMaxOrderByAggregateInput = {
     id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type CommunityModeratorCountOrderByAggregateInput = {
+  export type AffiliateTokenMinOrderByAggregateInput = {
     id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
+    token?: SortOrder
+    name?: SortOrder
+    createdBy?: SortOrder
+    maxUses?: SortOrder
+    currentUses?: SortOrder
+    expiresAt?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
-  export type CommunityModeratorMaxOrderByAggregateInput = {
-    id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
+  export type AffiliateTokenSumOrderByAggregateInput = {
+    maxUses?: SortOrder
+    currentUses?: SortOrder
   }
 
-  export type CommunityModeratorMinOrderByAggregateInput = {
+  export type AffiliateTokenScalarRelationFilter = {
+    is?: AffiliateTokenWhereInput
+    isNot?: AffiliateTokenWhereInput
+  }
+
+  export type AffiliateRelationCountOrderByAggregateInput = {
     id?: SortOrder
-    communityId?: SortOrder
-    userId?: SortOrder
-    assignedAt?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
+  export type AffiliateRelationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
+  }
+
+  export type AffiliateRelationMinOrderByAggregateInput = {
+    id?: SortOrder
+    affiliateTokenId?: SortOrder
+    affiliateUserId?: SortOrder
+    referredUserId?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    completedAt?: SortOrder
   }
 
   export type CommunityCreateNestedManyWithoutCreatorInput = {
@@ -28067,11 +28614,11 @@ export namespace Prisma {
     connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
   }
 
-  export type MessageReadStatusCreateNestedManyWithoutUserInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusCreateNestedManyWithoutUserInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageCreateNestedManyWithoutSenderInput = {
@@ -28108,18 +28655,25 @@ export namespace Prisma {
     connect?: UserStatsWhereUniqueInput
   }
 
-  export type CommunityAdminCreateNestedManyWithoutUserInput = {
-    create?: XOR<CommunityAdminCreateWithoutUserInput, CommunityAdminUncheckedCreateWithoutUserInput> | CommunityAdminCreateWithoutUserInput[] | CommunityAdminUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutUserInput | CommunityAdminCreateOrConnectWithoutUserInput[]
-    createMany?: CommunityAdminCreateManyUserInputEnvelope
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
+  export type AffiliateTokenCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
   }
 
-  export type CommunityModeratorCreateNestedManyWithoutUserInput = {
-    create?: XOR<CommunityModeratorCreateWithoutUserInput, CommunityModeratorUncheckedCreateWithoutUserInput> | CommunityModeratorCreateWithoutUserInput[] | CommunityModeratorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutUserInput | CommunityModeratorCreateOrConnectWithoutUserInput[]
-    createMany?: CommunityModeratorCreateManyUserInputEnvelope
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
+  export type AffiliateRelationCreateNestedManyWithoutAffiliateUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type AffiliateRelationCreateNestedManyWithoutReferredUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
   }
 
   export type CommunityUncheckedCreateNestedManyWithoutCreatorInput = {
@@ -28171,11 +28725,11 @@ export namespace Prisma {
     connect?: FriendRequestWhereUniqueInput | FriendRequestWhereUniqueInput[]
   }
 
-  export type MessageReadStatusUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageUncheckedCreateNestedManyWithoutSenderInput = {
@@ -28212,18 +28766,25 @@ export namespace Prisma {
     connect?: UserStatsWhereUniqueInput
   }
 
-  export type CommunityAdminUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<CommunityAdminCreateWithoutUserInput, CommunityAdminUncheckedCreateWithoutUserInput> | CommunityAdminCreateWithoutUserInput[] | CommunityAdminUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutUserInput | CommunityAdminCreateOrConnectWithoutUserInput[]
-    createMany?: CommunityAdminCreateManyUserInputEnvelope
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
+  export type AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
   }
 
-  export type CommunityModeratorUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<CommunityModeratorCreateWithoutUserInput, CommunityModeratorUncheckedCreateWithoutUserInput> | CommunityModeratorCreateWithoutUserInput[] | CommunityModeratorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutUserInput | CommunityModeratorCreateOrConnectWithoutUserInput[]
-    createMany?: CommunityModeratorCreateManyUserInputEnvelope
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
+  export type AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -28346,18 +28907,18 @@ export namespace Prisma {
     deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
   }
 
-  export type MessageReadStatusUpdateManyWithoutUserNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutUserInput | MessageReadStatusUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutUserInput | MessageStatusUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutUserInput | MessageStatusUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutUserInput | MessageStatusUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageUpdateManyWithoutSenderNestedInput = {
@@ -28426,32 +28987,46 @@ export namespace Prisma {
     update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
   }
 
-  export type CommunityAdminUpdateManyWithoutUserNestedInput = {
-    create?: XOR<CommunityAdminCreateWithoutUserInput, CommunityAdminUncheckedCreateWithoutUserInput> | CommunityAdminCreateWithoutUserInput[] | CommunityAdminUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutUserInput | CommunityAdminCreateOrConnectWithoutUserInput[]
-    upsert?: CommunityAdminUpsertWithWhereUniqueWithoutUserInput | CommunityAdminUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: CommunityAdminCreateManyUserInputEnvelope
-    set?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    disconnect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    delete?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    update?: CommunityAdminUpdateWithWhereUniqueWithoutUserInput | CommunityAdminUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: CommunityAdminUpdateManyWithWhereWithoutUserInput | CommunityAdminUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: CommunityAdminScalarWhereInput | CommunityAdminScalarWhereInput[]
+  export type AffiliateTokenUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    upsert?: AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    set?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    disconnect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    delete?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    update?: AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: AffiliateTokenUpdateManyWithWhereWithoutCreatorInput | AffiliateTokenUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
   }
 
-  export type CommunityModeratorUpdateManyWithoutUserNestedInput = {
-    create?: XOR<CommunityModeratorCreateWithoutUserInput, CommunityModeratorUncheckedCreateWithoutUserInput> | CommunityModeratorCreateWithoutUserInput[] | CommunityModeratorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutUserInput | CommunityModeratorCreateOrConnectWithoutUserInput[]
-    upsert?: CommunityModeratorUpsertWithWhereUniqueWithoutUserInput | CommunityModeratorUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: CommunityModeratorCreateManyUserInputEnvelope
-    set?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    disconnect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    delete?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    update?: CommunityModeratorUpdateWithWhereUniqueWithoutUserInput | CommunityModeratorUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: CommunityModeratorUpdateManyWithWhereWithoutUserInput | CommunityModeratorUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: CommunityModeratorScalarWhereInput | CommunityModeratorScalarWhereInput[]
+  export type AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type AffiliateRelationUpdateManyWithoutReferredUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput | AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
   }
 
   export type CommunityUncheckedUpdateManyWithoutCreatorNestedInput = {
@@ -28552,18 +29127,18 @@ export namespace Prisma {
     deleteMany?: FriendRequestScalarWhereInput | FriendRequestScalarWhereInput[]
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput> | MessageReadStatusCreateWithoutUserInput[] | MessageReadStatusUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutUserInput | MessageReadStatusUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: MessageReadStatusCreateManyUserInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput> | MessageStatusCreateWithoutUserInput[] | MessageStatusUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutUserInput | MessageStatusCreateOrConnectWithoutUserInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutUserInput | MessageStatusUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MessageStatusCreateManyUserInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutUserInput | MessageStatusUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutUserInput | MessageStatusUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageUncheckedUpdateManyWithoutSenderNestedInput = {
@@ -28632,32 +29207,46 @@ export namespace Prisma {
     update?: XOR<XOR<UserStatsUpdateToOneWithWhereWithoutUserInput, UserStatsUpdateWithoutUserInput>, UserStatsUncheckedUpdateWithoutUserInput>
   }
 
-  export type CommunityAdminUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<CommunityAdminCreateWithoutUserInput, CommunityAdminUncheckedCreateWithoutUserInput> | CommunityAdminCreateWithoutUserInput[] | CommunityAdminUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutUserInput | CommunityAdminCreateOrConnectWithoutUserInput[]
-    upsert?: CommunityAdminUpsertWithWhereUniqueWithoutUserInput | CommunityAdminUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: CommunityAdminCreateManyUserInputEnvelope
-    set?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    disconnect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    delete?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    update?: CommunityAdminUpdateWithWhereUniqueWithoutUserInput | CommunityAdminUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: CommunityAdminUpdateManyWithWhereWithoutUserInput | CommunityAdminUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: CommunityAdminScalarWhereInput | CommunityAdminScalarWhereInput[]
+  export type AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput> | AffiliateTokenCreateWithoutCreatorInput[] | AffiliateTokenUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutCreatorInput | AffiliateTokenCreateOrConnectWithoutCreatorInput[]
+    upsert?: AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: AffiliateTokenCreateManyCreatorInputEnvelope
+    set?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    disconnect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    delete?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    connect?: AffiliateTokenWhereUniqueInput | AffiliateTokenWhereUniqueInput[]
+    update?: AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput | AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: AffiliateTokenUpdateManyWithWhereWithoutCreatorInput | AffiliateTokenUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
   }
 
-  export type CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<CommunityModeratorCreateWithoutUserInput, CommunityModeratorUncheckedCreateWithoutUserInput> | CommunityModeratorCreateWithoutUserInput[] | CommunityModeratorUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutUserInput | CommunityModeratorCreateOrConnectWithoutUserInput[]
-    upsert?: CommunityModeratorUpsertWithWhereUniqueWithoutUserInput | CommunityModeratorUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: CommunityModeratorCreateManyUserInputEnvelope
-    set?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    disconnect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    delete?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    update?: CommunityModeratorUpdateWithWhereUniqueWithoutUserInput | CommunityModeratorUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: CommunityModeratorUpdateManyWithWhereWithoutUserInput | CommunityModeratorUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: CommunityModeratorScalarWhereInput | CommunityModeratorScalarWhereInput[]
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput> | AffiliateRelationCreateWithoutAffiliateUserInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateUserInput | AffiliateRelationCreateOrConnectWithoutAffiliateUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput> | AffiliateRelationCreateWithoutReferredUserInput[] | AffiliateRelationUncheckedCreateWithoutReferredUserInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput[]
+    createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput | AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
   }
 
   export type AnonymousParticipantCreateNestedManyWithoutConversationInput = {
@@ -29140,11 +29729,18 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
-  export type MessageReadStatusCreateNestedManyWithoutMessageInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+  }
+
+  export type MessageStatusCreateNestedManyWithoutResponseInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageTranslationCreateNestedManyWithoutMessageInput = {
@@ -29185,11 +29781,18 @@ export namespace Prisma {
     connect?: ConversationWhereUniqueInput
   }
 
-  export type MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  export type MessageStatusUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+  }
+
+  export type MessageStatusUncheckedCreateNestedManyWithoutResponseInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
   }
 
   export type MessageTranslationUncheckedCreateNestedManyWithoutMessageInput = {
@@ -29206,18 +29809,32 @@ export namespace Prisma {
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
-  export type MessageReadStatusUpdateManyWithoutMessageNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput | MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutMessageInput | MessageStatusUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutMessageInput | MessageStatusUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutMessageInput | MessageStatusUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+  }
+
+  export type MessageStatusUpdateManyWithoutResponseNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutResponseInput | MessageStatusUpsertWithWhereUniqueWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutResponseInput | MessageStatusUpdateWithWhereUniqueWithoutResponseInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutResponseInput | MessageStatusUpdateManyWithWhereWithoutResponseInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageTranslationUpdateManyWithoutMessageNestedInput = {
@@ -29286,18 +29903,32 @@ export namespace Prisma {
     update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutMessagesInput, ConversationUpdateWithoutMessagesInput>, ConversationUncheckedUpdateWithoutMessagesInput>
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput = {
-    create?: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput> | MessageReadStatusCreateWithoutMessageInput[] | MessageReadStatusUncheckedCreateWithoutMessageInput[]
-    connectOrCreate?: MessageReadStatusCreateOrConnectWithoutMessageInput | MessageReadStatusCreateOrConnectWithoutMessageInput[]
-    upsert?: MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput | MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput[]
-    createMany?: MessageReadStatusCreateManyMessageInputEnvelope
-    set?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    disconnect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    delete?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
-    update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
-    updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
-    deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  export type MessageStatusUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput> | MessageStatusCreateWithoutMessageInput[] | MessageStatusUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutMessageInput | MessageStatusCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutMessageInput | MessageStatusUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageStatusCreateManyMessageInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutMessageInput | MessageStatusUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutMessageInput | MessageStatusUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+  }
+
+  export type MessageStatusUncheckedUpdateManyWithoutResponseNestedInput = {
+    create?: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput> | MessageStatusCreateWithoutResponseInput[] | MessageStatusUncheckedCreateWithoutResponseInput[]
+    connectOrCreate?: MessageStatusCreateOrConnectWithoutResponseInput | MessageStatusCreateOrConnectWithoutResponseInput[]
+    upsert?: MessageStatusUpsertWithWhereUniqueWithoutResponseInput | MessageStatusUpsertWithWhereUniqueWithoutResponseInput[]
+    createMany?: MessageStatusCreateManyResponseInputEnvelope
+    set?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    disconnect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    delete?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    connect?: MessageStatusWhereUniqueInput | MessageStatusWhereUniqueInput[]
+    update?: MessageStatusUpdateWithWhereUniqueWithoutResponseInput | MessageStatusUpdateWithWhereUniqueWithoutResponseInput[]
+    updateMany?: MessageStatusUpdateManyWithWhereWithoutResponseInput | MessageStatusUpdateManyWithWhereWithoutResponseInput[]
+    deleteMany?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
   }
 
   export type MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput = {
@@ -29351,32 +29982,48 @@ export namespace Prisma {
     update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutTranslationsInput, MessageUpdateWithoutTranslationsInput>, MessageUncheckedUpdateWithoutTranslationsInput>
   }
 
-  export type UserCreateNestedOneWithoutMessageReadStatusInput = {
-    create?: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
-    connectOrCreate?: UserCreateOrConnectWithoutMessageReadStatusInput
+  export type UserCreateNestedOneWithoutMessageStatusInput = {
+    create?: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMessageStatusInput
     connect?: UserWhereUniqueInput
   }
 
-  export type MessageCreateNestedOneWithoutReadStatusInput = {
-    create?: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
-    connectOrCreate?: MessageCreateOrConnectWithoutReadStatusInput
+  export type MessageCreateNestedOneWithoutStatusInput = {
+    create?: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusInput
     connect?: MessageWhereUniqueInput
   }
 
-  export type UserUpdateOneRequiredWithoutMessageReadStatusNestedInput = {
-    create?: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
-    connectOrCreate?: UserCreateOrConnectWithoutMessageReadStatusInput
-    upsert?: UserUpsertWithoutMessageReadStatusInput
+  export type MessageCreateNestedOneWithoutStatusResponsesInput = {
+    create?: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusResponsesInput
+    connect?: MessageWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutMessageStatusNestedInput = {
+    create?: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMessageStatusInput
+    upsert?: UserUpsertWithoutMessageStatusInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMessageReadStatusInput, UserUpdateWithoutMessageReadStatusInput>, UserUncheckedUpdateWithoutMessageReadStatusInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMessageStatusInput, UserUpdateWithoutMessageStatusInput>, UserUncheckedUpdateWithoutMessageStatusInput>
   }
 
-  export type MessageUpdateOneRequiredWithoutReadStatusNestedInput = {
-    create?: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
-    connectOrCreate?: MessageCreateOrConnectWithoutReadStatusInput
-    upsert?: MessageUpsertWithoutReadStatusInput
+  export type MessageUpdateOneRequiredWithoutStatusNestedInput = {
+    create?: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusInput
+    upsert?: MessageUpsertWithoutStatusInput
     connect?: MessageWhereUniqueInput
-    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutReadStatusInput, MessageUpdateWithoutReadStatusInput>, MessageUncheckedUpdateWithoutReadStatusInput>
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutStatusInput, MessageUpdateWithoutStatusInput>, MessageUncheckedUpdateWithoutStatusInput>
+  }
+
+  export type MessageUpdateOneWithoutStatusResponsesNestedInput = {
+    create?: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutStatusResponsesInput
+    upsert?: MessageUpsertWithoutStatusResponsesInput
+    disconnect?: boolean
+    delete?: MessageWhereInput | boolean
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutStatusResponsesInput, MessageUpdateWithoutStatusResponsesInput>, MessageUncheckedUpdateWithoutStatusResponsesInput>
   }
 
   export type UserCreateNestedOneWithoutReceivedFriendRequestsInput = {
@@ -29462,20 +30109,6 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type CommunityAdminCreateNestedManyWithoutCommunityInput = {
-    create?: XOR<CommunityAdminCreateWithoutCommunityInput, CommunityAdminUncheckedCreateWithoutCommunityInput> | CommunityAdminCreateWithoutCommunityInput[] | CommunityAdminUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutCommunityInput | CommunityAdminCreateOrConnectWithoutCommunityInput[]
-    createMany?: CommunityAdminCreateManyCommunityInputEnvelope
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-  }
-
-  export type CommunityModeratorCreateNestedManyWithoutCommunityInput = {
-    create?: XOR<CommunityModeratorCreateWithoutCommunityInput, CommunityModeratorUncheckedCreateWithoutCommunityInput> | CommunityModeratorCreateWithoutCommunityInput[] | CommunityModeratorUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutCommunityInput | CommunityModeratorCreateOrConnectWithoutCommunityInput[]
-    createMany?: CommunityModeratorCreateManyCommunityInputEnvelope
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-  }
-
   export type ConversationCreateNestedManyWithoutCommunityInput = {
     create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
     connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
@@ -29488,20 +30121,6 @@ export namespace Prisma {
     connectOrCreate?: CommunityMemberCreateOrConnectWithoutCommunityInput | CommunityMemberCreateOrConnectWithoutCommunityInput[]
     createMany?: CommunityMemberCreateManyCommunityInputEnvelope
     connect?: CommunityMemberWhereUniqueInput | CommunityMemberWhereUniqueInput[]
-  }
-
-  export type CommunityAdminUncheckedCreateNestedManyWithoutCommunityInput = {
-    create?: XOR<CommunityAdminCreateWithoutCommunityInput, CommunityAdminUncheckedCreateWithoutCommunityInput> | CommunityAdminCreateWithoutCommunityInput[] | CommunityAdminUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutCommunityInput | CommunityAdminCreateOrConnectWithoutCommunityInput[]
-    createMany?: CommunityAdminCreateManyCommunityInputEnvelope
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-  }
-
-  export type CommunityModeratorUncheckedCreateNestedManyWithoutCommunityInput = {
-    create?: XOR<CommunityModeratorCreateWithoutCommunityInput, CommunityModeratorUncheckedCreateWithoutCommunityInput> | CommunityModeratorCreateWithoutCommunityInput[] | CommunityModeratorUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutCommunityInput | CommunityModeratorCreateOrConnectWithoutCommunityInput[]
-    createMany?: CommunityModeratorCreateManyCommunityInputEnvelope
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
   }
 
   export type ConversationUncheckedCreateNestedManyWithoutCommunityInput = {
@@ -29533,34 +30152,6 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedCommunitiesInput, UserUpdateWithoutCreatedCommunitiesInput>, UserUncheckedUpdateWithoutCreatedCommunitiesInput>
   }
 
-  export type CommunityAdminUpdateManyWithoutCommunityNestedInput = {
-    create?: XOR<CommunityAdminCreateWithoutCommunityInput, CommunityAdminUncheckedCreateWithoutCommunityInput> | CommunityAdminCreateWithoutCommunityInput[] | CommunityAdminUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutCommunityInput | CommunityAdminCreateOrConnectWithoutCommunityInput[]
-    upsert?: CommunityAdminUpsertWithWhereUniqueWithoutCommunityInput | CommunityAdminUpsertWithWhereUniqueWithoutCommunityInput[]
-    createMany?: CommunityAdminCreateManyCommunityInputEnvelope
-    set?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    disconnect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    delete?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    update?: CommunityAdminUpdateWithWhereUniqueWithoutCommunityInput | CommunityAdminUpdateWithWhereUniqueWithoutCommunityInput[]
-    updateMany?: CommunityAdminUpdateManyWithWhereWithoutCommunityInput | CommunityAdminUpdateManyWithWhereWithoutCommunityInput[]
-    deleteMany?: CommunityAdminScalarWhereInput | CommunityAdminScalarWhereInput[]
-  }
-
-  export type CommunityModeratorUpdateManyWithoutCommunityNestedInput = {
-    create?: XOR<CommunityModeratorCreateWithoutCommunityInput, CommunityModeratorUncheckedCreateWithoutCommunityInput> | CommunityModeratorCreateWithoutCommunityInput[] | CommunityModeratorUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutCommunityInput | CommunityModeratorCreateOrConnectWithoutCommunityInput[]
-    upsert?: CommunityModeratorUpsertWithWhereUniqueWithoutCommunityInput | CommunityModeratorUpsertWithWhereUniqueWithoutCommunityInput[]
-    createMany?: CommunityModeratorCreateManyCommunityInputEnvelope
-    set?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    disconnect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    delete?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    update?: CommunityModeratorUpdateWithWhereUniqueWithoutCommunityInput | CommunityModeratorUpdateWithWhereUniqueWithoutCommunityInput[]
-    updateMany?: CommunityModeratorUpdateManyWithWhereWithoutCommunityInput | CommunityModeratorUpdateManyWithWhereWithoutCommunityInput[]
-    deleteMany?: CommunityModeratorScalarWhereInput | CommunityModeratorScalarWhereInput[]
-  }
-
   export type ConversationUpdateManyWithoutCommunityNestedInput = {
     create?: XOR<ConversationCreateWithoutCommunityInput, ConversationUncheckedCreateWithoutCommunityInput> | ConversationCreateWithoutCommunityInput[] | ConversationUncheckedCreateWithoutCommunityInput[]
     connectOrCreate?: ConversationCreateOrConnectWithoutCommunityInput | ConversationCreateOrConnectWithoutCommunityInput[]
@@ -29587,34 +30178,6 @@ export namespace Prisma {
     update?: CommunityMemberUpdateWithWhereUniqueWithoutCommunityInput | CommunityMemberUpdateWithWhereUniqueWithoutCommunityInput[]
     updateMany?: CommunityMemberUpdateManyWithWhereWithoutCommunityInput | CommunityMemberUpdateManyWithWhereWithoutCommunityInput[]
     deleteMany?: CommunityMemberScalarWhereInput | CommunityMemberScalarWhereInput[]
-  }
-
-  export type CommunityAdminUncheckedUpdateManyWithoutCommunityNestedInput = {
-    create?: XOR<CommunityAdminCreateWithoutCommunityInput, CommunityAdminUncheckedCreateWithoutCommunityInput> | CommunityAdminCreateWithoutCommunityInput[] | CommunityAdminUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityAdminCreateOrConnectWithoutCommunityInput | CommunityAdminCreateOrConnectWithoutCommunityInput[]
-    upsert?: CommunityAdminUpsertWithWhereUniqueWithoutCommunityInput | CommunityAdminUpsertWithWhereUniqueWithoutCommunityInput[]
-    createMany?: CommunityAdminCreateManyCommunityInputEnvelope
-    set?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    disconnect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    delete?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    connect?: CommunityAdminWhereUniqueInput | CommunityAdminWhereUniqueInput[]
-    update?: CommunityAdminUpdateWithWhereUniqueWithoutCommunityInput | CommunityAdminUpdateWithWhereUniqueWithoutCommunityInput[]
-    updateMany?: CommunityAdminUpdateManyWithWhereWithoutCommunityInput | CommunityAdminUpdateManyWithWhereWithoutCommunityInput[]
-    deleteMany?: CommunityAdminScalarWhereInput | CommunityAdminScalarWhereInput[]
-  }
-
-  export type CommunityModeratorUncheckedUpdateManyWithoutCommunityNestedInput = {
-    create?: XOR<CommunityModeratorCreateWithoutCommunityInput, CommunityModeratorUncheckedCreateWithoutCommunityInput> | CommunityModeratorCreateWithoutCommunityInput[] | CommunityModeratorUncheckedCreateWithoutCommunityInput[]
-    connectOrCreate?: CommunityModeratorCreateOrConnectWithoutCommunityInput | CommunityModeratorCreateOrConnectWithoutCommunityInput[]
-    upsert?: CommunityModeratorUpsertWithWhereUniqueWithoutCommunityInput | CommunityModeratorUpsertWithWhereUniqueWithoutCommunityInput[]
-    createMany?: CommunityModeratorCreateManyCommunityInputEnvelope
-    set?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    disconnect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    delete?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    connect?: CommunityModeratorWhereUniqueInput | CommunityModeratorWhereUniqueInput[]
-    update?: CommunityModeratorUpdateWithWhereUniqueWithoutCommunityInput | CommunityModeratorUpdateWithWhereUniqueWithoutCommunityInput[]
-    updateMany?: CommunityModeratorUpdateManyWithWhereWithoutCommunityInput | CommunityModeratorUpdateManyWithWhereWithoutCommunityInput[]
-    deleteMany?: CommunityModeratorScalarWhereInput | CommunityModeratorScalarWhereInput[]
   }
 
   export type ConversationUncheckedUpdateManyWithoutCommunityNestedInput = {
@@ -29715,60 +30278,102 @@ export namespace Prisma {
     update?: XOR<XOR<ConversationUpdateToOneWithWhereWithoutPreferencesInput, ConversationUpdateWithoutPreferencesInput>, ConversationUncheckedUpdateWithoutPreferencesInput>
   }
 
-  export type UserCreateNestedOneWithoutCommunityAdminsInput = {
-    create?: XOR<UserCreateWithoutCommunityAdminsInput, UserUncheckedCreateWithoutCommunityAdminsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCommunityAdminsInput
+  export type UserCreateNestedOneWithoutCreatedAffiliateTokensInput = {
+    create?: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedAffiliateTokensInput
     connect?: UserWhereUniqueInput
   }
 
-  export type CommunityCreateNestedOneWithoutAdminsInput = {
-    create?: XOR<CommunityCreateWithoutAdminsInput, CommunityUncheckedCreateWithoutAdminsInput>
-    connectOrCreate?: CommunityCreateOrConnectWithoutAdminsInput
-    connect?: CommunityWhereUniqueInput
+  export type AffiliateRelationCreateNestedManyWithoutAffiliateTokenInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
   }
 
-  export type UserUpdateOneRequiredWithoutCommunityAdminsNestedInput = {
-    create?: XOR<UserCreateWithoutCommunityAdminsInput, UserUncheckedCreateWithoutCommunityAdminsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCommunityAdminsInput
-    upsert?: UserUpsertWithoutCommunityAdminsInput
+  export type AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateTokenInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutCreatedAffiliateTokensNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedAffiliateTokensInput
+    upsert?: UserUpsertWithoutCreatedAffiliateTokensInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCommunityAdminsInput, UserUpdateWithoutCommunityAdminsInput>, UserUncheckedUpdateWithoutCommunityAdminsInput>
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedAffiliateTokensInput, UserUpdateWithoutCreatedAffiliateTokensInput>, UserUncheckedUpdateWithoutCreatedAffiliateTokensInput>
   }
 
-  export type CommunityUpdateOneRequiredWithoutAdminsNestedInput = {
-    create?: XOR<CommunityCreateWithoutAdminsInput, CommunityUncheckedCreateWithoutAdminsInput>
-    connectOrCreate?: CommunityCreateOrConnectWithoutAdminsInput
-    upsert?: CommunityUpsertWithoutAdminsInput
-    connect?: CommunityWhereUniqueInput
-    update?: XOR<XOR<CommunityUpdateToOneWithWhereWithoutAdminsInput, CommunityUpdateWithoutAdminsInput>, CommunityUncheckedUpdateWithoutAdminsInput>
+  export type AffiliateRelationUpdateManyWithoutAffiliateTokenNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
   }
 
-  export type UserCreateNestedOneWithoutCommunityModeratorsInput = {
-    create?: XOR<UserCreateWithoutCommunityModeratorsInput, UserUncheckedCreateWithoutCommunityModeratorsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCommunityModeratorsInput
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenNestedInput = {
+    create?: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput> | AffiliateRelationCreateWithoutAffiliateTokenInput[] | AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput[]
+    connectOrCreate?: AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput | AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput[]
+    upsert?: AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput[]
+    createMany?: AffiliateRelationCreateManyAffiliateTokenInputEnvelope
+    set?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    disconnect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    delete?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+    update?: AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput | AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput[]
+    updateMany?: AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput | AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput[]
+    deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type AffiliateTokenCreateNestedOneWithoutAffiliationsInput = {
+    create?: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutAffiliationsInput
+    connect?: AffiliateTokenWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutAffiliateRelationsInput = {
+    create?: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAffiliateRelationsInput
     connect?: UserWhereUniqueInput
   }
 
-  export type CommunityCreateNestedOneWithoutModeratorsInput = {
-    create?: XOR<CommunityCreateWithoutModeratorsInput, CommunityUncheckedCreateWithoutModeratorsInput>
-    connectOrCreate?: CommunityCreateOrConnectWithoutModeratorsInput
-    connect?: CommunityWhereUniqueInput
-  }
-
-  export type UserUpdateOneRequiredWithoutCommunityModeratorsNestedInput = {
-    create?: XOR<UserCreateWithoutCommunityModeratorsInput, UserUncheckedCreateWithoutCommunityModeratorsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCommunityModeratorsInput
-    upsert?: UserUpsertWithoutCommunityModeratorsInput
+  export type UserCreateNestedOneWithoutReferredRelationsInput = {
+    create?: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferredRelationsInput
     connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCommunityModeratorsInput, UserUpdateWithoutCommunityModeratorsInput>, UserUncheckedUpdateWithoutCommunityModeratorsInput>
   }
 
-  export type CommunityUpdateOneRequiredWithoutModeratorsNestedInput = {
-    create?: XOR<CommunityCreateWithoutModeratorsInput, CommunityUncheckedCreateWithoutModeratorsInput>
-    connectOrCreate?: CommunityCreateOrConnectWithoutModeratorsInput
-    upsert?: CommunityUpsertWithoutModeratorsInput
-    connect?: CommunityWhereUniqueInput
-    update?: XOR<XOR<CommunityUpdateToOneWithWhereWithoutModeratorsInput, CommunityUpdateWithoutModeratorsInput>, CommunityUncheckedUpdateWithoutModeratorsInput>
+  export type AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput = {
+    create?: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+    connectOrCreate?: AffiliateTokenCreateOrConnectWithoutAffiliationsInput
+    upsert?: AffiliateTokenUpsertWithoutAffiliationsInput
+    connect?: AffiliateTokenWhereUniqueInput
+    update?: XOR<XOR<AffiliateTokenUpdateToOneWithWhereWithoutAffiliationsInput, AffiliateTokenUpdateWithoutAffiliationsInput>, AffiliateTokenUncheckedUpdateWithoutAffiliationsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput = {
+    create?: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAffiliateRelationsInput
+    upsert?: UserUpsertWithoutAffiliateRelationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAffiliateRelationsInput, UserUpdateWithoutAffiliateRelationsInput>, UserUncheckedUpdateWithoutAffiliateRelationsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutReferredRelationsNestedInput = {
+    create?: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutReferredRelationsInput
+    upsert?: UserUpsertWithoutReferredRelationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReferredRelationsInput, UserUpdateWithoutReferredRelationsInput>, UserUncheckedUpdateWithoutReferredRelationsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -29998,6 +30603,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutCreatorInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -30005,13 +30611,12 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: CommunityMemberCreateNestedManyWithoutCommunityInput
-    admins?: CommunityAdminCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorCreateNestedManyWithoutCommunityInput
     Conversation?: ConversationCreateNestedManyWithoutCommunityInput
   }
 
   export type CommunityUncheckedCreateWithoutCreatorInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -30019,8 +30624,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
-    admins?: CommunityAdminUncheckedCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorUncheckedCreateNestedManyWithoutCommunityInput
     Conversation?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
   }
 
@@ -30036,6 +30639,7 @@ export namespace Prisma {
   export type CommunityMemberCreateWithoutUserInput = {
     id?: string
     joinedAt?: Date | string
+    role?: string
     community: CommunityCreateNestedOneWithoutMembersInput
   }
 
@@ -30043,6 +30647,7 @@ export namespace Prisma {
     id?: string
     communityId: string
     joinedAt?: Date | string
+    role?: string
   }
 
   export type CommunityMemberCreateOrConnectWithoutUserInput = {
@@ -30243,25 +30848,29 @@ export namespace Prisma {
     data: FriendRequestCreateManySenderInput | FriendRequestCreateManySenderInput[]
   }
 
-  export type MessageReadStatusCreateWithoutUserInput = {
+  export type MessageStatusCreateWithoutUserInput = {
     id?: string
-    readAt?: Date | string
-    message: MessageCreateNestedOneWithoutReadStatusInput
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    message: MessageCreateNestedOneWithoutStatusInput
+    response?: MessageCreateNestedOneWithoutStatusResponsesInput
   }
 
-  export type MessageReadStatusUncheckedCreateWithoutUserInput = {
+  export type MessageStatusUncheckedCreateWithoutUserInput = {
     id?: string
     messageId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
-  export type MessageReadStatusCreateOrConnectWithoutUserInput = {
-    where: MessageReadStatusWhereUniqueInput
-    create: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput>
+  export type MessageStatusCreateOrConnectWithoutUserInput = {
+    where: MessageStatusWhereUniqueInput
+    create: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput>
   }
 
-  export type MessageReadStatusCreateManyUserInputEnvelope = {
-    data: MessageReadStatusCreateManyUserInput | MessageReadStatusCreateManyUserInput[]
+  export type MessageStatusCreateManyUserInputEnvelope = {
+    data: MessageStatusCreateManyUserInput | MessageStatusCreateManyUserInput[]
   }
 
   export type MessageCreateWithoutSenderInput = {
@@ -30275,7 +30884,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -30297,7 +30907,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -30449,46 +31060,93 @@ export namespace Prisma {
     create: XOR<UserStatsCreateWithoutUserInput, UserStatsUncheckedCreateWithoutUserInput>
   }
 
-  export type CommunityAdminCreateWithoutUserInput = {
+  export type AffiliateTokenCreateWithoutCreatorInput = {
     id?: string
-    assignedAt?: Date | string
-    community: CommunityCreateNestedOneWithoutAdminsInput
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    affiliations?: AffiliateRelationCreateNestedManyWithoutAffiliateTokenInput
   }
 
-  export type CommunityAdminUncheckedCreateWithoutUserInput = {
+  export type AffiliateTokenUncheckedCreateWithoutCreatorInput = {
     id?: string
-    communityId: string
-    assignedAt?: Date | string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    affiliations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateTokenInput
   }
 
-  export type CommunityAdminCreateOrConnectWithoutUserInput = {
-    where: CommunityAdminWhereUniqueInput
-    create: XOR<CommunityAdminCreateWithoutUserInput, CommunityAdminUncheckedCreateWithoutUserInput>
+  export type AffiliateTokenCreateOrConnectWithoutCreatorInput = {
+    where: AffiliateTokenWhereUniqueInput
+    create: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput>
   }
 
-  export type CommunityAdminCreateManyUserInputEnvelope = {
-    data: CommunityAdminCreateManyUserInput | CommunityAdminCreateManyUserInput[]
+  export type AffiliateTokenCreateManyCreatorInputEnvelope = {
+    data: AffiliateTokenCreateManyCreatorInput | AffiliateTokenCreateManyCreatorInput[]
   }
 
-  export type CommunityModeratorCreateWithoutUserInput = {
+  export type AffiliateRelationCreateWithoutAffiliateUserInput = {
     id?: string
-    assignedAt?: Date | string
-    community: CommunityCreateNestedOneWithoutModeratorsInput
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+    affiliateToken: AffiliateTokenCreateNestedOneWithoutAffiliationsInput
+    referredUser: UserCreateNestedOneWithoutReferredRelationsInput
   }
 
-  export type CommunityModeratorUncheckedCreateWithoutUserInput = {
+  export type AffiliateRelationUncheckedCreateWithoutAffiliateUserInput = {
     id?: string
-    communityId: string
-    assignedAt?: Date | string
+    affiliateTokenId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
   }
 
-  export type CommunityModeratorCreateOrConnectWithoutUserInput = {
-    where: CommunityModeratorWhereUniqueInput
-    create: XOR<CommunityModeratorCreateWithoutUserInput, CommunityModeratorUncheckedCreateWithoutUserInput>
+  export type AffiliateRelationCreateOrConnectWithoutAffiliateUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    create: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput>
   }
 
-  export type CommunityModeratorCreateManyUserInputEnvelope = {
-    data: CommunityModeratorCreateManyUserInput | CommunityModeratorCreateManyUserInput[]
+  export type AffiliateRelationCreateManyAffiliateUserInputEnvelope = {
+    data: AffiliateRelationCreateManyAffiliateUserInput | AffiliateRelationCreateManyAffiliateUserInput[]
+  }
+
+  export type AffiliateRelationCreateWithoutReferredUserInput = {
+    id?: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+    affiliateToken: AffiliateTokenCreateNestedOneWithoutAffiliationsInput
+    affiliateUser: UserCreateNestedOneWithoutAffiliateRelationsInput
+  }
+
+  export type AffiliateRelationUncheckedCreateWithoutReferredUserInput = {
+    id?: string
+    affiliateTokenId: string
+    affiliateUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationCreateOrConnectWithoutReferredUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    create: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput>
+  }
+
+  export type AffiliateRelationCreateManyReferredUserInputEnvelope = {
+    data: AffiliateRelationCreateManyReferredUserInput | AffiliateRelationCreateManyReferredUserInput[]
   }
 
   export type CommunityUpsertWithWhereUniqueWithoutCreatorInput = {
@@ -30512,6 +31170,7 @@ export namespace Prisma {
     OR?: CommunityScalarWhereInput[]
     NOT?: CommunityScalarWhereInput | CommunityScalarWhereInput[]
     id?: StringFilter<"Community"> | string
+    identifier?: StringNullableFilter<"Community"> | string | null
     name?: StringFilter<"Community"> | string
     description?: StringNullableFilter<"Community"> | string | null
     avatar?: StringNullableFilter<"Community"> | string | null
@@ -30545,6 +31204,7 @@ export namespace Prisma {
     communityId?: StringFilter<"CommunityMember"> | string
     userId?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
+    role?: StringFilter<"CommunityMember"> | string
   }
 
   export type ConversationMemberUpsertWithWhereUniqueWithoutUserInput = {
@@ -30706,30 +31366,32 @@ export namespace Prisma {
     data: XOR<FriendRequestUpdateManyMutationInput, FriendRequestUncheckedUpdateManyWithoutSenderInput>
   }
 
-  export type MessageReadStatusUpsertWithWhereUniqueWithoutUserInput = {
-    where: MessageReadStatusWhereUniqueInput
-    update: XOR<MessageReadStatusUpdateWithoutUserInput, MessageReadStatusUncheckedUpdateWithoutUserInput>
-    create: XOR<MessageReadStatusCreateWithoutUserInput, MessageReadStatusUncheckedCreateWithoutUserInput>
+  export type MessageStatusUpsertWithWhereUniqueWithoutUserInput = {
+    where: MessageStatusWhereUniqueInput
+    update: XOR<MessageStatusUpdateWithoutUserInput, MessageStatusUncheckedUpdateWithoutUserInput>
+    create: XOR<MessageStatusCreateWithoutUserInput, MessageStatusUncheckedCreateWithoutUserInput>
   }
 
-  export type MessageReadStatusUpdateWithWhereUniqueWithoutUserInput = {
-    where: MessageReadStatusWhereUniqueInput
-    data: XOR<MessageReadStatusUpdateWithoutUserInput, MessageReadStatusUncheckedUpdateWithoutUserInput>
+  export type MessageStatusUpdateWithWhereUniqueWithoutUserInput = {
+    where: MessageStatusWhereUniqueInput
+    data: XOR<MessageStatusUpdateWithoutUserInput, MessageStatusUncheckedUpdateWithoutUserInput>
   }
 
-  export type MessageReadStatusUpdateManyWithWhereWithoutUserInput = {
-    where: MessageReadStatusScalarWhereInput
-    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyWithoutUserInput>
+  export type MessageStatusUpdateManyWithWhereWithoutUserInput = {
+    where: MessageStatusScalarWhereInput
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyWithoutUserInput>
   }
 
-  export type MessageReadStatusScalarWhereInput = {
-    AND?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
-    OR?: MessageReadStatusScalarWhereInput[]
-    NOT?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
-    id?: StringFilter<"MessageReadStatus"> | string
-    messageId?: StringFilter<"MessageReadStatus"> | string
-    userId?: StringFilter<"MessageReadStatus"> | string
-    readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+  export type MessageStatusScalarWhereInput = {
+    AND?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+    OR?: MessageStatusScalarWhereInput[]
+    NOT?: MessageStatusScalarWhereInput | MessageStatusScalarWhereInput[]
+    id?: StringFilter<"MessageStatus"> | string
+    messageId?: StringFilter<"MessageStatus"> | string
+    userId?: StringFilter<"MessageStatus"> | string
+    receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
+    answer?: StringNullableFilter<"MessageStatus"> | string | null
   }
 
   export type MessageUpsertWithWhereUniqueWithoutSenderInput = {
@@ -30911,56 +31573,81 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommunityAdminUpsertWithWhereUniqueWithoutUserInput = {
-    where: CommunityAdminWhereUniqueInput
-    update: XOR<CommunityAdminUpdateWithoutUserInput, CommunityAdminUncheckedUpdateWithoutUserInput>
-    create: XOR<CommunityAdminCreateWithoutUserInput, CommunityAdminUncheckedCreateWithoutUserInput>
+  export type AffiliateTokenUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: AffiliateTokenWhereUniqueInput
+    update: XOR<AffiliateTokenUpdateWithoutCreatorInput, AffiliateTokenUncheckedUpdateWithoutCreatorInput>
+    create: XOR<AffiliateTokenCreateWithoutCreatorInput, AffiliateTokenUncheckedCreateWithoutCreatorInput>
   }
 
-  export type CommunityAdminUpdateWithWhereUniqueWithoutUserInput = {
-    where: CommunityAdminWhereUniqueInput
-    data: XOR<CommunityAdminUpdateWithoutUserInput, CommunityAdminUncheckedUpdateWithoutUserInput>
+  export type AffiliateTokenUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: AffiliateTokenWhereUniqueInput
+    data: XOR<AffiliateTokenUpdateWithoutCreatorInput, AffiliateTokenUncheckedUpdateWithoutCreatorInput>
   }
 
-  export type CommunityAdminUpdateManyWithWhereWithoutUserInput = {
-    where: CommunityAdminScalarWhereInput
-    data: XOR<CommunityAdminUpdateManyMutationInput, CommunityAdminUncheckedUpdateManyWithoutUserInput>
+  export type AffiliateTokenUpdateManyWithWhereWithoutCreatorInput = {
+    where: AffiliateTokenScalarWhereInput
+    data: XOR<AffiliateTokenUpdateManyMutationInput, AffiliateTokenUncheckedUpdateManyWithoutCreatorInput>
   }
 
-  export type CommunityAdminScalarWhereInput = {
-    AND?: CommunityAdminScalarWhereInput | CommunityAdminScalarWhereInput[]
-    OR?: CommunityAdminScalarWhereInput[]
-    NOT?: CommunityAdminScalarWhereInput | CommunityAdminScalarWhereInput[]
-    id?: StringFilter<"CommunityAdmin"> | string
-    communityId?: StringFilter<"CommunityAdmin"> | string
-    userId?: StringFilter<"CommunityAdmin"> | string
-    assignedAt?: DateTimeFilter<"CommunityAdmin"> | Date | string
+  export type AffiliateTokenScalarWhereInput = {
+    AND?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
+    OR?: AffiliateTokenScalarWhereInput[]
+    NOT?: AffiliateTokenScalarWhereInput | AffiliateTokenScalarWhereInput[]
+    id?: StringFilter<"AffiliateToken"> | string
+    token?: StringFilter<"AffiliateToken"> | string
+    name?: StringFilter<"AffiliateToken"> | string
+    createdBy?: StringFilter<"AffiliateToken"> | string
+    maxUses?: IntNullableFilter<"AffiliateToken"> | number | null
+    currentUses?: IntFilter<"AffiliateToken"> | number
+    expiresAt?: DateTimeNullableFilter<"AffiliateToken"> | Date | string | null
+    isActive?: BoolFilter<"AffiliateToken"> | boolean
+    createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
+    updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
   }
 
-  export type CommunityModeratorUpsertWithWhereUniqueWithoutUserInput = {
-    where: CommunityModeratorWhereUniqueInput
-    update: XOR<CommunityModeratorUpdateWithoutUserInput, CommunityModeratorUncheckedUpdateWithoutUserInput>
-    create: XOR<CommunityModeratorCreateWithoutUserInput, CommunityModeratorUncheckedCreateWithoutUserInput>
+  export type AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    update: XOR<AffiliateRelationUpdateWithoutAffiliateUserInput, AffiliateRelationUncheckedUpdateWithoutAffiliateUserInput>
+    create: XOR<AffiliateRelationCreateWithoutAffiliateUserInput, AffiliateRelationUncheckedCreateWithoutAffiliateUserInput>
   }
 
-  export type CommunityModeratorUpdateWithWhereUniqueWithoutUserInput = {
-    where: CommunityModeratorWhereUniqueInput
-    data: XOR<CommunityModeratorUpdateWithoutUserInput, CommunityModeratorUncheckedUpdateWithoutUserInput>
+  export type AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    data: XOR<AffiliateRelationUpdateWithoutAffiliateUserInput, AffiliateRelationUncheckedUpdateWithoutAffiliateUserInput>
   }
 
-  export type CommunityModeratorUpdateManyWithWhereWithoutUserInput = {
-    where: CommunityModeratorScalarWhereInput
-    data: XOR<CommunityModeratorUpdateManyMutationInput, CommunityModeratorUncheckedUpdateManyWithoutUserInput>
+  export type AffiliateRelationUpdateManyWithWhereWithoutAffiliateUserInput = {
+    where: AffiliateRelationScalarWhereInput
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserInput>
   }
 
-  export type CommunityModeratorScalarWhereInput = {
-    AND?: CommunityModeratorScalarWhereInput | CommunityModeratorScalarWhereInput[]
-    OR?: CommunityModeratorScalarWhereInput[]
-    NOT?: CommunityModeratorScalarWhereInput | CommunityModeratorScalarWhereInput[]
-    id?: StringFilter<"CommunityModerator"> | string
-    communityId?: StringFilter<"CommunityModerator"> | string
-    userId?: StringFilter<"CommunityModerator"> | string
-    assignedAt?: DateTimeFilter<"CommunityModerator"> | Date | string
+  export type AffiliateRelationScalarWhereInput = {
+    AND?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+    OR?: AffiliateRelationScalarWhereInput[]
+    NOT?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+    id?: StringFilter<"AffiliateRelation"> | string
+    affiliateTokenId?: StringFilter<"AffiliateRelation"> | string
+    affiliateUserId?: StringFilter<"AffiliateRelation"> | string
+    referredUserId?: StringFilter<"AffiliateRelation"> | string
+    status?: StringFilter<"AffiliateRelation"> | string
+    createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
+    completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
+  }
+
+  export type AffiliateRelationUpsertWithWhereUniqueWithoutReferredUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    update: XOR<AffiliateRelationUpdateWithoutReferredUserInput, AffiliateRelationUncheckedUpdateWithoutReferredUserInput>
+    create: XOR<AffiliateRelationCreateWithoutReferredUserInput, AffiliateRelationUncheckedCreateWithoutReferredUserInput>
+  }
+
+  export type AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput = {
+    where: AffiliateRelationWhereUniqueInput
+    data: XOR<AffiliateRelationUpdateWithoutReferredUserInput, AffiliateRelationUncheckedUpdateWithoutReferredUserInput>
+  }
+
+  export type AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput = {
+    where: AffiliateRelationScalarWhereInput
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyWithoutReferredUserInput>
   }
 
   export type AnonymousParticipantCreateWithoutConversationInput = {
@@ -31161,6 +31848,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutConversationInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -31169,12 +31857,11 @@ export namespace Prisma {
     updatedAt?: Date | string
     members?: CommunityMemberCreateNestedManyWithoutCommunityInput
     creator: UserCreateNestedOneWithoutCreatedCommunitiesInput
-    admins?: CommunityAdminCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorCreateNestedManyWithoutCommunityInput
   }
 
   export type CommunityUncheckedCreateWithoutConversationInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -31183,8 +31870,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
-    admins?: CommunityAdminUncheckedCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorUncheckedCreateNestedManyWithoutCommunityInput
   }
 
   export type CommunityCreateOrConnectWithoutConversationInput = {
@@ -31203,7 +31888,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -31225,7 +31911,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -31367,6 +32054,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutConversationInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31375,11 +32063,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
     creator?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
-    admins?: CommunityAdminUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUpdateManyWithoutCommunityNestedInput
   }
 
   export type CommunityUncheckedUpdateWithoutConversationInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31388,8 +32075,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
-    admins?: CommunityAdminUncheckedUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUncheckedUpdateManyWithoutCommunityNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -31429,6 +32114,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31455,14 +32141,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -31470,6 +32157,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31496,14 +32184,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -31573,6 +32262,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31599,20 +32289,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31639,14 +32331,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutMembersInput = {
@@ -31762,6 +32455,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31788,14 +32482,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedShareLinksInput = {
@@ -31803,6 +32498,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -31829,14 +32525,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedShareLinksInput = {
@@ -31922,6 +32619,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31948,20 +32646,22 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedShareLinksInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -31988,14 +32688,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutShareLinksInput = {
@@ -32170,7 +32871,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -32192,7 +32894,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -32340,25 +33043,54 @@ export namespace Prisma {
     data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutAnonymousSenderInput>
   }
 
-  export type MessageReadStatusCreateWithoutMessageInput = {
+  export type MessageStatusCreateWithoutMessageInput = {
     id?: string
-    readAt?: Date | string
-    user: UserCreateNestedOneWithoutMessageReadStatusInput
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    user: UserCreateNestedOneWithoutMessageStatusInput
+    response?: MessageCreateNestedOneWithoutStatusResponsesInput
   }
 
-  export type MessageReadStatusUncheckedCreateWithoutMessageInput = {
+  export type MessageStatusUncheckedCreateWithoutMessageInput = {
     id?: string
     userId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
-  export type MessageReadStatusCreateOrConnectWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    create: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput>
+  export type MessageStatusCreateOrConnectWithoutMessageInput = {
+    where: MessageStatusWhereUniqueInput
+    create: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput>
   }
 
-  export type MessageReadStatusCreateManyMessageInputEnvelope = {
-    data: MessageReadStatusCreateManyMessageInput | MessageReadStatusCreateManyMessageInput[]
+  export type MessageStatusCreateManyMessageInputEnvelope = {
+    data: MessageStatusCreateManyMessageInput | MessageStatusCreateManyMessageInput[]
+  }
+
+  export type MessageStatusCreateWithoutResponseInput = {
+    id?: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    user: UserCreateNestedOneWithoutMessageStatusInput
+    message: MessageCreateNestedOneWithoutStatusInput
+  }
+
+  export type MessageStatusUncheckedCreateWithoutResponseInput = {
+    id?: string
+    messageId: string
+    userId: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+  }
+
+  export type MessageStatusCreateOrConnectWithoutResponseInput = {
+    where: MessageStatusWhereUniqueInput
+    create: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput>
+  }
+
+  export type MessageStatusCreateManyResponseInputEnvelope = {
+    data: MessageStatusCreateManyResponseInput | MessageStatusCreateManyResponseInput[]
   }
 
   export type MessageTranslationCreateWithoutMessageInput = {
@@ -32403,7 +33135,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -32426,7 +33159,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
   }
 
@@ -32446,7 +33180,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -32468,7 +33203,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
@@ -32540,6 +33276,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -32567,13 +33304,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -32581,6 +33319,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -32608,13 +33347,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -32669,20 +33409,36 @@ export namespace Prisma {
     create: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
   }
 
-  export type MessageReadStatusUpsertWithWhereUniqueWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    update: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
-    create: XOR<MessageReadStatusCreateWithoutMessageInput, MessageReadStatusUncheckedCreateWithoutMessageInput>
+  export type MessageStatusUpsertWithWhereUniqueWithoutMessageInput = {
+    where: MessageStatusWhereUniqueInput
+    update: XOR<MessageStatusUpdateWithoutMessageInput, MessageStatusUncheckedUpdateWithoutMessageInput>
+    create: XOR<MessageStatusCreateWithoutMessageInput, MessageStatusUncheckedCreateWithoutMessageInput>
   }
 
-  export type MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput = {
-    where: MessageReadStatusWhereUniqueInput
-    data: XOR<MessageReadStatusUpdateWithoutMessageInput, MessageReadStatusUncheckedUpdateWithoutMessageInput>
+  export type MessageStatusUpdateWithWhereUniqueWithoutMessageInput = {
+    where: MessageStatusWhereUniqueInput
+    data: XOR<MessageStatusUpdateWithoutMessageInput, MessageStatusUncheckedUpdateWithoutMessageInput>
   }
 
-  export type MessageReadStatusUpdateManyWithWhereWithoutMessageInput = {
-    where: MessageReadStatusScalarWhereInput
-    data: XOR<MessageReadStatusUpdateManyMutationInput, MessageReadStatusUncheckedUpdateManyWithoutMessageInput>
+  export type MessageStatusUpdateManyWithWhereWithoutMessageInput = {
+    where: MessageStatusScalarWhereInput
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type MessageStatusUpsertWithWhereUniqueWithoutResponseInput = {
+    where: MessageStatusWhereUniqueInput
+    update: XOR<MessageStatusUpdateWithoutResponseInput, MessageStatusUncheckedUpdateWithoutResponseInput>
+    create: XOR<MessageStatusCreateWithoutResponseInput, MessageStatusUncheckedCreateWithoutResponseInput>
+  }
+
+  export type MessageStatusUpdateWithWhereUniqueWithoutResponseInput = {
+    where: MessageStatusWhereUniqueInput
+    data: XOR<MessageStatusUpdateWithoutResponseInput, MessageStatusUncheckedUpdateWithoutResponseInput>
+  }
+
+  export type MessageStatusUpdateManyWithWhereWithoutResponseInput = {
+    where: MessageStatusScalarWhereInput
+    data: XOR<MessageStatusUpdateManyMutationInput, MessageStatusUncheckedUpdateManyWithoutResponseInput>
   }
 
   export type MessageTranslationUpsertWithWhereUniqueWithoutMessageInput = {
@@ -32737,7 +33493,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -32759,7 +33516,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
   }
 
@@ -32851,6 +33609,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -32878,19 +33637,21 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -32918,13 +33679,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutMessagesInput = {
@@ -32989,7 +33751,8 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
     anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
@@ -33012,7 +33775,8 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
@@ -33042,7 +33806,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -33064,15 +33829,17 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
 
-  export type UserCreateWithoutMessageReadStatusInput = {
+  export type UserCreateWithoutMessageStatusInput = {
     id?: string
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33105,15 +33872,17 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserUncheckedCreateWithoutMessageReadStatusInput = {
+  export type UserUncheckedCreateWithoutMessageStatusInput = {
     id?: string
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33146,16 +33915,17 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserCreateOrConnectWithoutMessageReadStatusInput = {
+  export type UserCreateOrConnectWithoutMessageStatusInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
+    create: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
   }
 
-  export type MessageCreateWithoutReadStatusInput = {
+  export type MessageCreateWithoutStatusInput = {
     id?: string
     content: string
     originalLanguage?: string
@@ -33166,6 +33936,7 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    statusResponses?: MessageStatusCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationCreateNestedManyWithoutMessageInput
     replyTo?: MessageCreateNestedOneWithoutRepliesInput
     replies?: MessageCreateNestedManyWithoutReplyToInput
@@ -33174,7 +33945,7 @@ export namespace Prisma {
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
-  export type MessageUncheckedCreateWithoutReadStatusInput = {
+  export type MessageUncheckedCreateWithoutStatusInput = {
     id?: string
     conversationId: string
     senderId?: string | null
@@ -33189,30 +33960,77 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    statusResponses?: MessageStatusUncheckedCreateNestedManyWithoutResponseInput
     translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
   }
 
-  export type MessageCreateOrConnectWithoutReadStatusInput = {
+  export type MessageCreateOrConnectWithoutStatusInput = {
     where: MessageWhereUniqueInput
-    create: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
+    create: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
   }
 
-  export type UserUpsertWithoutMessageReadStatusInput = {
-    update: XOR<UserUpdateWithoutMessageReadStatusInput, UserUncheckedUpdateWithoutMessageReadStatusInput>
-    create: XOR<UserCreateWithoutMessageReadStatusInput, UserUncheckedCreateWithoutMessageReadStatusInput>
+  export type MessageCreateWithoutStatusResponsesInput = {
+    id?: string
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationCreateNestedManyWithoutMessageInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    anonymousSender?: AnonymousParticipantCreateNestedOneWithoutSentMessagesInput
+    sender?: UserCreateNestedOneWithoutSentMessagesInput
+    conversation: ConversationCreateNestedOneWithoutMessagesInput
+  }
+
+  export type MessageUncheckedCreateWithoutStatusResponsesInput = {
+    id?: string
+    conversationId: string
+    senderId?: string | null
+    anonymousSenderId?: string | null
+    content: string
+    originalLanguage?: string
+    messageType?: string
+    isEdited?: boolean
+    editedAt?: Date | string | null
+    isDeleted?: boolean
+    deletedAt?: Date | string | null
+    replyToId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: MessageStatusUncheckedCreateNestedManyWithoutMessageInput
+    translations?: MessageTranslationUncheckedCreateNestedManyWithoutMessageInput
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+  }
+
+  export type MessageCreateOrConnectWithoutStatusResponsesInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+  }
+
+  export type UserUpsertWithoutMessageStatusInput = {
+    update: XOR<UserUpdateWithoutMessageStatusInput, UserUncheckedUpdateWithoutMessageStatusInput>
+    create: XOR<UserCreateWithoutMessageStatusInput, UserUncheckedCreateWithoutMessageStatusInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutMessageReadStatusInput = {
+  export type UserUpdateToOneWithWhereWithoutMessageStatusInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutMessageReadStatusInput, UserUncheckedUpdateWithoutMessageReadStatusInput>
+    data: XOR<UserUpdateWithoutMessageStatusInput, UserUncheckedUpdateWithoutMessageStatusInput>
   }
 
-  export type UserUpdateWithoutMessageReadStatusInput = {
+  export type UserUpdateWithoutMessageStatusInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33245,14 +34063,16 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutMessageReadStatusInput = {
+  export type UserUncheckedUpdateWithoutMessageStatusInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33285,22 +34105,23 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type MessageUpsertWithoutReadStatusInput = {
-    update: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
-    create: XOR<MessageCreateWithoutReadStatusInput, MessageUncheckedCreateWithoutReadStatusInput>
+  export type MessageUpsertWithoutStatusInput = {
+    update: XOR<MessageUpdateWithoutStatusInput, MessageUncheckedUpdateWithoutStatusInput>
+    create: XOR<MessageCreateWithoutStatusInput, MessageUncheckedCreateWithoutStatusInput>
     where?: MessageWhereInput
   }
 
-  export type MessageUpdateToOneWithWhereWithoutReadStatusInput = {
+  export type MessageUpdateToOneWithWhereWithoutStatusInput = {
     where?: MessageWhereInput
-    data: XOR<MessageUpdateWithoutReadStatusInput, MessageUncheckedUpdateWithoutReadStatusInput>
+    data: XOR<MessageUpdateWithoutStatusInput, MessageUncheckedUpdateWithoutStatusInput>
   }
 
-  export type MessageUpdateWithoutReadStatusInput = {
+  export type MessageUpdateWithoutStatusInput = {
     content?: StringFieldUpdateOperationsInput | string
     originalLanguage?: StringFieldUpdateOperationsInput | string
     messageType?: StringFieldUpdateOperationsInput | string
@@ -33310,6 +34131,7 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -33318,7 +34140,7 @@ export namespace Prisma {
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
-  export type MessageUncheckedUpdateWithoutReadStatusInput = {
+  export type MessageUncheckedUpdateWithoutStatusInput = {
     conversationId?: StringFieldUpdateOperationsInput | string
     senderId?: NullableStringFieldUpdateOperationsInput | string | null
     anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33332,6 +34154,56 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
+    translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+  }
+
+  export type MessageUpsertWithoutStatusResponsesInput = {
+    update: XOR<MessageUpdateWithoutStatusResponsesInput, MessageUncheckedUpdateWithoutStatusResponsesInput>
+    create: XOR<MessageCreateWithoutStatusResponsesInput, MessageUncheckedCreateWithoutStatusResponsesInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutStatusResponsesInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutStatusResponsesInput, MessageUncheckedUpdateWithoutStatusResponsesInput>
+  }
+
+  export type MessageUpdateWithoutStatusResponsesInput = {
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
+    sender?: UserUpdateOneWithoutSentMessagesNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutStatusResponsesInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    senderId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousSenderId?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: StringFieldUpdateOperationsInput | string
+    originalLanguage?: StringFieldUpdateOperationsInput | string
+    messageType?: StringFieldUpdateOperationsInput | string
+    isEdited?: BoolFieldUpdateOperationsInput | boolean
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -33341,6 +34213,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33367,14 +34240,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutReceivedFriendRequestsInput = {
@@ -33382,6 +34256,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33408,14 +34283,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutReceivedFriendRequestsInput = {
@@ -33428,6 +34304,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33454,14 +34331,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutSentFriendRequestsInput = {
@@ -33469,6 +34347,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33495,14 +34374,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutSentFriendRequestsInput = {
@@ -33525,6 +34405,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33551,20 +34432,22 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedFriendRequestsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33591,14 +34474,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUpsertWithoutSentFriendRequestsInput = {
@@ -33616,6 +34500,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33642,20 +34527,22 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentFriendRequestsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33682,14 +34569,15 @@ export namespace Prisma {
     conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateWithoutTypingIndicatorsInput = {
@@ -33697,6 +34585,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33724,13 +34613,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -33738,6 +34628,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -33765,13 +34656,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -33841,6 +34733,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33868,19 +34761,21 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTypingIndicatorsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -33908,13 +34803,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutTypingIndicatorsInput = {
@@ -33973,6 +34869,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34000,13 +34897,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -34014,6 +34912,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34041,13 +34940,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -34070,6 +34970,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34097,19 +34998,21 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34137,18 +35040,20 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type CommunityMemberCreateWithoutCommunityInput = {
     id?: string
     joinedAt?: Date | string
+    role?: string
     user: UserCreateNestedOneWithoutCommunityMembershipsInput
   }
 
@@ -34156,6 +35061,7 @@ export namespace Prisma {
     id?: string
     userId: string
     joinedAt?: Date | string
+    role?: string
   }
 
   export type CommunityMemberCreateOrConnectWithoutCommunityInput = {
@@ -34172,6 +35078,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34198,14 +35105,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedCommunitiesInput = {
@@ -34213,6 +35121,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34239,61 +35148,20 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedCommunitiesInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutCreatedCommunitiesInput, UserUncheckedCreateWithoutCreatedCommunitiesInput>
-  }
-
-  export type CommunityAdminCreateWithoutCommunityInput = {
-    id?: string
-    assignedAt?: Date | string
-    user: UserCreateNestedOneWithoutCommunityAdminsInput
-  }
-
-  export type CommunityAdminUncheckedCreateWithoutCommunityInput = {
-    id?: string
-    userId: string
-    assignedAt?: Date | string
-  }
-
-  export type CommunityAdminCreateOrConnectWithoutCommunityInput = {
-    where: CommunityAdminWhereUniqueInput
-    create: XOR<CommunityAdminCreateWithoutCommunityInput, CommunityAdminUncheckedCreateWithoutCommunityInput>
-  }
-
-  export type CommunityAdminCreateManyCommunityInputEnvelope = {
-    data: CommunityAdminCreateManyCommunityInput | CommunityAdminCreateManyCommunityInput[]
-  }
-
-  export type CommunityModeratorCreateWithoutCommunityInput = {
-    id?: string
-    assignedAt?: Date | string
-    user: UserCreateNestedOneWithoutCommunityModeratorsInput
-  }
-
-  export type CommunityModeratorUncheckedCreateWithoutCommunityInput = {
-    id?: string
-    userId: string
-    assignedAt?: Date | string
-  }
-
-  export type CommunityModeratorCreateOrConnectWithoutCommunityInput = {
-    where: CommunityModeratorWhereUniqueInput
-    create: XOR<CommunityModeratorCreateWithoutCommunityInput, CommunityModeratorUncheckedCreateWithoutCommunityInput>
-  }
-
-  export type CommunityModeratorCreateManyCommunityInputEnvelope = {
-    data: CommunityModeratorCreateManyCommunityInput | CommunityModeratorCreateManyCommunityInput[]
   }
 
   export type ConversationCreateWithoutCommunityInput = {
@@ -34378,6 +35246,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34404,20 +35273,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedCommunitiesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34444,46 +35315,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type CommunityAdminUpsertWithWhereUniqueWithoutCommunityInput = {
-    where: CommunityAdminWhereUniqueInput
-    update: XOR<CommunityAdminUpdateWithoutCommunityInput, CommunityAdminUncheckedUpdateWithoutCommunityInput>
-    create: XOR<CommunityAdminCreateWithoutCommunityInput, CommunityAdminUncheckedCreateWithoutCommunityInput>
-  }
-
-  export type CommunityAdminUpdateWithWhereUniqueWithoutCommunityInput = {
-    where: CommunityAdminWhereUniqueInput
-    data: XOR<CommunityAdminUpdateWithoutCommunityInput, CommunityAdminUncheckedUpdateWithoutCommunityInput>
-  }
-
-  export type CommunityAdminUpdateManyWithWhereWithoutCommunityInput = {
-    where: CommunityAdminScalarWhereInput
-    data: XOR<CommunityAdminUpdateManyMutationInput, CommunityAdminUncheckedUpdateManyWithoutCommunityInput>
-  }
-
-  export type CommunityModeratorUpsertWithWhereUniqueWithoutCommunityInput = {
-    where: CommunityModeratorWhereUniqueInput
-    update: XOR<CommunityModeratorUpdateWithoutCommunityInput, CommunityModeratorUncheckedUpdateWithoutCommunityInput>
-    create: XOR<CommunityModeratorCreateWithoutCommunityInput, CommunityModeratorUncheckedCreateWithoutCommunityInput>
-  }
-
-  export type CommunityModeratorUpdateWithWhereUniqueWithoutCommunityInput = {
-    where: CommunityModeratorWhereUniqueInput
-    data: XOR<CommunityModeratorUpdateWithoutCommunityInput, CommunityModeratorUncheckedUpdateWithoutCommunityInput>
-  }
-
-  export type CommunityModeratorUpdateManyWithWhereWithoutCommunityInput = {
-    where: CommunityModeratorScalarWhereInput
-    data: XOR<CommunityModeratorUpdateManyMutationInput, CommunityModeratorUncheckedUpdateManyWithoutCommunityInput>
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithWhereUniqueWithoutCommunityInput = {
@@ -34526,6 +35366,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34552,14 +35393,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutCommunityMembershipsInput = {
@@ -34567,6 +35409,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34593,14 +35436,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutCommunityMembershipsInput = {
@@ -34610,6 +35454,7 @@ export namespace Prisma {
 
   export type CommunityCreateWithoutMembersInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -34617,13 +35462,12 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     creator: UserCreateNestedOneWithoutCreatedCommunitiesInput
-    admins?: CommunityAdminCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorCreateNestedManyWithoutCommunityInput
     Conversation?: ConversationCreateNestedManyWithoutCommunityInput
   }
 
   export type CommunityUncheckedCreateWithoutMembersInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -34631,8 +35475,6 @@ export namespace Prisma {
     createdBy: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    admins?: CommunityAdminUncheckedCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorUncheckedCreateNestedManyWithoutCommunityInput
     Conversation?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
   }
 
@@ -34656,6 +35498,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34682,20 +35525,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommunityMembershipsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34722,14 +35567,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type CommunityUpsertWithoutMembersInput = {
@@ -34744,6 +35590,7 @@ export namespace Prisma {
   }
 
   export type CommunityUpdateWithoutMembersInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34751,12 +35598,11 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     creator?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
-    admins?: CommunityAdminUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUpdateManyWithoutCommunityNestedInput
     Conversation?: ConversationUpdateManyWithoutCommunityNestedInput
   }
 
   export type CommunityUncheckedUpdateWithoutMembersInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34764,8 +35610,6 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    admins?: CommunityAdminUncheckedUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUncheckedUpdateManyWithoutCommunityNestedInput
     Conversation?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
   }
 
@@ -34774,6 +35618,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34801,13 +35646,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutStatsInput = {
@@ -34815,6 +35661,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34842,13 +35689,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutStatsInput = {
@@ -34871,6 +35719,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34898,19 +35747,21 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStatsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -34938,13 +35789,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateWithoutPreferencesInput = {
@@ -34952,6 +35804,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -34979,13 +35832,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -34993,6 +35847,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -35020,13 +35875,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -35049,6 +35905,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35076,19 +35933,21 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferencesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35116,13 +35975,14 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserCreateWithoutConversationPreferencesInput = {
@@ -35130,6 +35990,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -35156,14 +36017,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationPreferencesInput = {
@@ -35171,6 +36033,7 @@ export namespace Prisma {
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -35197,14 +36060,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationPreferencesInput = {
@@ -35274,6 +36138,7 @@ export namespace Prisma {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35300,20 +36165,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationPreferencesInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35340,14 +36207,15 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
   export type ConversationUpsertWithoutPreferencesInput = {
@@ -35401,11 +36269,12 @@ export namespace Prisma {
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutConversationNestedInput
   }
 
-  export type UserCreateWithoutCommunityAdminsInput = {
+  export type UserCreateWithoutCreatedAffiliateTokensInput = {
     id?: string
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -35433,20 +36302,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityModerators?: CommunityModeratorCreateNestedManyWithoutUserInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserUncheckedCreateWithoutCommunityAdminsInput = {
+  export type UserUncheckedCreateWithoutCreatedAffiliateTokensInput = {
     id?: string
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -35474,68 +36345,64 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityModerators?: CommunityModeratorUncheckedCreateNestedManyWithoutUserInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserCreateOrConnectWithoutCommunityAdminsInput = {
+  export type UserCreateOrConnectWithoutCreatedAffiliateTokensInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCommunityAdminsInput, UserUncheckedCreateWithoutCommunityAdminsInput>
+    create: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
   }
 
-  export type CommunityCreateWithoutAdminsInput = {
+  export type AffiliateRelationCreateWithoutAffiliateTokenInput = {
     id?: string
-    name: string
-    description?: string | null
-    avatar?: string | null
-    isPrivate?: boolean
+    status?: string
     createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: CommunityMemberCreateNestedManyWithoutCommunityInput
-    creator: UserCreateNestedOneWithoutCreatedCommunitiesInput
-    moderators?: CommunityModeratorCreateNestedManyWithoutCommunityInput
-    Conversation?: ConversationCreateNestedManyWithoutCommunityInput
+    completedAt?: Date | string | null
+    affiliateUser: UserCreateNestedOneWithoutAffiliateRelationsInput
+    referredUser: UserCreateNestedOneWithoutReferredRelationsInput
   }
 
-  export type CommunityUncheckedCreateWithoutAdminsInput = {
+  export type AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput = {
     id?: string
-    name: string
-    description?: string | null
-    avatar?: string | null
-    isPrivate?: boolean
-    createdBy: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
     createdAt?: Date | string
-    updatedAt?: Date | string
-    members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
-    moderators?: CommunityModeratorUncheckedCreateNestedManyWithoutCommunityInput
-    Conversation?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
+    completedAt?: Date | string | null
   }
 
-  export type CommunityCreateOrConnectWithoutAdminsInput = {
-    where: CommunityWhereUniqueInput
-    create: XOR<CommunityCreateWithoutAdminsInput, CommunityUncheckedCreateWithoutAdminsInput>
+  export type AffiliateRelationCreateOrConnectWithoutAffiliateTokenInput = {
+    where: AffiliateRelationWhereUniqueInput
+    create: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput>
   }
 
-  export type UserUpsertWithoutCommunityAdminsInput = {
-    update: XOR<UserUpdateWithoutCommunityAdminsInput, UserUncheckedUpdateWithoutCommunityAdminsInput>
-    create: XOR<UserCreateWithoutCommunityAdminsInput, UserUncheckedCreateWithoutCommunityAdminsInput>
+  export type AffiliateRelationCreateManyAffiliateTokenInputEnvelope = {
+    data: AffiliateRelationCreateManyAffiliateTokenInput | AffiliateRelationCreateManyAffiliateTokenInput[]
+  }
+
+  export type UserUpsertWithoutCreatedAffiliateTokensInput = {
+    update: XOR<UserUpdateWithoutCreatedAffiliateTokensInput, UserUncheckedUpdateWithoutCreatedAffiliateTokensInput>
+    create: XOR<UserCreateWithoutCreatedAffiliateTokensInput, UserUncheckedCreateWithoutCreatedAffiliateTokensInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutCommunityAdminsInput = {
+  export type UserUpdateToOneWithWhereWithoutCreatedAffiliateTokensInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutCommunityAdminsInput, UserUncheckedUpdateWithoutCommunityAdminsInput>
+    data: XOR<UserUpdateWithoutCreatedAffiliateTokensInput, UserUncheckedUpdateWithoutCreatedAffiliateTokensInput>
   }
 
-  export type UserUpdateWithoutCommunityAdminsInput = {
+  export type UserUpdateWithoutCreatedAffiliateTokensInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35563,19 +36430,21 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUpdateManyWithoutUserNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutCommunityAdminsInput = {
+  export type UserUncheckedUpdateWithoutCreatedAffiliateTokensInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35603,57 +36472,69 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityModerators?: CommunityModeratorUncheckedUpdateManyWithoutUserNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type CommunityUpsertWithoutAdminsInput = {
-    update: XOR<CommunityUpdateWithoutAdminsInput, CommunityUncheckedUpdateWithoutAdminsInput>
-    create: XOR<CommunityCreateWithoutAdminsInput, CommunityUncheckedCreateWithoutAdminsInput>
-    where?: CommunityWhereInput
+  export type AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput = {
+    where: AffiliateRelationWhereUniqueInput
+    update: XOR<AffiliateRelationUpdateWithoutAffiliateTokenInput, AffiliateRelationUncheckedUpdateWithoutAffiliateTokenInput>
+    create: XOR<AffiliateRelationCreateWithoutAffiliateTokenInput, AffiliateRelationUncheckedCreateWithoutAffiliateTokenInput>
   }
 
-  export type CommunityUpdateToOneWithWhereWithoutAdminsInput = {
-    where?: CommunityWhereInput
-    data: XOR<CommunityUpdateWithoutAdminsInput, CommunityUncheckedUpdateWithoutAdminsInput>
+  export type AffiliateRelationUpdateWithWhereUniqueWithoutAffiliateTokenInput = {
+    where: AffiliateRelationWhereUniqueInput
+    data: XOR<AffiliateRelationUpdateWithoutAffiliateTokenInput, AffiliateRelationUncheckedUpdateWithoutAffiliateTokenInput>
   }
 
-  export type CommunityUpdateWithoutAdminsInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
-    creator?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
-    moderators?: CommunityModeratorUpdateManyWithoutCommunityNestedInput
-    Conversation?: ConversationUpdateManyWithoutCommunityNestedInput
+  export type AffiliateRelationUpdateManyWithWhereWithoutAffiliateTokenInput = {
+    where: AffiliateRelationScalarWhereInput
+    data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenInput>
   }
 
-  export type CommunityUncheckedUpdateWithoutAdminsInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdBy?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUncheckedUpdateManyWithoutCommunityNestedInput
-    Conversation?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
+  export type AffiliateTokenCreateWithoutAffiliationsInput = {
+    id?: string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    creator: UserCreateNestedOneWithoutCreatedAffiliateTokensInput
   }
 
-  export type UserCreateWithoutCommunityModeratorsInput = {
+  export type AffiliateTokenUncheckedCreateWithoutAffiliationsInput = {
+    id?: string
+    token: string
+    name: string
+    createdBy: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AffiliateTokenCreateOrConnectWithoutAffiliationsInput = {
+    where: AffiliateTokenWhereUniqueInput
+    create: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+  }
+
+  export type UserCreateWithoutAffiliateRelationsInput = {
     id?: string
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -35681,20 +36562,22 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceCreateNestedManyWithoutUserInput
     stats?: UserStatsCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserUncheckedCreateWithoutCommunityModeratorsInput = {
+  export type UserUncheckedCreateWithoutAffiliateRelationsInput = {
     id?: string
     username: string
     firstName: string
     lastName: string
+    bio?: string
     email: string
     phoneNumber?: string | null
     password: string
@@ -35722,68 +36605,163 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
     receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
     sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
-    messageReadStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
     preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
-    communityAdmins?: CommunityAdminUncheckedCreateNestedManyWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
   }
 
-  export type UserCreateOrConnectWithoutCommunityModeratorsInput = {
+  export type UserCreateOrConnectWithoutAffiliateRelationsInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCommunityModeratorsInput, UserUncheckedCreateWithoutCommunityModeratorsInput>
+    create: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
   }
 
-  export type CommunityCreateWithoutModeratorsInput = {
+  export type UserCreateWithoutReferredRelationsInput = {
     id?: string
-    name: string
-    description?: string | null
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
     avatar?: string | null
-    isPrivate?: boolean
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    members?: CommunityMemberCreateNestedManyWithoutCommunityInput
-    creator: UserCreateNestedOneWithoutCreatedCommunitiesInput
-    admins?: CommunityAdminCreateNestedManyWithoutCommunityInput
-    Conversation?: ConversationCreateNestedManyWithoutCommunityInput
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
   }
 
-  export type CommunityUncheckedCreateWithoutModeratorsInput = {
+  export type UserUncheckedCreateWithoutReferredRelationsInput = {
     id?: string
-    name: string
-    description?: string | null
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
     avatar?: string | null
-    isPrivate?: boolean
-    createdBy: string
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    members?: CommunityMemberUncheckedCreateNestedManyWithoutCommunityInput
-    admins?: CommunityAdminUncheckedCreateNestedManyWithoutCommunityInput
-    Conversation?: ConversationUncheckedCreateNestedManyWithoutCommunityInput
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
   }
 
-  export type CommunityCreateOrConnectWithoutModeratorsInput = {
-    where: CommunityWhereUniqueInput
-    create: XOR<CommunityCreateWithoutModeratorsInput, CommunityUncheckedCreateWithoutModeratorsInput>
+  export type UserCreateOrConnectWithoutReferredRelationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
   }
 
-  export type UserUpsertWithoutCommunityModeratorsInput = {
-    update: XOR<UserUpdateWithoutCommunityModeratorsInput, UserUncheckedUpdateWithoutCommunityModeratorsInput>
-    create: XOR<UserCreateWithoutCommunityModeratorsInput, UserUncheckedCreateWithoutCommunityModeratorsInput>
+  export type AffiliateTokenUpsertWithoutAffiliationsInput = {
+    update: XOR<AffiliateTokenUpdateWithoutAffiliationsInput, AffiliateTokenUncheckedUpdateWithoutAffiliationsInput>
+    create: XOR<AffiliateTokenCreateWithoutAffiliationsInput, AffiliateTokenUncheckedCreateWithoutAffiliationsInput>
+    where?: AffiliateTokenWhereInput
+  }
+
+  export type AffiliateTokenUpdateToOneWithWhereWithoutAffiliationsInput = {
+    where?: AffiliateTokenWhereInput
+    data: XOR<AffiliateTokenUpdateWithoutAffiliationsInput, AffiliateTokenUncheckedUpdateWithoutAffiliationsInput>
+  }
+
+  export type AffiliateTokenUpdateWithoutAffiliationsInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    creator?: UserUpdateOneRequiredWithoutCreatedAffiliateTokensNestedInput
+  }
+
+  export type AffiliateTokenUncheckedUpdateWithoutAffiliationsInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdBy?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutAffiliateRelationsInput = {
+    update: XOR<UserUpdateWithoutAffiliateRelationsInput, UserUncheckedUpdateWithoutAffiliateRelationsInput>
+    create: XOR<UserCreateWithoutAffiliateRelationsInput, UserUncheckedCreateWithoutAffiliateRelationsInput>
     where?: UserWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutCommunityModeratorsInput = {
+  export type UserUpdateToOneWithWhereWithoutAffiliateRelationsInput = {
     where?: UserWhereInput
-    data: XOR<UserUpdateWithoutCommunityModeratorsInput, UserUncheckedUpdateWithoutCommunityModeratorsInput>
+    data: XOR<UserUpdateWithoutAffiliateRelationsInput, UserUncheckedUpdateWithoutAffiliateRelationsInput>
   }
 
-  export type UserUpdateWithoutCommunityModeratorsInput = {
+  export type UserUpdateWithoutAffiliateRelationsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35811,19 +36789,21 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
     stats?: UserStatsUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutCommunityModeratorsInput = {
+  export type UserUncheckedUpdateWithoutAffiliateRelationsInput = {
     username?: StringFieldUpdateOperationsInput | string
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     password?: StringFieldUpdateOperationsInput | string
@@ -35851,54 +36831,114 @@ export namespace Prisma {
     createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
     receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
     sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
-    messageReadStatus?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
     preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
-    communityAdmins?: CommunityAdminUncheckedUpdateManyWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
   }
 
-  export type CommunityUpsertWithoutModeratorsInput = {
-    update: XOR<CommunityUpdateWithoutModeratorsInput, CommunityUncheckedUpdateWithoutModeratorsInput>
-    create: XOR<CommunityCreateWithoutModeratorsInput, CommunityUncheckedCreateWithoutModeratorsInput>
-    where?: CommunityWhereInput
+  export type UserUpsertWithoutReferredRelationsInput = {
+    update: XOR<UserUpdateWithoutReferredRelationsInput, UserUncheckedUpdateWithoutReferredRelationsInput>
+    create: XOR<UserCreateWithoutReferredRelationsInput, UserUncheckedCreateWithoutReferredRelationsInput>
+    where?: UserWhereInput
   }
 
-  export type CommunityUpdateToOneWithWhereWithoutModeratorsInput = {
-    where?: CommunityWhereInput
-    data: XOR<CommunityUpdateWithoutModeratorsInput, CommunityUncheckedUpdateWithoutModeratorsInput>
+  export type UserUpdateToOneWithWhereWithoutReferredRelationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutReferredRelationsInput, UserUncheckedUpdateWithoutReferredRelationsInput>
   }
 
-  export type CommunityUpdateWithoutModeratorsInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
+  export type UserUpdateWithoutReferredRelationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
-    creator?: UserUpdateOneRequiredWithoutCreatedCommunitiesNestedInput
-    admins?: CommunityAdminUpdateManyWithoutCommunityNestedInput
-    Conversation?: ConversationUpdateManyWithoutCommunityNestedInput
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
   }
 
-  export type CommunityUncheckedUpdateWithoutModeratorsInput = {
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
+  export type UserUncheckedUpdateWithoutReferredRelationsInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
-    isPrivate?: BoolFieldUpdateOperationsInput | boolean
-    createdBy?: StringFieldUpdateOperationsInput | string
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
-    admins?: CommunityAdminUncheckedUpdateManyWithoutCommunityNestedInput
-    Conversation?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
   }
 
   export type CommunityCreateManyCreatorInput = {
     id?: string
+    identifier?: string | null
     name: string
     description?: string | null
     avatar?: string | null
@@ -35911,6 +36951,7 @@ export namespace Prisma {
     id?: string
     communityId: string
     joinedAt?: Date | string
+    role?: string
   }
 
   export type ConversationMemberCreateManyUserInput = {
@@ -35984,10 +37025,12 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type MessageReadStatusCreateManyUserInput = {
+  export type MessageStatusCreateManyUserInput = {
     id?: string
     messageId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
   }
 
   export type MessageCreateManySenderInput = {
@@ -36038,19 +37081,38 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type CommunityAdminCreateManyUserInput = {
+  export type AffiliateTokenCreateManyCreatorInput = {
     id?: string
-    communityId: string
-    assignedAt?: Date | string
+    token: string
+    name: string
+    maxUses?: number | null
+    currentUses?: number
+    expiresAt?: Date | string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
-  export type CommunityModeratorCreateManyUserInput = {
+  export type AffiliateRelationCreateManyAffiliateUserInput = {
     id?: string
-    communityId: string
-    assignedAt?: Date | string
+    affiliateTokenId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationCreateManyReferredUserInput = {
+    id?: string
+    affiliateTokenId: string
+    affiliateUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
   }
 
   export type CommunityUpdateWithoutCreatorInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36058,12 +37120,11 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: CommunityMemberUpdateManyWithoutCommunityNestedInput
-    admins?: CommunityAdminUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUpdateManyWithoutCommunityNestedInput
     Conversation?: ConversationUpdateManyWithoutCommunityNestedInput
   }
 
   export type CommunityUncheckedUpdateWithoutCreatorInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36071,12 +37132,11 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: CommunityMemberUncheckedUpdateManyWithoutCommunityNestedInput
-    admins?: CommunityAdminUncheckedUpdateManyWithoutCommunityNestedInput
-    moderators?: CommunityModeratorUncheckedUpdateManyWithoutCommunityNestedInput
     Conversation?: ConversationUncheckedUpdateManyWithoutCommunityNestedInput
   }
 
   export type CommunityUncheckedUpdateManyWithoutCreatorInput = {
+    identifier?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36087,17 +37147,20 @@ export namespace Prisma {
 
   export type CommunityMemberUpdateWithoutUserInput = {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
     community?: CommunityUpdateOneRequiredWithoutMembersNestedInput
   }
 
   export type CommunityMemberUncheckedUpdateWithoutUserInput = {
     communityId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
   }
 
   export type CommunityMemberUncheckedUpdateManyWithoutUserInput = {
     communityId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
   }
 
   export type ConversationMemberUpdateWithoutUserInput = {
@@ -36300,19 +37363,25 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageReadStatusUpdateWithoutUserInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    message?: MessageUpdateOneRequiredWithoutReadStatusNestedInput
+  export type MessageStatusUpdateWithoutUserInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    message?: MessageUpdateOneRequiredWithoutStatusNestedInput
+    response?: MessageUpdateOneWithoutStatusResponsesNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateWithoutUserInput = {
+  export type MessageStatusUncheckedUpdateWithoutUserInput = {
     messageId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutUserInput = {
+  export type MessageStatusUncheckedUpdateManyWithoutUserInput = {
     messageId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type MessageUpdateWithoutSenderInput = {
@@ -36325,7 +37394,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -36346,7 +37416,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -36453,34 +37524,87 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommunityAdminUpdateWithoutUserInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneRequiredWithoutAdminsNestedInput
+  export type AffiliateTokenUpdateWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    affiliations?: AffiliateRelationUpdateManyWithoutAffiliateTokenNestedInput
   }
 
-  export type CommunityAdminUncheckedUpdateWithoutUserInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateTokenUncheckedUpdateWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    affiliations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenNestedInput
   }
 
-  export type CommunityAdminUncheckedUpdateManyWithoutUserInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateTokenUncheckedUpdateManyWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    maxUses?: NullableIntFieldUpdateOperationsInput | number | null
+    currentUses?: IntFieldUpdateOperationsInput | number
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommunityModeratorUpdateWithoutUserInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    community?: CommunityUpdateOneRequiredWithoutModeratorsNestedInput
+  export type AffiliateRelationUpdateWithoutAffiliateUserInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateToken?: AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput
+    referredUser?: UserUpdateOneRequiredWithoutReferredRelationsNestedInput
   }
 
-  export type CommunityModeratorUncheckedUpdateWithoutUserInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateRelationUncheckedUpdateWithoutAffiliateUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
-  export type CommunityModeratorUncheckedUpdateManyWithoutUserInput = {
-    communityId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUpdateWithoutReferredUserInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateToken?: AffiliateTokenUpdateOneRequiredWithoutAffiliationsNestedInput
+    affiliateUser?: UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput
+  }
+
+  export type AffiliateRelationUncheckedUpdateWithoutReferredUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutReferredUserInput = {
+    affiliateTokenId?: StringFieldUpdateOperationsInput | string
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type AnonymousParticipantCreateManyConversationInput = {
@@ -36821,7 +37945,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -36842,7 +37967,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -37000,7 +38126,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replyTo?: MessageUpdateOneWithoutRepliesNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
@@ -37021,7 +38148,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -37041,10 +38169,20 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MessageReadStatusCreateManyMessageInput = {
+  export type MessageStatusCreateManyMessageInput = {
     id?: string
     userId: string
-    readAt?: Date | string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
+    answer?: string | null
+  }
+
+  export type MessageStatusCreateManyResponseInput = {
+    id?: string
+    messageId: string
+    userId: string
+    receivedAt?: Date | string | null
+    readAt?: Date | string | null
   }
 
   export type MessageTranslationCreateManyMessageInput = {
@@ -37074,19 +38212,46 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type MessageReadStatusUpdateWithoutMessageInput = {
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutMessageReadStatusNestedInput
+  export type MessageStatusUpdateWithoutMessageInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutMessageStatusNestedInput
+    response?: MessageUpdateOneWithoutStatusResponsesNestedInput
   }
 
-  export type MessageReadStatusUncheckedUpdateWithoutMessageInput = {
+  export type MessageStatusUncheckedUpdateWithoutMessageInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
-  export type MessageReadStatusUncheckedUpdateManyWithoutMessageInput = {
+  export type MessageStatusUncheckedUpdateManyWithoutMessageInput = {
     userId?: StringFieldUpdateOperationsInput | string
-    readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    answer?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type MessageStatusUpdateWithoutResponseInput = {
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutMessageStatusNestedInput
+    message?: MessageUpdateOneRequiredWithoutStatusNestedInput
+  }
+
+  export type MessageStatusUncheckedUpdateWithoutResponseInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type MessageStatusUncheckedUpdateManyWithoutResponseInput = {
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    receivedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type MessageTranslationUpdateWithoutMessageInput = {
@@ -37129,7 +38294,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUpdateManyWithoutMessageNestedInput
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     anonymousSender?: AnonymousParticipantUpdateOneWithoutSentMessagesNestedInput
@@ -37150,7 +38316,8 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    status?: MessageStatusUncheckedUpdateManyWithoutMessageNestedInput
+    statusResponses?: MessageStatusUncheckedUpdateManyWithoutResponseNestedInput
     translations?: MessageTranslationUncheckedUpdateManyWithoutMessageNestedInput
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
   }
@@ -37174,18 +38341,7 @@ export namespace Prisma {
     id?: string
     userId: string
     joinedAt?: Date | string
-  }
-
-  export type CommunityAdminCreateManyCommunityInput = {
-    id?: string
-    userId: string
-    assignedAt?: Date | string
-  }
-
-  export type CommunityModeratorCreateManyCommunityInput = {
-    id?: string
-    userId: string
-    assignedAt?: Date | string
+    role?: string
   }
 
   export type ConversationCreateManyCommunityInput = {
@@ -37205,47 +38361,20 @@ export namespace Prisma {
 
   export type CommunityMemberUpdateWithoutCommunityInput = {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
     user?: UserUpdateOneRequiredWithoutCommunityMembershipsNestedInput
   }
 
   export type CommunityMemberUncheckedUpdateWithoutCommunityInput = {
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
   }
 
   export type CommunityMemberUncheckedUpdateManyWithoutCommunityInput = {
     userId?: StringFieldUpdateOperationsInput | string
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CommunityAdminUpdateWithoutCommunityInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutCommunityAdminsNestedInput
-  }
-
-  export type CommunityAdminUncheckedUpdateWithoutCommunityInput = {
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CommunityAdminUncheckedUpdateManyWithoutCommunityInput = {
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CommunityModeratorUpdateWithoutCommunityInput = {
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutCommunityModeratorsNestedInput
-  }
-
-  export type CommunityModeratorUncheckedUpdateWithoutCommunityInput = {
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CommunityModeratorUncheckedUpdateManyWithoutCommunityInput = {
-    userId?: StringFieldUpdateOperationsInput | string
-    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    role?: StringFieldUpdateOperationsInput | string
   }
 
   export type ConversationUpdateWithoutCommunityInput = {
@@ -37300,6 +38429,39 @@ export namespace Prisma {
     lastMessageAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AffiliateRelationCreateManyAffiliateTokenInput = {
+    id?: string
+    affiliateUserId: string
+    referredUserId: string
+    status?: string
+    createdAt?: Date | string
+    completedAt?: Date | string | null
+  }
+
+  export type AffiliateRelationUpdateWithoutAffiliateTokenInput = {
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    affiliateUser?: UserUpdateOneRequiredWithoutAffiliateRelationsNestedInput
+    referredUser?: UserUpdateOneRequiredWithoutReferredRelationsNestedInput
+  }
+
+  export type AffiliateRelationUncheckedUpdateWithoutAffiliateTokenInput = {
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type AffiliateRelationUncheckedUpdateManyWithoutAffiliateTokenInput = {
+    affiliateUserId?: StringFieldUpdateOperationsInput | string
+    referredUserId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 

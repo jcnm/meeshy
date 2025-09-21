@@ -311,8 +311,25 @@ export function useMessageLoader({
   }), []);
 
   // Fonction pour mettre à jour les traductions d'un message existant
-  const updateMessageTranslations = useCallback((messageId: string, translations: TranslationData[]) => {
-    console.log('🌐 Mise à jour traductions pour message:', messageId, translations);
+  const updateMessageTranslations = useCallback((messageId: string, updaterOrTranslations: TranslationData[] | ((message: Message | null) => Message | null)) => {
+    console.log('🌐 Mise à jour traductions pour message:', messageId);
+    
+    // Gérer les deux signatures: callback pattern ou array directe
+    if (typeof updaterOrTranslations === 'function') {
+      // Callback pattern utilisé dans ConversationLayoutResponsive
+      setMessages(prev => prev.map(msg => {
+        if (msg.id === messageId) {
+          const updatedMessage = updaterOrTranslations(msg);
+          return updatedMessage || msg;
+        }
+        return msg;
+      }));
+      return;
+    }
+    
+    // Array pattern (mode direct)
+    const translations = updaterOrTranslations;
+    console.log('🌐 Traductions à appliquer:', translations);
     
     // Mettre à jour les messages bruts - FUSION des traductions existantes avec les nouvelles
     setMessages(prev => prev.map(msg => {

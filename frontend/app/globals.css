@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import des styles de conversations */
+@import url('../styles/conversations-layout.css');
+
+/* Force scroll behavior globally for conversation components */
+.conversation-area .messages-scroll,
+.conversation-area .conversation-list-scroll {
+  overflow-y: auto !important;
+  height: 100%;
+}
+
+/* Force scroll sur les listes de conversations */
+.conversation-list-container .conversation-list-scroll {
+  overflow-y: auto !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+}
+
+/* Debug scroll - temporaire */
+.conversation-list-scroll {
+  border: 1px solid red !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+
 @layer base {
   :root {
     /* Layout */

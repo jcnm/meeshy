@@ -2,16 +2,12 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../styles/bubble-stream.css";
 import { Toaster } from "@/components/ui/sonner";
-import { AppProvider } from "@/context/AppContext";
-import { LanguageProvider } from "@/context/LanguageContext";
-import { TranslationProvider } from "@/components/common/translation-provider";
-import { ErrorBoundary } from "@/components/common";
-import { FontInitializer } from "@/components/common/font-initializer";
-import { ClientOnly } from "@/components/common/client-only";
-// import { LanguageDetectionNotification } from "@/components/LanguageDetectionNotification";
-import { getAllFontVariables } from "@/lib/fonts";
+import { AppProvider } from "@/context/UnifiedProvider";
 import { AuthProvider } from "@/components/auth/auth-provider";
-// import { DebugModelsScript } from "@/components/debug/debug-models-script"; // Supprimé - obsolète
+import { ErrorBoundary } from "@/components/common";
+import { ClientOnly } from "@/components/common/client-only";
+import { defaultFont, getAllFontVariables } from "@/lib/fonts";
+import { preloadCriticalComponents } from "@/lib/lazy-components";
 
 export const metadata: Metadata = {
   title: 'Meeshy',
@@ -28,26 +24,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Preload des composants critiques après le rendu initial
+  if (typeof window !== 'undefined') {
+    setTimeout(preloadCriticalComponents, 0);
+  }
+
   return (
     <html lang="fr">
-      <body
-        className={`${getAllFontVariables()} antialiased font-nunito`}
-      >
-        <LanguageProvider>
-          <TranslationProvider>
-            <AppProvider>
-              <AuthProvider>
-                <ErrorBoundary>
-                  <ClientOnly>
-                    <FontInitializer />
-                    {/* <LanguageDetectionNotification /> */}
-                  </ClientOnly>
-                  {children}
-                </ErrorBoundary>
-              </AuthProvider>
-            </AppProvider>
-          </TranslationProvider>
-        </LanguageProvider>
+      <body className={`${getAllFontVariables()} antialiased font-nunito`}>
+        <AppProvider>
+          <AuthProvider>
+            <ErrorBoundary>
+              <ClientOnly>
+                {children}
+              </ClientOnly>
+            </ErrorBoundary>
+          </AuthProvider>
+        </AppProvider>
         <Toaster 
           position="bottom-right"
           expand={false}
@@ -62,7 +55,6 @@ export default function RootLayout({
             },
           }}
         />
-        {/* <DebugModelsScript /> Supprimé - obsolète */}
       </body>
     </html>
   );

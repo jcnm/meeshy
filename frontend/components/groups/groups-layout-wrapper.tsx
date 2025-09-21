@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { GroupsLayoutResponsive } from './groups-layout-responsive';
 import { useEffect } from 'react';
 

@@ -1,324 +1,230 @@
 /**
- * Centralisation des icônes pour optimiser les imports
- * Évite les imports multiples et améliore la performance
+ * Centralisation des icônes Lucide-React pour optimiser le bundle
+ * Import standard depuis lucide-react - Next.js 15 compatible
  */
 
-// Imports centralisés des icônes Lucide React
-export {
-  User,
-  Users,
+import {
+  // Navigation & Actions
   MessageSquare,
-  Send,
-  MoreHorizontal,
-  Search,
-  Settings,
   Bell,
-  Phone,
-  Video,
-  Mic,
-  MicOff,
-  Volume2,
-  VolumeX,
+  BellOff,
+  Search,
+  LogOut,
+  Settings,
+  User,
+  Home,
+  Users,
+  UserPlus,
+  Link,
+  Send,
+  Share,
+  
+  // UI Controls
+  ChevronDown,
+  ChevronUp,
+  MoreHorizontal,
+  X,
   Plus,
-  Minus,
+  ArrowRight,
+  ArrowUp,
+  ArrowLeft,
+  
+  // Status & Feedback
+  Loader2,
+  CheckCircle2,
+  Check,
+  CheckCheck,
+  AlertTriangle,
+  Timer,
+  Printer,
+  
+  // Content & Media
+  Languages,
+  Globe,
+  Globe2,
+  Shield,
+  ShieldCheck,
+  Brain,
+  TrendingUp,
+  Sparkles,
+  
+  // Editing & Actions
   Edit,
   Trash2,
   Copy,
-  Share,
-  Download,
-  Upload,
-  Eye,
-  EyeOff,
-  Lock,
-  Unlock,
-  Shield,
-  UserPlus,
-  UserMinus,
-  UserX,
-  Check,
-  X,
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-  ArrowRight,
-  Home,
-  Menu,
-  LogOut,
-  LogIn,
-  Calendar,
-  Clock,
-  MapPin,
-  Globe,
-  Wifi,
-  WifiOff,
-  Battery,
-  BatteryLow,
-  Signal,
-  SignalLow,
-  Smartphone,
-  Laptop,
-  Monitor,
-  Tablet,
-  Headphones,
-  Speaker,
-  Camera,
-  CameraOff,
-  Image,
-  File,
-  Folder,
-  Archive,
-  Star,
-  Heart,
-  ThumbsUp,
-  ThumbsDown,
-  Flag,
-  AlertTriangle,
-  AlertCircle,
-  Info,
-  HelpCircle,
-  ExternalLink,
-  Link,
-  Link2,
   RefreshCw,
-  RotateCcw,
-  Save,
-  Loader2,
-  Loader,
+  Star,
+  Lock,
+  Ghost,
   Zap,
-  Flashlight,
-  FlashlightOff,
-  Moon,
-  Sun,
-  Palette,
-  Brush,
-  PenTool,
-  Type,
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify,
-  List,
-  ListOrdered,
-  Quote,
-  Code,
-  Terminal,
-  Database,
-  Server,
-  Cloud,
-  CloudUpload,
-  CloudDownload,
-  CloudOff,
-  HardDrive,
-  Chip,
-  Cpu,
-  Memory,
-  Disc,
-  Disc3,
-  Play,
-  Pause,
-  Stop,
-  SkipBack,
-  SkipForward,
-  Repeat,
-  Shuffle,
-  Volume1,
-  Music,
-  HeadphonesIcon,
-  Radio,
-  Tv,
-  Film,
-  Clapperboard,
-  CameraIcon,
-  ImageIcon,
-  PictureInPicture,
-  Maximize,
-  Minimize,
-  Move,
-  RotateCw,
-  Crop,
-  Scissors,
-  Filter,
-  Layers,
-  Grid,
-  Columns,
-  Rows,
-  Layout,
-  Sidebar,
-  SidebarClose,
-  SidebarOpen,
-  PanelLeft,
-  PanelRight,
-  PanelTop,
-  PanelBottom,
-  PanelLeftClose,
-  PanelRightClose,
-  PanelTopClose,
-  PanelBottomClose,
-  PanelLeftOpen,
-  PanelRightOpen,
-  PanelTopOpen,
-  PanelBottomOpen,
-  Activity,
-  TrendingUp,
-  TrendingDown,
-  BarChart,
-  BarChart3,
-  LineChart,
-  PieChart,
-  DollarSign,
-  Euro,
-  Yen,
-  Pound,
-  CreditCard,
-  Wallet,
-  Receipt,
-  ShoppingCart,
-  ShoppingBag,
-  Package,
-  Truck,
-  Car,
-  Plane,
-  Train,
-  Bus,
-  Boat,
-  Bike,
-  Zap as Lightning,
-  Flame,
-  Snowflake,
-  Droplets,
-  Wind,
-  CloudRain,
-  CloudSnow,
-  CloudLightning,
-  SunIcon,
-  MoonIcon,
-  Sunrise,
-  Sunset,
-  Gauge,
-  Thermometer,
-  ThermometerSun,
-  ThermometerSnowflake,
-  Timer,
-  TimerOff,
-  Stopwatch,
-  ClockIcon,
-  CalendarIcon,
-  CalendarDays,
-  CalendarCheck,
-  CalendarX,
-  CalendarClock,
-  CalendarRange,
-  CalendarSearch,
-  CalendarHeart,
-  CalendarPlus,
-  CalendarMinus,
-  CalendarEdit,
-  CalendarTrash,
-  CalendarUser,
-  CalendarSettings,
-  CalendarStar,
-  CalendarGift,
-  CalendarCake,
-  CalendarMusic,
-  CalendarCamera,
-  CalendarVideo,
-  CalendarImage,
-  CalendarFile,
-  CalendarFolder,
-  CalendarDatabase,
-  CalendarServer,
-  CalendarCloud,
-  CalendarWifi,
-  CalendarBattery,
-  CalendarSignal,
-  CalendarSmartphone,
-  CalendarLaptop,
-  CalendarMonitor,
-  CalendarTablet,
-  CalendarHeadphones,
-  CalendarSpeaker,
-  CalendarMic,
-  CalendarMicOff,
-  CalendarPhone,
-  CalendarVideoIcon,
-  CalendarMessageSquare,
-  CalendarUsers,
-  CalendarUser,
-  CalendarSettings as CalendarSettingsIcon,
-  CalendarBell,
-  CalendarSearch as CalendarSearchIcon,
-  CalendarPlus as CalendarPlusIcon,
-  CalendarMinus as CalendarMinusIcon,
-  CalendarEdit as CalendarEditIcon,
-  CalendarTrash as CalendarTrashIcon,
-  CalendarStar as CalendarStarIcon,
-  CalendarHeart as CalendarHeartIcon,
-  CalendarGift as CalendarGiftIcon,
-  CalendarCake as CalendarCakeIcon,
-  CalendarMusic as CalendarMusicIcon,
-  CalendarCamera as CalendarCameraIcon,
-  CalendarVideo as CalendarVideoIcon,
-  CalendarImage as CalendarImageIcon,
-  CalendarFile as CalendarFileIcon,
-  CalendarFolder as CalendarFolderIcon,
-  CalendarDatabase as CalendarDatabaseIcon,
-  CalendarServer as CalendarServerIcon,
-  CalendarCloud as CalendarCloudIcon,
-  CalendarWifi as CalendarWifiIcon,
-  CalendarBattery as CalendarBatteryIcon,
-  CalendarSignal as CalendarSignalIcon,
-  CalendarSmartphone as CalendarSmartphoneIcon,
-  CalendarLaptop as CalendarLaptopIcon,
-  CalendarMonitor as CalendarMonitorIcon,
-  CalendarTablet as CalendarTabletIcon,
-  CalendarHeadphones as CalendarHeadphonesIcon,
-  CalendarSpeaker as CalendarSpeakerIcon,
-  CalendarMic as CalendarMicIcon,
-  CalendarMicOff as CalendarMicOffIcon,
-  CalendarPhone as CalendarPhoneIcon,
-  CalendarVideo as CalendarVideoIconIcon,
-  CalendarMessageSquare as CalendarMessageSquareIcon,
-  CalendarUsers as CalendarUsersIcon
+  
+  // Business & Categories
+  Building2,
+  GraduationCap,
+  
+  // Social Media
+  Youtube,
+  Twitter,
+  Linkedin,
+  Instagram,
+  
 } from 'lucide-react';
 
-// Cache des icônes pour éviter les re-imports
-const iconCache = new Map();
+// Re-export pour utilisation dans l'application
+export {
+  MessageSquare,
+  Bell,
+  BellOff,
+  Search,
+  LogOut,
+  Settings,
+  User,
+  Home,
+  Users,
+  UserPlus,
+  Link,
+  Send,
+  Share,
+  ChevronDown,
+  ChevronUp,
+  MoreHorizontal,
+  X,
+  Plus,
+  ArrowRight,
+  ArrowUp,
+  ArrowLeft,
+  Loader2,
+  CheckCircle2,
+  Check,
+  CheckCheck,
+  AlertTriangle,
+  Timer,
+  Printer,
+  Languages,
+  Globe,
+  Globe2,
+  Shield,
+  ShieldCheck,
+  Brain,
+  TrendingUp,
+  Sparkles,
+  Edit,
+  Trash2,
+  Copy,
+  RefreshCw,
+  Star,
+  Lock,
+  Ghost,
+  Zap,
+  Building2,
+  GraduationCap,
+  Youtube,
+  Twitter,
+  Linkedin,
+  Instagram,
+};
 
-/**
- * Fonction utilitaire pour obtenir une icône avec cache
- */
-export function getIcon(iconName: string) {
-  if (iconCache.has(iconName)) {
-    return iconCache.get(iconName);
-  }
-  
-  // Import dynamique pour les icônes non critiques
-  const icon = require('lucide-react')[iconName];
-  if (icon) {
-    iconCache.set(iconName, icon);
-    return icon;
-  }
-  
-  return null;
-}
+// Types pour l'auto-complétion
+export type IconName = 
+  | 'MessageSquare'
+  | 'Bell'
+  | 'Search'
+  | 'LogOut'
+  | 'Settings'
+  | 'User'
+  | 'Home'
+  | 'Users'
+  | 'UserPlus'
+  | 'Link'
+  | 'Send'
+  | 'Share'
+  | 'ChevronDown'
+  | 'ChevronUp'
+  | 'MoreHorizontal'
+  | 'X'
+  | 'Plus'
+  | 'ArrowRight'
+  | 'ArrowUp'
+  | 'Loader2'
+  | 'CheckCircle2'
+  | 'Check'
+  | 'CheckCheck'
+  | 'AlertTriangle'
+  | 'Timer'
+  | 'Languages'
+  | 'Globe'
+  | 'Globe2'
+  | 'Shield'
+  | 'ShieldCheck'
+  | 'Brain'
+  | 'TrendingUp'
+  | 'Sparkles'
+  | 'Edit'
+  | 'Trash2'
+  | 'Copy'
+  | 'RefreshCw'
+  | 'Star'
+  | 'Lock'
+  | 'Ghost'
+  | 'Zap'
+  | 'Building2'
+  | 'GraduationCap'
+  | 'Youtube'
+  | 'Twitter'
+  | 'Linkedin'
+  | 'Instagram';
 
-/**
- * Préchargement des icônes critiques
- */
-export function preloadCriticalIcons() {
-  const criticalIcons = [
-    'User', 'Users', 'MessageSquare', 'Send', 'Search', 'Settings', 'Bell',
-    'Home', 'Menu', 'LogOut', 'LogIn', 'Plus', 'Minus', 'Edit', 'Trash2',
-    'Copy', 'Share', 'Eye', 'EyeOff', 'Check', 'X', 'ChevronDown', 'ChevronUp'
-  ];
+// Helper pour obtenir une icône par nom (utile pour les configurations dynamiques)
+export const getIcon = (name: IconName) => {
+  const icons = {
+    MessageSquare,
+    Bell,
+    Search,
+    LogOut,
+    Settings,
+    User,
+    Home,
+    Users,
+    UserPlus,
+    Link,
+    Send,
+    Share,
+    ChevronDown,
+    ChevronUp,
+    MoreHorizontal,
+    X,
+    Plus,
+    ArrowRight,
+    ArrowUp,
+    Loader2,
+    CheckCircle2,
+    Check,
+    CheckCheck,
+    AlertTriangle,
+    Timer,
+    Languages,
+    Globe,
+    Globe2,
+    Shield,
+    ShieldCheck,
+    Brain,
+    TrendingUp,
+    Sparkles,
+    Edit,
+    Trash2,
+    Copy,
+    RefreshCw,
+    Star,
+    Lock,
+    Ghost,
+    Zap,
+    Building2,
+    GraduationCap,
+    Youtube,
+    Twitter,
+    Linkedin,
+    Instagram,
+  };
   
-  criticalIcons.forEach(iconName => {
-    getIcon(iconName);
-  });
-}
+  return icons[name];
+};

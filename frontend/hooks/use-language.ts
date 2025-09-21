@@ -9,7 +9,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { detectBestInterfaceLanguage, getUserPreferredLanguage } from '@/utils/language-detection';
 import { getBestMatchingLocale, detectUserPreferredLocale, type Locale } from '@/lib/i18n';
 import { useTranslations } from './useTranslations';
-import { INTERFACE_LANGUAGES } from '@/types';
+import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
 export interface TranslatedLanguage {
   code: string;
@@ -123,17 +123,16 @@ export function useLanguage(): UseLanguageReturn {
     console.log('[LANGUAGE_DETECTION] System language:', systemLanguage);
 
     // Détecter la meilleure langue d'interface
-    detectBestInterfaceLanguage()
-      .then(bestLanguage => {
-        console.log('[LANGUAGE_DETECTION] Best interface language:', bestLanguage);
-        setDetectedInterfaceLanguage(bestLanguage);
-        setIsDetectionComplete(true);
-      })
-      .catch(error => {
-        console.error('[LANGUAGE_DETECTION] Error detecting interface language:', error);
-        setDetectedInterfaceLanguage('en');
-        setIsDetectionComplete(true);
-      });
+    try {
+      const bestLanguage = detectBestInterfaceLanguage();
+      console.log('[LANGUAGE_DETECTION] Best interface language:', bestLanguage);
+      setDetectedInterfaceLanguage(bestLanguage);
+      setIsDetectionComplete(true);
+    } catch (error) {
+      console.error('[LANGUAGE_DETECTION] Error detecting interface language:', error);
+      setDetectedInterfaceLanguage('en');
+      setIsDetectionComplete(true);
+    }
   }, [detectBestInterfaceLanguage]);
 
   return {

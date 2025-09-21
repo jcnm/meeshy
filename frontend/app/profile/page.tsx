@@ -20,7 +20,7 @@ import {
   Activity
 } from 'lucide-react';
 import { User } from '@/types';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { getUserInitials } from '@/utils/user';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 

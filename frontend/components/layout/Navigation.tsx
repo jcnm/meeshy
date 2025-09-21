@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/hooks/useTranslations';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useAuth } from '@/hooks/use-auth';
 import { Z_CLASSES } from '@/lib/z-index';
 import { 

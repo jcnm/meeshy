@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { useMessaging } from '@/hooks/use-messaging';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -44,6 +44,8 @@ interface ConversationLayoutResponsiveProps {
 export function ConversationLayoutResponsive({ selectedConversationId }: ConversationLayoutResponsiveProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const conversationListRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number>(0);
   const { user, isAuthChecking } = useUser();
   const { t } = useTranslations('conversationLayout');
   const { t: tSearch } = useTranslations('conversationSearch');
@@ -203,9 +205,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Fonction pour charger les messages (compatibilité avec l'ancien hook)
   const loadMessages = useCallback(async (conversationId: string, isNewConversation = false) => {
-    if (isNewConversation) {
-      await refreshMessages();
-    }
+    // Toujours rafraîchir les messages lors du changement de conversation
+    await refreshMessages();
   }, [refreshMessages]);
 
   // Hook pour les statistiques de traduction (intégré dans useTranslation)
@@ -363,8 +364,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   }, [selectedConversation?.id, addMessage, setConversationsIfChanged]);
 
     const handleTranslation = useCallback((messageId: string, translations: any[]) => {
-    console.group(`🔤 Traduction reçue pour message ${messageId}`);
-    console.log('  - Données brutes:', { messageId, translations });
+    console.log(`🔤 Traduction reçue pour message ${messageId}`);
+    console.log('  - Nombre de traductions:', translations.length);
     
     // Créer un objet data compatible avec l'ancien format
     const data = {
@@ -381,8 +382,7 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     updateMessageTranslations(messageId, existingMessage => {
       if (!existingMessage) {
         console.warn('  ❌ Message non trouvé pour les traductions:', messageId);
-        console.groupEnd();
-        return existingMessage; // Retourner le message tel quel au lieu de null
+        return existingMessage;
       }
       
       console.log('  🔍 Message trouvé pour mise à jour:', {
@@ -700,21 +700,41 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [user?.id, router, sanitizeConversations, setConversationsIfChanged, searchParams, selectedConversationId]);
 
-  // Effet pour charger les données initiales et gérer les changements d'URL
+  // Effet pour charger les données initiales une seule fois
   useEffect(() => {
-    if (user) {
-      // Ne pas recharger les conversations si on vient juste d'en créer une
-      const conversationIdFromUrl = searchParams.get('id');
-      if (justCreatedConversation && conversationIdFromUrl === justCreatedConversation) {
-        console.log('[CONVERSATION] Éviter le rechargement après création de conversation:', justCreatedConversation);
-        // Réinitialiser le flag après un délai pour permettre les futurs rechargements
-        setTimeout(() => setJustCreatedConversation(null), 2000);
-        return;
-      }
-      
+    if (user && conversations.length === 0) {
+      console.log('[NAVIGATION] Chargement initial des conversations');
       loadData();
     }
-  }, [user, loadData, searchParams, justCreatedConversation]);
+  }, [user]); // Dépendance minimale pour éviter les rechargements multiples
+
+  // Gérer la navigation avec les boutons du navigateur (retour/avancer)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      console.log('[NAVIGATION] PopState event:', event.state);
+      
+      const conversationId = event.state?.conversationId || null;
+      
+      if (conversationId) {
+        const conversation = conversations.find(c => c.id === conversationId);
+        if (conversation) {
+          setSelectedConversation(conversation);
+          if (isMobile) {
+            setShowConversationList(false);
+          }
+        }
+      } else {
+        // Retour à la liste
+        setSelectedConversation(null);
+        if (isMobile) {
+          setShowConversationList(true);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [conversations, isMobile]);
 
   // Effet séparé pour gérer les changements de paramètres d'URL
   useEffect(() => {
@@ -724,15 +744,26 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
         let conversation = conversations.find(c => c.id === conversationIdFromUrl);
         
         if (conversation && conversation.id !== selectedConversation?.id) {
+          console.log('[NAVIGATION] Sélection de conversation depuis URL:', conversationIdFromUrl);
           setSelectedConversation(conversation);
+          if (isMobile) {
+            setShowConversationList(false);
+          }
         } else if (!conversation) {
+          console.log('[NAVIGATION] Conversation non trouvée dans URL:', conversationIdFromUrl);
           setSelectedConversation(null);
+          if (isMobile) {
+            setShowConversationList(true);
+          }
         }
       } else {
         setSelectedConversation(null);
+        if (isMobile) {
+          setShowConversationList(true);
+        }
       }
     }
-  }, [searchParams, selectedConversationId, conversations, user?.id, selectedConversation?.id]);
+  }, [searchParams, selectedConversationId, conversations, user?.id, selectedConversation?.id, isMobile]);
 
   // Effet pour gérer spécifiquement le retour à la liste (quand selectedConversationId devient undefined)
   useEffect(() => {
@@ -745,12 +776,45 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
     }
   }, [selectedConversationId, searchParams, isMobile]);
 
+  // Sauvegarder la position de scroll avant de sélectionner une conversation
+  const saveScrollPosition = useCallback(() => {
+    if (conversationListRef.current) {
+      const scrollContainer = conversationListRef.current.querySelector('.overflow-y-auto');
+      if (scrollContainer) {
+        scrollPositionRef.current = scrollContainer.scrollTop;
+        console.log('[SCROLL] Position sauvegardée:', scrollPositionRef.current);
+      }
+    }
+  }, []);
+
+  // Restaurer la position de scroll
+  const restoreScrollPosition = useCallback(() => {
+    if (conversationListRef.current) {
+      const scrollContainer = conversationListRef.current.querySelector('.overflow-y-auto');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollPositionRef.current;
+        console.log('[SCROLL] Position restaurée:', scrollPositionRef.current);
+      }
+    }
+  }, []);
+
   // Sélectionner une conversation
-  const handleSelectConversation = (conversation: Conversation) => {
+  const handleSelectConversation = useCallback((conversation: Conversation) => {
     // Si c'est la même conversation, ne rien faire
     if (selectedConversation?.id === conversation.id) {
       return;
     }
+
+    console.log('[NAVIGATION] Sélection de la conversation:', {
+      id: conversation.id,
+      title: conversation.title,
+      name: conversation.name,
+      type: conversation.type,
+      participantsCount: conversation.participants?.length
+    });
+
+    // Sauvegarder la position de scroll avant de changer
+    saveScrollPosition();
 
     // Sélectionner la conversation
     setSelectedConversation(conversation);
@@ -760,27 +824,36 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
       setShowConversationList(false);
     }
 
-    // Mettre à jour l'URL
-    router.push(`/conversations/${conversation.id}`, { scroll: false });
-  };
+    // Mettre à jour l'URL sans navigation (pour maintenir l'URL à jour)
+    // Utiliser replaceState pour éviter d'ajouter une entrée dans l'historique
+    const newUrl = `/conversations/${conversation.id}`;
+    window.history.replaceState({ conversationId: conversation.id }, '', newUrl);
+
+    // Restaurer le scroll après un court délai pour laisser le DOM se mettre à jour
+    setTimeout(restoreScrollPosition, 100);
+  }, [selectedConversation?.id, isMobile, saveScrollPosition, restoreScrollPosition]);
 
   // Retour à la liste (mobile et desktop)
-  const handleBackToList = () => {
-    console.log('[DEBUG] handleBackToList called, isMobile:', isMobile);
+  const handleBackToList = useCallback(() => {
+    console.log('[NAVIGATION] Retour à la liste, isMobile:', isMobile);
+    
+    // Sauvegarder la position de scroll actuelle
+    saveScrollPosition();
+    
+    // Désélectionner la conversation
+    setSelectedConversation(null);
     
     if (isMobile) {
-      // Sur mobile : naviguer vers la page de liste des conversations
-      console.log('[DEBUG] Mobile: navigating to /conversations');
-      setShowConversationList(true); // Afficher la liste sur mobile
-      setSelectedConversation(null); // Désélectionner la conversation
-      router.push('/conversations');
-    } else {
-      // Sur desktop : masquer la conversation sélectionnée pour revenir à la liste
-      console.log('[DEBUG] Desktop: clearing selected conversation and navigating to /conversations');
-      setSelectedConversation(null);
-      router.push('/conversations');
+      // Sur mobile : afficher la liste des conversations
+      setShowConversationList(true);
     }
-  };
+    
+    // Mettre à jour l'URL sans navigation
+    window.history.replaceState({ conversationId: null }, '', '/conversations');
+    
+    // Restaurer la position de scroll
+    setTimeout(restoreScrollPosition, 100);
+  }, [isMobile, saveScrollPosition, restoreScrollPosition]);
 
   // Envoyer un message (simplifié grâce au hook réutilisable)
   const handleSendMessage = async (content: string, e?: React.FormEvent) => {
@@ -885,6 +958,12 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
   // Effet 1: gestion du chargement/vidage des messages lorsque la conversation change
   useEffect(() => {
+    console.log('[DEBUG] Effect for loading messages triggered', {
+      conversationId: selectedConversation?.id,
+      messagesLength: messages.length,
+      firstMessageConvId: messages[0]?.conversationId
+    });
+
     if (!selectedConversation?.id) {
       clearMessages();
       return;
@@ -892,12 +971,14 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
 
     const isDifferentConversation = messages[0]?.conversationId && messages[0]?.conversationId !== selectedConversation.id;
     if (isDifferentConversation) {
+      console.log('[DEBUG] Different conversation detected, clearing messages');
       // Nettoyage des messages de l'ancienne conversation
       clearMessages();
     }
 
     const hasNoMessages = messages.length === 0;
     if (hasNoMessages || isDifferentConversation) {
+      console.log('[DEBUG] Loading messages for conversation', selectedConversation.id);
       // Chargement des messages pour la conversation
       loadMessages(selectedConversation.id, true);
     }
@@ -1081,19 +1162,21 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             : "h-full"
         )}>
           {/* Liste des conversations */}
-          <ConversationList
-            conversations={conversations}
-            selectedConversation={selectedConversation}
-            currentUser={user}
-            isLoading={isLoading}
-            isMobile={isMobile}
-            showConversationList={showConversationList}
-            onSelectConversation={handleSelectConversation}
-            onCreateConversation={() => setIsCreateConversationModalOpen(true)}
-            onLinkCreated={loadData}
-            t={t}
-            tSearch={tSearch}
-          />
+          <div ref={conversationListRef}>
+            <ConversationList
+              conversations={conversations}
+              selectedConversation={selectedConversation}
+              currentUser={user}
+              isLoading={isLoading}
+              isMobile={isMobile}
+              showConversationList={showConversationList}
+              onSelectConversation={handleSelectConversation}
+              onCreateConversation={() => setIsCreateConversationModalOpen(true)}
+              onLinkCreated={loadData}
+              t={t}
+              tSearch={tSearch}
+            />
+          </div>
 
           {/* Zone de messages */}
           <div className={cn(
@@ -1204,8 +1287,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
             // Sélectionner automatiquement la nouvelle conversation
             setSelectedConversation(conversationData);
             
-            // Rediriger vers la nouvelle conversation
-            router.push(`/conversations/${conversationData.id}`);
+            // Mettre à jour l'URL sans navigation
+            window.history.replaceState(null, '', `/conversations/${conversationData.id}`);
             
             // Affichage mobile : masquer la liste des conversations
             if (isMobile) {
@@ -1221,7 +1304,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
               });
               
               setSelectedConversation(newConversation);
-              router.push(`/conversations/${newConversation.id}`);
+              // Mettre à jour l'URL sans navigation
+              window.history.replaceState(null, '', `/conversations/${newConversation.id}`);
               
               if (isMobile) {
                 setShowConversationList(false);

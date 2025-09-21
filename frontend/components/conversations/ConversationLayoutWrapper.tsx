@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { ConversationLayoutResponsive } from './ConversationLayoutResponsive';
 
 interface ConversationLayoutWrapperProps {
@@ -36,3 +36,4 @@ const ConversationLayoutWrapper: React.FC<ConversationLayoutWrapperProps> = ({
 };
 
 export default ConversationLayoutWrapper;
+export { ConversationLayoutWrapper };

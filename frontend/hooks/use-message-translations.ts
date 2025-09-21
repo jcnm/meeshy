@@ -94,36 +94,91 @@ export function useMessageTranslations({
     // CORRECTION: Déduplication des traductions par langue pour éviter les doublons
     const translationsMap = new Map<string, BubbleTranslation>();
     
-    (message.translations || [])
-      .filter((t: any) => t && t.targetLanguage && t.translatedContent) // Filtrer les traductions valides
-      .forEach((t: any) => {
-        const language = t.targetLanguage;
+    // 🔍 DEBUG: Examiner les traductions brutes avant filtrage
+    console.log(`  🔍 FILTRAGE-DEBUG Message ${message.id}:`);
+    (message.translations || []).forEach((t: any, idx: number) => {
+      console.log(`    [${idx}] Traduction brute:`, {
+        id: t.id,
+        targetLanguage: t.targetLanguage,
+        translatedContent: t.translatedContent?.substring(0, 30) + '...',
+        language: t.language, // Propriété alternative
+        content: t.content?.substring(0, 30) + '...', // Propriété alternative
+        hasTargetLanguage: !!t.targetLanguage,
+        hasTranslatedContent: !!t.translatedContent,
+        hasLanguage: !!t.language,
+        hasContent: !!t.content
+      });
+    });
+    
+    const validTranslations = (message.translations || [])
+      .filter((t: any) => {
+        // Support des deux formats possibles: targetLanguage/translatedContent OU language/content
+        const hasValidStructure = t && (
+          (t.targetLanguage && t.translatedContent) || 
+          (t.language && t.content)
+        );
+        
+        // CORRECTION CRITIQUE: Ne pas filtrer les traductions valides avec du contenu
+        if (!hasValidStructure) {
+          console.log(`    ❌ Traduction filtrée (structure invalide):`, { 
+            t, 
+            hasTargetLanguage: !!t?.targetLanguage, 
+            hasTranslatedContent: !!t?.translatedContent, 
+            hasLanguage: !!t?.language, 
+            hasContent: !!t?.content 
+          });
+          return false;
+        }
+        
+        // Vérifier si le contenu traduit n'est pas vide
+        const translatedContent = t.translatedContent || t.content;
+        if (!translatedContent || translatedContent.trim() === '') {
+          console.log(`    ❌ Traduction filtrée (contenu vide):`, { t });
+          return false;
+        }
+        
+        console.log(`    ✅ Traduction valide conservée:`, { 
+          language: t.targetLanguage || t.language,
+          contentPreview: translatedContent.substring(0, 30) + '...'
+        });
+        
+        return true;
+      });
+    
+    console.log(`  📊 Traductions après filtrage: ${validTranslations.length}/${(message.translations || []).length}`);
+    
+    validTranslations.forEach((t: any) => {
+        // Support des deux formats de propriétés
+        const language = t.targetLanguage || t.language;
+        const content = t.translatedContent || t.content;
         const currentTimestamp = new Date(t.createdAt || message.createdAt);
         
-        // Garder la traduction la plus récente pour chaque langue
-        if (!translationsMap.has(language) || 
-            currentTimestamp > new Date(translationsMap.get(language)!.timestamp)) {
-          
+        console.log(`    ✅ Traitement traduction ${language}:`, { 
+          content: content?.substring(0, 30) + '...',
+          translationModel: t.translationModel,
+          cacheKey: t.cacheKey,
+          cached: t.cached
+        });
+        
+        // CORRECTION: Améliorer la logique de déduplication des traductions
+        const existingTranslation = translationsMap.get(language);
+        const shouldReplace = !existingTranslation || 
+          currentTimestamp > new Date(existingTranslation.timestamp) ||
+          (t.translationModel === 'premium' && existingTranslation.confidence < 0.95);
+        
+        if (shouldReplace) {
           const translation: BubbleTranslation = {
             language: language,
-            content: t.translatedContent,
+            content: content,
             status: 'completed' as const,
             timestamp: currentTimestamp,
-            confidence: t.confidenceScore || 0.9,
-            // Support du format MessageTranslation pour BubbleMessage
-            targetLanguage: language,
-            translatedContent: t.translatedContent,
-            confidenceScore: t.confidenceScore || 0.9,
-            translationModel: t.translationModel || 'basic',
-            id: t.id || `${message.id}_${language}_${Date.now()}`,
-            messageId: message.id,
-            sourceLanguage: t.sourceLanguage || message.originalLanguage || 'fr',
-            cacheKey: t.cacheKey || `${message.id}_${message.originalLanguage || 'fr'}_${language}`,
-            createdAt: currentTimestamp,
-            cached: t.cached || false
+            confidence: t.confidenceScore || t.confidence || 0.9
           };
           
           translationsMap.set(language, translation);
+          console.log(`    📦 Traduction ${language} ${existingTranslation ? 'remplacée' : 'ajoutée'} dans la map`);
+        } else {
+          console.log(`    ⏭️ Traduction ${language} existante conservée (plus récente ou meilleure qualité)`);
         }
       });
     

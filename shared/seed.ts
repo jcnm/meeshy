@@ -3,7 +3,7 @@
  * Crée 7 utilisateurs multilingues et messages pour conversation "meeshy"
  */
 
-import { PrismaClient } from './prisma/client';
+import { PrismaClient } from './client';
 import { UserRoleEnum } from './types';
 
 const prisma = new PrismaClient();

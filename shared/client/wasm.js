@@ -118,6 +118,7 @@ exports.Prisma.UserScalarFieldEnum = {
   username: 'username',
   firstName: 'firstName',
   lastName: 'lastName',
+  bio: 'bio',
   email: 'email',
   phoneNumber: 'phoneNumber',
   password: 'password',
@@ -255,11 +256,13 @@ exports.Prisma.MessageTranslationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.MessageReadStatusScalarFieldEnum = {
+exports.Prisma.MessageStatusScalarFieldEnum = {
   id: 'id',
   messageId: 'messageId',
   userId: 'userId',
-  readAt: 'readAt'
+  receivedAt: 'receivedAt',
+  readAt: 'readAt',
+  answer: 'answer'
 };
 
 exports.Prisma.FriendRequestScalarFieldEnum = {
@@ -297,6 +300,7 @@ exports.Prisma.NotificationScalarFieldEnum = {
 
 exports.Prisma.CommunityScalarFieldEnum = {
   id: 'id',
+  identifier: 'identifier',
   name: 'name',
   description: 'description',
   avatar: 'avatar',
@@ -310,7 +314,8 @@ exports.Prisma.CommunityMemberScalarFieldEnum = {
   id: 'id',
   communityId: 'communityId',
   userId: 'userId',
-  joinedAt: 'joinedAt'
+  joinedAt: 'joinedAt',
+  role: 'role'
 };
 
 exports.Prisma.UserStatsScalarFieldEnum = {
@@ -358,18 +363,27 @@ exports.Prisma.ConversationPreferenceScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.CommunityAdminScalarFieldEnum = {
+exports.Prisma.AffiliateTokenScalarFieldEnum = {
   id: 'id',
-  communityId: 'communityId',
-  userId: 'userId',
-  assignedAt: 'assignedAt'
+  token: 'token',
+  name: 'name',
+  createdBy: 'createdBy',
+  maxUses: 'maxUses',
+  currentUses: 'currentUses',
+  expiresAt: 'expiresAt',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.CommunityModeratorScalarFieldEnum = {
+exports.Prisma.AffiliateRelationScalarFieldEnum = {
   id: 'id',
-  communityId: 'communityId',
-  userId: 'userId',
-  assignedAt: 'assignedAt'
+  affiliateTokenId: 'affiliateTokenId',
+  affiliateUserId: 'affiliateUserId',
+  referredUserId: 'referredUserId',
+  status: 'status',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -391,7 +405,7 @@ exports.Prisma.ModelName = {
   AnonymousParticipant: 'AnonymousParticipant',
   Message: 'Message',
   MessageTranslation: 'MessageTranslation',
-  MessageReadStatus: 'MessageReadStatus',
+  MessageStatus: 'MessageStatus',
   FriendRequest: 'FriendRequest',
   TypingIndicator: 'TypingIndicator',
   Notification: 'Notification',
@@ -400,8 +414,8 @@ exports.Prisma.ModelName = {
   UserStats: 'UserStats',
   UserPreference: 'UserPreference',
   ConversationPreference: 'ConversationPreference',
-  CommunityAdmin: 'CommunityAdmin',
-  CommunityModerator: 'CommunityModerator'
+  AffiliateToken: 'AffiliateToken',
+  AffiliateRelation: 'AffiliateRelation'
 };
 
 /**

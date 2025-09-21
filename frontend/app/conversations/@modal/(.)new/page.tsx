@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/AppContext';
+import { useUser } from '@/context/UnifiedProvider';
 import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
 import { toast } from 'sonner';
 

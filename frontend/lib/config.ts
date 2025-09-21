@@ -157,6 +157,10 @@ export const APP_CONFIG = {
     return getBackendUrl();
   },
 
+  getFrontendUrl: () => {
+    return getFrontendUrl();
+  },
+
   getWebSocketUrl: () => {
     return getWebSocketUrl();
   }
@@ -218,6 +222,16 @@ export const getBackendUrl = (): string => {
   return trimSlashes(process.env.INTERNAL_BACKEND_URL || 'http://gateway:3000');
 };
 
+// HTTP base URL for the Frontend - Gère automatiquement client/serveur
+export const getFrontendUrl = (): string => {
+  if (isBrowser()) {
+    // Côté client (navigateur) - utiliser l'URL actuelle ou NEXT_PUBLIC_FRONTEND_URL
+    return trimSlashes(window.location.origin || process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me');
+  }
+  // Côté serveur (SSR) - utiliser NEXT_PUBLIC_FRONTEND_URL
+  return trimSlashes(process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://meeshy.me');
+};
+
 // WebSocket base URL for the Gateway - Gère automatiquement client/serveur
 export const getWebSocketUrl = (): string => {
   if (isBrowser()) {
@@ -234,9 +248,18 @@ export const getWebSocketUrl = (): string => {
 
 // Helper pour construire une URL complète vers l'API - Version unifiée
 export const buildApiUrl = (endpoint: string): string => {
-  // Add /api prefix for all API endpoints
+  // Add /api prefix for all API endpoints that don't already have it
   const apiEndpoint = endpoint.startsWith('/api/') ? endpoint : `/api${ensureLeadingSlash(endpoint)}`;
+  
+  // Route directly to gateway with /api prefix since all gateway routes are prefixed with /api
   return `${getBackendUrl()}${apiEndpoint}`;
+};
+
+// Helper pour construire une URL directe vers le Gateway (bypass Next.js API)
+export const buildGatewayUrl = (endpoint: string): string => {
+  // No /api prefix for direct gateway calls
+  const cleanEndpoint = ensureLeadingSlash(endpoint);
+  return `${getBackendUrl()}${cleanEndpoint}`;
 };
 
 // Helper pour construire une URL WebSocket complète avec path - Version unifiée

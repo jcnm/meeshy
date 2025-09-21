@@ -17,7 +17,7 @@ import {
   MessageSquare,
   Users,
   UserPlus
-} from 'lucide-react';
+} from '@/lib/icons';
 import { useNotifications } from '@/hooks/use-notifications';
 import { notificationService } from '@/services/notification.service';
 import { NotificationTest } from '@/components/notifications/NotificationTest';

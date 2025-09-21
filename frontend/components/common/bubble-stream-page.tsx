@@ -50,16 +50,26 @@ import {
 // Import des constantes centralisées
 import {
   SUPPORTED_LANGUAGES,
-  MAX_MESSAGE_LENGTH,
-  TOAST_SHORT_DURATION,
-  TOAST_LONG_DURATION,
-  TOAST_ERROR_DURATION,
-  TYPING_CANCELATION_DELAY,
   getLanguageInfo,
   getLanguageName,
   getLanguageFlag,
-  type LanguageStats
-} from '@/lib/constants/languages';
+  type SupportedLanguageInfo
+} from '@shared/types';
+
+// Constantes locales (non disponibles dans shared)
+const MAX_MESSAGE_LENGTH = 300;
+const TOAST_SHORT_DURATION = 2000;
+const TOAST_LONG_DURATION = 3000;
+const TOAST_ERROR_DURATION = 5000;
+const TYPING_CANCELATION_DELAY = 2000;
+
+// Interface pour les statistiques de langues (compatibilité)
+interface LanguageStats {
+  language: string;
+  flag: string;
+  count: number;
+  color: string;
+}
 
 // Import des modules réutilisables extraits
 import {
@@ -347,10 +357,64 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   }, []);
 
   const handleTranslation = useCallback((messageId: string, translations: any[]) => {
-    // Traductions reçues pour message
+    console.log('🌐 [BubbleStreamPage] Traductions reçues pour message:', messageId, translations);
     
     // Mettre à jour le message avec les nouvelles traductions
-        // updateMessageTranslations(messageId, translations);
+    updateMessageTranslations(messageId, (prevMessage) => {
+      console.log('🔄 [BubbleStreamPage] Mise à jour des traductions pour message:', messageId, {
+        currentTranslations: prevMessage.translations?.length || 0,
+        newTranslations: translations.length,
+        translationsReceived: translations.map(t => ({ 
+          lang: t.targetLanguage || t.language, 
+          content: (t.translatedContent || t.content)?.substring(0, 30) + '...' 
+        }))
+      });
+
+      // Fusionner les nouvelles traductions avec les existantes
+      const existingTranslations = prevMessage.translations || [];
+      const updatedTranslations = [...existingTranslations];
+
+      translations.forEach(newTranslation => {
+        const targetLang = newTranslation.targetLanguage || newTranslation.language;
+        const content = newTranslation.translatedContent || newTranslation.content;
+        
+        if (!targetLang || !content) {
+          console.warn('🚫 [BubbleStreamPage] Traduction invalide ignorée:', newTranslation);
+          return;
+        }
+
+        // Chercher si une traduction existe déjà pour cette langue
+        const existingIndex = updatedTranslations.findIndex(
+          t => t.targetLanguage === targetLang
+        );
+
+        const translationObject = {
+          id: newTranslation.id || `${messageId}_${targetLang}`,
+          messageId: messageId,
+          sourceLanguage: newTranslation.sourceLanguage || prevMessage.originalLanguage || 'fr',
+          targetLanguage: targetLang,
+          translatedContent: content,
+          translationModel: newTranslation.translationModel || newTranslation.model || 'basic',
+          cacheKey: newTranslation.cacheKey || `${messageId}_${targetLang}`,
+          cached: newTranslation.cached || newTranslation.fromCache || false,
+          confidenceScore: newTranslation.confidenceScore || newTranslation.confidence || 0.9,
+          createdAt: newTranslation.createdAt ? new Date(newTranslation.createdAt) : new Date(),
+        };
+
+        if (existingIndex >= 0) {
+          // Remplacer la traduction existante
+          updatedTranslations[existingIndex] = translationObject;
+        } else {
+          // Ajouter la nouvelle traduction
+          updatedTranslations.push(translationObject);
+        }
+      });
+
+      return {
+        ...prevMessage,
+        translations: updatedTranslations
+      };
+    });
     
     // Vérifier si on a des nouvelles traductions pour cet utilisateur
     const userLanguages = [
@@ -1132,9 +1196,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               onDeleteMessage={handleDeleteMessage}
               conversationType="public"
               userRole={getUserModerationRole() as any}
-              conversationId={conversationId}
               addTranslatingState={addTranslatingState}
               isTranslating={isTranslating}
+              containerRef={messagesContainerRef}
+              onLoadMore={loadMore}
+              hasMore={hasMore}
+              isLoadingMore={isLoadingMore}
             />
 
             {/* Indicateur si plus de messages disponibles - positionné après les messages */}

@@ -4,12 +4,27 @@
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Printer, Shield } from 'lucide-react';
+import { ArrowLeft, Printer, Shield } from '@/lib/icons';
 import Link from 'next/link';
 
 
 export default function PrivacyPage() {
-  const { t, tArray } = useTranslations('privacy');
+  const { t } = useTranslations('privacy');
+  
+  // Helper function pour simuler tArray avec notre hook optimisé
+  const tArray = (key: string): any[] => {
+    const result = t(key);
+    if (Array.isArray(result)) return result;
+    if (typeof result === 'string') {
+      try {
+        const parsed = JSON.parse(result);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
 
   const handlePrint = () => {
     window.print();

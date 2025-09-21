@@ -4,7 +4,7 @@
  */
 import type { User } from '@/types';
 import type { LanguageChoice } from '@/types/bubble-stream';
-import { SUPPORTED_LANGUAGES } from '@/lib/constants/languages';
+import { SUPPORTED_LANGUAGES } from '@shared/types';
 
 /**
  * Génère les choix de langues disponibles pour un utilisateur

@@ -1,7 +1,7 @@
 'use client';
 
 import { Globe2 } from 'lucide-react';
-import type { LanguageStats } from '@/lib/constants/languages';
+import type { LanguageStats } from '@shared/types';
 
 /**
  * Composant pour l'en-tête des langues dans la sidebar

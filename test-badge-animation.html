@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Animation Badge Traduction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>
+    <style>
+        @keyframes bounce-in {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); background-color: #10b981; }
+            100% { transform: scale(1.1); background-color: #3b82f6; }
+        }
+        
+        @keyframes wiggle {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg) scale(1.1); }
+            50% { transform: rotate(10deg) scale(1.1); }
+            75% { transform: rotate(-5deg) scale(1.05); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        
+        .badge-animation {
+            animation: bounce-in 0.6s ease-out;
+        }
+        
+        .icon-animation {
+            animation: wiggle 0.8s ease-out;
+        }
+        
+        .pulse-ring {
+            animation: pulse-ring 1s ease-out;
+        }
+        
+        @keyframes pulse-ring {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+            }
+            70% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-xl font-bold mb-6 text-center">Animation Badge Traduction</h1>
+        
+        <div class="flex items-center justify-center space-x-8">
+            <!-- État normal -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600 mb-2">État normal</p>
+                <div class="relative inline-block">
+                    <button class="p-2 rounded-full bg-gray-50 text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                        </svg>
+                    </button>
+                    <span class="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        2
+                    </span>
+                </div>
+            </div>
+            
+            <!-- État avec nouvelle traduction -->
+            <div class="text-center">
+                <p class="text-sm text-gray-600 mb-2">Nouvelle traduction</p>
+                <div class="relative inline-block pulse-ring rounded-full">
+                    <button class="p-2 rounded-full bg-green-50 text-green-600 transition-colors icon-animation">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                        </svg>
+                    </button>
+                    <span class="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium badge-animation shadow-lg shadow-green-500/50">
+                        3
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <button id="triggerAnimation" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                Simuler nouvelle traduction
+            </button>
+        </div>
+        
+        <div class="mt-6 text-sm text-gray-600">
+            <h3 class="font-semibold mb-2">Animations appliquées :</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li><strong>Badge :</strong> Bounce + changement de couleur (bleu → vert → bleu)</li>
+                <li><strong>Icône :</strong> Wiggle (rotation gauche/droite)</li>
+                <li><strong>Bouton :</strong> Pulse ring (onde verte)</li>
+                <li><strong>Durée :</strong> 0.6-1s puis retour à l'état normal</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let count = 2;
+        
+        document.getElementById('triggerAnimation').addEventListener('click', function() {
+            count++;
+            
+            const button = document.querySelector('.relative.inline-block');
+            const badge = button.querySelector('span');
+            const icon = button.querySelector('button');
+            
+            // Reset classes
+            button.classList.remove('pulse-ring');
+            badge.classList.remove('badge-animation', 'bg-green-500', 'shadow-lg', 'shadow-green-500/50');
+            icon.classList.remove('icon-animation', 'bg-green-50', 'text-green-600');
+            
+            // Update count
+            badge.textContent = count;
+            
+            // Trigger animations
+            setTimeout(() => {
+                button.classList.add('pulse-ring');
+                badge.classList.add('badge-animation', 'bg-green-500', 'shadow-lg', 'shadow-green-500/50');
+                icon.classList.add('icon-animation', 'bg-green-50', 'text-green-600');
+                
+                // Reset after animation
+                setTimeout(() => {
+                    badge.classList.remove('bg-green-500', 'shadow-lg', 'shadow-green-500/50');
+                    badge.classList.add('bg-blue-500');
+                    icon.classList.remove('bg-green-50', 'text-green-600');
+                    icon.classList.add('bg-gray-50', 'text-gray-400');
+                }, 2000);
+            }, 50);
+        });
+    </script>
+</body>
+</html>

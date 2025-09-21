@@ -1,491 +1,454 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
-import type { Conversation, UnifiedMessage, User, ThreadMember } from '@shared/types';
-
-// ===== TYPES =====
-
-interface ConversationState {
-  conversations: Conversation[];
-  selectedConversation: Conversation | null;
-  conversationParticipants: ThreadMember[];
-  messages: UnifiedMessage[];
-  translatedMessages: any[];
-  isLoading: boolean;
-  isLoadingMessages: boolean;
-  isLoadingMore: boolean;
-  hasMore: boolean;
-  messagesError: string | null;
-  typingUsers: Array<{ userId: string; username: string; conversationId: string; timestamp: number }>;
-  translatingMessages: Map<string, Set<string>>;
-  newMessage: string;
-  selectedLanguage: string;
-  isMobile: boolean;
-  showConversationList: boolean;
-  isCreateConversationModalOpen: boolean;
-  isCreateLinkModalOpen: boolean;
-  isDetailsSidebarOpen: boolean;
-  justCreatedConversation: string | null;
-}
-
-type ConversationAction =
-  | { type: 'SET_CONVERSATIONS'; payload: Conversation[] }
-  | { type: 'SET_SELECTED_CONVERSATION'; payload: Conversation | null }
-  | { type: 'SET_CONVERSATION_PARTICIPANTS'; payload: ThreadMember[] }
-  | { type: 'SET_MESSAGES'; payload: UnifiedMessage[] }
-  | { type: 'ADD_MESSAGE'; payload: UnifiedMessage }
-  | { type: 'UPDATE_MESSAGE'; payload: { messageId: string; updates: Partial<UnifiedMessage> } }
-  | { type: 'REMOVE_MESSAGE'; payload: string }
-  | { type: 'CLEAR_MESSAGES' }
-  | { type: 'SET_TRANSLATED_MESSAGES'; payload: any[] }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_LOADING_MESSAGES'; payload: boolean }
-  | { type: 'SET_LOADING_MORE'; payload: boolean }
-  | { type: 'SET_HAS_MORE'; payload: boolean }
-  | { type: 'SET_MESSAGES_ERROR'; payload: string | null }
-  | { type: 'SET_TYPING_USERS'; payload: Array<{ userId: string; username: string; conversationId: string; timestamp: number }> }
-  | { type: 'ADD_TYPING_USER'; payload: { userId: string; username: string; conversationId: string; timestamp: number } }
-  | { type: 'REMOVE_TYPING_USER'; payload: { userId: string; conversationId: string } }
-  | { type: 'SET_TRANSLATING_MESSAGES'; payload: Map<string, Set<string>> }
-  | { type: 'ADD_TRANSLATING_STATE'; payload: { messageId: string; targetLanguage: string } }
-  | { type: 'REMOVE_TRANSLATING_STATE'; payload: { messageId: string; targetLanguage: string } }
-  | { type: 'SET_NEW_MESSAGE'; payload: string }
-  | { type: 'SET_SELECTED_LANGUAGE'; payload: string }
-  | { type: 'SET_IS_MOBILE'; payload: boolean }
-  | { type: 'SET_SHOW_CONVERSATION_LIST'; payload: boolean }
-  | { type: 'SET_CREATE_CONVERSATION_MODAL_OPEN'; payload: boolean }
-  | { type: 'SET_CREATE_LINK_MODAL_OPEN'; payload: boolean }
-  | { type: 'SET_DETAILS_SIDEBAR_OPEN'; payload: boolean }
-  | { type: 'SET_JUST_CREATED_CONVERSATION'; payload: string | null }
-  | { type: 'UPDATE_CONVERSATION_LAST_MESSAGE'; payload: { conversationId: string; message: UnifiedMessage } }
-  | { type: 'UPDATE_CONVERSATION_UNREAD_COUNT'; payload: { conversationId: string; unreadCount: number } };
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
+import { conversationsService } from '@/services/conversations.service';
+import { messageTranslationService } from '@/services/message-translation.service';
+import type { Conversation, Message, User, MessageTranslation } from '@shared/types';
+import { toast } from 'sonner';
 
 interface ConversationContextType {
-  state: ConversationState;
-  dispatch: React.Dispatch<ConversationAction>;
+  // Conversations
+  conversations: Conversation[];
+  currentConversation: Conversation | null;
+  isLoadingConversations: boolean;
+  
+  // Messages
+  messages: Map<string, Message[]>; // conversationId -> messages
+  isLoadingMessages: Map<string, boolean>;
+  hasMoreMessages: Map<string, boolean>;
+  
+  // Translations
+  translatingMessages: Map<string, Set<string>>; // messageId -> Set of targetLanguages
   
   // Actions
-  setConversations: (conversations: Conversation[]) => void;
-  setSelectedConversation: (conversation: Conversation | null) => void;
-  setConversationParticipants: (participants: ThreadMember[]) => void;
-  setMessages: (messages: UnifiedMessage[]) => void;
-  addMessage: (message: UnifiedMessage) => void;
-  updateMessage: (messageId: string, updates: Partial<UnifiedMessage>) => void;
-  removeMessage: (messageId: string) => void;
-  clearMessages: () => void;
-  setTranslatedMessages: (messages: any[]) => void;
-  setLoading: (loading: boolean) => void;
-  setLoadingMessages: (loading: boolean) => void;
-  setLoadingMore: (loading: boolean) => void;
-  setHasMore: (hasMore: boolean) => void;
-  setMessagesError: (error: string | null) => void;
-  addTypingUser: (userId: string, username: string, conversationId: string) => void;
-  removeTypingUser: (userId: string, conversationId: string) => void;
-  addTranslatingState: (messageId: string, targetLanguage: string) => void;
-  removeTranslatingState: (messageId: string, targetLanguage: string) => void;
-  setNewMessage: (message: string) => void;
-  setSelectedLanguage: (language: string) => void;
-  setIsMobile: (isMobile: boolean) => void;
-  setShowConversationList: (show: boolean) => void;
-  setCreateConversationModalOpen: (open: boolean) => void;
-  setCreateLinkModalOpen: (open: boolean) => void;
-  setDetailsSidebarOpen: (open: boolean) => void;
-  setJustCreatedConversation: (conversationId: string | null) => void;
-  updateConversationLastMessage: (conversationId: string, message: UnifiedMessage) => void;
-  updateConversationUnreadCount: (conversationId: string, unreadCount: number) => void;
+  loadConversations: () => Promise<void>;
+  loadConversation: (conversationId: string) => Promise<void>;
+  selectConversation: (conversationId: string) => void;
+  addConversation: (conversation: Conversation) => void;
+  updateConversation: (conversationId: string, updates: Partial<Conversation>) => void;
   
-  // Computed values
-  totalUnreadCount: number;
-  isTranslating: (messageId: string, targetLanguage: string) => boolean;
+  loadMessages: (conversationId: string, options?: { offset?: number; limit?: number }) => Promise<void>;
+  addMessage: (conversationId: string, message: Message) => void;
+  updateMessage: (conversationId: string, messageId: string, updates: Partial<Message>) => void;
+  deleteMessage: (conversationId: string, messageId: string) => void;
+  
+  requestTranslation: (messageId: string, targetLanguage: string, sourceLanguage?: string) => Promise<void>;
+  addTranslation: (messageId: string, translation: MessageTranslation) => void;
+  sendMessage: (content: string) => Promise<void>;
 }
-
-// ===== INITIAL STATE =====
-
-const initialState: ConversationState = {
-  conversations: [],
-  selectedConversation: null,
-  conversationParticipants: [],
-  messages: [],
-  translatedMessages: [],
-  isLoading: true,
-  isLoadingMessages: false,
-  isLoadingMore: false,
-  hasMore: true,
-  messagesError: null,
-  typingUsers: [],
-  translatingMessages: new Map(),
-  newMessage: '',
-  selectedLanguage: 'fr',
-  isMobile: false,
-  showConversationList: true,
-  isCreateConversationModalOpen: false,
-  isCreateLinkModalOpen: false,
-  isDetailsSidebarOpen: false,
-  justCreatedConversation: null,
-};
-
-// ===== REDUCER =====
-
-function conversationReducer(state: ConversationState, action: ConversationAction): ConversationState {
-  switch (action.type) {
-    case 'SET_CONVERSATIONS':
-      return { ...state, conversations: action.payload };
-    
-    case 'SET_SELECTED_CONVERSATION':
-      return { ...state, selectedConversation: action.payload };
-    
-    case 'SET_CONVERSATION_PARTICIPANTS':
-      return { ...state, conversationParticipants: action.payload };
-    
-    case 'SET_MESSAGES':
-      return { ...state, messages: action.payload };
-    
-    case 'ADD_MESSAGE':
-      return { ...state, messages: [...state.messages, action.payload] };
-    
-    case 'UPDATE_MESSAGE':
-      return {
-        ...state,
-        messages: state.messages.map(msg =>
-          msg.id === action.payload.messageId
-            ? { ...msg, ...action.payload.updates }
-            : msg
-        )
-      };
-    
-    case 'REMOVE_MESSAGE':
-      return {
-        ...state,
-        messages: state.messages.filter(msg => msg.id !== action.payload)
-      };
-    
-    case 'CLEAR_MESSAGES':
-      return { ...state, messages: [], translatedMessages: [] };
-    
-    case 'SET_TRANSLATED_MESSAGES':
-      return { ...state, translatedMessages: action.payload };
-    
-    case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
-    
-    case 'SET_LOADING_MESSAGES':
-      return { ...state, isLoadingMessages: action.payload };
-    
-    case 'SET_LOADING_MORE':
-      return { ...state, isLoadingMore: action.payload };
-    
-    case 'SET_HAS_MORE':
-      return { ...state, hasMore: action.payload };
-    
-    case 'SET_MESSAGES_ERROR':
-      return { ...state, messagesError: action.payload };
-    
-    case 'SET_TYPING_USERS':
-      return { ...state, typingUsers: action.payload };
-    
-    case 'ADD_TYPING_USER':
-      return {
-        ...state,
-        typingUsers: [
-          ...state.typingUsers.filter(u => !(u.userId === action.payload.userId && u.conversationId === action.payload.conversationId)),
-          action.payload
-        ]
-      };
-    
-    case 'REMOVE_TYPING_USER':
-      return {
-        ...state,
-        typingUsers: state.typingUsers.filter(u => !(u.userId === action.payload.userId && u.conversationId === action.payload.conversationId))
-      };
-    
-    case 'SET_TRANSLATING_MESSAGES':
-      return { ...state, translatingMessages: action.payload };
-    
-    case 'ADD_TRANSLATING_STATE':
-      const newTranslatingMap = new Map(state.translatingMessages);
-      if (!newTranslatingMap.has(action.payload.messageId)) {
-        newTranslatingMap.set(action.payload.messageId, new Set());
-      }
-      newTranslatingMap.get(action.payload.messageId)!.add(action.payload.targetLanguage);
-      return { ...state, translatingMessages: newTranslatingMap };
-    
-    case 'REMOVE_TRANSLATING_STATE':
-      const updatedTranslatingMap = new Map(state.translatingMessages);
-      if (updatedTranslatingMap.has(action.payload.messageId)) {
-        updatedTranslatingMap.get(action.payload.messageId)!.delete(action.payload.targetLanguage);
-        if (updatedTranslatingMap.get(action.payload.messageId)!.size === 0) {
-          updatedTranslatingMap.delete(action.payload.messageId);
-        }
-      }
-      return { ...state, translatingMessages: updatedTranslatingMap };
-    
-    case 'SET_NEW_MESSAGE':
-      return { ...state, newMessage: action.payload };
-    
-    case 'SET_SELECTED_LANGUAGE':
-      return { ...state, selectedLanguage: action.payload };
-    
-    case 'SET_IS_MOBILE':
-      return { ...state, isMobile: action.payload };
-    
-    case 'SET_SHOW_CONVERSATION_LIST':
-      return { ...state, showConversationList: action.payload };
-    
-    case 'SET_CREATE_CONVERSATION_MODAL_OPEN':
-      return { ...state, isCreateConversationModalOpen: action.payload };
-    
-    case 'SET_CREATE_LINK_MODAL_OPEN':
-      return { ...state, isCreateLinkModalOpen: action.payload };
-    
-    case 'SET_DETAILS_SIDEBAR_OPEN':
-      return { ...state, isDetailsSidebarOpen: action.payload };
-    
-    case 'SET_JUST_CREATED_CONVERSATION':
-      return { ...state, justCreatedConversation: action.payload };
-    
-    case 'UPDATE_CONVERSATION_LAST_MESSAGE':
-      return {
-        ...state,
-        conversations: state.conversations.map(conv =>
-          conv.id === action.payload.conversationId
-            ? { ...conv, lastMessage: action.payload.message, updatedAt: new Date() }
-            : conv
-        )
-      };
-    
-    case 'UPDATE_CONVERSATION_UNREAD_COUNT':
-      return {
-        ...state,
-        conversations: state.conversations.map(conv =>
-          conv.id === action.payload.conversationId
-            ? { ...conv, unreadCount: action.payload.unreadCount }
-            : conv
-        )
-      };
-    
-    default:
-      return state;
-  }
-}
-
-// ===== CONTEXT =====
 
 const ConversationContext = createContext<ConversationContextType | undefined>(undefined);
 
-// ===== PROVIDER =====
+export const useConversation = () => {
+  const context = useContext(ConversationContext);
+  if (!context) {
+    throw new Error('useConversation must be used within ConversationProvider');
+  }
+  return context;
+};
 
 interface ConversationProviderProps {
   children: React.ReactNode;
+  user: User | null;
 }
 
-export function ConversationProvider({ children }: ConversationProviderProps) {
-  const [state, dispatch] = useReducer(conversationReducer, initialState);
+export function ConversationProvider({ children, user }: ConversationProviderProps) {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  
+  const [messages, setMessages] = useState<Map<string, Message[]>>(new Map());
+  const [isLoadingMessages, setIsLoadingMessages] = useState<Map<string, boolean>>(new Map());
+  const [hasMoreMessages, setHasMoreMessages] = useState<Map<string, boolean>>(new Map());
+  
+  const [translatingMessages, setTranslatingMessages] = useState<Map<string, Set<string>>>(new Map());
+  
+  const conversationsLoadedRef = useRef(false);
+  const messageOffsetsRef = useRef<Map<string, number>>(new Map());
 
-  // Action creators
-  const setConversations = useCallback((conversations: Conversation[]) => {
-    dispatch({ type: 'SET_CONVERSATIONS', payload: conversations });
-  }, []);
+  // Update conversation
+  const updateConversation = useCallback((conversationId: string, updates: Partial<Conversation>) => {
+    setConversations(prev => 
+      prev.map(c => c.id === conversationId ? { ...c, ...updates } : c)
+    );
+    
+    if (currentConversation?.id === conversationId) {
+      setCurrentConversation(prev => prev ? { ...prev, ...updates } : null);
+    }
+  }, [currentConversation]);
 
-  const setSelectedConversation = useCallback((conversation: Conversation | null) => {
-    dispatch({ type: 'SET_SELECTED_CONVERSATION', payload: conversation });
-  }, []);
-
-  const setConversationParticipants = useCallback((participants: ThreadMember[]) => {
-    dispatch({ type: 'SET_CONVERSATION_PARTICIPANTS', payload: participants });
-  }, []);
-
-  const setMessages = useCallback((messages: UnifiedMessage[]) => {
-    dispatch({ type: 'SET_MESSAGES', payload: messages });
-  }, []);
-
-  const addMessage = useCallback((message: UnifiedMessage) => {
-    dispatch({ type: 'ADD_MESSAGE', payload: message });
-  }, []);
-
-  const updateMessage = useCallback((messageId: string, updates: Partial<UnifiedMessage>) => {
-    dispatch({ type: 'UPDATE_MESSAGE', payload: { messageId, updates } });
-  }, []);
-
-  const removeMessage = useCallback((messageId: string) => {
-    dispatch({ type: 'REMOVE_MESSAGE', payload: messageId });
-  }, []);
-
-  const clearMessages = useCallback(() => {
-    dispatch({ type: 'CLEAR_MESSAGES' });
-  }, []);
-
-  const setTranslatedMessages = useCallback((messages: any[]) => {
-    dispatch({ type: 'SET_TRANSLATED_MESSAGES', payload: messages });
-  }, []);
-
-  const setLoading = useCallback((loading: boolean) => {
-    dispatch({ type: 'SET_LOADING', payload: loading });
-  }, []);
-
-  const setLoadingMessages = useCallback((loading: boolean) => {
-    dispatch({ type: 'SET_LOADING_MESSAGES', payload: loading });
-  }, []);
-
-  const setLoadingMore = useCallback((loading: boolean) => {
-    dispatch({ type: 'SET_LOADING_MORE', payload: loading });
-  }, []);
-
-  const setHasMore = useCallback((hasMore: boolean) => {
-    dispatch({ type: 'SET_HAS_MORE', payload: hasMore });
-  }, []);
-
-  const setMessagesError = useCallback((error: string | null) => {
-    dispatch({ type: 'SET_MESSAGES_ERROR', payload: error });
-  }, []);
-
-  const addTypingUser = useCallback((userId: string, username: string, conversationId: string) => {
-    dispatch({
-      type: 'ADD_TYPING_USER',
-      payload: { userId, username, conversationId, timestamp: Date.now() }
+  // Update message
+  const updateMessage = useCallback((conversationId: string, messageId: string, updates: Partial<Message>) => {
+    setMessages(prev => {
+      const newMap = new Map(prev);
+      const messages = newMap.get(conversationId);
+      
+      if (messages) {
+        newMap.set(
+          conversationId,
+          messages.map(m => m.id === messageId ? { ...m, ...updates } : m)
+        );
+      }
+      
+      return newMap;
     });
   }, []);
 
-  const removeTypingUser = useCallback((userId: string, conversationId: string) => {
-    dispatch({ type: 'REMOVE_TYPING_USER', payload: { userId, conversationId } });
+  // Add message
+  const addMessage = useCallback((conversationId: string, message: Message) => {
+    setMessages(prev => {
+      const newMap = new Map(prev);
+      const existingMessages = newMap.get(conversationId) || [];
+      
+      // Check for duplicates
+      if (existingMessages.some(m => m.id === message.id)) {
+        return prev;
+      }
+      
+      // Add to beginning (newest first)
+      newMap.set(conversationId, [message, ...existingMessages]);
+      return newMap;
+    });
+    
+    // Update conversation's last message
+    updateConversation(conversationId, {
+      lastMessage: message
+    });
+  }, [updateConversation]);
+
+  // Delete message
+  const deleteMessage = useCallback((conversationId: string, messageId: string) => {
+    setMessages(prev => {
+      const newMap = new Map(prev);
+      const messages = newMap.get(conversationId);
+      
+      if (messages) {
+        newMap.set(
+          conversationId,
+          messages.filter(m => m.id !== messageId)
+        );
+      }
+      
+      return newMap;
+    });
   }, []);
 
-  const addTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
-    dispatch({ type: 'ADD_TRANSLATING_STATE', payload: { messageId, targetLanguage } });
+  // Handle translation received
+  const handleTranslationReceived = useCallback((messageId: string, translations: any[]) => {
+    // Find the conversation containing this message
+    for (const [conversationId, msgs] of messages.entries()) {
+      const messageIndex = msgs.findIndex(m => m.id === messageId);
+      if (messageIndex !== -1) {
+        const message = msgs[messageIndex];
+        
+        // Update message with new translations
+        const updatedTranslations = [...(message.translations || [])];
+        
+        translations.forEach(newTranslation => {
+          const existingIndex = updatedTranslations.findIndex(
+            t => t.targetLanguage === newTranslation.targetLanguage
+          );
+          
+          if (existingIndex >= 0) {
+            updatedTranslations[existingIndex] = newTranslation;
+          } else {
+            updatedTranslations.push(newTranslation);
+          }
+        });
+        
+        updateMessage(conversationId, messageId, { translations: updatedTranslations });
+        
+        // Remove from translating state
+        translations.forEach(t => {
+          setTranslatingMessages(prev => {
+            const newMap = new Map(prev);
+            const langs = newMap.get(messageId);
+            if (langs) {
+              langs.delete(t.targetLanguage);
+              if (langs.size === 0) {
+                newMap.delete(messageId);
+              }
+            }
+            return newMap;
+          });
+        });
+        
+        break;
+      }
+    }
+  }, [messages, updateMessage]);
+
+  // Socket.IO messaging hook
+  const { 
+    sendMessage: socketSendMessage,
+    joinConversation,
+    leaveConversation,
+    connectionStatus 
+  } = useSocketIOMessaging({
+    conversationId: currentConversation?.id,
+    currentUser: user || undefined,
+    onNewMessage: (message) => {
+      if (message.conversationId) {
+        addMessage(message.conversationId, message as Message);
+      }
+    },
+    onMessageEdited: (message) => {
+      if (message.conversationId) {
+        updateMessage(message.conversationId, message.id, { content: message.content });
+      }
+    },
+    onMessageDeleted: (messageId) => {
+      const conversationId = Array.from(messages.entries()).find(([_, msgs]) => 
+        msgs.some(m => m.id === messageId)
+      )?.[0];
+      
+      if (conversationId) {
+        deleteMessage(conversationId, messageId);
+      }
+    },
+    onTranslation: (data: any) => {
+      if (data && data.messageId && data.translations) {
+        handleTranslationReceived(data.messageId, data.translations);
+      }
+    },
+    onConversationStats: (data) => {
+      if (currentConversation?.id === data.conversationId && data.stats) {
+        updateConversation(data.conversationId, {
+          stats: currentConversation.stats ? {
+            ...currentConversation.stats,
+            totalMessages: data.stats.totalMessages || currentConversation.stats.totalMessages,
+            totalParticipants: data.stats.totalMembers || currentConversation.stats.totalParticipants
+          } : undefined
+        });
+      }
+    }
+  });
+
+  // Load conversations (only once)
+  const loadConversations = useCallback(async () => {
+    if (conversationsLoadedRef.current || isLoadingConversations || !user) return;
+    
+    setIsLoadingConversations(true);
+    try {
+      const data = await conversationsService.getConversations();
+      setConversations(data);
+      conversationsLoadedRef.current = true;
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+      toast.error('Failed to load conversations');
+    } finally {
+      setIsLoadingConversations(false);
+    }
+  }, [user, isLoadingConversations]);
+
+  // Load single conversation
+  const loadConversation = useCallback(async (conversationId: string) => {
+    if (!user) return;
+    
+    try {
+      const conversation = await conversationsService.getConversation(conversationId);
+      
+      // Update or add to conversations list
+      setConversations(prev => {
+        const exists = prev.some(c => c.id === conversationId);
+        if (exists) {
+          return prev.map(c => c.id === conversationId ? conversation : c);
+        }
+        return [...prev, conversation];
+      });
+      
+      setCurrentConversation(conversation);
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+      toast.error('Failed to load conversation');
+    }
+  }, [user]);
+
+  // Select conversation
+  const selectConversation = useCallback((conversationId: string) => {
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation) {
+      setCurrentConversation(conversation);
+    }
+  }, [conversations]);
+
+  // Add conversation (for real-time updates)
+  const addConversation = useCallback((conversation: Conversation) => {
+    setConversations(prev => {
+      // Avoid duplicates
+      if (prev.some(c => c.id === conversation.id)) {
+        return prev;
+      }
+      // Add at the beginning for new conversations
+      return [conversation, ...prev];
+    });
   }, []);
 
-  const removeTranslatingState = useCallback((messageId: string, targetLanguage: string) => {
-    dispatch({ type: 'REMOVE_TRANSLATING_STATE', payload: { messageId, targetLanguage } });
+  // Load messages for a conversation
+  const loadMessages = useCallback(async (
+    conversationId: string, 
+    options: { offset?: number; limit?: number } = {}
+  ) => {
+    if (!user) return;
+    
+    const { offset = 0, limit = 20 } = options;
+    
+    // Check if already loading
+    if (isLoadingMessages.get(conversationId)) return;
+    
+    setIsLoadingMessages(prev => new Map(prev).set(conversationId, true));
+    
+    try {
+      const response = await conversationsService.getMessages(conversationId, offset / limit + 1, limit);
+      
+      setMessages(prev => {
+        const newMap = new Map(prev);
+        const existingMessages = newMap.get(conversationId) || [];
+        
+        if (offset === 0) {
+          // Initial load - replace
+          newMap.set(conversationId, response.messages);
+        } else {
+          // Pagination - append older messages
+          const messageIds = new Set(existingMessages.map(m => m.id));
+          const newMessages = response.messages.filter((m: Message) => !messageIds.has(m.id));
+          newMap.set(conversationId, [...existingMessages, ...newMessages]);
+        }
+        
+        return newMap;
+      });
+      
+      setHasMoreMessages(prev => new Map(prev).set(conversationId, response.hasMore));
+      messageOffsetsRef.current.set(conversationId, offset + response.messages.length);
+      
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      toast.error('Failed to load messages');
+    } finally {
+      setIsLoadingMessages(prev => {
+        const newMap = new Map(prev);
+        newMap.set(conversationId, false);
+        return newMap;
+      });
+    }
+  }, [user]);
+
+  // Request translation
+  const requestTranslation = useCallback(async (
+    messageId: string, 
+    targetLanguage: string,
+    sourceLanguage: string = 'auto'
+  ) => {
+    // Mark as translating
+    setTranslatingMessages(prev => {
+      const newMap = new Map(prev);
+      const langs = newMap.get(messageId) || new Set();
+      langs.add(targetLanguage);
+      newMap.set(messageId, langs);
+      return newMap;
+    });
+
+    try {
+      await messageTranslationService.requestTranslation({
+        messageId,
+        targetLanguage,
+        sourceLanguage,
+        model: 'basic'
+      });
+    } catch (error) {
+      console.error('Translation request failed:', error);
+      toast.error('Failed to request translation');
+      
+      // Remove from translating
+      setTranslatingMessages(prev => {
+        const newMap = new Map(prev);
+        const langs = newMap.get(messageId);
+        if (langs) {
+          langs.delete(targetLanguage);
+          if (langs.size === 0) {
+            newMap.delete(messageId);
+          }
+        }
+        return newMap;
+      });
+    }
   }, []);
 
-  const setNewMessage = useCallback((message: string) => {
-    dispatch({ type: 'SET_NEW_MESSAGE', payload: message });
-  }, []);
+  // Add translation
+  const addTranslation = useCallback((messageId: string, translation: MessageTranslation) => {
+    handleTranslationReceived(messageId, [translation]);
+  }, [handleTranslationReceived]);
 
-  const setSelectedLanguage = useCallback((language: string) => {
-    dispatch({ type: 'SET_SELECTED_LANGUAGE', payload: language });
-  }, []);
+  // Send message wrapper
+  const sendMessage = useCallback(async (content: string) => {
+    if (!currentConversation?.id || !user) return;
+    
+    await socketSendMessage(content);
+  }, [currentConversation?.id, user, socketSendMessage]);
 
-  const setIsMobile = useCallback((isMobile: boolean) => {
-    dispatch({ type: 'SET_IS_MOBILE', payload: isMobile });
-  }, []);
+  // Join/leave conversation when current conversation changes
+  useEffect(() => {
+    if (currentConversation?.id && user) {
+      joinConversation(currentConversation.id);
+      
+      // Load messages if not already loaded
+      if (!messages.has(currentConversation.id)) {
+        loadMessages(currentConversation.id);
+      }
+      
+      return () => {
+        leaveConversation(currentConversation.id);
+      };
+    }
+  }, [currentConversation?.id, user, joinConversation, leaveConversation, loadMessages, messages]);
 
-  const setShowConversationList = useCallback((show: boolean) => {
-    dispatch({ type: 'SET_SHOW_CONVERSATION_LIST', payload: show });
-  }, []);
+  // Socket.IO event for new conversations
+  useEffect(() => {
+    const handleNewConversation = (conversation: Conversation) => {
+      // Only add if user is a member
+      if (conversation.participants?.some(p => p.userId === user?.id)) {
+        addConversation(conversation);
+      }
+    };
 
-  const setCreateConversationModalOpen = useCallback((open: boolean) => {
-    dispatch({ type: 'SET_CREATE_CONVERSATION_MODAL_OPEN', payload: open });
-  }, []);
+    // Listen for new conversation events
+    if (user) {
+      // You would connect this to your socket service
+      // meeshySocketIOService.on('conversation:created', handleNewConversation);
+    }
 
-  const setCreateLinkModalOpen = useCallback((open: boolean) => {
-    dispatch({ type: 'SET_CREATE_LINK_MODAL_OPEN', payload: open });
-  }, []);
+    return () => {
+      // Cleanup
+      // meeshySocketIOService.off('conversation:created', handleNewConversation);
+    };
+  }, [user, addConversation]);
 
-  const setDetailsSidebarOpen = useCallback((open: boolean) => {
-    dispatch({ type: 'SET_DETAILS_SIDEBAR_OPEN', payload: open });
-  }, []);
-
-  const setJustCreatedConversation = useCallback((conversationId: string | null) => {
-    dispatch({ type: 'SET_JUST_CREATED_CONVERSATION', payload: conversationId });
-  }, []);
-
-  const updateConversationLastMessage = useCallback((conversationId: string, message: UnifiedMessage) => {
-    dispatch({ type: 'UPDATE_CONVERSATION_LAST_MESSAGE', payload: { conversationId, message } });
-  }, []);
-
-  const updateConversationUnreadCount = useCallback((conversationId: string, unreadCount: number) => {
-    dispatch({ type: 'UPDATE_CONVERSATION_UNREAD_COUNT', payload: { conversationId, unreadCount } });
-  }, []);
-
-  // Computed values
-  const totalUnreadCount = useMemo(() => {
-    return state.conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
-  }, [state.conversations]);
-
-  const isTranslating = useCallback((messageId: string, targetLanguage: string) => {
-    return state.translatingMessages.get(messageId)?.has(targetLanguage) || false;
-  }, [state.translatingMessages]);
-
-  const contextValue: ConversationContextType = useMemo(() => ({
-    state,
-    dispatch,
-    setConversations,
-    setSelectedConversation,
-    setConversationParticipants,
-    setMessages,
+  const value: ConversationContextType = {
+    conversations,
+    currentConversation,
+    isLoadingConversations,
+    messages,
+    isLoadingMessages,
+    hasMoreMessages,
+    translatingMessages,
+    loadConversations,
+    loadConversation,
+    selectConversation,
+    addConversation,
+    updateConversation,
+    loadMessages,
     addMessage,
     updateMessage,
-    removeMessage,
-    clearMessages,
-    setTranslatedMessages,
-    setLoading,
-    setLoadingMessages,
-    setLoadingMore,
-    setHasMore,
-    setMessagesError,
-    addTypingUser,
-    removeTypingUser,
-    addTranslatingState,
-    removeTranslatingState,
-    setNewMessage,
-    setSelectedLanguage,
-    setIsMobile,
-    setShowConversationList,
-    setCreateConversationModalOpen,
-    setCreateLinkModalOpen,
-    setDetailsSidebarOpen,
-    setJustCreatedConversation,
-    updateConversationLastMessage,
-    updateConversationUnreadCount,
-    totalUnreadCount,
-    isTranslating,
-  }), [
-    state,
-    setConversations,
-    setSelectedConversation,
-    setConversationParticipants,
-    setMessages,
-    addMessage,
-    updateMessage,
-    removeMessage,
-    clearMessages,
-    setTranslatedMessages,
-    setLoading,
-    setLoadingMessages,
-    setLoadingMore,
-    setHasMore,
-    setMessagesError,
-    addTypingUser,
-    removeTypingUser,
-    addTranslatingState,
-    removeTranslatingState,
-    setNewMessage,
-    setSelectedLanguage,
-    setIsMobile,
-    setShowConversationList,
-    setCreateConversationModalOpen,
-    setCreateLinkModalOpen,
-    setDetailsSidebarOpen,
-    setJustCreatedConversation,
-    updateConversationLastMessage,
-    updateConversationUnreadCount,
-    totalUnreadCount,
-    isTranslating,
-  ]);
+    deleteMessage,
+    requestTranslation,
+    addTranslation,
+    sendMessage
+  };
 
   return (
-    <ConversationContext.Provider value={contextValue}>
+    <ConversationContext.Provider value={value}>
       {children}
     </ConversationContext.Provider>
   );
-}
-
-// ===== HOOK =====
-
-export function useConversationContext(): ConversationContextType {
-  const context = useContext(ConversationContext);
-  if (context === undefined) {
-    throw new Error('useConversationContext must be used within a ConversationProvider');
-  }
-  return context;
 }
