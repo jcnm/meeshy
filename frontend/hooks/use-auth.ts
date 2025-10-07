@@ -12,7 +12,7 @@ import {
   redirectToAuth,
   redirectToHome
 } from '@/utils/auth';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser, useAuthActions, useIsAuthChecking } from '@/stores';
 
 // Cache global pour éviter les vérifications d'authentification multiples
 const authCache = {
@@ -32,7 +32,8 @@ export function useAuth() {
   
   const router = useRouter();
   const pathname = usePathname();
-  const { setUser, isAuthChecking } = useUser();
+  const { setUser } = useAuthActions();
+  const isAuthChecking = useIsAuthChecking();
   const hasInitialized = useRef(false);
   const setUserRef = useRef(setUser);
   const redirectInProgress = useRef(false);

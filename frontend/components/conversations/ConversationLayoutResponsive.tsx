@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser, useIsAuthChecking } from '@/stores';
 import { useMessaging } from '@/hooks/use-messaging';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -46,7 +46,8 @@ export function ConversationLayoutResponsive({ selectedConversationId }: Convers
   const searchParams = useSearchParams();
   const conversationListRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
-  const { user, isAuthChecking } = useUser();
+  const user = useUser();
+  const isAuthChecking = useIsAuthChecking();
   const { t } = useTranslations('conversationLayout');
   const { t: tSearch } = useTranslations('conversationSearch');
 

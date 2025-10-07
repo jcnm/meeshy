@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../styles/bubble-stream.css";
 import { Toaster } from "@/components/ui/sonner";
-import { AppProvider } from "@/context/UnifiedProvider";
-import { AuthProvider } from "@/components/auth/auth-provider";
+import { StoreInitializer } from "@/stores";
 import { ErrorBoundary } from "@/components/common";
 import { ClientOnly } from "@/components/common/client-only";
 import { defaultFont, getAllFontVariables } from "@/lib/fonts";
@@ -32,15 +31,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${getAllFontVariables()} antialiased font-nunito`}>
-        <AppProvider>
-          <AuthProvider>
-            <ErrorBoundary>
-              <ClientOnly>
-                {children}
-              </ClientOnly>
-            </ErrorBoundary>
-          </AuthProvider>
-        </AppProvider>
+        <StoreInitializer>
+          <ErrorBoundary>
+            <ClientOnly>
+              {children}
+            </ClientOnly>
+          </ErrorBoundary>
+        </StoreInitializer>
         <Toaster 
           position="bottom-right"
           expand={false}

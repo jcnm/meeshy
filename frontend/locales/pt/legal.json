@@ -1,0 +1,169 @@
+{
+  "privacy": {
+    "backHome": "Voltar ao início",
+    "print": "Imprimir",
+    "title": "Política de Privacidade",
+    "lastUpdated": "Última atualização: 6 de setembro de 2025",
+    "introduction": {
+      "title": "1. Introdução",
+      "content": "No Meeshy, estamos comprometidos em proteger sua privacidade e dados pessoais. Esta política de privacidade explica como coletamos, usamos e protegemos suas informações quando você usa nosso serviço de mensagens multilíngue."
+    },
+    "dataCollection": {
+      "title": "2. Informações que coletamos",
+      "personal": {
+        "title": "2.1 Informações pessoais",
+        "items": [
+          "Nome de usuário e endereço de e-mail (durante o registro)",
+          "Preferências de idioma",
+          "Informações de perfil (opcionais)"
+        ]
+      },
+      "translation": {
+        "title": "2.2 Dados de tradução",
+        "items": [
+          "Mensagens traduzidas (processadas em servidores seguros)",
+          "Idiomas de origem e destino",
+          "Metadados de tradução (sem conteúdo da mensagem)"
+        ]
+      },
+      "technical": {
+        "title": "2.3 Dados técnicos",
+        "items": [
+          "Endereço IP (anonimizado)",
+          "Tipo e versão do navegador",
+          "Dados de uso do serviço (estatísticas anônimas)"
+        ]
+      }
+    },
+    "usage": {
+      "title": "3. Como usamos suas informações",
+      "items": [
+        {
+          "title": "Prestação de serviço:",
+          "description": "Tradução em tempo real de suas mensagens"
+        },
+        {
+          "title": "Melhoria do serviço:",
+          "description": "Desenvolvimento de novos recursos"
+        },
+        {
+          "title": "Suporte ao cliente:",
+          "description": "Responder às suas perguntas e resolver problemas"
+        },
+        {
+          "title": "Segurança:",
+          "description": "Proteção contra abuso e fraude"
+        },
+        {
+          "title": "Comunicação:",
+          "description": "Informações importantes sobre o serviço"
+        }
+      ]
+    },
+    "protection": {
+      "title": "4. Proteção de dados",
+      "local": {
+        "title": "4.1 Processamento local",
+        "content": "Todas as traduções são realizadas em nossos servidores seguros com modelos de IA avançados, garantindo alta precisão e confiabilidade."
+      },
+      "encryption": {
+        "title": "4.2 Criptografia",
+        "content": "Todas as comunicações entre seu navegador e nossos servidores são criptografadas usando TLS 1.3."
+      },
+      "storage": {
+        "title": "4.3 Armazenamento seguro",
+        "content": "Os dados armazenados em nossos servidores são protegidos por medidas de segurança de nível empresarial, incluindo criptografia em repouso."
+      }
+    },
+    "sharing": {
+      "title": "5. Compartilhamento de informações",
+      "intro": "Não vendemos, alugamos ou compartilhamos suas informações pessoais com terceiros, exceto nos seguintes casos:",
+      "cases": [
+        "Com seu consentimento explícito",
+        "Para cumprir obrigações legais",
+        "Para proteger nossos direitos, propriedade ou segurança",
+        "Com prestadores de serviços confiáveis (sob acordos de confidencialidade)"
+      ]
+    },
+    "rights": {
+      "title": "6. Seus direitos",
+      "intro": "De acordo com o LGPD, você tem o direito de:",
+      "list": [
+        "Acessar seus dados pessoais",
+        "Retificar informações imprecisas",
+        "Excluir seus dados pessoais",
+        "Limitar o processamento de dados",
+        "Portabilidade de dados",
+        "Opor-se ao processamento"
+      ],
+      "contact": "Para exercer esses direitos, entre em contato conosco em: privacy@meeshy.me"
+    },
+    "cookies": {
+      "title": "7. Cookies e tecnologias similares",
+      "content": "Usamos cookies essenciais para a funcionalidade do serviço e cookies analíticos para melhorar a experiência do usuário. Você pode gerenciar suas preferências de cookies nas configurações do seu navegador."
+    },
+    "updates": {
+      "title": "8. Atualizações da política",
+      "content": "Podemos atualizar esta política de privacidade de tempos em tempos. Mudanças importantes serão comunicadas por e-mail ou via notificação no aplicativo. A data da última atualização é indicada no topo desta página."
+    },
+    "contact": {
+      "title": "9. Contato",
+      "address": "Endereço: 9 - 11 Avenue de l'Arche, Courbevoie 92400, França",
+      "email": "E-mail: privacy@meeshy.me"
+    },
+    "footer": {
+      "home": "Início",
+      "about": "Sobre",
+      "contact": "Contato",
+      "partners": "Tornar-se parceiro"
+    }
+  },
+  "terms": {
+    "title": "Termos de Uso",
+    "lastUpdated": "Última atualização: 1º de janeiro de 2026",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceitação dos termos",
+        "content": "Ao acessar e usar o Meeshy, você concorda em estar vinculado a estes termos de uso. Se você não concordar com estes termos, por favor, não use nosso serviço."
+      },
+      "description": {
+        "title": "2. Descrição do serviço",
+        "content": "O Meeshy é uma plataforma de mensagens multilíngue que usa inteligência artificial para traduzir automaticamente mensagens em tempo real. Nosso serviço permite comunicação sem barreiras linguísticas diretamente no seu navegador."
+      },
+      "acceptableUse": {
+        "title": "3. Uso aceitável",
+        "content": "Você concorda em:",
+        "items": [
+          "Usar o serviço apenas para fins legais",
+          "Não usar o serviço para prejudicar outros",
+          "Não usar o serviço para enviar spam ou vírus",
+          "Não usar o serviço para enviar conteúdo ilegal"
+        ]
+      },
+      "privacy": {
+        "title": "4. Privacidade e proteção de dados",
+        "content": "Estamos comprometidos em proteger sua privacidade. As traduções são realizadas em nossos servidores seguros com criptografia de nível empresarial. Nenhum dado pessoal é armazenado sem seu consentimento explícito. Consulte nossa política de privacidade para mais detalhes."
+      },
+      "intellectualProperty": {
+        "title": "5. Propriedade intelectual",
+        "content": "Todo o conteúdo, recursos e funcionalidade do Meeshy são propriedade da Meeshy SAS e são protegidos por leis de direitos autorais, marcas registradas e outras leis de propriedade intelectual."
+      },
+      "limitation": {
+        "title": "6. Limitação de responsabilidade",
+        "content": "O Meeshy é fornecido \"como está\" sem garantias de qualquer tipo. Não somos responsáveis por quaisquer danos decorrentes do uso de nosso serviço."
+      },
+      "termination": {
+        "title": "7. Rescisão",
+        "content": "Reservamo-nos o direito de encerrar ou suspender seu acesso ao nosso serviço a qualquer momento, com ou sem aviso, por conduta que acreditamos violar estes termos."
+      },
+      "changes": {
+        "title": "8. Alterações nos termos",
+        "content": "Reservamo-nos o direito de modificar estes termos a qualquer momento. As alterações entrarão em vigor imediatamente após a publicação. Seu uso continuado do serviço constitui aceitação dos termos modificados."
+      },
+      "contact": {
+        "title": "9. Contato",
+        "content": "Para perguntas sobre estes termos, entre em contato conosco em: legal@meeshy.me"
+      }
+    }
+  }
+}

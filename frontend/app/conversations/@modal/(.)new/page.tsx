@@ -1,12 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
 import { toast } from 'sonner';
 
 export default function NewConversationModal() {
-  const { user } = useUser();
+  const user = useUser();
   const router = useRouter();
 
   const handleConversationCreated = (conversationId: string) => {

@@ -1,12 +1,12 @@
 'use client';
 
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useState, useEffect } from 'react';
 
 export default function AuthStatusPage() {
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
   const { isAuthenticated: useAuthAuthenticated, isChecking: useAuthChecking } = useAuth();
   const { isAuthenticated: guardAuthenticated, isChecking: guardChecking } = useAuthGuard();
   const [localStorageData, setLocalStorageData] = useState<any>({});

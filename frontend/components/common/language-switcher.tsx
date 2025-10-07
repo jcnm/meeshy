@@ -9,12 +9,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Languages, Check } from 'lucide-react';
-import { useLanguage as useLanguageContext } from '@/context/LanguageContext';
+import { useCurrentInterfaceLanguage, useLanguageActions } from '@/stores';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useLanguage } from '@/hooks/use-language';
 
 export function LanguageSwitcher() {
-  const { currentInterfaceLanguage, setInterfaceLanguage } = useLanguageContext();
+  const currentInterfaceLanguage = useCurrentInterfaceLanguage();
+  const { setInterfaceLanguage } = useLanguageActions();
   const { t } = useTranslations('language');
   const { translatedLanguages } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);

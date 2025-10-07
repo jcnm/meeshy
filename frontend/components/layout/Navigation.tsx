@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/hooks/useTranslations';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { Z_CLASSES } from '@/lib/z-index';
 import { 
@@ -60,7 +60,7 @@ export function Navigation({ className }: NavigationProps) {
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useUser();
+  const user = useUser();
   const { logout } = useAuth();
 
   useEffect(() => {

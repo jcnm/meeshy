@@ -1166,7 +1166,7 @@
           },
           "translation": {
             "title": "Translation available",
-            "message": "🇫🇷 Bonjour le monde\n🇺🇸 Hello world\n🇪🇸 Hola mundo"
+            "message": "🇺🇸 Hello world\n🇬🇧 Translation available\n🌍 Multilingual message"
           }
         }
       }

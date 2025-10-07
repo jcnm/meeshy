@@ -1,0 +1,89 @@
+{
+  "landing": {
+    "navigation": {
+      "home": "Accueil",
+      "features": "Fonctionnalités",
+      "about": "À propos",
+      "contact": "Contact"
+    },
+    "hero": {
+      "badge": "Traduction en temps réel",
+      "title": "Communiquez sans",
+      "titleHighlight": "barrières linguistiques",
+      "subtitle": "Meeshy traduit automatiquement vos messages en temps réel grâce à l'IA. Traduction rapide, précise et fiable.",
+      "startFree": "Commencer gratuitement",
+      "joinConversation": "Rejoindre une conversation",
+      "resumeOrJoin": "Reprendre ou rejoindre une conversation"
+    },
+    "mission": {
+      "title": "Notre Mission",
+      "slogan": "Rencontrez-vous sans timidité ! 🌍✨",
+      "tagline": "Connecter le monde, une traduction à la fois",
+      "description": "Nous croyons que les barrières linguistiques ne devraient jamais faire obstacle aux connexions humaines significatives. Notre plateforme permet aux personnes des quatre coins du globe de communiquer librement, en abattant les murs qui nous séparent et en construisant des ponts de compréhension.",
+      "signature": {
+        "line1": "❤️ Fait avec ❤️",
+        "line2": "par des développeurs qui croient que la communication ne devrait avoir aucune limite."
+      }
+    },
+    "features": {
+      "title": "Pourquoi choisir Meeshy ?",
+      "subtitle": "Une plateforme de messagerie moderne qui brise les barrières linguistiques",
+      "universalTranslation": {
+        "title": "Traduction Universelle",
+        "description": "Support de plus de 15 langues avec des modèles d'IA avancés (MT5 et NLLB)"
+      },
+      "autoDetection": {
+        "title": "Détection Automatique",
+        "description": "Détecte automatiquement la langue du message pour une traduction plus précise."
+      },
+      "privacy": {
+        "title": "100% Privé",
+        "description": "Traduction côté serveur avec une sécurité de niveau entreprise. Vos données sont protégées par chiffrement."
+      },
+      "realtime": {
+        "title": "Temps Réel",
+        "description": "Messages traduits instantanément avec indicateurs de frappe et présence."
+      },
+      "groupChats": {
+        "title": "Conversations de Groupe",
+        "description": "Créez des communautés multilingues et gérez les permissions facilement."
+      },
+      "multiLanguage": {
+        "title": "Multi-Langues Personnalisé",
+        "description": "Configurez vos langues système et régionales pour une expérience sur mesure."
+      },
+      "modernInterface": {
+        "title": "Interface Moderne",
+        "description": "Design réactif et intuitif pour une expérience utilisateur optimale."
+      },
+      "internationalColleagues": {
+        "title": "Collègues Internationaux",
+        "description": "Communiquez avec vos collègues étrangers sans vous soucier des barrières linguistiques."
+      },
+      "multilingualClassrooms": {
+        "title": "Salles de Classe Multilingues",
+        "description": "Échangez avec vos camarades de classe dans leur langue maternelle, peu importe d'où ils viennent."
+      }
+    },
+    "cta": {
+      "title": "Prêt à communiquer sans limites ?",
+      "subtitle": "Rejoignez des milliers d'utilisateurs qui utilisent déjà Meeshy pour briser les barrières linguistiques.",
+      "createAccount": "Créer mon compte"
+    },
+    "footer": {
+      "copyright": "© 2026 Meeshy",
+      "tagline": "Rencontrez-vous sans timidité",
+      "links": {
+        "about": "À propos",
+        "policy": "Politique",
+        "terms": "Conditions",
+        "contact": "Contact",
+        "partners": "Partenaires"
+      },
+      "social": {
+        "followUs": "Suivez-nous"
+      },
+      "usefulLinks": "Liens Utiles"
+    }
+  }
+}

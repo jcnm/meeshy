@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 
 interface DashboardLayoutProps {

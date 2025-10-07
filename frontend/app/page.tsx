@@ -40,7 +40,7 @@ import { JoinConversationForm } from '@/components/auth/join-conversation-form';
 import { BubbleStreamPage } from '@/components/common';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Header } from '@/components/layout/Header';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser, useIsAuthChecking } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
@@ -48,7 +48,8 @@ import { isCurrentUserAnonymous } from '@/utils/auth';
 import { useTranslations } from '@/hooks/useTranslations';
 import Link from 'next/link';
 function LandingPageContent() {
-  const { user, isAuthChecking } = useUser();
+  const user = useUser();
+  const isAuthChecking = useIsAuthChecking();
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();

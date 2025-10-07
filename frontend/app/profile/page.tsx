@@ -20,13 +20,13 @@ import {
   Activity
 } from 'lucide-react';
 import { User } from '@/types';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { getUserInitials } from '@/utils/user';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 function ProfilePageContent() {
   const router = useRouter();
-  const { user } = useUser();
+  const user = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
 

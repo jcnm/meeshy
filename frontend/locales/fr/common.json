@@ -1,0 +1,67 @@
+{
+  "languageNames": {
+    "en": "Anglais",
+    "fr": "Français", 
+    "pt": "Portugais",
+    "es": "Espagnol",
+    "de": "Allemand",
+    "it": "Italien",
+    "zh": "Chinois",
+    "ja": "Japonais",
+    "ar": "Arabe",
+    "ru": "Russe",
+    "ko": "Coréen",
+    "hi": "Hindi",
+    "tr": "Turc"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "confirm": "Confirmer",
+    "yes": "Oui",
+    "no": "Non",
+    "insufficientRights": "Vous n'avez pas les droits nécessaires pour effectuer cette opération"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Déconnexion"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Adresse e-mail invalide",
+    "invalidPhone": "Numéro de téléphone invalide",
+    "minLength": "Minimum {min} caractères requis",
+    "maxLength": "Maximum {max} caractères autorisés",
+    "passwordMismatch": "Les mots de passe ne correspondent pas"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite",
+    "network": "Erreur réseau",
+    "unauthorized": "Accès non autorisé",
+    "forbidden": "Accès interdit",
+    "notFound": "Ressource introuvable",
+    "invalidCredentials": "Identifiants invalides",
+    "sessionExpired": "Session expirée",
+    "validationError": "Erreur de validation"
+  },
+  "success": {
+    "saved": "Enregistré avec succès",
+    "deleted": "Supprimé avec succès",
+    "updated": "Mis à jour avec succès",
+    "created": "Créé avec succès",
+    "welcome": "Bienvenue"
+  }
+}

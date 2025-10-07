@@ -1,0 +1,226 @@
+{
+  "chatPage": {
+    "verifyingAuth": "Verificando autenticação...",
+    "loadingConversation": "Carregando conversa...",
+    "missingLinkId": "ID do link ausente",
+    "sessionExpired": "Sessão expirada. Por favor, entre novamente na conversa.",
+    "noConversationData": "Nenhum dado de conversa disponível",
+    "incompleteData": "Dados incompletos",
+    "incompleteDataDescription": "Os dados da conversa estão incompletos. Tente novamente.",
+    "anonymousSessionCleared": "Sessão anônima limpa",
+    "createAccount": "Criar conta",
+    "createAccountDescription": "Junte-se ao Meeshy e comunique-se sem barreiras",
+    "login": "Entrar",
+    "loginDescription": "Entre na sua conta Meeshy",
+    "errorLoading": "Erro ao carregar conversa",
+    "accessDenied": "Acesso não autorizado a esta conversa",
+    "conversationNotFound": "Conversa não encontrada",
+    "sessionExpiredReconnect": "Sessão expirada. Por favor, reconecte-se.",
+    "defaultUser": "Usuário",
+    "defaultAnonymous": "Anônimo"
+  },
+  "anonymousChatErrorHandler": {
+    "forbidden": {
+      "title": "Acesso negado",
+      "description": "Você não tem permissão para acessar esta conversa.",
+      "actions": {
+        "backHome": "Voltar ao início"
+      }
+    },
+    "unauthorized": {
+      "title": "Sessão expirada",
+      "description": "Sua sessão expirou. Por favor, reconecte-se para continuar.",
+      "actions": {
+        "rejoin": "Entrar novamente",
+        "login": "Entrar",
+        "backHome": "Voltar ao início"
+      }
+    },
+    "notFound": {
+      "title": "Conversa não encontrada",
+      "description": "Esta conversa não existe ou foi excluída.",
+      "actions": {
+        "backHome": "Voltar ao início"
+      }
+    },
+    "invalidIdentifier": {
+      "title": "Link inválido",
+      "description": "O link que você está tentando usar não é válido.",
+      "actions": {
+        "backHome": "Voltar ao início"
+      }
+    },
+    "generic": {
+      "title": "Erro de conexão",
+      "description": "Ocorreu um erro ao carregar a conversa.",
+      "actions": {
+        "retry": "Tentar novamente",
+        "backHome": "Voltar ao início"
+      }
+    },
+    "maxRetriesReached": "Número máximo de tentativas atingido",
+    "retryFailed": "Falha na nova tentativa",
+    "attempts": "Tentativas: {current}/{max}",
+    "debug": {
+      "title": "Debug:",
+      "identifier": "Identificador:",
+      "type": "Tipo:",
+      "attempts": "Tentativas:",
+      "anonymous": "Anônimo",
+      "authenticated": "Autenticado"
+    },
+    "createConversationModal": "Modal de criação de conversa"
+  },
+  "conversationSearch": {
+    "placeholder": "Pesquisar por nome, descrição...",
+    "filterConversations": "Filtrar conversas",
+    "searchParticipants": "Pesquisar...",
+    "shareMessage": "Compartilhe algo com o mundo...",
+    "authChecking": "Verificando autenticação...",
+    "toasts": {
+      "messages": {
+        "translationInProgress": "Tradução em andamento...",
+        "retranslationInProgress": "Retradução em andamento...",
+        "editSoon": "Edição disponível em breve",
+        "translationSuccess": "Tradução bem-sucedida",
+        "textCopied": "Texto copiado para a área de transferência"
+      },
+      "conversations": {
+        "loadError": "Erro ao carregar conversa"
+      }
+    },
+    "conversations": {
+      "title": "Conversas"
+    },
+    "loadingConversations": "Carregando conversas...",
+    "filtreConversations": "Filtrar conversas",
+    "yes": "Sim",
+    "no": "Não",
+    "connected": "Conectado",
+    "notConnected": "Não conectado",
+    "noConversations": "Nenhuma conversa"
+  },
+  "conversationLayout": {
+    "loading": "Carregando...",
+    "error": "Erro ao carregar conversa",
+    "retry": "Tentar novamente",
+    "unauthorized": "Acesso não autorizado",
+    "notFound": "Conversa não encontrada"
+  },
+  "conversationWrapper": {
+    "loading": "Carregando conversa...",
+    "error": "Erro ao carregar conversa"
+  },
+  "conversationDetails": {
+    "title": "Detalhes da Conversa",
+    "description": "Descrição",
+    "participants": "Participantes",
+    "created": "Criado",
+    "lastActivity": "Última atividade",
+    "settings": "Configurações",
+    "leave": "Sair da conversa",
+    "delete": "Excluir conversa"
+  },
+  "conversationParticipants": {
+    "title": "Participantes",
+    "online": "Online",
+    "offline": "Offline",
+    "invite": "Convidar participantes",
+    "remove": "Remover participante",
+    "makeAdmin": "Tornar administrador",
+    "removeAdmin": "Remover direitos de administrador"
+  },
+  "conversationUI": {
+    "typing": "Digitando...",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Visto pela última vez {time}",
+    "messageInput": "Digite uma mensagem...",
+    "send": "Enviar",
+    "attach": "Anexar arquivo",
+    "emoji": "Adicionar emoji"
+  },
+  "conversationLinks": {
+    "title": "Links da Conversa",
+    "description": "Gerencie links de compartilhamento para esta conversa",
+    "createLink": "Criar link",
+    "noLinks": "Nenhum link criado",
+    "active": "Ativo",
+    "expired": "Expirado",
+    "uses": "usos",
+    "unlimited": "Ilimitado"
+  },
+  "conversationPreview": {
+    "loading": "Carregando visualização...",
+    "error": "Erro ao carregar visualização",
+    "noPreview": "Nenhuma visualização disponível"
+  },
+  "identifierSuggestions": {
+    "suggestions": "Sugestões",
+    "recent": "Recente",
+    "popular": "Popular"
+  },
+  "smartSearch": {
+    "placeholder": "Pesquisar...",
+    "noResults": "Nenhum resultado encontrado",
+    "searching": "Pesquisando..."
+  },
+  "typingIndicator": {
+    "typing": "{user} está digitando...",
+    "multipleTyping": "{count} pessoas estão digitando..."
+  },
+  "createLinkButton": {
+    "create": "Criar link",
+    "creating": "Criando...",
+    "success": "Link criado!",
+    "error": "Erro ao criar link"
+  },
+  "createLinkButtonV2": {
+    "create": "Criar link",
+    "tooltip": "Criar um link de compartilhamento para esta conversa"
+  },
+  "joinPage": {
+    "title": "Entrar na Conversa",
+    "loading": "Carregando...",
+    "verifying": "Verificando link...",
+    "joining": "Entrando na conversa...",
+    "success": "Entrou com sucesso!",
+    "error": "Erro ao tentar entrar na conversa",
+    "invalidLink": "Link inválido ou expirado",
+    "alreadyMember": "Você já é membro desta conversa"
+  },
+  "links": {
+    "title": "Links",
+    "description": "Gerencie seus links de conversa",
+    "create": "Criar link",
+    "noLinks": "Nenhum link criado",
+    "active": "Ativo",
+    "expired": "Expirado",
+    "pending": "Pendente",
+    "uses": "{used}/{total} usos",
+    "unlimited": "Usos ilimitados",
+    "expires": "Expira em {date}",
+    "neverExpires": "Nunca expira",
+    "actions": {
+      "copy": "Copiar link",
+      "share": "Compartilhar",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "disable": "Desabilitar",
+      "enable": "Habilitar"
+    }
+  },
+  "contacts": {
+    "title": "Contatos",
+    "description": "Gerencie seus contatos",
+    "search": "Pesquisar contatos...",
+    "noContacts": "Nenhum contato",
+    "add": "Adicionar contato",
+    "remove": "Remover contato",
+    "block": "Bloquear contato",
+    "unblock": "Desbloquear contato",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Visto pela última vez {time}"
+  }
+}

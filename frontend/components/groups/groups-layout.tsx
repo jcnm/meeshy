@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -43,7 +43,7 @@ interface GroupsLayoutProps {
 export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
   const { t } = useTranslations();
   const { t: tUI } = useTranslations('conversationUI');
 

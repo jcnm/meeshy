@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { GroupsLayoutResponsive } from './groups-layout-responsive';
 import { useEffect } from 'react';
 
@@ -9,7 +9,7 @@ interface GroupsLayoutWrapperProps {
 }
 
 export function GroupsLayoutWrapper({ selectedGroupIdentifier }: GroupsLayoutWrapperProps) {
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
 
   // Logs de débogage
   useEffect(() => {

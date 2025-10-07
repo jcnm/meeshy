@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { ConversationLayoutResponsive } from './ConversationLayoutResponsive';
 
 interface ConversationLayoutWrapperProps {
@@ -11,7 +11,7 @@ interface ConversationLayoutWrapperProps {
 const ConversationLayoutWrapper: React.FC<ConversationLayoutWrapperProps> = ({ 
   selectedConversationId 
 }) => {
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
 
   if (isAuthChecking) {
     return (

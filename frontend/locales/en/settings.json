@@ -1,0 +1,154 @@
+{
+  "settings": {
+    "title": "Settings",
+    "pageTitle": "Settings for {username}",
+    "loadingSettings": "Loading settings...",
+    "settingsError": "Error loading settings",
+    "settingsSaved": "Settings saved successfully",
+    "settingsSaveError": "Error saving settings",
+    "tabs": {
+      "profile": "Profile",
+      "translation": "Translation",
+      "theme": "Theme",
+      "fonts": "Fonts",
+      "stats": "Stats"
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Personal information",
+      "settingsTitle": "Profile Settings",
+      "settingsDescription": "Settings for {username}",
+      "photo": {
+        "title": "Profile Photo",
+        "description": "Customize your profile photo visible to other users",
+        "uploadImage": "Upload an image",
+        "takePhoto": "Take a photo",
+        "removePhoto": "Remove photo",
+        "photoUpdated": "Profile photo updated",
+        "previewTitle": "Photo Preview"
+      },
+      "personalInfo": {
+        "title": "Personal Information",
+        "description": "Modify your profile information",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "displayName": "Display name",
+        "displayNamePlaceholder": "How you want to appear in conversations",
+        "email": "Email",
+        "emailPlaceholder": "your.email@example.com",
+        "phoneNumber": "Phone number",
+        "phoneNumberPlaceholder": "+33 1 23 45 67 89",
+        "username": "Username",
+        "usernameCannotChange": "Username cannot be modified",
+        "bio": "Bio",
+        "bioPlaceholder": "Tell us about yourself..."
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "profileUpdated": "Profile updated successfully",
+        "updateError": "Error updating profile",
+        "confirm": "Confirm",
+        "uploading": "Uploading..."
+      }
+    },
+    "translation": {
+      "title": "Language and Translation Configuration",
+      "description": "Define your languages and translation settings",
+      "mainLanguages": {
+        "title": "Main Languages",
+        "description": "Configure your preferred languages for communication",
+        "systemLanguage": "System language",
+        "systemLanguageDescription": "Main language of your interface and messages",
+        "regionalLanguage": "Regional language",
+        "regionalLanguageDescription": "Language of your region or preferred secondary language",
+        "customDestinationLanguage": "Custom destination language",
+        "customDestinationLanguageDescription": "Specific language for automatic translation (optional)",
+        "selectLanguage": "Select a language",
+        "none": "None"
+      },
+      "autoTranslation": {
+        "title": "Automatic Translation Options",
+        "description": "Configure how messages are automatically translated",
+        "enabled": "Automatic translation",
+        "enabledDescription": "Enables automatic translation of incoming messages",
+        "exclusiveMode": "Exclusive mode: Enable only one translation option at a time.",
+        "translateToSystem": "Translate to system language only",
+        "translateToSystemDescription": "Translates messages to {flag} {language} only",
+        "translateToRegional": "Translate to regional language only",
+        "translateToRegionalDescription": "Translates messages to {flag} {language} only",
+        "translateToCustom": "Translate to custom language only",
+        "translateToCustomDescription": "Translates messages to {flag} {language} only",
+        "noCustomLanguage": "No custom language defined - set one above",
+        "tip": "Tip:",
+        "tipDescription": "If no option is selected, messages will be translated to all your configured languages (system + regional + custom)."
+      },
+      "preview": {
+        "title": "Configuration Preview",
+        "systemLanguage": "System language",
+        "regionalLanguage": "Regional language",
+        "customLanguage": "Custom language",
+        "autoTranslation": "Automatic translation",
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "settingsUpdated": "Language settings updated",
+        "updateError": "Error updating language settings"
+      },
+      "systemLanguage": "System language",
+      "regionalLanguage": "Regional language",
+      "customDestinationLanguage": "Custom destination language",
+      "autoTranslateEnabled": "Auto-translation enabled",
+      "translateToSystemLanguage": "Translate to system language",
+      "translateToRegionalLanguage": "Translate to regional language",
+      "useCustomDestination": "Use custom destination",
+      "customDestinationPlaceholder": "Select a language"
+    },
+    "theme": {
+      "title": "Theme and interface",
+      "description": "Customize the appearance, language and fonts of the application",
+      "displayMode": {
+        "title": "Display mode",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
+      "accentColor": {
+        "title": "Accent color",
+        "blue": "Blue",
+        "green": "Green",
+        "purple": "Purple",
+        "red": "Red",
+        "orange": "Orange",
+        "pink": "Pink"
+      },
+      "interfaceLanguage": {
+        "title": "Interface language",
+        "description": "Sets the user interface language"
+      },
+      "ui": {
+        "title": "User interface",
+        "description": "Display and behavior options",
+        "fontSize": {
+          "title": "Font size",
+          "small": "Small",
+          "medium": "Medium",
+          "large": "Large"
+        },
+        "compactMode": {
+          "title": "Compact mode",
+          "description": "Reduces spacing to display more content"
+        },
+        "animations": {
+          "title": "Animations",
+          "description": "Enables interface transitions and animations"
+        }
+      }
+    }
+  }
+}

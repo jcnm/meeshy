@@ -52,7 +52,7 @@ import { conversationsService } from '@/services/conversations.service';
 import { Conversation } from '@shared/types';
 import { User } from '@shared/types';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 
 // Langues supportées
 const SUPPORTED_LANGUAGES = [

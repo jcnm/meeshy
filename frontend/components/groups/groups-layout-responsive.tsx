@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,7 @@ interface GroupsLayoutResponsiveProps {
 export function GroupsLayoutResponsive({ selectedGroupIdentifier }: GroupsLayoutResponsiveProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
   const { t } = useTranslations();
 
   // Si on est en train de vérifier l'authentification, afficher un loader

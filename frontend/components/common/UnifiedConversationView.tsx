@@ -6,7 +6,7 @@ import { ConversationLayoutResponsive } from '@/components/conversations/Convers
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Header } from '@/components/layout/Header';
 import { useAuth } from '@/hooks/use-auth';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import type { User, ConversationLink } from '@shared/types';
 
 interface UnifiedConversationViewProps {
@@ -39,7 +39,7 @@ export function UnifiedConversationView({
   linkId,
   selectedConversationId
 }: UnifiedConversationViewProps) {
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
   const { isAnonymous, logout, leaveAnonymousSession } = useAuth();
   const [displayLayout, setDisplayLayout] = useState<'dashboard' | 'standalone'>('dashboard');
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { useMessaging } from '@/hooks/use-messaging';
@@ -26,7 +26,7 @@ interface ConversationLayoutProps {
 export function ConversationLayout({ selectedConversationId }: ConversationLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
   const { t } = useTranslations('conversationLayout');
   
   // ID unique pour cette instance du composant

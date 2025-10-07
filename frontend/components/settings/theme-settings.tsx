@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Palette, Monitor, Sun, Moon, Languages } from 'lucide-react';
 import { toast } from 'sonner';
-import { useLanguage } from '@/context/LanguageContext';
+import { useCurrentInterfaceLanguage, useLanguageActions } from '@/stores';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface ThemeConfig {

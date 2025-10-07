@@ -30,7 +30,7 @@ import { ShareAffiliateButton } from '@/components/affiliate/share-affiliate-but
 import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { User, Conversation } from '@/types';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { dashboardService, type DashboardData } from '@/services/dashboard.service';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,7 +45,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 
 function DashboardPageContent() {
   const router = useRouter();
-  const { user } = useUser();
+  const user = useUser();
   const { t } = useTranslations('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

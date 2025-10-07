@@ -41,13 +41,13 @@ import { LinkEditModal } from '@/components/links/link-edit-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
 import { CreateConversationModal } from '@/components/conversations/create-conversation-modal';
 import { copyToClipboard } from '@/lib/clipboard';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { useRouter } from 'next/navigation';
 
 export default function LinksPage() {
   const { t } = useTranslations('links');
   const { t: tConversations } = useTranslations('conversations');
-  const { user } = useUser();
+  const user = useUser();
   const router = useRouter();
   const [links, setLinks] = useState<ConversationLink[]>([]);
   const [isLoading, setIsLoading] = useState(true);

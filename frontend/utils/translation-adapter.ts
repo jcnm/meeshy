@@ -3,6 +3,7 @@
  */
 
 import type { TranslationData, User } from '@/types';
+import { resolveUserPreferredLanguage } from './user-language-preferences';
 
 /**
  * Structure pour une traduction formatée pour l'affichage
@@ -65,23 +66,15 @@ export function getUserTranslation(
   return translationDataToBubbleTranslation(translation);
 }
 
+// Import resolveUserPreferredLanguage from user-language-preferences
+import { resolveUserPreferredLanguage } from './user-language-preferences';
+
 /**
  * Détermine la langue cible d'un utilisateur selon ses préférences
+ * @deprecated Use resolveUserPreferredLanguage from user-language-preferences
  */
 export function resolveUserLanguage(user: User): string {
-  if (user.useCustomDestination && user.customDestinationLanguage) {
-    return user.customDestinationLanguage;
-  }
-  
-  if (user.translateToSystemLanguage) {
-    return user.systemLanguage;
-  }
-  
-  if (user.translateToRegionalLanguage) {
-    return user.regionalLanguage;
-  }
-  
-  return user.systemLanguage; // fallback
+  return resolveUserPreferredLanguage(user);
 }
 
 /**

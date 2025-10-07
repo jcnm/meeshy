@@ -39,7 +39,7 @@ import {
 import { User } from '@/types';
 import { usersService, conversationsService, type ParticipantsFilters } from '@/services';
 import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface FriendRequest {
@@ -77,7 +77,7 @@ interface AffiliateRelation {
 
 export default function ContactsPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const user = useUser();
   const { t } = useTranslations('contacts');
   const [contacts, setContacts] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');

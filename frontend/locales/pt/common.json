@@ -1,0 +1,67 @@
+{
+  "languageNames": {
+    "en": "Inglês",
+    "fr": "Francês", 
+    "pt": "Português",
+    "es": "Espanhol",
+    "de": "Alemão",
+    "it": "Italiano",
+    "zh": "Chinês",
+    "ja": "Japonês",
+    "ar": "Árabe",
+    "ru": "Russo",
+    "ko": "Coreano",
+    "hi": "Hindi",
+    "tr": "Turco"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "close": "Fechar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "yes": "Sim",
+    "no": "Não",
+    "insufficientRights": "Você não tem os direitos necessários para realizar esta operação"
+  },
+  "navigation": {
+    "home": "Início",
+    "dashboard": "Painel",
+    "settings": "Configurações",
+    "profile": "Perfil",
+    "logout": "Sair"
+  },
+  "validation": {
+    "required": "Este campo é obrigatório",
+    "invalidEmail": "Endereço de e-mail inválido",
+    "invalidPhone": "Número de telefone inválido",
+    "minLength": "Mínimo de {min} caracteres necessários",
+    "maxLength": "Máximo de {max} caracteres permitidos",
+    "passwordMismatch": "As senhas não coincidem"
+  },
+  "errors": {
+    "generic": "Ocorreu um erro",
+    "network": "Erro de rede",
+    "unauthorized": "Acesso não autorizado",
+    "forbidden": "Acesso proibido",
+    "notFound": "Recurso não encontrado",
+    "invalidCredentials": "Credenciais inválidas",
+    "sessionExpired": "Sessão expirada",
+    "validationError": "Erro de validação"
+  },
+  "success": {
+    "saved": "Salvo com sucesso",
+    "deleted": "Excluído com sucesso",
+    "updated": "Atualizado com sucesso",
+    "created": "Criado com sucesso",
+    "welcome": "Bem-vindo"
+  }
+}

@@ -400,7 +400,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/prisma/client",
+      "value": "/Users/smpceo/Documents/Services/Meeshy/meeshy/gateway/shared/prisma/client",
       "fromEnvVar": null
     },
     "config": {
@@ -414,11 +414,11 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/prisma/schema.prisma",
+    "sourceFilePath": "/Users/smpceo/Documents/Services/Meeshy/meeshy/gateway/shared/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
+    "rootEnvPath": "../../../.env",
     "schemaEnvPath": "../../../.env"
   },
   "relativePath": "..",

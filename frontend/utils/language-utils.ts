@@ -163,6 +163,7 @@ export function getLanguageInfo(languageCode: string) {
 
 /**
  * Vérifie si un code de langue est supporté
+ * @deprecated Use SUPPORTED_LANGUAGES from @shared/types or language-detection.ts instead
  */
 export function isSupportedLanguage(languageCode: string): boolean {
   return languageCode in LANGUAGE_NAMES;

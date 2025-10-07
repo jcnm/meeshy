@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Languages, Globe } from 'lucide-react';
 import { useLanguage as useLanguageHook } from '@/hooks/use-language';
-import { useLanguage } from '@/context/LanguageContext';
+import { useCurrentInterfaceLanguage, useLanguageActions } from '@/stores';
 
 interface LanguageDetectionNotificationProps {
   showNotification?: boolean;

@@ -23,7 +23,7 @@ import {
   Users,
   UserPlus
 } from 'lucide-react';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { useTranslations } from '@/hooks/useTranslations';

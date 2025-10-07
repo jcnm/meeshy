@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@/context/UnifiedProvider';
+import { useUser } from '@/stores';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { LoginForm } from '@/components/auth/login-form';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,7 +35,7 @@ export function AuthenticatedLayout({
   showNotifications = true,
   className = ''
 }: AuthenticatedLayoutProps) {
-  const { user, isAuthChecking } = useUser();
+  const user = useUser(); const isAuthChecking = useIsAuthChecking();
 
   // Affichage du chargement pendant la vérification d'authentification
   if (isAuthChecking) {
