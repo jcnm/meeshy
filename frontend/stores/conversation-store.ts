@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import type { Conversation, Message, MessageTranslation } from '@shared/types';
 
 interface ConversationState {
@@ -416,10 +417,14 @@ export const useConversationLoading = (conversationId: string) =>
   useConversationStore((state) => state.isLoadingMessages.get(conversationId) || false);
 export const useTypingUsers = (conversationId: string) => 
   useConversationStore((state) => state.typingUsers.get(conversationId) || new Set());
-export const useConversationActions = () => useConversationStore((state) => ({
-  loadConversations: state.loadConversations,
-  selectConversation: state.selectConversation,
-  addMessage: state.addMessage,
-  sendMessage: state.sendMessage,
-  requestTranslation: state.requestTranslation,
-}));
+
+// Use useShallow to prevent infinite loops when selecting multiple actions
+export const useConversationActions = () => useConversationStore(
+  useShallow((state) => ({
+    loadConversations: state.loadConversations,
+    selectConversation: state.selectConversation,
+    addMessage: state.addMessage,
+    sendMessage: state.sendMessage,
+    requestTranslation: state.requestTranslation,
+  }))
+);

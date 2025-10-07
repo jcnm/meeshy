@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 
 interface UserLanguageConfig {
   systemLanguage: string;
@@ -138,11 +139,15 @@ export const useCurrentInterfaceLanguage = () => useLanguageStore((state) => sta
 export const useCurrentMessageLanguage = () => useLanguageStore((state) => state.currentMessageLanguage);
 export const useAvailableLanguages = () => useLanguageStore((state) => state.availableLanguages);
 export const useUserLanguageConfig = () => useLanguageStore((state) => state.userLanguageConfig);
-export const useLanguageActions = () => useLanguageStore((state) => ({
-  setInterfaceLanguage: state.setInterfaceLanguage,
-  setMessageLanguage: state.setMessageLanguage,
-  setCustomDestinationLanguage: state.setCustomDestinationLanguage,
-  updateLanguageConfig: state.updateLanguageConfig,
-  detectAndSetBrowserLanguage: state.detectAndSetBrowserLanguage,
-  isLanguageSupported: state.isLanguageSupported,
-}));
+
+// Use useShallow to prevent infinite loops when selecting multiple actions
+export const useLanguageActions = () => useLanguageStore(
+  useShallow((state) => ({
+    setInterfaceLanguage: state.setInterfaceLanguage,
+    setMessageLanguage: state.setMessageLanguage,
+    setCustomDestinationLanguage: state.setCustomDestinationLanguage,
+    updateLanguageConfig: state.updateLanguageConfig,
+    detectAndSetBrowserLanguage: state.detectAndSetBrowserLanguage,
+    isLanguageSupported: state.isLanguageSupported,
+  }))
+);

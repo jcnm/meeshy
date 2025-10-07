@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 
 interface AppNotification {
   id: string;
@@ -150,9 +151,13 @@ export const useTheme = () => useAppStore((state) => state.theme);
 export const useIsOnline = () => useAppStore((state) => state.isOnline);
 export const useNotifications = () => useAppStore((state) => state.notifications);
 export const useIsInitialized = () => useAppStore((state) => state.isInitialized);
-export const useAppActions = () => useAppStore((state) => ({
-  setTheme: state.setTheme,
-  addNotification: state.addNotification,
-  removeNotification: state.removeNotification,
-  clearNotifications: state.clearNotifications,
-}));
+
+// Use useShallow to prevent infinite loops when selecting multiple actions
+export const useAppActions = () => useAppStore(
+  useShallow((state) => ({
+    setTheme: state.setTheme,
+    addNotification: state.addNotification,
+    removeNotification: state.removeNotification,
+    clearNotifications: state.clearNotifications,
+  }))
+);

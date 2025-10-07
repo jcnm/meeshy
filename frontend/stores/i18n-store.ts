@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 
 interface I18nState {
   currentLanguage: string;
@@ -168,9 +169,13 @@ export const useCurrentI18nLanguage = () => useI18nStore((state) => state.curren
 export const useI18nLoading = () => useI18nStore((state) => state.isLoading);
 export const useI18nError = () => useI18nStore((state) => state.error);
 export const useTranslate = () => useI18nStore((state) => state.translate);
-export const useI18nActions = () => useI18nStore((state) => ({
-  switchLanguage: state.switchLanguage,
-  loadModule: state.loadModule,
-  addTranslations: state.addTranslations,
-  clearCache: state.clearCache,
-}));
+
+// Use useShallow to prevent infinite loops when selecting multiple actions
+export const useI18nActions = () => useI18nStore(
+  useShallow((state) => ({
+    switchLanguage: state.switchLanguage,
+    loadModule: state.loadModule,
+    addTranslations: state.addTranslations,
+    clearCache: state.clearCache,
+  }))
+);

@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import type { User } from '@shared/types';
 
 interface AuthState {
@@ -170,9 +171,13 @@ export const useAuthStore = create<AuthStore>()(
 export const useUser = () => useAuthStore((state) => state.user);
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
 export const useIsAuthChecking = () => useAuthStore((state) => state.isAuthChecking);
-export const useAuthActions = () => useAuthStore((state) => ({
-  setUser: state.setUser,
-  logout: state.logout,
-  setTokens: state.setTokens,
-  clearAuth: state.clearAuth,
-}));
+
+// Use useShallow to prevent infinite loops when selecting multiple actions
+export const useAuthActions = () => useAuthStore(
+  useShallow((state) => ({
+    setUser: state.setUser,
+    logout: state.logout,
+    setTokens: state.setTokens,
+    clearAuth: state.clearAuth,
+  }))
+);
