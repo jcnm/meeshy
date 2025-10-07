@@ -123,13 +123,37 @@ export const useI18nStore = create<I18nStore>()(
           const { currentLanguage, cache } = get();
           const languageCache = cache[currentLanguage];
           
-          if (languageCache && languageCache[key]) {
-            return interpolate(languageCache[key], params);
+          if (!languageCache) {
+            console.warn(`[I18N_STORE] No cache for language: ${currentLanguage}`);
+            return key;
           }
           
-          // Fallback to key if translation not found
-          console.warn(`[I18N_STORE] Translation not found for key: ${key} (language: ${currentLanguage})`);
-          return key;
+          // Navigate nested keys (e.g., "hero.badge" or "landing.hero.badge")
+          const keys = key.split('.');
+          let translation: any = languageCache;
+          
+          for (const k of keys) {
+            if (translation && typeof translation === 'object' && k in translation) {
+              translation = translation[k];
+            } else {
+              translation = null;
+              break;
+            }
+          }
+          
+          // If not found, return key
+          if (!translation) {
+            console.warn(`[I18N_STORE] Translation not found for key: ${key} (language: ${currentLanguage})`);
+            return key;
+          }
+          
+          // If translation is an object, it means the key wasn't fully resolved
+          if (typeof translation === 'object') {
+            console.warn(`[I18N_STORE] Translation key ${key} points to object, not string`);
+            return key;
+          }
+          
+          return interpolate(translation, params);
         },
 
         addTranslations: (language: string, module: string, translations: Record<string, string>) => {
