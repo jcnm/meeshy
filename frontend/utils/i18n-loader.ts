@@ -22,6 +22,7 @@ const SUPPORTED_LANGUAGES = ['en', 'fr', 'pt', 'es', 'de', 'it', 'zh', 'ja', 'ar
 // Modules disponibles dans chaque langue
 const AVAILABLE_MODULES = [
   'common',
+  'header',
   'auth',
   'landing',
   'dashboard',
