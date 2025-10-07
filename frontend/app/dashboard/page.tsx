@@ -46,7 +46,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 function DashboardPageContent() {
   const router = useRouter();
   const user = useUser();
-  const { t } = useTranslations('dashboard');
+  const { t, currentLanguage } = useTranslations('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
@@ -479,7 +479,7 @@ function DashboardPageContent() {
                         </p>
                         <div className="flex items-center space-x-2">
                           <p className="text-xs text-gray-500">
-                            {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString(t('time.format'), { 
+                            {conversation.lastMessage && new Date(conversation.lastMessage.createdAt).toLocaleTimeString(currentLanguage, { 
                               hour: '2-digit', 
                               minute: '2-digit' 
                             })}

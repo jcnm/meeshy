@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { loadLanguageI18n, loadSpecificI18nModule } from '@/utils/i18n-loader';
 
 interface I18nState {
   currentLanguage: string;
@@ -26,17 +27,10 @@ type I18nStore = I18nState & I18nActions;
 
 // Simple translation function with parameter replacement
 const interpolate = (template: string, params: Record<string, any> = {}): string => {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+  return template.replace(/\{(\w+)\}/g, (match, key) => {
     return params[key] !== undefined ? String(params[key]) : match;
   });
 };
-
-// Mock function to simulate loading translation modules
-async function loadTranslationModule(language: string, module: string): Promise<Record<string, string>> {
-  // This would typically load from your actual i18n files
-  // For now, return empty object
-  return {};
-}
 
 const initialState: I18nState = {
   currentLanguage: 'fr',
@@ -58,11 +52,17 @@ export const useI18nStore = create<I18nStore>()(
           set({ isLoading: true, error: null });
           
           try {
-            // Load language data
-            await get().loadModule('common');
+            console.log(`[I18N_STORE] Switching to language: ${language}`);
+            
+            // Load all translations for the language using i18n-loader
+            const translations = await loadLanguageI18n(language);
             
             set({
               currentLanguage: language,
+              cache: {
+                ...get().cache,
+                [language]: translations,
+              },
               isLoading: false,
             });
             
@@ -87,7 +87,8 @@ export const useI18nStore = create<I18nStore>()(
           set({ isLoading: true });
           
           try {
-            const translations = await loadTranslationModule(currentLanguage, module);
+            console.log(`[I18N_STORE] Loading module ${module} for ${currentLanguage}`);
+            const translations = await loadSpecificI18nModule(currentLanguage, module);
             
             set((state) => ({
               loadedModules: {
