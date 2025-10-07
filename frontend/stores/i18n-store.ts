@@ -26,7 +26,12 @@ interface I18nActions {
 type I18nStore = I18nState & I18nActions;
 
 // Simple translation function with parameter replacement
-const interpolate = (template: string, params: Record<string, any> = {}): string => {
+const interpolate = (template: any, params: Record<string, any> = {}): string => {
+  // Handle non-string values
+  if (typeof template !== 'string') {
+    return typeof template === 'object' ? JSON.stringify(template) : String(template);
+  }
+  
   return template.replace(/\{(\w+)\}/g, (match, key) => {
     return params[key] !== undefined ? String(params[key]) : match;
   });
