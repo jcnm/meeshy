@@ -38,7 +38,7 @@ export interface UseLanguageReturn extends BrowserLanguageDetection {
 }
 
 export function useLanguage(): UseLanguageReturn {
-  const { t } = useTranslations('languageNames');
+  const { t } = useTranslations('common');
   
   // État de détection
   const [detectedInterfaceLanguage, setDetectedInterfaceLanguage] = useState<string>('en');

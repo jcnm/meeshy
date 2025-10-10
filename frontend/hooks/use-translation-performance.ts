@@ -368,28 +368,3 @@ export function useTranslationPerformance(
     getBatchInfo
   };
 }
-
-// Hook simplifié pour utilisation basique
-export function useTranslationBatch(options: Omit<UseTranslationPerformanceOptions, 'trackMetrics'> = {}) {
-  const {
-    requests,
-    isProcessing,
-    hasErrors,
-    requestTranslation,
-    cancelRequest,
-    retryRequest,
-    clearErrors,
-    flushBatches
-  } = useTranslationPerformance({ ...options, trackMetrics: false });
-
-  return {
-    requests: Array.from(requests.values()),
-    isProcessing,
-    hasErrors,
-    requestTranslation,
-    cancelRequest,
-    retryRequest,
-    clearErrors,
-    flushBatches
-  };
-}
