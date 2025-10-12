@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@/stores';
+import { useUser, useIsAuthChecking } from '@/stores';
 import { ConversationLayoutResponsive } from './ConversationLayoutResponsive';
 
 interface ConversationLayoutWrapperProps {

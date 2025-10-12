@@ -1,226 +1,76 @@
 {
-  "chatPage": {
-    "verifyingAuth": "Verifying authentication...",
-    "loadingConversation": "Loading conversation...",
-    "missingLinkId": "Missing link ID",
-    "sessionExpired": "Session expired. Please rejoin the conversation.",
-    "noConversationData": "No conversation data available",
-    "incompleteData": "Incomplete data",
-    "incompleteDataDescription": "The conversation data is incomplete. Please try again.",
-    "anonymousSessionCleared": "Anonymous session cleared",
-    "createAccount": "Create account",
-    "createAccountDescription": "Join Meeshy and communicate without barriers",
-    "login": "Sign in",
-    "loginDescription": "Sign in to your Meeshy account",
-    "errorLoading": "Error loading conversation",
-    "accessDenied": "Unauthorized access to this conversation",
-    "conversationNotFound": "Conversation not found",
-    "sessionExpiredReconnect": "Session expired. Please reconnect.",
-    "defaultUser": "User",
-    "defaultAnonymous": "Anonymous"
-  },
-  "anonymousChatErrorHandler": {
-    "forbidden": {
-      "title": "Access denied",
-      "description": "You don't have permission to access this conversation.",
-      "actions": {
-        "backHome": "Back to home"
-      }
+  "features": {
+    "chatPage": {
+      "verifyingAuth": "Verifying authentication...",
+      "loadingConversation": "Loading conversation...",
+      "missingLinkId": "Missing link ID",
+      "sessionExpired": "Session expired. Please rejoin the conversation.",
+      "noConversationData": "No conversation data available",
+      "incompleteData": "Incomplete data",
+      "incompleteDataDescription": "The conversation data is incomplete. Please try again.",
+      "anonymousSessionCleared": "Anonymous session cleared",
+      "createAccount": "Create account",
+      "createAccountDescription": "Join Meeshy and communicate without barriers",
+      "login": "Sign in",
+      "loginDescription": "Sign in to your Meeshy account",
+      "errorLoading": "Error loading conversation",
+      "accessDenied": "Unauthorized access to this conversation",
+      "conversationNotFound": "Conversation not found",
+      "sessionExpiredReconnect": "Session expired. Please reconnect.",
+      "defaultUser": "User",
+      "defaultAnonymous": "Anonymous"
     },
-    "unauthorized": {
-      "title": "Session expired",
-      "description": "Your session has expired. Please reconnect to continue.",
-      "actions": {
-        "rejoin": "Rejoin again",
-        "login": "Sign in",
-        "backHome": "Back to home"
-      }
-    },
-    "notFound": {
-      "title": "Conversation not found",
-      "description": "This conversation doesn't exist or has been deleted.",
-      "actions": {
-        "backHome": "Back to home"
-      }
-    },
-    "invalidIdentifier": {
-      "title": "Invalid link",
-      "description": "The link you're trying to use is not valid.",
-      "actions": {
-        "backHome": "Back to home"
-      }
-    },
-    "generic": {
-      "title": "Connection error",
-      "description": "An error occurred while loading the conversation.",
-      "actions": {
-        "retry": "Try again",
-        "backHome": "Back to home"
-      }
-    },
-    "maxRetriesReached": "Maximum number of attempts reached",
-    "retryFailed": "Retry failed",
-    "attempts": "Attempts: {current}/{max}",
-    "debug": {
-      "title": "Debug:",
-      "identifier": "Identifier:",
-      "type": "Type:",
-      "attempts": "Attempts:",
-      "anonymous": "Anonymous",
-      "authenticated": "Authenticated"
-    },
-    "createConversationModal": "Create conversation modal"
-  },
-  "conversationSearch": {
-    "placeholder": "Search by name, description...",
-    "filterConversations": "Filter conversations",
-    "searchParticipants": "Search...",
-    "shareMessage": "Share something with the world...",
-    "authChecking": "Checking authentication...",
-    "toasts": {
-      "messages": {
-        "translationInProgress": "Translation in progress...",
-        "retranslationInProgress": "Retranslation in progress...",
-        "editSoon": "Edit available soon",
-        "translationSuccess": "Translation successful",
-        "textCopied": "Text copied to clipboard"
+    "anonymousChatErrorHandler": {
+      "forbidden": {
+        "title": "Access denied",
+        "description": "You don't have permission to access this conversation.",
+        "actions": {
+          "backHome": "Back to home"
+        }
       },
-      "conversations": {
-        "loadError": "Error loading conversation"
-      }
-    },
-    "conversations": {
-      "title": "Conversations"
-    },
-    "loadingConversations": "Loading conversations...",
-    "filtreConversations": "Filter conversations",
-    "yes": "Yes",
-    "no": "No",
-    "connected": "Connected",
-    "notConnected": "Not connected",
-    "noConversations": "No conversations"
-  },
-  "conversationLayout": {
-    "loading": "Loading...",
-    "error": "Error loading conversation",
-    "retry": "Retry",
-    "unauthorized": "Unauthorized access",
-    "notFound": "Conversation not found"
-  },
-  "conversationWrapper": {
-    "loading": "Loading conversation...",
-    "error": "Error loading conversation"
-  },
-  "conversationDetails": {
-    "title": "Conversation Details",
-    "description": "Description",
-    "participants": "Participants",
-    "created": "Created",
-    "lastActivity": "Last activity",
-    "settings": "Settings",
-    "leave": "Leave conversation",
-    "delete": "Delete conversation"
-  },
-  "conversationParticipants": {
-    "title": "Participants",
-    "online": "Online",
-    "offline": "Offline",
-    "invite": "Invite participants",
-    "remove": "Remove participant",
-    "makeAdmin": "Make admin",
-    "removeAdmin": "Remove admin"
-  },
-  "conversationUI": {
-    "typing": "Typing...",
-    "online": "Online",
-    "offline": "Offline",
-    "lastSeen": "Last seen {time}",
-    "messageInput": "Type a message...",
-    "send": "Send",
-    "attach": "Attach file",
-    "emoji": "Add emoji"
-  },
-  "conversationLinks": {
-    "title": "Conversation Links",
-    "description": "Manage sharing links for this conversation",
-    "createLink": "Create link",
-    "noLinks": "No links created",
-    "active": "Active",
-    "expired": "Expired",
-    "uses": "uses",
-    "unlimited": "Unlimited"
-  },
-  "conversationPreview": {
-    "loading": "Loading preview...",
-    "error": "Error loading preview",
-    "noPreview": "No preview available"
-  },
-  "identifierSuggestions": {
-    "suggestions": "Suggestions",
-    "recent": "Recent",
-    "popular": "Popular"
-  },
-  "smartSearch": {
-    "placeholder": "Search...",
-    "noResults": "No results found",
-    "searching": "Searching..."
-  },
-  "typingIndicator": {
-    "typing": "{user} is typing...",
-    "multipleTyping": "{count} people are typing..."
-  },
-  "createLinkButton": {
-    "create": "Create link",
-    "creating": "Creating...",
-    "success": "Link created!",
-    "error": "Error creating link"
-  },
-  "createLinkButtonV2": {
-    "create": "Create link",
-    "tooltip": "Create a sharing link for this conversation"
-  },
-  "joinPage": {
-    "title": "Join Conversation",
-    "loading": "Loading...",
-    "verifying": "Verifying link...",
-    "joining": "Joining conversation...",
-    "success": "Successfully joined!",
-    "error": "Error joining conversation",
-    "invalidLink": "Invalid or expired link",
-    "alreadyMember": "You are already a member of this conversation"
-  },
-  "links": {
-    "title": "Links",
-    "description": "Manage your conversation links",
-    "create": "Create link",
-    "noLinks": "No links created",
-    "active": "Active",
-    "expired": "Expired",
-    "pending": "Pending",
-    "uses": "{used}/{total} uses",
-    "unlimited": "Unlimited uses",
-    "expires": "Expires {date}",
-    "neverExpires": "Never expires",
-    "actions": {
-      "copy": "Copy link",
-      "share": "Share",
-      "edit": "Edit",
-      "delete": "Delete",
-      "disable": "Disable",
-      "enable": "Enable"
+      "unauthorized": {
+        "title": "Session expired",
+        "description": "Your session has expired. Please reconnect to continue.",
+        "actions": {
+          "rejoin": "Rejoin again",
+          "login": "Sign in",
+          "backHome": "Back to home"
+        }
+      },
+      "notFound": {
+        "title": "Conversation not found",
+        "description": "This conversation doesn't exist or has been deleted.",
+        "actions": {
+          "backHome": "Back to home"
+        }
+      },
+      "invalidIdentifier": {
+        "title": "Invalid link",
+        "description": "The link you're trying to use is not valid.",
+        "actions": {
+          "backHome": "Back to home"
+        }
+      },
+      "generic": {
+        "title": "Connection error",
+        "description": "An error occurred while loading the conversation.",
+        "actions": {
+          "retry": "Try again",
+          "backHome": "Back to home"
+        }
+      },
+      "maxRetriesReached": "Maximum number of attempts reached",
+      "retryFailed": "Retry failed",
+      "attempts": "Attempts: {current}/{max}",
+      "debug": {
+        "title": "Debug:",
+        "identifier": "Identifier:",
+        "type": "Type:",
+        "attempts": "Attempts:",
+        "anonymous": "Anonymous",
+        "authenticated": "Authenticated"
+      },
+      "createConversationModal": "Create conversation modal"
     }
-  },
-  "contacts": {
-    "title": "Contacts",
-    "description": "Manage your contacts",
-    "search": "Search contacts...",
-    "noContacts": "No contacts",
-    "add": "Add contact",
-    "remove": "Remove contact",
-    "block": "Block contact",
-    "unblock": "Unblock contact",
-    "online": "Online",
-    "offline": "Offline",
-    "lastSeen": "Last seen {time}"
   }
 }

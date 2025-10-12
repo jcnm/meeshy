@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/stores';
+import { useUser, useIsAuthChecking } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthGuard } from '@/hooks/use-auth-guard';
 import { useState, useEffect } from 'react';

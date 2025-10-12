@@ -1,27 +1,27 @@
 'use client';
 
 
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Printer, FileText } from 'lucide-react';
+import { ArrowLeft, Printer, FileText, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 
 export default function TermsPage() {
-  const { t, tArray } = useTranslations('terms');
+  const { t, tArray } = useI18n('terms');
 
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+            <Link href="/" className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
               <ArrowLeft className="h-5 w-5" />
               <span>{t('backHome')}</span>
             </Link>
@@ -41,30 +41,30 @@ export default function TermsPage() {
               <FileText className="h-8 w-8 text-blue-600" />
               <CardTitle className="text-3xl font-bold">{t('title')}</CardTitle>
             </div>
-            <p className="text-gray-600">{t('lastUpdated')}</p>
+            <p className="text-gray-600 dark:text-gray-400">{t('lastUpdated')}</p>
           </CardHeader>
           
           <CardContent className="prose prose-lg max-w-none p-8">
             {/* 1. Acceptance */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('acceptance.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('acceptance.title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('acceptance.content')}
               </p>
             </section>
 
             {/* 2. Service Description */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('service.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('service.title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('service.content')}
               </p>
             </section>
 
             {/* 3. User Account */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('account.title')}</h2>
-              <div className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('account.title')}</h2>
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 <p className="mb-4">{t('account.intro')}</p>
                 <ul className="list-disc pl-6 space-y-2">
                   {tArray('account.responsibilities').map((item: string, index: number) => (
@@ -76,8 +76,8 @@ export default function TermsPage() {
 
             {/* 4. Acceptable Use */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('usage.title')}</h2>
-              <div className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('usage.title')}</h2>
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 <p className="mb-4">{t('usage.intro')}</p>
                 <ul className="list-disc pl-6 space-y-2">
                   {tArray('usage.prohibited').map((item: string, index: number) => (
@@ -89,8 +89,8 @@ export default function TermsPage() {
 
             {/* 5. User Content */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('content.title')}</h2>
-              <div className="text-gray-700 leading-relaxed space-y-4">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('content.title')}</h2>
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed space-y-4">
                 <p>{t('content.ownership')}</p>
                 <p>{t('content.license')}</p>
                 <p>{t('content.responsibility')}</p>
@@ -99,55 +99,55 @@ export default function TermsPage() {
 
             {/* 6. Privacy */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('content')}
               </p>
             </section>
 
             {/* 7. Termination */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('termination.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('termination.title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('termination.content')}
               </p>
             </section>
 
             {/* 8. Limitation of Liability */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('limitation.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('limitation.title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('limitation.content')}
               </p>
             </section>
 
             {/* 9. Changes to Terms */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('changes.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('changes.title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('changes.content')}
               </p>
             </section>
 
             {/* 10. Governing Law */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('governing.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('governing.title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('governing.content')}
               </p>
             </section>
 
             {/* 11. Contact */}
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('title')}</h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">{t('title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                 {t('intro')}
               </p>
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <p className="text-gray-700 mb-2">
+              <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+                <p className="text-gray-700 dark:text-gray-300 mb-2">
                   <strong>{t('email')}</strong>
                 </p>
-                <p className="text-gray-700">
+                <p className="text-gray-700 dark:text-gray-300">
                   <strong>{t('address')}</strong>
                 </p>
               </div>
@@ -157,7 +157,7 @@ export default function TermsPage() {
 
         {/* Navigation Links */}
         <div className="text-center mt-8">
-          <p className="text-gray-600 mb-6">{t('footer.title')}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t('footer.title')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/about">
               <Button variant="outline" size="lg">
@@ -165,8 +165,9 @@ export default function TermsPage() {
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" size="lg">
-                {t('footer.contact')}
+              <Button size="lg" className="flex items-center space-x-2">
+                <Mail className="h-5 w-5" />
+                <span>{t('footer.contact')}</span>
               </Button>
             </Link>
             <Link href="/partners">

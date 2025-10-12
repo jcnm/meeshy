@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "../styles/bubble-stream.css";
+import "../styles/z-index-fix.css";
 import { Toaster } from "@/components/ui/sonner";
 import { StoreInitializer } from "@/stores";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ErrorBoundary } from "@/components/common";
 import { ClientOnly } from "@/components/common/client-only";
 import { defaultFont, getAllFontVariables } from "@/lib/fonts";
@@ -32,11 +34,13 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${getAllFontVariables()} antialiased font-nunito`}>
         <StoreInitializer>
-          <ErrorBoundary>
-            <ClientOnly>
-              {children}
-            </ClientOnly>
-          </ErrorBoundary>
+          <ThemeProvider>
+            <ErrorBoundary>
+              <ClientOnly>
+                {children}
+              </ClientOnly>
+            </ErrorBoundary>
+          </ThemeProvider>
         </StoreInitializer>
         <Toaster 
           position="bottom-right"

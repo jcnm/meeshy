@@ -1,0 +1,21 @@
+{
+  "name": "@meeshy/e2e-tests",
+  "version": "1.0.0",
+  "description": "Tests end-to-end pour Meeshy - Validation du flux de traduction multilingue",
+  "private": true,
+  "scripts": {
+    "test:translation": "ts-node e2e-translation-test.ts",
+    "test:translation:meeshy": "ts-node e2e-translation-test.ts meeshy",
+    "test:quick": "ts-node quick-translation-test.ts"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.7.2",
+    "@prisma/client": "^6.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
+

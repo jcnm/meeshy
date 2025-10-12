@@ -44,9 +44,9 @@ export const LazyBubbleStreamPage = lazy(() =>
   }))
 );
 
-export const LazyConversationLayoutResponsive = lazy(() =>
-  import('@/components/conversations/ConversationLayoutResponsive').then(module => ({
-    default: module.ConversationLayoutResponsive
+export const LazyConversationLayout = lazy(() =>
+  import('@/components/conversations/ConversationLayout').then(module => ({
+    default: module.ConversationLayout
   }))
 );
 
@@ -137,7 +137,7 @@ export function preloadCriticalComponents() {
   // Preload des composants les plus utilisés après le chargement initial
   setTimeout(() => {
     import('@/components/common/bubble-stream-page');
-    import('@/components/conversations/ConversationLayoutResponsive');
+    import('@/components/conversations/ConversationLayout');
   }, 1000);
 }
 

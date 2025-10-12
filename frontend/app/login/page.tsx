@@ -2,10 +2,13 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useI18n } from '@/hooks/useI18n';
+import { useAuth } from '@/hooks/use-auth';
+import { LargeLogo } from '@/components/branding';
 
 // Composants inline légers pour éviter les imports lourds
 const SimpleCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-white rounded-lg shadow-md border ${className}`}>
+  <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 ${className}`}>
     {children}
   </div>
 );
@@ -54,64 +57,37 @@ const SimpleInput = ({
     onChange={onChange}
     placeholder={placeholder}
     disabled={disabled}
-    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${className}`}
+    className={`w-full px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent placeholder:text-gray-400 dark:placeholder:text-gray-500 ${className}`}
   />
 );
 
-// Messages statiques pour éviter le système de traduction lourd
-const MESSAGES = {
-  title: 'Connexion',
-  subtitle: 'Connectez-vous à votre compte Meeshy',
-  usernameLabel: 'Nom d\'utilisateur',
-  usernamePlaceholder: 'Votre nom d\'utilisateur',
-  passwordLabel: 'Mot de passe',
-  passwordPlaceholder: 'Votre mot de passe',
-  loginButton: 'Se connecter',
-  loggingIn: 'Connexion...',
-  noAccount: 'Pas de compte ?',
-  registerLink: 'S\'inscrire',
-  loginSuccess: 'Connexion réussie !',
-  loginFailed: 'Erreur de connexion',
-  required: 'Tous les champs sont requis'
-};
-
 function QuickLoginPageContent() {
+  const { t } = useI18n('auth');
+  const { login: authLogin, isAuthenticated, isChecking } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [authChecking, setAuthChecking] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl');
 
-  // Vérification d'authentification simplifiée
+  // Rediriger si déjà authentifié
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('auth_token');
-      const user = localStorage.getItem('user');
-      
-      if (token && user) {
-        setIsAuthenticated(true);
-        const redirectUrl = returnUrl || '/';
-        router.replace(redirectUrl);
-      } else {
-        setAuthChecking(false);
-      }
-    };
-
-    checkAuth();
-  }, [returnUrl, router]);
+    if (!isChecking && isAuthenticated) {
+      const redirectUrl = returnUrl || '/';
+      router.replace(redirectUrl);
+    }
+  }, [isAuthenticated, isChecking, returnUrl, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.username.trim() || !formData.password.trim()) {
-      alert(MESSAGES.required);
+      alert(t('login.validation.required'));
       return;
     }
 
@@ -134,38 +110,34 @@ function QuickLoginPageContent() {
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        // Stockage direct
-        localStorage.setItem('auth_token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+        // Utiliser le hook d'authentification pour mettre à jour le store
+        authLogin(data.data.user, data.data.token);
         
         // Notification de succès simple
-        console.log(MESSAGES.loginSuccess);
+        console.log(t('login.success.loginSuccess'));
         
         // Redirection immédiate
         const redirectUrl = returnUrl || '/';
         router.replace(redirectUrl);
       } else {
-        alert(data.error || MESSAGES.loginFailed);
+        alert(data.error || t('login.errors.loginFailed'));
       }
     } catch (error) {
       console.error('Erreur de connexion:', error);
-      alert(MESSAGES.loginFailed);
+      alert(t('login.errors.loginFailed'));
     } finally {
       setIsLoading(false);
     }
   };
 
   // État de chargement minimaliste
-  if (authChecking) {
+  if (isChecking) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-xl">M</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Meeshy</h1>
-          <p className="text-gray-600 mt-2">Vérification...</p>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mt-4"></div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <LargeLogo href="/" />
+          <p className="text-gray-600 dark:text-gray-400">{t('login.verifyingAuth')}</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       </div>
     );
@@ -173,67 +145,62 @@ function QuickLoginPageContent() {
 
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-xl">M</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Meeshy</h1>
-          <p className="text-gray-600 mt-2">Redirection...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <LargeLogo href="/" />
+          <p className="text-gray-600 dark:text-gray-400">{t('login.redirecting')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Header minimaliste */}
-        <div className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-xl font-bold">M</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Meeshy</h1>
-          <p className="text-gray-600 mt-2">{MESSAGES.subtitle}</p>
+        <div className="text-center space-y-3">
+          <LargeLogo href="/" />
+          <p className="text-gray-600 dark:text-gray-400">{t('login.subtitle')}</p>
         </div>
 
         {/* Formulaire simplifié */}
         <SimpleCard className="p-6">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">{MESSAGES.title}</h2>
-            <p className="text-gray-600 text-sm">Entrez vos identifiants pour vous connecter</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{t('login.title')}</h2>
+            <p className="text-gray-600 dark:text-gray-400 text-sm">{t('login.formDescription')}</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {MESSAGES.usernameLabel}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('login.usernameLabel')}
               </label>
               <SimpleInput
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                placeholder={MESSAGES.usernamePlaceholder}
+                placeholder={t('login.usernamePlaceholder')}
                 disabled={isLoading}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {MESSAGES.passwordLabel}
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('login.passwordLabel')}
               </label>
               <div className="relative">
                 <SimpleInput
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder={MESSAGES.passwordPlaceholder}
+                  placeholder={t('login.passwordPlaceholder')}
                   disabled={isLoading}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-2 text-gray-400 hover:text-gray-600 dark:text-gray-400"
                   onClick={() => setShowPassword(!showPassword)}
+                  title={showPassword ? t('login.hidePassword') : t('login.showPassword')}
                 >
                   {showPassword ? '🙈' : '👁️'}
                 </button>
@@ -244,22 +211,22 @@ function QuickLoginPageContent() {
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>{MESSAGES.loggingIn}</span>
+                  <span>{t('login.loggingIn')}</span>
                 </div>
               ) : (
-                MESSAGES.loginButton
+                t('login.loginButton')
               )}
             </SimpleButton>
 
             <div className="text-center pt-4">
-              <p className="text-gray-600 text-sm">
-                {MESSAGES.noAccount}{' '}
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                {t('login.noAccount')}{' '}
                 <button
                   type="button"
                   onClick={() => router.push('/signin' + (returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ''))}
                   className="text-blue-600 hover:text-blue-700 font-medium underline"
                 >
-                  {MESSAGES.registerLink}
+                  {t('login.registerLink')}
                 </button>
               </p>
             </div>
@@ -273,7 +240,7 @@ function QuickLoginPageContent() {
 export default function QuickLoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     }>

@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
 import { MAX_MESSAGE_LENGTH } from '@shared/types';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface MessageComposerProps {
   value: string;
@@ -45,11 +45,11 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   className = "",
   choices
 }, ref) => {
-  const { t } = useTranslations('conversationSearch');
+  const { t } = useI18n('conversations');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   // Utiliser le placeholder fourni ou la traduction par défaut
-  const finalPlaceholder = placeholder || t('shareMessage');
+  const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),

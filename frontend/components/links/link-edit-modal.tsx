@@ -21,7 +21,7 @@ import {
   Hash
 } from 'lucide-react';
 import { ConversationLink } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
 import { cn } from '@/lib/utils';
@@ -34,7 +34,7 @@ interface LinkEditModalProps {
 }
 
 export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModalProps) {
-  const { t } = useTranslations('links');
+  const { t } = useI18n('links');
   const [isLoading, setIsLoading] = useState(false);
   
   // États du formulaire

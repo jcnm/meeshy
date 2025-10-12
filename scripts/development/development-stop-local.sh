@@ -93,7 +93,7 @@ check_port_free 8000 "Translator"
 
 # Arrêt des services Docker
 echo -e "${BLUE}🐳 Arrêt des services Docker...${NC}"
-cd /Users/smpceo/Downloads/Meeshy/meeshy
+cd /Users/smpceo/Documents/Services/Meeshy/meeshy
 
 # Arrêter les services Docker de développement
 echo -e "${YELLOW}🛑 Arrêt des conteneurs Docker...${NC}"
@@ -109,19 +109,19 @@ docker-compose -f docker-compose.dev.yml ps 2>/dev/null || echo "Aucun conteneur
 # Nettoyage des fichiers de logs (optionnel)
 echo -e "${BLUE}🧹 Nettoyage des fichiers de logs...${NC}"
 
-if [ -f "/Users/smpceo/Downloads/Meeshy/meeshy/translator/translator.log" ]; then
+if [ -f "/Users/smpceo/Documents/Services/Meeshy/meeshy/translator/translator.log" ]; then
     echo -e "${YELLOW}🗑️  Suppression de translator.log${NC}"
-    rm -f "/Users/smpceo/Downloads/Meeshy/meeshy/translator/translator.log"
+    rm -f "/Users/smpceo/Documents/Services/Meeshy/meeshy/translator/translator.log"
 fi
 
-if [ -f "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/gateway.log" ]; then
+if [ -f "/Users/smpceo/Documents/Services/Meeshy/meeshy/gateway/gateway.log" ]; then
     echo -e "${YELLOW}🗑️  Suppression de gateway.log${NC}"
-    rm -f "/Users/smpceo/Downloads/Meeshy/meeshy/gateway/gateway.log"
+    rm -f "/Users/smpceo/Documents/Services/Meeshy/meeshy/gateway/gateway.log"
 fi
 
-if [ -f "/Users/smpceo/Downloads/Meeshy/meeshy/frontend/frontend.log" ]; then
+if [ -f "/Users/smpceo/Documents/Services/Meeshy/meeshy/frontend/frontend.log" ]; then
     echo -e "${YELLOW}🗑️  Suppression de frontend.log${NC}"
-    rm -f "/Users/smpceo/Downloads/Meeshy/meeshy/frontend/frontend.log"
+    rm -f "/Users/smpceo/Documents/Services/Meeshy/meeshy/frontend/frontend.log"
 fi
 
 echo ""

@@ -1,0 +1,117 @@
+{
+  "languageNames": {
+    "en": "English",
+    "fr": "French", 
+    "pt": "Portuguese",
+    "es": "Spanish",
+    "de": "German",
+    "it": "Italian",
+    "zh": "Chinese",
+    "ja": "Japanese",
+    "ar": "Arabic",
+    "ru": "Russian",
+    "ko": "Korean",
+    "hi": "Hindi",
+    "tr": "Turkish"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "insufficientRights": "You do not have the necessary rights to perform this operation"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión",
+    "conversations": "Conversaciones",
+    "contacts": "Contactos",
+    "groups": "Grupos",
+    "links": "Enlaces",
+    "communities": "Comunidades",
+    "admin": "Administración",
+    "about": "Acerca de",
+    "help": "Ayuda"
+  },
+  "header": {
+    "searchPlaceholder": "Buscar..."
+  },
+  "auth": {
+    "checking": "Verificando...",
+    "logoutSuccess": "Sesión cerrada correctamente",
+    "logoutError": "Error al cerrar sesión"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "invalidPhone": "Invalid phone number",
+    "minLength": "Minimum {min} characters required",
+    "maxLength": "Maximum {max} characters allowed",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Network error",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "notFound": "Resource not found",
+    "invalidCredentials": "Invalid credentials",
+    "sessionExpired": "Session expired",
+    "validationError": "Validation error"
+  },
+  "success": {
+    "saved": "Saved successfully",
+    "deleted": "Deleted successfully",
+    "updated": "Updated successfully",
+    "created": "Created successfully",
+    "welcome": "Welcome"
+  },
+  "toasts": {
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "warning": "Warning",
+    "info": "Information",
+    "connectionError": "Connection error",
+    "sessionExpired": "Session expired, please log in again",
+    "unauthorized": "You are not authorized to perform this action",
+    "saveFailed": "Save failed",
+    "saveSuccess": "Saved successfully",
+    "deleteFailed": "Delete failed",
+    "deleteSuccess": "Deleted successfully",
+    "updateFailed": "Update failed",
+    "updateSuccess": "Updated successfully"
+  },
+  "layout": {
+    "header": {
+      "title": "Meeshy",
+      "subtitle": "Real-time multilingual messaging"
+    },
+    "sidebar": {
+      "menu": "Menu",
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar"
+    },
+    "footer": {
+      "copyright": "© {year} Meeshy. All rights reserved.",
+      "version": "Version {version}",
+      "about": "About",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact"
+    }
+  }
+}

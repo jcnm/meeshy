@@ -21,7 +21,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { ConversationLink } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { copyToClipboard } from '@/lib/clipboard';
 import { toast } from 'sonner';
 
@@ -32,7 +32,7 @@ interface LinkDetailsModalProps {
 }
 
 export function LinkDetailsModal({ link, isOpen, onClose }: LinkDetailsModalProps) {
-  const { t } = useTranslations('links');
+  const { t } = useI18n('links');
 
   const handleCopyLink = async () => {
     const linkUrl = `${window.location.origin}/join/${link.linkId}`;

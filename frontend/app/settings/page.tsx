@@ -6,11 +6,11 @@ import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { CompleteUserSettings } from '@/components/settings/complete-user-settings';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
 export default function SettingsPage() {
   const router = useRouter();
-  const { t } = useTranslations('settings');
+  const { t } = useI18n('settings');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -95,10 +95,10 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('loadingSettings')}</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('loadingSettings')}</p>
         </div>
       </div>
     );

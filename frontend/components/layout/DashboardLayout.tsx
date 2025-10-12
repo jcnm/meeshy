@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { 
   MessageSquare, 
@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useUser } from '@/stores';
+import { useUser, useIsAuthChecking } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
 
 interface DashboardLayoutProps {
@@ -51,9 +51,10 @@ export function DashboardLayout({
   hideHeaderOnMobile = false
 }: DashboardLayoutProps) {
   const router = useRouter();
-  const { user, isAuthChecking } = useUser();
+  const user = useUser();
+  const isAuthChecking = useIsAuthChecking();
   const { logout } = useAuth();
-  const { t } = useTranslations('layout');
+  const { t } = useI18n('common');
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
 
@@ -121,10 +122,6 @@ export function DashboardLayout({
 
   // Si la vérification d'auth est terminée mais qu'il n'y a pas d'utilisateur,
   // on ne rend rien car le useEffect va rediriger
-  if (!user) {
-    return null;
-  }
-
   if (!user) {
     return null;
   }
@@ -235,7 +232,7 @@ export function DashboardLayout({
                   </DropdownMenuItem>
                   
                   {/* Lien Admin - Affiché seulement si l'utilisateur a les permissions */}
-                  {user.permissions?.canAccessAdmin && (
+                  {(user as any).permissions?.canAccessAdmin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => router.push('/admin')}>

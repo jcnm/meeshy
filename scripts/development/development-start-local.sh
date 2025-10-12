@@ -1,52 +1,8 @@
 #!/bin/bash
 
 # 🚀 Script de démarrage pour l'environnement de développement LOCAL
-# Ce script démarre l'environnement complet Meeshy en mode développement
-# - Services Docker: MongoDB, Redis
-# - Services Node: Gateway, Frontend, Translator (via scripts .sh)
-# - Gestion propre de l'arrêt avec Ctrl+C
+# Ce script démarre tous les services Meeshy en mode développement
 set -e
-
-# Variables globales pour le nettoyage
-TRANSLATOR_PID=""
-GATEWAY_PID=""
-FRONTEND_PID=""
-DOCKER_COMPOSE_STARTED=false
-
-# Fonction de nettoyage appelée lors de l'arrêt
-cleanup() {
-    echo ""
-    echo -e "${YELLOW}🛑 Arrêt en cours... (Ctrl+C détecté)${NC}"
-    
-    # Arrêter les services Node.js
-    if [ -n "$TRANSLATOR_PID" ] && kill -0 "$TRANSLATOR_PID" 2>/dev/null; then
-        echo -e "${YELLOW}🛑 Arrêt du Translator (PID: $TRANSLATOR_PID)${NC}"
-        kill -TERM "$TRANSLATOR_PID" 2>/dev/null || true
-    fi
-    
-    if [ -n "$GATEWAY_PID" ] && kill -0 "$GATEWAY_PID" 2>/dev/null; then
-        echo -e "${YELLOW}🛑 Arrêt du Gateway (PID: $GATEWAY_PID)${NC}"
-        kill -TERM "$GATEWAY_PID" 2>/dev/null || true
-    fi
-    
-    if [ -n "$FRONTEND_PID" ] && kill -0 "$FRONTEND_PID" 2>/dev/null; then
-        echo -e "${YELLOW}🛑 Arrêt du Frontend (PID: $FRONTEND_PID)${NC}"
-        kill -TERM "$FRONTEND_PID" 2>/dev/null || true
-    fi
-    
-    # Arrêter les services Docker
-    if [ "$DOCKER_COMPOSE_STARTED" = true ]; then
-        echo -e "${YELLOW}🐳 Arrêt des services Docker...${NC}"
-        cd /Users/smpceo/Downloads/Meeshy/meeshy
-        docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
-    fi
-    
-    echo -e "${GREEN}✅ Arrêt terminé proprement${NC}"
-    exit 0
-}
-
-# Capturer les signaux pour un arrêt propre
-trap cleanup SIGINT SIGTERM
 
 # Couleurs pour l'affichage
 RED='\033[0;31m'
@@ -57,468 +13,435 @@ PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-echo -e "${CYAN}🚀 Démarrage de l'environnement Meeshy LOCAL (DEV)${NC}"
-echo -e "${YELLOW}   Architecture: Services Node natifs + Services Docker${NC}"
-echo -e "${PURPLE}   Utilisez Ctrl+C pour arrêter proprement tous les services${NC}"
+# Obtenir le répertoire du projet
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
+echo -e "${CYAN}🚀 MEESHY - DÉMARRAGE ENVIRONNEMENT DE DÉVELOPPEMENT LOCAL${NC}"
+echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
+echo ""
+echo -e "${BLUE}📁 Répertoire du projet: ${PROJECT_ROOT}${NC}"
 echo ""
 
-# Export et configuration des variables d'environnement pour localhost
-echo -e "${BLUE}🔧 Configuration des variables d'environnement...${NC}"
+cd "$PROJECT_ROOT"
 
-# Variables d'environnement pour le développement LOCAL
-export NODE_ENV="development"
-export ENVIRONMENT="local"
+# Variables globales pour les PIDs
+TRANSLATOR_PID=""
+GATEWAY_PID=""
+FRONTEND_PID=""
 
-# Base de données et cache (Docker sur localhost)
-export DATABASE_TYPE="MONGODB"
-export DATABASE_URL="mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0"
-export REDIS_URL="redis://localhost:6379"
-
-# URLs des services (natifs sur localhost)
-export TRANSLATOR_URL="http://localhost:8000"
-export GATEWAY_URL="http://localhost:3000"
-export FRONTEND_URL="http://localhost:3100"
-
-# Configuration WebSocket et API pour localhost
-export NEXT_PUBLIC_API_URL="http://localhost:3000"
-export NEXT_PUBLIC_TRANSLATION_URL="http://localhost:8000"
-export NEXT_PUBLIC_WS_URL="ws://localhost:3000/api/ws"
-
-# Configuration ZMQ (communication inter-services sur localhost)
-export ZMQ_PUSH_URL="tcp://localhost:5555"
-export ZMQ_SUB_URL="tcp://localhost:5558"
-
-# Configuration Prisma
-export PRISMA_SCHEMA_PATH="../shared/prisma/schema.prisma"
-
-# Configuration ML/Translator pour dev
-export ML_BATCH_SIZE="16"
-export TRANSLATION_CACHE_TTL="3600"
-export SUPPORTED_LANGUAGES="fr,en,es,de,pt,zh,ja,ar"
-export DEFAULT_LANGUAGE="fr"
-export AUTO_DETECT_LANGUAGE="true"
-
-# Configuration sécurité (dev uniquement)
-export JWT_SECRET="dev-jwt-secret-key-change-in-production"
-export CORS_ORIGIN="http://localhost:3100"
-
-# Configuration logging
-export LOG_LEVEL="debug"
-export LOG_FORMAT="pretty"
-
-# Écrire les variables dans les fichiers .env.local pour chaque service
-echo -e "${YELLOW}📝 Création des fichiers .env.local...${NC}"
-
-# Fichier .env.local global
-cat > /Users/smpceo/Downloads/Meeshy/meeshy/.env.local << EOF
-NODE_ENV=development
-ENVIRONMENT=local
-DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
-REDIS_URL=redis://localhost:6379
-TRANSLATOR_URL=http://localhost:8000
-GATEWAY_URL=http://localhost:3000
-FRONTEND_URL=http://localhost:3100
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
-NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
-ZMQ_PUSH_URL=tcp://localhost:5555
-ZMQ_SUB_URL=tcp://localhost:5558
-PRISMA_SCHEMA_PATH=../shared/prisma/schema.prisma
-JWT_SECRET=dev-jwt-secret-key-change-in-production
-CORS_ORIGIN=http://localhost:3100
-
-# Chemins locaux pour le développement (pas Docker)
-MODELS_PATH=./models
-TORCH_HOME=./models
-HF_HOME=./models
-MODEL_CACHE_DIR=./models
-CACHE_DIR=./cache
-LOG_DIR=./logs
-PRISMA_CLIENT_OUTPUT_DIRECTORY=./client
-EOF
-
-# Frontend .env.local
-cat > /Users/smpceo/Downloads/Meeshy/meeshy/frontend/.env.local << EOF
-NODE_ENV=development
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
-NEXT_PUBLIC_WS_URL=ws://localhost:3000/ws
-EOF
-
-# Gateway .env.local  
-cat > /Users/smpceo/Downloads/Meeshy/meeshy/gateway/.env.local << EOF
-NODE_ENV=development
-DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
-REDIS_URL=redis://localhost:6379
-TRANSLATOR_URL=http://localhost:8000
-ZMQ_PUSH_URL=tcp://localhost:5555
-ZMQ_SUB_URL=tcp://localhost:5558
-PRISMA_SCHEMA_PATH=../shared/prisma/schema.prisma
-PORT=3000
-CORS_ORIGIN=http://localhost:3100
-JWT_SECRET=dev-jwt-secret-key-change-in-production
-
-# Chemins locaux pour le développement
-MODELS_PATH=./models
-TORCH_HOME=./models
-HF_HOME=./models
-MODEL_CACHE_DIR=./models
-CACHE_DIR=./cache
-LOG_DIR=./logs
-PRISMA_CLIENT_OUTPUT_DIRECTORY=./client
-EOF
-
-# Translator .env.local
-cat > /Users/smpceo/Downloads/Meeshy/meeshy/translator/.env.local << EOF
-NODE_ENV=development
-DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
-REDIS_URL=redis://localhost:6379
-ZMQ_PUSH_URL=tcp://localhost:5555
-ZMQ_SUB_URL=tcp://localhost:5558
-PRISMA_SCHEMA_PATH=../shared/prisma/schema.prisma
-ML_BATCH_SIZE=16
-TRANSLATION_CACHE_TTL=3600
-SUPPORTED_LANGUAGES=fr,en,es,de,pt,zh,ja,ar
-DEFAULT_LANGUAGE=fr
-PORT=8000
-
-# Chemins locaux pour le développement
-MODELS_PATH=./models
-TORCH_HOME=./models
-HF_HOME=./models
-MODEL_CACHE_DIR=./models
-CACHE_DIR=./cache
-LOG_DIR=./logs
-PRISMA_CLIENT_OUTPUT_DIRECTORY=./client
-EOF
-
-echo -e "${BLUE}📋 Configuration de l'environnement LOCAL:${NC}"
-echo -e "  ${GREEN}NODE_ENV:${NC} $NODE_ENV"
-echo -e "  ${GREEN}DATABASE_URL:${NC} ${DATABASE_URL/\/\/.*@/\/\/***@}"
-echo -e "  ${GREEN}Frontend:${NC} $FRONTEND_URL"
-echo -e "  ${GREEN}Gateway:${NC} $GATEWAY_URL"
-echo -e "  ${GREEN}Translator:${NC} $TRANSLATOR_URL"
-echo ""
-
-# Fonction pour vérifier si shared a été modifié et doit être redistribué
-check_and_distribute_shared() {
-    echo -e "${BLUE}🔍 Vérification de la distribution de /shared...${NC}"
+# Fonction de nettoyage pour l'arrêt propre
+cleanup() {
+    echo ""
+    echo -e "${YELLOW}🛑 Arrêt des services Meeshy...${NC}"
     
-    local shared_dir="/Users/smpceo/Downloads/Meeshy/meeshy/shared"
-    local gateway_version="/Users/smpceo/Downloads/Meeshy/meeshy/gateway/shared/version.txt"
-    local translator_version="/Users/smpceo/Downloads/Meeshy/meeshy/translator/shared/version.txt"
-    
-    local needs_distribution=false
-    
-    # Vérifier si les fichiers de version existent
-    if [[ ! -f "$gateway_version" ]] || [[ ! -f "$translator_version" ]]; then
-        echo -e "${YELLOW}📦 Première distribution ou fichiers manquants détectés${NC}"
-        needs_distribution=true
-    else
-        # Comparer les timestamps des fichiers dans shared/ avec la dernière distribution
-        local gateway_version_timestamp=$(stat -f %m "$gateway_version" 2>/dev/null || echo "0")
-        local translator_version_timestamp=$(stat -f %m "$translator_version" 2>/dev/null || echo "0")
-        local min_version_timestamp=$((gateway_version_timestamp < translator_version_timestamp ? gateway_version_timestamp : translator_version_timestamp))
-        
-        # Vérifier si des fichiers dans shared/ sont plus récents
-        local shared_files_newer=$(find "$shared_dir" -type f \( -name "*.prisma" -o -name "*.proto" -o -name "*.ts" -o -name "*.js" \) -newer "$gateway_version" 2>/dev/null | wc -l)
-        
-        if [[ $shared_files_newer -gt 0 ]]; then
-            echo -e "${YELLOW}📦 Modifications détectées dans /shared depuis la dernière distribution${NC}"
-            needs_distribution=true
-        else
-            echo -e "${GREEN}✅ /shared est à jour, pas de redistribution nécessaire${NC}"
-        fi
+    # Arrêter Frontend
+    if [ -n "$FRONTEND_PID" ]; then
+        echo -e "${YELLOW}🛑 Arrêt du Frontend (PID: $FRONTEND_PID)...${NC}"
+        kill -TERM "$FRONTEND_PID" 2>/dev/null || true
+        wait "$FRONTEND_PID" 2>/dev/null || true
+        echo -e "${GREEN}✅ Frontend arrêté${NC}"
     fi
     
-    if [[ "$needs_distribution" == "true" ]]; then
-        echo -e "${BLUE}🚀 Distribution de /shared en cours...${NC}"
-        
-        cd "$shared_dir"
-        
-        # Vérifier si le script distribute existe
-        if [[ ! -f "scripts/distribute.sh" ]]; then
-            echo -e "${RED}❌ Script distribute.sh non trouvé dans /shared/scripts/${NC}"
-            return 1
-        fi
-        
-        # Exécuter la distribution
-        chmod +x scripts/distribute.sh
-        if ./scripts/distribute.sh; then
-            echo -e "${GREEN}✅ Distribution de /shared terminée avec succès${NC}"
-        else
-            echo -e "${RED}❌ Erreur lors de la distribution de /shared${NC}"
-            return 1
-        fi
-        
-        # Retourner au répertoire principal
-        cd /Users/smpceo/Downloads/Meeshy/meeshy
-        
-        return 0
+    # Arrêter Gateway
+    if [ -n "$GATEWAY_PID" ]; then
+        echo -e "${YELLOW}🛑 Arrêt du Gateway (PID: $GATEWAY_PID)...${NC}"
+        kill -TERM "$GATEWAY_PID" 2>/dev/null || true
+        wait "$GATEWAY_PID" 2>/dev/null || true
+        echo -e "${GREEN}✅ Gateway arrêté${NC}"
     fi
     
-    return 0
+    # Arrêter Translator
+    if [ -n "$TRANSLATOR_PID" ]; then
+        echo -e "${YELLOW}🛑 Arrêt du Translator (PID: $TRANSLATOR_PID)...${NC}"
+        kill -TERM "$TRANSLATOR_PID" 2>/dev/null || true
+        wait "$TRANSLATOR_PID" 2>/dev/null || true
+        echo -e "${GREEN}✅ Translator arrêté${NC}"
+    fi
+    
+    # Arrêter les services Docker
+    echo -e "${YELLOW}🛑 Arrêt des services Docker (MongoDB, Redis)...${NC}"
+    docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
+    echo -e "${GREEN}✅ Services Docker arrêtés${NC}"
+    
+    echo ""
+    echo -e "${GREEN}✅ Environnement Meeshy arrêté avec succès !${NC}"
+    echo ""
+    
+    exit 0
 }
 
-# Fonction pour générer les clients Prisma si nécessaire
-generate_prisma_clients() {
-    echo -e "${BLUE}🔧 Génération des clients Prisma...${NC}"
-    
-    # Gateway - Client TypeScript
-    echo -e "${PURPLE}📦 Génération du client Prisma pour Gateway...${NC}"
-    cd /Users/smpceo/Downloads/Meeshy/meeshy/gateway
-    if [[ -f "./shared/prisma/schema.prisma" ]]; then
-        if pnpm prisma generate --schema=./shared/prisma/schema.prisma; then
-            echo -e "${GREEN}✅ Client Prisma Gateway généré avec succès${NC}"
-        else
-            echo -e "${RED}❌ Erreur lors de la génération du client Prisma Gateway${NC}"
-            return 1
-        fi
-    else
-        echo -e "${YELLOW}⚠️  Schema Prisma non trouvé pour Gateway${NC}"
-    fi
-    
-    # Translator - Client Python
-    echo -e "${PURPLE}🐍 Génération du client Prisma pour Translator...${NC}"
-    cd /Users/smpceo/Downloads/Meeshy/meeshy/translator
-    if [[ -f "shared/prisma/schema.prisma" ]]; then
-        # Vérifier si Python et Prisma sont disponibles
-        if command -v python3 >/dev/null 2>&1; then
-            python3 -m venv .venv
-            if [ ! -f ".venv/bin/activate" ]; then
-                echo -e "${RED}❌ Script d'activation .venv/bin/activate non trouvé"
-                exit 1
-            fi
-            echo -e "${GREEN}✅ Script d'activation .venv/bin/activate trouvé"
-            source .venv/bin/activate 
-            echo -e "${GREEN}✅ Environnement virtuel trouvé"
-            if ! command -v prisma >/dev/null 2>&1; then
-                echo -e "${RED}❌ Installation de prisma non trouvé"
-                python3 -m pip install prisma
-            fi
-            echo -e "${GREEN}✅ Prisma installé"
-            echo -e "${BLUE}🔧 Génération du client Prisma pour Translator...${NC}"
-            if prisma generate --schema=shared/prisma/schema.prisma; then
-                echo -e "${GREEN}✅ Client Prisma Translator généré avec succès${NC}"
-            else
-                echo -e "${YELLOW}⚠️  Génération du client Prisma Python échouée, continuons...${NC}"
-            fi
-        else
-            echo -e "${YELLOW}⚠️  Python3 non disponible, génération Prisma Python ignorée${NC}"
-        fi
-    else
-        echo -e "${YELLOW}⚠️  Schema Prisma non trouvé pour Translator${NC}"
-    fi
-    
-    # Retourner au répertoire principal
-    cd /Users/smpceo/Downloads/Meeshy/meeshy
-    
-    return 0
-}
+# Capturer Ctrl+C pour arrêt propre
+trap cleanup INT TERM
 
-# Exécuter la vérification et distribution de shared
-check_and_distribute_shared
-
-# Générer les clients Prisma après la distribution
-generate_prisma_clients
-
-# Fonction pour vérifier si un port est occupé
+# Fonction pour vérifier si un port est utilisé
 check_port() {
     local port=$1
     local service=$2
+    
     if lsof -ti:$port >/dev/null 2>&1; then
-        echo -e "${YELLOW}⚠️  Port $port déjà occupé ($service)${NC}"
+        echo -e "${RED}❌ Port $port déjà utilisé ($service)${NC}"
+        echo -e "${YELLOW}⚠️  Utilisez './scripts/development/development-stop-local.sh' pour arrêter les services existants${NC}"
         return 1
+    else
+        echo -e "${GREEN}✅ Port $port disponible ($service)${NC}"
+        return 0
     fi
-    return 0
 }
 
 # Fonction pour attendre qu'un service soit prêt
 wait_for_service() {
     local url=$1
-    local service_name=$2
-    local max_attempts=3
-    local attempt=1
+    local service=$2
+    local max_attempts=${3:-30}
+    local attempt=0
     
-    echo -e "${YELLOW}⏳ Attente du service $service_name...${NC}"
+    echo -e "${YELLOW}⏳ Attente du démarrage de $service...${NC}"
     
-    while [ $attempt -le $max_attempts ]; do
-        if mongosh --eval "db.adminCommand('ping')" 2>&1; then
-            echo -e "${GREEN}✅ $service_name est prêt !${NC}"
+    while [ $attempt -lt $max_attempts ]; do
+        if curl -s "$url" >/dev/null 2>&1; then
+            echo -e "${GREEN}✅ $service est prêt !${NC}"
             return 0
         fi
-        echo -n "."
-        sleep 1
         attempt=$((attempt + 1))
+        echo -e "${BLUE}   Tentative $attempt/$max_attempts...${NC}"
+        sleep 2
     done
     
-    echo -e "${RED}❌ Timeout: $service_name n'est pas prêt après $((max_attempts * 2)) secondes${NC}"
+    echo -e "${RED}❌ $service n'a pas démarré dans le temps imparti${NC}"
     return 1
 }
 
-# Vérification des ports
+# Vérifier les prérequis
+echo -e "${BLUE}🔍 Vérification des prérequis...${NC}"
+echo ""
+
+# Vérifier Node.js
+if ! command -v node &> /dev/null; then
+    echo -e "${RED}❌ Node.js n'est pas installé${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ Node.js $(node --version)${NC}"
+
+# Vérifier pnpm
+if ! command -v pnpm &> /dev/null; then
+    echo -e "${RED}❌ pnpm n'est pas installé${NC}"
+    echo -e "${YELLOW}   Installez-le avec: npm install -g pnpm${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ pnpm $(pnpm --version)${NC}"
+
+# Vérifier Python
+if ! command -v python3 &> /dev/null; then
+    echo -e "${RED}❌ Python3 n'est pas installé${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ Python $(python3 --version)${NC}"
+
+# Vérifier Docker
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}❌ Docker n'est pas installé${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ Docker $(docker --version)${NC}"
+
+# Vérifier docker-compose
+if ! command -v docker-compose &> /dev/null; then
+    echo -e "${RED}❌ docker-compose n'est pas installé${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ docker-compose $(docker-compose --version)${NC}"
+
+echo ""
+
+# Vérifier que les ports sont disponibles
 echo -e "${BLUE}🔍 Vérification des ports...${NC}"
-ports_ok=true
+check_port 3000 "Gateway" || exit 1
+check_port 3100 "Frontend" || exit 1
+check_port 8000 "Translator" || exit 1
+#check_port 27017 "MongoDB" || exit 1
+#check_port 6379 "Redis" || exit 1
+echo ""
 
-if ! check_port 3000 "Gateway"; then ports_ok=false; fi
-if ! check_port 3100 "Frontend"; then ports_ok=false; fi
-if ! check_port 8000 "Translator"; then ports_ok=false; fi
+# Créer les fichiers .env.local
+echo -e "${BLUE}📝 Configuration des variables d'environnement...${NC}"
 
-if [ "$ports_ok" = false ]; then
-    echo -e "${RED}❌ Certains ports sont occupés. Arrêtez les services en cours.${NC}"
-    echo -e "${YELLOW}💡 Utilisez: pkill -f 'node.*server.js' ou pkill -f 'python.*main.py'${NC}"
-    exit 1
-fi
+# .env.local racine
+cat > .env.local << 'EOF'
+# Configuration locale de développement
+NODE_ENV=development
+LOG_LEVEL=debug
 
-# Démarrage des services Docker (infrastructure)
-echo -e "${BLUE}🐳 Démarrage des services Docker (infrastructure)...${NC}"
-cd /Users/smpceo/Downloads/Meeshy/meeshy
+# Base de données MongoDB
+DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
 
-# Démarrer seulement les services d'infrastructure avec le docker-compose de dev
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# JWT
+JWT_SECRET=dev-secret-key-change-in-production-12345678
+
+# Services URLs
+TRANSLATOR_URL=http://localhost:8000
+GATEWAY_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3100
+
+# CORS
+CORS_ORIGINS=http://localhost:3100,http://localhost:3000
+EOF
+echo -e "${GREEN}✅ .env.local créé${NC}"
+
+# .env.local Frontend
+cat > frontend/.env.local << 'EOF'
+NODE_ENV=development
+
+# Public URLs (accessibles côté client)
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_WS_URL=ws://localhost:3000
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+NEXT_PUBLIC_TRANSLATION_URL=http://localhost:8000
+NEXT_PUBLIC_FRONTEND_URL=http://localhost:3100
+
+# Server-side URLs
+API_URL=http://localhost:3000
+BACKEND_URL=http://localhost:3000
+TRANSLATION_URL=http://localhost:8000
+EOF
+echo -e "${GREEN}✅ frontend/.env.local créé${NC}"
+
+# .env.local Gateway
+cat > gateway/.env.local << 'EOF'
+NODE_ENV=development
+LOG_LEVEL=debug
+
+# Base de données
+DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Services
+TRANSLATOR_URL=http://localhost:8000
+
+# JWT
+JWT_SECRET=dev-secret-key-change-in-production-12345678
+
+# Server
+PORT=3000
+HOST=0.0.0.0
+
+# CORS
+CORS_ORIGINS=http://localhost:3100,http://localhost:3000
+EOF
+echo -e "${GREEN}✅ gateway/.env.local créé${NC}"
+
+# .env.local Translator
+cat > translator/.env.local << 'EOF'
+# FastAPI Configuration
+ENVIRONMENT=development
+LOG_LEVEL=DEBUG
+
+# Base de données
+DATABASE_URL=mongodb://meeshy:MeeshyPassword123@localhost:27017/meeshy?authSource=admin&replicaSet=rs0
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Server
+PORT=8000
+HOST=0.0.0.0
+
+# ML Models
+TRANSLATION_MODEL_PATH=./models
+WORKER_COUNT=2
+
+# CORS
+CORS_ORIGINS=http://localhost:3100,http://localhost:3000,http://localhost:8000
+EOF
+echo -e "${GREEN}✅ translator/.env.local créé${NC}"
+
+echo ""
+
+# Démarrer l'infrastructure Docker (MongoDB + Redis)
+echo -e "${BLUE}🐳 Démarrage des services Docker (MongoDB, Redis)...${NC}"
 docker-compose -f docker-compose.dev.yml up -d
-DOCKER_COMPOSE_STARTED=true
 
-echo -e "${YELLOW}⏳ Attente du démarrage des services Docker...${NC}"
-sleep 2
+# Attendre que MongoDB soit prêt
+echo -e "${YELLOW}⏳ Attente du démarrage de MongoDB...${NC}"
+sleep 5
 
-# Vérification des services Docker
-echo -e "${BLUE}📊 Statut des services Docker:${NC}"
-docker-compose -f docker-compose.dev.yml ps
+# Initialiser le replica set MongoDB
+echo -e "${BLUE}🔧 Initialisation du replica set MongoDB...${NC}"
+docker exec meeshy-dev-database mongosh --eval '
+try {
+    rs.status();
+    print("Replica set already initialized");
+} catch (e) {
+    rs.initiate({
+        _id: "rs0",
+        members: [{ _id: 0, host: "localhost:27017" }]
+    });
+    print("Replica set initialized");
+}
+' 2>/dev/null || echo -e "${YELLOW}⚠️  Replica set déjà initialisé ou erreur non critique${NC}"
 
-# Vérifier la connectivité MongoDB
-echo -e "${BLUE}🔍 Test de connectivité MongoDB...${NC}"
-if ! wait_for_service "mongodb://localhost:27017" "MongoDB"; then
-    # Essayer avec netcat comme fallback
-    if nc -z localhost 27017; then
-        echo -e "${GREEN}✅ MongoDB est accessible sur le port 27017${NC}"
-    else
-        echo -e "${RED}❌ MongoDB n'est pas accessible${NC}"
-        exit 1
-    fi
+echo -e "${GREEN}✅ Services Docker démarrés${NC}"
+echo ""
+
+# Vérifier que les dépendances sont installées
+echo -e "${BLUE}📦 Vérification des dépendances...${NC}"
+
+# Frontend
+if [ ! -d "frontend/node_modules" ]; then
+    echo -e "${YELLOW}📦 Installation des dépendances Frontend...${NC}"
+    cd frontend && pnpm install && cd ..
+fi
+echo -e "${GREEN}✅ Dépendances Frontend OK${NC}"
+
+# Gateway
+if [ ! -d "gateway/node_modules" ]; then
+    echo -e "${YELLOW}📦 Installation des dépendances Gateway...${NC}"
+    cd gateway && pnpm install && cd ..
+fi
+echo -e "${GREEN}✅ Dépendances Gateway OK${NC}"
+
+# Translator
+if [ ! -d "translator/venv" ]; then
+    echo -e "${YELLOW}📦 Création de l'environnement virtuel Python...${NC}"
+    cd translator && python3 -m venv venv && cd ..
 fi
 
-# Initialiser le replica set MongoDB si nécessaire
-echo -e "${BLUE}🔧 Vérification du replica set MongoDB...${NC}"
-if [[ -f "scripts/development/init-mongodb-replica.sh" ]]; then
-    echo -e "${YELLOW}🚀 Initialisation du replica set MongoDB...${NC}"
-    if ./scripts/development/init-mongodb-replica.sh; then
-        echo -e "${GREEN}✅ Replica set MongoDB configuré${NC}"
-    else
-        echo -e "${YELLOW}⚠️  Replica set MongoDB déjà configuré ou erreur mineure${NC}"
-    fi
-else
-    echo -e "${YELLOW}⚠️  Script d'initialisation du replica set non trouvé${NC}"
-fi
-
-# Vérifier la connectivité Redis
-echo -e "${BLUE}🔍 Test de connectivité Redis...${NC}"
-if nc -z localhost 6379; then
-    echo -e "${GREEN}✅ Redis est accessible sur le port 6379${NC}"
-else
-    echo -e "${RED}❌ Redis n'est pas accessible${NC}"
+if [ ! -f "translator/venv/bin/activate" ]; then
+    echo -e "${RED}❌ Environnement virtuel Python non créé${NC}"
     exit 1
 fi
 
-echo ""
-echo -e "${GREEN}✅ Services Docker démarrés avec succès !${NC}"
+echo -e "${YELLOW}📦 Installation des dépendances Translator...${NC}"
+cd translator && source venv/bin/activate && pip install -q -r requirements.txt && cd ..
+echo -e "${GREEN}✅ Dépendances Translator OK${NC}"
+
 echo ""
 
-# Démarrage des services Node (en arrière-plan)
-echo -e "${BLUE}🚀 Démarrage des services Node.js...${NC}"
+# Générer les clients Prisma
+echo -e "${BLUE}🔧 Génération des clients Prisma...${NC}"
+cd gateway
+pnpm run generate:prisma 2>/dev/null || echo -e "${YELLOW}⚠️  Prisma déjà généré${NC}"
+cd ..
+echo -e "${GREEN}✅ Clients Prisma générés${NC}"
+echo ""
 
-# Démarrer le Translator en arrière-plan
-echo -e "${PURPLE}🔤 Démarrage du Translator...${NC}"
-cd /Users/smpceo/Downloads/Meeshy/meeshy/translator
-chmod +x translator.sh
-nohup ./translator.sh > translator.log 2>&1 &
+# Créer les répertoires de logs
+mkdir -p translator/logs gateway/logs frontend/.next
+
+# Démarrer les services
+echo -e "${BLUE}🚀 Démarrage des services applicatifs...${NC}"
+echo ""
+
+# 1. Démarrer le Translator
+echo -e "${CYAN}═══════════════════════════════════════${NC}"
+echo -e "${CYAN}🔤 Démarrage du Translator (Port 8000)${NC}"
+echo -e "${CYAN}═══════════════════════════════════════${NC}"
+cd translator
+source venv/bin/activate
+python3 src/main.py > translator.log 2>&1 &
 TRANSLATOR_PID=$!
-echo "PID Translator: $TRANSLATOR_PID"
+cd ..
+echo -e "${GREEN}✅ Translator démarré (PID: $TRANSLATOR_PID)${NC}"
+sleep 3
 
-# Attendre que le translator soit prêt
-sleep 2
-if ! wait_for_service "http://localhost:8000/health" "Translator"; then
-    echo -e "${YELLOW}⚠️  Translator pas encore prêt, continuons...${NC}"
-fi
-
-# Démarrer le Gateway en arrière-plan
-echo -e "${PURPLE}🌐 Démarrage du Gateway...${NC}"
-cd /Users/smpceo/Downloads/Meeshy/meeshy/gateway
-chmod +x gateway.sh
-nohup ./gateway.sh > gateway.log 2>&1 &
+# 2. Démarrer le Gateway
+echo -e "${CYAN}═══════════════════════════════════════${NC}"
+echo -e "${CYAN}🌐 Démarrage du Gateway (Port 3000)${NC}"
+echo -e "${CYAN}═══════════════════════════════════════${NC}"
+cd gateway
+pnpm run dev > gateway.log 2>&1 &
 GATEWAY_PID=$!
-echo "PID Gateway: $GATEWAY_PID"
+cd ..
+echo -e "${GREEN}✅ Gateway démarré (PID: $GATEWAY_PID)${NC}"
+sleep 5
 
-# Attendre que le gateway soit prêt
-sleep 2
-if ! wait_for_service "http://localhost:3000/health" "Gateway"; then
-    echo -e "${YELLOW}⚠️  Gateway pas encore prêt, continuons...${NC}"
-fi
-
-# Démarrer le Frontend en arrière-plan
-echo -e "${PURPLE}🎨 Démarrage du Frontend...${NC}"
-cd /Users/smpceo/Downloads/Meeshy/meeshy/frontend
-chmod +x frontend.sh
-nohup ./frontend.sh > frontend.log 2>&1 &
+# 3. Démarrer le Frontend
+echo -e "${CYAN}═══════════════════════════════════════${NC}"
+echo -e "${CYAN}🎨 Démarrage du Frontend (Port 3100)${NC}"
+echo -e "${CYAN}═══════════════════════════════════════${NC}"
+cd frontend
+pnpm run dev > frontend.log 2>&1 &
 FRONTEND_PID=$!
-echo "PID Frontend: $FRONTEND_PID"
-
-# Attendre que le frontend soit prêt
-sleep 2
-if ! wait_for_service "http://localhost:3100" "Frontend"; then
-    echo -e "${YELLOW}⚠️  Frontend pas encore prêt, continuons...${NC}"
-fi
+cd ..
+echo -e "${GREEN}✅ Frontend démarré (PID: $FRONTEND_PID)${NC}"
+sleep 5
 
 echo ""
-echo -e "${GREEN}🎉 Environnement Meeshy LOCAL démarré avec succès !${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${GREEN}✅ TOUS LES SERVICES SONT DÉMARRÉS !${NC}"
+echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${CYAN}🌐 URLs d'accès:${NC}"
-echo -e "  ${GREEN}Frontend:${NC}   http://localhost:3100"
-echo -e "  ${GREEN}Gateway:${NC}    http://localhost:3000"
-echo -e "  ${GREEN}Translator:${NC} http://localhost:8000"
-echo -e "  ${GREEN}MongoDB:${NC}    mongodb://localhost:27017"
-echo -e "  ${GREEN}Redis:${NC}      redis://localhost:6379"
-echo ""
-echo -e "${CYAN}📊 Process IDs:${NC}"
-echo -e "  ${GREEN}Translator:${NC} $TRANSLATOR_PID"
-echo -e "  ${GREEN}Gateway:${NC}    $GATEWAY_PID"
-echo -e "  ${GREEN}Frontend:${NC}   $FRONTEND_PID"
-echo ""
-echo -e "${CYAN}📝 Logs des services:${NC}"
-echo -e "  ${GREEN}Translator:${NC} tail -f /Users/smpceo/Downloads/Meeshy/meeshy/translator/translator.log"
-echo -e "  ${GREEN}Gateway:${NC}    tail -f /Users/smpceo/Downloads/Meeshy/meeshy/gateway/gateway.log"
-echo -e "  ${GREEN}Frontend:${NC}   tail -f /Users/smpceo/Downloads/Meeshy/meeshy/frontend/frontend.log"
-echo ""
-echo -e "${PURPLE}🛑 Pour arrêter tous les services: Appuyez sur Ctrl+C${NC}"
-echo -e "${PURPLE}🚀 Environnement de développement LOCAL prêt !${NC}"
 
-# Boucle infinie pour maintenir le script actif et permettre l'arrêt avec Ctrl+C
-echo -e "${YELLOW}⏳ Services en cours d'exécution... (Ctrl+C pour arrêter)${NC}"
+# Afficher les informations de connexion
+echo -e "${CYAN}📊 INFORMATIONS DES SERVICES${NC}"
+echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+echo ""
+echo -e "${PURPLE}🌐 Frontend:${NC}     ${BLUE}http://localhost:3100${NC}"
+echo -e "${PURPLE}🚀 Gateway API:${NC}  ${BLUE}http://localhost:3000${NC}"
+echo -e "${PURPLE}🔤 Translator:${NC}   ${BLUE}http://localhost:8000${NC}"
+echo -e "${PURPLE}🗄️  MongoDB:${NC}     ${BLUE}mongodb://localhost:27017${NC}"
+echo -e "${PURPLE}💾 Redis:${NC}        ${BLUE}redis://localhost:6379${NC}"
+echo ""
+echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+echo ""
+
+# Afficher les informations des logs
+echo -e "${YELLOW}📋 LOGS DES SERVICES${NC}"
+echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+echo ""
+echo -e "  ${BLUE}• Translator:${NC} tail -f translator/translator.log"
+echo -e "  ${BLUE}• Gateway:${NC}    tail -f gateway/gateway.log"
+echo -e "  ${BLUE}• Frontend:${NC}   tail -f frontend/frontend.log"
+echo ""
+echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+echo ""
+
+# Afficher les PIDs
+echo -e "${CYAN}🔧 PROCESS IDs${NC}"
+echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+echo -e "  ${BLUE}• Translator PID:${NC} $TRANSLATOR_PID"
+echo -e "  ${BLUE}• Gateway PID:${NC}    $GATEWAY_PID"
+echo -e "  ${BLUE}• Frontend PID:${NC}   $FRONTEND_PID"
+echo -e "${CYAN}════════════════════════════════════════════════════════════${NC}"
+echo ""
+
+# Instructions d'arrêt
+echo -e "${YELLOW}⚠️  POUR ARRÊTER L'ENVIRONNEMENT${NC}"
+echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+echo -e "  ${RED}Appuyez sur Ctrl+C dans ce terminal${NC}"
+echo -e "  ${BLUE}Ou utilisez:${NC} ./scripts/development/development-stop-local.sh"
+echo -e "${YELLOW}════════════════════════════════════════════════════════════${NC}"
+echo ""
+
+# Monitoring des services
+echo -e "${GREEN}🔄 Monitoring des services en cours...${NC}"
+echo -e "${GREEN}   (Le script restera actif et surveillera les services)${NC}"
+echo ""
+
+# Boucle de monitoring
 while true; do
-    # Vérifier que les services sont toujours en cours
-    services_running=0
+    sleep 10
     
-    if [ -n "$TRANSLATOR_PID" ] && kill -0 "$TRANSLATOR_PID" 2>/dev/null; then
-        services_running=$((services_running + 1))
-    else
-        echo -e "${RED}⚠️  Translator arrêté inattendu${NC}"
+    # Vérifier que les services sont toujours actifs
+    if ! kill -0 "$TRANSLATOR_PID" 2>/dev/null; then
+        echo -e "${RED}❌ Le Translator s'est arrêté !${NC}"
+        echo -e "${YELLOW}📋 Vérifiez les logs: tail -f translator/translator.log${NC}"
     fi
     
-    if [ -n "$GATEWAY_PID" ] && kill -0 "$GATEWAY_PID" 2>/dev/null; then
-        services_running=$((services_running + 1))
-    else
-        echo -e "${RED}⚠️  Gateway arrêté inattendu${NC}"
+    if ! kill -0 "$GATEWAY_PID" 2>/dev/null; then
+        echo -e "${RED}❌ Le Gateway s'est arrêté !${NC}"
+        echo -e "${YELLOW}📋 Vérifiez les logs: tail -f gateway/gateway.log${NC}"
     fi
     
-    if [ -n "$FRONTEND_PID" ] && kill -0 "$FRONTEND_PID" 2>/dev/null; then
-        services_running=$((services_running + 1))
-    else
-        echo -e "${RED}⚠️  Frontend arrêté inattendu${NC}"
+    if ! kill -0 "$FRONTEND_PID" 2>/dev/null; then
+        echo -e "${RED}❌ Le Frontend s'est arrêté !${NC}"
+        echo -e "${YELLOW}📋 Vérifiez les logs: tail -f frontend/frontend.log${NC}"
     fi
-    
-    if [ $services_running -eq 0 ]; then
-        echo -e "${RED}❌ Tous les services sont arrêtés${NC}"
-        cleanup
-    fi
-    
-    sleep 2
 done
+

@@ -18,6 +18,7 @@ import {
   Link,
   Send,
   Share,
+  Mail,
   
   // UI Controls
   ChevronDown,
@@ -85,6 +86,7 @@ export {
   Link,
   Send,
   Share,
+  Mail,
   ChevronDown,
   ChevronUp,
   MoreHorizontal,

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAnonymousMessages, type AnonymousMessage } from '@/hooks/use-anonymous-messages';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { getMessageInitials } from '@/lib/avatar-utils';
 
 interface AnonymousChatProps {
@@ -33,7 +33,7 @@ interface AnonymousChatProps {
 }
 
 export function AnonymousChat({ linkId, participant, conversation }: AnonymousChatProps) {
-  const { t } = useTranslations('anonymousChat');
+  const { t } = useI18n('anonymousChat');
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { User, SUPPORTED_LANGUAGES } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { getUserInitials } from '@/lib/avatar-utils';
 
 interface UserSelectorProps {
@@ -16,7 +16,7 @@ interface UserSelectorProps {
 }
 
 export function UserSelector({ users, onUserSelect, isLoading = false }: UserSelectorProps) {
-  const { t } = useTranslations('conversationUI');
+  const { t } = useI18n('conversations');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const getLanguageFlag = (languageCode: string): string => {
@@ -122,9 +122,9 @@ export function UserSelector({ users, onUserSelect, isLoading = false }: UserSel
                 )}
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{t('autoTranslation')}</span>
+                  <span className="text-muted-foreground">{t('conversationUI.autoTranslation')}</span>
                   <Badge variant={user.autoTranslateEnabled ? "default" : "secondary"}>
-                    {user.autoTranslateEnabled ? t('enabled') : t('disabled')}
+                    {user.autoTranslateEnabled ? t('conversationUI.enabled') : t('conversationUI.disabled')}
                   </Badge>
                 </div>
               </CardContent>

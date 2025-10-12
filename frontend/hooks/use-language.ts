@@ -8,7 +8,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { detectBestInterfaceLanguage, getUserPreferredLanguage } from '@/utils/language-detection';
 import { getBestMatchingLocale, detectUserPreferredLocale, type Locale } from '@/lib/i18n';
-import { useTranslations } from './useTranslations';
+import { useI18n } from './useI18n';
 import { INTERFACE_LANGUAGES } from '@/types/frontend';
 
 export interface TranslatedLanguage {
@@ -38,7 +38,7 @@ export interface UseLanguageReturn extends BrowserLanguageDetection {
 }
 
 export function useLanguage(): UseLanguageReturn {
-  const { t } = useTranslations('common');
+  const { t } = useI18n('common');
   
   // État de détection
   const [detectedInterfaceLanguage, setDetectedInterfaceLanguage] = useState<string>('en');

@@ -5,8 +5,8 @@ export { useSocketIOMessaging } from './use-socketio-messaging';
 export { useMessaging } from './use-messaging'; // Nouveau hook fusionné
 
 // Traduction unifiée
-export { useTranslation } from './use-translation'; // Pour traduction de messages API
-export { useI18n, useTranslations } from './use-i18n'; // Pour traduction i18n interface
+export { useMessageTranslation } from './useMessageTranslation'; // Pour traduction de messages API
+export { useI18n } from './useI18n'; // Pour traduction i18n interface
 export { useMessageTranslations } from './use-message-translations';
 export { useMessageLoader } from './use-message-loader';
 export { useConversationMessages } from './use-conversation-messages';

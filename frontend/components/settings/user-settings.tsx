@@ -11,7 +11,7 @@ import { User as UserType } from '@/types';
 import { getUserInitials } from '@/utils/user';
 import { toast } from 'sonner';
 import { Upload, Camera, X } from 'lucide-react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { buildApiUrl } from '@/lib/config';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { validateAvatarFile } from '@/utils/avatar-upload';
@@ -22,7 +22,7 @@ interface UserSettingsProps {
 }
 
 export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
-  const { t } = useTranslations('settings');
+  const { t } = useI18n('settings');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',

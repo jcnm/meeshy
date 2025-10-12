@@ -45,7 +45,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { User, AuthMode } from '@/types';
 import { toast } from 'sonner';
 import { isCurrentUserAnonymous } from '@/utils/auth';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import Link from 'next/link';
 function LandingPageContent() {
   const user = useUser();
@@ -53,8 +53,9 @@ function LandingPageContent() {
   const { login } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>('welcome');
   const router = useRouter();
-  const { t } = useTranslations('landing');
-  const { t: tAuth } = useTranslations('auth');
+  const { t } = useI18n('landing');
+  const { t: tAuth } = useI18n('auth');
+  const { t: tCommon } = useI18n('common');
 
   // État pour gérer l'affichage du lien de conversation anonyme
   const [anonymousChatLink, setAnonymousChatLink] = useState<string | null>(null);
@@ -76,7 +77,7 @@ function LandingPageContent() {
   }, [user]);
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
       </div>
     );
@@ -96,7 +97,11 @@ function LandingPageContent() {
   
   // Si l'utilisateur a un token d'authentification ET un utilisateur, afficher BubbleStreamPage
   if (user && hasAuthToken) {
-    console.log('[LANDING] Utilisateur authentifié détecté, affichage BubbleStreamPage');
+    console.log('[LANDING] ✅ Utilisateur authentifié détecté, affichage BubbleStreamPage', {
+      username: user.username,
+      hasAuthToken,
+      userId: user.id
+    });
     
     // Nettoyer les données anonymes si elles existent (l'utilisateur est authentifié)
     if (isAnonymous) {
@@ -108,20 +113,23 @@ function LandingPageContent() {
       localStorage.removeItem('anonymous_just_joined');
     }
     
+    console.log('[LANDING] 🎨 Rendu du DashboardLayout avec BubbleStreamPage');
     return (
-      <DashboardLayout title={t('navigation.home')}>
+      <DashboardLayout title={tCommon('navigation.home') || t('navigation.home')}>
         <div className="h-full">
           <BubbleStreamPage user={user} />
         </div>
       </DashboardLayout>
     );
   }
+  
+  console.log('[LANDING] ⚠️ Pas d\'utilisateur authentifié, affichage landing page');
 
   // Pour les utilisateurs anonymes et non connectés, afficher la landing page
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
       <Header 
         mode="landing"
@@ -140,14 +148,14 @@ function LandingPageContent() {
           </Badge>
           
           {/* Titre principal impactant */}
-          <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+          <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white dark:text-white mb-8 leading-tight">
             {t('hero.title')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
               {t('hero.titleHighlight')}
             </span>
           </h1>
           
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+          <p className="text-xl text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-8 leading-relaxed">
             {t('hero.subtitle')}
           </p>
 
@@ -192,9 +200,9 @@ function LandingPageContent() {
                 
                 {/* Si l'utilisateur a une conversation en cours, afficher le bouton de reprise */}
                 {anonymousChatLink && (
-                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h4 className="font-medium text-green-800 mb-2">{tAuth('joinConversation.ongoingConversation')}</h4>
-                    <p className="text-sm text-green-700 mb-3">{tAuth('joinConversation.ongoingDescription')}</p>
+                  <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">{tAuth('joinConversation.ongoingConversation')}</h4>
+                    <p className="text-sm text-green-700 dark:text-green-300 mb-3">{tAuth('joinConversation.ongoingDescription')}</p>
                     <Button 
                       onClick={() => {
                         setAuthMode('welcome');
@@ -212,8 +220,8 @@ function LandingPageContent() {
                 <div>
                   {anonymousChatLink && (
                     <div className="mb-3">
-                      <h4 className="font-medium text-gray-800">{tAuth('joinConversation.orJoinNew')}</h4>
-                      <p className="text-sm text-gray-600">{tAuth('joinConversation.newConversationDescription')}</p>
+                      <h4 className="font-medium text-gray-800 dark:text-gray-100">{tAuth('joinConversation.orJoinNew')}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{tAuth('joinConversation.newConversationDescription')}</p>
                     </div>
                   )}
                   <JoinConversationForm onSuccess={(linkId: string) => {
@@ -227,24 +235,24 @@ function LandingPageContent() {
       </section>
 
       {/* Mission Section */}
-      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 py-20 lg:py-32">
+      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-20 lg:py-32">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto">
             <div className="mb-8">
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white dark:text-white mb-6">
                 {t('mission.title')}
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto mb-8"></div>
             </div>
             
-            <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12 mb-8">
-              <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
+            <div className="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-xl p-8 lg:p-12 mb-8">
+              <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white dark:text-white mb-6">
                 {t('mission.slogan')}
               </h3>
-              <p className="text-xl lg:text-2xl text-gray-700 mb-8 leading-relaxed font-medium">
+              <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-8 leading-relaxed font-medium">
                 {t('mission.tagline')}
               </p>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-400 dark:text-gray-400 leading-relaxed">
                 {t('mission.description')}
               </p>
             </div>
@@ -261,13 +269,13 @@ function LandingPageContent() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-16 lg:py-24">
+      <section className="bg-white dark:bg-gray-800 dark:bg-gray-800 py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white dark:text-white mb-4">
               {t('features.title')}
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-400 dark:text-gray-400 max-w-2xl mx-auto">
               {t('features.subtitle')}
             </p>
           </div>
@@ -315,7 +323,7 @@ function LandingPageContent() {
             
             <Card className="border-0 shadow-lg">
               <CardHeader>
-                <Users className="h-12 w-12 text-purple-600 mb-4" />
+                <Users className="h-12 w-12 text-purple-600 dark:text-purple-400 mb-4" />
                 <CardTitle>{t('features.groupChats.title')}</CardTitle>
                 <CardDescription>
                   {t('features.groupChats.description')}
@@ -335,7 +343,7 @@ function LandingPageContent() {
             
             <Card className="border-0 shadow-lg">
               <CardHeader>
-                <MessageSquare className="h-12 w-12 text-red-600 mb-4" />
+                <MessageSquare className="h-12 w-12 text-red-600 dark:text-red-400 mb-4" />
                 <CardTitle>{t('features.modernInterface.title')}</CardTitle>
                 <CardDescription>
                   {t('features.modernInterface.description')}
@@ -372,7 +380,7 @@ function LandingPageContent() {
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
             {t('cta.title')}
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-blue-100 dark:text-blue-200 mb-8 max-w-2xl mx-auto">
             {t('cta.subtitle')}
           </p>
           

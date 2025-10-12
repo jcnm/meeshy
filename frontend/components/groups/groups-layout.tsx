@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/stores';
+import { useUser, useIsAuthChecking } from '@/stores';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ResponsiveLayout } from '@/components/layout/ResponsiveLayout';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -44,8 +44,8 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useUser(); const isAuthChecking = useIsAuthChecking();
-  const { t } = useTranslations();
-  const { t: tUI } = useTranslations('conversationUI');
+  const { t } = useI18n('groups');
+  const { t: tConv } = useI18n('conversations');
 
   // États principaux - TOUJOURS appelés avant tout return conditionnel
   const [groups, setGroups] = useState<Group[]>([]);
@@ -453,12 +453,12 @@ export function GroupsLayout({ selectedGroupIdentifier }: GroupsLayoutProps) {
   }
 
   return (
-    <DashboardLayout title={tUI('communities')}>
+    <DashboardLayout title={tConv('communities.title')}>
       {isLoading ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">{tUI('loading')}</p>
+            <p className="text-muted-foreground">{tConv('loading')}</p>
           </div>
         </div>
       ) : (

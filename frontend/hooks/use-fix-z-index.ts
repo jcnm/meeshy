@@ -5,83 +5,97 @@ import { Z_INDEX } from '@/lib/z-index';
 
 /**
  * Hook pour forcer les bons z-index sur les composants Radix UI
- * Utile pour corriger les problèmes de superposition
+ * Solution définitive avec MutationObserver global
  */
 export function useFixRadixZIndex() {
   useEffect(() => {
-    // Fonction pour appliquer les z-index corrects
+    // Fonction complète pour appliquer les z-index corrects et garantir le portail
     const fixZIndex = () => {
-      // Popovers
+      // 1. Popovers - Z-index maximum
       const popoverWrappers = document.querySelectorAll('[data-radix-popper-content-wrapper]');
       popoverWrappers.forEach((element) => {
-        (element as HTMLElement).style.zIndex = Z_INDEX.MAX.toString();
+        const el = element as HTMLElement;
+        el.style.setProperty('z-index', '99999', 'important');
+        el.style.setProperty('position', 'fixed', 'important');
       });
 
       const popoverContents = document.querySelectorAll('[data-radix-popover-content]');
       popoverContents.forEach((element) => {
-        (element as HTMLElement).style.zIndex = Z_INDEX.MAX.toString();
+        const el = element as HTMLElement;
+        el.style.setProperty('z-index', '99999', 'important');
+        el.style.setProperty('position', 'fixed', 'important');
+        el.classList.add('radix-popover-fixed');
       });
 
-      // Dropdown Menus
+      // 2. Dropdown Menus
       const dropdownContents = document.querySelectorAll('[data-radix-dropdown-menu-content]');
       dropdownContents.forEach((element) => {
-        (element as HTMLElement).style.zIndex = Z_INDEX.DROPDOWN_MENU.toString();
+        const el = element as HTMLElement;
+        el.style.setProperty('z-index', '9998', 'important');
+        el.style.setProperty('position', 'fixed', 'important');
       });
 
-      // Tooltips
+      // 3. Tooltips
       const tooltipContents = document.querySelectorAll('[data-radix-tooltip-content]');
       tooltipContents.forEach((element) => {
-        (element as HTMLElement).style.zIndex = Z_INDEX.TOOLTIP.toString();
+        const el = element as HTMLElement;
+        el.style.setProperty('z-index', '9997', 'important');
+        el.style.setProperty('position', 'fixed', 'important');
       });
 
-      console.log('🎯 Z-Index fixés:', {
-        popovers: popoverContents.length,
-        dropdowns: dropdownContents.length,
-        tooltips: tooltipContents.length
+      // 4. Dialogs/Modals
+      const dialogOverlays = document.querySelectorAll('[data-radix-dialog-overlay]');
+      dialogOverlays.forEach((element) => {
+        const el = element as HTMLElement;
+        el.style.setProperty('z-index', '9996', 'important');
       });
+
+      const dialogContents = document.querySelectorAll('[data-radix-dialog-content]');
+      dialogContents.forEach((element) => {
+        const el = element as HTMLElement;
+        el.style.setProperty('z-index', '9997', 'important');
+      });
+
+      // 5. Portails Radix - Forcer au niveau racine
+      const portals = document.querySelectorAll('[data-radix-portal]');
+      portals.forEach((element) => {
+        const el = element as HTMLElement;
+        el.style.setProperty('z-index', '99999', 'important');
+      });
+
+      if (popoverContents.length > 0 || dropdownContents.length > 0 || tooltipContents.length > 0) {
+        console.log('🎯 Z-Index appliqués:', {
+          popovers: popoverContents.length,
+          dropdowns: dropdownContents.length,
+          tooltips: tooltipContents.length,
+          portals: portals.length
+        });
+      }
     };
 
     // Appliquer immédiatement
     fixZIndex();
 
-    // Observer les changements dans le DOM pour les nouveaux éléments
-    const observer = new MutationObserver((mutations) => {
-      let shouldFix = false;
-      
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element;
-            if (
-              element.hasAttribute('data-radix-popper-content-wrapper') ||
-              element.hasAttribute('data-radix-popover-content') ||
-              element.hasAttribute('data-radix-dropdown-menu-content') ||
-              element.hasAttribute('data-radix-tooltip-content') ||
-              element.querySelector('[data-radix-popper-content-wrapper]') ||
-              element.querySelector('[data-radix-popover-content]') ||
-              element.querySelector('[data-radix-dropdown-menu-content]') ||
-              element.querySelector('[data-radix-tooltip-content]')
-            ) {
-              shouldFix = true;
-            }
-          }
-        });
-      });
-
-      if (shouldFix) {
-        // Petit délai pour laisser les composants se monter
-        setTimeout(fixZIndex, 10);
-      }
+    // Observer les changements dans le DOM de manière agressive
+    const observer = new MutationObserver(() => {
+      // Utiliser requestAnimationFrame pour optimiser les performances
+      requestAnimationFrame(fixZIndex);
     });
 
     // Observer tout le document
     observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-state', 'data-radix-popover-content']
     });
+
+    // Ré-appliquer périodiquement au cas où (fallback)
+    const interval = setInterval(fixZIndex, 1000);
 
     return () => {
       observer.disconnect();
+      clearInterval(interval);
     };
   }, []);
 }

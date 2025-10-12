@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { buildApiUrl } from '@/lib/config';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface JoinConversationFormProps {
   onSuccess: (linkId: string) => void;
@@ -15,13 +15,13 @@ interface JoinConversationFormProps {
 export function JoinConversationForm({ onSuccess }: JoinConversationFormProps) {
   const [linkId, setLinkId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { t } = useTranslations('joinConversation');
+  const { t } = useI18n('auth');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!linkId.trim()) {
-      toast.error(t('enterLink'));
+      toast.error(t('joinConversation.enterLink'));
       return;
     }
 
@@ -43,17 +43,17 @@ export function JoinConversationForm({ onSuccess }: JoinConversationFormProps) {
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
-          toast.success(t('validLink'));
+          toast.success(t('joinConversation.validLink'));
           onSuccess(extractedLinkId);
         } else {
-          toast.error(t('invalidLink'));
+          toast.error(t('joinConversation.invalidLink'));
         }
       } else {
-        toast.error(t('expiredLink'));
+        toast.error(t('joinConversation.expiredLink'));
       }
     } catch (error) {
       console.error('Erreur vérification lien:', error);
-      toast.error(t('verificationError'));
+      toast.error(t('joinConversation.verificationError'));
     } finally {
       setIsLoading(false);
     }
@@ -62,11 +62,11 @@ export function JoinConversationForm({ onSuccess }: JoinConversationFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="linkId">{t('linkLabel')}</Label>
+        <Label htmlFor="linkId">{t('joinConversation.linkLabel')}</Label>
         <Input
           id="linkId"
           type="text"
-          placeholder={t('linkPlaceholder')}
+          placeholder={t('joinConversation.linkPlaceholder')}
           value={linkId}
           onChange={(e) => setLinkId(e.target.value)}
           disabled={isLoading}
@@ -79,7 +79,7 @@ export function JoinConversationForm({ onSuccess }: JoinConversationFormProps) {
         className="w-full" 
         disabled={isLoading || !linkId.trim()}
       >
-        {isLoading ? t('verifying') : t('joinButton')}
+        {isLoading ? t('joinConversation.verifying') : t('joinConversation.joinButton')}
       </Button>
     </form>
   );

@@ -35,7 +35,7 @@ import {
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { ConversationLink } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { LinkDetailsModal } from '@/components/links/link-details-modal';
 import { LinkEditModal } from '@/components/links/link-edit-modal';
 import { CreateLinkButton } from '@/components/links/create-link-button';
@@ -45,8 +45,8 @@ import { useUser } from '@/stores';
 import { useRouter } from 'next/navigation';
 
 export default function LinksPage() {
-  const { t } = useTranslations('links');
-  const { t: tConversations } = useTranslations('conversations');
+  const { t } = useI18n('links');
+  const { t: tConversations } = useI18n('conversations');
   const user = useUser();
   const router = useRouter();
   const [links, setLinks] = useState<ConversationLink[]>([]);

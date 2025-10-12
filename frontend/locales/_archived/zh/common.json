@@ -1,0 +1,117 @@
+{
+  "languageNames": {
+    "en": "English",
+    "fr": "French", 
+    "pt": "Portuguese",
+    "es": "Spanish",
+    "de": "German",
+    "it": "Italian",
+    "zh": "Chinese",
+    "ja": "Japanese",
+    "ar": "Arabic",
+    "ru": "Russian",
+    "ko": "Korean",
+    "hi": "Hindi",
+    "tr": "Turkish"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "insufficientRights": "You do not have the necessary rights to perform this operation"
+  },
+  "navigation": {
+    "home": "首页",
+    "dashboard": "仪表板",
+    "settings": "设置",
+    "profile": "个人资料",
+    "logout": "退出登录",
+    "conversations": "对话",
+    "contacts": "联系人",
+    "groups": "群组",
+    "links": "链接",
+    "communities": "社区",
+    "admin": "管理",
+    "about": "关于",
+    "help": "帮助"
+  },
+  "header": {
+    "searchPlaceholder": "搜索..."
+  },
+  "auth": {
+    "checking": "验证中...",
+    "logoutSuccess": "已成功退出",
+    "logoutError": "退出时出错"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "invalidPhone": "Invalid phone number",
+    "minLength": "Minimum {min} characters required",
+    "maxLength": "Maximum {max} characters allowed",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Network error",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "notFound": "Resource not found",
+    "invalidCredentials": "Invalid credentials",
+    "sessionExpired": "Session expired",
+    "validationError": "Validation error"
+  },
+  "success": {
+    "saved": "Saved successfully",
+    "deleted": "Deleted successfully",
+    "updated": "Updated successfully",
+    "created": "Created successfully",
+    "welcome": "Welcome"
+  },
+  "toasts": {
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "warning": "Warning",
+    "info": "Information",
+    "connectionError": "Connection error",
+    "sessionExpired": "Session expired, please log in again",
+    "unauthorized": "You are not authorized to perform this action",
+    "saveFailed": "Save failed",
+    "saveSuccess": "Saved successfully",
+    "deleteFailed": "Delete failed",
+    "deleteSuccess": "Deleted successfully",
+    "updateFailed": "Update failed",
+    "updateSuccess": "Updated successfully"
+  },
+  "layout": {
+    "header": {
+      "title": "Meeshy",
+      "subtitle": "Real-time multilingual messaging"
+    },
+    "sidebar": {
+      "menu": "Menu",
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar"
+    },
+    "footer": {
+      "copyright": "© {year} Meeshy. All rights reserved.",
+      "version": "Version {version}",
+      "about": "About",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact"
+    }
+  }
+}

@@ -18,7 +18,7 @@ import {
 import { SocketIOUser as User, ThreadMember, UserRoleEnum } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { getUserInitials } from '@/lib/avatar-utils';
 
 interface ConversationParticipantsProps {
@@ -40,7 +40,7 @@ export function ConversationParticipants({
   className = "",
   typingUsers = []
 }: ConversationParticipantsProps) {
-  const { t } = useTranslations('conversationParticipants');
+  const { t } = useI18n('conversations');
 
 
   // Les typing users sont désormais passés par props pour éviter des abonnements socket multiples
@@ -68,11 +68,11 @@ export function ConversationParticipants({
 
   const renderTypingMessage = () => {
     if (typingUserNames.length === 1) {
-      return `${typingUserNames[0]} ${t('typing')}`;
+      return `${typingUserNames[0]} ${t('conversationParticipants.typing')}`;
     } else if (typingUserNames.length === 2) {
-      return `${typingUserNames[0]} et ${typingUserNames[1]} ${t('typing')}`;
+      return `${typingUserNames[0]} et ${typingUserNames[1]} ${t('conversationParticipants.typing')}`;
     } else {
-      return `${typingUserNames.length} ${t('typingMultiple')}`;
+      return `${typingUserNames.length} ${t('conversationParticipants.typingMultiple')}`;
     }
   };
 

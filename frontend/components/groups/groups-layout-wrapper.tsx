@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/stores';
+import { useUser, useIsAuthChecking } from '@/stores';
 import { GroupsLayoutResponsive } from './groups-layout-responsive';
 import { useEffect } from 'react';
 

@@ -26,6 +26,19 @@ export type { CreateUserDto, ChatRoom } from './frontend';
 // Export des constantes spécifiques frontend
 export { INTERFACE_LANGUAGES } from './frontend';
 
+// Export des types i18n
+export type {
+  SupportedLanguage,
+  Language,
+  TranslationModule,
+  LoadedModules,
+  TranslationParams,
+  I18nState,
+  I18nActions,
+  I18nStore,
+  TranslationModuleName,
+} from './i18n';
+
 // Types spécifiques au frontend uniquement
 export interface FrontendConfig {
   apiUrl: string;

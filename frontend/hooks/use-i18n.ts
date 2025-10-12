@@ -11,6 +11,12 @@ import { useLanguageStore } from '@/stores';
 // Cache global pour éviter de recharger les mêmes fichiers
 const translationsCache = new Map<string, Record<string, any>>();
 
+// Fonction pour vider le cache (utile lors de changements de structure)
+export function clearTranslationsCache() {
+  translationsCache.clear();
+  console.log('[i18n] Cache cleared');
+}
+
 interface UseI18nOptions {
   fallbackLocale?: string;
 }
@@ -43,8 +49,11 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
   const loadTranslations = useCallback(async (locale: string, ns: string) => {
     const cacheKey = `${locale}-${ns}`;
     
-    // Vérifier le cache d'abord
-    if (translationsCache.has(cacheKey)) {
+    // En développement, ne pas utiliser le cache pour voir les changements immédiatement
+    const useCache = process.env.NODE_ENV !== 'development';
+    
+    // Vérifier le cache d'abord (seulement en production)
+    if (useCache && translationsCache.has(cacheKey)) {
       return translationsCache.get(cacheKey)!;
     }
     
@@ -53,8 +62,10 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
       const data = await import(`@/locales/${locale}/${ns}.json`);
       const translations = data.default || data;
       
-      // Mettre en cache
-      translationsCache.set(cacheKey, translations);
+      // Mettre en cache (seulement en production)
+      if (useCache) {
+        translationsCache.set(cacheKey, translations);
+      }
       
       return translations;
     } catch (error) {
@@ -89,6 +100,12 @@ export function useI18n(namespace: string = 'common', options: UseI18nOptions = 
         // Si les données ont une clé racine qui correspond au namespace, l'extraire
         // Ex: { "landing": { "hero": { ... } } } → { "hero": { ... } }
         const translationsData = data[namespace] || data;
+        
+        // Debug: log la structure chargée en mode développement
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[i18n] Loaded ${currentInterfaceLanguage}/${namespace}:`, Object.keys(translationsData));
+        }
+        
         setTranslations(translationsData);
         setIsLoading(false);
       }

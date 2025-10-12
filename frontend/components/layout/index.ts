@@ -1,3 +1,3 @@
-// Composants de layout
-export { default as Navigation } from './Navigation';
-export { ResponsiveLayout, PageHeader, PageContent } from './ResponsiveLayout';
+export { DashboardLayout } from './DashboardLayout';
+export { Header } from './Header';
+

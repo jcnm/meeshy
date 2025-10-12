@@ -9,19 +9,43 @@ import components from './components.json';
 import legal from './legal.json';
 import modals from './modals.json';
 import features from './features.json';
+import header from './header.json';
+import about from './about.json';
+import chat from './chat.json';
+import contact from './contact.json';
+import contacts from './contacts.json';
+import groups from './groups.json';
+import joinPage from './joinPage.json';
+import links from './links.json';
+import notifications from './notifications.json';
+import partners from './partners.json';
+import privacy from './privacy.json';
+import terms from './terms.json';
 
 export default {
-  ...common,
-  ...auth,
-  ...landing,
-  ...dashboard,
-  ...conversations,
-  ...settings,
-  ...pages,
-  ...components,
-  ...legal,
-  ...modals,
-  ...features,
+  common,
+  auth,
+  landing,
+  dashboard,
+  conversations,
+  settings,
+  pages,
+  components,
+  legal,
+  modals,
+  features,
+  header,
+  about,
+  chat,
+  contact,
+  contacts,
+  groups,
+  joinPage,
+  links,
+  notifications,
+  partners,
+  privacy,
+  terms,
 };
 
 export {
@@ -36,4 +60,17 @@ export {
   legal,
   modals,
   features,
+  header,
+  about,
+  chat,
+  contact,
+  contacts,
+  groups,
+  joinPage,
+  links,
+  notifications,
+  partners,
+  privacy,
+  terms,
 };
+

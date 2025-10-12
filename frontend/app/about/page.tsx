@@ -2,21 +2,21 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users, Globe, Heart, Target, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Users, Globe, Heart, Target, Lightbulb, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 export default function AboutPage() {
-  const { t } = useTranslations('about');
+  const { t } = useI18n('about');
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+            <Link href="/" className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 dark:text-gray-300 hover:text-gray-900 dark:text-white dark:hover:text-white">
               <ArrowLeft className="h-5 w-5" />
               <span>{t('backHome')}</span>
             </Link>
@@ -29,8 +29,8 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('title')}</h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t('title')}</h1>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               {t('subtitle')}
             </p>
           </div>
@@ -44,7 +44,7 @@ export default function AboutPage() {
               </div>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-lg text-gray-700 leading-relaxed">
+              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('mission.description')}
               </p>
             </CardContent>
@@ -98,10 +98,10 @@ export default function AboutPage() {
               </div>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
                 {t('team.description')}
               </p>
-              <div className="bg-blue-50 rounded-lg p-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
                 <p className="text-gray-700">
                   {t('team.details')}
                 </p>
@@ -111,11 +111,12 @@ export default function AboutPage() {
 
           {/* Contact CTA */}
           <div className="text-center mt-8">
-            <p className="text-gray-600 mb-4">{t('cta.title')}</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{t('cta.title')}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/contact">
-                <Button variant="outline" size="lg">
-                  {t('cta.contact')}
+                <Button size="lg" className="flex items-center space-x-2">
+                  <Mail className="h-5 w-5" />
+                  <span>{t('cta.contact')}</span>
                 </Button>
               </Link>
               <Link href="/terms">

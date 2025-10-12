@@ -412,7 +412,8 @@ export class TranslationService extends EventEmitter {
   /**
    * Extrait les langues cibles des participants d'une conversation
    * Inclut les langues des utilisateurs authentifiés ET des participants anonymes
-   * NOTE: Cette méthode retourne toutes les langues sans filtrage.
+   * NOTE: Cette méthode retourne TOUTES les langues parlées dans la conversation,
+   * indépendamment des préférences de traduction automatique des utilisateurs.
    * Le filtrage des langues identiques à la source se fait dans les méthodes de traitement.
    */
   private async _extractConversationLanguages(conversationId: string): Promise<string[]> {
@@ -451,15 +452,21 @@ export class TranslationService extends EventEmitter {
         }
       });
       
-      // Extraire les langues des utilisateurs authentifiés
+      // Extraire TOUTES les langues des utilisateurs authentifiés
+      // On extrait toujours systemLanguage, et les autres langues selon les préférences
       for (const member of members) {
+        // Toujours ajouter la langue système du participant
+        if (member.user.systemLanguage) {
+          languages.add(member.user.systemLanguage);
+        }
+        
+        // Ajouter les langues additionnelles si l'utilisateur a activé la traduction automatique
         if (member.user.autoTranslateEnabled) {
-          if (member.user.translateToSystemLanguage) {
-            languages.add(member.user.systemLanguage); 
-          }
-          if (member.user.translateToRegionalLanguage) {
+          // Langue régionale si activée
+          if (member.user.translateToRegionalLanguage && member.user.regionalLanguage) {
             languages.add(member.user.regionalLanguage); 
           }
+          // Langue personnalisée si activée
           if (member.user.useCustomDestination && member.user.customDestinationLanguage) {
             languages.add(member.user.customDestinationLanguage); 
           }
@@ -476,12 +483,12 @@ export class TranslationService extends EventEmitter {
       // Retourner toutes les langues (le filtrage se fera dans les méthodes de traitement)
       const allLanguages = Array.from(languages);
       
-      // console.log(`🌍 Langues extraites pour ${conversationId}: ${allLanguages.join(', ')}`);
+      console.log(`🌍 [TranslationService] Langues extraites pour conversation ${conversationId}: ${allLanguages.join(', ')} (${allLanguages.length} langues uniques)`);
       
       return allLanguages;
       
     } catch (error) {
-      console.error(`❌ Erreur extraction langues: ${error}`);
+      console.error(`❌ [TranslationService] Erreur extraction langues: ${error}`);
       return ['en', 'fr']; // Fallback
     }
   }

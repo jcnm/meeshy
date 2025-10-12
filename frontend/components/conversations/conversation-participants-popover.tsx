@@ -22,7 +22,7 @@ import {
 import { ThreadMember } from '@shared/types';
 import { conversationsService } from '@/services/conversations.service';
 import { toast } from 'sonner';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { UserRoleEnum } from '@shared/types';
 import { CreateLinkButton } from './create-link-button';
 import { InviteUserModal } from './invite-user-modal';
@@ -51,8 +51,7 @@ export function ConversationParticipantsPopover({
   onParticipantAdded,
   onLinkCreated
 }: ConversationParticipantsPopoverProps) {
-  const { t } = useTranslations('conversationSearch');
-  const { t: tUI } = useTranslations('conversationUI');
+  const { t } = useI18n('conversations');
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -97,10 +96,10 @@ export function ConversationParticipantsPopover({
       setIsLoading(true);
       await conversationsService.removeParticipant(conversationId, userId);
       onParticipantRemoved?.(userId);
-      toast.success(tUI('participantRemoved'));
+      toast.success(t('conversationDetails.participantRemovedSuccess'));
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
-      toast.error(tUI('removeParticipantError'));
+      toast.error(t('conversationDetails.removeParticipantError'));
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +119,7 @@ export function ConversationParticipantsPopover({
           variant="ghost"
           size="sm"
           className="rounded-full h-10 w-10 p-0 hover:bg-accent/50 relative"
-          title={tUI('participants')}
+          title={t('conversationUI.participants')}
         >
           <Users className="h-5 w-5" />
           {participants.length > 0 && (
@@ -131,16 +130,18 @@ export function ConversationParticipantsPopover({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 shadow-2xl border border-gray-200 bg-white/95 backdrop-blur-sm"
+        className="w-80 p-0 shadow-2xl border border-border bg-card dark:bg-card backdrop-blur-sm"
         side="bottom"
-        align="end"
+        align="start"
         sideOffset={8}
+        alignOffset={-8}
+        collisionPadding={{ top: 70, right: 16, bottom: 16, left: 16 }}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="p-3">
           {/* Header avec actions */}
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-sm">{tUI('participants')} ({participants.length})</h4>
+            <h4 className="font-semibold text-sm text-foreground">{t('conversationUI.participants')} ({participants.length})</h4>
             <div className="flex items-center gap-1">
               {/* Bouton de création de lien - seulement pour les conversations de groupe et avec les bons rôles */}
               {conversationType !== 'direct' && 
@@ -154,8 +155,8 @@ export function ConversationParticipantsPopover({
                 >
                   <CreateLinkButton
                     disableSummaryModal={true}
-                    onLinkCreated={(link) => {
-                      onLinkCreated?.(link);
+                    onLinkCreated={() => {
+                      onLinkCreated?.('');
                     }}
                     variant="ghost"
                     size="sm"
@@ -169,7 +170,7 @@ export function ConversationParticipantsPopover({
                 variant="ghost"
                 size="sm"
                 className="h-7 w-7 p-0"
-                title={tUI('addParticipant')}
+                title={t('conversationUI.addParticipant')}
                 onClick={() => {
                   setIsOpen(false); // Fermer le popover
                   setShowInviteModal(true);
@@ -184,45 +185,45 @@ export function ConversationParticipantsPopover({
           {/* Barre de recherche */}
           <div className="mb-3">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                placeholder={tUI('searchParticipants')}
+                placeholder={t('conversationDetails.searchParticipants')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 border-gray-200/60 focus:bg-white focus:border-blue-300"
+                className="pl-8 pr-8 h-8 text-xs bg-accent/50 dark:bg-accent/30 border-border focus:bg-background dark:focus:bg-card focus:border-primary text-foreground"
               />
             </div>
           </div>
 
-          <div className="max-h-64 overflow-y-auto space-y-3">
+          <div className="max-h-[min(400px,calc(100vh-250px))] overflow-y-auto space-y-3">
             {/* Section En ligne */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-gray-600">{tUI('online')}</span>
+                <span className="text-xs font-semibold text-muted-foreground">{t('conversationUI.online')}</span>
                 <Badge variant="secondary" className="text-[10px]">{onlineParticipants.length}</Badge>
               </div>
               {onlineParticipants.length === 0 ? (
-                <div className="text-xs text-gray-400">{tUI('noOneOnline')}</div>
+                <div className="text-xs text-muted-foreground">{t('conversationDetails.noOneOnline')}</div>
               ) : (
                 <div className="space-y-1">
                   {onlineParticipants.map((participant) => {
                     const user = participant.user;
                     const isCurrentUser = user.id === currentUser.id;
                     return (
-                      <div key={participant.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+                      <div key={participant.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors">
                         <div className="relative">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user.avatar} />
-                            <AvatarFallback className="text-xs bg-primary/20 text-primary">
+                            <AvatarFallback className="text-xs bg-primary/10 text-primary">
                               {getAvatarFallback(user)}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+                          <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-card" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium truncate">
-                              {getDisplayName(user)}{isCurrentUser && ` (${tUI('you')})`}
+                            <span className="text-sm font-medium truncate text-foreground">
+                              {getDisplayName(user)}{isCurrentUser && ` (${t('conversationDetails.you')})`}
                             </span>
                             {(participant.role === UserRoleEnum.ADMIN || 
                               (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
@@ -231,7 +232,7 @@ export function ConversationParticipantsPopover({
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>
                             <span>•</span>
-                            <span className="text-green-600">{tUI('online')}</span>
+                            <span className="text-green-600">{t('conversationUI.online')}</span>
                           </div>
                         </div>
                         {isAdmin && !isCurrentUser && (
@@ -240,8 +241,8 @@ export function ConversationParticipantsPopover({
                             size="sm"
                             onClick={() => handleRemoveParticipant(user.id)}
                             disabled={isLoading}
-                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            title={tUI('removeFromGroup')}
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title={t('conversationDetails.removeFromGroup')}
                           >
                             <UserX className="h-3 w-3" />
                           </Button>
@@ -256,31 +257,31 @@ export function ConversationParticipantsPopover({
             {/* Section Hors ligne */}
             <div>
               <div className="flex items-center justify-between mt-2 mb-1">
-                <span className="text-xs font-semibold text-gray-600">{tUI('offline')}</span>
+                <span className="text-xs font-semibold text-muted-foreground">{t('conversationDetails.offline')}</span>
                 <Badge variant="outline" className="text-[10px]">{offlineParticipants.length}</Badge>
               </div>
               {offlineParticipants.length === 0 ? (
-                <div className="text-xs text-gray-400">{tUI('noOfflineParticipants')}</div>
+                <div className="text-xs text-muted-foreground">{t('conversationDetails.noOfflineParticipants')}</div>
               ) : (
                 <div className="space-y-1">
                   {offlineParticipants.map((participant) => {
                     const user = participant.user;
                     const isCurrentUser = user.id === currentUser.id;
                     return (
-                      <div key={participant.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
+                      <div key={participant.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors">
                         <div className="relative">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={user.avatar} />
-                            <AvatarFallback className="text-xs bg-gray-100 text-gray-600">
+                            <AvatarFallback className="text-xs bg-muted text-muted-foreground">
                               {getAvatarFallback(user)}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-gray-400 rounded-full border-2 border-background" />
+                          <div className="absolute -bottom-0 -right-0 h-3 w-3 bg-muted-foreground/50 rounded-full border-2 border-card" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium truncate">
-                              {getDisplayName(user)}{isCurrentUser && ` (${tUI('you')})`}
+                            <span className="text-sm font-medium truncate text-foreground">
+                              {getDisplayName(user)}{isCurrentUser && ` (${t('conversationDetails.you')})`}
                             </span>
                             {(participant.role === UserRoleEnum.ADMIN || 
                               (conversationType !== 'direct' && participant.role === UserRoleEnum.CREATOR)) && 
@@ -289,7 +290,7 @@ export function ConversationParticipantsPopover({
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <span>@{user.username}</span>
                             <span>•</span>
-                            <span className="text-muted-foreground">{tUI('offline')}</span>
+                            <span className="text-muted-foreground">{t('conversationDetails.offline')}</span>
                           </div>
                         </div>
                         {isAdmin && !isCurrentUser && (
@@ -298,8 +299,8 @@ export function ConversationParticipantsPopover({
                             size="sm"
                             onClick={() => handleRemoveParticipant(user.id)}
                             disabled={isLoading}
-                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            title={tUI('removeFromGroup')}
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title={t('conversationDetails.removeFromGroup')}
                           >
                             <UserX className="h-3 w-3" />
                           </Button>

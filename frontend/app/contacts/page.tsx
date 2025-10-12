@@ -40,7 +40,7 @@ import { User } from '@/types';
 import { usersService, conversationsService, type ParticipantsFilters } from '@/services';
 import { ShareAffiliateModal } from '@/components/affiliate/share-affiliate-modal';
 import { useUser } from '@/stores';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface FriendRequest {
   id: string;
@@ -78,7 +78,7 @@ interface AffiliateRelation {
 export default function ContactsPage() {
   const router = useRouter();
   const user = useUser();
-  const { t } = useTranslations('contacts');
+  const { t } = useI18n('contacts');
   const [contacts, setContacts] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -382,7 +382,7 @@ export default function ContactsPage() {
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     {displayedUsers.length === 1 ? t('contactsFound', { count: displayedUsers.length }) : t('contactsFound_plural', { count: displayedUsers.length })}
                   </p>
                 </div>
@@ -415,10 +415,10 @@ export default function ContactsPage() {
                     <Card>
                       <CardContent className="flex flex-col items-center justify-center py-12">
                         <Users className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                           {searchQuery ? t('messages.noContactsFound') : t('messages.noContacts')}
                         </h3>
-                        <p className="text-gray-600 text-center max-w-sm mb-4">
+                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm mb-4">
                           {searchQuery 
                             ? t('messages.noContactsFoundDescription')
                             : t('messages.noContactsDescription')
@@ -448,10 +448,10 @@ export default function ContactsPage() {
                                 </Avatar>
                                 
                                 <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900">
+                                  <h3 className="font-semibold text-gray-900 dark:text-white">
                                     {getUserDisplayName(contact)}
                                   </h3>
-                                  <p className="text-sm text-gray-600">@{contact.username}</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">@{contact.username}</p>
                                   
                                   <div className="flex items-center space-x-4 mt-1">
                                     <div className="flex items-center space-x-1">
@@ -544,8 +544,8 @@ export default function ContactsPage() {
                     <Card>
                       <CardContent className="flex flex-col items-center justify-center py-12">
                         <Clock className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noPendingRequests')}</h3>
-                        <p className="text-gray-600 text-center max-w-sm">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noPendingRequests')}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
                           {t('messages.noPendingRequestsDescription')}
                         </p>
                       </CardContent>
@@ -569,10 +569,10 @@ export default function ContactsPage() {
                                   </Avatar>
                                   
                                   <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">
                                       {getUserDisplayName(otherUser!)}
                                     </h3>
-                                    <p className="text-sm text-gray-600">@{otherUser?.username}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">@{otherUser?.username}</p>
                                     <p className="text-xs text-gray-500">
                                       {isCurrentUserSender 
                                         ? t('messages.requestSent', { date: new Date(request.createdAt).toLocaleDateString('pt-BR') })
@@ -630,8 +630,8 @@ export default function ContactsPage() {
                     <Card>
                       <CardContent className="flex flex-col items-center justify-center py-12">
                         <UserCheck className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noConnectedContacts')}</h3>
-                        <p className="text-gray-600 text-center max-w-sm">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noConnectedContacts')}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
                           {t('messages.noConnectedContactsDescription')}
                         </p>
                       </CardContent>
@@ -655,10 +655,10 @@ export default function ContactsPage() {
                                   </Avatar>
                                   
                                   <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">
                                       {getUserDisplayName(otherUser!)}
                                     </h3>
-                                    <p className="text-sm text-gray-600">@{otherUser?.username}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">@{otherUser?.username}</p>
                                     <div className="flex items-center space-x-1 mt-1">
                                       <div className={`w-2 h-2 rounded-full ${otherUser?.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                                       <span className="text-xs text-gray-500">
@@ -698,8 +698,8 @@ export default function ContactsPage() {
                     <Card>
                       <CardContent className="flex flex-col items-center justify-center py-12">
                         <UserX className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noRefusedRequests')}</h3>
-                        <p className="text-gray-600 text-center max-w-sm">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noRefusedRequests')}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
                           {t('messages.noRefusedRequestsDescription')}
                         </p>
                       </CardContent>
@@ -724,10 +724,10 @@ export default function ContactsPage() {
                                   </Avatar>
                                   
                                   <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900">
+                                    <h3 className="font-semibold text-gray-900 dark:text-white">
                                       {getUserDisplayName(otherUser!)}
                                     </h3>
-                                    <p className="text-sm text-gray-600">@{otherUser?.username}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">@{otherUser?.username}</p>
                                     <p className="text-xs text-gray-500">
                                       {t('messages.requestRejected', { date: new Date(request.updatedAt).toLocaleDateString('pt-BR') })}
                                     </p>
@@ -736,7 +736,7 @@ export default function ContactsPage() {
                                 
                                 <div className="flex items-center space-x-2">
                                   {isCurrentUserSender ? (
-                                    <Badge variant="outline" className="text-red-600 border-red-200">
+                                    <Badge variant="outline" className="text-red-600 dark:text-red-400 border-red-200">
                                       <UserX className="h-3 w-3 mr-1" />
                                       {t('status.rejected')}
                                     </Badge>
@@ -772,8 +772,8 @@ export default function ContactsPage() {
                     <Card>
                       <CardContent className="flex flex-col items-center justify-center py-12">
                         <Share2 className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noAffiliateContacts')}</h3>
-                        <p className="text-gray-600 text-center max-w-sm">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('messages.noAffiliateContacts')}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-center max-w-sm">
                           {t('messages.noAffiliateContactsDescription')}
                         </p>
                       </CardContent>
@@ -793,22 +793,22 @@ export default function ContactsPage() {
                                 </Avatar>
                                 
                                 <div className="flex-1">
-                                  <h3 className="font-semibold text-gray-900">
+                                  <h3 className="font-semibold text-gray-900 dark:text-white">
                                     {getUserDisplayName(relation.referredUser)}
                                   </h3>
-                                  <p className="text-sm text-gray-600">@{relation.referredUser.username}</p>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">@{relation.referredUser.username}</p>
                                   
                                   {/* Informations détaillées */}
                                   <div className="space-y-2 mt-3">
                                     {/* Email si disponible */}
                                     {relation.referredUser.email && (
-                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
+                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                                         <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
                                         <div className="flex-1 min-w-0">
                                           <span className="text-xs text-gray-500 uppercase tracking-wide">
                                             {t('messages.emailAddress')}
                                           </span>
-                                          <p className="text-sm text-gray-700 truncate">
+                                          <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
                                             {relation.referredUser.email}
                                           </p>
                                         </div>
@@ -830,13 +830,13 @@ export default function ContactsPage() {
                                     
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                       {/* Date d'inscription */}
-                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
+                                      <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                                         <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
                                         <div className="flex-1">
                                           <span className="text-xs text-gray-500 uppercase tracking-wide block">
                                             {t('messages.registeredAt')}
                                           </span>
-                                          <p className="text-sm text-gray-700">
+                                          <p className="text-sm text-gray-700 dark:text-gray-300">
                                             {new Date(relation.referredUser.createdAt).toLocaleDateString('fr-FR', {
                                               day: 'numeric',
                                               month: 'short',
@@ -847,13 +847,13 @@ export default function ContactsPage() {
                                       </div>
                                       
                                       {/* Date de jointure via le lien */}
-                                      <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-md">
+                                      <div className="flex items-center space-x-2 p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
                                         <UserCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
                                         <div className="flex-1">
                                           <span className="text-xs text-green-600 uppercase tracking-wide block">
                                             {t('messages.joinedOn')}
                                           </span>
-                                          <p className="text-sm text-green-700 font-medium">
+                                          <p className="text-sm text-green-700 dark:text-green-300 font-medium">
                                             {new Date(relation.createdAt).toLocaleDateString('fr-FR', {
                                               day: 'numeric',
                                               month: 'short',
@@ -865,10 +865,10 @@ export default function ContactsPage() {
                                     </div>
                                     
                                     {/* Statut en ligne/hors ligne */}
-                                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                    <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
                                       <div className="flex items-center space-x-2">
                                         <div className={`w-3 h-3 rounded-full ${relation.referredUser.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                        <span className="text-sm text-gray-700">
+                                        <span className="text-sm text-gray-700 dark:text-gray-300">
                                           {relation.referredUser.isOnline ? t('status.online') : t('status.offline')}
                                         </span>
                                       </div>

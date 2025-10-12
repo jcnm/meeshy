@@ -2,7 +2,7 @@
 
 import { GroupsLayout } from '@/components/groups/groups-layout';
 import { Suspense, use } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface GroupPageProps {
   params: Promise<{
@@ -16,7 +16,7 @@ function GroupPageContent({ params }: GroupPageProps) {
 }
 
 function GroupPageFallback() {
-  const { t } = useTranslations('groups');
+  const { t } = useI18n('groups');
   return <div>Chargement du groupe...</div>;
 }
 

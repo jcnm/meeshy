@@ -36,7 +36,7 @@ import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { LinkConversationService } from '@/services/link-conversation.service';
 
 // Langues supportées pour les participants anonymes
@@ -65,7 +65,7 @@ export default function JoinConversationPage() {
   const router = useRouter();
   const linkId = params?.linkId as string;
   const { user: currentUser, login, joinAnonymously, isChecking, isAnonymous, token, logout, leaveAnonymousSession } = useAuth();
-  const { t } = useTranslations('joinPage');
+  const { t } = useI18n('joinPage');
 
   // Fonction pour obtenir le type de conversation traduit
   const getConversationTypeLabel = (type: string | undefined) => {
@@ -385,7 +385,7 @@ export default function JoinConversationPage() {
 
   if (isLoading || isChecking) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
       </div>
     );
@@ -439,15 +439,15 @@ export default function JoinConversationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
+      <header className="border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <MessageSquare className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">Meeshy</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">Meeshy</span>
           </div>
           
           {!currentUser && (
@@ -492,7 +492,7 @@ export default function JoinConversationPage() {
           
           {currentUser && (
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {isAnonymous ? 'Session anonyme' : 'Connecté'}: {currentUser.displayName || `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim() || currentUser.username}
               </span>
               <Button 
@@ -558,17 +558,17 @@ export default function JoinConversationPage() {
                 </div>
               )}
               {/* Informations sur la conversation */}
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">{t('type')}:</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('type')}:</span>
                   <Badge variant={getBadgeVariant(conversationLink.conversation?.type) as any}>
                     {getConversationTypeLabel(conversationLink.conversation?.type)}
                   </Badge>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">{t('participants')}:</span>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('participants')}:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     {conversationLink.stats?.totalParticipants || 0} {t('members')}
                     {conversationLink.stats && conversationLink.stats.anonymousCount > 0 && (
                       <span className="text-xs text-gray-500 ml-1">
@@ -580,9 +580,9 @@ export default function JoinConversationPage() {
                 
                 {conversationLink.stats && conversationLink.stats.languageCount > 0 && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">{t('spokenLanguages')}:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('spokenLanguages')}:</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
                         {conversationLink.stats.languageCount} {t('languages')}
                       </span>
                       <div className="flex gap-1">
@@ -605,16 +605,16 @@ export default function JoinConversationPage() {
                 )}
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">{t('createdOn')}:</span>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('createdOn')}:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     {conversationLink.conversation?.createdAt ? new Date(conversationLink.conversation.createdAt).toLocaleDateString() : 'N/A'}
                   </span>
                 </div>
 
                 {conversationLink.expiresAt && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">{t('expiresOn')}:</span>
-                    <span className="text-sm text-gray-600 flex items-center">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('expiresOn')}:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
                       {new Date(conversationLink.expiresAt).toLocaleDateString()}
                     </span>
@@ -625,7 +625,7 @@ export default function JoinConversationPage() {
               {/* Actions */}
               {currentUser ? (
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                  <div className="flex items-center space-x-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <div>
                       <p className="font-medium text-green-900">
@@ -649,7 +649,7 @@ export default function JoinConversationPage() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="text-center text-gray-600">
+                  <div className="text-center text-gray-600 dark:text-gray-400">
                     <p className="mb-4">Choisissez comment rejoindre cette conversation</p>
                   </div>
                   
@@ -672,7 +672,7 @@ export default function JoinConversationPage() {
                           <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-white px-2 text-muted-foreground">Ou avec un compte</span>
+                          <span className="bg-white dark:bg-gray-800 px-2 text-muted-foreground">Ou avec un compte</span>
                         </div>
                       </div>
                       
@@ -718,8 +718,8 @@ export default function JoinConversationPage() {
                     /* Formulaire anonyme */
                     <div className="space-y-4">
                       <div className="text-center mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">Accès anonyme</h3>
-                        <p className="text-sm text-gray-600">Créez votre identité temporaire</p>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Accès anonyme</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Créez votre identité temporaire</p>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">

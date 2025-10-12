@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { 
   MessageSquare, 
   Users, 
@@ -46,7 +46,7 @@ import { AuthGuard } from '@/components/auth/AuthGuard';
 function DashboardPageContent() {
   const router = useRouter();
   const user = useUser();
-  const { t, currentLanguage } = useTranslations('dashboard');
+  const { t, currentLanguage } = useI18n('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);

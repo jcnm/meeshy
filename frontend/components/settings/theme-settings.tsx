@@ -8,11 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Palette, Monitor, Sun, Moon, Languages } from 'lucide-react';
 import { toast } from 'sonner';
-import { useCurrentInterfaceLanguage, useLanguageActions } from '@/stores';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTheme, useAppActions, useCurrentInterfaceLanguage, useLanguageActions } from '@/stores';
+import { useI18n } from '@/hooks/useI18n';
 
 interface ThemeConfig {
-  theme: 'light' | 'dark' | 'system';
   accentColor: string;
   fontSize: 'small' | 'medium' | 'large';
   compactMode: boolean;
@@ -22,10 +21,15 @@ interface ThemeConfig {
 }
 
 export function ThemeSettings() {
-  const { t } = useTranslations('settings');
-  const { currentInterfaceLanguage, setInterfaceLanguage, getSupportedLanguages } = useLanguage();
+  const { t } = useI18n('settings');
+  // Utiliser Zustand pour le thème global
+  const theme = useTheme();
+  const { setTheme } = useAppActions();
+  // Utiliser Zustand pour la langue
+  const currentInterfaceLanguage = useCurrentInterfaceLanguage();
+  const { setInterfaceLanguage } = useLanguageActions();
+  
   const [config, setConfig] = useState<ThemeConfig>({
-    theme: 'system',
     accentColor: 'blue',
     fontSize: 'medium',
     compactMode: false,
@@ -37,7 +41,10 @@ export function ThemeSettings() {
   useEffect(() => {
     const savedConfig = localStorage.getItem('meeshy-theme-config');
     if (savedConfig) {
-      setConfig(JSON.parse(savedConfig));
+      const parsed = JSON.parse(savedConfig);
+      // Ne pas charger le thème depuis localStorage car géré par Zustand
+      const { theme: _, ...rest } = parsed;
+      setConfig({ ...config, ...rest });
     }
   }, []);
 
@@ -45,6 +52,11 @@ export function ThemeSettings() {
     const newConfig = { ...config, [key]: value };
     setConfig(newConfig);
     localStorage.setItem('meeshy-theme-config', JSON.stringify(newConfig));
+    toast.success(t('theme.settingsUpdated'));
+  };
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'auto') => {
+    setTheme(newTheme);
     toast.success(t('theme.settingsUpdated'));
   };
 
@@ -79,24 +91,24 @@ export function ThemeSettings() {
             <Label className="text-sm sm:text-base">{t('theme.displayMode.title')}</Label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <Button
-                variant={config.theme === 'light' ? 'default' : 'outline'}
-                onClick={() => handleConfigChange('theme', 'light')}
+                variant={theme === 'light' ? 'default' : 'outline'}
+                onClick={() => handleThemeChange('light')}
                 className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Sun className="h-4 w-4" />
                 <span className="text-sm sm:text-base">{t('theme.displayMode.light')}</span>
               </Button>
               <Button
-                variant={config.theme === 'dark' ? 'default' : 'outline'}
-                onClick={() => handleConfigChange('theme', 'dark')}
+                variant={theme === 'dark' ? 'default' : 'outline'}
+                onClick={() => handleThemeChange('dark')}
                 className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Moon className="h-4 w-4" />
                 <span className="text-sm sm:text-base">{t('theme.displayMode.dark')}</span>
               </Button>
               <Button
-                variant={config.theme === 'system' ? 'default' : 'outline'}
-                onClick={() => handleConfigChange('theme', 'system')}
+                variant={theme === 'auto' ? 'default' : 'outline'}
+                onClick={() => handleThemeChange('auto')}
                 className="flex items-center gap-2 justify-center sm:justify-start"
               >
                 <Monitor className="h-4 w-4" />

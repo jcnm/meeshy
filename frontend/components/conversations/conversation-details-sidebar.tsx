@@ -30,7 +30,7 @@ import { toast } from 'sonner';
 import { ConversationLinksSection } from './conversation-links-section';
 import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 // Import des composants de la sidebar de BubbleStreamPage
 import {
@@ -57,7 +57,7 @@ export function ConversationDetailsSidebar({
   isOpen,
   onClose
 }: ConversationDetailsSidebarProps) {
-  const { t } = useTranslations('conversationDetails');
+  const { t } = useI18n('conversations');
   
   // États pour la gestion des conversations
   const [isEditingName, setIsEditingName] = useState(false);
@@ -158,7 +158,7 @@ export function ConversationDetailsSidebar({
       
       // Validation du nom
       if (!conversationName.trim()) {
-        toast.error(t('nameCannotBeEmpty'));
+        toast.error(t('conversationDetails.nameCannotBeEmpty'));
         return;
       }
       
@@ -173,21 +173,21 @@ export function ConversationDetailsSidebar({
       });
       
       setIsEditingName(false);
-      toast.success(t('nameUpdated'));
+      toast.success(t('conversationDetails.nameUpdated'));
     } catch (error) {
       console.error('Erreur lors de la mise à jour du nom:', error);
       
       // Gestion d'erreur améliorée
-      let errorMessage = t('updateError');
+      let errorMessage = t('conversationDetails.updateError');
       
       if (error.status === 409) {
-        errorMessage = t('conversationExists');
+        errorMessage = t('conversationDetails.conversationExists');
       } else if (error.status === 403) {
-        errorMessage = t('noPermissionToModify');
+        errorMessage = t('conversationDetails.noPermissionToModify');
       } else if (error.status === 404) {
-        errorMessage = t('conversationNotFound');
+        errorMessage = t('conversationDetails.conversationNotFound');
       } else if (error.status === 400) {
-        errorMessage = t('invalidData');
+        errorMessage = t('conversationDetails.invalidData');
       }
       
       toast.error(errorMessage);
@@ -205,10 +205,10 @@ export function ConversationDetailsSidebar({
     try {
       setIsLoading(true);
       await conversationsService.removeParticipant(conversation.id, userId);
-      toast.success(t('participantRemoved'));
+      toast.success(t('conversationDetails.participantRemoved'));
     } catch (error) {
       console.error('Erreur lors de la suppression du participant:', error);
-      toast.error(t('removeParticipantError'));
+      toast.error(t('conversationDetails.removeParticipantError'));
     } finally {
       setIsLoading(false);
     }
@@ -217,16 +217,17 @@ export function ConversationDetailsSidebar({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-80 bg-white/95 backdrop-blur-lg border-l border-border/30 z-50 shadow-xl">
+    <div className="fixed inset-y-0 right-0 w-80 bg-card/95 dark:bg-card/95 backdrop-blur-lg border-l border-border z-50 shadow-xl">
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border/30">
-          <h2 className="text-lg font-semibold">{t('title')}</h2>
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <h2 className="text-lg font-semibold">{t('conversationDetails.title')}</h2>
           <Button
             size="sm"
             variant="ghost"
             onClick={onClose}
             className="h-8 w-8 p-0 rounded-full"
+            aria-label={t('conversationDetails.close')}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -250,7 +251,7 @@ export function ConversationDetailsSidebar({
                       value={conversationName}
                       onChange={(e) => setConversationName(e.target.value)}
                       className="h-8 text-sm"
-                      placeholder={t('conversationName')}
+                      placeholder={t('conversationDetails.conversationName')}
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -290,7 +291,7 @@ export function ConversationDetailsSidebar({
                         setIsEditingName(true);
                         setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
                       }}
-                      title={t('clickToEdit')}
+                      title={t('conversationDetails.clickToEdit')}
                     >
                       {getConversationDisplayName(conversation)}
                     </h3>
@@ -302,14 +303,14 @@ export function ConversationDetailsSidebar({
                         setConversationName(conversation.title || conversation.name || getConversationDisplayName(conversation));
                       }}
                       className="h-6 w-6 p-0"
-                      title={t('editName')}
+                      title={t('conversationDetails.editName')}
                     >
                       <Edit className="h-3 w-3" />
                     </Button>
                   </div>
                 )}
                 <p className="text-sm text-muted-foreground text-center">
-                  {conversation.type !== 'direct' ? t('conversationGroup') : t('conversationPrivate')}
+                  {conversation.type !== 'direct' ? t('conversationDetails.conversationGroup') : t('conversationDetails.conversationPrivate')}
                 </p>
               </div>
             </div>
@@ -324,7 +325,7 @@ export function ConversationDetailsSidebar({
 
             {/* Section Langues Actives - Foldable */}
             <FoldableSection
-              title={t('activeLanguages')}
+              title={t('conversationDetails.activeLanguages')}
               icon={<Languages className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
@@ -333,16 +334,16 @@ export function ConversationDetailsSidebar({
 
             {/* Section Utilisateurs Actifs - Foldable */}
             <FoldableSection
-              title={`${t('activeUsers')} (${activeUsers.length})`}
+              title={`${t('conversationDetails.activeUsers')} (${activeUsers.length})`}
               icon={<Users className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
               <div className="space-y-3">
                 {activeUsers.slice(0, 6).map((user) => (
-                  <div key={user.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors">
+                  <div key={user.id} className="flex items-center space-x-3 p-2 rounded hover:bg-accent cursor-pointer transition-colors">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar} alt={user.firstName} />
-                      <AvatarFallback className="bg-green-100 text-green-800 text-xs font-medium">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                         {(user.firstName || user.username || 'U').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -363,7 +364,7 @@ export function ConversationDetailsSidebar({
                 {activeUsers.length > 6 && (
                   <div className="text-center pt-2">
                     <p className="text-xs text-gray-500">
-                      {t('otherActiveUsers', { count: activeUsers.length - 6 })}
+                      {t('conversationDetails.otherActiveUsers', { count: activeUsers.length - 6 })}
                     </p>
                   </div>
                 )}
@@ -371,7 +372,7 @@ export function ConversationDetailsSidebar({
                 {activeUsers.length === 0 && (
                   <div className="text-center py-4">
                     <Users className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-500">{t('noActiveUsers')}</p>
+                    <p className="text-sm text-gray-500">{t('conversationDetails.noActiveUsers')}</p>
                   </div>
                 )}
               </div>
@@ -381,7 +382,7 @@ export function ConversationDetailsSidebar({
             {/* Section des liens de partage - seulement pour les conversations de groupe */}
             {conversation.type !== 'direct' && (
               <FoldableSection
-                title={t('shareLinks')}
+                title={t('conversationDetails.shareLinks')}
                 icon={<Link2 className="h-4 w-4 mr-2" />}
                 defaultExpanded={false}
               >
@@ -397,7 +398,7 @@ export function ConversationDetailsSidebar({
                     className="w-full"
                   >
                     <Link2 className="h-4 w-4 mr-2" />
-                    {t('createLink')}
+                    {t('conversationDetails.createLink')}
                   </CreateLinkButton>
                   
                   {/* Liste des liens existants */}

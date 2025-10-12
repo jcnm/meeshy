@@ -12,7 +12,7 @@ import {
 import { UserSettings } from './user-settings';
 import { LanguageSettings } from '@/components/translation/language-settings';
 import { ThemeSettings } from './theme-settings';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface CompleteUserSettingsProps {
   user: User | null;
@@ -21,7 +21,7 @@ interface CompleteUserSettingsProps {
 }
 
 export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteUserSettingsProps) {
-  const { t } = useTranslations('settings');
+  const { t } = useI18n('settings');
   const [activeTab, setActiveTab] = useState('user');
 
   // Gérer l'ancrage URL pour les tabs

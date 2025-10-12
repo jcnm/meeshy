@@ -51,7 +51,7 @@ import {
 import { conversationsService } from '@/services/conversations.service';
 import { Conversation } from '@shared/types';
 import { User } from '@shared/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { useUser } from '@/stores';
 
 // Langues supportées
@@ -172,7 +172,7 @@ export function CreateLinkModalV2({
   preGeneratedLink,
   preGeneratedToken
 }: CreateLinkModalV2Props) {
-  const { t } = useTranslations('createLinkModal');
+  const { t } = useI18n('modals');
   const { user: currentUser } = useUser();
   
   // États pour les étapes
@@ -340,12 +340,12 @@ export function CreateLinkModalV2({
     // Le titre est généré automatiquement, pas besoin de vérifier linkTitle
 
     if (!selectedConversationId && !createNewConversation) {
-      toast.error(t('errors.selectConversation'));
+      toast.error(t('createLinkModal.errors.selectConversation'));
       return;
     }
 
     if (createNewConversation && !newConversationData.title.trim()) {
-      toast.error(t('errors.enterTitle'));
+      toast.error(t('createLinkModal.errors.enterTitle'));
       return;
     }
 
@@ -414,9 +414,9 @@ export function CreateLinkModalV2({
         // Copier automatiquement dans le presse-papiers
         const copyResult = await copyToClipboard(linkUrl);
         if (copyResult.success) {
-          toast.success(t('successMessages.linkGeneratedAndCopied'));
+          toast.success(t('createLinkModal.successMessages.linkGeneratedAndCopied'));
         } else {
-          toast.success(t('successMessages.linkGenerated'));
+          toast.success(t('createLinkModal.successMessages.linkGenerated'));
         }
         
         // Ne pas appeler onLinkCreated() ici pour garder la modale ouverte
@@ -438,7 +438,7 @@ export function CreateLinkModalV2({
     if (generatedLink) {
       const copyResult = await copyToClipboard(generatedLink, 'input[readonly]');
       if (copyResult.success) {
-        toast.success(t('successMessages.linkCopied'));
+        toast.success(t('createLinkModal.successMessages.linkCopied'));
       } else {
         toast.info(copyResult.message);
       }
@@ -449,7 +449,7 @@ export function CreateLinkModalV2({
     if (generatedToken) {
       const copyResult = await copyToClipboard(generatedToken);
       if (copyResult.success) {
-        toast.success(t('successMessages.tokenCopied'));
+        toast.success(t('createLinkModal.successMessages.tokenCopied'));
       } else {
         toast.info(copyResult.message);
       }
@@ -544,13 +544,13 @@ export function CreateLinkModalV2({
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
-        return t('steps.selectConversation');
+        return t('createLinkModal.steps.selectConversation');
       case 2:
-        return createNewConversation ? t('createNewConversation.title') : t('steps.configureLink');
+        return createNewConversation ? t('createLinkModal.createNewConversation.title') : t('createLinkModal.steps.configureLink');
       case 3:
-        return t('steps.linkOptions');
+        return t('createLinkModal.steps.linkOptions');
       case 4:
-        return t('steps.summaryAndGeneration');
+        return t('createLinkModal.steps.summaryAndGeneration');
       default:
         return '';
     }
@@ -559,13 +559,13 @@ export function CreateLinkModalV2({
   const getStepDescription = () => {
     switch (currentStep) {
       case 1:
-        return t('stepDescriptions.selectConversation');
+        return t('createLinkModal.stepDescriptions.selectConversation');
       case 2:
-        return createNewConversation ? t('stepDescriptions.configureNewConversation') : t('stepDescriptions.configureLink');
+        return createNewConversation ? t('createLinkModal.stepDescriptions.configureNewConversation') : t('createLinkModal.stepDescriptions.configureLink');
       case 3:
-        return t('stepDescriptions.linkOptions');
+        return t('createLinkModal.stepDescriptions.linkOptions');
       case 4:
-        return t('stepDescriptions.summaryAndGeneration');
+        return t('createLinkModal.stepDescriptions.summaryAndGeneration');
       default:
         return '';
     }
@@ -598,9 +598,9 @@ export function CreateLinkModalV2({
               <Plus className="h-6 w-6" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold">{t('createNewConversation.title')}</h3>
+              <h3 className="text-lg font-semibold">{t('createLinkModal.createNewConversation.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                {t('createNewConversation.description')}
+                {t('createLinkModal.createNewConversation.description')}
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -618,7 +618,7 @@ export function CreateLinkModalV2({
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">{t('createNewConversation.orSelectExisting')}</span>
+          <span className="bg-background px-2 text-muted-foreground">{t('createLinkModal.createNewConversation.orSelectExisting')}</span>
         </div>
       </div>
 
@@ -627,7 +627,7 @@ export function CreateLinkModalV2({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder={t('search.conversations')}
+            placeholder={t('createLinkModal.search.conversations')}
             value={conversationSearchQuery}
             onChange={(e) => setConversationSearchQuery(e.target.value)}
             className="pl-10"
@@ -643,7 +643,7 @@ export function CreateLinkModalV2({
           ) : filteredConversations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t('search.noConversationsFound')}</p>
+              <p>{t('createLinkModal.search.noConversationsFound')}</p>
             </div>
           ) : (
             filteredConversations.map((conversation) => (
@@ -1373,10 +1373,10 @@ export function CreateLinkModalV2({
               const isActive = stepNumber === currentStep;
               const isCompleted = stepNumber < currentStep;
               const stepTitles = [
-                t('steps.selectConversation'),
-                t('steps.configureLink'),
-                t('steps.linkOptions'),
-                t('steps.summaryAndGeneration')
+                t('createLinkModal.steps.selectConversation'),
+                t('createLinkModal.steps.configureLink'),
+                t('createLinkModal.steps.linkOptions'),
+                t('createLinkModal.steps.summaryAndGeneration')
               ];
               
               return (

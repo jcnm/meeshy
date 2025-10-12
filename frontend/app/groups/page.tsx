@@ -2,7 +2,7 @@
 
 import { GroupsLayout } from '@/components/groups/groups-layout';
 import { Suspense } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 function GroupsPageContent() {
@@ -10,7 +10,7 @@ function GroupsPageContent() {
 }
 
 function GroupsPageFallback() {
-  const { t } = useTranslations('groups');
+  const { t } = useI18n('groups');
   return <div>Chargement des groupes...</div>;
 }
 

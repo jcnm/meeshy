@@ -15,7 +15,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { User } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
 import { apiService } from '@/services/api.service';
 import { getUserInitials } from '@/utils/user';
@@ -35,7 +35,7 @@ export function InviteUserModal({
   currentParticipants,
   onUserInvited 
 }: InviteUserModalProps) {
-  const { t } = useTranslations('conversation');
+  const { t } = useI18n('conversations');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);

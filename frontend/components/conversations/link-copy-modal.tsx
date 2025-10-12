@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Copy, Check, ExternalLink, Settings } from 'lucide-react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface LinkCopyModalProps {
   isOpen: boolean;
@@ -55,7 +55,7 @@ export function LinkCopyModal({
   onOpenAdvancedSettings
 }: LinkCopyModalProps) {
   const [copied, setCopied] = useState(false);
-  const { t } = useTranslations('createLinkButton');
+  const { t } = useI18n('modals');
 
   const copyToClipboard = async (text: string): Promise<boolean> => {
     // Méthode moderne avec navigator.clipboard
@@ -102,7 +102,7 @@ export function LinkCopyModal({
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return t('noExpiration');
+    if (!dateString) return t('createLinkButton.noExpiration');
     return new Date(dateString).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
@@ -113,7 +113,7 @@ export function LinkCopyModal({
   };
 
   const formatBoolean = (value?: boolean) => {
-    return value ? t('enabled') : t('disabled');
+    return value ? t('createLinkButton.enabled') : t('createLinkButton.disabled');
   };
 
   return (
@@ -126,8 +126,8 @@ export function LinkCopyModal({
               <ExternalLink className="h-3 w-3 text-green-600" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-900">{t('linkCreated')}</h3>
-              <p className="text-xs text-gray-600">{t('copyManually')}</p>
+              <h3 className="text-sm font-semibold text-gray-900">{t('createLinkButton.linkCreated')}</h3>
+              <p className="text-xs text-gray-600">{t('createLinkButton.copyManually')}</p>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@ export function LinkCopyModal({
         <div className="p-4 space-y-3">
           {/* Lien généré */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-gray-700">{t('generatedLink')}</Label>
+            <Label className="text-xs font-medium text-gray-700">{t('createLinkButton.generatedLink')}</Label>
             <div className="flex gap-2">
               <Input
                 value={linkUrl}
@@ -151,12 +151,12 @@ export function LinkCopyModal({
                 {copied ? (
                   <>
                     <Check className="h-3 w-3 text-green-600 mr-1" />
-                    {t('copied')}
+                    {t('createLinkButton.copied')}
                   </>
                 ) : (
                   <>
                     <Copy className="h-3 w-3 mr-1" />
-                    {t('copy')}
+                    {t('createLinkButton.copy')}
                   </>
                 )}
               </Button>
@@ -170,7 +170,7 @@ export function LinkCopyModal({
               <div className="bg-blue-50 rounded-lg p-2">
                 <div className="flex items-center gap-1 mb-1">
                   <div className="h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="text-xs font-medium text-blue-900">{t('participants')}</span>
+                  <span className="text-xs font-medium text-blue-900">{t('createLinkButton.participants')}</span>
                 </div>
                 <div className="text-xs text-blue-700">
                   {linkDetails.participantCount || 0}
@@ -182,10 +182,10 @@ export function LinkCopyModal({
               <div className="bg-orange-50 rounded-lg p-2">
                 <div className="flex items-center gap-1 mb-1">
                   <div className="h-2 w-2 rounded-full bg-orange-500" />
-                  <span className="text-xs font-medium text-orange-900">{t('uses')}</span>
+                  <span className="text-xs font-medium text-orange-900">{t('createLinkButton.uses')}</span>
                 </div>
                 <div className="text-xs text-orange-700">
-                  {linkDetails.maxUses ? `0/${linkDetails.maxUses}` : t('unlimited')}
+                  {linkDetails.maxUses ? `0/${linkDetails.maxUses}` : t('createLinkButton.unlimited')}
                 </div>
               </div>
             </div>
@@ -196,15 +196,15 @@ export function LinkCopyModal({
             <div className="grid grid-cols-2 gap-4">
               {/* Colonne 1: Permissions */}
               <div className="space-y-2">
-                <Label className="text-xs font-medium text-gray-700">{t('permissions')}</Label>
+                <Label className="text-xs font-medium text-gray-700">{t('createLinkButton.permissions')}</Label>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1">
                     <div className={`h-2 w-2 rounded-full ${linkDetails.allowAnonymousMessages ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    <span className="text-xs text-gray-600">{t('messages')}</span>
+                    <span className="text-xs text-gray-600">{t('createLinkButton.messages')}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className={`h-2 w-2 rounded-full ${linkDetails.allowAnonymousFiles ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    <span className="text-xs text-gray-600">{t('files')}</span>
+                    <span className="text-xs text-gray-600">{t('createLinkButton.files')}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div className={`h-2 w-2 rounded-full ${linkDetails.allowAnonymousImages ? 'bg-green-500' : 'bg-gray-300'}`} />

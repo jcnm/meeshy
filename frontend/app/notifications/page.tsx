@@ -21,12 +21,12 @@ import {
 import { useNotifications } from '@/hooks/use-notifications';
 import { notificationService } from '@/services/notification.service';
 import { NotificationTest } from '@/components/notifications/NotificationTest';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import type { Notification } from '@/services/notification.service';
 import { AuthGuard } from '@/components/auth/AuthGuard';
 
 function NotificationsPageContent() {
-  const { t } = useTranslations();
+  const { t } = useI18n('notifications');
   const { 
     notifications, 
     unreadNotifications, 
@@ -90,10 +90,10 @@ function NotificationsPageContent() {
     const diffHours = Math.floor(diffMinutes / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMinutes < 1) return t('notifications.timeAgo.now');
-    if (diffMinutes < 60) return t('notifications.timeAgo.minute', { count: diffMinutes });
-    if (diffHours < 24) return t('notifications.timeAgo.hour', { count: diffHours });
-    if (diffDays < 7) return t('notifications.timeAgo.day', { count: diffDays });
+    if (diffMinutes < 1) return t('timeAgo.now');
+    if (diffMinutes < 60) return t('timeAgo.minute', { count: diffMinutes });
+    if (diffHours < 24) return t('timeAgo.hour', { count: diffHours });
+    if (diffDays < 7) return t('timeAgo.day', { count: diffDays });
     return date.toLocaleDateString();
   };
 
@@ -103,9 +103,9 @@ function NotificationsPageContent() {
       return t(key, { count: unreadCount, total: totalCount });
     } else if (totalCount > 0) {
       const plural = totalCount > 1 ? 's' : '';
-      return t('notifications.unreadCount.allRead', { total: totalCount, plural });
+      return t('unreadCount.allRead', { total: totalCount, plural });
     } else {
-      return t('notifications.unreadCount.empty');
+      return t('unreadCount.empty');
     }
   };
 
@@ -128,12 +128,12 @@ function NotificationsPageContent() {
   }
 
   return (
-    <DashboardLayout title={t('notifications.pageTitle')}>
+    <DashboardLayout title={t('pageTitle')}>
       <div className="max-w-4xl mx-auto">
         {/* Header avec actions */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{t('notifications.pageTitle')}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t('pageTitle')}</h1>
             <p className="text-gray-600 mt-1">
               {getUnreadCountMessage()}
             </p>
@@ -147,7 +147,7 @@ function NotificationsPageContent() {
               className="hidden sm:flex"
             >
               <Settings className="h-4 w-4 mr-2" />
-              {t('notifications.preferences')}
+              {t('preferences')}
             </Button>
             
             {unreadCount > 0 && (
@@ -158,7 +158,7 @@ function NotificationsPageContent() {
                 className="flex items-center space-x-2"
               >
                 <CheckCheck className="h-4 w-4" />
-                <span>{t('notifications.markAllRead')}</span>
+                <span>{t('markAllRead')}</span>
               </Button>
             )}
           </div>
@@ -174,10 +174,10 @@ function NotificationsPageContent() {
                     <BellOff className="h-8 w-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {t('notifications.empty.title')}
+                    {t('empty.title')}
                   </h3>
                   <p className="text-gray-600 text-center max-w-sm">
-                    {t('notifications.empty.description')}
+                    {t('empty.description')}
                   </p>
                 </CardContent>
               </Card>
@@ -234,20 +234,20 @@ function NotificationsPageContent() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Settings className="h-5 w-5" />
-                  <span>{t('notifications.systemStatus')}</span>
+                  <span>{t('systemStatus')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('notifications.service')}</span>
+                  <span className="text-sm font-medium">{t('service')}</span>
                   <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('notifications.totalNotifications')}</span>
+                  <span className="text-sm font-medium">{t('totalNotifications')}</span>
                   <Badge variant="secondary">{totalCount}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{t('notifications.unread')}</span>
+                  <span className="text-sm font-medium">{t('unread')}</span>
                   <Badge variant={unreadCount > 0 ? "destructive" : "secondary"}>{unreadCount}</Badge>
                 </div>
               </CardContent>
@@ -256,7 +256,7 @@ function NotificationsPageContent() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('notifications.quickActions')}</CardTitle>
+                <CardTitle>{t('quickActions')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <NotificationTest />

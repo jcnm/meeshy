@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/clipboard';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface LinkSummaryModalProps {
   isOpen: boolean;
@@ -62,7 +62,7 @@ export function LinkSummaryModal({
   linkData
 }: LinkSummaryModalProps) {
   const [copied, setCopied] = useState(false);
-  const { t } = useTranslations('linkSummaryModal');
+  const { t } = useI18n('modals');
 
   const handleCopyLink = async () => {
     try {
@@ -107,17 +107,17 @@ export function LinkSummaryModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-primary" />
-            {t('title')}
+            {t('linkSummaryModal.title')}
           </DialogTitle>
           <DialogDescription>
-            {t('description')}
+            {t('linkSummaryModal.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Lien de partage */}
           <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">{t('shareLink')}</label>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">{t('linkSummaryModal.shareLink')}</label>
             <div className="flex items-center gap-2">
               <code className="flex-1 p-2 bg-muted rounded text-xs break-all">
                 {linkData.url}
@@ -133,7 +133,7 @@ export function LinkSummaryModal({
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
-                {copied ? t('copied') : t('copy')}
+                {copied ? t('linkSummaryModal.copied') : t('linkSummaryModal.copy')}
               </Button>
             </div>
           </div>
@@ -147,7 +147,7 @@ export function LinkSummaryModal({
                 {/* Expiration */}
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{t('expires')}</span>
+                  <span className="text-muted-foreground">{t('linkSummaryModal.expires')}</span>
                   <span className="font-medium">{formatExpirationDate(linkData.expirationDays)}</span>
                 </div>
 
@@ -155,26 +155,26 @@ export function LinkSummaryModal({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{t('userLimits')}</span>
+                    <span className="text-muted-foreground">{t('linkSummaryModal.userLimits')}</span>
                   </div>
                   <div className="ml-6 space-y-1 text-sm">
                     {linkData.maxUses ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">{t('limitedTo')}:</span>
-                        <Badge variant="outline">{linkData.maxUses} {linkData.maxUses === 1 ? t('usage') : t('usages')}</Badge>
+                        <span className="text-muted-foreground">{t('linkSummaryModal.limitedTo')}:</span>
+                        <Badge variant="outline">{linkData.maxUses} {linkData.maxUses === 1 ? t('linkSummaryModal.usage') : t('linkSummaryModal.usages')}</Badge>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground">{t('unlimitedUsage')}</span>
+                      <span className="text-muted-foreground">{t('linkSummaryModal.unlimitedUsage')}</span>
                     )}
                     {linkData.maxConcurrentUsers && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">{t('maxConcurrent')}:</span>
+                        <span className="text-muted-foreground">{t('linkSummaryModal.maxConcurrent')}:</span>
                         <Badge variant="outline">{linkData.maxConcurrentUsers}</Badge>
                       </div>
                     )}
                     {linkData.maxUniqueSessions && (
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">{t('maxSessions')}:</span>
+                        <span className="text-muted-foreground">{t('linkSummaryModal.maxSessions')}:</span>
                         <Badge variant="outline">{linkData.maxUniqueSessions}</Badge>
                       </div>
                     )}
@@ -185,12 +185,12 @@ export function LinkSummaryModal({
               {/* Exigences d'authentification */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">{t('authRequirements')}</span>
+                  <span className="text-muted-foreground">{t('linkSummaryModal.authRequirements')}</span>
                 </div>
                 <div className="ml-6 space-y-2">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('nickname')}</span>
+                    <span className="text-sm">{t('linkSummaryModal.nickname')}</span>
                     {linkData.requireNickname ? (
                       <Check className="h-4 w-4 text-green-600" />
                     ) : (
@@ -199,7 +199,7 @@ export function LinkSummaryModal({
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{t('email')}</span>
+                    <span className="text-sm">{t('linkSummaryModal.email')}</span>
                     {linkData.requireEmail ? (
                       <Check className="h-4 w-4 text-green-600" />
                     ) : (
@@ -213,7 +213,7 @@ export function LinkSummaryModal({
             {/* Langues autorisées */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">{t('languages')}</span>
+                <span className="text-muted-foreground">{t('linkSummaryModal.languages')}</span>
               </div>
               <div className="ml-6 flex flex-wrap gap-1">
                 {linkData.allowedLanguages.map((lang) => (
@@ -227,12 +227,12 @@ export function LinkSummaryModal({
             {/* Permissions d'envoi sur 3 colonnes */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">{t('sendPermissions')}</span>
+                <span className="text-muted-foreground">{t('linkSummaryModal.sendPermissions')}</span>
               </div>
               <div className="ml-6 grid grid-cols-1 md:grid-cols-3 gap-2">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('messages')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.messages')}</span>
                   {linkData.allowAnonymousMessages ? (
                     <Check className="h-4 w-4 text-green-600" />
                   ) : (
@@ -241,7 +241,7 @@ export function LinkSummaryModal({
                 </div>
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('files')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.files')}</span>
                   {linkData.allowAnonymousFiles ? (
                     <Check className="h-4 w-4 text-green-600" />
                   ) : (
@@ -250,7 +250,7 @@ export function LinkSummaryModal({
                 </div>
                 <div className="flex items-center gap-2">
                   <Image className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('images')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.images')}</span>
                   {linkData.allowAnonymousImages ? (
                     <Check className="h-4 w-4 text-green-600" />
                   ) : (
@@ -259,7 +259,7 @@ export function LinkSummaryModal({
                 </div>
                 <div className="flex items-center gap-2">
                   <Video className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('videos')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.videos')}</span>
                   {linkData.allowAnonymousFiles ? (
                     <Check className="h-4 w-4 text-green-600" />
                   ) : (
@@ -268,7 +268,7 @@ export function LinkSummaryModal({
                 </div>
                 <div className="flex items-center gap-2">
                   <Volume2 className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('audio')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.audio')}</span>
                   {linkData.allowAnonymousFiles ? (
                     <Check className="h-4 w-4 text-green-600" />
                   ) : (
@@ -277,7 +277,7 @@ export function LinkSummaryModal({
                 </div>
                 <div className="flex items-center gap-2">
                   <File className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('documents')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.documents')}</span>
                   {linkData.allowAnonymousFiles ? (
                     <Check className="h-4 w-4 text-green-600" />
                   ) : (
@@ -286,17 +286,17 @@ export function LinkSummaryModal({
                 </div>
                 <div className="flex items-center gap-2">
                   <Link className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('links')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.links')}</span>
                   <Check className="h-4 w-4 text-green-600" />
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('location')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.location')}</span>
                   <Check className="h-4 w-4 text-green-600" />
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{t('contacts')}</span>
+                  <span className="text-sm">{t('linkSummaryModal.contacts')}</span>
                   <Check className="h-4 w-4 text-green-600" />
                 </div>
               </div>

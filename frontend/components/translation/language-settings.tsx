@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { User as UserType, SUPPORTED_LANGUAGES } from '@/types';
 import { toast } from 'sonner';
 import { Globe, Languages, Target } from 'lucide-react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { buildApiUrl } from '@/lib/config';
 
 interface LanguageSettingsProps {
@@ -19,7 +19,7 @@ interface LanguageSettingsProps {
 }
 
 export function LanguageSettings({ user, onUserUpdate }: LanguageSettingsProps) {
-  const { t } = useTranslations('settings');
+  const { t } = useI18n('settings');
   const [settings, setSettings] = useState({
     systemLanguage: 'fr',
     regionalLanguage: 'fr',

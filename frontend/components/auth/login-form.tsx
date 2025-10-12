@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface LoginFormProps {
   onSuccess?: (user: User, token: string) => void; // Optional callback for custom behavior
@@ -16,7 +16,7 @@ interface LoginFormProps {
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
   const { login } = useAuth();
-  const { t } = useTranslations('login');
+  const { t } = useI18n('auth');
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -27,7 +27,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     e.preventDefault();
     
     if (!formData.username.trim() || !formData.password.trim()) {
-      toast.error(t('validation.required'));
+      toast.error(t('login.validation.required'));
       return;
     }
 
@@ -81,7 +81,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
       if (userData && token) {
         console.log('[LOGIN_FORM] Connexion réussie pour:', userData.username);
-        toast.success(t('success.loginSuccess'));
+        toast.success(t('login.success.loginSuccess'));
         
         // Use useAuth hook for authentication
         login(userData, token);
@@ -95,7 +95,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       }
     } catch (error) {
       console.error('[LOGIN_FORM] Erreur login:', error);
-      toast.error(error instanceof Error ? error.message : t('errors.loginFailed'));
+      toast.error(error instanceof Error ? error.message : t('login.errors.loginFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -104,34 +104,34 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="login-form-username">{t('usernameLabel')}</Label>
+        <Label htmlFor="login-form-username">{t('login.usernameLabel')}</Label>
         <Input
           id="login-form-username"
           type="text"
-          placeholder={t('usernamePlaceholder')}
+          placeholder={t('login.usernamePlaceholder')}
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           disabled={isLoading}
           required
         />
         <p className="text-xs text-gray-500">
-          {t('usernameHelp')}
+          {t('login.usernameHelp')}
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="login-form-password">{t('passwordLabel')}</Label>
+        <Label htmlFor="login-form-password">{t('login.passwordLabel')}</Label>
         <Input
           id="login-form-password"
           type="password"
-          placeholder={t('passwordPlaceholder')}
+          placeholder={t('login.passwordPlaceholder')}
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           disabled={isLoading}
           required
         />
         <p className="text-xs text-gray-500">
-          {t('passwordHelp')}
+          {t('login.passwordHelp')}
         </p>
       </div>
 
@@ -140,7 +140,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         className="w-full" 
         disabled={isLoading}
       >
-        {isLoading ? t('loggingIn') : t('loginButton')}
+        {isLoading ? t('login.loggingIn') : t('login.loginButton')}
       </Button>
     </form>
   );

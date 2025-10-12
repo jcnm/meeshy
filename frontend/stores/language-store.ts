@@ -36,17 +36,17 @@ type LanguageStore = LanguageState & LanguageActions;
 
 // Detect browser language
 const detectBrowserLanguage = (): string => {
-  if (typeof window === 'undefined') return 'fr';
+  if (typeof window === 'undefined') return 'en';
   
   const browserLang = navigator.language.split('-')[0];
-  const supportedLanguages = ['fr', 'en', 'es', 'de', 'pt', 'it', 'zh', 'ja', 'ar'];
+  const supportedLanguages = ['en'];
   
-  return supportedLanguages.includes(browserLang) ? browserLang : 'fr';
+  return supportedLanguages.includes(browserLang) ? browserLang : 'en';
 };
 
 const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
-  systemLanguage: 'fr',
-  regionalLanguage: 'fr',
+  systemLanguage: 'en',
+  regionalLanguage: 'en',
   customDestinationLanguage: undefined,
   autoTranslateEnabled: true,
   translateToSystemLanguage: true,
@@ -57,7 +57,7 @@ const DEFAULT_LANGUAGE_CONFIG: UserLanguageConfig = {
 const initialState: LanguageState = {
   currentInterfaceLanguage: detectBrowserLanguage(),
   currentMessageLanguage: detectBrowserLanguage(),
-  availableLanguages: ['fr', 'en', 'es', 'de', 'pt', 'it', 'zh', 'ja', 'ar'],
+  availableLanguages: ['en'],
   userLanguageConfig: DEFAULT_LANGUAGE_CONFIG,
 };
 

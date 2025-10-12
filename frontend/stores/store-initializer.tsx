@@ -8,7 +8,6 @@ import { useEffect, ReactNode } from 'react';
 import { useAppStore } from './app-store';
 import { useAuthStore } from './auth-store';
 import { useLanguageStore } from './language-store';
-import { useI18nStore } from './i18n-store';
 
 interface StoreInitializerProps {
   children: ReactNode;
@@ -18,8 +17,6 @@ export function StoreInitializer({ children }: StoreInitializerProps) {
   const initializeApp = useAppStore((state) => state.initialize);
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const detectBrowserLanguage = useLanguageStore((state) => state.detectAndSetBrowserLanguage);
-  const switchLanguage = useI18nStore((state) => state.switchLanguage);
-  const currentInterfaceLanguage = useLanguageStore((state) => state.currentInterfaceLanguage);
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
@@ -39,9 +36,6 @@ export function StoreInitializer({ children }: StoreInitializerProps) {
         } else {
           detectBrowserLanguage();
         }
-        
-        // Initialize i18n with the selected language
-        await switchLanguage(currentInterfaceLanguage);
         
         console.log('[STORE_INITIALIZER] All stores initialized successfully');
         

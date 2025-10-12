@@ -35,18 +35,138 @@
     "errorLoadingNewConversation": "Error loading new conversation:",
     "lastMessage": "Last message",
     "noLastMessage": "No messages yet",
-    "authChecking": "Checking authentication..."
-  },
-  "communities": {
-    "title": "Communities",
-    "description": "Manage your communities and groups",
-    "loading": "Loading communities...",
-    "noCommunities": "No communities",
-    "noCommunitiesDescription": "Create or join a community to start collaborating!",
-    "createCommunity": "Create community",
-    "joinCommunity": "Join community",
-    "members": "members",
-    "private": "Private",
-    "public": "Public"
+    "authChecking": "Checking authentication...",
+    "id": "ID",
+    "conversationLayout": {
+      "authChecking": "Checking authentication...",
+      "conversations": {
+        "title": "Conversations"
+      },
+      "writeMessage": "Write your message...",
+      "loadingConversations": "Loading conversations...",
+      "errorLoadingConversation": "Error loading conversation",
+      "errorLoadingNewConversation": "Error loading new conversation",
+      "id": "ID",
+      "toasts": {
+        "conversations": {
+          "loadError": "Error loading conversation"
+        }
+      }
+    },
+    "conversationSearch": {
+      "search": "Search...",
+      "searchPlaceholder": "Search conversations...",
+      "noResults": "No results found",
+      "noConversationsFound": "No conversations found",
+      "shareMessage": "Share a message..."
+    },
+    "conversationUI": {
+      "participants": "Participants",
+      "addParticipant": "Add participant",
+      "removeParticipant": "Remove participant",
+      "leaveConversation": "Leave conversation",
+      "deleteConversation": "Delete conversation",
+      "conversationSettings": "Conversation settings",
+      "members": "members",
+      "online": "online"
+    },
+    "conversationParticipants": {
+      "typing": "is typing...",
+      "typingMultiple": "people are typing..."
+    },
+    "conversationDetails": {
+      "title": "Conversation details",
+      "conversationName": "Conversation name",
+      "conversationGroup": "Group conversation",
+      "conversationPrivate": "Private conversation",
+      "activeLanguages": "Active languages",
+      "activeUsers": "Active users",
+      "noActiveUsers": "No active users",
+      "otherActiveUsers": "+{count} other users",
+      "shareLinks": "Share links",
+      "clickToEdit": "Click to edit",
+      "editName": "Edit name",
+      "nameCannotBeEmpty": "Name cannot be empty",
+      "nameUpdated": "Name updated successfully",
+      "updateError": "Error updating name",
+      "conversationExists": "A conversation with this name already exists",
+      "noPermissionToModify": "You don't have permission to modify this conversation",
+      "conversationNotFound": "Conversation not found",
+      "invalidData": "Invalid data",
+      "participantRemovedSuccess": "Participant removed successfully",
+      "removeParticipantError": "Error removing participant",
+      "searchParticipants": "Search participants...",
+      "noOneOnline": "No one online",
+      "you": "you",
+      "removeFromGroup": "Remove from group",
+      "offline": "offline",
+      "noOfflineParticipants": "No offline participants"
+    },
+    "typingIndicator": {
+      "typing": "Typing...",
+      "isTyping": "is typing",
+      "areTyping": "are typing",
+      "multipleTyping": "people are typing"
+    },
+    "bubbleStream": {
+      "websocketConnected": "WebSocket connected",
+      "websocketEstablished": "WebSocket connection established",
+      "connected": "Connected",
+      "connecting": "Connecting...",
+      "initializing": "Initializing...",
+      "loading": "Loading...",
+      "reconnecting": "Reconnecting...",
+      "typing": {
+        "single": "{name} is typing...",
+        "double": "{name1} and {name2} are typing...",
+        "multiple": "{name} and {count} others are typing..."
+      },
+      "realTimeMessages": "Real-time messages",
+      "connectionInProgress": "Connection in progress",
+      "emptyStateMessage": "No messages yet",
+      "emptyStateDescription": "Start the conversation by sending a message!",
+      "activeLanguages": "Active languages",
+      "originalLanguage": "Original language",
+      "edit": "Edit",
+      "delete": "Delete",
+      "viewing": "Viewing",
+      "viewTranslations": "View translations",
+      "translations": "Translations",
+      "translateTo": "Translate to",
+      "filterLanguages": "Filter languages...",
+      "noTranslationFound": "No translation found",
+      "noTranslationAvailable": "No translation available",
+      "translating": "Translating...",
+      "allLanguagesTranslated": "All languages translated",
+      "addFavorite": "Add to favorites",
+      "removeFavorite": "Remove from favorites",
+      "copied": "Copied to clipboard",
+      "copyFailed": "Copy failed",
+      "copyMessage": "Copy message",
+      "messageTranslatedTo": "Message translated to {language}",
+      "justNow": "just now",
+      "minutesAgo": "{minutes}min ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago",
+      "maxModelReached": "Maximum translation model already reached",
+      "retranslatingTo": "Retranslating to {language} ({model} model)",
+      "upgradeError": "Error requesting upgrade",
+      "editMessagePrompt": "Edit message:",
+      "deleteMessageConfirm": "Are you sure you want to delete this message?",
+      "originalBadge": "Original",
+      "improveQuality": "Improve quality (model {current} → {next})"
+    },
+    "communities": {
+      "title": "Communities",
+      "description": "Manage your communities and groups",
+      "loading": "Loading communities...",
+      "noCommunities": "No communities",
+      "noCommunitiesDescription": "Create or join a community to start collaborating!",
+      "createCommunity": "Create community",
+      "joinCommunity": "Join community",
+      "members": "members",
+      "private": "Private",
+      "public": "Public"
+    }
   }
 }

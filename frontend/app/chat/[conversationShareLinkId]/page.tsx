@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { RegisterForm } from '@/components/auth/register-form';
 import { LoginForm } from '@/components/auth/login-form';
 import { AccessDenied } from '@/components/ui/access-denied';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 // Utiliser directement le type importé
 type ConversationData = LinkConversationData;
@@ -20,7 +20,7 @@ export default function ChatLinkPage() {
   const params = useParams();
   const linkId = params.conversationShareLinkId as string;
   const { user } = useAuth();
-  const { t } = useTranslations('chat');
+  const { t } = useI18n('chat');
   
   const [conversationData, setConversationData] = useState<ConversationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);

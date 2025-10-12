@@ -1,76 +1,41 @@
-// Configuration i18n simplifiée sans redirections d'URL
-// L'internationalisation est gérée côté client via le LanguageContext
+/**
+ * I18n Compatibility Layer
+ * Provides backward compatibility for old i18n functions
+ */
 
-// Define the locales that your app supports (focus on FR, EN, PT for now)
-export const locales = ['en', 'fr', 'pt'] as const;
-export type Locale = (typeof locales)[number];
+export type Locale = 'fr' | 'en' | 'pt' | 'es' | 'zh';
 
-// Default locale
-export const defaultLocale: Locale = 'fr';
+export const translatedLanguages = [
+  { code: 'fr', nativeName: 'Français', translatedName: 'French' },
+  { code: 'en', nativeName: 'English', translatedName: 'Anglais' },
+  { code: 'pt', nativeName: 'Português', translatedName: 'Portugais' },
+  { code: 'es', nativeName: 'Español', translatedName: 'Espagnol' },
+  { code: 'zh', nativeName: '中文', translatedName: 'Chinois' },
+];
 
-// Configuration de requête supprimée car l'internationalisation est gérée côté client
-
-// Utility function to get supported languages
-export function getSupportedLanguages() {
-  return [
-    { code: 'en', name: 'English', nativeName: 'English' },
-    { code: 'fr', name: 'French', nativeName: 'Français' },
-    { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
-  ];
+export function getNativeNameForLanguage(code: string): string {
+  const lang = translatedLanguages.find(l => l.code === code);
+  return lang?.nativeName || code.toUpperCase();
 }
 
-// Utility function to check if a language is supported
-export function isLanguageSupported(language: string): language is Locale {
-  return locales.includes(language as Locale);
-}
-
-// Utility function to get the best matching locale from browser languages
-export function getBestMatchingLocale(browserLanguages?: readonly string[]): Locale {
-  // Si aucune langue n'est fournie, utiliser les langues du navigateur
-  const languages = browserLanguages || (typeof window !== 'undefined' ? navigator.languages : []);
-  
-  console.log('[I18N] Detecting best matching locale from:', languages);
-  
-  for (const browserLang of languages) {
-    const langCode = browserLang.split('-')[0].toLowerCase();
-    if (isLanguageSupported(langCode)) {
-      console.log('[I18N] Found matching locale:', langCode);
+export function getBestMatchingLocale(preferredLocales: string[]): Locale {
+  for (const locale of preferredLocales) {
+    const langCode = locale.split('-')[0];
+    if (['fr', 'en', 'pt', 'es', 'zh'].includes(langCode)) {
       return langCode as Locale;
     }
   }
-  
-  console.log('[I18N] No matching locale found, using default:', defaultLocale);
-  return defaultLocale;
+  return 'en';
 }
 
-// Nouvelle fonction pour détecter automatiquement la langue préférée de l'utilisateur
 export function detectUserPreferredLocale(): Locale {
-  if (typeof window === 'undefined') return defaultLocale;
+  if (typeof window === 'undefined') return 'en';
   
-  // 1. Vérifier le localStorage d'abord
-  const storedLocale = localStorage.getItem('meeshy-interface-language');
-  if (storedLocale && isLanguageSupported(storedLocale)) {
-    console.log('[I18N] Using stored locale:', storedLocale);
-    return storedLocale as Locale;
+  const browserLang = navigator.language.split('-')[0];
+  if (['fr', 'en', 'pt', 'es', 'zh'].includes(browserLang)) {
+    return browserLang as Locale;
   }
-  
-  // 2. Si pas de locale sauvegardée, détecter automatiquement
-  const detectedLocale = getBestMatchingLocale();
-  console.log('[I18N] Auto-detected locale:', detectedLocale);
-  
-  // Sauvegarder la locale détectée pour les prochaines fois
-  try {
-    localStorage.setItem('meeshy-interface-language', detectedLocale);
-  } catch (error) {
-    console.warn('[I18N] Could not save detected locale:', error);
-  }
-  
-  return detectedLocale;
+  return 'en';
 }
 
-// Utility function to format locale for display
-export function formatLocale(locale: Locale): string {
-  const languages = getSupportedLanguages();
-  const language = languages.find(lang => lang.code === locale);
-  return language ? language.nativeName : locale.toUpperCase();
-}
+

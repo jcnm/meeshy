@@ -1,42 +1,27 @@
 'use client';
 
 
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Printer, Shield } from '@/lib/icons';
+import { ArrowLeft, Printer, Shield, Mail } from '@/lib/icons';
 import Link from 'next/link';
 
 
 export default function PrivacyPage() {
-  const { t } = useTranslations('privacy');
-  
-  // Helper function pour simuler tArray avec notre hook optimisé
-  const tArray = (key: string): any[] => {
-    const result = t(key);
-    if (Array.isArray(result)) return result;
-    if (typeof result === 'string') {
-      try {
-        const parsed = JSON.parse(result);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    }
-    return [];
-  };
+  const { t, tArray } = useI18n('privacy');
 
   const handlePrint = () => {
     window.print();
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+            <Link href="/" className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900">
               <ArrowLeft className="h-5 w-5" />
               <span>{t('backHome')}</span>
             </Link>
@@ -62,14 +47,14 @@ export default function PrivacyPage() {
           <CardContent className="prose prose-lg max-w-none p-8">
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('introduction.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('introduction.content')}
               </p>
             </section>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('dataCollection.title')}</h2>
-              <div className="text-gray-700 leading-relaxed">
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 <h3 className="text-lg font-medium mb-2">{t('dataCollection.personal.title')}</h3>
                 <ul className="list-disc pl-6 space-y-1 mb-4">
                   {tArray('dataCollection.personal.items').map((item: string, index: number) => (
@@ -95,7 +80,7 @@ export default function PrivacyPage() {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('usage.title')}</h2>
-              <div className="text-gray-700 leading-relaxed">
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 <ul className="list-disc pl-6 space-y-2">
                   {tArray('usage.items').map((item: any, index: number) => (
                     <li key={index}><strong>{item.title}</strong> {item.description}</li>
@@ -106,7 +91,7 @@ export default function PrivacyPage() {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('protection.title')}</h2>
-              <div className="text-gray-700 leading-relaxed">
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 <h3 className="text-lg font-medium mb-2">{t('protection.local.title')}</h3>
                 <p className="mb-4">
                   {t('protection.local.content')}
@@ -126,7 +111,7 @@ export default function PrivacyPage() {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('sharing.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('sharing.intro')}
               </p>
               <ul className="list-disc pl-6 space-y-1 mt-4">
@@ -138,7 +123,7 @@ export default function PrivacyPage() {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('rights.title')}</h2>
-              <div className="text-gray-700 leading-relaxed">
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 <p className="mb-4">{t('rights.intro')}</p>
                 <ul className="list-disc pl-6 space-y-1">
                   {tArray('rights.list').map((right: string, index: number) => (
@@ -153,26 +138,23 @@ export default function PrivacyPage() {
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('cookies.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {t('cookies.content')}
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('changes.title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
-                {t('changes.content')}
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('updates.title')}</h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                {t('updates.content')}
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('title')}</h2>
-              <p className="text-gray-700 leading-relaxed">
-                {t('intro')}
-              </p>
-              <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                <p><strong>{t('email')}</strong></p>
-                <p><strong>{t('address')}</strong></p>
+              <h2 className="text-2xl font-semibold mb-4 text-gray-900">{t('contact.title')}</h2>
+              <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg space-y-2">
+                <p className="text-gray-700">{t('contact.address')}</p>
+                <p className="text-gray-700">{t('contact.email')}</p>
               </div>
             </section>
           </CardContent>
@@ -180,7 +162,7 @@ export default function PrivacyPage() {
 
         {/* Navigation Links */}
         <div className="text-center mt-8">
-          <p className="text-gray-600 mb-6">{t('footer.title')}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t('footer.title')}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/about">
               <Button variant="outline" size="lg">
@@ -188,8 +170,9 @@ export default function PrivacyPage() {
               </Button>
             </Link>
             <Link href="/contact">
-              <Button variant="outline" size="lg">
-                {t('footer.contact')}
+              <Button size="lg" className="flex items-center space-x-2">
+                <Mail className="h-5 w-5" />
+                <span>{t('footer.contact')}</span>
               </Button>
             </Link>
             <Link href="/partners">

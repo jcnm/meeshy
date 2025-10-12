@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Share2 } from 'lucide-react';
 import { ShareAffiliateModal } from './share-affiliate-modal';
 import { useAuth } from '@/hooks/use-auth';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface ShareAffiliateButtonProps {
   variant?: 'default' | 'outline' | 'ghost';
@@ -24,7 +24,7 @@ export function ShareAffiliateButton({
 }: ShareAffiliateButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useAuth();
-  const { t } = useTranslations('affiliate');
+  const { t } = useI18n('affiliate');
 
   if (!user) return null;
 

@@ -24,7 +24,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { buildApiUrl } from '@/lib/config';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface AffiliateToken {
   id: string;
@@ -56,8 +56,8 @@ export function ShareAffiliateModal({ isOpen, onClose, userLanguage }: ShareAffi
   const [newTokenName, setNewTokenName] = useState('');
   const [shareMessage, setShareMessage] = useState('');
   const [currentStep, setCurrentStep] = useState<'select' | 'create' | 'share'>('select');
-  const { t } = useTranslations('affiliate');
-  const { t: tCommon } = useTranslations('common');
+  const { t } = useI18n('affiliate');
+  const { t: tCommon } = useI18n('common');
 
   // Messages de partage par défaut selon la langue
   const defaultMessages = {

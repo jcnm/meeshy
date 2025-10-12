@@ -71,7 +71,7 @@ services:
 
   # Translator Service
   translator:
-    image: ${TRANSLATOR_IMAGE:-isopen/meeshy-translator:1.0.39-alpha
+    image: ${TRANSLATOR_IMAGE:-isopen/meeshy-translator:1.0.39-alpha}
     container_name: meeshy-translator
     restart: unless-stopped
     environment:
@@ -104,7 +104,7 @@ services:
 
   # Gateway Service
   gateway:
-    image: ${GATEWAY_IMAGE:-isopen/meeshy-gateway:1.0.39-alpha
+    image: ${GATEWAY_IMAGE:-isopen/meeshy-gateway:1.0.39-alpha}
     container_name: meeshy-gateway
     restart: unless-stopped
     environment:
@@ -143,7 +143,7 @@ services:
 
   # Frontend Service
   frontend:
-    image: ${FRONTEND_IMAGE:-isopen/meeshy-frontend:1.0.39-alpha
+    image: ${FRONTEND_IMAGE:-isopen/meeshy-frontend:1.0.39-alpha}
     container_name: meeshy-frontend
     restart: unless-stopped
     environment:

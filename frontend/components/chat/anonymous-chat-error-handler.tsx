@@ -14,7 +14,7 @@ import {
   Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface AnonymousChatErrorHandlerProps {
   error: string;
@@ -31,7 +31,7 @@ export function AnonymousChatErrorHandler({
   onRetry,
   onRedirect
 }: AnonymousChatErrorHandlerProps) {
-  const { t } = useTranslations('anonymousChatErrorHandler');
+  const { t } = useI18n('anonymousChatErrorHandler');
   const router = useRouter();
   const [isRetrying, setIsRetrying] = useState(false);
   const [retryCount, setRetryCount] = useState(0);

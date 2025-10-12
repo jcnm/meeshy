@@ -1,267 +1,181 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { 
-  MessageSquare, 
   LogIn, 
-  UserPlus,
-  Share,
-  User,
-  LogOut,
-  AlertTriangle
+  UserPlus, 
+  MessageSquare,
+  Menu,
+  X,
+  Share2
 } from 'lucide-react';
-import { LoginForm } from '@/components/auth/login-form';
-import { RegisterForm } from '@/components/auth/register-form';
-import { toast } from 'sonner';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { LanguageSwitcher } from '@/components/common/language-switcher';
-import { useTranslations } from '@/hooks/useTranslations';
+import { AuthMode } from '@/types';
 
 interface HeaderProps {
-  // Mode d'affichage
-  mode?: 'landing' | 'chat';
-  
-  // Pour le mode chat
+  mode?: 'landing' | 'chat' | 'default';
+  authMode?: AuthMode;
+  onAuthModeChange?: (mode: AuthMode) => void;
+  anonymousChatLink?: string | null;
   conversationTitle?: string;
   shareLink?: string;
-  
-  // Pour le mode landing
-  authMode?: 'welcome' | 'login' | 'register' | 'join';
-  onAuthModeChange?: (mode: 'welcome' | 'login' | 'register' | 'join') => void;
-  anonymousChatLink?: string | null;
-  
-  // Informations utilisateur pour le menu
-  user?: {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    displayName?: string;
-    isAnonymous?: boolean;
-  } | null;
-  
-  // Fonctions de gestion
-  onLogout?: () => void;
-  onClearAnonymousSession?: () => void;
 }
 
 export function Header({ 
-  mode = 'landing',
-  conversationTitle,
-  shareLink,
+  mode = 'default', 
   authMode = 'welcome',
   onAuthModeChange,
   anonymousChatLink,
-  user,
-  onLogout,
-  onClearAnonymousSession
+  conversationTitle,
+  shareLink
 }: HeaderProps) {
   const router = useRouter();
-  const [showClearSessionDialog, setShowClearSessionDialog] = useState(false);
-  const { t } = useTranslations('header');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleAuthClick = (newMode: AuthMode) => {
+    if (onAuthModeChange) {
+      onAuthModeChange(newMode);
+    }
+  };
 
   const handleShare = () => {
-    if (shareLink) {
+    if (shareLink && navigator.share) {
+      navigator.share({
+        title: conversationTitle || 'Meeshy Conversation',
+        url: shareLink,
+      }).catch(console.error);
+    } else if (shareLink) {
       navigator.clipboard.writeText(shareLink);
-      toast.success(t('shareLinkCopied'));
     }
   };
 
   return (
-    <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <button 
-            onClick={() => router.push('/')}
-            className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer"
-          >
-            <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 hidden md:inline">Meeshy</span>
-          </button>
-          
-          {/* Titre de la conversation pour le mode chat */}
-          {mode === 'chat' && conversationTitle && (
-            <>
-              <div className="h-4 w-px bg-gray-300 mx-2"></div>
-              <span className="text-sm text-gray-600 font-medium">
-                {conversationTitle}
-              </span>
-            </>
-          )}
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          
-          {/* Language Switcher */}
-          <LanguageSwitcher />
-          
-          {/* Mode chat - Boutons de partage et menu utilisateur */}
-          {mode === 'chat' && (
-            <>
-              {shareLink && (
-                  <Button 
-                    onClick={handleShare}
-                    variant="outline"
-                    className="flex items-center space-x-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                  >
-                    <Share className="h-4 w-4" />
-                    <span>{t('share')}</span>
-                  </Button>
-              )}
-              
-              {/* Menu utilisateur */}
-              {user && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>{user.displayName || user.firstName || user.username}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <div className="px-3 py-2">
-                      <p className="text-sm font-medium">{user.displayName || `${user.firstName} ${user.lastName}`}</p>
-                      <p className="text-xs text-gray-500">@{user.username}</p>
-                      {user.isAnonymous && (
-                        <p className="text-xs text-orange-600 mt-1">{t('anonymousSession')}</p>
-                      )}
-                    </div>
-                    <DropdownMenuSeparator />
-                    
-                    {user.isAnonymous ? (
-                      <>
-                        <DropdownMenuItem onClick={() => onAuthModeChange?.('login')}>
-                          <LogIn className="h-4 w-4 mr-2" />
-                          {t('signIn')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onAuthModeChange?.('register')}>
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          {t('signUp')}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => setShowClearSessionDialog(true)}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          {t('clearSession')}
-                        </DropdownMenuItem>
-                      </>
-                    ) : (
-                      <>
-                        <DropdownMenuItem onClick={() => router.push('/profile')}>
-                          <User className="h-4 w-4 mr-2" />
-                          {t('profile')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push('/settings')}>
-                          <AlertTriangle className="h-4 w-4 mr-2" />
-                          {t('settings')}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={onLogout}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          {t('logout')}
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </>
-          )}
-          
-          {/* Mode landing - Boutons de connexion/inscription */}
-          {mode === 'landing' && !user && (
-            <div className="flex items-center space-x-2">
-              <Dialog open={authMode === 'login'} onOpenChange={(open) => onAuthModeChange?.(open ? 'login' : 'welcome')}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <LogIn className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t('login')}</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{t('loginTitle')}</DialogTitle>
-                    <DialogDescription>
-                      {t('loginDescription')}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <LoginForm />
-                </DialogContent>
-              </Dialog>
-              
-              <Dialog open={authMode === 'register'} onOpenChange={(open) => onAuthModeChange?.(open ? 'register' : 'welcome')}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center space-x-2">
-                    <UserPlus className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t('register')}</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>{t('registerTitle')}</DialogTitle>
-                    <DialogDescription>
-                      {t('registerDescription')}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <RegisterForm formPrefix="header-register" />
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
-        </div>
-      </div>
+    <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md dark:bg-gray-900/80">
+      <div className="container mx-auto px-4">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center space-x-2">
+            <MessageSquare className="h-8 w-8 text-blue-600" />
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              {conversationTitle || 'Meeshy'}
+            </span>
+          </Link>
 
-      {/* Dialog de confirmation pour effacer la session */}
-      <Dialog open={showClearSessionDialog} onOpenChange={setShowClearSessionDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              <span>{t('clearSessionConfirm')}</span>
-            </DialogTitle>
-            <DialogDescription>
-              {t('clearSessionDescription')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setShowClearSessionDialog(false)}>
-              {t('cancel')}
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={() => {
-                onClearAnonymousSession?.();
-                setShowClearSessionDialog(false);
-              }}
-            >
-              {t('clearSessionButton')}
-            </Button>
+          {/* Actions Desktop */}
+          <div className="hidden md:flex items-center space-x-4">
+            {mode === 'chat' && shareLink && (
+              <Button 
+                variant="outline"
+                onClick={handleShare}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Share
+              </Button>
+            )}
+            
+            {mode === 'landing' && (
+              <>
+                {anonymousChatLink && (
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push(anonymousChatLink)}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Continue Chat
+                  </Button>
+                )}
+                <Button 
+                  variant="ghost" 
+                  onClick={() => handleAuthClick('login')}
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login
+                </Button>
+                <Button 
+                  onClick={() => handleAuthClick('register')}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Sign Up
+                </Button>
+              </>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
+
+          {/* Mobile Menu Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </Button>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t">
+            <nav className="flex flex-col space-y-4">
+              {mode === 'chat' && shareLink && (
+                <Button 
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={handleShare}
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              )}
+              
+              {mode === 'landing' && (
+                <>
+                  {anonymousChatLink && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        router.push(anonymousChatLink);
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Continue Chat
+                    </Button>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      handleAuthClick('login');
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Login
+                  </Button>
+                  <Button 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      handleAuthClick('register');
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Sign Up
+                  </Button>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
+      </div>
     </header>
   );
 }
+

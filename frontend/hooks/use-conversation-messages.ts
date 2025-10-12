@@ -130,6 +130,13 @@ export function useConversationMessages(
       }
 
       if (isLoadMore) {
+        // Sauvegarder la position de scroll et la hauteur AVANT d'ajouter les messages
+        const container = actualContainerRef.current;
+        const scrollHeightBefore = container?.scrollHeight || 0;
+        const scrollTopBefore = container?.scrollTop || 0;
+        
+        console.log(`[Conversation] 📏 AVANT ajout messages - scrollHeight: ${scrollHeightBefore}, scrollTop: ${scrollTopBefore}`);
+        
         // Pour ConversationLayoutResponsive : ajouter les messages plus anciens au début
         setMessages(prev => {
           // Éviter les doublons
@@ -143,6 +150,22 @@ export function useConversationMessages(
           // Ajouter les nouveaux messages au début (les plus anciens)
           return [...uniqueNewMessages, ...prev];
         });
+        
+        // Restaurer la position de scroll après le rendu
+        // Utiliser requestAnimationFrame pour attendre que le DOM soit mis à jour
+        requestAnimationFrame(() => {
+          if (container) {
+            const scrollHeightAfter = container.scrollHeight;
+            const heightDifference = scrollHeightAfter - scrollHeightBefore;
+            
+            // Ajuster le scrollTop pour compenser la hauteur ajoutée
+            const newScrollTop = scrollTopBefore + heightDifference;
+            container.scrollTop = newScrollTop;
+            
+            console.log(`[Conversation] 📏 APRÈS ajout messages - scrollHeight: ${scrollHeightAfter}, scrollTop restauré: ${newScrollTop}, diff: ${heightDifference}`);
+          }
+        });
+        
         setOffset(prev => prev + limit);
         offsetRef.current += limit; // Mettre à jour la ref immédiatement
       } else {

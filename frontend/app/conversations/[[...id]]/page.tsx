@@ -3,11 +3,11 @@
 import { Suspense } from 'react';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { ConversationLayout } from '@/components/conversations/ConversationLayout';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { useParams } from 'next/navigation';
 
 function ConversationsPageFallback() {
-  const { t } = useTranslations('conversations');
+  const { t } = useI18n('conversations');
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">

@@ -1,0 +1,22 @@
+{
+  "joinPage": {
+    "title": "Join conversation",
+    "invitedTo": "You're invited to",
+    "conversationWithoutName": "Conversation without name",
+    "type": "Type",
+    "direct": "Direct",
+    "group": "Group",
+    "public": "Public",
+    "privateConversation": "Private",
+    "global": "Global",
+    "anonymous": "Anonymous",
+    "members": "Members",
+    "participants": "Participants",
+    "languages": "Languages",
+    "spokenLanguages": "Spoken languages",
+    "createdOn": "Created on",
+    "expiresOn": "Expires on",
+    "joinButton": "Join conversation",
+    "joinAnonymously": "Join anonymously"
+  }
+}

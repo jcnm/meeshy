@@ -22,7 +22,7 @@ import { User as UserType, SUPPORTED_LANGUAGES, LanguageCode } from '@/types';
 import { FontSelector } from '@/components/settings/font-selector';
 import { toast } from 'sonner';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 
 interface SettingsLayoutProps {
   currentUser: UserType;
@@ -37,7 +37,7 @@ interface SettingsSection {
 }
 
 export function SettingsLayout({ currentUser, initialTab = 'profile' }: SettingsLayoutProps) {
-  const { t } = useTranslations('settings');
+  const { t } = useI18n('settings');
   // États principaux
   const [selectedSection, setSelectedSection] = useState<string>(initialTab);
   const [localSettings, setLocalSettings] = useState<Partial<UserType>>({});

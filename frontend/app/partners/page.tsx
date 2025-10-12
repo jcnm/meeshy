@@ -1,7 +1,7 @@
 'use client';
 
 
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Handshake, Mail, ExternalLink, Building2, GraduationCap, Users, Shield, Zap, HeartHandshake, Globe, BookOpen, Briefcase } from 'lucide-react';
@@ -9,15 +9,15 @@ import Link from 'next/link';
 
 
 export default function PartnersPage() {
-  const { t } = useTranslations('partners');
+  const { t } = useI18n('partners');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+            <Link href="/" className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900">
               <ArrowLeft className="h-5 w-5" />
               <span>{t('backHome')}</span>
             </Link>
@@ -33,8 +33,8 @@ export default function PartnersPage() {
             <div className="flex items-center justify-center space-x-2 mb-4">
               <Handshake className="h-12 w-12 text-blue-600" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{t('title')}</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t('title')}</h1>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
               {t('subtitle')}
             </p>
           </div>
@@ -42,7 +42,7 @@ export default function PartnersPage() {
           {/* Partnership Types */}
           <div className="grid lg:grid-cols-3 gap-8 mb-12">
             {/* Enterprise Teams */}
-            <Card className="shadow-lg border-l-4 border-l-blue-600">
+            <Card className="shadow-lg border-l-4 border-l-blue-600 dark:border-l-blue-400">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Building2 className="h-6 w-6 text-blue-600" />
@@ -50,7 +50,7 @@ export default function PartnersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 mb-4">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
                   {t('enterprise.description')}
                 </p>
                 <ul className="space-y-2 text-gray-600">
@@ -61,13 +61,13 @@ export default function PartnersPage() {
                   <li>• {t('enterprise.features.customization')}</li>
                 </ul>
                 <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-gray-600 font-medium">{t('enterprise.pricing')}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{t('enterprise.pricing')}</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Educational Institutions */}
-            <Card className="shadow-lg border-l-4 border-l-green-600">
+            <Card className="shadow-lg border-l-4 border-l-green-600 dark:border-l-green-400">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <GraduationCap className="h-6 w-6 text-green-600" />
@@ -75,7 +75,7 @@ export default function PartnersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 mb-4">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
                   {t('education.description')}
                 </p>
                 <ul className="space-y-2 text-gray-600">
@@ -92,7 +92,7 @@ export default function PartnersPage() {
             </Card>
 
             {/* Technology Partners */}
-            <Card className="shadow-lg border-l-4 border-l-purple-600">
+            <Card className="shadow-lg border-l-4 border-l-purple-600 dark:border-l-purple-400">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <ExternalLink className="h-6 w-6 text-purple-600" />
@@ -100,7 +100,7 @@ export default function PartnersPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 mb-4">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
                   {t('types.tech.description')}
                 </p>
                 <ul className="space-y-2 text-gray-600">
@@ -125,7 +125,7 @@ export default function PartnersPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 mb-4">{t('deployment.onPremise.description')}</p>
+                  <p className="text-gray-700 dark:text-gray-300 mb-4">{t('deployment.onPremise.description')}</p>
                   <ul className="space-y-2 text-gray-600">
                     <li>• {t('deployment.onPremise.features.security')}</li>
                     <li>• {t('deployment.onPremise.features.compliance')}</li>
@@ -143,7 +143,7 @@ export default function PartnersPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-700 mb-4">{t('deployment.cloud.description')}</p>
+                  <p className="text-gray-700 dark:text-gray-300 mb-4">{t('deployment.cloud.description')}</p>
                   <ul className="space-y-2 text-gray-600">
                     <li>• {t('deployment.cloud.features.quick')}</li>
                     <li>• {t('deployment.cloud.features.scalable')}</li>
@@ -220,29 +220,29 @@ export default function PartnersPage() {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-blue-100 dark:bg-blue-800/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <Zap className="h-8 w-8 text-blue-600" />
                   </div>
                   <h3 className="font-semibold mb-2">{t('benefits.priority.title')}</h3>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
                     {t('benefits.priority.description')}
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-blue-100 dark:bg-blue-800/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <HeartHandshake className="h-8 w-8 text-blue-600" />
                   </div>
                   <h3 className="font-semibold mb-2">{t('benefits.support.title')}</h3>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
                     {t('benefits.support.description')}
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-blue-100 dark:bg-blue-800/30 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <Globe className="h-8 w-8 text-blue-600" />
                   </div>
                   <h3 className="font-semibold mb-2">{t('benefits.visibility.title')}</h3>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
                     {t('benefits.visibility.description')}
                   </p>
                 </div>
@@ -256,7 +256,7 @@ export default function PartnersPage() {
               <CardTitle className="text-2xl">{t('become.title')}</CardTitle>
             </CardHeader>
             <CardContent className="text-center">
-              <p className="text-gray-700 mb-6">
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
                 {t('become.description')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">

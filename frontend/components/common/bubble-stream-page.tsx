@@ -89,10 +89,10 @@ import { LoadingState } from '@/components/common/LoadingStates';
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useMessageTranslations } from '@/hooks/use-message-translations';
-import { useTranslation } from '@/hooks/use-translation';
+import { useMessageTranslation } from '@/hooks/useMessageTranslation';
 import { useFixRadixZIndex } from '@/hooks/use-fix-z-index';
 import { detectLanguage } from '@/utils/language-detection';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useI18n } from '@/hooks/useI18n';
 import type { User, Message, BubbleTranslation } from '@shared/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { messageTranslationService } from '@/services/message-translation.service';
@@ -104,8 +104,7 @@ import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
 
 export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousMode = false, linkId, initialParticipants }: BubbleStreamPageProps) {
-  const { t } = useTranslations('bubbleStream');
-  const { t: tSearch } = useTranslations('conversationSearch');
+  const { t } = useI18n('conversations');
   const router = useRouter();
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -432,7 +431,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       
       // Toast pour traduction pertinente
       
-      // Incrémenter les statistiques de traduction
+      // Statistiques de traduction de messages
       incrementTranslationCount(relevantTranslation.sourceLanguage || 'fr', relevantTranslation.targetLanguage);
       
       // Toast de traduction réduit pour éviter le spam
@@ -465,8 +464,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }, 100);
   }, [addMessage, user.id]);
 
-  // Hooks
-  const { stats: translationStats, incrementTranslationCount } = useTranslation();
+  // Hook pour les statistiques de traduction de messages
+  const { stats: translationStats, incrementTranslationCount } = useMessageTranslation();
   
   const { 
     sendMessage: sendMessageToService,
@@ -600,8 +599,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       console.log('Diagnostic après délai:', newDiagnostics);
       
       if (connectionStatus.isConnected && connectionStatus.hasSocket && !hasShownConnectionToast) {
-        console.log(`✅ ${t('websocketConnected')}`);
-        console.log(`${t('connected')}`);
+        console.log(`✅ ${t('bubbleStream.websocketConnected')}`);
+        console.log(`${t('bubbleStream.connected')}`);
         setHasShownConnectionToast(true);
       } else if (!connectionStatus.isConnected || !connectionStatus.hasSocket) {
         console.log('WebSocket non connecté après délai');
@@ -737,10 +736,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   useEffect(() => {
     if (connectionStatus.isConnected) {
       setHasEstablishedConnection(true);
-      console.log(`${t('websocketEstablished')}`);
+      console.log(`${t('bubbleStream.websocketEstablished')}`);
       
       if (!hasShownConnectionToast) {
-        console.log(`${t('connected')}`);
+        console.log(`${t('bubbleStream.connected')}`);
         setHasShownConnectionToast(true);
       }
     } else {
@@ -845,10 +844,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       <LoadingState 
         message={
           !hasLoadedMessages 
-            ? t('loading')
+            ? t('bubbleStream.loading')
             : !hasEstablishedConnection
-            ? t('connecting')
-            : t('initializing')
+            ? t('bubbleStream.connecting')
+            : t('bubbleStream.initializing')
         }
         fullScreen={true}
       />
@@ -1086,10 +1085,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   <Loader2 className="h-3 w-3 animate-spin" />
                   <span>
                     {typingUsers.length === 1 
-                      ? t('typing.single', { name: typingUsers[0].displayName })
+                      ? t('bubbleStream.typing.single', { name: typingUsers[0].displayName })
                       : typingUsers.length === 2
-                      ? t('typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
-                      : t('typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
+                      ? t('bubbleStream.typing.double', { name1: typingUsers[0].displayName, name2: typingUsers[1].displayName })
+                      : t('bubbleStream.typing.multiple', { name: typingUsers[0].displayName, count: typingUsers.length - 1 })
                     }
                   </span>
                 </div>
@@ -1104,10 +1103,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                     connectionStatus.isConnected && connectionStatus.hasSocket ? 'bg-green-600' : 'bg-orange-600'
                   }`} />
                   <span className="font-medium">
-                    {t('realTimeMessages')}
+                    {t('bubbleStream.realTimeMessages')}
                   </span>
                   {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
-                    <span className="text-xs opacity-75">• {t('connectionInProgress')}</span>
+                    <span className="text-xs opacity-75">• {t('bubbleStream.connectionInProgress')}</span>
                   )}
                   {!(connectionStatus.isConnected && connectionStatus.hasSocket) && (
                     <>
@@ -1119,7 +1118,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                           const diagnostics = getDiagnostics();
                           console.log('Diagnostic avant reconnexion:', diagnostics);
                           
-                          console.log(`${t('reconnecting')}`);
+                          console.log(`${t('bubbleStream.reconnecting')}`);
                           reconnect();
                           
                           // Vérifier après un délai
@@ -1187,8 +1186,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               currentUser={user}
               userLanguage={userLanguage}
               usedLanguages={usedLanguages}
-              emptyStateMessage={t('emptyStateMessage')}
-              emptyStateDescription={t('emptyStateDescription')}
+              emptyStateMessage={t('bubbleStream.emptyStateMessage')}
+              emptyStateDescription={t('bubbleStream.emptyStateDescription')}
               reverseOrder={true}
               className="space-y-4"
               onTranslation={handleTranslation}
@@ -1239,7 +1238,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                   onLanguageChange={setSelectedInputLanguage}
                   location={location}
                   isComposingEnabled={isComposingEnabled}
-                  placeholder={tSearch('shareMessage')}
+                  placeholder={t('conversationSearch.shareMessage')}
                   onKeyPress={handleKeyPress}
                   choices={languageChoices}
                 />
@@ -1262,7 +1261,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
 
             {/* Section Langues Actives - Foldable */}
             <FoldableSection
-              title={t('activeLanguages')}
+              title={t('bubbleStream.activeLanguages')}
               icon={<Languages className="h-4 w-4 mr-2" />}
               defaultExpanded={true}
             >
