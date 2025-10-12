@@ -10,6 +10,7 @@ import { Palette, Monitor, Sun, Moon, Languages } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme, useAppActions, useCurrentInterfaceLanguage, useLanguageActions } from '@/stores';
 import { useI18n } from '@/hooks/useI18n';
+import { useLanguage } from '@/hooks/compatibility-hooks';
 
 interface ThemeConfig {
   accentColor: string;
@@ -28,6 +29,7 @@ export function ThemeSettings() {
   // Utiliser Zustand pour la langue
   const currentInterfaceLanguage = useCurrentInterfaceLanguage();
   const { setInterfaceLanguage } = useLanguageActions();
+  const { getSupportedLanguages } = useLanguage();
   
   const [config, setConfig] = useState<ThemeConfig>({
     accentColor: 'blue',

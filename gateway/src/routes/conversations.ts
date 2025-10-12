@@ -309,9 +309,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   }
   
   // Route pour obtenir toutes les conversations de l'utilisateur
-  fastify.get('/conversations', {
+  fastify.get<{ Querystring: { limit?: string; offset?: string } }>('/conversations', {
     preValidation: [optionalAuth]
-  }, async (request: FastifyRequest, reply) => {
+  }, async (request: FastifyRequest<{ Querystring: { limit?: string; offset?: string } }>, reply) => {
     try {
       const authRequest = request as UnifiedAuthRequest;
       
@@ -324,6 +324,12 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
       
       const userId = authRequest.authContext.userId;
+      
+      // Paramètres de pagination
+      const limit = parseInt(request.query.limit || '20', 10);
+      const offset = parseInt(request.query.offset || '0', 10);
+      
+      console.log(`📄 [GET /conversations] Pagination: limit=${limit}, offset=${offset}, userId=${userId}`);
 
       const conversations = await prisma.conversation.findMany({
         where: {
@@ -340,6 +346,8 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           ],
           isActive: true
         },
+        skip: offset,
+        take: limit,
         include: {
           members: {
             take: 10, // Limiter à 10 membres pour optimiser la performance
@@ -397,6 +405,27 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         orderBy: { lastMessageAt: 'desc' }
       });
 
+      // Compter le nombre total de conversations (pour la pagination)
+      const totalCount = await prisma.conversation.count({
+        where: {
+          OR: [
+            {
+              members: {
+                some: {
+                  userId: userId,
+                  isActive: true
+                }
+              }
+            }
+          ],
+          isActive: true
+        }
+      });
+      
+      const hasMore = offset + conversations.length < totalCount;
+      
+      console.log(`📊 [GET /conversations] Résultats: ${conversations.length} conversations, total=${totalCount}, hasMore=${hasMore}`);
+
       // Calculer le nombre de messages non lus pour chaque conversation
       const conversationsWithUnreadCount = await Promise.all(
         conversations.map(async (conversation) => {
@@ -424,7 +453,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
 
       reply.send({
         success: true,
-        data: conversationsWithUnreadCount
+        data: conversationsWithUnreadCount,
+        pagination: {
+          limit,
+          offset,
+          total: totalCount,
+          hasMore
+        }
       });
 
     } catch (error) {
@@ -912,8 +947,9 @@ export async function conversationRoutes(fastify: FastifyInstance) {
       }
 
       // Debug: Logger les données de traduction avant envoi
-      const finalMessages = messagesWithAllTranslations.reverse();
-      console.log(`📤 [BACKEND] Envoi de ${finalMessages.length} messages avec traductions:`);
+      // NE PAS INVERSER: La DB retourne déjà en DESC (récent→ancien), c'est l'ordre voulu!
+      const finalMessages = messagesWithAllTranslations;
+      console.log(`📤 [BACKEND] Envoi de ${finalMessages.length} messages avec traductions (ordre DESC - récent en premier):`);
       
       finalMessages.slice(0, 3).forEach((msg, index) => {
         console.log(`  [${index}] Message ${msg.id}:`);

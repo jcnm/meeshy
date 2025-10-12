@@ -199,6 +199,14 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
 
           {/* Messages */}
           <div>
+            {/* 
+              MODE CONVERSATION: Messages récents EN BAS (proche zone de saisie)
+              - Backend retourne: orderBy createdAt DESC = [récent...ancien]
+              - reverseOrder=true inverse pour afficher: [ancien...récent]
+              - scrollDirection='up' (défaut dans useConversationMessages)
+              - Scroll vers le haut charge les plus anciens (ajoutés au DÉBUT)
+              - Résultat: Ancien EN HAUT, Récent EN BAS ✅
+            */}
             <MessagesDisplay
               messages={messages}
               translatedMessages={translatedMessages}
@@ -208,7 +216,7 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
               usedLanguages={usedLanguages}
               emptyStateMessage={t('noMessages')}
               emptyStateDescription={t('noMessagesDescription')}
-              reverseOrder={false}
+              reverseOrder={true}
               className={cn(
                 "space-y-3",
                 isMobile && "space-y-2"

@@ -234,10 +234,7 @@ export class ZMQTranslationClient extends EventEmitter {
   private async _handleTranslationResult(message: Buffer): Promise<void> {
     try {
       const messageStr = message.toString('utf-8');
-      logger.info(`📋 [GATEWAY] Message ZMQ reçu brut: ${messageStr}`);
-      
       const event: TranslationEvent = JSON.parse(messageStr);
-      logger.info(`📋 [GATEWAY] Message parsé: ${JSON.stringify(event, null, 2)}`);
       
       // Vérifier le type d'événement
       if (event.type === 'translation_completed') {
@@ -248,7 +245,6 @@ export class ZMQTranslationClient extends EventEmitter {
         
         // Vérifier si ce taskId a déjà été traité (évite les doublons accidentels)
         if (this.processedResults.has(resultKey)) {
-          logger.info(`🔄 [GATEWAY] Task déjà traité, ignoré: ${resultKey}`);
           return;
         }
         
@@ -263,28 +259,16 @@ export class ZMQTranslationClient extends EventEmitter {
         
         // VALIDATION COMPLÈTE
         if (!completedEvent.result) {
-          logger.error(`❌ [GATEWAY] Message sans résultat: ${JSON.stringify(completedEvent)}`);
+          logger.error(`❌ [GATEWAY] Message sans résultat`);
           return;
         }
         
         if (!completedEvent.result.messageId) {
-          logger.error(`❌ [GATEWAY] Message sans messageId: ${JSON.stringify(completedEvent)}`);
+          logger.error(`❌ [GATEWAY] Message sans messageId`);
           return;
         }
         
         this.stats.results_received++;
-        
-        // LOGGING DES INFORMATIONS TECHNIQUES
-        logger.info(`🔧 [GATEWAY] Informations techniques reçues:`);
-        logger.info(`   📋 Modèle: ${completedEvent.result.translatorModel || 'unknown'}`);
-        logger.info(`   📋 Worker: ${completedEvent.result.workerId || 'unknown'}`);
-        logger.info(`   📋 Pool: ${completedEvent.result.poolType || 'unknown'}`);
-        logger.info(`   📋 Temps traduction: ${completedEvent.result.translationTime || 0}ms`);
-        logger.info(`   📋 Temps queue: ${completedEvent.result.queueTime || 0}ms`);
-        logger.info(`   📋 Mémoire: ${completedEvent.result.memoryUsage || 0}MB`);
-        logger.info(`   📋 CPU: ${completedEvent.result.cpuUsage || 0}%`);
-        
-        logger.info(`✅ [GATEWAY] Traduction terminée: ${completedEvent.taskId} -> ${completedEvent.targetLanguage} (messageId: ${completedEvent.result.messageId})`);
         
         // Émettre l'événement avec toutes les informations
         this.emit('translationCompleted', {
@@ -298,11 +282,7 @@ export class ZMQTranslationClient extends EventEmitter {
         this.pendingRequests.delete(completedEvent.taskId);
         
       } else if (event.type === 'pong') {
-        // Gestion des réponses ping/pong
-        logger.info(`🏓 [GATEWAY] Pong reçu du Translator: ${JSON.stringify(event)}`);
-        if (event.translator_status === 'alive') {
-          logger.info(`🏓 [GATEWAY] Translator en ligne - Ports: PUB=${event.translator_port_pub}, PULL=${event.translator_port_pull}`);
-        }
+        // Gestion des réponses ping/pong (silencieux en production)
         
       } else if (event.type === 'translation_error') {
         const errorEvent = event as TranslationErrorEvent;
@@ -310,11 +290,9 @@ export class ZMQTranslationClient extends EventEmitter {
         
         if (errorEvent.error === 'translation pool full') {
           this.stats.pool_full_rejections++;
-          logger.warning(`⚠️ [GATEWAY] Pool de traduction pleine pour ${errorEvent.messageId}`);
         }
         
         logger.error(`❌ [GATEWAY] Erreur traduction: ${errorEvent.error} pour ${errorEvent.messageId}`);
-        logger.error(`🔧 [GATEWAY] Contexte erreur: ${JSON.stringify(errorEvent.metadata || {}, null, 2)}`);
         
         // Émettre l'événement d'erreur avec métadonnées
         this.emit('translationError', {
@@ -331,32 +309,19 @@ export class ZMQTranslationClient extends EventEmitter {
       
     } catch (error) {
       logger.error(`❌ [GATEWAY] Erreur traitement message ZMQ: ${error}`);
-      logger.error(`📋 [GATEWAY] Message problématique: ${message.toString('utf-8')}`);
     }
   }
 
   async sendTranslationRequest(request: TranslationRequest): Promise<string> {
-    // LOG DÉTAILLÉ DES OBJETS AVANT ENVOI
-    logger.info('🔍 [GATEWAY] VÉRIFICATION OBJETS ZMQ AVANT ENVOI PUSH:');
-    logger.info(`   📋 this.pushSocket: ${this.pushSocket}`);
-    logger.info(`   📋 this.pushSocket type: ${typeof this.pushSocket}`);
-    logger.info(`   📋 this.subSocket: ${this.subSocket}`);
-    logger.info(`   📋 this.context: ${this.context}`);
-    logger.info(`   📋 this.running: ${this.running}`);
-    logger.info(`   📋 Socket PUSH fermé?: ${this.pushSocket?.closed || 'N/A'}`);
-    logger.info(`   📋 Socket SUB fermé?: ${this.subSocket?.closed || 'N/A'}`);
-
     if (!this.pushSocket) {
-      logger.error('❌ [GATEWAY] Socket PUSH non initialisé lors de la vérification');
+      logger.error('❌ [GATEWAY] Socket PUSH non initialisé');
       throw new Error('Socket PUSH non initialisé');
     }
 
     // Test de connectivité avec un ping
     try {
-      logger.info('🔍 [GATEWAY] Test de connectivité avec ping...');
       const pingMessage = { type: 'ping', timestamp: Date.now() };
       await this.pushSocket.send(JSON.stringify(pingMessage));
-      logger.info(`✅ [GATEWAY] Ping envoyé avec succès via port ${this.pushPort}`);
     } catch (error) {
       logger.error(`❌ [GATEWAY] Erreur lors du ping via port ${this.pushPort}: ${error}`);
     }

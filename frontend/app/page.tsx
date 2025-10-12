@@ -161,6 +161,7 @@ function LandingPageContent() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             
+            {/* Dialog Register */}
             <Dialog open={authMode === 'register'} onOpenChange={(open) => setAuthMode(open ? 'register' : 'welcome')}>
               <DialogTrigger asChild>
                 <Button size="lg" className="flex items-center space-x-2">
@@ -180,6 +181,7 @@ function LandingPageContent() {
               </DialogContent>
             </Dialog>
             
+            {/* Dialog Join */}
             <Dialog open={authMode === 'join'} onOpenChange={(open) => setAuthMode(open ? 'join' : 'welcome')}>
               <DialogTrigger asChild>
                 <Button size="lg" variant="outline" className="flex items-center space-x-2">
@@ -500,6 +502,19 @@ function LandingPageContent() {
           </div>
         </div>
       </footer>
+
+      {/* Dialog Login - Contrôlé par authMode depuis Header */}
+      <Dialog open={authMode === 'login'} onOpenChange={(open) => setAuthMode(open ? 'login' : 'welcome')}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tAuth('login.title') || 'Connexion'}</DialogTitle>
+            <DialogDescription>
+              {tAuth('login.description') || 'Connectez-vous à votre compte Meeshy'}
+            </DialogDescription>
+          </DialogHeader>
+          <LoginForm />
+        </DialogContent>
+      </Dialog>
     </div>
     </>
   );

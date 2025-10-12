@@ -74,9 +74,13 @@ const ConversationComposerComponent = memo(function ConversationComposer({
       "flex-shrink-0 border-t border-gray-200",
       // Tailwind uniquement - simple et efficace
       isMobile 
-        ? "fixed bottom-0 left-0 right-0 w-full z-50 bg-white p-4 pb-6 shadow-lg" 
+        ? "fixed bottom-0 left-0 right-0 w-full z-[9999] bg-white p-4 pb-safe shadow-lg safe-area-inset-bottom" 
         : "p-4 bg-white/70 backdrop-blur-sm rounded-br-2xl min-h-[100px]"
-    )}>
+    )}
+    style={isMobile ? {
+      paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))',
+    } : undefined}
+    >
       <MessageComposer
         ref={messageComposerRef}
         value={newMessage}

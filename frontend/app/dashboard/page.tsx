@@ -74,7 +74,6 @@ function DashboardPageContent() {
     const CACHE_DURATION = 30000; // 30 seconds
     
     if (!forceRefresh && dashboardData && (now - lastFetchTime) < CACHE_DURATION) {
-      console.log('[DASHBOARD] Using cache, no new API call');
       return;
     }
     
@@ -82,7 +81,6 @@ function DashboardPageContent() {
       setIsLoading(true);
       setError(null);
       
-      console.log('[DASHBOARD] Loading dashboard data...');
       const response = await dashboardService.getDashboardData();
       if (response.data) {
         setDashboardData(response.data);

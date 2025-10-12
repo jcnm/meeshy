@@ -21,12 +21,6 @@
   min-height: 0 !important;
 }
 
-/* Debug scroll - temporaire */
-.conversation-list-scroll {
-  border: 1px solid red !important;
-  background: rgba(255, 0, 0, 0.1) !important;
-}
-
 @layer base {
   :root {
     /* Layout */
@@ -351,5 +345,24 @@
     opacity: 0.7;
     transform: scale(1.02);
     filter: brightness(1.2);
+  }
+}
+
+/* Support des safe-area pour mobile (iOS notch, Android navigation bar, etc.) */
+@supports (padding: max(0px)) {
+  .safe-area-inset-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Viewport height pour mobile (prend en compte les barres d'adresse) */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  .h-screen {
+    height: -webkit-fill-available;
   }
 }

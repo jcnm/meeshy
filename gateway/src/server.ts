@@ -73,7 +73,7 @@ const config = loadConfiguration();
 // ============================================================================
 
 const logger = winston.createLogger({
-  level: config.isDev ? 'debug' : 'info',
+  level: config.isDev ? 'debug' : 'warn', // Production: seulement warn et error
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.errors({ stack: true }),
@@ -226,7 +226,7 @@ class MeeshyServer {
     });
     
     this.prisma = new PrismaClient({
-      log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error']
+      log: config.isDev ? ['query', 'info', 'warn', 'error'] : ['error', 'warn']
     });
     
     // Initialiser le middleware d'authentification unifié

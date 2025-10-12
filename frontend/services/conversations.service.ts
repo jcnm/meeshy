@@ -260,16 +260,43 @@ export class ConversationsService {
   }
 
   /**
-   * Obtenir toutes les conversations de l'utilisateur
+   * Obtenir toutes les conversations de l'utilisateur (avec pagination optionnelle)
    */
-  async getConversations(): Promise<Conversation[]> {
-    // Vérifier le cache
-    if (this.isCacheValid()) {
+  async getConversations(options: { limit?: number; offset?: number; skipCache?: boolean } = {}): Promise<{
+    conversations: Conversation[];
+    pagination: {
+      limit: number;
+      offset: number;
+      total: number;
+      hasMore: boolean;
+    };
+  }> {
+    const { limit = 20, offset = 0, skipCache = false } = options;
+    
+    // Vérifier le cache (seulement pour la première page sans offset)
+    if (!skipCache && offset === 0 && this.isCacheValid()) {
       console.log('🔄 Utilisation du cache pour les conversations');
-      return this.conversationsCache!.data;
+      return {
+        conversations: this.conversationsCache!.data,
+        pagination: {
+          limit,
+          offset: 0,
+          total: this.conversationsCache!.data.length,
+          hasMore: false
+        }
+      };
     }
     
-    const response = await apiService.get<{ success: boolean; data: unknown[] }>('/api/conversations');
+    const response = await apiService.get<{ 
+      success: boolean; 
+      data: unknown[];
+      pagination?: {
+        limit: number;
+        offset: number;
+        total: number;
+        hasMore: boolean;
+      };
+    }>('/api/conversations', { limit: limit.toString(), offset: offset.toString() });
     
     if (!response.data.success || !Array.isArray(response.data.data)) {
       throw new Error('Format de réponse invalide pour les conversations');
@@ -277,10 +304,20 @@ export class ConversationsService {
     
     const conversations = response.data.data.map(conv => this.transformConversationData(conv));
     
-    // Mettre en cache les conversations
-    this.setCacheConversations(conversations);
+    // Mettre en cache les conversations (seulement pour la première page)
+    if (offset === 0) {
+      this.setCacheConversations(conversations);
+    }
     
-    return conversations;
+    return {
+      conversations,
+      pagination: response.data.pagination || {
+        limit,
+        offset,
+        total: conversations.length,
+        hasMore: false
+      }
+    };
   }
 
   /**

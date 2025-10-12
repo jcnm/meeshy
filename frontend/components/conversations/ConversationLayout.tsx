@@ -6,6 +6,7 @@ import { useUser, useIsAuthChecking } from '@/stores';
 import { useI18n } from '@/hooks/useI18n';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { useMessaging } from '@/hooks/use-messaging';
+import { useConversationsPagination } from '@/hooks/use-conversations-pagination';
 import { conversationsService } from '@/services/conversations.service';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ConversationList } from './ConversationList';
@@ -32,8 +33,22 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   // ID unique pour cette instance du composant
   const instanceId = useMemo(() => `layout-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, []);
 
-  // États principaux
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  // Hook de pagination pour les conversations
+  const {
+    conversations: paginatedConversations,
+    isLoading: isLoadingConversations,
+    isLoadingMore: isLoadingMoreConversations,
+    hasMore: hasMoreConversations,
+    loadMore: loadMoreConversations,
+    refresh: refreshConversations,
+    setConversations
+  } = useConversationsPagination({
+    limit: 20,
+    enabled: !!user
+  });
+  
+  // Utiliser les conversations paginées
+  const conversations = paginatedConversations;
   
   // État local pour la sélection dynamique (sans changement d'URL)
   const [localSelectedConversationId, setLocalSelectedConversationId] = useState<string | null>(null);
@@ -55,7 +70,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     return found || null;
   }, [effectiveSelectedId, conversations, instanceId, selectedConversationId, localSelectedConversationId]);
   const [participants, setParticipants] = useState<ThreadMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Utiliser l'état de chargement du hook de pagination
+  const isLoading = isLoadingConversations;
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
 
   // États modaux et UI
@@ -284,33 +300,13 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   }, [selectedConversationId, instanceId]);
   
 
-  // Chargement des conversations
+  // Le chargement des conversations est maintenant géré par le hook useConversationsPagination
+  // Cette fonction n'est plus nécessaire mais gardée pour compatibilité
   const loadConversations = useCallback(async () => {
     if (!user) return;
-    
-    setIsLoading(true);
-    try {
-      const conversationsData = await conversationsService.getConversations();
-      console.log('[ConversationLayout] Conversations reçues du service:', {
-        total: conversationsData.length,
-        conversations: conversationsData.map(c => ({
-          id: c.id,
-          title: c.title,
-          type: c.type,
-          visibility: c.visibility,
-          identifier: c.identifier
-        }))
-      });
-      setConversations(conversationsData);
-      
-      // Note: La sélection de conversation se fait maintenant automatiquement via useMemo
-      // basé sur selectedConversationId et la liste des conversations
-    } catch (error) {
-      console.error('Erreur lors du chargement des conversations:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, selectedConversationId, searchParams]);
+    console.log('[ConversationLayout] Rafraîchissement des conversations via hook de pagination');
+    refreshConversations();
+  }, [user, refreshConversations]);
 
   // Chargement des participants
   const loadParticipants = useCallback(async (conversationId: string) => {
@@ -570,6 +566,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
             onCreateConversation={() => setIsCreateModalOpen(true)}
             onLinkCreated={loadConversations}
             t={t}
+            hasMore={hasMoreConversations}
+            isLoadingMore={isLoadingMoreConversations}
+            onLoadMore={loadMoreConversations}
             tSearch={(key: string) => t(`search.${key}`)}
           />
         </aside>
@@ -605,7 +604,10 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
               {/* Zone des messages */}
               <div 
-                className="flex-1 overflow-hidden min-h-0"
+                className={cn(
+                  "flex-1 overflow-hidden min-h-0",
+                  isMobile && "pb-32" // Espace pour la zone de saisie sur mobile
+                )}
                 role="region"
                 aria-live="polite"
                 aria-label={t('conversationLayout.messagesList')}
@@ -633,8 +635,20 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               </div>
 
               {/* Zone de composition - réutilise le style de BubbleStreamPage */}
-              <div className="sticky bottom-0 z-20 bg-card/95 dark:bg-card/95 backdrop-blur-sm border-t border-border p-4">
-                <div className="max-w-4xl mx-auto">
+              <div 
+                className={cn(
+                  "z-20 bg-card/95 dark:bg-card/95 backdrop-blur-sm border-t border-border",
+                  isMobile 
+                    ? "fixed bottom-0 left-0 right-0 w-full z-[9999] p-4 shadow-lg" 
+                    : "sticky bottom-0 p-4"
+                )}
+                style={isMobile ? {
+                  paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+                } : undefined}
+              >
+                <div className={cn(
+                  isMobile ? "w-full" : "max-w-4xl mx-auto"
+                )}>
                   <MessageComposer
                     ref={messageComposerRef}
                     value={newMessage}

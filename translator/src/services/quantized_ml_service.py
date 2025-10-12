@@ -597,8 +597,6 @@ class QuantizedMLService:
         try:
             # Fallback optimisé sans boucles multiples
             best_model = self._find_best_available_model(model_type)
-            if best_model != model_type:
-                logger.info(f"🔄 Utilisation modèle {best_model} au lieu de {model_type}")
             
             # Traduction
             translated_text = await self._ml_translate_optimized(

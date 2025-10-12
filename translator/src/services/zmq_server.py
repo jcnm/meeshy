@@ -376,12 +376,9 @@ class TranslationPoolManager:
         """Traduit un texte vers une langue cible spécifique"""
         start_time = time.time()
         
-        logger.info(f"🔄 [TRANSLATOR] Début traduction: worker={worker_name}, texte='{task.text[:30]}...', source={task.source_language}, target={target_language}")
-        
         try:
             # Utiliser le service de traduction partagé
             if self.translation_service:
-                logger.info(f"🔧 [TRANSLATOR] Avant appel ML service: {worker_name}")
                 # Effectuer la vraie traduction avec le service ML unifié
                 result = await self.translation_service.translate(
                     text=task.text,
@@ -390,7 +387,6 @@ class TranslationPoolManager:
                     model_type=task.model_type,
                     source_channel='zmq'  # Identifier le canal source
                 )
-                logger.info(f"🔧 [TRANSLATOR] Après appel ML service: {worker_name}, résultat: {type(result)}")
                 
                 processing_time = time.time() - start_time
                 
@@ -403,8 +399,6 @@ class TranslationPoolManager:
                 if not isinstance(result, dict) or 'translated_text' not in result:
                     logger.error(f"❌ [TRANSLATOR] Résultat invalide pour {worker_name}: {result}")
                     raise Exception(f"Résultat de traduction invalide: {result}")
-                
-                logger.info(f"✅ [TRANSLATOR] Traduction terminée: worker={worker_name}, '{task.text[:30]}...' → '{result['translated_text'][:30]}...' ({processing_time:.3f}s)")
                 
                 return {
                     'messageId': task.message_id,
@@ -567,21 +561,12 @@ class ZMQTranslationServer:
         
         self.running = True
         logger.info("ZMQTranslationServer démarré")
-        logger.info(f"[TRANSLATOR] 🔧 État du serveur: running={self.running}")
-        logger.info(f"🔧 Socket PULL lié: {self.pull_socket is not None}")
-        logger.info(f"🔧 Socket PUB lié: {self.pub_socket is not None}")
         
         try:
             while self.running:
                 try:
-                    # LOG DÉTAILLÉ DES OBJETS AVANT COMMUNICATION
-                    # DEBUG: Logs réduits de 60% - Suppression des vérifications détaillées
-                    logger.info("🎧 En attente de commandes ZMQ...")
                     # Recevoir une commande de traduction via PULL
                     message = await self.pull_socket.recv()
-                    
-                                    # DEBUG: Logs réduits de 60% - Suppression des vérifications détaillées
-                    
                     await self._handle_translation_request(message)
                     
                 except zmq.ZMQError as e:
@@ -602,8 +587,6 @@ class ZMQTranslationServer:
         """Traite une requête de traduction reçue via SUB"""
         try:
             request_data = json.loads(message.decode('utf-8'))
-            
-            logger.info(f"📥 [TRANSLATOR] Commande PULL reçue: {request_data}")
             
             # Vérifier si c'est un message de ping
             if request_data.get('type') == 'ping':

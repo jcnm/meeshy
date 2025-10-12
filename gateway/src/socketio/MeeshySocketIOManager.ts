@@ -80,6 +80,38 @@ export class MeeshySocketIOManager {
     console.log('[GATEWAY] 🚀 MeeshySocketIOManager initialisé avec MessagingService');
   }
 
+  /**
+   * Normalise l'identifiant de conversation pour créer une room cohérente
+   * Résout identifier/ObjectId vers l'identifier canonique
+   */
+  private async normalizeConversationId(conversationId: string): Promise<string> {
+    try {
+      // Si c'est un ObjectId MongoDB (24 caractères hex)
+      if (/^[0-9a-fA-F]{24}$/.test(conversationId)) {
+        // Chercher la conversation pour obtenir son identifier
+        const conversation = await this.prisma.conversation.findUnique({
+          where: { id: conversationId },
+          select: { id: true, identifier: true }
+        });
+        
+        if (conversation) {
+          // Retourner l'identifier s'il existe, sinon l'ObjectId
+          const normalized = conversation.identifier || conversation.id;
+          console.log(`🔄 [NORMALIZE] ObjectId ${conversationId} → ${normalized}`);
+          return normalized;
+        }
+      }
+      
+      // Si c'est déjà un identifier ou non trouvé, retourner tel quel
+      console.log(`🔄 [NORMALIZE] Identifier ${conversationId} → ${conversationId}`);
+      return conversationId;
+    } catch (error) {
+      console.error('❌ [NORMALIZE] Erreur normalisation:', error);
+      // En cas d'erreur, retourner l'identifiant original
+      return conversationId;
+    }
+  }
+
   async initialize(): Promise<void> {
     try {
       // Initialiser le service de traduction
@@ -317,27 +349,35 @@ export class MeeshySocketIOManager {
       });
 
       // Gestion des rooms conversation: join
-      socket.on(CLIENT_EVENTS.CONVERSATION_JOIN, (data: { conversationId: string }) => {
-        const room = `conversation_${data.conversationId}`;
+      socket.on(CLIENT_EVENTS.CONVERSATION_JOIN, async (data: { conversationId: string }) => {
+        const normalizedId = await this.normalizeConversationId(data.conversationId);
+        const room = `conversation_${normalizedId}`;
         socket.join(room);
         const userId = this.socketToUser.get(socket.id);
         if (userId) {
-          socket.emit(SERVER_EVENTS.CONVERSATION_JOINED, { conversationId: data.conversationId, userId });
+          socket.emit(SERVER_EVENTS.CONVERSATION_JOINED, { 
+            conversationId: normalizedId,
+            userId 
+          });
           // Pré-charger/rafraîchir les stats pour cette conversation et les envoyer au socket qui rejoint
-          this._sendConversationStatsToSocket(socket, data.conversationId).catch(() => {});
+          this._sendConversationStatsToSocket(socket, normalizedId).catch(() => {});
         }
-        console.log(`👥 Socket ${socket.id} rejoint ${room}`);
+        console.log(`👥 Socket ${socket.id} rejoint ${room} (original: ${data.conversationId} → normalized: ${normalizedId})`);
       });
 
       // Gestion des rooms conversation: leave
-      socket.on(CLIENT_EVENTS.CONVERSATION_LEAVE, (data: { conversationId: string }) => {
-        const room = `conversation_${data.conversationId}`;
+      socket.on(CLIENT_EVENTS.CONVERSATION_LEAVE, async (data: { conversationId: string }) => {
+        const normalizedId = await this.normalizeConversationId(data.conversationId);
+        const room = `conversation_${normalizedId}`;
         socket.leave(room);
         const userId = this.socketToUser.get(socket.id);
         if (userId) {
-          socket.emit(SERVER_EVENTS.CONVERSATION_LEFT, { conversationId: data.conversationId, userId });
+          socket.emit(SERVER_EVENTS.CONVERSATION_LEFT, { 
+            conversationId: normalizedId,
+            userId 
+          });
         }
-        console.log(`👥 Socket ${socket.id} quitte ${room}`);
+        console.log(`👥 Socket ${socket.id} quitte ${room} (original: ${data.conversationId})`);
       });
       
       // Déconnexion
@@ -895,11 +935,13 @@ export class MeeshySocketIOManager {
       
       // Diffuser dans la room de conversation (méthode principale et UNIQUE)
       if (conversationIdForBroadcast) {
-        const roomName = `conversation_${conversationIdForBroadcast}`;
+        // Normaliser l'ID de conversation
+        const normalizedId = await this.normalizeConversationId(conversationIdForBroadcast);
+        const roomName = `conversation_${normalizedId}`;
         const roomClients = this.io.sockets.adapter.rooms.get(roomName);
         const clientCount = roomClients ? roomClients.size : 0;
         
-        console.log(`📡 [SocketIOManager] Broadcasting traduction vers room ${roomName} (${clientCount} clients)`);
+        console.log(`📡 [SocketIOManager] Broadcasting traduction vers room ${roomName} (${clientCount} clients) - original: ${conversationIdForBroadcast}`);
         
         this.io.to(roomName).emit(SERVER_EVENTS.MESSAGE_TRANSLATION, translationData);
         this.stats.translations_sent += clientCount;
@@ -988,6 +1030,9 @@ export class MeeshySocketIOManager {
     }
 
     try {
+      // Normaliser l'ID de conversation
+      const normalizedId = await this.normalizeConversationId(data.conversationId);
+      
       // Récupérer les informations utilisateur depuis la base de données
       const dbUser = await this.prisma.user.findUnique({
         where: { id: userId },
@@ -1013,13 +1058,13 @@ export class MeeshySocketIOManager {
       const typingEvent: TypingEvent = {
         userId: userId,
         username: displayName,
-        conversationId: data.conversationId,
+        conversationId: normalizedId,
         isTyping: true
       };
 
-      const room = `conversation_${data.conversationId}`;
+      const room = `conversation_${normalizedId}`;
       
-      console.log(`⌨️ [TYPING] ${displayName} commence à taper dans ${room}`);
+      console.log(`⌨️ [TYPING] ${displayName} commence à taper dans ${room} (original: ${data.conversationId})`);
       
       // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
       socket.to(room).emit(SERVER_EVENTS.TYPING_START, typingEvent);
@@ -1037,6 +1082,9 @@ export class MeeshySocketIOManager {
     }
 
     try {
+      // Normaliser l'ID de conversation
+      const normalizedId = await this.normalizeConversationId(data.conversationId);
+      
       // Récupérer les informations utilisateur depuis la base de données
       const dbUser = await this.prisma.user.findUnique({
         where: { id: userId },
@@ -1062,13 +1110,13 @@ export class MeeshySocketIOManager {
       const typingEvent: TypingEvent = {
         userId: userId,
         username: displayName,
-        conversationId: data.conversationId,
+        conversationId: normalizedId,
         isTyping: false
       };
 
-      const room = `conversation_${data.conversationId}`;
+      const room = `conversation_${normalizedId}`;
       
-      console.log(`⌨️ [TYPING] ${displayName} arrête de taper dans ${room}`);
+      console.log(`⌨️ [TYPING] ${displayName} arrête de taper dans ${room} (original: ${data.conversationId})`);
       
       // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
       socket.to(room).emit(SERVER_EVENTS.TYPING_STOP, typingEvent);
@@ -1120,10 +1168,15 @@ export class MeeshySocketIOManager {
    */
   private async _broadcastNewMessage(message: Message, conversationId: string, senderSocket?: any): Promise<void> {
     try {
-      // Récupérer les stats de conversation mises à jour
+      // Normaliser l'ID de conversation pour le broadcast
+      const normalizedId = await this.normalizeConversationId(conversationId);
+      
+      console.log(`[PHASE 3.1] 📤 Broadcasting message ${message.id} vers conversation ${normalizedId} (original: ${conversationId})`);
+      
+      // Récupérer les stats de conversation mises à jour (utiliser normalizedId)
       const updatedStats = await conversationStatsService.updateOnNewMessage(
         this.prisma,
-        conversationId,
+        normalizedId,
         message.originalLanguage || 'fr',
         () => this.getConnectedUsers()
       );
@@ -1211,8 +1264,8 @@ export class MeeshySocketIOManager {
         }
       }
 
-      // Debug: Vérifier les clients connectés à la room
-      const room = `conversation_${conversationId}`;
+      // Debug: Vérifier les clients connectés à la room avec l'ID normalisé
+      const room = `conversation_${normalizedId}`;
       const roomClients = this.io.sockets.adapter.rooms.get(room);
       console.log(`🔍 [DEBUG] Room ${room} a ${roomClients?.size || 0} clients connectés`);
       
@@ -1237,7 +1290,7 @@ export class MeeshySocketIOManager {
         console.log(`⚠️ [PHASE 3.1] Socket de l'auteur non fourni, broadcast room seulement`);
       }
       
-      console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers conversation ${conversationId} (${roomClients?.size || 0} clients)`);
+      console.log(`✅ [PHASE 3.1] Message ${message.id} broadcasté vers ${room} (${roomClients?.size || 0} clients)`);
       
       // Envoyer les notifications de message pour les utilisateurs non connectés à la conversation
       const isAnonymousSender = !!message.anonymousSenderId;

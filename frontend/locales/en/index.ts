@@ -21,6 +21,7 @@ import notifications from './notifications.json';
 import partners from './partners.json';
 import privacy from './privacy.json';
 import terms from './terms.json';
+import bubbleStream from './bubbleStream.json';
 
 export default {
   common,
@@ -46,6 +47,7 @@ export default {
   partners,
   privacy,
   terms,
+  bubbleStream,
 };
 
 export {
@@ -72,4 +74,5 @@ export {
   partners,
   privacy,
   terms,
+  bubbleStream,
 };

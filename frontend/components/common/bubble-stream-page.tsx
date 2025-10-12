@@ -99,7 +99,6 @@ import { messageTranslationService } from '@/services/message-translation.servic
 import { conversationsService } from '@/services';
 import { messageService } from '@/services/message.service';
 import { TypingIndicator } from '@/components/conversations/typing-indicator';
-import { useMessageLoader } from '@/hooks/use-message-loader';
 import { useConversationMessages } from '@/hooks/use-conversation-messages';
 import { MessagesDisplay } from '@/components/common/messages-display';
 
@@ -443,7 +442,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const handleNewMessage = useCallback((message: Message) => {
     // Message reçu via WebSocket
     
-    // Utiliser addMessage de useMessageLoader pour gérer l'ajout du message
+    // Ajouter le message à la liste (il sera inséré au début grâce au hook)
     addMessage(message);
     
     // Notification UNIQUEMENT pour les nouveaux messages d'autres utilisateurs
@@ -451,13 +450,25 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       toast.info(`📨 Nouveau message de ${message.sender?.firstName || 'Utilisateur'}`, {
         duration: TOAST_LONG_DURATION
       });
+      
+      // Scroll automatique SEULEMENT si l'utilisateur est déjà proche du haut (dans les 300px)
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          const currentScrollTop = messagesContainerRef.current.scrollTop;
+          
+          if (currentScrollTop < 300) {
+            messagesContainerRef.current.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            });
+            console.log('📜 Scroll vers le haut pour nouveau message reçu');
+          }
+        }
+      }, 300);
     } else {
-      // Pour nos propres messages, juste un toast discret de confirmation
+      // Pour nos propres messages, c'est déjà géré dans handleSendMessage
       // Mon message publié avec succès
     }
-    
-    // PAS de scroll automatique - laisser l'utilisateur là où il est
-    // L'utilisateur peut scroller manuellement s'il veut voir le nouveau message
   }, [addMessage, user.id]);
 
   // Hook pour les statistiques de traduction de messages
@@ -905,6 +916,17 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
           
           // Log pour le debug - La langue source sera utilisée côté serveur
           console.log(`🔤 Langue source du message: ${selectedInputLanguage} (détectée: ${detectedLanguage})`);
+          
+          // Scroll automatique vers le haut pour voir le message envoyé
+          setTimeout(() => {
+            if (messagesContainerRef.current) {
+              messagesContainerRef.current.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+              console.log('📜 Scroll vers le haut pour voir le message envoyé');
+            }
+          }, 300); // Délai pour laisser le message s'ajouter au DOM
         } else {
           console.error('❌ Envoi échoué: sendResult est false');
           throw new Error('L\'envoi du message a échoué - le serveur a retourné false');
@@ -1110,47 +1132,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          console.log('Tentative de reconnexion manuelle...');
-                          const diagnostics = getDiagnostics();
-                          console.log('Diagnostic avant reconnexion:', diagnostics);
-                          
-                          console.log(`${t('bubbleStream.reconnecting')}`);
                           reconnect();
-                          
-                          // Vérifier après un délai
-                          setTimeout(() => {
-                            const newDiagnostics = getDiagnostics();
-                            console.log('Diagnostic après reconnexion:', newDiagnostics);
-                            
-                            if (newDiagnostics.isConnected) {
-                              console.log('Reconnexion réussie !');
-                            } else {
-                              console.error('Reconnexion échouée - Vérifiez le serveur');
-                            }
-                          }, 2000);
                         }}
                         className="ml-2 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
                       >
                         Reconnecter
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          const diagnostics = getDiagnostics();
-                          console.log('Diagnostic complet:', diagnostics);
-                          
-                          const message = `Diagnostic WebSocket:
-• Socket créé: ${diagnostics.hasSocket ? '✅' : '❌'}
-• Connecté: ${diagnostics.isConnected ? '✅' : '❌'}  
-• Token: ${diagnostics.hasToken ? '✅' : '❌'}
-• URL: ${diagnostics.url}`;
-
-                          toast.info(message, { duration: TOAST_ERROR_DURATION });
-                        }}
-                        className="ml-1 text-xs px-2 py-1 h-auto hover:bg-orange-200/50"
-                      >
-                        Debug
                       </Button>
                     </>
                   )}
@@ -1165,6 +1151,14 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             className="relative h-full pt-4 md:pt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-40 messages-container scroll-optimized scrollbar-thin overflow-y-auto mobile-messages-container"
             style={{ background: 'transparent' }}
           >
+            {/* 
+              MODE BUBBLESTREAM: Messages récents EN HAUT (sous header)
+              - Backend retourne: orderBy createdAt DESC = [récent...ancien]
+              - reverseOrder=false garde l'ordre: [récent...ancien]
+              - scrollDirection='down' (spécifié dans useConversationMessages)
+              - Scroll vers le bas charge les plus anciens (ajoutés à la FIN)
+              - Résultat: Récent EN HAUT, Ancien EN BAS ✅
+            */}
             <MessagesDisplay
               messages={messages}
               translatedMessages={translatedMessages}
@@ -1188,11 +1182,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               hasMore={hasMore}
               isLoadingMore={isLoadingMore}
             />
-
-            {/* Note: Backend retourne orderBy createdAt DESC = [récent...ancien] */}
-            {/* reverseOrder=false = affiche tel quel = RÉCENT EN HAUT, ANCIEN EN BAS */}
-            {/* scrollDirection='down' = scroll vers le bas charge plus anciens */}
-            {/* Nouveaux anciens ajoutés à la FIN pour apparaître EN BAS */}
 
             {/* Indicateur si plus de messages disponibles - positionné après les messages */}
             {!hasMore && messages.length > 0 && (

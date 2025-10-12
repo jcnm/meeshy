@@ -155,7 +155,7 @@ export function MessagesDisplay({
             targetLanguage,
             translatedContent: result.translationId ? 'Translation in progress...' : 'Translation requested',
             sourceLanguage,
-            translationModel: (model || 'basic') as const,
+            translationModel: (model || 'basic') as 'basic' | 'medium' | 'premium',
             cacheKey: '',
             confidenceScore: 0.95,
             createdAt: new Date(),
@@ -293,7 +293,7 @@ export function MessagesDisplay({
   }
 
   return (
-    <div className={`${className} bubble-message-container`}>
+    <div className={`${className} bubble-message-container flex flex-col`}>
       {displayMessages.map((message) => {
         // Initialiser l'état du message
         if (!messageDisplayStates[message.id]) {

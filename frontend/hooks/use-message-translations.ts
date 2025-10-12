@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { BubbleTranslation, User, Message } from '@shared/types';
 
-interface BubbleStreamMessage extends Message {
+interface BubbleStreamMessage extends Omit<Message, 'translations'> {
   location?: string;
   originalLanguage: string;
   isTranslated: boolean;
@@ -84,31 +84,9 @@ export function useMessageTranslations({
    * Traite un message brut et le convertit en BubbleStreamMessage avec traductions
    */
   const processMessageWithTranslations = useCallback((message: any): BubbleStreamMessage => {
-    console.log(`🔄 [TRANSLATION_PROCESSOR] Début traitement message ${message.id}:`);
-    console.log(`  - Original Language: ${message.originalLanguage}`);
-    console.log(`  - Raw translations count: ${message.translations?.length || 0}`);
-    console.log(`  - Raw translations data:`, message.translations);
-    console.log(`  - Message content: ${message.content?.substring(0, 50)}...`);
-
     // Convertir les traductions backend vers le format BubbleTranslation
     // CORRECTION: Déduplication des traductions par langue pour éviter les doublons
     const translationsMap = new Map<string, BubbleTranslation>();
-    
-    // 🔍 DEBUG: Examiner les traductions brutes avant filtrage
-    console.log(`  🔍 FILTRAGE-DEBUG Message ${message.id}:`);
-    (message.translations || []).forEach((t: any, idx: number) => {
-      console.log(`    [${idx}] Traduction brute:`, {
-        id: t.id,
-        targetLanguage: t.targetLanguage,
-        translatedContent: t.translatedContent?.substring(0, 30) + '...',
-        language: t.language, // Propriété alternative
-        content: t.content?.substring(0, 30) + '...', // Propriété alternative
-        hasTargetLanguage: !!t.targetLanguage,
-        hasTranslatedContent: !!t.translatedContent,
-        hasLanguage: !!t.language,
-        hasContent: !!t.content
-      });
-    });
     
     const validTranslations = (message.translations || [])
       .filter((t: any) => {
@@ -118,47 +96,24 @@ export function useMessageTranslations({
           (t.language && t.content)
         );
         
-        // CORRECTION CRITIQUE: Ne pas filtrer les traductions valides avec du contenu
         if (!hasValidStructure) {
-          console.log(`    ❌ Traduction filtrée (structure invalide):`, { 
-            t, 
-            hasTargetLanguage: !!t?.targetLanguage, 
-            hasTranslatedContent: !!t?.translatedContent, 
-            hasLanguage: !!t?.language, 
-            hasContent: !!t?.content 
-          });
           return false;
         }
         
         // Vérifier si le contenu traduit n'est pas vide
         const translatedContent = t.translatedContent || t.content;
         if (!translatedContent || translatedContent.trim() === '') {
-          console.log(`    ❌ Traduction filtrée (contenu vide):`, { t });
           return false;
         }
         
-        console.log(`    ✅ Traduction valide conservée:`, { 
-          language: t.targetLanguage || t.language,
-          contentPreview: translatedContent.substring(0, 30) + '...'
-        });
-        
         return true;
       });
-    
-    console.log(`  📊 Traductions après filtrage: ${validTranslations.length}/${(message.translations || []).length}`);
     
     validTranslations.forEach((t: any) => {
         // Support des deux formats de propriétés
         const language = t.targetLanguage || t.language;
         const content = t.translatedContent || t.content;
         const currentTimestamp = new Date(t.createdAt || message.createdAt);
-        
-        console.log(`    ✅ Traitement traduction ${language}:`, { 
-          content: content?.substring(0, 30) + '...',
-          translationModel: t.translationModel,
-          cacheKey: t.cacheKey,
-          cached: t.cached
-        });
         
         // CORRECTION: Améliorer la logique de déduplication des traductions
         const existingTranslation = translationsMap.get(language);
@@ -176,32 +131,13 @@ export function useMessageTranslations({
           };
           
           translationsMap.set(language, translation);
-          console.log(`    📦 Traduction ${language} ${existingTranslation ? 'remplacée' : 'ajoutée'} dans la map`);
-        } else {
-          console.log(`    ⏭️ Traduction ${language} existante conservée (plus récente ou meilleure qualité)`);
         }
       });
     
     const translations: BubbleTranslation[] = Array.from(translationsMap.values());
-    
-    // Log des traductions dédupliquées
-    translations.forEach(translation => {
-      console.log(`  📝 Traduction ${translation.language}:`, {
-        language: translation.language,
-        content: translation.content.substring(0, 50) + '...',
-        status: translation.status,
-        confidence: translation.confidence
-      });
-    });
 
     const originalLanguage = message.originalLanguage || 'fr';
     const preferredLanguage = resolveUserPreferredLanguage();
-    
-    console.log(`  🎯 Langues:`, {
-      original: originalLanguage,
-      preferred: preferredLanguage,
-      availableTranslations: translations.map(t => t.language)
-    });
     
     // Déterminer le contenu à afficher selon les préférences utilisateur
     let displayContent = message.content;
@@ -219,15 +155,11 @@ export function useMessageTranslations({
         displayContent = preferredTranslation.content;
         isTranslated = true;
         translatedFrom = originalLanguage;
-        console.log(`  ✅ Utilisation traduction ${originalLanguage} → ${preferredLanguage}`);
       } else {
         // Pas de traduction disponible, marquer comme nécessitant une traduction
         isTranslated = false;
         translatedFrom = originalLanguage;
-        console.log(`  ⏳ Traduction nécessaire ${originalLanguage} → ${preferredLanguage}`);
       }
-    } else {
-      console.log(`  📍 Message déjà dans la langue préférée (${preferredLanguage})`);
     }
 
     const result: BubbleStreamMessage = {
@@ -240,13 +172,6 @@ export function useMessageTranslations({
       location: message.location || 'Paris',
       translations
     };
-
-    console.log(`🏁 [TRANSLATION_PROCESSOR] Résultat final message ${result.id}:`);
-    console.log(`  - Is Translated: ${result.isTranslated}`);
-    console.log(`  - Processed translations count: ${result.translations.length}`);
-    console.log(`  - Display content: ${result.content.substring(0, 50)}...`);
-    console.log(`  - Processed translations:`, result.translations);
-    console.log(`  - Available languages:`, result.translations.map(t => t.language));
 
     return result;
   }, [resolveUserPreferredLanguage]);

@@ -97,7 +97,7 @@ function BubbleMessageInner({
   conversationType = 'direct',
   userRole = 'USER'
 }: BubbleMessageProps) {
-  const { t } = useI18n('conversations');
+  const { t } = useI18n('bubbleStream');
   
   // Hook pour fixer les z-index des popovers de traduction
   useFixTranslationPopoverZIndex();
@@ -210,7 +210,7 @@ function BubbleMessageInner({
       
       if (newTranslation && currentDisplayLanguage === userLanguage) {
         console.log(`🎉 [AUTO-TRANSLATION] Affichage automatique de la traduction en ${userLanguage} pour le message ${message.id}`);
-        toast.success(t('bubbleStream.messageTranslatedTo', { language: userLanguage }), {
+        toast.success(t('messageTranslatedTo', { language: userLanguage }), {
           duration: 2000,
           position: 'bottom-right'
         });
@@ -294,10 +294,10 @@ function BubbleMessageInner({
     const messageTime = new Date(timestamp);
     const diffInMinutes = Math.floor((now.getTime() - messageTime.getTime()) / (1000 * 60));
 
-    if (diffInMinutes < 1) return t('bubbleStream.justNow');
-    if (diffInMinutes < 60) return t('bubbleStream.minutesAgo', { minutes: diffInMinutes });
-    if (diffInMinutes < 1440) return t('bubbleStream.hoursAgo', { hours: Math.floor(diffInMinutes / 60) });
-    return t('bubbleStream.daysAgo', { days: Math.floor(diffInMinutes / 1440) });
+    if (diffInMinutes < 1) return t('justNow');
+    if (diffInMinutes < 60) return t('minutesAgo', { minutes: diffInMinutes });
+    if (diffInMinutes < 1440) return t('hoursAgo', { hours: Math.floor(diffInMinutes / 60) });
+    return t('daysAgo', { days: Math.floor(diffInMinutes / 1440) });
   };
 
   // Handlers qui remontent les actions au parent
@@ -322,7 +322,7 @@ function BubbleMessageInner({
   const handleUpgradeTier = async (targetLanguage: string, currentTier: string) => {
     const nextTier = getNextTier(currentTier);
     if (!nextTier) {
-      toast.info(t('bubbleStream.maxModelReached'));
+      toast.info(t('maxModelReached'));
       return;
     }
 
@@ -332,25 +332,25 @@ function BubbleMessageInner({
       try {
         // Appeler avec le tier supérieur spécifié
         await onForceTranslation(message.id, targetLanguage, nextTier as 'basic' | 'medium' | 'premium');
-        toast.success(t('bubbleStream.retranslatingTo', { 
+        toast.success(t('retranslatingTo', { 
           language: getLanguageInfo(targetLanguage).name, 
           model: nextTier 
         }));
       } catch (error) {
-        toast.error(t('bubbleStream.upgradeError'));
+        toast.error(t('upgradeError'));
       }
     }
   };
 
   const handleEditMessage = () => {
-    const newContent = prompt(t('bubbleStream.editMessagePrompt'), message.content);
+    const newContent = prompt(t('editMessagePrompt'), message.content);
     if (newContent && newContent.trim() !== message.content) {
       onEditMessage?.(message.id, newContent.trim());
     }
   };
 
   const handleDeleteMessage = () => {
-    const confirmed = confirm(t('bubbleStream.deleteMessageConfirm'));
+    const confirmed = confirm(t('deleteMessageConfirm'));
     if (confirmed) {
       onDeleteMessage?.(message.id);
     }
@@ -502,8 +502,8 @@ function BubbleMessageInner({
                 </TooltipTrigger>
                 <TooltipContent>
                   {currentDisplayLanguage === (message.originalLanguage || 'fr')
-                    ? `${t('bubbleStream.originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name}`
-                    : `${t('bubbleStream.originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name} • ${t('bubbleStream.viewing')}: ${getLanguageInfo(currentDisplayLanguage).name}`
+                    ? `${t('originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name}`
+                    : `${t('originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name} • ${t('viewing')}: ${getLanguageInfo(currentDisplayLanguage).name}`
                   }
                 </TooltipContent>
               </Tooltip>
@@ -552,7 +552,7 @@ function BubbleMessageInner({
                         ? "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 hover:bg-green-100 dark:hover:bg-green-900"
                         : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                     )}
-                    aria-label={t('bubbleStream.viewTranslations')}
+                    aria-label={t('viewTranslations')}
                   >
                     <Languages className={cn(
                       "h-4 w-4 transition-transform",
@@ -594,10 +594,10 @@ function BubbleMessageInner({
                   <Tabs defaultValue="translations" className="w-full max-h-[min(600px,calc(100vh-100px))] flex flex-col">
                     <TabsList className="grid w-full grid-cols-2 mb-3 flex-shrink-0">
                       <TabsTrigger value="translations" className="text-xs">
-                        {t('bubbleStream.translations')} ({availableVersions.length})
+                        {t('translations')} ({availableVersions.length})
                       </TabsTrigger>
                       <TabsTrigger value="translate" className="text-xs">
-                        {t('bubbleStream.translateTo')} ({filteredMissingLanguages.length})
+                        {t('translateTo')} ({filteredMissingLanguages.length})
                       </TabsTrigger>
                     </TabsList>
 
@@ -611,7 +611,7 @@ function BubbleMessageInner({
                               <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
                               <Input
                                 ref={filterInputRef}
-                                placeholder={t('bubbleStream.filterLanguages')}
+                                placeholder={t('filterLanguages')}
                                 value={translationFilter}
                                 onChange={(e) => setTranslationFilter(e.target.value)}
                                 className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 dark:bg-gray-800/80 border-gray-200/60 dark:border-gray-600/60 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-300 dark:focus:border-blue-600 transition-all text-gray-900 dark:text-gray-100"
@@ -660,7 +660,7 @@ function BubbleMessageInner({
                                   </span>
                                   {versionAny.isOriginal && (
                                     <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100/60 dark:bg-gray-700/60 px-1.5 py-0.5 rounded">
-                                      {t('bubbleStream.originalBadge')}
+                                      {t('originalBadge')}
                                     </span>
                                   )}
                                   {isCurrentlyDisplayed && (
@@ -684,7 +684,7 @@ function BubbleMessageInner({
                                           </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                          {t('bubbleStream.improveQuality', { 
+                                          {t('improveQuality', { 
                                             current: versionAny.model || 'basic', 
                                             next: getNextTier(versionAny.model || 'basic') 
                                           })}
@@ -725,7 +725,7 @@ function BubbleMessageInner({
                             <div className="text-center p-4 text-gray-400 dark:text-gray-500">
                               <Languages className="h-6 w-6 mx-auto mb-2 opacity-60" />
                               <p className="text-xs">
-                                {translationFilter ? t('bubbleStream.noTranslationFound') : t('bubbleStream.noTranslationAvailable')}
+                                {translationFilter ? t('noTranslationFound') : t('noTranslationAvailable')}
                               </p>
                             </div>
                           )}
@@ -735,7 +735,7 @@ function BubbleMessageInner({
                           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                             <div className="flex items-center justify-center space-x-2 text-sm text-blue-600 dark:text-blue-400 py-2">
                               <Loader2 className="h-4 w-4 animate-spin" />
-                              <span className="font-medium">{t('bubbleStream.translating')}</span>
+                              <span className="font-medium">{t('translating')}</span>
                             </div>
                           </div>
                         )}
@@ -751,7 +751,7 @@ function BubbleMessageInner({
                             <div className="relative">
                               <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
                               <Input
-                                placeholder={t('bubbleStream.filterLanguages')}
+                                placeholder={t('filterLanguages')}
                                 value={translationFilter}
                                 onChange={(e) => setTranslationFilter(e.target.value)}
                                 className="pl-8 pr-8 h-8 text-xs bg-gray-50/80 dark:bg-gray-800/80 border-gray-200/60 dark:border-gray-600/60 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-300 dark:focus:border-blue-600 transition-all text-gray-900 dark:text-gray-100"
@@ -795,7 +795,7 @@ function BubbleMessageInner({
                             <div className="text-center p-4 text-gray-400 dark:text-gray-500">
                               <CheckCircle2 className="h-6 w-6 mx-auto mb-2 opacity-60" />
                               <p className="text-xs">
-                                {t('bubbleStream.allLanguagesTranslated')}
+                                {t('allLanguagesTranslated')}
                               </p>
                             </div>
                           )}
@@ -811,7 +811,7 @@ function BubbleMessageInner({
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsFavorited(!isFavorited)}
-                aria-label={isFavorited ? t('bubbleStream.removeFavorite') : t('bubbleStream.addFavorite')}
+                aria-label={isFavorited ? t('removeFavorite') : t('addFavorite')}
                 className={cn(
                   "p-2 rounded-full transition-colors",
                   isFavorited 
@@ -828,16 +828,16 @@ function BubbleMessageInner({
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(getCurrentContent());
-                    toast.success(t('bubbleStream.copied'), {
+                    toast.success(t('copied'), {
                       duration: 2000,
                     });
                   } catch (error) {
-                    toast.error(t('bubbleStream.copyFailed'), {
+                    toast.error(t('copyFailed'), {
                       duration: 2000,
                     });
                   }
                 }}
-                aria-label={t('bubbleStream.copyMessage')}
+                aria-label={t('copyMessage')}
                 className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-full"
               >
                 <Copy className="h-4 w-4" />
@@ -859,7 +859,7 @@ function BubbleMessageInner({
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={handleEditMessage}>
                     <Edit className="h-4 w-4 mr-2" />
-                    <span>{t('bubbleStream.edit')}</span>
+                    <span>{t('edit')}</span>
                   </DropdownMenuItem>
                   {canDeleteMessage() && (
                     <DropdownMenuItem 
@@ -867,7 +867,7 @@ function BubbleMessageInner({
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      <span>{t('bubbleStream.delete')}</span>
+                      <span>{t('delete')}</span>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>

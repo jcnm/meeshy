@@ -16,7 +16,8 @@ This directory contains the English translations organized by functionality and 
 - **`pages.json`** - Static pages (about, contact, partners, not found)
 
 ### Component Files
-- **`components.json`** - UI components (affiliate, header, language selector, layout, toasts, bubble stream)
+- **`components.json`** - UI components (affiliate, header, language selector, layout, toasts)
+- **`bubbleStream.json`** - Bubble stream message component (translations, time format, actions)
 - **`modals.json`** - Modal dialogs (create link modal, link summary, anonymous chat)
 - **`features.json`** - Specialized features (chat page, error handlers, search, conversation management)
 

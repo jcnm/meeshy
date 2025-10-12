@@ -28,8 +28,12 @@ from services.translation_ml_service import TranslationMLService
 from api.translation_api import TranslationAPI
 
 # Configuration du logging
+# Production: WARNING (seulement les avertissements et erreurs)
+# Development: INFO (toutes les infos)
+log_level = logging.WARNING if os.getenv('NODE_ENV') == 'production' else logging.INFO
+
 logging.basicConfig(
-    level=logging.INFO,
+    level=log_level,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),

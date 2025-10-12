@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useCallback, useMemo, memo, useEffect } from 'react';
-import { MessageSquare, Link2, Users, Globe, Search, Plus } from 'lucide-react';
+import { useState, useCallback, useMemo, memo, useEffect, useRef } from 'react';
+import { MessageSquare, Link2, Users, Globe, Search, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,10 @@ interface ConversationListProps {
   onLinkCreated: () => void;
   t: (key: string) => string;
   tSearch: (key: string) => string;
+  // Props pour la pagination
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 interface ConversationItemProps {
@@ -158,10 +162,17 @@ export function ConversationList({
   onCreateConversation,
   onLinkCreated,
   t,
-  tSearch
+  tSearch,
+  hasMore = false,
+  isLoadingMore = false,
+  onLoadMore
 }: ConversationListProps) {
   const [activeTab, setActiveTab] = useState<'public' | 'private'>('public');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Référence pour le scroll container
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const loadMoreTriggerRef = useRef<HTMLDivElement>(null);
 
   // Filtrage des conversations
   const { publicConversations, privateConversations } = useMemo(() => {
@@ -221,6 +232,33 @@ export function ConversationList({
       }
     }
   }, [selectedConversation?.id, publicConversations, privateConversations]); // Inclure les listes pour la vérification
+  
+  // Détection du scroll infini avec Intersection Observer
+  useEffect(() => {
+    if (!onLoadMore || !hasMore || isLoadingMore) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting) {
+          console.log('📜 [Pagination] Trigger détecté - chargement de plus de conversations');
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+    
+    const trigger = loadMoreTriggerRef.current;
+    if (trigger) {
+      observer.observe(trigger);
+    }
+    
+    return () => {
+      if (trigger) {
+        observer.unobserve(trigger);
+      }
+    };
+  }, [onLoadMore, hasMore, isLoadingMore]);
   
   // Test de défilement - ajouter des éléments de test si nécessaire
   if (process.env.NODE_ENV === 'development') {
@@ -311,6 +349,7 @@ export function ConversationList({
           </div>
         ) : (
           <div 
+            ref={scrollContainerRef}
             className="h-full overflow-y-auto conversation-list-scroll conversation-scroll"
           >
             <div className="px-4 py-2 space-y-1">
@@ -323,6 +362,25 @@ export function ConversationList({
                   onClick={() => onSelectConversation(conversation)}
                 />
               ))}
+              
+              {/* Indicateur de chargement de plus de conversations */}
+              {isLoadingMore && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    {t('loadingMore') || 'Chargement...'}
+                  </span>
+                </div>
+              )}
+              
+              {/* Trigger pour le chargement infini - invisible mais détecté */}
+              {hasMore && !isLoadingMore && (
+                <div 
+                  ref={loadMoreTriggerRef}
+                  className="h-4 w-full"
+                  aria-hidden="true"
+                />
+              )}
             </div>
           </div>
         )}
