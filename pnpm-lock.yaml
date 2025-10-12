@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@prisma/client':
         specifier: 6.13.0
-        version: 6.13.0(prisma@6.13.0)
+        version: 6.13.0(prisma@6.13.0(typescript@5.9.3))(typescript@5.9.3)
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.2
@@ -35,7 +35,7 @@ importers:
         version: 3.1.10
       prisma:
         specifier: 6.13.0
-        version: 6.13.0
+        version: 6.13.0(typescript@5.9.3)
       tsx:
         specifier: ^4.20.3
         version: 4.20.4
@@ -750,6 +750,11 @@ packages:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   undefsafe@2.0.5:
     resolution: {integrity: sha512-WxONCrssBM8TSPRqN5EmsjVrsv4A8X12J4ArBiiayv3DyyG3ZlIg6yysuuSYdZsVz3TKcTg2fd//Ujd4CHV1iA==}
 
@@ -898,9 +903,10 @@ snapshots:
   '@esbuild/win32-x64@0.25.9':
     optional: true
 
-  '@prisma/client@6.13.0(prisma@6.13.0)':
+  '@prisma/client@6.13.0(prisma@6.13.0(typescript@5.9.3))(typescript@5.9.3)':
     optionalDependencies:
-      prisma: 6.13.0
+      prisma: 6.13.0(typescript@5.9.3)
+      typescript: 5.9.3
 
   '@prisma/config@6.13.0':
     dependencies:
@@ -1336,10 +1342,12 @@ snapshots:
       exsolve: 1.0.7
       pathe: 2.0.3
 
-  prisma@6.13.0:
+  prisma@6.13.0(typescript@5.9.3):
     dependencies:
       '@prisma/config': 6.13.0
       '@prisma/engines': 6.13.0
+    optionalDependencies:
+      typescript: 5.9.3
     transitivePeerDependencies:
       - magicast
 
@@ -1464,6 +1472,9 @@ snapshots:
       fsevents: 2.3.3
 
   type-fest@4.41.0: {}
+
+  typescript@5.9.3:
+    optional: true
 
   undefsafe@2.0.5: {}
 
