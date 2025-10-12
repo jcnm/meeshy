@@ -167,3 +167,4 @@ const handleForceTranslation = useCallback(async (messageId: string, targetLangu
 
 La fonctionnalité de retraduction avec tier supérieur est maintenant complètement opérationnelle. Les utilisateurs peuvent améliorer progressivement la qualité de leurs traductions en cliquant sur l'icône de flèche vers le haut dans le popover des traductions.
 
+

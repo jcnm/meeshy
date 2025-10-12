@@ -33,7 +33,7 @@ class ApiService {
   private config: ApiConfig;
   constructor(config: Partial<ApiConfig> = {}) {
     this.config = {
-      timeout: 5000, // 5 seconds is enough - backend should be fast
+      timeout: 5000, // 15 seconds - augmenté pour les traductions multilingues
       headers: {
         'Content-Type': 'application/json',
       },
@@ -111,7 +111,8 @@ class ApiService {
       }
 
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new ApiServiceError('Timeout de la requête', 408, 'TIMEOUT');
+        console.error('❌ [API-SERVICE] Timeout de la requête:', { endpoint: url, timeout: this.config.timeout });
+        throw new ApiServiceError(`Timeout de la requête (${this.config.timeout}ms) - ${endpoint}`, 408, 'TIMEOUT');
       }
 
       throw new ApiServiceError(

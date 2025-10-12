@@ -294,19 +294,6 @@ export function MessagesDisplay({
 
   return (
     <div className={`${className} bubble-message-container`}>
-      {/* Load more button for infinite scroll */}
-      {hasMore && onLoadMore && (
-        <div className="flex justify-center py-4">
-          <button
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
-            className="text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
-          >
-            {isLoadingMore ? 'Loading...' : 'Load more messages'}
-          </button>
-        </div>
-      )}
-
       {displayMessages.map((message) => {
         // Initialiser l'état du message
         if (!messageDisplayStates[message.id]) {
@@ -337,6 +324,19 @@ export function MessagesDisplay({
           />
         );
       })}
+
+      {/* Load more button for infinite scroll - EN BAS */}
+      {hasMore && onLoadMore && (
+        <div className="flex justify-center py-6 mt-4">
+          <button
+            onClick={onLoadMore}
+            disabled={isLoadingMore}
+            className="px-6 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-border"
+          >
+            {isLoadingMore ? 'Chargement...' : 'Charger plus de messages'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

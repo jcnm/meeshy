@@ -869,12 +869,13 @@ export class MeeshySocketIOManager {
       }
       
       // Préparer les données de traduction au format correct pour le frontend
-      const translationData = {
+      // FORMAT: TranslationEvent avec un tableau de traductions
+      const translationData: TranslationEvent = {
         messageId: result.messageId,
         translations: [{
-          id: data.translationId || data.id || `${result.messageId}_${targetLanguage}_${Date.now()}`, // Utiliser l'ID de la traduction
+          id: data.translationId || data.id || `${result.messageId}_${targetLanguage}_${Date.now()}`,
           messageId: result.messageId,
-          sourceLanguage: result.sourceLanguage || 'auto', // Utiliser la langue source réelle
+          sourceLanguage: result.sourceLanguage || 'auto',
           targetLanguage: targetLanguage,
           translatedContent: result.translatedText,
           translationModel: result.translationModel || result.modelType || 'medium',
@@ -887,11 +888,12 @@ export class MeeshySocketIOManager {
       
       console.log(`🔍 [SocketIOManager] Format de traduction préparé:`, {
         messageId: translationData.messageId,
-        translationCount: translationData.translations.length,
-        firstTranslation: translationData.translations[0]
+        translationsCount: translationData.translations.length,
+        targetLanguage: translationData.translations[0].targetLanguage,
+        translatedTextPreview: translationData.translations[0].translatedContent.substring(0, 50) + '...'
       });
       
-      // Diffuser dans la room de conversation (méthode principale)
+      // Diffuser dans la room de conversation (méthode principale et UNIQUE)
       if (conversationIdForBroadcast) {
         const roomName = `conversation_${conversationIdForBroadcast}`;
         const roomClients = this.io.sockets.adapter.rooms.get(roomName);
@@ -899,28 +901,28 @@ export class MeeshySocketIOManager {
         
         console.log(`📡 [SocketIOManager] Broadcasting traduction vers room ${roomName} (${clientCount} clients)`);
         
-        this.io.to(roomName).emit('message:translation', translationData);
+        this.io.to(roomName).emit(SERVER_EVENTS.MESSAGE_TRANSLATION, translationData);
         this.stats.translations_sent += clientCount;
         
         console.log(`✅ [SocketIOManager] Traduction ${result.messageId} -> ${targetLanguage} diffusée vers ${clientCount} clients dans la room`);
       } else {
         console.warn(`⚠️ [SocketIOManager] Aucune conversation trouvée pour le message ${result.messageId}`);
-      }
-      
-      // Fallback: Envoi direct aux utilisateurs connectés pour cette langue
-      const targetUsers = this._findUsersForLanguage(targetLanguage);
-      let directSendCount = 0;
-      
-      for (const user of targetUsers) {
-        const userSocket = this.io.sockets.sockets.get(user.socketId);
-        if (userSocket) {
-          userSocket.emit('message:translation', translationData);
-          directSendCount++;
+        
+        // Fallback UNIQUEMENT si pas de room: Envoi direct aux utilisateurs connectés pour cette langue
+        const targetUsers = this._findUsersForLanguage(targetLanguage);
+        let directSendCount = 0;
+        
+        for (const user of targetUsers) {
+          const userSocket = this.io.sockets.sockets.get(user.socketId);
+          if (userSocket) {
+            userSocket.emit(SERVER_EVENTS.MESSAGE_TRANSLATION, translationData);
+            directSendCount++;
+          }
         }
-      }
-      
-      if (directSendCount > 0) {
-        console.log(`📡 [SocketIOManager] Traduction aussi envoyée directement à ${directSendCount} utilisateurs spécifiques`);
+        
+        if (directSendCount > 0) {
+          console.log(`📡 [SocketIOManager] Fallback: Traduction envoyée directement à ${directSendCount} utilisateurs (pas de room)`);
+        }
       }
       
       // Envoyer les notifications de traduction pour les utilisateurs non connectés
@@ -978,27 +980,101 @@ export class MeeshySocketIOManager {
     this.stats.active_connections--;
   }
 
-  private _handleTypingStart(socket: any, data: { conversationId: string }) {
+  private async _handleTypingStart(socket: any, data: { conversationId: string }) {
     const userId = this.socketToUser.get(socket.id);
-    if (userId) {
-      const user = this.connectedUsers.get(userId);
-      socket.to(`conversation_${data.conversationId}`).emit('typing:start', {
-        userId: userId,
-        username: user?.id || 'unknown',
-        conversationId: data.conversationId
+    if (!userId) {
+      console.warn('⚠️ [TYPING] Typing start sans userId pour socket', socket.id);
+      return;
+    }
+
+    try {
+      // Récupérer les informations utilisateur depuis la base de données
+      const dbUser = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { 
+          id: true, 
+          username: true,
+          firstName: true,
+          lastName: true,
+          displayName: true
+        }
       });
+
+      if (!dbUser) {
+        console.warn('⚠️ [TYPING] Utilisateur non trouvé:', userId);
+        return;
+      }
+
+      // Construire le nom d'affichage
+      const displayName = dbUser.displayName || 
+                         `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || 
+                         dbUser.username;
+
+      const typingEvent: TypingEvent = {
+        userId: userId,
+        username: displayName,
+        conversationId: data.conversationId,
+        isTyping: true
+      };
+
+      const room = `conversation_${data.conversationId}`;
+      
+      console.log(`⌨️ [TYPING] ${displayName} commence à taper dans ${room}`);
+      
+      // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
+      socket.to(room).emit(SERVER_EVENTS.TYPING_START, typingEvent);
+      
+    } catch (error) {
+      console.error('❌ [TYPING] Erreur handleTypingStart:', error);
     }
   }
 
-  private _handleTypingStop(socket: any, data: { conversationId: string }) {
+  private async _handleTypingStop(socket: any, data: { conversationId: string }) {
     const userId = this.socketToUser.get(socket.id);
-    if (userId) {
-      const user = this.connectedUsers.get(userId);
-      socket.to(`conversation_${data.conversationId}`).emit('typing:stop', {
-        userId: userId,
-        username: user?.id || 'unknown',
-        conversationId: data.conversationId
+    if (!userId) {
+      console.warn('⚠️ [TYPING] Typing stop sans userId pour socket', socket.id);
+      return;
+    }
+
+    try {
+      // Récupérer les informations utilisateur depuis la base de données
+      const dbUser = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { 
+          id: true, 
+          username: true,
+          firstName: true,
+          lastName: true,
+          displayName: true
+        }
       });
+
+      if (!dbUser) {
+        console.warn('⚠️ [TYPING] Utilisateur non trouvé:', userId);
+        return;
+      }
+
+      // Construire le nom d'affichage
+      const displayName = dbUser.displayName || 
+                         `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || 
+                         dbUser.username;
+
+      const typingEvent: TypingEvent = {
+        userId: userId,
+        username: displayName,
+        conversationId: data.conversationId,
+        isTyping: false
+      };
+
+      const room = `conversation_${data.conversationId}`;
+      
+      console.log(`⌨️ [TYPING] ${displayName} arrête de taper dans ${room}`);
+      
+      // Émettre vers tous les autres utilisateurs de la conversation (sauf l'émetteur)
+      socket.to(room).emit(SERVER_EVENTS.TYPING_STOP, typingEvent);
+      
+    } catch (error) {
+      console.error('❌ [TYPING] Erreur handleTypingStop:', error);
     }
   }
 

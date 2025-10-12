@@ -168,7 +168,7 @@ export function ConversationHeader({
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={onOpenDetails}>
               <Info className="h-4 w-4 mr-2" />
-              {t('conversationDetails')}
+              {t('conversationDetails.title')}
             </DropdownMenuItem>
             
             {conversation.type !== 'direct' && (

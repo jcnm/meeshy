@@ -342,6 +342,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         },
         include: {
           members: {
+            take: 10, // Limiter à 10 membres pour optimiser la performance
             include: {
               user: {
                 select: {
@@ -356,6 +357,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
             }
           },
           anonymousParticipants: {
+            take: 5, // Limiter à 5 participants anonymes
             where: {
               isActive: true
             },

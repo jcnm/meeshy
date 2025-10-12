@@ -54,6 +54,58 @@ pnpm test:quick meeshy
 ts-node quick-translation-test.ts meeshy
 ```
 
+### 3. Test de Vérification des Doublons (`no-duplicate-translations-test.ts`) 🆕
+
+Test spécifique pour vérifier l'absence de traductions en doublon après les corrections apportées.
+
+**Fonctionnalités:**
+- ✅ Authentification avec utilisateur réel
+- ✅ Envoi d'un message et attente des traductions
+- ✅ Détection des doublons via WebSocket (événements multiples)
+- ✅ Vérification en base de données (doublons avec même messageId + targetLanguage)
+- ✅ Vérification de cohérence WebSocket ↔ Base de données
+- ✅ Rapport détaillé avec diagnostics
+
+**Usage:**
+```bash
+# Avec script (recommandé)
+./run-no-duplicates-test.sh [conversationId] [username] [password]
+
+# Exemple
+./run-no-duplicates-test.sh meeshy admin admin123
+
+# Ou directement
+ts-node no-duplicate-translations-test.ts meeshy admin admin123
+```
+
+**Ce test vérifie:**
+1. Qu'aucune traduction n'est reçue plusieurs fois via WebSocket
+2. Qu'il n'y a pas de doublons en base (même messageId + targetLanguage)
+3. Que les données WebSocket correspondent exactement aux données en base
+4. Que toutes les traductions sont bien créées et diffusées
+
+**Verdict:**
+- ✅ Test réussi = Aucun doublon détecté, corrections fonctionnent
+- ❌ Test échoué = Doublons détectés, vérifier index MongoDB et code
+
+### 4. Test Authentifié (`authenticated-translation-test.ts`)
+
+Test avec authentification JWT pour vérifier le flux complet avec un utilisateur réel.
+
+**Fonctionnalités:**
+- ✅ Authentification via API `/auth/login`
+- ✅ Connexion WebSocket avec token JWT
+- ✅ Envoi de message et réception des traductions
+- ✅ Support du format de diffusion immédiate
+
+**Usage:**
+```bash
+ts-node authenticated-translation-test.ts [username] [password] [conversationId]
+
+# Exemple
+ts-node authenticated-translation-test.ts admin admin123 meeshy
+```
+
 ## 🔍 Flux testé
 
 Le test valide le flux complet suivant:
@@ -103,7 +155,34 @@ Le test complet fournit:
 
 ## 🐛 Problèmes courants identifiés
 
-### Problème 1: Une seule traduction reçue
+### Problème 1: Traductions en doublon 🆕 (CORRIGÉ)
+**Symptôme:** Les traductions apparaissent en doublon lors de la récupération des messages
+
+**Causes identifiées:**
+1. Pas de contrainte d'unicité sur (messageId, targetLanguage)
+2. Race condition dans la sauvegarde des traductions
+3. Requêtes simultanées créant des doublons
+
+**Solutions appliquées:**
+1. ✅ Index unique composite ajouté au schéma Prisma
+2. ✅ Gestion des race conditions dans TranslationService
+3. ✅ Nettoyage automatique des doublons lors de la sauvegarde
+
+**Vérification:**
+```bash
+# Test spécifique
+./run-no-duplicates-test.sh meeshy admin admin123
+
+# Vérification manuelle en DB
+node ../scripts/verify-no-duplicate-translations.js
+
+# Nettoyage si nécessaire
+node ../scripts/cleanup-duplicate-translations.js
+```
+
+**Voir aussi:** `TRADUCTIONS_DOUBLONS_FIX.md` et `CORRECTION_TRADUCTIONS_DOUBLONS.md` à la racine du projet
+
+### Problème 2: Une seule traduction reçue
 **Symptôme:** L'utilisateur ne reçoit qu'une traduction au lieu de toutes
 
 **Causes possibles:**
@@ -118,7 +197,7 @@ Le test complet fournit:
 console.log('Langues extraites:', languages);
 ```
 
-### Problème 2: Aucune traduction reçue
+### Problème 3: Aucune traduction reçue
 **Symptôme:** Aucune traduction n'arrive via WebSocket
 
 **Causes possibles:**
@@ -135,7 +214,7 @@ docker ps | grep translator
 docker logs meeshy-gateway-1 --tail 100 -f
 ```
 
-### Problème 3: Traductions en base mais pas reçues
+### Problème 4: Traductions en base mais pas reçues
 **Symptôme:** Les traductions sont en DB mais pas diffusées via WebSocket
 
 **Causes possibles:**

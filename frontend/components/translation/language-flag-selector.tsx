@@ -60,7 +60,7 @@ export function LanguageFlagSelector({
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-10 p-2" align="center">
+      <PopoverContent className="w-10 p-2">
         <div className="flex flex-col gap-1 items-center">
           {availableLanguages.map((language) => (
             <Button

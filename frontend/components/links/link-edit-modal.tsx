@@ -168,7 +168,7 @@ export function LinkEditModal({ link, isOpen, onClose, onUpdate }: LinkEditModal
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0">
                     <div className="p-3">
                       <Input
                         type="datetime-local"

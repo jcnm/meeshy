@@ -383,6 +383,7 @@ export class ZMQTranslationClient extends EventEmitter {
       logger.info(`   📋 sourceLanguage: ${request.sourceLanguage}`);
       logger.info(`   📋 targetLanguages: [${request.targetLanguages.join(', ')}]`);
       logger.info(`   📋 conversationId: ${request.conversationId}`);
+      logger.info(`   🎨 modelType: ${requestMessage.modelType}`);
       logger.info(`   📋 message size: ${JSON.stringify(requestMessage).length} chars`);
       
       // Envoyer la commande via PUSH (garantit distribution équitable)

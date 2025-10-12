@@ -2,6 +2,7 @@
   "conversations": {
     "title": "Conversations",
     "conversations": "Conversations",
+    "createNewConversation": "Create new conversation",
     "loading": "Loading conversations...",
     "loadingConversations": "Loading...",
     "loadingConversationsDescription": "Retrieving your conversations...",
@@ -42,6 +43,10 @@
       "conversations": {
         "title": "Conversations"
       },
+      "conversationsList": "Conversations list",
+      "conversationWith": "Conversation with {name}",
+      "messagesList": "Messages list",
+      "selectConversation": "Select a conversation",
       "writeMessage": "Write your message...",
       "loadingConversations": "Loading conversations...",
       "errorLoadingConversation": "Error loading conversation",
@@ -53,8 +58,12 @@
         }
       }
     },
+    "search": {
+      "placeholder": "Search conversations..."
+    },
     "conversationSearch": {
       "search": "Search...",
+      "placeholder": "Search conversations...",
       "searchPlaceholder": "Search conversations...",
       "noResults": "No results found",
       "noConversationsFound": "No conversations found",
@@ -70,6 +79,7 @@
       "members": "members",
       "online": "online"
     },
+    "addParticipant": "Add participant",
     "conversationParticipants": {
       "typing": "is typing...",
       "typingMultiple": "people are typing..."

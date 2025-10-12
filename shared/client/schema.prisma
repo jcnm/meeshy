@@ -210,6 +210,8 @@ model MessageTranslation {
   createdAt         DateTime @default(now())
 
   message Message @relation(fields: [messageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([messageId, targetLanguage], name: "message_target_language_unique")
 }
 
 /// Statut de reception, lecture ou réponse d'un message par un utilisateur

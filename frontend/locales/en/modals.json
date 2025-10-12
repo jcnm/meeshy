@@ -1,5 +1,7 @@
 {
   "modals": {
+    "title": "Modal",
+    "description": "Modal dialog",
     "createConversationModal": {
       "title": "Create a new conversation",
       "description": "Create a direct or group conversation",
@@ -88,6 +90,10 @@
     "createLinkModal": {
       "title": "Create a sharing link",
       "description": "Create a link to allow others to join a conversation",
+      "search": {
+        "conversations": "Search conversations...",
+        "noConversationsFound": "No conversations found"
+      },
       "steps": {
         "selectConversation": "Select a conversation",
         "configureLink": "Configure the link",
@@ -205,6 +211,16 @@
         }
       },
       "actions": {
+        "previous": "Previous",
+        "next": "Next",
+        "cancel": "Cancel",
+        "createLink": "Create link",
+        "generating": "Generating...",
+        "copyLink": "Copy link",
+        "shareLink": "Share link",
+        "close": "Close"
+      },
+      "navigation": {
         "previous": "Previous",
         "next": "Next",
         "cancel": "Cancel",

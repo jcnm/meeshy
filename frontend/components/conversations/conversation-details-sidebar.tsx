@@ -217,24 +217,33 @@ export function ConversationDetailsSidebar({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-80 bg-card/95 dark:bg-card/95 backdrop-blur-lg border-l border-border z-50 shadow-xl">
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold">{t('conversationDetails.title')}</h2>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onClose}
-            className="h-8 w-8 p-0 rounded-full"
-            aria-label={t('conversationDetails.close')}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <>
+      {/* Overlay pour fermer en cliquant en dehors */}
+      <div 
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 animate-in fade-in duration-200"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      
+      {/* Sidebar au niveau de la conversation */}
+      <div className="absolute inset-y-0 right-0 w-80 bg-card dark:bg-card border-l border-border z-50 shadow-2xl animate-in slide-in-from-right duration-300">
+        <div className="flex flex-col h-full">
+          {/* Header fixe */}
+          <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border bg-card dark:bg-card">
+            <h2 className="text-lg font-semibold">{t('conversationDetails.title')}</h2>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onClose}
+              className="h-8 w-8 p-0 rounded-full hover:bg-accent"
+              aria-label={t('conversationDetails.close')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-        {/* Contenu scrollable */}
-        <ScrollArea className="flex-1">
+          {/* Contenu scrollable */}
+          <ScrollArea className="flex-1 overflow-y-auto">
           <div className="p-4 space-y-6">
             {/* Info principale */}
             <div className="text-center space-y-3">
@@ -412,5 +421,6 @@ export function ConversationDetailsSidebar({
         </ScrollArea>
       </div>
     </div>
+    </>
   );
 }

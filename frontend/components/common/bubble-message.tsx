@@ -177,6 +177,24 @@ function BubbleMessageInner({
   const messageRef = useRef<HTMLDivElement>(null);
   const filterInputRef = useRef<HTMLInputElement>(null);
 
+  // Calculer le positionnement dynamique du popover basé sur la position du message
+  const getPopoverSide = useCallback((): 'top' | 'bottom' => {
+    if (!messageRef.current) return 'top'; // Fallback par défaut
+    
+    try {
+      const messageRect = messageRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const messageCenter = messageRect.top + (messageRect.height / 2);
+      
+      // Si le message est dans la moitié inférieure de l'écran, ouvrir vers le haut
+      // Si le message est dans la moitié supérieure, ouvrir vers le bas
+      return messageCenter > (viewportHeight / 2) ? 'top' : 'bottom';
+    } catch (error) {
+      console.warn('Erreur calcul position popover:', error);
+      return 'top'; // Fallback en cas d'erreur
+    }
+  }, []);
+
   // Effet pour détecter les nouvelles traductions et déclencher l'animation
   useEffect(() => {
     const currentCount = message.translations?.length || 0;
@@ -560,8 +578,8 @@ function BubbleMessageInner({
                     "w-full max-w-xs md:w-80 p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm",
                     Z_CLASSES.POPOVER
                   )}
-                  side="top" 
-                  align="center"
+                  side={getPopoverSide()} 
+                  align="start"
                   sideOffset={12}
                   alignOffset={0}
                   collisionPadding={20}
@@ -610,7 +628,8 @@ function BubbleMessageInner({
                           </div>
                         )}
 
-                        <div className="space-y-1 flex-1 overflow-y-auto scrollbar-thin">
+                        {/* Liste des traductions - hauteur pour 2 items visibles */}
+                        <div className="space-y-1 max-h-[200px] overflow-y-auto scrollbar-thin">
                       {filteredVersions.length > 0 ? (
                         filteredVersions.map((version, index) => {
                           const versionAny = version as any;
@@ -749,7 +768,8 @@ function BubbleMessageInner({
                           </div>
                         )}
 
-                        <div className="space-y-1 flex-1 overflow-y-auto scrollbar-thin">
+                        {/* Liste des langues à traduire - hauteur pour 2-3 items visibles */}
+                        <div className="space-y-1 max-h-[200px] overflow-y-auto scrollbar-thin">
                           {filteredMissingLanguages.length > 0 ? (
                             filteredMissingLanguages.map((lang, index) => (
                               <button

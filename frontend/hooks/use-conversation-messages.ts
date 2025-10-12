@@ -15,6 +15,7 @@ export interface ConversationMessagesOptions {
   enabled?: boolean;
   threshold?: number;
   containerRef?: React.RefObject<HTMLDivElement | null>;
+  scrollDirection?: 'up' | 'down'; // Direction du scroll pour charger plus: 'up' = haut (défaut), 'down' = bas
 }
 
 export interface ConversationMessagesReturn {
@@ -40,7 +41,8 @@ export function useConversationMessages(
     limit = 20,
     enabled = true,
     threshold = 100,
-    containerRef
+    containerRef,
+    scrollDirection = 'up' // Par défaut: scroll vers le haut (comportement actuel)
   } = options;
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -135,9 +137,9 @@ export function useConversationMessages(
         const scrollHeightBefore = container?.scrollHeight || 0;
         const scrollTopBefore = container?.scrollTop || 0;
         
-        console.log(`[Conversation] 📏 AVANT ajout messages - scrollHeight: ${scrollHeightBefore}, scrollTop: ${scrollTopBefore}`);
+        console.log(`[Conversation] 📏 AVANT ajout messages - scrollHeight: ${scrollHeightBefore}, scrollTop: ${scrollTopBefore}, direction: ${scrollDirection}`);
         
-        // Pour ConversationLayoutResponsive : ajouter les messages plus anciens au début
+        // Ajouter les messages selon la direction de scroll
         setMessages(prev => {
           // Éviter les doublons
           const existingIds = new Set(prev.map(m => m.id));
@@ -147,24 +149,35 @@ export function useConversationMessages(
             return prev;
           }
           
-          // Ajouter les nouveaux messages au début (les plus anciens)
-          return [...uniqueNewMessages, ...prev];
+          if (scrollDirection === 'up') {
+            // Scroll vers le haut: ajouter les messages plus anciens au DÉBUT
+            return [...uniqueNewMessages, ...prev];
+          } else {
+            // Scroll vers le bas: ajouter les messages plus anciens à la FIN
+            return [...prev, ...uniqueNewMessages];
+          }
         });
         
         // Restaurer la position de scroll après le rendu
         // Utiliser requestAnimationFrame pour attendre que le DOM soit mis à jour
-        requestAnimationFrame(() => {
-          if (container) {
-            const scrollHeightAfter = container.scrollHeight;
-            const heightDifference = scrollHeightAfter - scrollHeightBefore;
-            
-            // Ajuster le scrollTop pour compenser la hauteur ajoutée
-            const newScrollTop = scrollTopBefore + heightDifference;
-            container.scrollTop = newScrollTop;
-            
-            console.log(`[Conversation] 📏 APRÈS ajout messages - scrollHeight: ${scrollHeightAfter}, scrollTop restauré: ${newScrollTop}, diff: ${heightDifference}`);
-          }
-        });
+        if (scrollDirection === 'up') {
+          // Pour scroll vers le haut: compenser la hauteur ajoutée
+          requestAnimationFrame(() => {
+            if (container) {
+              const scrollHeightAfter = container.scrollHeight;
+              const heightDifference = scrollHeightAfter - scrollHeightBefore;
+              
+              // Ajuster le scrollTop pour compenser la hauteur ajoutée
+              const newScrollTop = scrollTopBefore + heightDifference;
+              container.scrollTop = newScrollTop;
+              
+              console.log(`[Conversation] 📏 APRÈS ajout messages (scroll haut) - scrollHeight: ${scrollHeightAfter}, scrollTop restauré: ${newScrollTop}, diff: ${heightDifference}`);
+            }
+          });
+        } else {
+          // Pour scroll vers le bas: garder la position actuelle
+          console.log(`[Conversation] 📏 APRÈS ajout messages (scroll bas) - position maintenue`);
+        }
         
         setOffset(prev => prev + limit);
         offsetRef.current += limit; // Mettre à jour la ref immédiatement
@@ -405,16 +418,26 @@ export function useConversationMessages(
           return;
         }
         
-        // Pour ConversationLayoutResponsive : scroll vers le haut pour charger plus anciens
-        const isNearTop = scrollTop <= threshold;
+        // Déterminer la direction de scroll
+        let shouldLoadMore = false;
         
-        const shouldLoadMore = isNearTop;
+        if (scrollDirection === 'up') {
+          // Scroll vers le haut pour charger plus anciens (comportement par défaut)
+          const isNearTop = scrollTop <= threshold;
+          shouldLoadMore = isNearTop;
+          console.log(`[Conversation] 📜 ÉVALUATION SCROLL (vers haut) - scrollTop: ${scrollTop}, threshold: ${threshold}, isNearTop: ${isNearTop}, shouldLoadMore: ${shouldLoadMore}`);
+        } else {
+          // Scroll vers le bas pour charger plus anciens
+          const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+          const isNearBottom = distanceFromBottom <= threshold;
+          shouldLoadMore = isNearBottom;
+          console.log(`[Conversation] 📜 ÉVALUATION SCROLL (vers bas) - distanceFromBottom: ${distanceFromBottom}, threshold: ${threshold}, isNearBottom: ${isNearBottom}, shouldLoadMore: ${shouldLoadMore}`);
+        }
 
-        console.log(`[Conversation] 📜 ÉVALUATION SCROLL - scrollTop: ${scrollTop}, threshold: ${threshold}, isNearTop: ${isNearTop}, shouldLoadMore: ${shouldLoadMore}`);
-        console.log(`[Conversation] 📜 POSITION SCROLL - scrollTop: ${scrollTop}, clientHeight: ${clientHeight}, scrollHeight: ${scrollHeight}, distanceFromTop: ${scrollTop}`);
+        console.log(`[Conversation] 📜 POSITION SCROLL - scrollTop: ${scrollTop}, clientHeight: ${clientHeight}, scrollHeight: ${scrollHeight}`);
 
         if (shouldLoadMore) {
-          console.log(`[Conversation] 📜 ✅ DÉCLENCHEMENT CHARGEMENT - scrollTop: ${scrollTop}, threshold: ${threshold}, isNearTop: ${isNearTop}`);
+          console.log(`[Conversation] 📜 ✅ DÉCLENCHEMENT CHARGEMENT - direction: ${scrollDirection}`);
           loadMore();
         }
       }, 100);

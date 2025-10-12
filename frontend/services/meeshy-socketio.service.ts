@@ -284,9 +284,25 @@ class MeeshySocketIOService {
     });
 
     this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data) => {
-      // Déduplication des événements basée sur messageId + timestamp des traductions
-      const firstTranslation = data.translations[0];
-      const eventKey = `${data.messageId}_${firstTranslation?.id || firstTranslation?.createdAt || Date.now()}`;
+      // SUPPORT DES DEUX FORMATS: singulier (nouveau) et pluriel (ancien)
+      // Format singulier: { translation: {...} } - Une traduction par événement (diffusion immédiate)
+      // Format pluriel: { translations: [{...}] } - Toutes les traductions groupées (ancien format)
+      
+      let translations: any[];
+      if (data.translation) {
+        // NOUVEAU FORMAT SINGULIER (diffusion immédiate)
+        translations = [data.translation];
+      } else if (data.translations && Array.isArray(data.translations)) {
+        // ANCIEN FORMAT PLURIEL (rétrocompatibilité)
+        translations = data.translations;
+      } else {
+        console.warn('⚠️ [SOCKETIO-SERVICE] Format de traduction invalide:', data);
+        return;
+      }
+      
+      // Déduplication des événements basée sur messageId + timestamp de la traduction
+      const firstTranslation = translations[0];
+      const eventKey = `${data.messageId}_${firstTranslation?.id || firstTranslation?.targetLanguage || Date.now()}`;
       
       if (this.processedTranslationEvents.has(eventKey)) {
         console.log('🔄 [SOCKETIO-SERVICE] Événement de traduction déjà traité, ignoré:', eventKey);
@@ -304,30 +320,32 @@ class MeeshySocketIOService {
       console.group('🚀 [SOCKETIO-SERVICE] NOUVELLE TRADUCTION REÇUE');
       console.log('📥 [FRONTEND] Traduction reçue via Socket.IO:', {
         messageId: data.messageId,
-        translationsCount: data.translations.length,
+        format: data.translation ? 'singulier (diffusion immédiate)' : 'pluriel (groupé)',
+        translationsCount: translations.length,
         eventKey,
-        firstTranslation: data.translations[0] ? {
-          id: data.translations[0].id,
-          targetLanguage: data.translations[0].targetLanguage,
-          translatedContent: data.translations[0].translatedContent?.substring(0, 50) + '...',
-          confidenceScore: data.translations[0].confidenceScore,
-          translationModel: data.translations[0].translationModel,
-          cacheKey: data.translations[0].cacheKey,
-          cached: data.translations[0].cached,
-          createdAt: data.translations[0].createdAt
+        firstTranslation: firstTranslation ? {
+          id: firstTranslation.id,
+          targetLanguage: firstTranslation.targetLanguage,
+          translatedContent: firstTranslation.translatedContent?.substring(0, 50) + '...',
+          confidenceScore: firstTranslation.confidenceScore,
+          translationModel: firstTranslation.translationModel,
+          cacheKey: firstTranslation.cacheKey,
+          cached: firstTranslation.cached,
+          createdAt: firstTranslation.createdAt
         } : null
       });
       
       logger.socketio.debug('MeeshySocketIOService: Traduction reçue', {
         messageId: data.messageId,
-        translationsCount: data.translations.length,
-        translations: data.translations
+        format: data.translation ? 'singulier' : 'pluriel',
+        translationsCount: translations.length,
+        translations: translations
       });
 
       // Mise en cache de la traduction reçue
-      if (data.translations && data.translations.length > 0) {
+      if (translations && translations.length > 0) {
         console.log('🔄 [SOCKETIO-SERVICE] Mise en cache des traductions...');
-        data.translations.forEach((translation, index) => {
+        translations.forEach((translation, index) => {
           const cacheKey = `${data.messageId}_${translation.targetLanguage}`;
           this.translationCache.set(cacheKey, translation);
           console.log(`  ${index + 1}. Cache: ${cacheKey} → ${translation.translatedContent?.substring(0, 30)}...`);
@@ -335,12 +353,17 @@ class MeeshySocketIOService {
       }
 
       console.log(`📡 [SOCKETIO-SERVICE] Notification à ${this.translationListeners.size} listeners...`);
-      // Notifier tous les listeners
+      // Notifier tous les listeners avec format normalisé (toujours pluriel pour cohérence interne)
+      const normalizedData = {
+        messageId: data.messageId,
+        translations: translations
+      };
+      
       let listenerIndex = 0;
       this.translationListeners.forEach((listener) => {
         listenerIndex++;
-        console.log(`  → Listener ${listenerIndex}: Envoi des données...`);
-        listener(data);
+        console.log(`  → Listener ${listenerIndex}: Envoi des données normalisées...`);
+        listener(normalizedData);
       });
       
       console.groupEnd();

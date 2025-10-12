@@ -7,6 +7,9 @@
     "test:translation": "ts-node e2e-translation-test.ts",
     "test:translation:meeshy": "ts-node e2e-translation-test.ts meeshy",
     "test:quick": "ts-node quick-translation-test.ts",
+    "test:no-duplicates": "ts-node no-duplicate-translations-test.ts meeshy admin admin123",
+    "test:no-duplicates:custom": "ts-node no-duplicate-translations-test.ts",
+    "test:authenticated": "ts-node authenticated-translation-test.ts admin admin123 meeshy",
     "diagnostic:analyze": "ts-node diagnostic-helper.ts analyze",
     "diagnostic:stats": "ts-node diagnostic-helper.ts stats"
   },

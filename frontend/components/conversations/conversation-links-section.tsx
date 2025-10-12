@@ -219,7 +219,7 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
                     <MoreHorizontal className="h-3 w-3" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-4" align="start">
+                <PopoverContent className="w-80 p-4">
                   <div className="space-y-3">
                     <div>
                       <h4 className="font-medium text-sm mb-1">Détails du lien</h4>

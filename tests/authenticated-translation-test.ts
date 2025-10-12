@@ -19,12 +19,12 @@ interface AuthResponse {
 
 interface TranslationEvent {
   messageId: string;
-  translations: Array<{
+  translation: {
     id?: string;
     targetLanguage: string;
     translatedContent: string;
     sourceLanguage?: string;
-  }>;
+  };
 }
 
 async function authenticateUser(username: string, password: string): Promise<string> {
@@ -140,20 +140,19 @@ async function runAuthenticatedTest(
       });
 
       // Traduction reçue - ÉVÉNEMENT CLÉ À OBSERVER
+      // FORMAT: Une traduction par événement (diffusion immédiate)
       socket.on('message:translation', (data: TranslationEvent) => {
         console.log(`\n🌐 TRADUCTION REÇUE pour message ${data.messageId}`);
-        console.log(`📊 Nombre de traductions dans le payload: ${data.translations?.length || 0}`);
+        console.log(`📊 Format: Traduction unique (diffusion immédiate)`);
         
-        if (data.translations && Array.isArray(data.translations)) {
-          data.translations.forEach((translation, index) => {
-            console.log(`  ${index + 1}. ${translation.targetLanguage?.toUpperCase() || 'UNKNOWN'}:`);
-            console.log(`     "${translation.translatedContent.substring(0, 80)}..."`);
-            
-            receivedTranslations.push({
-              language: translation.targetLanguage,
-              content: translation.translatedContent,
-              timestamp: new Date()
-            });
+        if (data.translation) {
+          console.log(`  ➜ ${data.translation.targetLanguage?.toUpperCase() || 'UNKNOWN'}:`);
+          console.log(`     "${data.translation.translatedContent.substring(0, 80)}..."`);
+          
+          receivedTranslations.push({
+            language: data.translation.targetLanguage,
+            content: data.translation.translatedContent,
+            timestamp: new Date()
           });
         } else {
           console.log(`  ⚠️  Aucune traduction dans le payload ou format incorrect`);
@@ -180,7 +179,8 @@ async function runAuthenticatedTest(
         console.log('📊 RÉSULTATS DU TEST');
         console.log('='.repeat(80));
         console.log(`Message ID: ${messageId || 'N/A'}`);
-        console.log(`Événements 'message:translation' reçus: ${receivedTranslations.length > 0 ? Math.ceil(receivedTranslations.length / 4) : 0}`);
+        console.log(`Format: Diffusion immédiate (une traduction par événement)`);
+        console.log(`Événements 'message:translation' reçus: ${receivedTranslations.length}`);
         console.log(`Total traductions reçues: ${receivedTranslations.length}`);
         
         if (receivedTranslations.length > 0) {
@@ -194,20 +194,19 @@ async function runAuthenticatedTest(
           });
           
           console.log('\n✅ Des traductions ont été reçues');
+          console.log(`💡 Note: Chaque traduction arrive dans un événement séparé (diffusion immédiate)`);
           
-          // Diagnostic sur le problème
-          if (uniqueLanguages.length === 1) {
-            console.log('\n⚠️  PROBLÈME DÉTECTÉ:');
-            console.log('  Une seule langue reçue au lieu de toutes les langues des participants');
-            console.log('\n🔍 CAUSE PROBABLE:');
-            console.log('  L\'événement "message:translation" ne contient qu\'une traduction');
-            console.log('  au lieu de toutes les traductions pour ce message.');
-            console.log('\n💡 VÉRIFIER:');
-            console.log('  gateway/src/socketio/MeeshySocketIOManager.ts');
-            console.log('  Méthode: _handleTranslationReady()');
-            console.log('  Ligne: ~847');
-          } else {
+          // Vérifier si toutes les langues attendues sont reçues
+          // Pour la conversation "meeshy", on devrait avoir au moins 2-3 langues
+          if (uniqueLanguages.length >= 2) {
             console.log('\n✅ Plusieurs langues reçues - Le système fonctionne correctement!');
+            console.log('   Le format de diffusion immédiate fonctionne comme prévu.');
+          } else if (uniqueLanguages.length === 1) {
+            console.log('\n⚠️  UNE SEULE LANGUE REÇUE');
+            console.log('🔍 Vérifications à faire:');
+            console.log('  1. La conversation a-t-elle plusieurs participants avec des langues différentes?');
+            console.log('  2. Les traductions sont-elles générées pour toutes les langues?');
+            console.log('  3. Vérifier les logs du TranslationService pour voir les langues extraites');
           }
         } else {
           console.log('\n❌ Aucune traduction reçue');

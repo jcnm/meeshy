@@ -35,6 +35,7 @@ export class TranslationService extends EventEmitter {
   private prisma: PrismaClient;
   private zmqClient: ZMQTranslationClient | null = null;
   private startTime: number = Date.now();
+  private isInitialized: boolean = false; // Flag pour éviter la double initialisation
   
   // Cache mémoire pour les résultats récents
   private memoryCache: Map<string, TranslationResult> = new Map();
@@ -95,15 +96,30 @@ export class TranslationService extends EventEmitter {
 
   async initialize(): Promise<void> {
     try {
+      // ⚠️ IMPORTANT: Éviter la double initialisation qui créerait des listeners multiples
+      if (this.isInitialized) {
+        console.log('[GATEWAY] ⚠️  TranslationService déjà initialisé, skip');
+        return;
+      }
+      
       console.log('[GATEWAY] 🔧 Initialisation TranslationService...');
       
       // Utiliser le singleton ZMQ
       this.zmqClient = await ZMQSingleton.getInstance();
       console.log('[GATEWAY] ✅ ZMQ Client obtenu:', this.zmqClient ? 'OK' : 'NULL');
       
+      // ⚠️ CORRECTION DOUBLONS: Retirer les anciens listeners AVANT d'en ajouter de nouveaux
+      this.zmqClient.removeAllListeners('translationCompleted');
+      this.zmqClient.removeAllListeners('translationError');
+      
       // Écouter les événements de traduction terminée
       this.zmqClient.on('translationCompleted', this._handleTranslationCompleted.bind(this));
       this.zmqClient.on('translationError', this._handleTranslationError.bind(this));
+      
+      console.log('[GATEWAY] 📡 Listeners enregistrés:', {
+        translationCompleted: this.zmqClient.listenerCount('translationCompleted'),
+        translationError: this.zmqClient.listenerCount('translationError')
+      });
       
       // Test de réception après initialisation
       setTimeout(async () => {
@@ -115,6 +131,7 @@ export class TranslationService extends EventEmitter {
         }
       }, 3000);
       
+      this.isInitialized = true;
       console.log('[GATEWAY] ✅ TranslationService initialisé avec succès');
     } catch (error) {
       console.error('[GATEWAY] ❌ Erreur initialisation TranslationService:', error);
@@ -174,7 +191,7 @@ export class TranslationService extends EventEmitter {
           console.log(`🔄 [TranslationService] Début traitement asynchrone...`);
           if (isRetranslation) {
             // Pour une retraduction, on utilise les données du message existant
-            console.log(`🔄 [TranslationService] Traitement retraduction...`);
+            console.log(`🔄 [TranslationService] Traitement retraduction avec modelType: ${(messageData as any).modelType || 'auto'}...`);
             await this._processRetranslationAsync(messageId, messageData);
           } else {
             // Pour un nouveau message, on récupère les données complètes
@@ -183,8 +200,10 @@ export class TranslationService extends EventEmitter {
               where: { id: messageId }
             });
             if (savedMessage) {
-              // Passer la langue cible spécifiée par le client
-              await this._processTranslationsAsync(savedMessage, messageData.targetLanguage);
+              // Passer la langue cible ET le modelType spécifiés par le client
+              const requestedModelType = (messageData as any).modelType;
+              console.log(`🎨 [TranslationService] Transmission modelType: ${requestedModelType || 'auto'}`);
+              await this._processTranslationsAsync(savedMessage, messageData.targetLanguage, requestedModelType);
             } else {
               console.error(`❌ [TranslationService] Message ${messageId} non trouvé en base`);
             }
@@ -260,10 +279,11 @@ export class TranslationService extends EventEmitter {
    * OPTIMISATION: Filtre automatiquement les langues cibles identiques à la langue source
    * pour éviter les traductions inutiles (ex: fr → fr)
    */
-  private async _processTranslationsAsync(message: any, targetLanguage?: string) {
+  private async _processTranslationsAsync(message: any, targetLanguage?: string, modelType?: string) {
     try {
       console.log(`🔄 Démarrage traitement asynchrone des traductions pour ${message.id}`);
       console.log(`🔧 ZMQ Client disponible:`, this.zmqClient ? 'OUI' : 'NON');
+      console.log(`🎨 ModelType demandé:`, modelType || 'auto');
       
       if (!this.zmqClient) {
         console.error('[GATEWAY] ❌ ZMQ Client non disponible pour les traductions');
@@ -297,6 +317,7 @@ export class TranslationService extends EventEmitter {
       });
       
       console.log(`🌍 Langues cibles finales (après filtrage): ${filteredTargetLanguages.join(', ')}`);
+      console.log(`🔍 [DEBUG] Langue source: ${message.originalLanguage}, Langues cibles brutes: ${targetLanguages.join(', ')}, Langues filtrées: ${filteredTargetLanguages.join(', ')}`);
       
       // Si aucune langue cible après filtrage, ne pas envoyer de requête
       if (filteredTargetLanguages.length === 0) {
@@ -304,21 +325,27 @@ export class TranslationService extends EventEmitter {
         return;
       }
       
-      // 2. ENVOYER LA REQUÊTE DE TRADUCTION VIA PUB
+      // 2. DÉTERMINER LE MODEL TYPE
+      // Priorité: 1) modelType passé en paramètre, 2) modelType du message, 3) auto-détection
+      const finalModelType = modelType || (message as any).modelType || ((message.content?.length ?? 0) < 80 ? 'medium' : 'premium');
+      
+      console.log(`🎨 [TranslationService] ModelType final: ${finalModelType} (demandé: ${modelType || 'auto'}, message: ${(message as any).modelType || 'N/A'}, auto: ${(message.content?.length ?? 0) < 80 ? 'medium' : 'premium'})`);
+      
+      // 3. ENVOYER LA REQUÊTE DE TRADUCTION VIA ZMQ
       const request: TranslationRequest = {
         messageId: message.id,
         text: message.content,
         sourceLanguage: message.originalLanguage,
         targetLanguages: filteredTargetLanguages,
         conversationId: message.conversationId,
-        modelType: (message as any).modelType || ((message.content?.length ?? 0) < 80 ? 'medium' : 'premium')
+        modelType: finalModelType
       };
       
-      console.log(`📤 Tentative d'envoi de requête ZMQ...`);
+      console.log(`📤 Tentative d'envoi de requête ZMQ avec modelType: ${finalModelType}...`);
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
-      console.log(`📤 Requête de traduction envoyée: ${taskId} (${filteredTargetLanguages.length} langues)`);
+      console.log(`📤 Requête de traduction envoyée: ${taskId} (${filteredTargetLanguages.length} langues, model: ${finalModelType})`);
       
     } catch (error) {
       console.error(`❌ Erreur traitement asynchrone: ${error}`);
@@ -384,24 +411,46 @@ export class TranslationService extends EventEmitter {
         return;
       }
       
-      // 2. SUPPRIMER LES ANCIENNES TRADUCTIONS (optionnel)
-      // On peut choisir de supprimer les anciennes traductions ou les garder
-      // Pour le moment, on ne supprime pas les anciennes traductions, besoin de définir un comportement plus adapté
+      // 2. DÉTERMINER LE MODEL TYPE
+      // Priorité: 1) modelType du messageData (demandé par l'utilisateur), 2) auto-détection
+      const requestedModelType = (messageData as any).modelType;
+      const autoModelType = (existingMessage.content?.length ?? 0) < 80 ? 'medium' : 'premium';
+      const finalModelType = requestedModelType || autoModelType;
       
-      // 3. ENVOYER LA REQUÊTE DE RETRADUCTION VIA PUB
+      console.log(`🎨 [TranslationService] ModelType pour retraduction:`);
+      console.log(`   Demandé: ${requestedModelType || 'N/A'}`);
+      console.log(`   Auto: ${autoModelType}`);
+      console.log(`   Final: ${finalModelType}`);
+      
+      // 3. SUPPRIMER LES ANCIENNES TRADUCTIONS POUR LES LANGUES CIBLES
+      // Cela permet de remplacer les traductions existantes par les nouvelles
+      if (filteredTargetLanguages.length > 0) {
+        const deleteResult = await this.prisma.messageTranslation.deleteMany({
+          where: {
+            messageId: messageId,
+            targetLanguage: {
+              in: filteredTargetLanguages
+            }
+          }
+        });
+        console.log(`🗑️  [TranslationService] ${deleteResult.count} anciennes traductions supprimées pour retraduction`);
+      }
+      
+      // 4. ENVOYER LA REQUÊTE DE RETRADUCTION VIA ZMQ
       const request: TranslationRequest = {
         messageId: messageId,
         text: existingMessage.content,
         sourceLanguage: existingMessage.originalLanguage,
         targetLanguages: filteredTargetLanguages,
         conversationId: existingMessage.conversationId,
-        modelType: (messageData as any).modelType || ((existingMessage.content?.length ?? 0) < 80 ? 'medium' : 'premium')
+        modelType: finalModelType
       };
       
+      console.log(`📤 [TranslationService] Envoi requête de retraduction avec modelType: ${finalModelType}`);
       const taskId = await this.zmqClient.sendTranslationRequest(request);
       this.stats.translation_requests_sent++;
       
-      console.log(`📤 Requête de retraduction envoyée: ${taskId} (${filteredTargetLanguages.length} langues)`);
+      console.log(`✅ [TranslationService] Requête de retraduction envoyée: ${taskId} (${filteredTargetLanguages.length} langues, model: ${finalModelType})`);
       
     } catch (error) {
       console.error(`❌ Erreur retraduction: ${error}`);
@@ -645,71 +694,108 @@ export class TranslationService extends EventEmitter {
     try {
       console.log(`💾 [TranslationService] Sauvegarde traduction en base: ${result.messageId} -> ${result.targetLanguage}`);
       
-      // AMÉLIORATION: Utiliser upsert pour éviter les doublons
-      // Vérifier d'abord s'il y a des doublons existants
-      const existingTranslations = await this.prisma.messageTranslation.findMany({
-        where: {
-          messageId: result.messageId,
-          targetLanguage: result.targetLanguage
-        },
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
-
-      // Créer la clé de cache
+      // Créer la clé de cache unique
       const cacheKey = `${result.messageId}_${result.sourceLanguage}_${result.targetLanguage}`;
       
       // Extraire les informations techniques du modèle
       const modelInfo = result.translatorModel || result.modelType || 'basic';
       const confidenceScore = result.confidenceScore || 0.9;
 
-      if (existingTranslations.length > 0) {
-        // Supprimer les doublons s'il y en a (garder seulement le plus récent)
-        if (existingTranslations.length > 1) {
-          const duplicatesToDelete = existingTranslations.slice(1);
-          await this.prisma.messageTranslation.deleteMany({
-            where: {
-              id: {
-                in: duplicatesToDelete.map(t => t.id)
+      // SOLUTION ATOMIQUE: Nettoyer d'abord les doublons potentiels
+      // Puis utiliser un try-catch pour gérer les violations de contrainte unique
+      try {
+        // Étape 1: Nettoyer les doublons existants AVANT l'insertion/mise à jour
+        const existingTranslations = await this.prisma.messageTranslation.findMany({
+          where: {
+            messageId: result.messageId,
+            targetLanguage: result.targetLanguage
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        });
+
+        if (existingTranslations.length > 0) {
+          // S'il y a des doublons, supprimer tous sauf le premier
+          if (existingTranslations.length > 1) {
+            const duplicatesToDelete = existingTranslations.slice(1);
+            await this.prisma.messageTranslation.deleteMany({
+              where: {
+                id: {
+                  in: duplicatesToDelete.map(t => t.id)
+                }
               }
+            });
+            console.log(`🧹 [TranslationService] ${duplicatesToDelete.length} doublons supprimés pour ${result.messageId} -> ${result.targetLanguage}`);
+          }
+
+          // Mettre à jour la traduction existante
+          const latestTranslation = existingTranslations[0];
+          const updatedTranslation = await this.prisma.messageTranslation.update({
+            where: {
+              id: latestTranslation.id
+            },
+            data: {
+              sourceLanguage: result.sourceLanguage,
+              translatedContent: result.translatedText,
+              translationModel: modelInfo,
+              confidenceScore: confidenceScore,
+              cacheKey: cacheKey
             }
           });
-          console.log(`🧹 [TranslationService] ${duplicatesToDelete.length} doublons supprimés pour ${result.messageId} -> ${result.targetLanguage}`);
+          
+          console.log(`🔄 [TranslationService] Traduction mise à jour: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id})`);
+          return updatedTranslation.id;
+        } else {
+          // Créer une nouvelle traduction
+          const newTranslation = await this.prisma.messageTranslation.create({
+            data: {
+              messageId: result.messageId,
+              sourceLanguage: result.sourceLanguage,
+              targetLanguage: result.targetLanguage,
+              translatedContent: result.translatedText,
+              translationModel: modelInfo,
+              confidenceScore: confidenceScore,
+              cacheKey: cacheKey
+            }
+          });
+          
+          console.log(`✅ [TranslationService] Nouvelle traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage} (ID: ${newTranslation.id})`);
+          return newTranslation.id;
+        }
+      } catch (createError: any) {
+        // Si erreur de contrainte unique (race condition), réessayer avec une mise à jour
+        if (createError.code === 'P2002' || createError.message?.includes('unique constraint')) {
+          console.log(`⚠️ [TranslationService] Contrainte unique violée, tentative de mise à jour: ${result.messageId} -> ${result.targetLanguage}`);
+          
+          // Récupérer la traduction existante créée entre-temps
+          const existingTranslation = await this.prisma.messageTranslation.findFirst({
+            where: {
+              messageId: result.messageId,
+              targetLanguage: result.targetLanguage
+            }
+          });
+
+          if (existingTranslation) {
+            const updatedTranslation = await this.prisma.messageTranslation.update({
+              where: {
+                id: existingTranslation.id
+              },
+              data: {
+                sourceLanguage: result.sourceLanguage,
+                translatedContent: result.translatedText,
+                translationModel: modelInfo,
+                confidenceScore: confidenceScore,
+                cacheKey: cacheKey
+              }
+            });
+            
+            console.log(`🔄 [TranslationService] Traduction mise à jour après race condition: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id})`);
+            return updatedTranslation.id;
+          }
         }
         
-        // Mettre à jour la traduction existante (la plus récente)
-        const latestTranslation = existingTranslations[0];
-        const updatedTranslation = await this.prisma.messageTranslation.update({
-          where: {
-            id: latestTranslation.id
-          },
-          data: {
-            translatedContent: result.translatedText,
-            translationModel: modelInfo,
-            confidenceScore: confidenceScore,
-            cacheKey: cacheKey
-          }
-        });
-        
-        console.log(`🔄 [TranslationService] Traduction mise à jour: ${result.messageId} -> ${result.targetLanguage} (ID: ${updatedTranslation.id})`);
-        return updatedTranslation.id;
-      } else {
-        // Créer une nouvelle traduction
-        const newTranslation = await this.prisma.messageTranslation.create({
-          data: {
-            messageId: result.messageId,
-            sourceLanguage: result.sourceLanguage,
-            targetLanguage: result.targetLanguage,
-            translatedContent: result.translatedText,
-            translationModel: modelInfo,
-            confidenceScore: confidenceScore,
-            cacheKey: cacheKey
-          }
-        });
-        
-        console.log(`✅ [TranslationService] Nouvelle traduction sauvegardée: ${result.messageId} -> ${result.targetLanguage} (ID: ${newTranslation.id})`);
-        return newTranslation.id;
+        throw createError;
       }
 
     } catch (error) {

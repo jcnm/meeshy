@@ -577,7 +577,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         {/* Zone de conversation principale */}
         <main 
           className={cn(
-            "flex-1 flex flex-col min-w-0 h-full",
+            "flex-1 flex flex-col min-w-0 h-full relative",
             isMobile && showConversationList && "hidden"
           )}
           role="main"
@@ -661,20 +661,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           )}
         </main>
 
-        {/* Sidebar des détails - Desktop seulement */}
+        {/* Sidebar des détails - Desktop seulement, positionnée à l'intérieur de main */}
         {!isMobile && selectedConversation && isDetailsOpen && (
-          <aside
-            role="complementary"
-            aria-label={t('conversationLayout.conversationDetails')}
-          >
-            <ConversationDetailsSidebar
-              conversation={selectedConversation}
-              currentUser={user}
-              messages={messages}
-              isOpen={isDetailsOpen}
-              onClose={() => setIsDetailsOpen(false)}
-            />
-          </aside>
+          <ConversationDetailsSidebar
+            conversation={selectedConversation}
+            currentUser={user}
+            messages={messages}
+            isOpen={isDetailsOpen}
+            onClose={() => setIsDetailsOpen(false)}
+          />
         )}
       </div>
 

@@ -129,8 +129,9 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   } = useConversationMessages(conversationId, user, {
     limit: 20,
     enabled: true,
-    threshold: 100,
-    containerRef: messagesContainerRef
+    threshold: 200, // Scroll infini activé: charge automatiquement à 200px du bas
+    containerRef: messagesContainerRef,
+    scrollDirection: 'down' // Scroll vers le bas pour charger plus (page publique)
   });
 
   // Hook pour la gestion des traductions
@@ -455,13 +456,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Mon message publié avec succès
     }
     
-    // Auto-scroll vers le nouveau message
-    setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }, 100);
+    // PAS de scroll automatique - laisser l'utilisateur là où il est
+    // L'utilisateur peut scroller manuellement s'il veut voir le nouveau message
   }, [addMessage, user.id]);
 
   // Hook pour les statistiques de traduction de messages
@@ -1169,16 +1165,6 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             className="relative h-full pt-4 md:pt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-40 messages-container scroll-optimized scrollbar-thin overflow-y-auto mobile-messages-container"
             style={{ background: 'transparent' }}
           >
-            {/* Indicateur de chargement pour la pagination (messages plus anciens) */}
-            {isLoadingMore && hasMore && (
-              <div className="flex justify-center py-4">
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                  <span>Chargement des messages plus anciens...</span>
-                </div>
-              </div>
-            )}
-
             <MessagesDisplay
               messages={messages}
               translatedMessages={translatedMessages}
@@ -1188,7 +1174,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               usedLanguages={usedLanguages}
               emptyStateMessage={t('bubbleStream.emptyStateMessage')}
               emptyStateDescription={t('bubbleStream.emptyStateDescription')}
-              reverseOrder={true}
+              reverseOrder={false}
               className="space-y-4"
               onTranslation={handleTranslation}
               onEditMessage={handleEditMessage}
@@ -1202,6 +1188,11 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               hasMore={hasMore}
               isLoadingMore={isLoadingMore}
             />
+
+            {/* Note: Backend retourne orderBy createdAt DESC = [récent...ancien] */}
+            {/* reverseOrder=false = affiche tel quel = RÉCENT EN HAUT, ANCIEN EN BAS */}
+            {/* scrollDirection='down' = scroll vers le bas charge plus anciens */}
+            {/* Nouveaux anciens ajoutés à la FIN pour apparaître EN BAS */}
 
             {/* Indicateur si plus de messages disponibles - positionné après les messages */}
             {!hasMore && messages.length > 0 && (
