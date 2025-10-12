@@ -112,7 +112,7 @@ export function MessagesDisplay({
   }, [messageDisplayStates, getPreferredDisplayLanguage]);
 
   // Fonction pour forcer la traduction
-  const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string) => {
+  const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string, model?: 'basic' | 'medium' | 'premium') => {
     try {
       // Marquer comme en cours de traduction
       setMessageDisplayStates(prev => ({
@@ -134,11 +134,13 @@ export function MessagesDisplay({
       const message = messages.find(m => m.id === messageId);
       const sourceLanguage = message?.originalLanguage || 'fr';
 
+      console.log(`🔄 [FORCE TRANSLATION] Requesting translation with model: ${model || 'basic'}`);
+
       const result = await messageTranslationService.requestTranslation({
         messageId,
         targetLanguage,
         sourceLanguage,
-        model: 'basic'
+        model: model || 'basic'
       });
 
       // Notification de succès
@@ -153,7 +155,7 @@ export function MessagesDisplay({
             targetLanguage,
             translatedContent: result.translationId ? 'Translation in progress...' : 'Translation requested',
             sourceLanguage,
-            translationModel: 'basic' as const,
+            translationModel: (model || 'basic') as const,
             cacheKey: '',
             confidenceScore: 0.95,
             createdAt: new Date(),

@@ -70,7 +70,7 @@ interface BubbleMessageProps {
   userLanguage: string;
   usedLanguages: string[];
   // Props pour les actions (remontées au parent)
-  onForceTranslation?: (messageId: string, targetLanguage: string) => void;
+  onForceTranslation?: (messageId: string, targetLanguage: string, model?: 'basic' | 'medium' | 'premium') => void;
   onEditMessage?: (messageId: string, newContent: string) => void;
   onDeleteMessage?: (messageId: string) => void;
   onLanguageSwitch?: (messageId: string, language: string) => void;
@@ -312,9 +312,8 @@ function BubbleMessageInner({
     
     if (onForceTranslation) {
       try {
-        // Pour l'instant, utiliser la fonction de traduction normale
-        // TODO: Ajouter support pour spécifier le modèle
-        await onForceTranslation(message.id, targetLanguage);
+        // Appeler avec le tier supérieur spécifié
+        await onForceTranslation(message.id, targetLanguage, nextTier as 'basic' | 'medium' | 'premium');
         toast.success(t('bubbleStream.retranslatingTo', { 
           language: getLanguageInfo(targetLanguage).name, 
           model: nextTier 
