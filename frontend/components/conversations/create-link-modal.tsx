@@ -1560,7 +1560,7 @@ export function CreateLinkModalV2({
                   className="w-full sm:w-auto"
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
-                  {t('navigation.previous')}
+                  {t('createLinkModal.navigation.previous')}
                 </Button>
               )}
             </div>
@@ -1573,7 +1573,7 @@ export function CreateLinkModalV2({
                   disabled={!canProceedToNext()}
                   className="w-full sm:w-auto"
                 >
-                  {t('navigation.next')}
+                  {t('createLinkModal.navigation.next')}
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
@@ -1584,7 +1584,7 @@ export function CreateLinkModalV2({
                   className="flex items-center w-full sm:w-auto"
                 >
                   <Link2 className="h-4 w-4 mr-2" />
-                  {isCreating ? t('navigation.generating') : t('navigation.createLink')}
+                  {isCreating ? t('createLinkModal.navigation.generating') : t('createLinkModal.navigation.createLink')}
                 </Button>
               )}
             </div>

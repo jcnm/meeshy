@@ -261,13 +261,7 @@ export function ConversationList({
   }, [onLoadMore, hasMore, isLoadingMore]);
   
   // Test de défilement - ajouter des éléments de test si nécessaire
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[ConversationList] Conversations pour défilement:', {
-      activeTab,
-      currentCount: currentConversations.length,
-      shouldScroll: currentConversations.length > 5
-    });
-  }
+  // Logs désactivés pour éviter la répétition excessive
   const totalUnread = conversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
 
   return (
