@@ -15,7 +15,8 @@ import {
   X,
   Ghost,
   Edit,
-  Trash2
+  Trash2,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +75,7 @@ interface BubbleMessageProps {
   onEditMessage?: (messageId: string, newContent: string) => void;
   onDeleteMessage?: (messageId: string) => void;
   onLanguageSwitch?: (messageId: string, language: string) => void;
+  onReplyMessage?: (message: Message) => void;
   // États contrôlés depuis le parent
   currentDisplayLanguage: string;
   isTranslating?: boolean;
@@ -91,6 +93,7 @@ function BubbleMessageInner({
   onEditMessage,
   onDeleteMessage,
   onLanguageSwitch,
+  onReplyMessage,
   currentDisplayLanguage,
   isTranslating = false,
   translationError,
@@ -510,6 +513,44 @@ function BubbleMessageInner({
             </div>
           </div>
 
+          {/* Message parent si c'est une réponse */}
+          {message.replyTo && (
+            <div className="mb-3 p-3 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border-l-4 border-blue-400 dark:border-blue-500 rounded-lg">
+              <div className="flex items-start space-x-2">
+                <MessageCircle className="h-4 w-4 text-blue-500 dark:text-blue-400 mt-1 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                      {(message.replyTo.sender && 'displayName' in message.replyTo.sender ? message.replyTo.sender.displayName : null) || 
+                       message.replyTo.sender?.username || 
+                       message.replyTo.anonymousSender?.username ||
+                       t('unknownUser')}
+                    </span>
+                    <span className="text-xs text-blue-600/60 dark:text-blue-400/60">
+                      {new Date(message.replyTo.createdAt).toLocaleString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: '2-digit',
+                        month: 'short'
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 italic">
+                    {message.replyTo.content}
+                  </p>
+                  {message.replyTo.translations && message.replyTo.translations.length > 0 && (
+                    <div className="mt-1 flex items-center space-x-1">
+                      <Languages className="h-3 w-3 text-blue-500/60 dark:text-blue-400/60" />
+                      <span className="text-xs text-blue-600/60 dark:text-blue-400/60">
+                        {message.replyTo.translations.length} {t('translations')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Contenu principal */}
           <div className="mb-3">
             <AnimatePresence mode="wait">
@@ -805,6 +846,28 @@ function BubbleMessageInner({
                   </Tabs>
                 </PopoverContent>
               </Popover>
+
+              {/* Bouton de réponse */}
+              {onReplyMessage && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onReplyMessage(message)}
+                        aria-label={t('replyToMessage')}
+                        className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 p-2 rounded-full transition-colors"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('replyToMessage')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
 
               {/* Autres boutons d'action */}
               <Button

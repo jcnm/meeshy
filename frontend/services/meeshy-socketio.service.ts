@@ -283,7 +283,7 @@ class MeeshySocketIOService {
       this.deleteListeners.forEach(listener => listener(data.messageId));
     });
 
-    this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data) => {
+    this.socket.on(SERVER_EVENTS.MESSAGE_TRANSLATION, (data: any) => {
       // SUPPORT DES DEUX FORMATS: singulier (nouveau) et pluriel (ancien)
       // Format singulier: { translation: {...} } - Une traduction par événement (diffusion immédiate)
       // Format pluriel: { translations: [{...}] } - Toutes les traductions groupées (ancien format)
@@ -679,7 +679,7 @@ class MeeshySocketIOService {
   /**
    * Envoie un message (accepte soit un ID soit un objet conversation)
    */
-  public async sendMessage(conversationOrId: any, content: string, originalLanguage?: string): Promise<boolean> {
+  public async sendMessage(conversationOrId: any, content: string, originalLanguage?: string, replyToId?: string): Promise<boolean> {
     return new Promise(async (resolve) => {
       if (!this.socket) {
         console.error('❌ MeeshySocketIOService: Socket non connecté');
@@ -733,6 +733,7 @@ class MeeshySocketIOService {
           isConnected: this.isConnected,
           hasAuthToken: !!authToken,
           hasSessionToken: !!sessionToken,
+          replyToId: replyToId || 'none',
           conversationOrId,
           conversationId,
           contentLength: content.length,
@@ -752,7 +753,8 @@ class MeeshySocketIOService {
         const messageData = { 
           conversationId, 
           content,
-          ...(originalLanguage && { originalLanguage })
+          ...(originalLanguage && { originalLanguage }),
+          ...(replyToId && { replyToId })
         };
 
         // Ajouter un timeout pour éviter que la promesse reste en attente

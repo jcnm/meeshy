@@ -22,6 +22,7 @@ interface MessagesDisplayProps {
   onTranslation?: (messageId: string, translations: any[]) => void;
   onEditMessage?: (messageId: string, newContent: string) => Promise<void>;
   onDeleteMessage?: (messageId: string) => Promise<void>;
+  onReplyMessage?: (message: Message) => void;
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
   
@@ -48,6 +49,7 @@ export function MessagesDisplay({
   onTranslation,
   onEditMessage,
   onDeleteMessage,
+  onReplyMessage,
   conversationType = 'direct',
   userRole = 'USER',
   addTranslatingState,
@@ -315,6 +317,7 @@ export function MessagesDisplay({
             onForceTranslation={handleForceTranslation}
             onEditMessage={onEditMessage}
             onDeleteMessage={onDeleteMessage}
+            onReplyMessage={onReplyMessage}
             onLanguageSwitch={handleLanguageSwitch}
             currentDisplayLanguage={state.currentDisplayLanguage}
             isTranslating={state.isTranslating || checkIsTranslating(message.id, state.currentDisplayLanguage)}

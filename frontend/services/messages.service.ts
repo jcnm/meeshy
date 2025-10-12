@@ -23,6 +23,7 @@ export interface CreateMessageDto {
   content: string;
   conversationId?: string;
   groupId?: string;
+  replyToId?: string;
 }
 
 export interface UpdateMessageDto {

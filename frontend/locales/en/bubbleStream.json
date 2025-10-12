@@ -59,6 +59,9 @@
       "edit": "Edit",
       "delete": "Delete"
     },
+    "replyToMessage": "Reply to message",
+    "replyingTo": "Replying to",
+    "unknownUser": "Unknown user",
     "translation": {
       "showOriginal": "Show original",
       "showTranslation": "Show translation",

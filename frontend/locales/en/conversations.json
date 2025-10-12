@@ -69,6 +69,10 @@
       "noConversationsFound": "No conversations found",
       "shareMessage": "Share a message..."
     },
+    "replyToMessage": "Reply to message",
+    "replyingTo": "Replying to",
+    "unknownUser": "Unknown user",
+    "translations": "translations",
     "conversationUI": {
       "participants": "Participants",
       "addParticipant": "Add participant",

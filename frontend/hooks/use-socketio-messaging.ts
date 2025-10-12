@@ -46,7 +46,7 @@ interface UseSocketIOMessagingOptions {
 
 interface UseSocketIOMessagingReturn {
   // Actions
-  sendMessage: (content: string, originalLanguage?: string) => Promise<boolean>;
+  sendMessage: (content: string, originalLanguage?: string, replyToId?: string) => Promise<boolean>;
   editMessage: (messageId: string, newContent: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
   
@@ -322,7 +322,7 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
   }, [conversationId, currentUser?.id]); // Dépendances minimales pour éviter les re-rendus
 
   // Actions
-  const sendMessage = useCallback(async (content: string, originalLanguage?: string): Promise<boolean> => {
+  const sendMessage = useCallback(async (content: string, originalLanguage?: string, replyToId?: string): Promise<boolean> => {
     if (!conversationId) {
       logger.messaging.error('useSocketIOMessaging: Impossible d\'envoyer - aucune conversation active');
       return false;
@@ -332,10 +332,11 @@ export const useSocketIOMessaging = (options: UseSocketIOMessagingOptions = {}):
       conversationId, 
       contentLength: content.length,
       originalLanguage,
+      replyToId: replyToId || 'none',
       content: content.substring(0, 50) + '...'
     });
 
-    return await meeshySocketIOService.sendMessage(conversationId, content, originalLanguage);
+    return await meeshySocketIOService.sendMessage(conversationId, content, originalLanguage, replyToId);
   }, [conversationId]);
 
   const editMessage = useCallback(async (messageId: string, newContent: string): Promise<boolean> => {

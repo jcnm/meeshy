@@ -85,6 +85,7 @@ import {
 import { BubbleMessage } from '@/components/common/bubble-message';
 import { TrendingSection } from '@/components/common/trending-section';
 import { LoadingState } from '@/components/common/LoadingStates';
+import { useReplyStore } from '@/stores/reply-store';
 
 import { useSocketIOMessaging } from '@/hooks/use-socketio-messaging';
 import { useNotifications } from '@/hooks/use-notifications';
@@ -221,6 +222,25 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       throw error;
     }
   }, [conversationId, refreshMessages]);
+
+  const handleReplyMessage = useCallback((message: any) => {
+    const { setReplyingTo } = useReplyStore.getState();
+    setReplyingTo({
+      id: message.id,
+      content: message.content,
+      originalLanguage: message.originalLanguage,
+      sender: message.sender,
+      createdAt: message.createdAt,
+      translations: message.translations
+    });
+    
+    // Focus sur la zone de saisie
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+    
+    toast.success('Répondre à ce message');
+  }, []);
 
   // Logique de permissions pour la modération
   const getUserModerationRole = useCallback(() => {
@@ -867,14 +887,22 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     }
 
     const messageContent = newMessage.trim();
+    const replyToId = useReplyStore.getState().replyingTo?.id;
+    
     console.log('📤 Envoi du message avec langue sélectionnée:', {
       content: messageContent.substring(0, 50) + '...',
       sourceLanguage: selectedInputLanguage,
-      languageChoice: languageChoices.find(choice => choice.code === selectedInputLanguage)
+      languageChoice: languageChoices.find(choice => choice.code === selectedInputLanguage),
+      replyToId: replyToId || 'none'
     });
     
     setNewMessage(''); // Réinitialiser immédiatement pour éviter les doubles envois
     setIsTyping(false);
+    
+    // Effacer l'état de réponse après l'envoi
+    if (replyToId) {
+      useReplyStore.getState().clearReply();
+    }
     
     // Réinitialiser la hauteur du textarea
     if (textareaRef.current && textareaRef.current.style) {
@@ -907,8 +935,8 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         
         console.log('📤 Envoi du message avec métadonnées de langue:', messageWithLanguage);
         
-        // Envoyer le message avec la langue source sélectionnée
-        const sendResult = await sendMessageToService(messageContent, selectedInputLanguage);
+        // Envoyer le message avec la langue source sélectionnée et le replyToId
+        const sendResult = await sendMessageToService(messageContent, selectedInputLanguage, replyToId);
         
         if (sendResult) {
           console.log('✅ Message envoyé via WebSocket avec succès');
@@ -1173,6 +1201,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               onTranslation={handleTranslation}
               onEditMessage={handleEditMessage}
               onDeleteMessage={handleDeleteMessage}
+              onReplyMessage={handleReplyMessage}
               conversationType="public"
               userRole={getUserModerationRole() as any}
               addTranslatingState={addTranslatingState}

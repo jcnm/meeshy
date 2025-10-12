@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent, forwardRef, useImperativeHandle, useEffect } from 'react';
-import { Send, MapPin } from 'lucide-react';
+import { Send, MapPin, X, MessageCircle, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LanguageFlagSelector } from '@/components/translation';
-import { MAX_MESSAGE_LENGTH } from '@shared/types';
+import { MAX_MESSAGE_LENGTH } from '@/lib/constants/languages';
 import { type LanguageChoice } from '@/lib/bubble-stream-modules';
 import { useI18n } from '@/hooks/useI18n';
+import { useReplyStore, type ReplyingToMessage } from '@/stores/reply-store';
 
 interface MessageComposerProps {
   value: string;
@@ -47,6 +48,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 }, ref) => {
   const { t } = useI18n('conversations');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { replyingTo, clearReply } = useReplyStore();
   
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
@@ -107,17 +109,60 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
 
   return (
     <div className={`relative ${className}`}>
+      {/* Affichage du message auquel on répond */}
+      {replyingTo && (
+        <div className="mb-2 p-3 bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-400 dark:border-blue-500 rounded-t-lg backdrop-blur-sm">
+          <div className="flex items-start justify-between space-x-2">
+            <div className="flex items-start space-x-2 flex-1 min-w-0">
+              <MessageCircle className="h-4 w-4 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                    {t('replyingTo')} {replyingTo.sender?.displayName || replyingTo.sender?.username || t('unknownUser')}
+                  </span>
+                  <span className="text-xs text-blue-600/60 dark:text-blue-400/60">
+                    {new Date(replyingTo.createdAt).toLocaleString('fr-FR', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 italic">
+                  {replyingTo.content}
+                </p>
+                {replyingTo.translations && replyingTo.translations.length > 0 && (
+                  <div className="mt-1 flex items-center space-x-1">
+                    <Languages className="h-3 w-3 text-blue-500/60 dark:text-blue-400/60" />
+                    <span className="text-xs text-blue-600/60 dark:text-blue-400/60">
+                      {replyingTo.translations.length} {t('translations')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearReply}
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1 h-6 w-6"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+      
       <Textarea
         ref={textareaRef}
         value={value}
         onChange={handleTextareaChange}
         onKeyPress={handleKeyPress}
         placeholder={finalPlaceholder}
-        className="expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 text-sm sm:text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200"
+        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 text-sm sm:text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${replyingTo ? 'rounded-b-2xl rounded-t-none border-t-0' : 'rounded-2xl'}`}
         maxLength={MAX_MESSAGE_LENGTH}
         disabled={!isComposingEnabled}
         style={{
-          borderRadius: '16px',
+          borderRadius: replyingTo ? '0 0 16px 16px' : '16px',
           boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)'
         }}
       />

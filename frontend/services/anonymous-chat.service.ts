@@ -122,7 +122,7 @@ export class AnonymousChatService {
   /**
    * Envoie un message
    */
-  public async sendMessage(content: string, originalLanguage: string = 'fr'): Promise<any> {
+  public async sendMessage(content: string, originalLanguage: string = 'fr', replyToId?: string): Promise<any> {
     if (!this.sessionToken || !this.linkId) {
       throw new Error('Session non initialisée');
     }
@@ -137,7 +137,8 @@ export class AnonymousChatService {
         body: JSON.stringify({
           content,
           originalLanguage,
-          messageType: 'text'
+          messageType: 'text',
+          ...(replyToId && { replyToId })
         })
       });
 
