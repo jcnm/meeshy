@@ -46,8 +46,9 @@ export function ConversationParticipants({
   // Les typing users sont désormais passés par props pour éviter des abonnements socket multiples
 
   // Filtrer les utilisateurs qui tapent dans cette conversation (exclure l'utilisateur actuel)
+  // NOTE: Ne pas filtrer par conversationId car le backend normalise les IDs (ObjectId → identifier)
+  // et le hook useMessaging ne remonte déjà que les événements de la conversation courante
   const usersTypingInChat = (typingUsers || []).filter((typingUser: { userId: string; conversationId: string }) => 
-    typingUser.conversationId === conversationId && 
     typingUser.userId !== currentUser.id
   );
 

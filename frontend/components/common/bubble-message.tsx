@@ -76,6 +76,7 @@ interface BubbleMessageProps {
   onDeleteMessage?: (messageId: string) => void;
   onLanguageSwitch?: (messageId: string, language: string) => void;
   onReplyMessage?: (message: Message) => void;
+  onNavigateToMessage?: (messageId: string) => void;
   // États contrôlés depuis le parent
   currentDisplayLanguage: string;
   isTranslating?: boolean;
@@ -94,6 +95,7 @@ function BubbleMessageInner({
   onDeleteMessage,
   onLanguageSwitch,
   onReplyMessage,
+  onNavigateToMessage,
   currentDisplayLanguage,
   isTranslating = false,
   translationError,
@@ -104,6 +106,44 @@ function BubbleMessageInner({
   
   // Hook pour fixer les z-index des popovers de traduction
   useFixTranslationPopoverZIndex();
+  
+  // Fonction pour formater la date du message parent
+  const formatReplyDate = (date: Date | string) => {
+    const messageDate = new Date(date);
+    const now = new Date();
+    
+    // Réinitialiser l'heure pour comparer uniquement les dates
+    const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const isSameDay = messageDateOnly.getTime() === nowDateOnly.getTime();
+    const isSameYear = messageDate.getFullYear() === now.getFullYear();
+    
+    if (isSameDay) {
+      // Même jour : afficher seulement l'heure
+      return messageDate.toLocaleString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } else if (isSameYear) {
+      // Même année mais jour différent : afficher jour + mois + heure
+      return messageDate.toLocaleString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } else {
+      // Année différente : afficher date complète + heure
+      return messageDate.toLocaleString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  };
   
   // États UI locaux uniquement (pas de logique métier)
   const [isFavorited, setIsFavorited] = useState(false);
@@ -277,20 +317,37 @@ function BubbleMessageInner({
     return result;
   }, [message.translations, isTranslating]);
 
-  // Fonctions utilitaires (pas d'effets de bord)
-  const getCurrentContent = () => {
+  // Mémoriser le contenu actuel pour qu'il se mette à jour quand la langue change
+  const currentContent = useMemo(() => {
     const originalLang = message.originalLanguage || 'fr';
     
+    console.log(`📖 [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] Getting content:`, {
+      currentDisplayLanguage,
+      originalLang,
+      isOriginal: currentDisplayLanguage === originalLang,
+      translationsCount: message.translations?.length || 0,
+      availableLanguages: message.translations?.map((t: any) => t.language || t.targetLanguage) || []
+    });
+    
     if (currentDisplayLanguage === originalLang) {
-      return message.originalContent || message.content;
+      const content = message.originalContent || message.content;
+      console.log(`✅ [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] Showing ORIGINAL content`);
+      return content;
     }
     
     const translation = message.translations?.find((t: any) => 
       (t?.language || t?.targetLanguage) === currentDisplayLanguage
     );
     
-    return ((translation as any)?.content || (translation as any)?.translatedContent) || message.originalContent || message.content;
-  };
+    if (translation) {
+      const content = ((translation as any)?.content || (translation as any)?.translatedContent);
+      console.log(`✅ [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] Showing TRANSLATED content in ${currentDisplayLanguage}`);
+      return content || message.originalContent || message.content;
+    }
+    
+    console.log(`⚠️ [BUBBLE-MESSAGE ${message.id.substring(0, 8)}] No translation found for ${currentDisplayLanguage}, showing original`);
+    return message.originalContent || message.content;
+  }, [currentDisplayLanguage, message.id, message.originalLanguage, message.content, message.originalContent, message.translations]);
 
   const formatTimeAgo = (timestamp: string | Date) => {
     const now = new Date();
@@ -305,6 +362,8 @@ function BubbleMessageInner({
 
   // Handlers qui remontent les actions au parent
   const handleLanguageSwitch = (langCode: string) => {
+    console.log(`🔄 [BUBBLE-MESSAGE] Switching language for message ${message.id} to ${langCode}`);
+    console.log(`📊 [BUBBLE-MESSAGE] Current display language: ${currentDisplayLanguage}`);
     handlePopoverOpenChange(false);
     onLanguageSwitch?.(message.id, langCode);
   };
@@ -432,6 +491,7 @@ function BubbleMessageInner({
   return (
     <TooltipProvider>
       <Card 
+        id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
           "bubble-message relative transition-all duration-300 hover:shadow-lg mx-2",
@@ -513,49 +573,75 @@ function BubbleMessageInner({
             </div>
           </div>
 
-          {/* Message parent si c'est une réponse */}
+          {/* Message parent si c'est une réponse - Style flottant minimaliste */}
           {message.replyTo && (
-            <div className="mb-3 p-3 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 border-l-4 border-blue-400 dark:border-blue-500 rounded-lg">
-              <div className="flex items-start space-x-2">
-                <MessageCircle className="h-4 w-4 text-blue-500 dark:text-blue-400 mt-1 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                      {(message.replyTo.sender && 'displayName' in message.replyTo.sender ? message.replyTo.sender.displayName : null) || 
-                       message.replyTo.sender?.username || 
-                       message.replyTo.anonymousSender?.username ||
-                       t('unknownUser')}
-                    </span>
-                    <span className="text-xs text-blue-600/60 dark:text-blue-400/60">
-                      {new Date(message.replyTo.createdAt).toLocaleString('fr-FR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        day: '2-digit',
-                        month: 'short'
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 italic">
-                    {message.replyTo.content}
-                  </p>
-                  {message.replyTo.translations && message.replyTo.translations.length > 0 && (
-                    <div className="mt-1 flex items-center space-x-1">
-                      <Languages className="h-3 w-3 text-blue-500/60 dark:text-blue-400/60" />
-                      <span className="text-xs text-blue-600/60 dark:text-blue-400/60">
-                        {message.replyTo.translations.length} {t('translations')}
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              className="mb-2"
+            >
+              <div 
+                onClick={() => {
+                  if (message.replyTo?.id && onNavigateToMessage) {
+                    onNavigateToMessage(message.replyTo.id);
+                  }
+                }}
+                className="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-400 dark:border-blue-500 px-3 py-2 cursor-pointer hover:shadow-md hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/40 dark:hover:to-indigo-900/40 transition-all duration-200 group"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  {/* Contenu principal */}
+                  <div className="flex-1 min-w-0">
+                    {/* Header avec nom, date et badges */}
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-xs font-semibold text-blue-900 dark:text-blue-100 truncate">
+                        {(message.replyTo.sender && 'displayName' in message.replyTo.sender ? message.replyTo.sender.displayName : null) || 
+                         message.replyTo.sender?.username || 
+                         message.replyTo.anonymousSender?.username ||
+                         t('unknownUser')}
                       </span>
+                      
+                  <span className="text-[10px] text-blue-600/60 dark:text-blue-400/60 flex-shrink-0">
+                    {formatReplyDate(message.replyTo.createdAt)}
+                  </span>
+                      
+                      <Badge 
+                        variant="secondary" 
+                        className="text-[10px] px-1.5 py-0 h-4 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-0"
+                      >
+                        <span className="mr-0.5">{getLanguageInfo(message.replyTo.originalLanguage || 'fr').flag}</span>
+                        {getLanguageInfo(message.replyTo.originalLanguage || 'fr').code.toUpperCase()}
+                      </Badge>
+                      
+                      {message.replyTo.translations && message.replyTo.translations.length > 0 && (
+                        <Badge 
+                          variant="outline" 
+                          className="text-[10px] px-1.5 py-0 h-4 bg-green-50/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-0"
+                        >
+                          <Languages className="h-2.5 w-2.5 mr-0.5" />
+                          {message.replyTo.translations.length}
+                        </Badge>
+                      )}
                     </div>
-                  )}
+
+                    {/* Contenu du message */}
+                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 leading-snug">
+                      {message.replyTo.content}
+                    </p>
+                  </div>
+
+                  {/* Icône de réponse */}
+                  <MessageCircle className="h-4 w-4 text-blue-500/60 dark:text-blue-400/60 flex-shrink-0 mt-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors" />
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Contenu principal */}
           <div className="mb-3">
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               <motion.div
-                key={`${message.id}-${currentDisplayLanguage}`}
+                key={`content-${message.id}-${currentDisplayLanguage}-${currentContent.substring(0, 10)}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -563,7 +649,7 @@ function BubbleMessageInner({
                 ref={contentRef}
               >
                 <p className="text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap text-base">
-                  {getCurrentContent()}
+                  {currentContent}
                 </p>
               </motion.div>
             </AnimatePresence>
@@ -572,58 +658,87 @@ function BubbleMessageInner({
           {/* Actions */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1">
-              {/* Bouton traduction avec popover */}
-              <Popover 
-                open={isTranslationPopoverOpen} 
-                onOpenChange={handlePopoverOpenChange}
-                modal={false}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    onMouseEnter={handlePopoverMouseEnter}
-                    onMouseLeave={handlePopoverMouseLeave}
-                    className={cn(
-                      "relative p-2 rounded-full transition-all duration-200",
-                      isNewTranslation
-                        ? "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 hover:bg-green-100 dark:hover:bg-green-900"
-                        : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                    )}
-                    aria-label={t('viewTranslations')}
-                  >
-                    <Languages className={cn(
-                      "h-4 w-4 transition-transform",
-                      isActuallyTranslating && "animate-pulse"
-                    )} />
-                    
-                    {message.translations && message.translations.length > 0 && (
-                      <span 
-                        className={cn(
-                          "absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium transition-all duration-300",
-                          isNewTranslation 
-                            ? "bg-green-500 shadow-lg shadow-green-500/50 scale-110" 
-                            : "bg-blue-500"
-                        )}
+              {/* Bouton de réponse - Déplacé en premier */}
+              {onReplyMessage && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onReplyMessage(message)}
+                        aria-label={t('replyToMessage')}
+                        className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 p-2 rounded-full transition-colors"
                       >
-                        {message.translations.length}
-                      </span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
+                        <MessageCircle className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('replyToMessage')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {/* Bouton traduction avec popover */}
+              <TooltipProvider>
+                <Tooltip>
+                  <Popover 
+                    open={isTranslationPopoverOpen} 
+                    onOpenChange={handlePopoverOpenChange}
+                    modal={false}
+                  >
+                    <PopoverTrigger asChild>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          onMouseEnter={handlePopoverMouseEnter}
+                          onMouseLeave={handlePopoverMouseLeave}
+                          className={cn(
+                            "relative p-2 rounded-full transition-all duration-200",
+                            isNewTranslation
+                              ? "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 hover:bg-green-100 dark:hover:bg-green-900"
+                              : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          )}
+                          aria-label={t('translationOptions')}
+                        >
+                          <Languages className={cn(
+                            "h-4 w-4 transition-transform",
+                            isActuallyTranslating && "animate-pulse"
+                          )} />
+                          
+                          {message.translations && message.translations.length > 0 && (
+                            <span 
+                              className={cn(
+                                "absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium transition-all duration-300",
+                                isNewTranslation 
+                                  ? "bg-green-500 shadow-lg shadow-green-500/50 scale-110" 
+                                  : "bg-blue-500"
+                              )}
+                            >
+                              {message.translations.length}
+                            </span>
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                    </PopoverTrigger>
+                    <TooltipContent>
+                      <p>{t('translationOptions')}</p>
+                    </TooltipContent>
                 <PopoverContent 
                   className={cn(
-                    "w-full max-w-xs md:w-80 p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm",
+                    "w-[calc(100vw-32px)] sm:w-96 md:w-[420px] p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm",
                     Z_CLASSES.POPOVER
                   )}
                   side={getPopoverSide()} 
-                  align="start"
-                  sideOffset={12}
+                  align="center"
+                  sideOffset={8}
                   alignOffset={0}
-                  collisionPadding={20}
+                  collisionPadding={{ top: 80, right: 16, bottom: 80, left: 16 }}
                   onOpenAutoFocus={(e) => e.preventDefault()}
                   onInteractOutside={(e) => {
                     e.preventDefault();
@@ -632,19 +747,19 @@ function BubbleMessageInner({
                   onMouseEnter={handlePopoverMouseEnter}
                   onMouseLeave={handlePopoverMouseLeave}
                 >
-                  <Tabs defaultValue="translations" className="w-full max-h-[min(600px,calc(100vh-100px))] flex flex-col">
-                    <TabsList className="grid w-full grid-cols-2 mb-3 flex-shrink-0">
-                      <TabsTrigger value="translations" className="text-xs">
+                  <Tabs defaultValue="translations" className="w-full max-h-[min(500px,calc(100vh-160px))] flex flex-col">
+                    <TabsList className="grid w-full grid-cols-2 mb-2 sm:mb-3 flex-shrink-0">
+                      <TabsTrigger value="translations" className="text-[10px] sm:text-xs py-1.5 sm:py-2">
                         {t('translations')} ({availableVersions.length})
                       </TabsTrigger>
-                      <TabsTrigger value="translate" className="text-xs">
+                      <TabsTrigger value="translate" className="text-[10px] sm:text-xs py-1.5 sm:py-2">
                         {t('translateTo')} ({filteredMissingLanguages.length})
                       </TabsTrigger>
                     </TabsList>
 
                     {/* Onglet Traductions disponibles */}
                     <TabsContent value="translations" className="mt-0 flex-1 overflow-hidden">
-                      <div className="p-3 pt-0 h-full flex flex-col">
+                      <div className="p-2 sm:p-3 pt-0 h-full flex flex-col">
                         {/* Champ de filtre */}
                         {availableVersions.length > 1 && (
                           <div className="mb-3">
@@ -669,8 +784,8 @@ function BubbleMessageInner({
                           </div>
                         )}
 
-                        {/* Liste des traductions - hauteur pour 2 items visibles */}
-                        <div className="space-y-1 max-h-[200px] overflow-y-auto scrollbar-thin">
+                        {/* Liste des traductions - hauteur adaptative */}
+                        <div className="space-y-1 max-h-[180px] sm:max-h-[220px] overflow-y-auto scrollbar-thin">
                       {filteredVersions.length > 0 ? (
                         filteredVersions.map((version, index) => {
                           const versionAny = version as any;
@@ -685,10 +800,10 @@ function BubbleMessageInner({
                                 handleLanguageSwitch(versionAny.language);
                                 handlePopoverOpenChange(false);
                               }}
-                              className={`w-full p-2.5 rounded-lg text-left transition-all duration-200 group ${
+                              className={`w-full p-2 sm:p-2.5 rounded-lg text-left transition-all duration-200 group ${
                                 isCurrentlyDisplayed 
                                   ? 'bg-blue-50/80 dark:bg-blue-900/40 border border-blue-200/60 dark:border-blue-700/60'
-                                  : 'bg-white/60 dark:bg-gray-700/40 border border-transparent hover:bg-white/80 dark:hover:bg-gray-700/60 hover:border-gray-200/60 dark:hover:border-gray-600/60'
+                                  : 'bg-white/60 dark:bg-gray-700/40 border border-transparent hover:bg-white/80 dark:hover:bg-gray-700/60 hover:border-gray-200/60 dark:hover:border-gray-600/60 active:bg-white/90 dark:active:bg-gray-700/70'
                               }`}
                             >
                               <div className="flex items-center justify-between mb-1.5">
@@ -785,7 +900,7 @@ function BubbleMessageInner({
 
                     {/* Onglet Traduire vers */}
                     <TabsContent value="translate" className="mt-0 flex-1 overflow-hidden">
-                      <div className="p-3 pt-0 h-full flex flex-col">
+                      <div className="p-2 sm:p-3 pt-0 h-full flex flex-col">
                         {/* Champ de filtre */}
                         {getMissingLanguages().length > 3 && (
                           <div className="mb-3">
@@ -809,8 +924,8 @@ function BubbleMessageInner({
                           </div>
                         )}
 
-                        {/* Liste des langues à traduire - hauteur pour 2-3 items visibles */}
-                        <div className="space-y-1 max-h-[200px] overflow-y-auto scrollbar-thin">
+                        {/* Liste des langues à traduire - hauteur adaptative */}
+                        <div className="space-y-1 max-h-[180px] sm:max-h-[220px] overflow-y-auto scrollbar-thin">
                           {filteredMissingLanguages.length > 0 ? (
                             filteredMissingLanguages.map((lang, index) => (
                               <button
@@ -820,7 +935,7 @@ function BubbleMessageInner({
                                   handleForceTranslation(lang.code);
                                   handlePopoverOpenChange(false);
                                 }}
-                                className="w-full p-2.5 rounded-lg border border-gray-100/60 dark:border-gray-700/60 text-left transition-all hover:shadow-sm hover:border-green-200/60 dark:hover:border-green-700/60 hover:bg-green-50/60 dark:hover:bg-green-900/40"
+                                className="w-full p-2 sm:p-2.5 rounded-lg border border-gray-100/60 dark:border-gray-700/60 text-left transition-all hover:shadow-sm hover:border-green-200/60 dark:hover:border-green-700/60 hover:bg-green-50/60 dark:hover:bg-green-900/40 active:bg-green-50/80 dark:active:bg-green-900/60"
                               >
                                 <div className="flex items-center space-x-2">
                                   <span className="text-base">{lang.flag}</span>
@@ -846,65 +961,64 @@ function BubbleMessageInner({
                   </Tabs>
                 </PopoverContent>
               </Popover>
+                </Tooltip>
+              </TooltipProvider>
 
-              {/* Bouton de réponse */}
-              {onReplyMessage && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onReplyMessage(message)}
-                        aria-label={t('replyToMessage')}
-                        className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 p-2 rounded-full transition-colors"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t('replyToMessage')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              {/* Bouton favoris avec tooltip */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsFavorited(!isFavorited)}
+                      aria-label={isFavorited ? t('removeFavorite') : t('addFavorite')}
+                      className={cn(
+                        "p-2 rounded-full transition-colors",
+                        isFavorited 
+                          ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/40' 
+                          : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/40'
+                      )}
+                    >
+                      <Star className={cn("h-4 w-4", isFavorited && "fill-current")} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isFavorited ? t('removeFavorite') : t('addFavorite')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
-              {/* Autres boutons d'action */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsFavorited(!isFavorited)}
-                aria-label={isFavorited ? t('removeFavorite') : t('addFavorite')}
-                className={cn(
-                  "p-2 rounded-full transition-colors",
-                  isFavorited 
-                    ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/40' 
-                    : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/40'
-                )}
-              >
-                <Star className={cn("h-4 w-4", isFavorited && "fill-current")} />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(getCurrentContent());
-                    toast.success(t('copied'), {
-                      duration: 2000,
-                    });
-                  } catch (error) {
-                    toast.error(t('copyFailed'), {
-                      duration: 2000,
-                    });
-                  }
-                }}
-                aria-label={t('copyMessage')}
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-full"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
+              {/* Bouton copie avec tooltip */}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(currentContent);
+                          toast.success(t('copied'), {
+                            duration: 2000,
+                          });
+                        } catch (error) {
+                          toast.error(t('copyFailed'), {
+                            duration: 2000,
+                          });
+                        }
+                      }}
+                      aria-label={t('copyShowingContent')}
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-full"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t('copyShowingContent')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Menu d'options si permissions */}
@@ -943,38 +1057,4 @@ function BubbleMessageInner({
   );
 }
 
-export const BubbleMessage = memo(BubbleMessageInner, (prevProps, nextProps) => {
-  // Comparaison approfondie pour détecter les changements dans les traductions
-  const prevTranslations = prevProps.message.translations || [];
-  const nextTranslations = nextProps.message.translations || [];
-  
-  // Si le nombre de traductions a changé, re-render
-  if (prevTranslations.length !== nextTranslations.length) {
-    return false;
-  }
-  
-  // Vérifier si le contenu des traductions a changé
-  const translationsChanged = prevTranslations.some((prevTrans, index) => {
-    const nextTrans = nextTranslations[index];
-    return !nextTrans || 
-           prevTrans.targetLanguage !== nextTrans.targetLanguage ||
-           prevTrans.translatedContent !== nextTrans.translatedContent ||
-           prevTrans.translationModel !== nextTrans.translationModel;
-  });
-  
-  if (translationsChanged) {
-    return false;
-  }
-  
-  // Comparaison des autres props
-  return (
-    prevProps.message.id === nextProps.message.id &&
-    prevProps.message.content === nextProps.message.content &&
-    prevProps.currentDisplayLanguage === nextProps.currentDisplayLanguage &&
-    prevProps.isTranslating === nextProps.isTranslating &&
-    prevProps.translationError === nextProps.translationError
-  );
-});
-
-BubbleMessage.displayName = 'BubbleMessage';
-BubbleMessage.displayName = 'BubbleMessage';
+export const BubbleMessage = BubbleMessageInner;

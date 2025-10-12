@@ -73,6 +73,9 @@
     "replyingTo": "Replying to",
     "unknownUser": "Unknown user",
     "translations": "translations",
+    "clickToViewMessage": "Click to view message",
+    "translationOptions": "Translation options",
+    "copyShowingContent": "Copy showing content",
     "conversationUI": {
       "participants": "Participants",
       "addParticipant": "Add participant",

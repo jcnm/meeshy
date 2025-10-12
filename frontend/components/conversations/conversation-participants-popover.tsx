@@ -130,12 +130,12 @@ export function ConversationParticipantsPopover({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-0 shadow-2xl border border-border bg-card dark:bg-card backdrop-blur-sm"
+        className="w-72 sm:w-80 p-0 shadow-2xl border border-border bg-card dark:bg-card backdrop-blur-sm"
         side="bottom"
-        align="start"
+        align="end"
+        alignOffset={-2}
         sideOffset={8}
-        alignOffset={-8}
-        collisionPadding={{ top: 70, right: 16, bottom: 16, left: 16 }}
+        collisionPadding={20}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="p-3">
@@ -195,7 +195,7 @@ export function ConversationParticipantsPopover({
             </div>
           </div>
 
-          <div className="max-h-[min(400px,calc(100vh-250px))] overflow-y-auto space-y-3">
+          <div className="max-h-[min(300px,calc(100vh-280px))] sm:max-h-[min(400px,calc(100vh-250px))] overflow-y-auto space-y-3 scrollbar-thin">
             {/* Section En ligne */}
             <div>
               <div className="flex items-center justify-between mb-1">

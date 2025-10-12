@@ -242,6 +242,33 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     toast.success('Répondre à ce message');
   }, []);
 
+  const handleNavigateToMessage = useCallback((messageId: string) => {
+    console.log('🔍 Navigation vers le message:', messageId);
+    
+    // Chercher l'élément du message dans le DOM
+    const messageElement = document.getElementById(`message-${messageId}`);
+    
+    if (messageElement) {
+      // Scroll vers le message avec animation
+      messageElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      
+      // Highlight temporaire du message
+      messageElement.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+      setTimeout(() => {
+        messageElement.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+      }, 2000);
+      
+      toast.success('Message trouvé !');
+    } else {
+      // Le message n'est pas visible, peut-être trop loin
+      toast.info('Message non visible. Chargement...');
+      // TODO: Implémenter le chargement des messages précédents si nécessaire
+    }
+  }, []);
+
   // Logique de permissions pour la modération
   const getUserModerationRole = useCallback(() => {
     // Pour BubbleStreamPage, nous considérons que c'est une conversation publique
@@ -1202,6 +1229,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               onEditMessage={handleEditMessage}
               onDeleteMessage={handleDeleteMessage}
               onReplyMessage={handleReplyMessage}
+              onNavigateToMessage={handleNavigateToMessage}
               conversationType="public"
               userRole={getUserModerationRole() as any}
               addTranslatingState={addTranslatingState}
@@ -1229,15 +1257,15 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         {/* Dégradé inférieur fixe - Transition progressive vers les couleurs générales de la page */}
         <div className="fixed bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none z-20" />
 
-        {/* Zone de composition flottante - Position fixe avec transparence cohérente aux couleurs de la page */}
+        {/* Zone de composition flottante - Position fixe avec style plus large et aéré comme /conversations */}
         <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30 mobile-input-zone">
           {/* Dégradé de fond pour transition douce avec les couleurs générales */}
           <div className="h-10 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none" />
           
           {/* Zone de saisie avec transparence et couleurs harmonisées */}
           <div className="bg-blue-50/20 backdrop-blur-lg border-t border-blue-200/50 shadow-xl shadow-blue-500/10">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              <div className="relative max-w-2xl mx-auto">
+            <div className="p-4">
+              <div className="max-w-5xl mx-auto">
                 <MessageComposer
                   ref={textareaRef}
                   value={newMessage}

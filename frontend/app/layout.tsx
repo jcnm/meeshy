@@ -46,7 +46,7 @@ export default function RootLayout({
           position="bottom-right"
           expand={false}
           richColors
-          visibleToasts={3}
+          visibleToasts={1}
           toastOptions={{
             duration: 3000,
             style: {

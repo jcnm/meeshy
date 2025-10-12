@@ -62,6 +62,9 @@
     "replyToMessage": "Reply to message",
     "replyingTo": "Replying to",
     "unknownUser": "Unknown user",
+    "clickToViewMessage": "Click to view message",
+    "translationOptions": "Translation options",
+    "copyShowingContent": "Copy showing content",
     "translation": {
       "showOriginal": "Show original",
       "showTranslation": "Show translation",

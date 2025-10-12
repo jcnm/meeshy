@@ -19,6 +19,8 @@ import { CreateConversationModal } from './create-conversation-modal';
 import { ConversationDetailsSidebar } from './conversation-details-sidebar';
 import { cn } from '@/lib/utils';
 import type { Conversation, ThreadMember, UserRoleEnum } from '@shared/types';
+import { useReplyStore } from '@/stores/reply-store';
+import { toast } from 'sonner';
 
 interface ConversationLayoutProps {
   selectedConversationId?: string;
@@ -137,7 +139,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     enabled: !!selectedConversation?.id
   });
 
-  // Hook messaging pour l'envoi de messages uniquement
+  // Hook messaging pour l'envoi de messages et indicateurs de frappe
   const messaging = useMessaging({
     conversationId: selectedConversation?.id,
     currentUser: user || undefined,
@@ -146,6 +148,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }, []),
     onMessageFailed: useCallback((content: string, error: Error) => {
       console.error('[ConversationLayout] Échec envoi message:', { content: content.substring(0, 50), error });
+    }, []),
+    onUserTyping: useCallback((userId: string, username: string, isTyping: boolean) => {
+      console.log('[ConversationLayout] 👤 Événement de frappe:', { userId, username, isTyping });
     }, []),
     onNewMessage: useCallback((message: any) => {
       console.log(`[ConversationLayout-${instanceId}] 🔥 NOUVEAU MESSAGE VIA WEBSOCKET:`, {
@@ -444,6 +449,49 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
   }, [isMobile, selectedConversationId, localSelectedConversationId, router, instanceId]);
 
+  // Gérer la réponse à un message
+  const handleReplyMessage = useCallback((message: any) => {
+    const { setReplyingTo } = useReplyStore.getState();
+    setReplyingTo({
+      id: message.id,
+      content: message.content,
+      originalLanguage: message.originalLanguage,
+      sender: message.sender,
+      createdAt: message.createdAt,
+      translations: message.translations
+    });
+
+    // Focus sur MessageComposer
+    if (messageComposerRef.current) {
+      messageComposerRef.current.focus();
+    }
+
+    toast.success('Répondre à ce message');
+  }, []);
+
+  // Naviguer vers un message spécifique
+  const handleNavigateToMessage = useCallback((messageId: string) => {
+    console.log('🔍 Navigation vers le message:', messageId);
+
+    const messageElement = document.getElementById(`message-${messageId}`);
+
+    if (messageElement) {
+      messageElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+
+      messageElement.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
+      setTimeout(() => {
+        messageElement.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2');
+      }, 2000);
+
+      toast.success('Message trouvé !');
+    } else {
+      toast.info('Message non visible. Chargement...');
+    }
+  }, []);
+
   // Envoi de message - attendre le retour serveur
   const handleSendMessage = useCallback(async () => {
     if (!newMessage.trim() || !selectedConversation || !user) {
@@ -451,12 +499,15 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
 
     const content = newMessage.trim();
+    const replyToId = useReplyStore.getState().replyingTo?.id;
+    
     console.log('[ConversationLayout] handleSendMessage appelé:', {
       content,
       selectedConversationId: selectedConversation?.id,
       hasMessaging: !!messaging,
       hasUser: !!user,
-      selectedLanguage
+      selectedLanguage,
+      replyToId
     });
     
     if (!selectedConversation?.id || !user) {
@@ -465,9 +516,14 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
     }
     
     try {
-      await messaging.sendMessage(content, selectedLanguage);
+      await messaging.sendMessage(content, selectedLanguage, replyToId);
       console.log('[ConversationLayout] Message envoyé avec succès - en attente du retour serveur');
-      setNewMessage(''); // Vider le champ après envoi réussi
+      setNewMessage('');
+      
+      // Effacer l'état de réponse
+      if (replyToId) {
+        useReplyStore.getState().clearReply();
+      }
     } catch (error) {
       console.error('[ConversationLayout] Erreur envoi message:', error);
     }
@@ -591,7 +647,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   conversation={selectedConversation}
                   currentUser={user}
                   conversationParticipants={participants}
-                  typingUsers={[]}
+                  typingUsers={messaging.typingUsers}
                   isMobile={isMobile}
                   onBackToList={handleBackToList}
                   onOpenDetails={() => setIsDetailsOpen(true)}
@@ -629,6 +685,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   isTranslating={isTranslating}
                   onEditMessage={async () => {}}
                   onDeleteMessage={async () => {}}
+                  onReplyMessage={handleReplyMessage}
+                  onNavigateToMessage={handleNavigateToMessage}
                   onLoadMore={loadMore}
                   t={t}
                 />
@@ -647,7 +705,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 } : undefined}
               >
                 <div className={cn(
-                  isMobile ? "w-full" : "max-w-4xl mx-auto"
+                  isMobile ? "w-full" : "max-w-5xl mx-auto"
                 )}>
                   <MessageComposer
                     ref={messageComposerRef}

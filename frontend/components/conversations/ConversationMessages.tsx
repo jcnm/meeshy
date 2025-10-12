@@ -28,6 +28,8 @@ interface ConversationMessagesProps {
   isTranslating: (messageId: string, targetLanguage: string) => boolean;
   onEditMessage: (messageId: string, newContent: string) => Promise<void>;
   onDeleteMessage: (messageId: string) => Promise<void>;
+  onReplyMessage?: (message: Message) => void;
+  onNavigateToMessage?: (messageId: string) => void;
   onLoadMore?: () => void;
   t: (key: string) => string;
 }
@@ -49,6 +51,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
   isTranslating,
   onEditMessage,
   onDeleteMessage,
+  onReplyMessage,
+  onNavigateToMessage,
   onLoadMore,
   t
 }: ConversationMessagesProps) {
@@ -223,6 +227,8 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
               )}
               onEditMessage={onEditMessage}
               onDeleteMessage={onDeleteMessage}
+              onReplyMessage={onReplyMessage}
+              onNavigateToMessage={onNavigateToMessage}
               conversationType={conversationType || 'direct'}
               userRole={userRole}
               addTranslatingState={addTranslatingState}

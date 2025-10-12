@@ -53,6 +53,44 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
 
+  // Fonction pour formater la date en fonction du jour
+  const formatReplyDate = (date: Date | string) => {
+    const messageDate = new Date(date);
+    const now = new Date();
+    
+    // Réinitialiser l'heure pour comparer uniquement les dates
+    const messageDateOnly = new Date(messageDate.getFullYear(), messageDate.getMonth(), messageDate.getDate());
+    const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    const isSameDay = messageDateOnly.getTime() === nowDateOnly.getTime();
+    const isSameYear = messageDate.getFullYear() === now.getFullYear();
+    
+    if (isSameDay) {
+      // Même jour : afficher seulement l'heure
+      return messageDate.toLocaleString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } else if (isSameYear) {
+      // Même année mais jour différent : afficher jour + mois + heure
+      return messageDate.toLocaleString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } else {
+      // Année différente : afficher date complète + heure
+      return messageDate.toLocaleString('fr-FR', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  };
+
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
     blur: () => textareaRef.current?.blur(),
@@ -121,10 +159,7 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
                     {t('replyingTo')} {replyingTo.sender?.displayName || replyingTo.sender?.username || t('unknownUser')}
                   </span>
                   <span className="text-xs text-blue-600/60 dark:text-blue-400/60">
-                    {new Date(replyingTo.createdAt).toLocaleString('fr-FR', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {formatReplyDate(replyingTo.createdAt)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 italic">

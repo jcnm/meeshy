@@ -23,6 +23,7 @@ interface MessagesDisplayProps {
   onEditMessage?: (messageId: string, newContent: string) => Promise<void>;
   onDeleteMessage?: (messageId: string) => Promise<void>;
   onReplyMessage?: (message: Message) => void;
+  onNavigateToMessage?: (messageId: string) => void;
   conversationType?: 'direct' | 'group' | 'public' | 'global';
   userRole?: 'USER' | 'MEMBER' | 'MODERATOR' | 'ADMIN' | 'CREATOR' | 'AUDIT' | 'ANALYST' | 'BIGBOSS';
   
@@ -50,6 +51,7 @@ export function MessagesDisplay({
   onEditMessage,
   onDeleteMessage,
   onReplyMessage,
+  onNavigateToMessage,
   conversationType = 'direct',
   userRole = 'USER',
   addTranslatingState,
@@ -93,25 +95,6 @@ export function MessagesDisplay({
     // Sinon, afficher dans la langue originale
     return message.originalLanguage || 'fr';
   }, [userLanguage]);
-
-  // Initialiser l'état d'affichage pour les nouveaux messages
-  const initializeMessageState = useCallback((messageId: string, originalLanguage: string, message?: any) => {
-    if (!messageDisplayStates[messageId]) {
-      const preferredLanguage = message ? getPreferredDisplayLanguage(message) : originalLanguage;
-      
-      setMessageDisplayStates(prev => ({
-        ...prev,
-        [messageId]: {
-          currentDisplayLanguage: preferredLanguage,
-          isTranslating: false
-        }
-      }));
-      
-      if (preferredLanguage !== originalLanguage) {
-        console.log(`🎯 [AUTO-TRANSLATION] Message ${messageId} initialisé en ${preferredLanguage} au lieu de ${originalLanguage}`);
-      }
-    }
-  }, [messageDisplayStates, getPreferredDisplayLanguage]);
 
   // Fonction pour forcer la traduction
   const handleForceTranslation = useCallback(async (messageId: string, targetLanguage: string, model?: 'basic' | 'medium' | 'premium') => {
@@ -203,13 +186,20 @@ export function MessagesDisplay({
 
   // Gérer le changement de langue d'affichage
   const handleLanguageSwitch = useCallback((messageId: string, language: string) => {
-    setMessageDisplayStates(prev => ({
-      ...prev,
-      [messageId]: {
-        ...prev[messageId],
-        currentDisplayLanguage: language
-      }
-    }));
+    console.log(`🔄 [LANGUAGE SWITCH] Message ${messageId}: switching to ${language}`);
+    setMessageDisplayStates(prev => {
+      const newState = {
+        ...prev,
+        [messageId]: {
+          currentDisplayLanguage: language,
+          isTranslating: prev[messageId]?.isTranslating || false,
+          translationError: prev[messageId]?.translationError
+        }
+      };
+      console.log(`📊 [LANGUAGE SWITCH] Previous state:`, prev[messageId]);
+      console.log(`📊 [LANGUAGE SWITCH] New state:`, newState[messageId]);
+      return newState;
+    });
   }, []);
 
   // Fonction pour vérifier si un message est en cours de traduction
@@ -236,34 +226,59 @@ export function MessagesDisplay({
     return reverseOrder ? [...transformedMessages].reverse() : transformedMessages;
   }, [messages, translatedMessages, reverseOrder]);
 
+  // Initialiser l'état d'affichage pour les nouveaux messages
+  useEffect(() => {
+    setMessageDisplayStates(prev => {
+      const newStates: Record<string, any> = { ...prev };
+      let hasChanges = false;
+
+      displayMessages.forEach(message => {
+        if (!prev[message.id]) {
+          const preferredLanguage = getPreferredDisplayLanguage(message);
+          newStates[message.id] = {
+            currentDisplayLanguage: preferredLanguage,
+            isTranslating: false
+          };
+          hasChanges = true;
+
+          if (preferredLanguage !== message.originalLanguage) {
+            console.log(`🎯 [AUTO-TRANSLATION] Message ${message.id} initialisé en ${preferredLanguage} au lieu de ${message.originalLanguage}`);
+          }
+        }
+      });
+
+      return hasChanges ? newStates : prev;
+    });
+  }, [displayMessages, getPreferredDisplayLanguage]);
+
   // Effet pour détecter les nouvelles traductions et changer automatiquement l'affichage
   useEffect(() => {
-    const messagesToUpdate: { [messageId: string]: string } = {};
-    
-    // Parcourir tous les messages pour voir si de nouvelles traductions sont disponibles
-    displayMessages.forEach(message => {
-      const currentState = messageDisplayStates[message.id];
-      if (!currentState) return;
+    setMessageDisplayStates(prev => {
+      const messagesToUpdate: { [messageId: string]: string } = {};
       
-      // Si le message n'est pas dans la langue utilisateur et qu'une traduction est disponible
-      if (message.originalLanguage !== userLanguage) {
-        const userLanguageTranslation = message.translations?.find((t: any) => 
-          (t.language || t.targetLanguage) === userLanguage
-        );
+      // Parcourir tous les messages pour voir si de nouvelles traductions sont disponibles
+      displayMessages.forEach(message => {
+        const currentState = prev[message.id];
+        if (!currentState) return;
         
-        // Si une traduction dans la langue utilisateur est disponible et qu'on ne l'affiche pas encore
-        if (userLanguageTranslation && currentState.currentDisplayLanguage !== userLanguage) {
-          console.log(`🔄 [AUTO-TRANSLATION] Nouvelle traduction détectée pour ${message.id} en ${userLanguage}`);
-          messagesToUpdate[message.id] = userLanguage;
+        // Si le message n'est pas dans la langue utilisateur et qu'une traduction est disponible
+        if (message.originalLanguage !== userLanguage) {
+          const userLanguageTranslation = message.translations?.find((t: any) => 
+            (t.language || t.targetLanguage) === userLanguage
+          );
+          
+          // Si une traduction dans la langue utilisateur est disponible et qu'on ne l'affiche pas encore
+          if (userLanguageTranslation && currentState.currentDisplayLanguage !== userLanguage) {
+            console.log(`🔄 [AUTO-TRANSLATION] Nouvelle traduction détectée pour ${message.id} en ${userLanguage}`);
+            messagesToUpdate[message.id] = userLanguage;
+          }
         }
-      }
-    });
-    
-    // Mettre à jour tous les messages qui ont de nouvelles traductions
-    if (Object.keys(messagesToUpdate).length > 0) {
-      console.log(`🎯 [AUTO-TRANSLATION] Mise à jour automatique de ${Object.keys(messagesToUpdate).length} messages`);
+      });
       
-      setMessageDisplayStates(prev => {
+      // Mettre à jour tous les messages qui ont de nouvelles traductions
+      if (Object.keys(messagesToUpdate).length > 0) {
+        console.log(`🎯 [AUTO-TRANSLATION] Mise à jour automatique de ${Object.keys(messagesToUpdate).length} messages`);
+        
         const newState = { ...prev };
         Object.entries(messagesToUpdate).forEach(([messageId, language]) => {
           newState[messageId] = {
@@ -272,9 +287,11 @@ export function MessagesDisplay({
           };
         });
         return newState;
-      });
-    }
-  }, [displayMessages, messageDisplayStates, userLanguage]);
+      }
+      
+      return prev;
+    });
+  }, [displayMessages, userLanguage]);
 
   if (isLoadingMessages && displayMessages.length === 0) {
     return (
@@ -297,11 +314,6 @@ export function MessagesDisplay({
   return (
     <div className={`${className} bubble-message-container flex flex-col`}>
       {displayMessages.map((message) => {
-        // Initialiser l'état du message
-        if (!messageDisplayStates[message.id]) {
-          initializeMessageState(message.id, message.originalLanguage, message);
-        }
-
         const state = messageDisplayStates[message.id] || {
           currentDisplayLanguage: message.originalLanguage,
           isTranslating: false
@@ -318,6 +330,7 @@ export function MessagesDisplay({
             onEditMessage={onEditMessage}
             onDeleteMessage={onDeleteMessage}
             onReplyMessage={onReplyMessage}
+            onNavigateToMessage={onNavigateToMessage}
             onLanguageSwitch={handleLanguageSwitch}
             currentDisplayLanguage={state.currentDisplayLanguage}
             isTranslating={state.isTranslating || checkIsTranslating(message.id, state.currentDisplayLanguage)}

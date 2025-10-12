@@ -51,16 +51,21 @@ export function LanguageFlagSelector({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "justify-center w-7 h-7 sm:w-8 sm:h-8 p-0 border-gray-200 hover:border-blue-300",
+            "justify-center w-6 h-6 sm:w-7 sm:h-7 p-0 border-gray-200 hover:border-blue-300",
             className
           )}
         >
-          <span className="text-sm">
+          <span className="text-xs sm:text-sm">
             {selectedLanguage?.flag || '🌐'}
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-10 p-2">
+      <PopoverContent 
+        className="w-10 p-2" 
+        side="top" 
+        align="center"
+        sideOffset={4}
+      >
         <div className="flex flex-col gap-1 items-center">
           {availableLanguages.map((language) => (
             <Button

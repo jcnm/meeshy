@@ -20,15 +20,23 @@ Implémentation complète d'une fonctionnalité de réponse aux messages dans Me
   - Bouton pour annuler la réponse (X)
 - Design élégant avec gradient bleu et bordure latérale
 
-### 3. **Affichage du Message Parent**
+### 3. **Affichage du Message Parent (Design Minimaliste et Flottant)**
 - Intégré dans `BubbleMessage` pour montrer le message auquel on répond
-- Design distinctif avec :
-  - Bordure latérale bleue
-  - Fond dégradé bleu/indigo
-  - Icône de message circulaire
-  - Informations de l'auteur et date
-  - Aperçu du contenu (limité à 2 lignes)
-  - Badge du nombre de traductions
+- Design épuré et élégant inspiré de MessageComposer :
+  - **Style flottant** : Compact et léger, positionné au-dessus du contenu
+  - **Animation d'entrée douce** : Fade-in + slide-up subtil (0.2s)
+  - **Cliquable** : Navigation vers le message original en un clic
+  - **Informations essentielles uniquement** :
+    - 👤 Nom de l'auteur
+    - 🕐 Date et heure du message (format court)
+    - 🌍 Langue originale avec drapeau
+    - 🔤 Nombre de traductions disponibles
+    - 💬 Contenu du message (2 lignes max)
+  - **Icône subtile** : MessageCircle qui s'anime au hover
+  - **Bordure latérale** : Barre bleue distinctive
+  - **Gradient léger** : Bleu → Indigo subtil
+  - **Hover élégant** : Shadow qui s'intensifie
+  - **Support complet du dark mode** : Couleurs adaptées
 
 ## 🛠️ Modifications Techniques
 
@@ -90,25 +98,74 @@ Le backend était déjà préparé pour supporter les réponses aux messages :
 - `gateway/src/routes/conversations.ts` - Route POST accepte `replyToId`
 - `gateway/src/socketio/MeeshySocketIOManager.ts` - Gestion de `replyToId` dans `_handleNewMessage()`
 
-## 🎨 Design
+## 🎨 Design Minimaliste et Moderne
 
 ### Couleurs et Style
-- **Message Parent**: Gradient bleu/indigo avec bordure latérale bleue
-- **Zone de Réponse**: Fond bleu clair avec bordure bleue
-- **Icône**: MessageCircle bleu avec hover effet
-- **Dark Mode**: Support complet avec couleurs adaptées
+- **Message Parent (Flottant)**: 
+  - Gradient léger : `from-blue-50/90 to-indigo-50/90`
+  - Dark mode : `from-blue-900/30 to-indigo-900/30`
+  - Bordure latérale distinctive : `border-l-4 border-blue-400`
+  - Compact : Padding réduit (`px-3 py-2`)
+  - Coins arrondis : `rounded-lg`
+  
+- **Zone de Réponse (MessageComposer)**: 
+  - Fond bleu dégradé avec transparence
+  - Bordure bleue distinctive
+  - Icône MessageCircle avec ring
+  
+- **Interactions**:
+  - Cursor pointer : Indique la cliquabilité
+  - Hover : Shadow qui apparaît (`hover:shadow-md`)
+  - Hover : Intensification du gradient
+  - Icône qui change de couleur au hover
+  - Transitions fluides (200ms)
+  
+- **Typographie**:
+  - Texte semi-bold pour les noms (`font-semibold`)
+  - Taille adaptative (`text-xs`, `text-sm`)
+  - Line-clamp pour limiter à 2 lignes
+  - Leading snug pour compacité
 
-### UX
-- Clic sur l'icône de réponse → Focus automatique sur la zone de saisie
-- Affichage contextuel du message parent
-- Possibilité d'annuler une réponse en cours
-- Toast de confirmation lors de la sélection d'un message pour réponse
-- Line-clamp pour éviter les messages trop longs
+### UX Premium
+- **Interactions fluides**:
+  - Clic sur l'icône de réponse → Focus automatique sur la zone de saisie
+  - Clic sur le message parent → Navigation vers le message original avec highlight
+  - Animation d'entrée douce (0.2s)
+  - Toast de confirmation élégant
+  
+- **Navigation intelligente**:
+  - Scroll automatique vers le message original
+  - Highlight temporaire (ring bleu pendant 2s)
+  - ID unique par message (`message-${id}`)
+  - Gestion des messages non visibles (chargement futur)
+  
+- **Feedback visuel**:
+  - Hover effects discrets mais efficaces
+  - Icône qui s'anime au survol
+  - Shadow qui apparaît au hover
+  - Gradient qui s'intensifie
+  
+- **Minimalisme**:
+  - Pas de texte superflu ("Replying to", etc.)
+  - Pas d'avatar (redondant)
+  - Informations essentielles uniquement
+  - Design compact et épuré
+  
+- **Accessibilité**:
+  - Cursor pointer pour indiquer la cliquabilité
+  - Contraste suffisant en mode clair et sombre
+  - Line-clamp pour éviter les messages trop longs
+  
+- **Performance**:
+  - Animations légères avec Framer Motion
+  - Transitions GPU-accelerated
+  - Pas de composants lourds inutiles
 
 ## 🔄 Flux de Données
 
+### Répondre à un message
 ```
-1. Utilisateur clique sur l'icône de réponse
+1. Utilisateur clique sur l'icône de réponse (MessageCircle)
    ↓
 2. handleReplyMessage() stocke le message dans reply-store
    ↓
@@ -124,7 +181,25 @@ Le backend était déjà préparé pour supporter les réponses aux messages :
    ↓
 8. Message diffusé via WebSocket avec message.replyTo inclus
    ↓
-9. BubbleMessage affiche le message avec son parent
+9. BubbleMessage affiche le message avec son parent (minimaliste)
+```
+
+### Naviguer vers le message original
+```
+1. Utilisateur clique sur le message parent flottant
+   ↓
+2. onNavigateToMessage() est appelé avec messageId
+   ↓
+3. Recherche de l'élément dans le DOM (`message-${id}`)
+   ↓
+4. Si trouvé:
+   - Scroll smooth vers le message (block: 'center')
+   - Ajout d'un highlight temporaire (ring-2 ring-blue-500)
+   - Toast de succès
+   ↓
+5. Si non trouvé:
+   - Toast d'information
+   - TODO: Chargement des messages précédents
 ```
 
 ## 📦 Dépendances

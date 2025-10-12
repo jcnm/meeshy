@@ -139,20 +139,18 @@ export function ConversationHeader({
 
       {/* Actions */}
       <div className="flex items-center gap-1 flex-shrink-0">
-        {/* Participants popover - Desktop */}
-        {!isMobile && (
-          <ConversationParticipantsPopover
-            conversationId={conversation.id}
-            participants={conversationParticipants}
-            currentUser={currentUser}
-            isGroup={conversation.type !== 'direct'}
-            conversationType={conversation.type}
-            userConversationRole={getCurrentUserRole()}
-            onParticipantRemoved={onParticipantRemoved}
-            onParticipantAdded={onParticipantAdded}
-            onLinkCreated={onLinkCreated}
-          />
-        )}
+        {/* Participants popover - Toujours visible (Desktop & Mobile) */}
+        <ConversationParticipantsPopover
+          conversationId={conversation.id}
+          participants={conversationParticipants}
+          currentUser={currentUser}
+          isGroup={conversation.type !== 'direct'}
+          conversationType={conversation.type}
+          userConversationRole={getCurrentUserRole()}
+          onParticipantRemoved={onParticipantRemoved}
+          onParticipantAdded={onParticipantAdded}
+          onLinkCreated={onLinkCreated}
+        />
 
         {/* Menu dropdown */}
         <DropdownMenu>
@@ -177,28 +175,6 @@ export function ConversationHeader({
                 <DropdownMenuItem>
                   <UserPlus className="h-4 w-4 mr-2" />
                   {t('addParticipant')}
-                </DropdownMenuItem>
-              </>
-            )}
-
-            {/* Actions mobiles */}
-            {isMobile && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <div>
-                    <ConversationParticipantsPopover
-                      conversationId={conversation.id}
-                      participants={conversationParticipants}
-                      currentUser={currentUser}
-                      isGroup={conversation.type !== 'direct'}
-                      conversationType={conversation.type}
-                      userConversationRole={getCurrentUserRole()}
-                      onParticipantRemoved={onParticipantRemoved}
-                      onParticipantAdded={onParticipantAdded}
-                      onLinkCreated={onLinkCreated}
-                    />
-                  </div>
                 </DropdownMenuItem>
               </>
             )}

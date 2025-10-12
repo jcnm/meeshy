@@ -43,7 +43,7 @@ interface UseMessagingReturn {
   sendError: string | null;
   
   // Actions de messagerie
-  sendMessage: (content: string, originalLanguage?: string) => Promise<boolean>;
+  sendMessage: (content: string, originalLanguage?: string, replyToId?: string) => Promise<boolean>;
   editMessage: (messageId: string, newContent: string) => Promise<boolean>;
   deleteMessage: (messageId: string) => Promise<boolean>;
   
@@ -159,7 +159,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
   }, [isTyping, conversationId, currentUser, socketMessaging]);
 
   // Envoi de message
-  const sendMessage = useCallback(async (content: string, originalLanguage?: string): Promise<boolean> => {
+  const sendMessage = useCallback(async (content: string, originalLanguage?: string, replyToId?: string): Promise<boolean> => {
     if (!conversationId || !currentUser) {
       console.error('[MESSAGING] Cannot send message: missing conversationId or currentUser');
       return false;
@@ -184,7 +184,7 @@ export function useMessaging(options: UseMessagingOptions = {}): UseMessagingRet
       logMessageSend(content, conversationId, currentUser);
 
       // Envoyer via Socket.IO
-      const success = await socketMessaging.sendMessage(content, originalLanguage);
+      const success = await socketMessaging.sendMessage(content, originalLanguage, replyToId);
 
       if (success) {
         // Arrêter la frappe
