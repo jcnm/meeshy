@@ -30,7 +30,9 @@ export interface LinkConversationData {
     content: string;
     originalLanguage: string;
     createdAt: string;
-    sender: {
+    senderId?: string;
+    anonymousSenderId?: string;
+    sender?: {
       id: string;
       username: string;
       firstName: string;
@@ -39,10 +41,30 @@ export interface LinkConversationData {
       avatar?: string;
       isMeeshyer: boolean; // true = membre, false = anonyme
     };
+    anonymousSender?: {
+      id: string;
+      username: string;
+      firstName: string;
+      lastName: string;
+      language: string;
+      isOnline: boolean;
+      isMeeshyer: boolean;
+    };
+    replyTo?: {
+      id: string;
+      content: string;
+      sender: {
+        id: string;
+        username: string;
+        firstName: string;
+        lastName: string;
+      };
+    };
     translations?: Array<{
       id: string;
       targetLanguage: string;
       translatedText: string;
+      translatedContent?: string;
     }>;
   }>;
   stats: {
@@ -106,9 +128,9 @@ export interface LinkConversationOptions {
 export class LinkConversationService {
   /**
    * Récupère les données complètes d'une conversation via un lien de partage
-   * Utilise la séparation anonymous/links pour respecter l'architecture
+   * Accepte soit un linkId (format: id.timestamp_random) soit un conversationShareLinkId
    * 
-   * @param identifier - Peut être soit un linkId (format mshy_...) soit un conversationShareLinkId (ID de base de données)
+   * @param identifier - Peut être un linkId OU un conversationShareLinkId
    */
   static async getConversationData(
     identifier: string, 
@@ -120,7 +142,7 @@ export class LinkConversationService {
     const identifierInfo = analyzeLinkIdentifier(identifier);
     
     if (!isValidForApiRequest(identifier)) {
-      throw new Error(`Identifiant invalide: ${identifier}`);
+      throw new Error(`Identifiant invalide: ${identifier} (type: ${identifierInfo.type})`);
     }
     
     console.log('[LinkConversationService] Analyse de l\'identifiant:', {
@@ -142,13 +164,14 @@ export class LinkConversationService {
       console.log('[LinkConversationService] Aucune authentification');
     }
     
-    // Essayer d'abord avec l'identifiant original
-    let endpoint = `/api/links/${identifier}`;
-    let url = new URL(buildApiUrl(endpoint));
+    // L'endpoint API /api/links/:id accepte les deux types d'identifiants
+    // Le backend se charge de déterminer le type et de récupérer les bonnes données
+    const endpoint = `/api/links/${identifier}`;
+    const url = new URL(buildApiUrl(endpoint));
     url.searchParams.append('limit', limit.toString());
     url.searchParams.append('offset', offset.toString());
 
-    console.log('[LinkConversationService] Tentative avec endpoint:', endpoint);
+    console.log('[LinkConversationService] Requête vers:', endpoint);
 
     try {
       const response = await fetch(url.toString(), {
@@ -166,38 +189,41 @@ export class LinkConversationService {
         throw new Error(data.message || 'Erreur lors de la récupération des données');
       }
 
+      console.log('[LinkConversationService] Données récupérées avec succès');
       return data.data;
     } catch (error) {
-      console.log('[LinkConversationService] Erreur avec identifiant original, tentative avec fallbacks');
+      console.error('[LinkConversationService] Erreur lors de la récupération:', error);
       
-      // Essayer avec les identifiants de fallback
+      // Essayer avec les identifiants de fallback si disponibles
       const fallbacks = generateFallbackIdentifiers(identifier);
       
-      for (const fallbackIdentifier of fallbacks) {
-        try {
-          console.log('[LinkConversationService] Tentative avec fallback:', fallbackIdentifier);
-          
-          const fallbackEndpoint = `/api/links/${fallbackIdentifier}`;
-          const fallbackUrl = new URL(buildApiUrl(fallbackEndpoint));
-          fallbackUrl.searchParams.append('limit', limit.toString());
-          fallbackUrl.searchParams.append('offset', offset.toString());
+      if (fallbacks.length > 0) {
+        console.log('[LinkConversationService] Tentative avec fallbacks:', fallbacks);
+        
+        for (const fallbackIdentifier of fallbacks) {
+          try {
+            const fallbackEndpoint = `/api/links/${fallbackIdentifier}`;
+            const fallbackUrl = new URL(buildApiUrl(fallbackEndpoint));
+            fallbackUrl.searchParams.append('limit', limit.toString());
+            fallbackUrl.searchParams.append('offset', offset.toString());
 
-          const fallbackResponse = await fetch(fallbackUrl.toString(), {
-            method: 'GET',
-            headers
-          });
+            const fallbackResponse = await fetch(fallbackUrl.toString(), {
+              method: 'GET',
+              headers
+            });
 
-          if (fallbackResponse.ok) {
-            const fallbackData = await fallbackResponse.json();
-            
-            if (fallbackData.success) {
-              console.log('[LinkConversationService] Succès avec fallback:', fallbackIdentifier);
-              return fallbackData.data;
+            if (fallbackResponse.ok) {
+              const fallbackData = await fallbackResponse.json();
+              
+              if (fallbackData.success) {
+                console.log('[LinkConversationService] Succès avec fallback:', fallbackIdentifier);
+                return fallbackData.data;
+              }
             }
+          } catch (fallbackError) {
+            console.log('[LinkConversationService] Échec avec fallback:', fallbackIdentifier);
+            // Continuer avec le prochain fallback
           }
-        } catch (fallbackError) {
-          console.log('[LinkConversationService] Échec avec fallback:', fallbackIdentifier, fallbackError);
-          // Continuer avec le prochain fallback
         }
       }
       

@@ -112,6 +112,16 @@
         "terms": "Terms",
         "contact": "Contact"
       }
+    },
+    "accessDenied": {
+      "title": "Access Denied",
+      "description": "You don't have the necessary permissions to access this page.",
+      "back": "Back",
+      "home": "Home",
+      "tip": {
+        "title": "Tip:",
+        "message": "If you think you should have access to this resource, try logging in or contact the administrator."
+      }
     }
   }
 }

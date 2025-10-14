@@ -6,10 +6,6 @@ import { LinkConversationService, LinkConversationData } from '@/services/link-c
 import { BubbleStreamPage } from '@/components/common/bubble-stream-page';
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/layout/Header';
-import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { RegisterForm } from '@/components/auth/register-form';
-import { LoginForm } from '@/components/auth/login-form';
 import { AccessDenied } from '@/components/ui/access-denied';
 import { useI18n } from '@/hooks/useI18n';
 
@@ -18,45 +14,63 @@ type ConversationData = LinkConversationData;
 
 export default function ChatLinkPage() {
   const params = useParams();
-  const linkId = params.conversationShareLinkId as string;
+  const id = params.id as string; // Peut être linkId OU conversationShareLinkId
   const { user } = useAuth();
   const { t } = useI18n('chat');
   
   const [conversationData, setConversationData] = useState<ConversationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
 
   useEffect(() => {
     const loadConversation = async () => {
       try {
         setIsLoading(true);
-        const data = await LinkConversationService.getConversationData(linkId);
         
+        // Récupérer les tokens d'authentification
+        const sessionToken = localStorage.getItem('anonymous_session_token');
+        const authToken = localStorage.getItem('auth_token');
+        
+        console.log('[ChatLinkPage] Chargement avec:', { 
+          id, 
+          hasSessionToken: !!sessionToken, 
+          hasAuthToken: !!authToken 
+        });
+        
+        // id peut être un linkId ou un conversationShareLinkId
+        const data = await LinkConversationService.getConversationData(id, {
+          sessionToken: sessionToken || undefined,
+          authToken: authToken || undefined
+        });
+        
+        if (!data) {
+          setError(t('errors.invalidLink'));
+          return;
+        }
+
         if (!data.link.isActive) {
-          setError('This link is no longer active');
+          setError(t('errors.linkNoLongerActive'));
           return;
         }
 
         if (data.link.expiresAt && new Date(data.link.expiresAt) < new Date()) {
-          setError('This link has expired');
+          setError(t('errors.linkExpired'));
           return;
         }
 
         setConversationData(data);
       } catch (err) {
         console.error('Failed to load conversation:', err);
-        setError('Failed to load conversation');
+        setError(t('errors.loadError'));
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (linkId) {
+    if (id) {
       loadConversation();
     }
-  }, [linkId]);
+  }, [id, t]);
 
   if (isLoading) {
     return (
@@ -90,31 +104,7 @@ export default function ChatLinkPage() {
       <Header 
         mode="chat"
         conversationTitle={conversationData.conversation.title}
-        shareLink={`${window.location.origin}/join/${linkId}`}
-        user={{
-          ...conversationData.currentUser,
-          isAnonymous
-        }}
-        onLogout={() => {
-          // Pour les utilisateurs anonymes, effacer la session
-          if (isAnonymous) {
-            localStorage.removeItem('anonymous_session_token');
-            localStorage.removeItem('anonymous_participant');
-            localStorage.removeItem('anonymous_current_share_link');
-            localStorage.removeItem('anonymous_current_link_id');
-            window.location.href = '/';
-          } else {
-            // Pour les utilisateurs authentifiés, rediriger vers logout
-            window.location.href = '/login';
-          }
-        }}
-        onClearAnonymousSession={() => {
-          localStorage.removeItem('anonymous_session_token');
-          localStorage.removeItem('anonymous_participant');
-          localStorage.removeItem('anonymous_current_share_link');
-          localStorage.removeItem('anonymous_current_link_id');
-          window.location.href = '/';
-        }}
+        shareLink={conversationData.link.linkId ? `${window.location.origin}/join/${conversationData.link.linkId}` : undefined}
       />
       
       <BubbleStreamPage 
@@ -149,8 +139,42 @@ export default function ChatLinkPage() {
         }}
         conversationId={conversationId}
         isAnonymousMode={isAnonymous}
-        linkId={linkId}
+        linkId={id} // Passer l'id (peut être linkId ou conversationShareLinkId)
         initialParticipants={[
+          // Ajouter l'utilisateur anonyme actuel en premier s'il est anonyme
+          ...(isAnonymous && conversationData.currentUser ? [{
+            id: conversationData.currentUser.id,
+            username: conversationData.currentUser.username,
+            firstName: conversationData.currentUser.firstName,
+            lastName: conversationData.currentUser.lastName,
+            displayName: conversationData.currentUser.displayName || conversationData.currentUser.username,
+            email: '',
+            avatar: '',
+            role: 'USER' as const,
+            permissions: {
+              canAccessAdmin: false,
+              canManageUsers: false,
+              canManageGroups: false,
+              canManageConversations: false,
+              canViewAnalytics: false,
+              canModerateContent: false,
+              canViewAuditLogs: false,
+              canManageNotifications: false,
+              canManageTranslations: false,
+            },
+            systemLanguage: conversationData.currentUser.language || 'fr',
+            regionalLanguage: conversationData.currentUser.language || 'fr',
+            autoTranslateEnabled: true,
+            translateToSystemLanguage: true,
+            translateToRegionalLanguage: false,
+            useCustomDestination: false,
+            isOnline: true,
+            lastSeen: new Date(),
+            lastActiveAt: new Date(),
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }] : []),
           ...conversationData.members.map(member => ({
             id: member.user.id,
             username: member.user.username,
@@ -184,7 +208,10 @@ export default function ChatLinkPage() {
             createdAt: new Date(),
             updatedAt: new Date()
           })),
-          ...conversationData.anonymousParticipants.map(participant => ({
+          // Ajouter les autres participants anonymes (en évitant de dupliquer l'utilisateur actuel)
+          ...conversationData.anonymousParticipants
+            .filter(participant => !isAnonymous || participant.id !== conversationData.currentUser?.id)
+            .map(participant => ({
             id: participant.id,
             username: participant.username,
             firstName: participant.firstName,
@@ -219,26 +246,6 @@ export default function ChatLinkPage() {
           }))
         ]}
       />
-
-      {/* Auth Dialog for anonymous users */}
-      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {authMode === 'login' ? 'Sign In' : 'Create Account'}
-            </DialogTitle>
-            <DialogDescription>
-              {authMode === 'login' ? 'Sign in to your account' : 'Create an account to continue'}
-            </DialogDescription>
-          </DialogHeader>
-          
-          {authMode === 'login' ? (
-            <LoginForm onSuccess={() => setShowAuthDialog(false)} />
-          ) : (
-            <RegisterForm onSuccess={() => setShowAuthDialog(false)} />
-          )}
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

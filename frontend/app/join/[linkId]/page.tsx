@@ -230,16 +230,16 @@ export default function JoinConversationPage() {
       
       if (response.ok && result.success) {
         // Utiliser le hook d'authentification pour gérer la session anonyme
-        joinAnonymously(result.data.participant, result.data.sessionToken, result.data.id);
+        joinAnonymously(result.data.participant, result.data.sessionToken, result.data.conversationShareLinkId || linkId);
         
         // Stocker le linkId original pour permettre la redirection depuis la page d'accueil
         localStorage.setItem('anonymous_current_link_id', linkId);
         
         toast.success(t('welcome', { username: result.data.participant.username }));
         
-        // Rediriger vers la page de chat anonyme avec le conversationShareLinkId
+        // Rediriger vers la page de chat anonyme avec le linkId (pas l'ID de la conversation!)
         // Utiliser window.location.href pour forcer la redirection immédiate
-        window.location.href = `/chat/${result.data.id}`;
+        window.location.href = `/chat/${linkId}`;
       } else {
         toast.error(result.message || t('joinError'));
         
@@ -286,24 +286,9 @@ export default function JoinConversationPage() {
       // Si l'utilisateur a un session token (participant anonyme), rediriger directement
       if (isAnonymous && sessionToken) {
         console.log('[JOIN_CONVERSATION] Utilisateur anonyme avec session token, redirection directe');
-        // Pour les utilisateurs anonymes, utiliser le conversationShareLinkId stocké
-        const storedShareLinkId = localStorage.getItem('anonymous_current_share_link');
-        if (storedShareLinkId) {
-          router.push(`/chat/${storedShareLinkId}`);
-        } else {
-          // Fallback: essayer de récupérer le conversationShareLinkId via l'API
-          try {
-            const linkInfo = await LinkConversationService.getLinkInfo(linkId);
-            if (linkInfo.success) {
-              router.push(`/chat/${linkInfo.data.id}`);
-            } else {
-              toast.error(t('joinError'));
-            }
-          } catch (error) {
-            console.error('[JOIN_CONVERSATION] Erreur récupération linkInfo:', error);
-            toast.error(t('joinError'));
-          }
-        }
+        // Pour les utilisateurs anonymes, utiliser directement le linkId de l'URL
+        // Cela garantit que nous utilisons toujours le bon identifiant de lien
+        router.push(`/chat/${linkId}`);
         return;
       }
 

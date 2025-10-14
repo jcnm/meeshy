@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Home, Shield, AlertTriangle } from 'lucide-react';
+import { useI18n } from '@/hooks/useI18n';
 
 interface AccessDeniedProps {
   title?: string;
@@ -15,14 +16,15 @@ interface AccessDeniedProps {
 }
 
 export function AccessDenied({
-  title = "Accès interdit",
-  description = "Vous n'avez pas les permissions nécessaires pour accéder à cette page.",
+  title,
+  description,
   showBackButton = true,
   showHomeButton = true,
   variant = 'forbidden',
   className = ""
 }: AccessDeniedProps) {
   const router = useRouter();
+  const { t } = useI18n('common');
 
   const getVariantStyles = () => {
     switch (variant) {
@@ -82,10 +84,10 @@ export function AccessDenied({
             </div>
           </div>
           <CardTitle className={`text-2xl font-bold ${styles.titleColor}`}>
-            {title}
+            {title || t('accessDenied.title')}
           </CardTitle>
           <CardDescription className={`text-base ${styles.descriptionColor}`}>
-            {description}
+            {description || t('accessDenied.description')}
           </CardDescription>
         </CardHeader>
         
@@ -98,7 +100,7 @@ export function AccessDenied({
                 className="flex items-center justify-center space-x-2 flex-1"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span>Retour</span>
+                <span>{t('accessDenied.back')}</span>
               </Button>
             )}
             
@@ -108,7 +110,7 @@ export function AccessDenied({
                 className="flex items-center justify-center space-x-2 flex-1"
               >
                 <Home className="h-4 w-4" />
-                <span>Accueil</span>
+                <span>{t('accessDenied.home')}</span>
               </Button>
             )}
           </div>
@@ -116,8 +118,7 @@ export function AccessDenied({
           {variant === 'forbidden' && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-700">
-                💡 <strong>Conseil :</strong> Si vous pensez avoir accès à cette ressource, 
-                essayez de vous connecter ou contactez l'administrateur.
+                💡 <strong>{t('accessDenied.tip.title')}</strong> {t('accessDenied.tip.message')}
               </p>
             </div>
           )}

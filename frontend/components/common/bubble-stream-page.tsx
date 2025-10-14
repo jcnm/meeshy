@@ -130,6 +130,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     limit: 20,
     enabled: true,
     threshold: 200, // Scroll infini activé: charge automatiquement à 200px du bas
+    linkId: isAnonymousMode ? linkId : undefined, // Passer le linkId pour les utilisateurs anonymes
     containerRef: messagesContainerRef,
     scrollDirection: 'down' // Scroll vers le bas pour charger plus (page publique)
   });
@@ -489,12 +490,46 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
   const handleNewMessage = useCallback((message: Message) => {
     // Message reçu via WebSocket
     
-    // Ajouter le message à la liste (il sera inséré au début grâce au hook)
-    addMessage(message);
+    // Enrichir le message avec les informations du sender si nécessaire
+    let enrichedMessage = { ...message };
+    
+    // Si c'est notre propre message et que sender/anonymousSender manque, l'enrichir
+    if ((message.senderId === user.id || message.anonymousSenderId === user.id) && 
+        !message.sender && !message.anonymousSender) {
+      if (isAnonymousMode) {
+        enrichedMessage.anonymousSender = {
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          language: user.systemLanguage || 'fr',
+          isOnline: true,
+          isMeeshyer: false
+        };
+      } else {
+        enrichedMessage.sender = {
+          id: user.id,
+          username: user.username,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          displayName: user.displayName,
+          avatar: user.avatar,
+          isMeeshyer: true
+        };
+      }
+    }
+    
+    // Ajouter le message enrichi à la liste (il sera inséré au début grâce au hook)
+    addMessage(enrichedMessage);
     
     // Notification UNIQUEMENT pour les nouveaux messages d'autres utilisateurs
-    if (message.senderId !== user.id) {
-      toast.info(`📨 Nouveau message de ${message.sender?.firstName || 'Utilisateur'}`, {
+    if (message.senderId !== user.id && message.anonymousSenderId !== user.id) {
+      const senderName = enrichedMessage.sender?.firstName || 
+                        enrichedMessage.anonymousSender?.firstName || 
+                        enrichedMessage.sender?.username ||
+                        enrichedMessage.anonymousSender?.username ||
+                        'Utilisateur';
+      toast.info(`📨 Nouveau message de ${senderName}`, {
         duration: TOAST_LONG_DURATION
       });
       
@@ -516,7 +551,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
       // Pour nos propres messages, c'est déjà géré dans handleSendMessage
       // Mon message publié avec succès
     }
-  }, [addMessage, user.id]);
+  }, [addMessage, user.id, user.username, user.firstName, user.lastName, user.displayName, user.avatar, user.systemLanguage, isAnonymousMode]);
 
   // Hook pour les statistiques de traduction de messages
   const { stats: translationStats, incrementTranslationCount } = useMessageTranslation();

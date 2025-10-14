@@ -123,7 +123,7 @@ class ApiService {
     }
   }
 
-  async get<T>(endpoint: string, params?: Record<string, unknown>, options?: { signal?: AbortSignal }): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string, params?: Record<string, unknown>, options?: { signal?: AbortSignal; headers?: Record<string, string> }): Promise<ApiResponse<T>> {
     let url = endpoint;
     if (params) {
       const searchParams = new URLSearchParams();
@@ -135,7 +135,11 @@ class ApiService {
       url += `?${searchParams.toString()}`;
     }
 
-    return this.request<T>(url, { method: 'GET', signal: options?.signal });
+    return this.request<T>(url, { 
+      method: 'GET', 
+      signal: options?.signal,
+      headers: options?.headers
+    });
   }
 
   async post<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {

@@ -20,15 +20,6 @@ export function analyzeLinkIdentifier(identifier: string): LinkIdentifierInfo {
     };
   }
 
-  // Vérifier si c'est un linkId (commence par "mshy_")
-  if (identifier.startsWith('mshy_')) {
-    return {
-      type: 'linkId',
-      value: identifier,
-      isValid: identifier.length > 10 && /^mshy_[a-zA-Z0-9_-]+$/.test(identifier)
-    };
-  }
-
   // Vérifier si c'est un ObjectId MongoDB (24 caractères hexadécimaux)
   if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
     return {
@@ -38,10 +29,20 @@ export function analyzeLinkIdentifier(identifier: string): LinkIdentifierInfo {
     };
   }
 
-  // Vérifier si c'est un identifiant personnalisé (alphanumérique avec tirets/underscores)
-  if (/^[a-zA-Z0-9_-]+$/.test(identifier)) {
+  // Vérifier si c'est un linkId (format: mongoId.timestamp_randomString)
+  // Exemple: 68ee540df062ef6a37bd3cca.2510141545_ordljlc5
+  if (/^[0-9a-fA-F]{24}\.[0-9]+_[a-z0-9]+$/.test(identifier)) {
     return {
-      type: 'conversationShareLinkId',
+      type: 'linkId',
+      value: identifier,
+      isValid: true
+    };
+  }
+
+  // Fallback: identifiant personnalisé (alphanumérique avec tirets/underscores/points)
+  if (/^[a-zA-Z0-9._-]+$/.test(identifier)) {
+    return {
+      type: identifier.includes('.') ? 'linkId' : 'conversationShareLinkId',
       value: identifier,
       isValid: identifier.length >= 3
     };
@@ -62,14 +63,14 @@ export function generateFallbackIdentifiers(identifier: string): string[] {
   const info = analyzeLinkIdentifier(identifier);
 
   if (info.type === 'linkId') {
-    // Si c'est un linkId, essayer sans le préfixe
-    const withoutPrefix = identifier.replace('mshy_', '');
-    if (withoutPrefix !== identifier) {
-      fallbacks.push(withoutPrefix);
+    // Si c'est un linkId (format: id.timestamp_random), essayer juste l'ID
+    const parts = identifier.split('.');
+    if (parts.length > 1 && /^[0-9a-fA-F]{24}$/.test(parts[0])) {
+      fallbacks.push(parts[0]); // Essayer avec juste le conversationShareLinkId
     }
   } else if (info.type === 'conversationShareLinkId') {
-    // Si c'est un conversationShareLinkId, essayer avec le préfixe
-    fallbacks.push(`mshy_${identifier}`);
+    // Si c'est un conversationShareLinkId, on ne peut pas reconstruire le linkId
+    // Car il nécessite le timestamp et le random qui ne sont pas disponibles
   }
 
   return fallbacks;
@@ -114,19 +115,22 @@ export function isTemporaryLinkId(identifier: string): boolean {
 }
 
 /**
- * Extrait l'ID de conversation depuis un identifiant de lien
+ * Extrait le conversationShareLinkId depuis un linkId
+ * Format linkId: conversationShareLinkId.timestamp_random
  */
-export function extractConversationId(identifier: string): string | null {
+export function extractConversationShareLinkId(identifier: string): string | null {
   const info = analyzeLinkIdentifier(identifier);
   
   if (info.type === 'linkId') {
-    // Pour les linkIds, on ne peut pas extraire directement l'ID de conversation
-    // Il faut faire une requête API
-    return null;
+    // Pour les linkIds (format: id.timestamp_random), extraire la première partie
+    const parts = identifier.split('.');
+    if (parts.length > 1 && /^[0-9a-fA-F]{24}$/.test(parts[0])) {
+      return parts[0];
+    }
   }
   
   if (info.type === 'conversationShareLinkId') {
-    // Pour les conversationShareLinkIds, c'est directement l'ID
+    // C'est déjà un conversationShareLinkId
     return identifier;
   }
   

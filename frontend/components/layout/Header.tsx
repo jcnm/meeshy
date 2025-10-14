@@ -13,6 +13,7 @@ import {
   Share2
 } from 'lucide-react';
 import { AuthMode } from '@/types';
+import { useAuth } from '@/hooks/use-auth';
 
 interface HeaderProps {
   mode?: 'landing' | 'chat' | 'default';
@@ -33,6 +34,7 @@ export function Header({
 }: HeaderProps) {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAnonymous } = useAuth();
 
   const handleAuthClick = (newMode: AuthMode) => {
     if (onAuthModeChange) {
@@ -65,14 +67,56 @@ export function Header({
 
           {/* Actions Desktop */}
           <div className="hidden md:flex items-center space-x-4">
-            {mode === 'chat' && shareLink && (
-              <Button 
-                variant="outline"
-                onClick={handleShare}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+            {/* Mode Chat */}
+            {mode === 'chat' && (
+              <>
+                {/* Bouton Share en premier */}
+                {shareLink && (
+                  <Button 
+                    variant="outline"
+                    onClick={handleShare}
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                )}
+                
+                {/* Informations utilisateur */}
+                {user && (
+                  <div className="flex items-center space-x-3 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                      {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
+                      </span>
+                      {isAnonymous && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Guest</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Boutons de connexion pour les utilisateurs anonymes */}
+                {isAnonymous && (
+                  <>
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => router.push('/login')}
+                    >
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Login
+                    </Button>
+                    <Button 
+                      onClick={() => router.push('/signin')}
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Sign Up
+                    </Button>
+                  </>
+                )}
+              </>
             )}
             
             {mode === 'landing' && (
@@ -141,15 +185,64 @@ export function Header({
         {isMobileMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col space-y-4">
-              {mode === 'chat' && shareLink && (
-                <Button 
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={handleShare}
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
+              {/* Mode Chat */}
+              {mode === 'chat' && (
+                <>
+                  {/* Informations utilisateur en mobile */}
+                  {user && (
+                    <div className="flex items-center space-x-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                        {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
+                        </span>
+                        {isAnonymous && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Guest</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {shareLink && (
+                    <Button 
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                  )}
+                  
+                  {/* Boutons de connexion pour les utilisateurs anonymes */}
+                  {isAnonymous && (
+                    <>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-start"
+                        onClick={() => {
+                          router.push('/login');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Login
+                      </Button>
+                      <Button 
+                        className="w-full justify-start"
+                        onClick={() => {
+                          router.push('/signin');
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Sign Up
+                      </Button>
+                    </>
+                  )}
+                </>
               )}
               
               {mode === 'landing' && (

@@ -35,14 +35,15 @@ export interface ConversationMessagesReturn {
 export function useConversationMessages(
   conversationId: string | null,
   currentUser: User | null,
-  options: ConversationMessagesOptions = {}
+  options: ConversationMessagesOptions & { linkId?: string } = {}
 ): ConversationMessagesReturn {
   const {
     limit = 20,
     enabled = true,
     threshold = 100,
     containerRef,
-    scrollDirection = 'up' // Par défaut: scroll vers le haut (comportement actuel)
+    scrollDirection = 'up', // Par défaut: scroll vers le haut (comportement actuel)
+    linkId // Optionnel: utilisé pour les utilisateurs anonymes
   } = options;
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -85,20 +86,39 @@ export function useConversationMessages(
 
       setError(null);
 
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
+      // Chercher le token d'authentification (auth_token ou sessionToken pour les anonymes)
+      const authToken = localStorage.getItem('auth_token');
+      const sessionToken = localStorage.getItem('anonymous_session_token');
+      
+      if (!authToken && !sessionToken) {
         throw new Error('Token d\'authentification manquant');
       }
 
       // Calculer l'offset AVANT de faire l'appel API
       const currentOffset = isLoadMore ? offsetRef.current : 0;
 
+      // Déterminer l'endpoint selon le type d'utilisateur
+      let endpoint: string;
+      const requestOptions: { headers?: Record<string, string> } = {};
+      
+      if (sessionToken && linkId) {
+        // Utilisateur anonyme : utiliser l'endpoint des liens
+        endpoint = `/api/links/${linkId}/messages`;
+        requestOptions.headers = { 'x-session-token': sessionToken };
+      } else if (authToken && conversationId) {
+        // Utilisateur authentifié : endpoint classique
+        endpoint = `/conversations/${conversationId}/messages`;
+      } else {
+        throw new Error('Configuration invalide pour charger les messages');
+      }
+
       const response = await apiService.get<{ success: boolean; data: { messages: Message[] } }>(
-        `/conversations/${conversationId}/messages`,
+        endpoint,
         {
           limit: limit.toString(),
           offset: currentOffset.toString()
-        }
+        },
+        requestOptions.headers ? { headers: requestOptions.headers } : undefined
       );
 
       const data = response.data;

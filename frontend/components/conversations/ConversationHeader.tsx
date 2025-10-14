@@ -18,7 +18,7 @@ import type {
   ThreadMember
 } from '@shared/types';
 import { ConversationParticipants } from './conversation-participants';
-import { ConversationParticipantsPopover } from './conversation-participants-popover';
+import { ConversationParticipantsDrawer } from './conversation-participants-drawer';
 import { CreateLinkButton } from './create-link-button';
 import { UserRoleEnum } from '@shared/types';
 
@@ -140,8 +140,8 @@ export function ConversationHeader({
 
       {/* Actions */}
       <div className="flex items-center gap-1 flex-shrink-0">
-        {/* Participants popover - Toujours visible (Desktop & Mobile) */}
-        <ConversationParticipantsPopover
+        {/* Participants drawer - S'ouvre depuis la gauche */}
+        <ConversationParticipantsDrawer
           conversationId={conversation.id}
           participants={conversationParticipants}
           currentUser={currentUser}
