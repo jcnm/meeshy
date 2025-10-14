@@ -97,14 +97,14 @@ cd /Users/smpceo/Documents/Services/Meeshy/meeshy
 
 # Arrêter les services Docker de développement (infrastructure uniquement)
 echo -e "${YELLOW}🛑 Arrêt des conteneurs Docker (MongoDB, Redis)...${NC}"
-docker-compose -f docker-compose.infrastructure.yml stop 2>/dev/null || true
+docker-compose -f docker-compose.local.yml stop 2>/dev/null || true
 
 # Optionnel: supprimer les conteneurs (décommentez si nécessaire)
 # echo -e "${YELLOW}🗑️  Suppression des conteneurs...${NC}"
-# docker-compose -f docker-compose.infrastructure.yml rm -f 2>/dev/null || true
+# docker-compose -f docker-compose.local.yml rm -f 2>/dev/null || true
 
 echo -e "${BLUE}📊 Statut des conteneurs Docker:${NC}"
-docker-compose -f docker-compose.infrastructure.yml ps 2>/dev/null || echo "Aucun conteneur Docker en cours"
+docker-compose -f docker-compose.local.yml ps 2>/dev/null || echo "Aucun conteneur Docker en cours"
 
 # Nettoyage des fichiers de logs (optionnel)
 echo -e "${BLUE}🧹 Nettoyage des fichiers de logs...${NC}"

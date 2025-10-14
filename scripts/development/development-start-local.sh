@@ -62,7 +62,7 @@ cleanup() {
     
     # Arrêter les services Docker
     echo -e "${YELLOW}🛑 Arrêt des services Docker (MongoDB, Redis)...${NC}"
-    docker-compose -f docker-compose.infrastructure.yml down 2>/dev/null || true
+    docker-compose -f docker-compose.local.yml down 2>/dev/null || true
     echo -e "${GREEN}✅ Services Docker arrêtés${NC}"
     
     echo ""
@@ -267,7 +267,7 @@ echo ""
 echo -e "${BLUE}🐳 Démarrage de l'infrastructure Docker (MongoDB, Redis)...${NC}"
 echo -e "${CYAN}   Note: Seuls MongoDB et Redis sont démarrés en Docker${NC}"
 echo -e "${CYAN}   Les services applicatifs seront lancés nativement${NC}"
-docker-compose -f docker-compose.infrastructure.yml up -d
+docker-compose -f docker-compose.local.yml up -d
 
 # Attendre que MongoDB soit prêt
 echo -e "${YELLOW}⏳ Attente du démarrage de MongoDB...${NC}"
