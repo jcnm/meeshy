@@ -54,6 +54,8 @@ model User {
   createdAffiliateTokens      AffiliateToken[]         @relation("AffiliateTokenCreator")
   affiliateRelations          AffiliateRelation[]      @relation("AffiliateUser")
   referredRelations           AffiliateRelation[]      @relation("ReferredUser")
+  createdTrackingLinks        TrackingLink[]           @relation("TrackingLinkCreator")
+  trackingLinkClicks          TrackingLinkClick[]      @relation("TrackingLinkClickUser")
 }
 
 /// Conversation entre utilisateurs (direct, group, public, global)
@@ -167,6 +169,7 @@ model AnonymousParticipant {
   shareLink       ConversationShareLink @relation("ShareLinkParticipants", fields: [shareLinkId], references: [id])
   conversation    Conversation          @relation(fields: [conversationId], references: [id])
   sentMessages    Message[]             @relation("AnonymousMessageSender")
+  trackingLinkClicks TrackingLinkClick[] @relation("TrackingLinkClickAnonymous")
 }
 
 /// Message dans une conversation
@@ -390,4 +393,49 @@ model AffiliateRelation {
   affiliateToken  AffiliateToken @relation(fields: [affiliateTokenId], references: [id])
   affiliateUser   User           @relation("AffiliateUser", fields: [affiliateUserId], references: [id])
   referredUser    User           @relation("ReferredUser", fields: [referredUserId], references: [id])
+}
+
+/// Lien de tracking pour compter les clics sur les liens partagés
+model TrackingLink {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  token           String   @unique // Token de 6 caractères (ex: "a1b2c3")
+  originalUrl     String   // URL originale complète
+  shortUrl        String   // URL courte générée (meeshy.me/l/<token>)
+  createdBy       String?  @db.ObjectId // Utilisateur qui a créé le lien (null si anonyme)
+  conversationId  String?  @db.ObjectId // Conversation où le lien a été partagé
+  messageId       String?  @db.ObjectId // Message contenant le lien
+  totalClicks     Int      @default(0) // Nombre total de clics
+  uniqueClicks    Int      @default(0) // Nombre de clics uniques (par IP/fingerprint)
+  isActive        Boolean  @default(true) // Le lien est-il actif
+  expiresAt       DateTime? // Date d'expiration (null = pas d'expiration)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastClickedAt   DateTime? // Date du dernier clic
+  
+  clicks          TrackingLinkClick[]
+  creator         User?    @relation("TrackingLinkCreator", fields: [createdBy], references: [id])
+}
+
+/// Clic sur un lien de tracking
+model TrackingLinkClick {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  trackingLinkId  String   @db.ObjectId
+  userId          String?  @db.ObjectId // Utilisateur connecté qui a cliqué (null si anonyme)
+  anonymousId     String?  @db.ObjectId // Participant anonyme qui a cliqué
+  ipAddress       String?  // Adresse IP du visiteur
+  country         String?  // Pays d'origine
+  city            String?  // Ville
+  region          String?  // Région
+  userAgent       String?  // User agent du navigateur
+  browser         String?  // Navigateur détecté
+  os              String?  // Système d'exploitation
+  device          String?  // Type d'appareil (mobile, desktop, tablet)
+  language        String?  // Langue du navigateur
+  referrer        String?  // Page d'origine
+  deviceFingerprint String? // Empreinte unique du device
+  clickedAt       DateTime @default(now())
+  
+  trackingLink    TrackingLink @relation(fields: [trackingLinkId], references: [id])
+  user            User?        @relation("TrackingLinkClickUser", fields: [userId], references: [id])
+  anonymousUser   AnonymousParticipant? @relation("TrackingLinkClickAnonymous", fields: [anonymousId], references: [id])
 }

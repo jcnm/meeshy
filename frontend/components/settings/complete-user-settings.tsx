@@ -74,14 +74,16 @@ export function CompleteUserSettings({ user, onUserUpdate, children }: CompleteU
   ];
 
   return (
-    <div className="w-full">
-      <ResponsiveTabs
-        items={tabItems}
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="w-full"
-        mobileBreakpoint="lg"
-      />
+    <div className="w-full space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <ResponsiveTabs
+          items={tabItems}
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+          mobileBreakpoint="lg"
+        />
+      </div>
 
       {children}
     </div>

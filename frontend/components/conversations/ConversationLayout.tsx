@@ -594,30 +594,111 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
   if (!user) return null;
 
   return (
-    <div className={cn(
-      "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100",
-      isMobile ? "min-h-screen" : "h-screen overflow-hidden"
-    )}>
-      <div className={cn(
-        isMobile ? "flex-shrink-0" : "flex-1 overflow-hidden"
-      )}>
-        <DashboardLayout 
-          title={t('conversationLayout.conversations.title')} 
-          hideHeaderOnMobile={selectedConversation ? true : false}
-          className={cn(
-            "!bg-none !bg-transparent !h-full",
-            selectedConversationId ? "!min-h-0 !max-w-none !px-0" : ""
+    <>
+      {/* Mode mobile avec conversation ouverte - Layout plein écran */}
+      {isMobile && selectedConversation ? (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-950">
+          {/* Header de conversation */}
+          <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700">
+            <ConversationHeader
+              conversation={selectedConversation}
+              currentUser={user}
+              conversationParticipants={participants}
+              typingUsers={messaging.typingUsers}
+              isMobile={isMobile}
+              onBackToList={handleBackToList}
+              onOpenDetails={() => setIsDetailsOpen(true)}
+              onParticipantRemoved={() => {}}
+              onParticipantAdded={() => {}}
+              onLinkCreated={() => {}}
+              t={t}
+              showBackButton={!!selectedConversationId}
+            />
+          </header>
+
+          {/* Zone des messages scrollable */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden bg-transparent pb-36">
+            <ConversationMessages
+              messages={messages}
+              translatedMessages={messages as any}
+              currentUser={user}
+              userLanguage={user.systemLanguage}
+              usedLanguages={usedLanguages}
+              isLoadingMessages={isLoadingMessages}
+              isLoadingMore={isLoadingMore}
+              hasMore={hasMore}
+              isMobile={isMobile}
+              conversationType={selectedConversation.type === 'anonymous' ? 'direct' : selectedConversation.type === 'broadcast' ? 'public' : selectedConversation.type as any}
+              userRole={user.role as UserRoleEnum}
+              conversationId={selectedConversation.id}
+              addTranslatingState={addTranslatingState}
+              isTranslating={isTranslating}
+              onEditMessage={async () => {}}
+              onDeleteMessage={async () => {}}
+              onReplyMessage={handleReplyMessage}
+              onNavigateToMessage={handleNavigateToMessage}
+              onLoadMore={loadMore}
+              t={t}
+            />
+          </div>
+
+          {/* Zone de saisie fixe */}
+          <div 
+            className="fixed bottom-0 left-0 right-0 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl p-4 z-[100]"
+            style={{
+              paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+            }}
+          >
+            <MessageComposer
+              ref={messageComposerRef}
+              value={newMessage}
+              onChange={handleTyping}
+              onSend={handleSendMessage}
+              selectedLanguage={selectedLanguage}
+              onLanguageChange={setSelectedLanguage}
+              placeholder={t('conversationLayout.writeMessage')}
+              onKeyPress={handleKeyPress}
+              choices={getUserLanguageChoices(user)}
+            />
+          </div>
+
+          {/* Sidebar des détails - Mobile en modal */}
+          {isDetailsOpen && (
+            <ConversationDetailsSidebar
+              conversation={selectedConversation}
+              currentUser={user}
+              messages={messages}
+              isOpen={isDetailsOpen}
+              onClose={() => setIsDetailsOpen(false)}
+            />
           )}
-        >
-        <div 
-          className={cn(
-            "flex bg-transparent conversation-layout relative z-10",
-            !selectedConversationId && "max-w-7xl mx-auto",
-            isMobile ? 'h-screen' : 'h-full'
-          )}
-          role="application"
-          aria-label={t('conversationLayout.conversations.title')}
-        >
+        </div>
+      ) : (
+        /* Mode desktop ou mobile sans conversation */
+        <div className={cn(
+          "flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100",
+          isMobile ? "min-h-screen" : "h-screen overflow-hidden"
+        )}>
+          <div className={cn(
+            isMobile ? "flex-shrink-0" : "flex-1 overflow-hidden"
+          )}>
+            <DashboardLayout 
+              title={t('conversationLayout.conversations.title')} 
+              hideHeaderOnMobile={false}
+              className={cn(
+                "!bg-none !bg-transparent !h-full",
+                selectedConversationId ? "!min-h-0 !max-w-none !px-0" : ""
+              )}
+            >
+            <div 
+              className={cn(
+                "flex bg-transparent conversation-layout relative z-10",
+                !selectedConversationId && "max-w-7xl mx-auto",
+                isMobile ? 'h-[calc(100vh-4rem)]' : 'h-full'
+              )}
+              role="application"
+              aria-label={t('conversationLayout.conversations.title')}
+            >
         {/* Liste des conversations - Sidebar gauche - Masquée si conversation sélectionnée via URL */}
         {!selectedConversationId && (
           <aside 
@@ -625,7 +706,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
               "flex-shrink-0 bg-white dark:bg-gray-950 border-r-2 border-gray-200 dark:border-gray-800 transition-all duration-300 shadow-lg",
               isMobile ? (
                 showConversationList 
-                  ? "fixed inset-0 z-40 w-full h-screen" 
+                  ? "fixed top-16 left-0 right-0 bottom-0 z-40 w-full" 
                   : "hidden"
               ) : "relative w-80 lg:w-96 h-full"
             )}
@@ -651,29 +732,26 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           </aside>
         )}
 
-        {/* Zone de conversation principale */}
+        {/* Zone de conversation principale - Desktop uniquement */}
         <main 
           className={cn(
             "flex flex-col min-w-0",
-            selectedConversationId ? "w-full h-full" : "flex-1 h-full",
-            isMobile && showConversationList && "hidden"
+            selectedConversationId ? "w-full h-full" : "flex-1 h-full"
           )}
           role="main"
           aria-label={selectedConversation ? t('conversationLayout.conversationWith', { name: selectedConversation.title }) : t('conversationLayout.selectConversation')}
         >
           
           {selectedConversation ? (
-            <div 
-              className="flex flex-col w-full h-full bg-white dark:bg-gray-950 shadow-xl"
-            >
+            <div className="flex flex-col w-full h-full bg-white dark:bg-gray-950 shadow-xl">
               {/* Header de conversation */}
-              <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md relative border-b-2 border-gray-200 dark:border-gray-700 z-10" role="banner">
+              <header className="flex-shrink-0 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-md border-b-2 border-gray-200 dark:border-gray-700 relative z-10" role="banner">
                 <ConversationHeader
                   conversation={selectedConversation}
                   currentUser={user}
                   conversationParticipants={participants}
                   typingUsers={messaging.typingUsers}
-                  isMobile={isMobile}
+                  isMobile={false}
                   onBackToList={handleBackToList}
                   onOpenDetails={() => setIsDetailsOpen(true)}
                   onParticipantRemoved={() => {}}
@@ -686,10 +764,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
 
               {/* Zone des messages */}
               <div 
-                className={cn(
-                  "flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950",
-                  isMobile && "pb-32" // Espace pour la zone de saisie sur mobile
-                )}
+                className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-900/50 dark:to-gray-950 pb-4"
                 role="region"
                 aria-live="polite"
                 aria-label={t('conversationLayout.messagesList')}
@@ -703,7 +778,7 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                   isLoadingMessages={isLoadingMessages}
                   isLoadingMore={isLoadingMore}
                   hasMore={hasMore}
-                  isMobile={isMobile}
+                  isMobile={false}
                   conversationType={selectedConversation.type === 'anonymous' ? 'direct' : selectedConversation.type === 'broadcast' ? 'public' : selectedConversation.type as any}
                   userRole={user.role as UserRoleEnum}
                   conversationId={selectedConversation.id}
@@ -718,21 +793,9 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
                 />
               </div>
 
-              {/* Zone de composition - Moderne et élégante */}
-              <div 
-                className={cn(
-                  "z-20 bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl",
-                  isMobile 
-                    ? "fixed bottom-0 left-0 right-0 w-full z-[9999] p-4" 
-                    : "sticky bottom-0 p-6"
-                )}
-                style={isMobile ? {
-                  paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
-                } : undefined}
-              >
-                <div className={cn(
-                  isMobile ? "w-full" : "max-w-5xl mx-auto"
-                )}>
+              {/* Zone de composition - Desktop */}
+              <div className="bg-white/98 dark:bg-gray-950/98 backdrop-blur-xl border-t-2 border-gray-200 dark:border-gray-700 shadow-2xl sticky bottom-0 p-6 z-20">
+                <div className="max-w-5xl mx-auto">
                   <MessageComposer
                     ref={messageComposerRef}
                     value={newMessage}
@@ -759,8 +822,8 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
           )}
         </main>
 
-        {/* Sidebar des détails - Desktop seulement, positionnée à l'intérieur de main */}
-        {!isMobile && selectedConversation && isDetailsOpen && (
+        {/* Sidebar des détails - Desktop seulement */}
+        {selectedConversation && isDetailsOpen && (
           <ConversationDetailsSidebar
             conversation={selectedConversation}
             currentUser={user}
@@ -771,39 +834,30 @@ export function ConversationLayout({ selectedConversationId }: ConversationLayou
         )}
       </div>
 
-      {/* Modales */}
-      <CreateConversationModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        currentUser={user}
-        onConversationCreated={(id, conv) => {
-          setIsCreateModalOpen(false);
-          if (conv) {
-            setConversations(prev => [conv, ...prev]);
-            handleSelectConversation(conv);
-          }
-        }}
-      />
+            {/* Modales */}
+            <CreateConversationModal
+              isOpen={isCreateModalOpen}
+              onClose={() => setIsCreateModalOpen(false)}
+              currentUser={user}
+              onConversationCreated={(id, conv) => {
+                setIsCreateModalOpen(false);
+                if (conv) {
+                  setConversations(prev => [conv, ...prev]);
+                  handleSelectConversation(conv);
+                }
+              }}
+            />
+            </DashboardLayout>
+          </div>
 
-      {/* Sidebar des détails - Mobile en modal */}
-      {isMobile && selectedConversation && (
-        <ConversationDetailsSidebar
-          conversation={selectedConversation}
-          currentUser={user}
-          messages={messages}
-          isOpen={isDetailsOpen}
-          onClose={() => setIsDetailsOpen(false)}
-        />
-      )}
-        </DashboardLayout>
-      </div>
-
-      {/* Footer - En bas de la page, dans le gradient bleu - Toujours visible sur desktop sauf mobile */}
-      {!isMobile && (
-        <div className="relative z-20 flex-shrink-0">
-          <Footer />
+          {/* Footer - En bas de la page, dans le gradient bleu - Desktop seulement */}
+          {!isMobile && (
+            <div className="relative z-20 flex-shrink-0">
+              <Footer />
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 }

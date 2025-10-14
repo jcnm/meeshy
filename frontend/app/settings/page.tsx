@@ -6,8 +6,12 @@ import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { CompleteUserSettings } from '@/components/settings/complete-user-settings';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { Footer } from '@/components/layout/Footer';
 import { useI18n } from '@/hooks/useI18n';
 import { toast } from 'sonner';
+import { Settings as SettingsIcon, User as UserIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+
 export default function SettingsPage() {
   const router = useRouter();
   const { t } = useI18n('settings');
@@ -95,7 +99,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">{t('loadingSettings')}</p>
@@ -109,16 +113,48 @@ export default function SettingsPage() {
   }
 
   return (
-    <DashboardLayout title={t('title')}>
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">{t('pageTitle', { username: currentUser?.username })}</h1>
+    <DashboardLayout title={t('title')} className="!h-auto flex flex-col !max-w-none">
+      {/* Hero Section */}
+      <section className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b dark:border-gray-700 shadow-sm -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+        <div className="w-full py-6 lg:py-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+                <SettingsIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
+                  {t('title')}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  {t('pageTitle', { username: currentUser?.username })}
+                </p>
+              </div>
+            </div>
+            <Badge variant="secondary" className="flex items-center gap-2 px-4 py-2">
+              <UserIcon className="h-4 w-4" />
+              <span>{currentUser?.username}</span>
+            </Badge>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
+            {t('subtitle') || 'Gérez vos préférences de compte, de langue et de confidentialité'}
+          </p>
         </div>
-        
-        <CompleteUserSettings 
-          user={currentUser}
-          onUserUpdate={handleUserUpdate}
-        />
+      </section>
+
+      {/* Settings Content */}
+      <section className="py-6 lg:py-8 flex-1">
+        <div className="w-full">
+          <CompleteUserSettings 
+            user={currentUser}
+            onUserUpdate={handleUserUpdate}
+          />
+        </div>
+      </section>
+
+      {/* Footer pleine largeur */}
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8 mt-auto">
+        <Footer />
       </div>
     </DashboardLayout>
   );

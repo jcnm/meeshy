@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { TranslationService } from '../services/TranslationService';
+import { TrackingLinkService } from '../services/TrackingLinkService';
 import { conversationStatsService } from '../services/ConversationStatsService';
 import { z } from 'zod';
 import { UserRoleEnum } from '../../shared/types';
@@ -278,6 +279,7 @@ export async function conversationRoutes(fastify: FastifyInstance) {
   // Récupérer prisma et le service de traduction décorés par le serveur
   const prisma = fastify.prisma;
   const translationService: TranslationService = (fastify as any).translationService;
+  const trackingLinkService = new TrackingLinkService(prisma);
   
   // Middleware d'authentification optionnel pour les conversations
   const optionalAuth = createUnifiedAuthMiddleware(prisma, { 
@@ -1144,12 +1146,21 @@ export async function conversationRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Créer le message
+      // ÉTAPE 1: Traiter les liens dans le message AVANT la sauvegarde
+      console.log('[CONVERSATION] Processing links in message before saving...');
+      const { processedContent, trackingLinks } = await trackingLinkService.processMessageLinks({
+        content: content.trim(),
+        conversationId,
+        createdBy: userId
+      });
+      console.log(`[CONVERSATION] Processed content: ${trackingLinks.length} tracking link(s) created`);
+
+      // ÉTAPE 2: Créer le message avec le contenu transformé
       const message = await prisma.message.create({
         data: {
           conversationId: conversationId, // Utiliser l'ID résolu
           senderId: userId,
-          content: content.trim(),
+          content: processedContent, // Utiliser le contenu avec les liens remplacés par mshy://<token>
           originalLanguage,
           messageType,
           replyToId
@@ -1178,6 +1189,13 @@ export async function conversationRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // ÉTAPE 3: Mettre à jour les messageIds des TrackingLinks
+      if (trackingLinks.length > 0) {
+        const tokens = trackingLinks.map(link => link.token);
+        await trackingLinkService.updateTrackingLinksMessageId(tokens, message.id);
+        console.log(`[CONVERSATION] Updated messageId for ${tokens.length} tracking link(s)`);
+      }
 
       // Mettre à jour le timestamp de la conversation
       await prisma.conversation.update({

@@ -16,7 +16,10 @@ import {
   UserPlus,
   Link as LinkIcon,
   ChevronDown,
-  Shield
+  Shield,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -27,6 +30,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -34,6 +38,7 @@ import { User } from '@/types';
 import { buildApiUrl, API_ENDPOINTS } from '@/lib/config';
 import { useUser, useIsAuthChecking } from '@/stores';
 import { useAuth } from '@/hooks/use-auth';
+import { useAppStore } from '@/stores/app-store';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -57,6 +62,7 @@ export function DashboardLayout({
   const { t } = useI18n('common');
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const { theme, setTheme } = useAppStore();
 
   // Détection mobile
   useEffect(() => {
@@ -111,10 +117,10 @@ export function DashboardLayout({
 
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('auth.checking')}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t('auth.checking')}</p>
         </div>
       </div>
     );
@@ -131,10 +137,10 @@ export function DashboardLayout({
       className.includes('!h-full') ? 'h-full' : 
       className.includes('!h-auto') ? 'min-h-0' : 
       'min-h-screen'
-    } bg-gradient-to-br from-blue-50 to-indigo-100 ${className}`}>
+    } bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-950 dark:to-gray-900 ${className}`}>
       {/* Header fixe - masqué sur mobile si demandé */}
       {!(isMobile && hideHeaderOnMobile) && (
-        <header className="fixed top-0 left-0 right-0 z-[50] bg-white shadow-sm border-b">
+        <header className="fixed top-0 left-0 right-0 z-[50] bg-white dark:bg-gray-900 shadow-sm dark:shadow-gray-900/50 border-b dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo et titre */}
@@ -146,12 +152,12 @@ export function DashboardLayout({
                 <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <MessageSquare className="h-5 w-5 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 hidden md:inline">Meeshy</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white hidden md:inline">Meeshy</h1>
               </div>
               {title && (
                 <div className="hidden md:block">
-                  <span className="text-gray-400 mx-2">/</span>
-                  <span className="text-lg font-medium text-gray-700">{title}</span>
+                  <span className="text-gray-400 dark:text-gray-600 mx-2">/</span>
+                  <span className="text-lg font-medium text-gray-700 dark:text-gray-300">{title}</span>
                 </div>
               )}
             </div>
@@ -160,13 +166,13 @@ export function DashboardLayout({
             {!hideSearch && (
               <div className="flex-1 max-w-lg mx-8">
                 <form onSubmit={handleSearch} className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <Input
                     type="text"
                     placeholder={t('header.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-full"
+                    className="pl-10 w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                 </form>
               </div>
@@ -180,20 +186,20 @@ export function DashboardLayout({
               {/* Menu déroulant utilisateur */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-100">
+                  <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-100 dark:hover:bg-gray-800">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar} alt={user.firstName} />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
                         {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
                         {user.firstName} {user.lastName}
                       </p>
-                      <p className="text-xs text-gray-500">@{user.username}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">@{user.username}</p>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-gray-400 hidden md:block" />
+                    <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500 hidden md:block" />
                   </Button>
                 </DropdownMenuTrigger>
                 
@@ -248,7 +254,29 @@ export function DashboardLayout({
                   
                   <DropdownMenuSeparator />
                   
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  {/* Options de thème */}
+                  <DropdownMenuLabel className="text-xs text-gray-500 dark:text-gray-400">
+                    Theme
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setTheme('light')}>
+                    <Sun className="mr-2 h-4 w-4" />
+                    <span>Light</span>
+                    {theme === 'light' && <span className="ml-auto">✓</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')}>
+                    <Moon className="mr-2 h-4 w-4" />
+                    <span>Dark</span>
+                    {theme === 'dark' && <span className="ml-auto">✓</span>}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('auto')}>
+                    <Monitor className="mr-2 h-4 w-4" />
+                    <span>System</span>
+                    {theme === 'auto' && <span className="ml-auto">✓</span>}
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>{t('navigation.logout')}</span>
                   </DropdownMenuItem>

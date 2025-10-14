@@ -16,11 +16,11 @@
   animation: bubble-slide-in 0.4s ease-out;
 }
 
-/* Animation au survol des bulles */
+/* Animation au survol des bulles - Ombres désactivées */
 .bubble-message:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s ease;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
 /* Animation pour les icônes d'action */

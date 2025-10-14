@@ -21,11 +21,11 @@ exports.$Enums = {}
 
 /**
  * Prisma Client JS version: 6.13.0
- * Query Engine version: 393aa359c9ad4a4bb28630fb5613f9c281cde053
+ * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
  */
 Prisma.prismaVersion = {
   client: "6.13.0",
-  engine: "393aa359c9ad4a4bb28630fb5613f9c281cde053"
+  engine: "361e86d0ea4987e9f53a565309b3eed797a6bcbd"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -386,6 +386,42 @@ exports.Prisma.AffiliateRelationScalarFieldEnum = {
   completedAt: 'completedAt'
 };
 
+exports.Prisma.TrackingLinkScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  originalUrl: 'originalUrl',
+  shortUrl: 'shortUrl',
+  createdBy: 'createdBy',
+  conversationId: 'conversationId',
+  messageId: 'messageId',
+  totalClicks: 'totalClicks',
+  uniqueClicks: 'uniqueClicks',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastClickedAt: 'lastClickedAt'
+};
+
+exports.Prisma.TrackingLinkClickScalarFieldEnum = {
+  id: 'id',
+  trackingLinkId: 'trackingLinkId',
+  userId: 'userId',
+  anonymousId: 'anonymousId',
+  ipAddress: 'ipAddress',
+  country: 'country',
+  city: 'city',
+  region: 'region',
+  userAgent: 'userAgent',
+  browser: 'browser',
+  os: 'os',
+  device: 'device',
+  language: 'language',
+  referrer: 'referrer',
+  deviceFingerprint: 'deviceFingerprint',
+  clickedAt: 'clickedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -415,7 +451,9 @@ exports.Prisma.ModelName = {
   UserPreference: 'UserPreference',
   ConversationPreference: 'ConversationPreference',
   AffiliateToken: 'AffiliateToken',
-  AffiliateRelation: 'AffiliateRelation'
+  AffiliateRelation: 'AffiliateRelation',
+  TrackingLink: 'TrackingLink',
+  TrackingLinkClick: 'TrackingLinkClick'
 };
 
 /**

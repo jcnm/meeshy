@@ -148,14 +148,14 @@ function LandingPageContent() {
           </Badge>
           
           {/* Titre principal impactant */}
-          <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white dark:text-white mb-8 leading-tight">
+          <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-8 leading-tight">
             {t('hero.title')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
               {t('hero.titleHighlight')}
             </span>
           </h1>
           
-          <p className="text-xl text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-8 leading-relaxed">
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">
             {t('hero.subtitle')}
           </p>
 
@@ -202,7 +202,7 @@ function LandingPageContent() {
                 
                 {/* Si l'utilisateur a une conversation en cours, afficher le bouton de reprise */}
                 {anonymousChatLink && (
-                  <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                     <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">{tAuth('joinConversation.ongoingConversation')}</h4>
                     <p className="text-sm text-green-700 dark:text-green-300 mb-3">{tAuth('joinConversation.ongoingDescription')}</p>
                     <Button 
@@ -241,20 +241,20 @@ function LandingPageContent() {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto">
             <div className="mb-8">
-              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white dark:text-white mb-6">
+              <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-6">
                 {t('mission.title')}
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto mb-8"></div>
             </div>
             
-            <div className="bg-white dark:bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-xl p-8 lg:p-12 mb-8">
-              <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white dark:text-white mb-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/30 p-8 lg:p-12 mb-8">
+              <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6">
                 {t('mission.slogan')}
               </h3>
-              <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-8 leading-relaxed font-medium">
+              <p className="text-xl lg:text-2xl text-gray-700 dark:text-gray-300 mb-8 leading-relaxed font-medium">
                 {t('mission.tagline')}
               </p>
-              <p className="text-lg text-gray-600 dark:text-gray-400 dark:text-gray-400 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
                 {t('mission.description')}
               </p>
             </div>
@@ -271,21 +271,21 @@ function LandingPageContent() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white dark:bg-gray-800 dark:bg-gray-800 py-16 lg:py-24">
+      <section className="bg-white dark:bg-gray-900 py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white dark:text-white mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {t('features.title')}
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               {t('features.subtitle')}
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
-                <Globe className="h-12 w-12 text-blue-600 mb-4" />
+                <Globe className="h-12 w-12 text-blue-600 dark:text-blue-400 mb-4" />
                 <CardTitle>{t('features.universalTranslation.title')}</CardTitle>
                 <CardDescription>
                   {t('features.universalTranslation.description')}
@@ -293,9 +293,9 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
-                <Languages className="h-12 w-12 text-violet-600 mb-4" />
+                <Languages className="h-12 w-12 text-violet-600 dark:text-violet-400 mb-4" />
                 <CardTitle>{t('features.autoDetection.title')}</CardTitle>
                 <CardDescription>
                   {t('features.autoDetection.description')}
@@ -303,9 +303,9 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
-                <Shield className="h-12 w-12 text-green-600 mb-4" />
+                <Shield className="h-12 w-12 text-green-600 dark:text-green-400 mb-4" />
                 <CardTitle>{t('features.privacy.title')}</CardTitle>
                 <CardDescription>
                   {t('features.privacy.description')}
@@ -313,9 +313,9 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
-                <Zap className="h-12 w-12 text-yellow-600 mb-4" />
+                <Zap className="h-12 w-12 text-yellow-600 dark:text-yellow-400 mb-4" />
                 <CardTitle>{t('features.realtime.title')}</CardTitle>
                 <CardDescription>
                   {t('features.realtime.description')}
@@ -323,7 +323,7 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
                 <Users className="h-12 w-12 text-purple-600 dark:text-purple-400 mb-4" />
                 <CardTitle>{t('features.groupChats.title')}</CardTitle>
@@ -333,9 +333,9 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
-                <Languages className="h-12 w-12 text-indigo-600 mb-4" />
+                <Languages className="h-12 w-12 text-indigo-600 dark:text-indigo-400 mb-4" />
                 <CardTitle>{t('features.multiLanguage.title')}</CardTitle>
                 <CardDescription>
                   {t('features.multiLanguage.description')}
@@ -343,7 +343,7 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
                 <MessageSquare className="h-12 w-12 text-red-600 dark:text-red-400 mb-4" />
                 <CardTitle>{t('features.modernInterface.title')}</CardTitle>
@@ -353,9 +353,9 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
-                <Building2 className="h-12 w-12 text-orange-600 mb-4" />
+                <Building2 className="h-12 w-12 text-orange-600 dark:text-orange-400 mb-4" />
                 <CardTitle>{t('features.internationalColleagues.title')}</CardTitle>
                 <CardDescription>
                   {t('features.internationalColleagues.description')}
@@ -363,9 +363,9 @@ function LandingPageContent() {
               </CardHeader>
             </Card>
             
-            <Card className="border-0 shadow-lg">
+            <Card className="border-0 shadow-lg dark:bg-gray-800 dark:shadow-gray-900/30">
               <CardHeader>
-                <GraduationCap className="h-12 w-12 text-teal-600 mb-4" />
+                <GraduationCap className="h-12 w-12 text-teal-600 dark:text-teal-400 mb-4" />
                 <CardTitle>{t('features.multilingualClassrooms.title')}</CardTitle>
                 <CardDescription>
                   {t('features.multilingualClassrooms.description')}

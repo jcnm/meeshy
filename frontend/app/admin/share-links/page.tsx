@@ -297,29 +297,29 @@ export default function AdminShareLinksPage() {
                   <div key={shareLink.id} className="border rounded-lg p-6 hover:bg-gray-50">
                     <div className="space-y-4">
                       {/* En-tête avec statut et actions */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-2 flex-wrap">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate max-w-md">
                               {shareLink.name || shareLink.identifier || shareLink.linkId}
                             </h3>
                             {shareLink.isActive ? (
-                              <Badge variant="default" className="bg-green-100 text-green-800">
+                              <Badge variant="default" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 flex-shrink-0">
                                 Actif
                               </Badge>
                             ) : (
-                              <Badge variant="secondary">Inactif</Badge>
+                              <Badge variant="secondary" className="flex-shrink-0">Inactif</Badge>
                             )}
                             {isExpired(shareLink.expiresAt) && (
-                              <Badge variant="destructive">Expiré</Badge>
+                              <Badge variant="destructive" className="flex-shrink-0">Expiré</Badge>
                             )}
                           </div>
 
                           {shareLink.description && (
-                            <p className="text-gray-600 mb-3">{shareLink.description}</p>
+                            <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{shareLink.description}</p>
                           )}
 
-                          <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
                             <div className="flex items-center space-x-1">
                               <Link className="h-4 w-4" />
                               <span className="font-mono text-xs">{shareLink.linkId}</span>
@@ -341,30 +341,31 @@ export default function AdminShareLinksPage() {
                           </div>
                         </div>
 
-                        <div className="flex space-x-2 ml-4">
+                        {/* Boutons d'action toujours visibles */}
+                        <div className="flex space-x-2 flex-shrink-0">
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => copyToClipboard(shareLink.linkId)}
                           >
-                            <Copy className="h-4 w-4 mr-1" />
-                            Copier
+                            <Copy className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Copier</span>
                           </Button>
                           <Button variant="outline" size="sm">
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            Ouvrir
+                            <ExternalLink className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Ouvrir</span>
                           </Button>
                           <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-1" />
-                            Voir
+                            <Eye className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Voir</span>
                           </Button>
                           <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 mr-1" />
-                            Modifier
+                            <Edit className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Modifier</span>
                           </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Supprimer
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 dark:text-red-400">
+                            <Trash2 className="h-4 w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Supprimer</span>
                           </Button>
                         </div>
                       </div>

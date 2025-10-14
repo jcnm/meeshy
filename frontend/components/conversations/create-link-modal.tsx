@@ -1365,19 +1365,19 @@ export function CreateLinkModalV2({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[90vw] max-h-[90vh] p-0 gap-0 flex flex-col sm:max-w-2xl sm:w-[85vw] sm:max-h-[85vh]">
-        <DialogHeader className="flex-shrink-0 bg-background border-b px-6 py-4">
-          <DialogTitle className="text-xl font-bold flex items-center">
-            <Link2 className="h-5 w-5 mr-2" />
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[95vh] p-0 gap-0 flex flex-col sm:max-w-2xl sm:w-[90vw] sm:max-h-[90vh] md:w-[85vw] md:max-h-[85vh]">
+        <DialogHeader className="flex-shrink-0 bg-background border-b px-3 py-3 sm:px-6 sm:py-4">
+          <DialogTitle className="text-base sm:text-xl font-bold flex items-center">
+            <Link2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             Créer un lien de partage
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Créez un lien de partage pour inviter des personnes à rejoindre une conversation
           </DialogDescription>
         </DialogHeader>
 
         {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto px-6">
+        <div className="flex-1 overflow-y-auto px-3 sm:px-6">
           {/* Progress indicator - Timeline horizontale */}
           <div className="py-6">
             <div className="flex items-center justify-between">
@@ -1564,7 +1564,7 @@ export function CreateLinkModalV2({
 
         {/* Navigation buttons - masqués quand la synthèse est affichée */}
         {!generatedLink && (
-          <div className="flex-shrink-0 bg-background border-t px-6 py-4">
+          <div className="flex-shrink-0 bg-background border-t px-3 py-3 sm:px-6 sm:py-4">
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <div className="flex space-x-2 w-full sm:w-auto">
                 {currentStep > 1 && (
@@ -1572,9 +1572,9 @@ export function CreateLinkModalV2({
                     type="button"
                     variant="outline"
                     onClick={prevStep}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
                   >
-                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     {t('createLinkModal.navigation.previous')}
                   </Button>
                 )}
@@ -1586,19 +1586,19 @@ export function CreateLinkModalV2({
                     type="button"
                     onClick={nextStep}
                     disabled={!canProceedToNext()}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
                   >
                     {t('createLinkModal.navigation.next')}
-                    <ChevronRight className="h-4 w-4 ml-2" />
+                    <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2" />
                   </Button>
                 ) : (
                   <Button
                     type="button"
                     onClick={generateLink}
                     disabled={!canCreateLink() || isCreating}
-                    className="flex items-center w-full sm:w-auto"
+                    className="flex items-center w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-10"
                   >
-                    <Link2 className="h-4 w-4 mr-2" />
+                    <Link2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     {isCreating ? t('createLinkModal.navigation.generating') : t('createLinkModal.navigation.createLink')}
                   </Button>
                 )}

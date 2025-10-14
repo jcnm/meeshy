@@ -135,13 +135,71 @@ function getTranslation(text: string, sourceLang: string, targetLang: string): s
 async function main() {
   console.log('🌱 Début du seeding...');
 
-  // Nettoyer les données existantes
-  console.log('🧹 Nettoyage des données existantes...');
-  await prisma.messageTranslation.deleteMany();
-  await prisma.message.deleteMany();
-  await prisma.conversationMember.deleteMany();
-  await prisma.conversation.deleteMany();
-  await prisma.user.deleteMany();
+  // Vérifier si les données de seed existent déjà
+  console.log('🔍 Vérification des données existantes...');
+  const existingUsers = await prisma.user.findMany({
+    where: {
+      email: {
+        in: [
+          'alice@meeshy.com',
+          'bob@meeshy.com',
+          'carlos@meeshy.com',
+          'dieter@meeshy.com',
+          'li@meeshy.com',
+          'yuki@meeshy.com',
+          'maria@meeshy.com'
+        ]
+      }
+    }
+  });
+
+  if (existingUsers.length > 0) {
+    console.log(`⚠️  ${existingUsers.length} utilisateurs seed détectés`);
+    console.log('🧹 Nettoyage sélectif des données de seed...');
+    
+    // Récupérer les IDs des utilisateurs seed
+    const seedUserIds = existingUsers.map(u => u.id);
+    
+    // Récupérer les conversations où les utilisateurs seed sont membres
+    const seedConversations = await prisma.conversationMember.findMany({
+      where: { userId: { in: seedUserIds } },
+      select: { conversationId: true }
+    });
+    const seedConversationIds = [...new Set(seedConversations.map(cm => cm.conversationId))];
+    
+    // Supprimer les traductions des messages de seed
+    await prisma.messageTranslation.deleteMany({
+      where: {
+        message: {
+          conversationId: { in: seedConversationIds }
+        }
+      }
+    });
+    
+    // Supprimer les messages de seed
+    await prisma.message.deleteMany({
+      where: { conversationId: { in: seedConversationIds } }
+    });
+    
+    // Supprimer les membres de conversation de seed
+    await prisma.conversationMember.deleteMany({
+      where: { userId: { in: seedUserIds } }
+    });
+    
+    // Supprimer la conversation "meeshy" si elle existe
+    await prisma.conversation.deleteMany({
+      where: { identifier: 'meeshy' }
+    });
+    
+    // Supprimer les utilisateurs de seed
+    await prisma.user.deleteMany({
+      where: { id: { in: seedUserIds } }
+    });
+    
+    console.log('✅ Données de seed nettoyées');
+  } else {
+    console.log('✅ Aucune donnée de seed existante détectée');
+  }
 
   // ================== CRÉER 7 UTILISATEURS MULTILINGUES ==================
   

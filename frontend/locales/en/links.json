@@ -109,6 +109,90 @@
       "toggleFailed": "Error updating link status",
       "extendFailed": "Error extending link",
       "updateFailed": "Error updating link"
+    },
+    "durationOptions": {
+      "1": {
+        "label": "1 day",
+        "description": "Link expires in 1 day"
+      },
+      "3": {
+        "label": "3 days",
+        "description": "Link expires in 3 days"
+      },
+      "7": {
+        "label": "7 days",
+        "description": "Link expires in 1 week"
+      },
+      "14": {
+        "label": "14 days",
+        "description": "Link expires in 2 weeks"
+      },
+      "30": {
+        "label": "30 days",
+        "description": "Link expires in 1 month"
+      },
+      "60": {
+        "label": "60 days",
+        "description": "Link expires in 2 months"
+      },
+      "90": {
+        "label": "90 days",
+        "description": "Link expires in 3 months"
+      },
+      "180": {
+        "label": "180 days",
+        "description": "Link expires in 6 months"
+      },
+      "365": {
+        "label": "365 days",
+        "description": "Link expires in 1 year"
+      },
+      "730": {
+        "label": "730 days",
+        "description": "Link expires in 2 years"
+      }
+    },
+    "limitOptions": {
+      "unlimited": {
+        "label": "Unlimited",
+        "description": "No limit on number of uses"
+      },
+      "5": {
+        "label": "5 uses",
+        "description": "Link can be used 5 times"
+      },
+      "10": {
+        "label": "10 uses",
+        "description": "Link can be used 10 times"
+      },
+      "25": {
+        "label": "25 uses",
+        "description": "Link can be used 25 times"
+      },
+      "50": {
+        "label": "50 uses",
+        "description": "Link can be used 50 times"
+      },
+      "100": {
+        "label": "100 uses",
+        "description": "Link can be used 100 times"
+      },
+      "250": {
+        "label": "250 uses",
+        "description": "Link can be used 250 times"
+      },
+      "500": {
+        "label": "500 uses",
+        "description": "Link can be used 500 times"
+      },
+      "1000": {
+        "label": "1000 uses",
+        "description": "Link can be used 1000 times"
+      },
+      "5000": {
+        "label": "5000 uses",
+        "description": "Link can be used 5000 times"
+      }
     }
   }
 }

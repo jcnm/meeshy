@@ -264,13 +264,24 @@ export function ConversationList({
   // Logs désactivés pour éviter la répétition excessive
 
   return (
-    <div className="flex flex-col h-full max-h-full bg-card conversation-list-container overflow-hidden">
-      {/* Header fixe */}
-      <div className="flex-shrink-0 p-4 border-b conversation-list-header">
+    <div className="flex flex-col h-full max-h-full bg-card conversation-list-container">
+      {/* Header de la liste des conversations */}
+      <div className="flex-shrink-0 p-4 border-b bg-card z-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{t('title')}</h2>
           
           <div className="flex items-center gap-2">
+            {/* Bouton créer nouvelle conversation */}
+            <Button
+              onClick={onCreateConversation}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title={t('createNewConversation')}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            
             {/* Bouton créer lien */}
             <CreateLinkButton
               onLinkCreated={onLinkCreated}
@@ -298,7 +309,7 @@ export function ConversationList({
       </div>
 
       {/* Onglets fixes */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 bg-card">
         <Tabs value={activeTab} onValueChange={(v) => {
           console.log('[ConversationList] Changement onglet:', { from: activeTab, to: v });
           setActiveTab(v as 'public' | 'private');
@@ -314,8 +325,8 @@ export function ConversationList({
         </Tabs>
       </div>
 
-      {/* Contenu scrollable - en dehors des Tabs pour éviter les conflits */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      {/* Contenu scrollable */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -334,50 +345,44 @@ export function ConversationList({
             </p>
           </div>
         ) : (
-          <div 
-            ref={scrollContainerRef}
-            className="h-full overflow-y-auto conversation-list-scroll conversation-scroll"
-          >
-            <div className="px-4 py-2 space-y-1">
-              {currentConversations.map((conversation) => (
-                <ConversationItem
-                  key={conversation.id}
-                  conversation={conversation}
-                  isSelected={selectedConversation?.id === conversation.id}
-                  currentUser={currentUser}
-                  onClick={() => onSelectConversation(conversation)}
-                />
-              ))}
-              
-              {/* Indicateur de chargement de plus de conversations */}
-              {isLoadingMore && (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    {t('loadingMore') || 'Chargement...'}
-                  </span>
-                </div>
-              )}
-              
-              {/* Trigger pour le chargement infini - invisible mais détecté */}
-              {hasMore && !isLoadingMore && (
-                <div 
-                  ref={loadMoreTriggerRef}
-                  className="h-4 w-full"
-                  aria-hidden="true"
-                />
-              )}
-            </div>
+          <div className="px-4 py-2 space-y-1">
+            {currentConversations.map((conversation) => (
+              <ConversationItem
+                key={conversation.id}
+                conversation={conversation}
+                isSelected={selectedConversation?.id === conversation.id}
+                currentUser={currentUser}
+                onClick={() => onSelectConversation(conversation)}
+              />
+            ))}
+            
+            {/* Indicateur de chargement de plus de conversations */}
+            {isLoadingMore && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {t('loadingMore') || 'Chargement...'}
+                </span>
+              </div>
+            )}
+            
+            {/* Trigger pour le chargement infini - invisible mais détecté */}
+            {hasMore && !isLoadingMore && (
+              <div 
+                ref={loadMoreTriggerRef}
+                className="h-4 w-full"
+                aria-hidden="true"
+              />
+            )}
           </div>
         )}
       </div>
 
-      {/* Bouton de création toujours visible en bas */}
-      <div className="flex-shrink-0 p-4 border-t bg-card/95 backdrop-blur-sm">
+      {/* Bouton de création en bas */}
+      <div className="flex-shrink-0 p-4 border-t bg-card">
         <Button
           onClick={onCreateConversation}
-          className="w-full flex items-center justify-center gap-2 h-12"
-          size="default"
+          className="w-full flex items-center justify-center gap-2 h-11 text-sm font-medium"
         >
           <Plus className="h-5 w-5" />
           {t('createNewConversation')}

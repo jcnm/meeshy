@@ -386,6 +386,42 @@ exports.Prisma.AffiliateRelationScalarFieldEnum = {
   completedAt: 'completedAt'
 };
 
+exports.Prisma.TrackingLinkScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  originalUrl: 'originalUrl',
+  shortUrl: 'shortUrl',
+  createdBy: 'createdBy',
+  conversationId: 'conversationId',
+  messageId: 'messageId',
+  totalClicks: 'totalClicks',
+  uniqueClicks: 'uniqueClicks',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastClickedAt: 'lastClickedAt'
+};
+
+exports.Prisma.TrackingLinkClickScalarFieldEnum = {
+  id: 'id',
+  trackingLinkId: 'trackingLinkId',
+  userId: 'userId',
+  anonymousId: 'anonymousId',
+  ipAddress: 'ipAddress',
+  country: 'country',
+  city: 'city',
+  region: 'region',
+  userAgent: 'userAgent',
+  browser: 'browser',
+  os: 'os',
+  device: 'device',
+  language: 'language',
+  referrer: 'referrer',
+  deviceFingerprint: 'deviceFingerprint',
+  clickedAt: 'clickedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -415,7 +451,9 @@ exports.Prisma.ModelName = {
   UserPreference: 'UserPreference',
   ConversationPreference: 'ConversationPreference',
   AffiliateToken: 'AffiliateToken',
-  AffiliateRelation: 'AffiliateRelation'
+  AffiliateRelation: 'AffiliateRelation',
+  TrackingLink: 'TrackingLink',
+  TrackingLinkClick: 'TrackingLinkClick'
 };
 
 /**

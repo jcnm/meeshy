@@ -207,6 +207,17 @@ export const API_ENDPOINTS = {
     ADD_MEMBER: (groupId: string, userId: string) => `/communities/${groupId}/members/${userId}`,
     REMOVE_MEMBER: (groupId: string, userId: string) => `/communities/${groupId}/members/${userId}`,
     UPDATE_ROLE: (groupId: string, userId: string) => `/communities/${groupId}/members/${userId}/role`
+  },
+  TRACKING_LINK: {
+    CREATE: '/api/tracking-links',
+    CLICK: (token: string) => `/api/tracking-links/${token}/click`,
+    GET: (token: string) => `/api/tracking-links/${token}`,
+    STATS: (token: string) => `/api/tracking-links/${token}/stats`,
+    USER_LINKS: '/api/tracking-links/user/me',
+    CONVERSATION_LINKS: (conversationId: string) => `/api/tracking-links/conversation/${conversationId}`,
+    DEACTIVATE: (token: string) => `/api/tracking-links/${token}/deactivate`,
+    DELETE: (token: string) => `/api/tracking-links/${token}`,
+    REDIRECT: (token: string) => `/l/${token}`
   }
 };
 

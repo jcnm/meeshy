@@ -29,15 +29,15 @@ export function LanguageIndicators({
         return (
           <div 
             key={stat.language} 
-            className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
+            className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
           >
             <div className="flex items-center space-x-2">
               <span className="text-lg">{stat.flag}</span>
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
                 {langInfo?.name || stat.language}
               </span>
             </div>
-            <Badge variant="outline" className="text-xs bg-white/50">
+            <Badge variant="outline" className="text-xs bg-white/50 dark:bg-gray-700/50 dark:text-gray-300">
               {stat.count}
             </Badge>
           </div>
@@ -52,15 +52,15 @@ export function LanguageIndicators({
             return (
               <div 
                 key={stat.language} 
-                className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
+                className="flex items-center justify-between p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
               >
                 <div className="flex items-center space-x-2">
                   <span className="text-lg">{stat.flag}</span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
                     {langInfo?.name || stat.language}
                   </span>
                 </div>
-                <Badge variant="outline" className="text-xs bg-white/50">
+                <Badge variant="outline" className="text-xs bg-white/50 dark:bg-gray-700/50 dark:text-gray-300">
                   {stat.count}
                 </Badge>
               </div>

@@ -172,16 +172,16 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
   const renderLinkCard = (link: ShareLink) => (
     <Card key={link.id} className="mb-3">
       <CardContent className="p-3">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-medium text-sm truncate">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h4 className="font-medium text-sm truncate max-w-[calc(100%-4rem)]">
                 {link.name || 'Lien de partage'}
               </h4>
               {getStatusBadge(link)}
             </div>
             
-            <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
+            <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
               <span className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
                 {link.currentUses}/{link.maxUses || '∞'}
@@ -197,116 +197,117 @@ export function ConversationLinksSection({ conversationId }: ConversationLinksSe
                 </span>
               )}
             </div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => copyLink(link.linkId)}
-                className="h-6 px-2 text-xs"
-              >
-                <Copy className="h-3 w-3 mr-1" />
-                Copier
-              </Button>
-              
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 px-2 text-xs"
-                  >
-                    <MoreHorizontal className="h-3 w-3" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-4">
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-medium text-sm mb-1">Détails du lien</h4>
-                      <p className="text-xs text-gray-600 mb-2">
-                        {link.description || 'Aucune description'}
-                      </p>
-                    </div>
-
-                    <Separator />
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="font-medium">Créé par:</span>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Avatar className="h-4 w-4">
-                            <AvatarImage src={link.creator.avatar} />
-                            <AvatarFallback className="text-xs">
-                              {link.creator.firstName?.charAt(0) || link.creator.username?.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="truncate">
-                            {link.creator.displayName || link.creator.username}
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <span className="font-medium">Créé le:</span>
-                        <p className="mt-1">{formatDate(link.createdAt)}</p>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h5 className="font-medium text-xs mb-2">Permissions</h5>
-                      <div className="grid grid-cols-2 gap-1 text-xs">
-                        <div className="flex items-center gap-1">
-                          {link.allowAnonymousMessages ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
-                          <MessageSquare className="h-3 w-3" />
-                          Messages
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {link.allowAnonymousImages ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
-                          <Image className="h-3 w-3" />
-                          Images
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {link.allowAnonymousFiles ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
-                          <FileText className="h-3 w-3" />
-                          Fichiers
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {link.allowViewHistory ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
-                          <Eye className="h-3 w-3" />
-                          Historique
-                        </div>
-                      </div>
-                    </div>
-
-                    {(link.allowedLanguages.length > 0 || link.allowedCountries.length > 0) && (
-                      <>
-                        <Separator />
-                        <div>
-                          <h5 className="font-medium text-xs mb-2">Restrictions</h5>
-                          {link.allowedLanguages.length > 0 && (
-                            <div className="mb-1">
-                              <span className="text-xs font-medium">Langues:</span>
-                              <p className="text-xs text-gray-600">
-                                {link.allowedLanguages.join(', ')}
-                              </p>
-                            </div>
-                          )}
-                          {link.allowedCountries.length > 0 && (
-                            <div>
-                              <span className="text-xs font-medium">Pays:</span>
-                              <p className="text-xs text-gray-600">
-                                {link.allowedCountries.join(', ')}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
+          {/* Boutons d'action toujours visibles */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => copyLink(link.linkId)}
+              className="h-7 px-2 text-xs"
+            >
+              <Copy className="h-3 w-3 sm:mr-1" />
+              <span className="hidden sm:inline">Copier</span>
+            </Button>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-xs"
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4" align="end">
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium text-sm mb-1">Détails du lien</h4>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                      {link.description || 'Aucune description'}
+                    </p>
                   </div>
-                </PopoverContent>
-              </Popover>
-            </div>
+
+                  <Separator />
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="font-medium">Créé par:</span>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Avatar className="h-4 w-4">
+                          <AvatarImage src={link.creator.avatar} />
+                          <AvatarFallback className="text-xs">
+                            {link.creator.firstName?.charAt(0) || link.creator.username?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="truncate">
+                          {link.creator.displayName || link.creator.username}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium">Créé le:</span>
+                      <p className="mt-1">{formatDate(link.createdAt)}</p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h5 className="font-medium text-xs mb-2">Permissions</h5>
+                    <div className="grid grid-cols-2 gap-1 text-xs">
+                      <div className="flex items-center gap-1">
+                        {link.allowAnonymousMessages ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
+                        <MessageSquare className="h-3 w-3" />
+                        Messages
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {link.allowAnonymousImages ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
+                        <Image className="h-3 w-3" />
+                        Images
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {link.allowAnonymousFiles ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
+                        <FileText className="h-3 w-3" />
+                        Fichiers
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {link.allowViewHistory ? <CheckCircle className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}
+                        <Eye className="h-3 w-3" />
+                        Historique
+                      </div>
+                    </div>
+                  </div>
+
+                  {(link.allowedLanguages.length > 0 || link.allowedCountries.length > 0) && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h5 className="font-medium text-xs mb-2">Restrictions</h5>
+                        {link.allowedLanguages.length > 0 && (
+                          <div className="mb-1">
+                            <span className="text-xs font-medium">Langues:</span>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              {link.allowedLanguages.join(', ')}
+                            </p>
+                          </div>
+                        )}
+                        {link.allowedCountries.length > 0 && (
+                          <div>
+                            <span className="text-xs font-medium">Pays:</span>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              {link.allowedCountries.join(', ')}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </CardContent>

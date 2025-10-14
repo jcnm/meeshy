@@ -78,9 +78,10 @@
     "textarea": "Text area",
     "summary": {
       "title": "Summary",
+      "description": "Review your link configuration before creating it",
       "basicInfo": "Basic Information",
       "conversation": "Conversation",
-      "description": "Description",
+      "conversationDescription": "Description",
       "permissionsGranted": "Permissions Granted",
       "allowedLanguages": "Allowed Languages",
       "selectedLanguages": "Selected languages",
@@ -101,7 +102,9 @@
       "welcomeMessageDescription": "Custom message shown to guests",
       "validityDuration": "Validity duration",
       "usageLimit": "Usage limit",
+      "usageCount": "{count} use(s)",
       "unlimited": "Unlimited",
+      "linkDisabledAfter": "Link will be automatically disabled after {count} uses",
       "guestsCanSendMessages": "Guests can send messages",
       "guestsCannotSendMessages": "Guests cannot send messages",
       "guestsCanShareImages": "Guests can share images",
@@ -323,6 +326,10 @@
           "label": "1000 uses",
           "description": "Very large group"
         },
+        "5000": {
+          "label": "5000 uses",
+          "description": "Enterprise scale"
+        },
         "unlimited": {
           "label": "Unlimited",
           "description": "No usage limit"
@@ -359,6 +366,7 @@
       "allowedLanguages": {
         "title": "Allowed languages",
         "description": "Select which languages can be used in this conversation",
+        "allowLanguage": "Allow {language}",
         "allowAllLanguages": "Allow all languages"
       },
       "linkDetails": {
@@ -367,7 +375,12 @@
         "linkName": "Link name",
         "linkNameInfo": "A friendly name to identify this link",
         "linkNamePlaceholder": "Ex: Team invitation, Partner access...",
-        "linkIdentifier": "Link identifier"
+        "linkIdentifier": "Link identifier",
+        "linkIdentifierInfo": "Unique identifier for this link (used in the URL)",
+        "regenerateIdentifier": "Regenerate identifier",
+        "welcomeMessage": "Welcome message",
+        "welcomeMessageInfo": "A message that will be shown to guests when they join via this link",
+        "welcomeMessagePlaceholder": "Welcome to our conversation! Feel free to introduce yourself..."
       },
       "successMessages": {
         "linkGeneratedAndCopied": "Link generated and copied!",

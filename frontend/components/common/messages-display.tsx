@@ -46,7 +46,7 @@ export function MessagesDisplay({
   emptyStateMessage = "Aucun message pour le moment",
   emptyStateDescription = "Soyez le premier à publier !",
   reverseOrder = false,
-  className = "space-y-4",
+  className = "",
   onTranslation,
   onEditMessage,
   onDeleteMessage,

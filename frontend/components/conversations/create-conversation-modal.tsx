@@ -378,10 +378,10 @@ export function CreateConversationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-y-auto sm:max-w-3xl sm:w-[90vw] sm:max-h-[85vh]">
+      <DialogContent className="max-w-3xl w-[95vw] max-h-[95vh] overflow-y-auto p-4 sm:p-6 sm:max-w-3xl sm:w-[90vw] sm:max-h-[90vh] md:max-h-[85vh]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
 {t('createConversationModal.title')}
           </DialogTitle>
           <DialogDescription>
@@ -728,7 +728,7 @@ placeholder={t('createConversationModal.community.searchPlaceholder')}
           )}
           
           {/* Actions */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
             <Button
               onClick={createConversation}
               disabled={
@@ -737,10 +737,9 @@ placeholder={t('createConversationModal.community.searchPlaceholder')}
                 !customIdentifier.trim() ||
                 !validateIdentifier(customIdentifier)
               }
-              className="flex-1"
-              size="lg"
+              className="flex-1 w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-11"
             >
-              <Sparkles className="mr-2 h-4 w-4" />
+              <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
               {isCreating ? t('createConversationModal.actions.creating') : 
                 selectedUsers.length === 1 ? t('createConversationModal.actions.createDirectConversation') : 
                 t('createConversationModal.actions.createGroupConversation')}
@@ -748,7 +747,7 @@ placeholder={t('createConversationModal.community.searchPlaceholder')}
             <Button
               onClick={handleClose}
               variant="outline"
-              size="lg"
+              className="w-full sm:w-auto text-xs sm:text-sm h-9 sm:h-11"
             >
               {t('createConversationModal.actions.cancel')}
             </Button>

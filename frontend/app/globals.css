@@ -202,6 +202,19 @@
     will-change: transform;
   }
 
+  /* Suppression de toutes les ombres sur les messages */
+  .bubble-message,
+  .bubble-message > *,
+  .bubble-message [data-slot="card"] {
+    box-shadow: none !important;
+  }
+
+  .bubble-message:hover,
+  .bubble-message:hover > *,
+  .bubble-message:hover [data-slot="card"] {
+    box-shadow: none !important;
+  }
+
   .translation-flip {
     animation: contentFlip 0.6s ease-in-out;
   }

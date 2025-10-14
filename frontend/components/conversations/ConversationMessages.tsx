@@ -114,6 +114,38 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     }
   }, []);
 
+  // Fonction pour scroller vers un message spécifique
+  const scrollToMessage = useCallback((messageId: string, smooth = true) => {
+    const messageElement = document.getElementById(`message-${messageId}`);
+    if (messageElement) {
+      messageElement.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+        block: 'center'
+      });
+      console.log('[ConversationMessages] 📍 Scroll vers message:', messageId);
+    }
+  }, []);
+
+  // Fonction pour trouver le premier message non lu
+  const findFirstUnreadMessage = useCallback(() => {
+    if (!currentUser) return null;
+    
+    // Trouver le premier message qui n'a pas été lu par l'utilisateur courant
+    const firstUnread = messages.find(msg => {
+      // Un message est considéré non lu si :
+      // 1. Ce n'est pas un message de l'utilisateur courant
+      // 2. Il n'a pas de readStatus ou l'utilisateur n'est pas dans readStatus
+      if (msg.senderId === currentUser.id) return false;
+      
+      if (!msg.readStatus || msg.readStatus.length === 0) return true;
+      
+      const userReadStatus = msg.readStatus.find(rs => rs.userId === currentUser.id);
+      return !userReadStatus || !userReadStatus.readAt;
+    });
+    
+    return firstUnread || null;
+  }, [messages, currentUser]);
+
   // Gestionnaire de scroll pour le chargement infini
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -141,14 +173,25 @@ const ConversationMessagesComponent = memo(function ConversationMessages({
     previousMessageCountRef.current = 0;
   }, [conversationId]);
 
-  // Scénario 1 : Premier chargement - scroller vers le bas
+  // Scénario 1 : Premier chargement - scroller vers le dernier message lu ou non lu
   useEffect(() => {
     if (isFirstLoadRef.current && messages.length > 0 && !isLoadingMessages) {
-      console.log('[ConversationMessagesV2] 🚀 Premier chargement - scroll vers le bas');
-      scrollToBottom(false);
-      isFirstLoadRef.current = false;
+      // Petit délai pour s'assurer que les éléments DOM sont rendus
+      setTimeout(() => {
+        const firstUnreadMessage = findFirstUnreadMessage();
+        
+        if (firstUnreadMessage) {
+          console.log('[ConversationMessages] 🎯 Premier chargement - scroll vers premier message non lu:', firstUnreadMessage.id);
+          scrollToMessage(firstUnreadMessage.id, false);
+        } else {
+          console.log('[ConversationMessages] 🚀 Premier chargement - pas de messages non lus - scroll vers le bas');
+          scrollToBottom(false);
+        }
+        
+        isFirstLoadRef.current = false;
+      }, 100);
     }
-  }, [messages.length, isLoadingMessages, scrollToBottom]);
+  }, [messages.length, isLoadingMessages, scrollToBottom, scrollToMessage, findFirstUnreadMessage]);
 
   // Scénario 2 & 3 : Nouveaux messages en temps réel
   useEffect(() => {

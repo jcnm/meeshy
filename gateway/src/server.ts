@@ -24,6 +24,7 @@ import { AuthMiddleware, createUnifiedAuthMiddleware } from './middleware/auth';
 import { authRoutes } from './routes/auth';
 import { conversationRoutes } from './routes/conversations';
 import { linksRoutes } from './routes/links';
+import { trackingLinksRoutes } from './routes/tracking-links';
 import { anonymousRoutes } from './routes/anonymous';
 import { communityRoutes } from './routes/communities';
 import { adminRoutes } from './routes/admin';
@@ -468,6 +469,9 @@ class MeeshyServer {
     }, { prefix: '/api' });
     // Register links management routes
     await this.server.register(linksRoutes, { prefix: '/api' });
+    
+    // Register tracking links routes
+    await this.server.register(trackingLinksRoutes, { prefix: '/api' });
     
     // Register anonymous participation routes
     await this.server.register(anonymousRoutes, { prefix: '/api' });

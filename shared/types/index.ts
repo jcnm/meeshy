@@ -21,6 +21,9 @@ export * from './messaging';
 // Export des types unifiés Phase 3 - Affiliate
 export * from './affiliate';
 
+// Export des types unifiés Phase 4 - Tracking Links
+export * from './tracking-link';
+
 // ===== ÉVÉNEMENTS SOCKET.IO =====
 export * from './socketio-events';
 

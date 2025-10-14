@@ -184,15 +184,15 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{t('profile.photo.title')}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">{t('profile.photo.title')}</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             {t('profile.photo.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <Avatar className="h-24 w-24 sm:h-20 sm:w-20">
               <AvatarImage src={user.avatar} alt={user.username} />
@@ -228,15 +228,15 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t('profile.personalInfo.title')}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-lg sm:text-xl">{t('profile.personalInfo.title')}</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             {t('profile.personalInfo.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <CardContent className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
-              <Label htmlFor="settings-firstName">{t('profile.personalInfo.firstName')}</Label>
+              <Label htmlFor="settings-firstName" className="text-sm sm:text-base">{t('profile.personalInfo.firstName')}</Label>
               <Input
                 id="settings-firstName"
                 value={formData.firstName}
@@ -246,7 +246,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="settings-lastName">{t('profile.personalInfo.lastName')}</Label>
+              <Label htmlFor="settings-lastName" className="text-sm sm:text-base">{t('profile.personalInfo.lastName')}</Label>
               <Input
                 id="settings-lastName"
                 value={formData.lastName}
@@ -258,7 +258,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="settings-displayName">{t('profile.personalInfo.displayName')}</Label>
+            <Label htmlFor="settings-displayName" className="text-sm sm:text-base">{t('profile.personalInfo.displayName')}</Label>
             <Input
               id="settings-displayName"
               value={formData.displayName}
@@ -268,9 +268,9 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
-              <Label htmlFor="settings-email">{t('profile.personalInfo.email')}</Label>
+              <Label htmlFor="settings-email" className="text-sm sm:text-base">{t('profile.personalInfo.email')}</Label>
               <Input
                 id="settings-email"
                 type="email"
@@ -282,7 +282,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="settings-phoneNumber">{t('profile.personalInfo.phoneNumber')}</Label>
+              <Label htmlFor="settings-phoneNumber" className="text-sm sm:text-base">{t('profile.personalInfo.phoneNumber')}</Label>
               <Input
                 id="settings-phoneNumber"
                 type="tel"
@@ -295,7 +295,7 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="settings-bio">{t('profile.personalInfo.bio')}</Label>
+            <Label htmlFor="settings-bio" className="text-sm sm:text-base">{t('profile.personalInfo.bio')}</Label>
             <Textarea
               id="settings-bio"
               value={formData.bio}
@@ -304,41 +304,51 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
               className="w-full min-h-[100px]"
               maxLength={500}
             />
-            <p className="text-sm text-muted-foreground text-right">
+            <p className="text-xs sm:text-sm text-muted-foreground text-right">
               {formData.bio.length}/500
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="settings-username">{t('profile.personalInfo.username')}</Label>
+            <Label htmlFor="settings-username" className="text-sm sm:text-base">{t('profile.personalInfo.username')}</Label>
             <Input
               id="settings-username"
               value={user.username}
               disabled
               className="bg-muted w-full"
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {t('profile.personalInfo.usernameCannotChange')}
             </p>
           </div>
         </CardContent>
-      </Card>
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end sm:space-x-4 pt-6 mr-6">
 
-      <div className="flex justify-end space-x-4">
-        <Button variant="outline" onClick={() => setFormData({
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          displayName: user.displayName || '',
-          email: user.email || '',
-          phoneNumber: user.phoneNumber || '',
-          bio: user.bio || '',
-        })}>
-          {t('profile.actions.cancel')}
-        </Button>
-        <Button onClick={handleSave} disabled={isLoading}>
-          {isLoading ? t('profile.actions.saving') : t('profile.actions.save')}
-        </Button>
-      </div>
+          <Button 
+              variant="outline" 
+              className="w-full sm:w-auto" 
+              onClick={() => {
+                if (user) {
+                  setFormData({
+                    firstName: user.firstName || '',
+                    lastName: user.lastName || '',
+                    displayName: user.displayName || '',
+                    email: user.email || '',
+                    phoneNumber: user.phoneNumber || '',
+                    bio: user.bio || '',
+                  });
+                }
+              }}
+            >
+              {t('profile.actions.cancel')}
+            </Button>
+            <Button onClick={handleSave} disabled={isLoading} className="w-full sm:w-auto">
+              {isLoading ? t('profile.actions.saving') : t('profile.actions.save')}
+            </Button>
+
+          </div>
+
+      </Card>
 
       {/* Modale de prévisualisation d'avatar */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
@@ -370,6 +380,8 @@ export function UserSettings({ user, onUserUpdate }: UserSettingsProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      
     </div>
   );
 }

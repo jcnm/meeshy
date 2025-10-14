@@ -56,7 +56,8 @@ import { Z_CLASSES } from '@/lib/z-index';
 import { useI18n } from '@/hooks/useI18n';
 import { getMessageInitials } from '@/lib/avatar-utils';
 import { cn } from '@/lib/utils';
-import { useFixTranslationPopoverZIndex } from '@/hooks/use-fix-z-index'; 
+import { useFixTranslationPopoverZIndex } from '@/hooks/use-fix-z-index';
+import { MessageWithLinks } from '@/components/chat/message-with-links'; 
 
 
 interface BubbleMessageProps {
@@ -490,253 +491,286 @@ function BubbleMessageInner({
 
   return (
     <TooltipProvider>
-      <Card 
+      {/* Container with flex alignment based on sender */}
+      <div 
         id={`message-${message.id}`}
         ref={messageRef}
         className={cn(
-          "bubble-message relative transition-all duration-300 hover:shadow-lg mx-2",
-          isOwnMessage 
-            ? 'bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800' 
-            : 'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700'
+          "bubble-message flex gap-2 sm:gap-3 mb-3 sm:mb-4 px-2 sm:px-4",
+          isOwnMessage ? "flex-row-reverse" : "flex-row"
         )}
       >
-        <CardContent className="p-4">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage 
-                  src={(message.sender as any)?.avatar} 
-                  alt={message.sender?.firstName} 
-                />
-                <AvatarFallback className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 font-medium">
-                  {getMessageInitials(message)}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="flex-1">
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {message.anonymousSender 
-                      ? (message.anonymousSender.username || 
-                         `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim() || 
-                         t('anonymous'))
-                      : `@${message.sender?.username}`
-                    }
-                  </span>
-                  {message.anonymousSenderId && (
-                    <Ghost className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                  )}
-                  <span className="text-gray-400 dark:text-gray-500">•</span>
-                  <span className="text-gray-500 dark:text-gray-400 flex items-center text-sm">
-                    <Timer className="h-3 w-3 mr-1" />
-                    {formatTimeAgo(message.createdAt)}
-                  </span>
-                </div>
-              </div>
-            </div>
+        {/* Avatar - Hidden on mobile for own messages */}
+        <Avatar className={cn(
+          "h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 mt-1",
+          isOwnMessage && "hidden sm:flex"
+        )}>
+          <AvatarImage 
+            src={(message.sender as any)?.avatar} 
+            alt={message.sender?.firstName} 
+          />
+          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs sm:text-sm font-semibold">
+            {getMessageInitials(message)}
+          </AvatarFallback>
+        </Avatar>
 
-            {/* Indicateur de statut */}
-            <div className="flex items-center space-x-2">
-              {translationError && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
-                      <AlertTriangle className="h-3 w-3" />
+        {/* Message Bubble */}
+        <div className={cn(
+          "flex-1 min-w-0 max-w-[85%] sm:max-w-[75%] md:max-w-[65%]",
+          isOwnMessage && "flex flex-col items-end"
+        )}>
+          {/* Header with sender name and time */}
+          <div className={cn(
+            "flex items-center gap-2 mb-1 px-1",
+            isOwnMessage && "flex-row-reverse"
+          )}>
+            <span className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 truncate">
+              {message.anonymousSender 
+                ? (message.anonymousSender.username || 
+                   `${message.anonymousSender.firstName || ''} ${message.anonymousSender.lastName || ''}`.trim() || 
+                   t('anonymous'))
+                : message.sender?.username || `@${message.sender?.username}`
+              }
+            </span>
+            {message.anonymousSenderId && (
+              <Ghost className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+            )}
+            <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+              {formatTimeAgo(message.createdAt)}
+            </span>
+          </div>
+
+          {/* Main Message Card */}
+          <Card 
+            className={cn(
+              "relative transition-colors duration-200 border shadow-none",
+              isOwnMessage 
+                ? 'bg-gradient-to-br from-blue-400 to-blue-500 border-blue-400 text-white' 
+                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+            )}
+          >
+            <CardContent className="p-2.5 sm:p-3">
+
+              {/* Message parent si c'est une réponse */}
+              {message.replyTo && (
+                <motion.div
+                  initial={{ opacity: 0, y: -3 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mb-2"
+                >
+                  <div 
+                    onClick={() => {
+                      if (message.replyTo?.id && onNavigateToMessage) {
+                        onNavigateToMessage(message.replyTo.id);
+                      }
+                    }}
+                    className={cn(
+                      "relative overflow-hidden rounded-md border-l-2 px-2 py-1.5 cursor-pointer transition-all duration-200 group text-xs",
+                      isOwnMessage 
+                        ? "bg-white/20 border-white/40 backdrop-blur-sm hover:bg-white/30" 
+                        : "bg-gray-50/90 dark:bg-gray-700/40 border-blue-400 dark:border-blue-500 hover:bg-gray-100/90 dark:hover:bg-gray-700/60"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-1.5">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className={cn(
+                            "text-xs font-semibold truncate",
+                            isOwnMessage ? "text-white/90" : "text-gray-700 dark:text-gray-200"
+                          )}>
+                            {message.replyTo.anonymousSender 
+                              ? (message.replyTo.anonymousSender.username || t('anonymous'))
+                              : (message.replyTo.sender?.username || t('unknownUser'))}
+                          </span>
+                          <span className={cn(
+                            "text-[10px]",
+                            isOwnMessage ? "text-white/60" : "text-gray-500 dark:text-gray-400"
+                          )}>
+                            {formatReplyDate(message.replyTo.createdAt)}
+                          </span>
+                        </div>
+                        <p className={cn(
+                          "text-xs line-clamp-2 leading-snug",
+                          isOwnMessage ? "text-white/80" : "text-gray-600 dark:text-gray-300"
+                        )}>
+                          {message.replyTo.content}
+                        </p>
+                      </div>
+                      <MessageCircle className={cn(
+                        "h-3 w-3 flex-shrink-0 mt-0.5",
+                        isOwnMessage ? "text-white/50" : "text-blue-500/50 dark:text-blue-400/50"
+                      )} />
                     </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {translationError}
-                  </TooltipContent>
-                </Tooltip>
+                  </div>
+                </motion.div>
               )}
 
-              {/* Badge langue originale - indique aussi si traduit */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge 
-                    variant="outline" 
-                    className={cn(
-                      "font-medium cursor-pointer transition-colors",
-                      currentDisplayLanguage === (message.originalLanguage || 'fr')
-                        ? "bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
-                        : "bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-800"
-                    )}
-                    onClick={() => handleLanguageSwitch(message.originalLanguage || 'fr')}
+              {/* Contenu principal */}
+              <div className="mb-2">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={`content-${message.id}-${currentDisplayLanguage}-${currentContent.substring(0, 10)}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    ref={contentRef}
                   >
-                    <span className="mr-1">{getLanguageInfo(message.originalLanguage || 'fr').flag}</span>
-                    {getLanguageInfo(message.originalLanguage || 'fr').code.toUpperCase()}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {currentDisplayLanguage === (message.originalLanguage || 'fr')
-                    ? `${t('originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name}`
-                    : `${t('originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name} • ${t('viewing')}: ${getLanguageInfo(currentDisplayLanguage).name}`
-                  }
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-
-          {/* Message parent si c'est une réponse - Style flottant minimaliste */}
-          {message.replyTo && (
-            <motion.div
-              initial={{ opacity: 0, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-              className="mb-2"
-            >
-              <div 
-                onClick={() => {
-                  if (message.replyTo?.id && onNavigateToMessage) {
-                    onNavigateToMessage(message.replyTo.id);
-                  }
-                }}
-                className="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-50/90 to-indigo-50/90 dark:from-blue-900/30 dark:to-indigo-900/30 border-l-4 border-blue-400 dark:border-blue-500 px-3 py-2 cursor-pointer hover:shadow-md hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/40 dark:hover:to-indigo-900/40 transition-all duration-200 group"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  {/* Contenu principal */}
-                  <div className="flex-1 min-w-0">
-                    {/* Header avec nom, date et badges */}
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-xs font-semibold text-blue-900 dark:text-blue-100 truncate">
-                        {message.replyTo.anonymousSender 
-                          ? (message.replyTo.anonymousSender.username || 
-                             `${message.replyTo.anonymousSender.firstName || ''} ${message.replyTo.anonymousSender.lastName || ''}`.trim() || 
-                             t('anonymous'))
-                          : ((message.replyTo.sender && 'displayName' in message.replyTo.sender ? message.replyTo.sender.displayName : null) || 
-                             message.replyTo.sender?.username || 
-                             t('unknownUser'))}
-                      </span>
-                      
-                  <span className="text-[10px] text-blue-600/60 dark:text-blue-400/60 flex-shrink-0">
-                    {formatReplyDate(message.replyTo.createdAt)}
-                  </span>
-                      
-                      <Badge 
-                        variant="secondary" 
-                        className="text-[10px] px-1.5 py-0 h-4 bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-0"
-                      >
-                        <span className="mr-0.5">{getLanguageInfo(message.replyTo.originalLanguage || 'fr').flag}</span>
-                        {getLanguageInfo(message.replyTo.originalLanguage || 'fr').code.toUpperCase()}
-                      </Badge>
-                      
-                      {message.replyTo.translations && message.replyTo.translations.length > 0 && (
-                        <Badge 
-                          variant="outline" 
-                          className="text-[10px] px-1.5 py-0 h-4 bg-green-50/80 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-0"
-                        >
-                          <Languages className="h-2.5 w-2.5 mr-0.5" />
-                          {message.replyTo.translations.length}
-                        </Badge>
+                    <MessageWithLinks
+                      content={currentContent}
+                      className={cn(
+                        "leading-relaxed text-sm sm:text-base break-words",
+                        isOwnMessage 
+                          ? "text-white" 
+                          : "text-gray-800 dark:text-gray-100"
                       )}
-                    </div>
-
-                    {/* Contenu du message */}
-                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 leading-snug">
-                      {message.replyTo.content}
-                    </p>
-                  </div>
-
-                  {/* Icône de réponse */}
-                  <MessageCircle className="h-4 w-4 text-blue-500/60 dark:text-blue-400/60 flex-shrink-0 mt-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors" />
-                </div>
+                      linkClassName={cn(
+                        isOwnMessage
+                          ? "text-white hover:text-white/90 decoration-white/40 hover:decoration-white/70"
+                          : "text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 decoration-blue-500/30 hover:decoration-blue-500/60"
+                      )}
+                      textClassName="whitespace-pre-wrap"
+                      enableTracking={true}
+                      onLinkClick={(url, isTracking) => {
+                        console.log(`Link clicked: ${url} (tracking: ${isTracking})`);
+                      }}
+                    />
+                  </motion.div>
+                </AnimatePresence>
               </div>
-            </motion.div>
-          )}
 
-          {/* Contenu principal */}
-          <div className="mb-3">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={`content-${message.id}-${currentDisplayLanguage}-${currentContent.substring(0, 10)}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                ref={contentRef}
-              >
-                <p className="text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap text-base">
-                  {currentContent}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+              {/* Footer: Language badge + Actions */}
+              <div className="flex items-center justify-between gap-2">
+                {/* Language Badge - Flag only on mobile */}
+                <div className="flex items-center gap-1.5">
+                  {translationError && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className={cn(
+                          "flex items-center",
+                          isOwnMessage ? "text-red-200" : "text-red-500"
+                        )}>
+                          <AlertTriangle className="h-3 w-3" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {translationError}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
 
-          {/* Actions */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1">
-              {/* Bouton de réponse - Déplacé en premier */}
-              {onReplyMessage && (
-                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onReplyMessage(message)}
-                        aria-label={t('replyToMessage')}
-                        className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 p-2 rounded-full transition-colors"
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "cursor-pointer transition-all text-xs border font-medium h-5 sm:h-6",
+                          currentDisplayLanguage === (message.originalLanguage || 'fr')
+                            ? isOwnMessage 
+                              ? "bg-white/20 border-white/40 text-white hover:bg-white/30"
+                              : "bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                            : isOwnMessage
+                              ? "bg-white/30 border-white/50 text-white hover:bg-white/40"
+                              : "bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:border-blue-700 dark:text-blue-300"
+                        )}
+                        onClick={() => handleLanguageSwitch(message.originalLanguage || 'fr')}
                       >
-                        <MessageCircle className="h-4 w-4" />
-                      </Button>
+                        <span className="text-sm">{getLanguageInfo(message.originalLanguage || 'fr').flag}</span>
+                        {/* Hide language code on mobile */}
+                        <span className="hidden sm:inline ml-1">
+                          {getLanguageInfo(message.originalLanguage || 'fr').code.toUpperCase()}
+                        </span>
+                      </Badge>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{t('replyToMessage')}</p>
+                      {currentDisplayLanguage === (message.originalLanguage || 'fr')
+                        ? `${t('originalLanguage')}: ${getLanguageInfo(message.originalLanguage || 'fr').name}`
+                        : `${t('viewing')}: ${getLanguageInfo(currentDisplayLanguage).name}`
+                      }
                     </TooltipContent>
                   </Tooltip>
-                </TooltipProvider>
-              )}
+                </div>
 
-              {/* Bouton traduction avec popover */}
-              <TooltipProvider>
-                <Tooltip>
-                  <Popover 
-                    open={isTranslationPopoverOpen} 
-                    onOpenChange={handlePopoverOpenChange}
-                    modal={false}
-                  >
-                    <PopoverTrigger asChild>
+                {/* Action Buttons */}
+                <div className="flex items-center gap-0.5">
+                  {/* Bouton de réponse */}
+                  {onReplyMessage && (
+                    <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                          onMouseEnter={handlePopoverMouseEnter}
-                          onMouseLeave={handlePopoverMouseLeave}
+                          onClick={() => onReplyMessage(message)}
+                          aria-label={t('replyToMessage')}
                           className={cn(
-                            "relative p-2 rounded-full transition-all duration-200",
-                            isNewTranslation
-                              ? "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 hover:bg-green-100 dark:hover:bg-green-900"
-                              : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            "h-7 w-7 p-0 rounded-full transition-colors",
+                            isOwnMessage 
+                              ? "text-white/70 hover:text-white hover:bg-white/20" 
+                              : "text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/30"
                           )}
-                          aria-label={t('translationOptions')}
                         >
-                          <Languages className={cn(
-                            "h-4 w-4 transition-transform",
-                            isActuallyTranslating && "animate-pulse"
-                          )} />
-                          
-                          {message.translations && message.translations.length > 0 && (
-                            <span 
-                              className={cn(
-                                "absolute -top-1 -right-1 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium transition-all duration-300",
-                                isNewTranslation 
-                                  ? "bg-green-500 shadow-lg shadow-green-500/50 scale-110" 
-                                  : "bg-blue-500"
-                              )}
-                            >
-                              {message.translations.length}
-                            </span>
-                          )}
+                          <MessageCircle className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
-                    </PopoverTrigger>
-                    <TooltipContent>
-                      <p>{t('translationOptions')}</p>
-                    </TooltipContent>
+                      <TooltipContent>
+                        <p>{t('replyToMessage')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {/* Bouton traduction avec popover */}
+                  <Tooltip>
+                    <Popover 
+                      open={isTranslationPopoverOpen} 
+                      onOpenChange={handlePopoverOpenChange}
+                      modal={false}
+                    >
+                      <PopoverTrigger asChild>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                            onMouseEnter={handlePopoverMouseEnter}
+                            onMouseLeave={handlePopoverMouseLeave}
+                            className={cn(
+                              "relative h-7 w-7 p-0 rounded-full transition-all duration-200",
+                              isNewTranslation
+                                ? isOwnMessage
+                                  ? "text-green-300 bg-white/30 hover:bg-white/40"
+                                  : "text-green-600 bg-green-50 hover:bg-green-100 dark:text-green-400 dark:bg-green-950 dark:hover:bg-green-900"
+                                : isOwnMessage
+                                  ? "text-white/70 hover:text-white hover:bg-white/20"
+                                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                            )}
+                            aria-label={t('translationOptions')}
+                          >
+                            <Languages className={cn(
+                              "h-3.5 w-3.5 transition-transform",
+                              isActuallyTranslating && "animate-pulse"
+                            )} />
+                            
+                            {message.translations && message.translations.length > 0 && (
+                              <span 
+                                className={cn(
+                                  "absolute -top-0.5 -right-0.5 text-white text-[9px] rounded-full h-4 w-4 flex items-center justify-center font-bold transition-all duration-300",
+                                  isNewTranslation 
+                                    ? "bg-green-500 shadow-md scale-110" 
+                                    : "bg-blue-500"
+                                )}
+                              >
+                                {message.translations.length}
+                              </span>
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                      </PopoverTrigger>
+                      <TooltipContent>
+                        <p>{t('translationOptions')}</p>
+                      </TooltipContent>
                 <PopoverContent 
                   className={cn(
                     "w-[calc(100vw-32px)] sm:w-[270px] md:w-[294px] p-0 shadow-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm",
@@ -968,99 +1002,110 @@ function BubbleMessageInner({
                     </TabsContent>
                   </Tabs>
                 </PopoverContent>
-              </Popover>
-                </Tooltip>
-              </TooltipProvider>
+                    </Popover>
+                  </Tooltip>
 
-              {/* Bouton favoris avec tooltip */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsFavorited(!isFavorited)}
-                      aria-label={isFavorited ? t('removeFavorite') : t('addFavorite')}
-                      className={cn(
-                        "p-2 rounded-full transition-colors",
-                        isFavorited 
-                          ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:hover:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/40' 
-                          : 'text-gray-500 dark:text-gray-400 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/40'
-                      )}
-                    >
-                      <Star className={cn("h-4 w-4", isFavorited && "fill-current")} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{isFavorited ? t('removeFavorite') : t('addFavorite')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  {/* Bouton favoris */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsFavorited(!isFavorited)}
+                        aria-label={isFavorited ? t('removeFavorite') : t('addFavorite')}
+                        className={cn(
+                          "h-7 w-7 p-0 rounded-full transition-colors",
+                          isFavorited 
+                            ? isOwnMessage
+                              ? 'text-yellow-300 hover:text-yellow-200 hover:bg-white/20'
+                              : 'text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50 dark:text-yellow-400 dark:hover:text-yellow-300 dark:hover:bg-yellow-900/30'
+                            : isOwnMessage
+                              ? 'text-white/70 hover:text-white hover:bg-white/20'
+                              : 'text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 dark:text-gray-400 dark:hover:text-yellow-400 dark:hover:bg-yellow-900/30'
+                        )}
+                      >
+                        <Star className={cn("h-3.5 w-3.5", isFavorited && "fill-current")} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isFavorited ? t('removeFavorite') : t('addFavorite')}</p>
+                    </TooltipContent>
+                  </Tooltip>
 
-              {/* Bouton copie avec tooltip */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(currentContent);
-                          toast.success(t('copied'), {
-                            duration: 2000,
-                          });
-                        } catch (error) {
-                          toast.error(t('copyFailed'), {
-                            duration: 2000,
-                          });
-                        }
-                      }}
-                      aria-label={t('copyShowingContent')}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-full"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{t('copyShowingContent')}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+                  {/* Bouton copie */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(currentContent);
+                            toast.success(t('copied'), {
+                              duration: 2000,
+                            });
+                          } catch (error) {
+                            toast.error(t('copyFailed'), {
+                              duration: 2000,
+                            });
+                          }
+                        }}
+                        aria-label={t('copyShowingContent')}
+                        className={cn(
+                          "h-7 w-7 p-0 rounded-full transition-colors",
+                          isOwnMessage 
+                            ? "text-white/70 hover:text-white hover:bg-white/20" 
+                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                        )}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('copyShowingContent')}</p>
+                    </TooltipContent>
+                  </Tooltip>
 
-            {/* Menu d'options si permissions */}
-            {canModifyMessage() && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 p-1 rounded-full"
-                  >
-                    <MoreHorizontal className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={handleEditMessage}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    <span>{t('edit')}</span>
-                  </DropdownMenuItem>
-                  {canDeleteMessage() && (
-                    <DropdownMenuItem 
-                      onClick={handleDeleteMessage}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      <span>{t('delete')}</span>
-                    </DropdownMenuItem>
+                  {/* Menu d'options si permissions */}
+                  {canModifyMessage() && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={cn(
+                            "h-7 w-7 p-0 rounded-full transition-colors",
+                            isOwnMessage 
+                              ? "text-white/70 hover:text-white hover:bg-white/20" 
+                              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:bg-gray-700"
+                          )}
+                        >
+                          <MoreHorizontal className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuItem onClick={handleEditMessage}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          <span>{t('edit')}</span>
+                        </DropdownMenuItem>
+                        {canDeleteMessage() && (
+                          <DropdownMenuItem 
+                            onClick={handleDeleteMessage}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            <span>{t('delete')}</span>
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </TooltipProvider>
   );
 }

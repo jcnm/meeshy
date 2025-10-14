@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { logError } from '../utils/logger';
 import { UserRoleEnum } from '../../shared/types';
+import { TrackingLinkService } from '../services/TrackingLinkService';
 import { 
   createUnifiedAuthMiddleware,
   UnifiedAuthRequest,
@@ -71,6 +72,9 @@ export async function linksRoutes(fastify: FastifyInstance) {
     requireAuth: true, 
     allowAnonymous: false 
   });
+
+  // Service de tracking de liens
+  const trackingLinkService = new TrackingLinkService(fastify.prisma);
 
   /**
    * Adapte le nouveau contexte d'authentification unifié au format legacy
@@ -1240,12 +1244,21 @@ export async function linksRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Créer le message
+      // ÉTAPE 1: Traiter les liens dans le message AVANT la sauvegarde
+      console.log('[LINKS] Processing links in anonymous message before saving...');
+      const { processedContent, trackingLinks } = await trackingLinkService.processMessageLinks({
+        content: body.content,
+        conversationId: anonymousParticipant.shareLink.conversationId,
+        createdBy: undefined // Message anonyme
+      });
+      console.log(`[LINKS] Processed content: ${trackingLinks.length} tracking link(s) created`);
+
+      // ÉTAPE 2: Créer le message avec le contenu transformé
       const message = await fastify.prisma.message.create({
         data: {
           conversationId: anonymousParticipant.shareLink.conversationId,
           senderId: null, // Pas de sender authentifié
-          content: body.content,
+          content: processedContent, // Utiliser le contenu avec les liens remplacés par mshy://<token>
           originalLanguage: body.originalLanguage,
           messageType: body.messageType,
           anonymousSenderId: anonymousParticipant.id
@@ -1262,6 +1275,13 @@ export async function linksRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // ÉTAPE 3: Mettre à jour les messageIds des TrackingLinks
+      if (trackingLinks.length > 0) {
+        const tokens = trackingLinks.map(link => link.token);
+        await trackingLinkService.updateTrackingLinksMessageId(tokens, message.id);
+        console.log(`[LINKS] Updated messageId for ${tokens.length} tracking link(s)`);
+      }
 
       // Émettre l'événement WebSocket
       const socketManager = (fastify as any).socketManager;
@@ -1422,12 +1442,21 @@ export async function linksRoutes(fastify: FastifyInstance) {
         });
       }
 
-      // Créer le message
+      // ÉTAPE 1: Traiter les liens dans le message AVANT la sauvegarde
+      console.log('[LINKS_AUTH] Processing links in authenticated message before saving...');
+      const { processedContent, trackingLinks } = await trackingLinkService.processMessageLinks({
+        content: body.content,
+        conversationId: shareLink.conversationId,
+        createdBy: userId
+      });
+      console.log(`[LINKS_AUTH] Processed content: ${trackingLinks.length} tracking link(s) created`);
+
+      // ÉTAPE 2: Créer le message avec le contenu transformé
       const message = await fastify.prisma.message.create({
         data: {
           conversationId: shareLink.conversationId,
           senderId: userId, // Utilisateur authentifié
-          content: body.content,
+          content: processedContent, // Utiliser le contenu avec les liens remplacés par mshy://<token>
           originalLanguage: body.originalLanguage,
           messageType: body.messageType,
           anonymousSenderId: null // Pas de sender anonyme
@@ -1446,6 +1475,13 @@ export async function linksRoutes(fastify: FastifyInstance) {
           }
         }
       });
+
+      // ÉTAPE 3: Mettre à jour les messageIds des TrackingLinks
+      if (trackingLinks.length > 0) {
+        const tokens = trackingLinks.map(link => link.token);
+        await trackingLinkService.updateTrackingLinksMessageId(tokens, message.id);
+        console.log(`[LINKS_AUTH] Updated messageId for ${tokens.length} tracking link(s)`);
+      }
 
       // Émettre l'événement WebSocket
       const socketManager = (fastify as any).socketManager;

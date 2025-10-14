@@ -1271,7 +1271,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
               emptyStateMessage={t('bubbleStream.emptyStateMessage')}
               emptyStateDescription={t('bubbleStream.emptyStateDescription')}
               reverseOrder={false}
-              className="space-y-4"
+              className=""
               onTranslation={handleTranslation}
               onEditMessage={handleEditMessage}
               onDeleteMessage={handleDeleteMessage}
@@ -1302,15 +1302,15 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         </div>
 
         {/* Dégradé inférieur fixe - Transition progressive vers les couleurs générales de la page */}
-        <div className="fixed bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none z-20" />
+        <div className="fixed bottom-0 left-0 right-0 xl:right-80 h-32 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none z-20" />
 
         {/* Zone de composition flottante - Position fixe avec style plus large et aéré comme /conversations */}
         <div className="fixed bottom-0 left-0 right-0 xl:right-80 z-30 mobile-input-zone">
           {/* Dégradé de fond pour transition douce avec les couleurs générales */}
-          <div className="h-10 bg-gradient-to-t from-blue-50 via-blue-50/40 to-transparent pointer-events-none" />
+          <div className="h-10 bg-gradient-to-t from-blue-50 dark:from-gray-950 via-blue-50/40 dark:via-gray-950/40 to-transparent pointer-events-none" />
           
           {/* Zone de saisie avec transparence et couleurs harmonisées */}
-          <div className="bg-blue-50/20 backdrop-blur-lg border-t border-blue-200/50 shadow-xl shadow-blue-500/10">
+          <div className="bg-blue-50/20 dark:bg-gray-900/80 backdrop-blur-lg border-t border-blue-200/50 dark:border-gray-800/50 shadow-xl shadow-blue-500/10 dark:shadow-gray-900/50">
             <div className="p-4">
               <div className="max-w-5xl mx-auto">
                 <MessageComposer
@@ -1332,7 +1332,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
         </div>
 
         {/* Sidebar droite - Desktop uniquement - FIXE avec scroll indépendant */}
-        <div className="hidden xl:block w-80 fixed right-0 top-20 bottom-0 bg-white/60 backdrop-blur-lg border-l border-blue-200/30 z-40">
+        <div className="hidden xl:block w-80 fixed right-0 top-20 bottom-0 bg-white/60 dark:bg-gray-900/80 backdrop-blur-lg border-l border-blue-200/30 dark:border-gray-800/50 z-40">
           <div 
             className="h-full overflow-y-auto p-6 scroll-hidden"
           >
@@ -1363,7 +1363,7 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 {activeUsers.slice(0, 6).map((activeUser, index) => (
                   <div
                     key={`${activeUser.id}-${index}`}
-                    className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
+                    className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
@@ -1372,10 +1372,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {activeUser.firstName} {activeUser.lastName}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         @{activeUser.username}
                       </p>
                     </div>
@@ -1386,12 +1386,12 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                 {/* Section scrollable pour les utilisateurs restants */}
                 {activeUsers.length > 6 && (
                   <div 
-                    className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 pt-3 mt-3 scroll-hidden"
+                    className="max-h-48 overflow-y-auto space-y-3 pr-1 border-t border-gray-100 dark:border-gray-700 pt-3 mt-3 scroll-hidden"
                   >
                     {activeUsers.slice(6).map((activeUser, index) => (
                       <div
                         key={`${activeUser.id}-${index + 6}`}
-                        className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 cursor-pointer transition-colors"
+                        className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50/80 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                       >
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={activeUser.avatar || undefined} alt={activeUser.firstName} />
@@ -1400,10 +1400,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                             {activeUser.firstName} {activeUser.lastName}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                             @{activeUser.username}
                           </p>
                         </div>
@@ -1416,16 +1416,16 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
             </FoldableSection>
 
             {/* Section Tendances - Statique non-interactive, grisée */}
-            <div className="opacity-60 saturate-50 bg-gray-50/50 rounded-lg p-2">
-              <Card className="mb-6 bg-white/80 backdrop-blur-sm border-gray-200/50 shadow-lg">
+            <div className="opacity-60 saturate-50 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg p-2">
+              <Card className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-gray-200/50 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/30">
                 <CardContent className="p-0">
                   {/* Header non-cliquable */}
-                  <div className="flex items-center justify-between p-4 bg-gray-50/80">
-                    <h3 className="font-semibold text-gray-500 flex items-center">
-                      <TrendingUp className="h-4 w-4 mr-2 text-gray-400" />
+                  <div className="flex items-center justify-between p-4 bg-gray-50/80 dark:bg-gray-700/50">
+                    <h3 className="font-semibold text-gray-500 dark:text-gray-400 flex items-center">
+                      <TrendingUp className="h-4 w-4 mr-2 text-gray-400 dark:text-gray-500" />
                       Tendances
                     </h3>
-                    <ChevronDown className="h-4 w-4 text-gray-300" />
+                    <ChevronDown className="h-4 w-4 text-gray-300 dark:text-gray-600" />
                   </div>
                   
                   {/* Contenu statique (non-visible car fermé) */}

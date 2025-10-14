@@ -2,6 +2,7 @@
   "settings": {
     "title": "Settings",
     "pageTitle": "Settings for {username}",
+    "subtitle": "Manage your account preferences, language settings, and privacy options",
     "loadingSettings": "Loading settings...",
     "settingsError": "Error loading settings",
     "settingsSaved": "Settings saved successfully",

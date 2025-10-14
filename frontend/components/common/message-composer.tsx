@@ -49,9 +49,18 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const { t } = useI18n('conversations');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { replyingTo, clearReply } = useReplyStore();
+  const [isMobile, setIsMobile] = useState(false);
   
   // Utiliser le placeholder fourni ou la traduction par défaut
   const finalPlaceholder = placeholder || t('conversationSearch.shareMessage');
+  
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Fonction pour formater la date en fonction du jour
   const formatReplyDate = (date: Date | string) => {
@@ -110,6 +119,18 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
   const handleKeyPress = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (onKeyPress) {
       onKeyPress(e);
+    }
+  };
+
+  // Handle blur for mobile to ensure zoom out
+  const handleBlur = () => {
+    if (isMobile && textareaRef.current) {
+      // Force blur and zoom out on mobile devices
+      textareaRef.current.blur();
+      // Slight delay to ensure keyboard is fully dismissed before zoom reset
+      setTimeout(() => {
+        window.scrollTo(0, window.scrollY);
+      }, 100);
     }
   };
 
@@ -192,13 +213,15 @@ export const MessageComposer = forwardRef<MessageComposerRef, MessageComposerPro
         value={value}
         onChange={handleTextareaChange}
         onKeyPress={handleKeyPress}
+        onBlur={handleBlur}
         placeholder={finalPlaceholder}
-        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 text-sm sm:text-base border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${replyingTo ? 'rounded-b-2xl rounded-t-none border-t-0' : 'rounded-2xl'}`}
+        className={`expandable-textarea min-h-[60px] sm:min-h-[80px] max-h-40 resize-none pr-20 sm:pr-28 pb-8 sm:pb-10 pt-3 pl-3 border-blue-200/60 bg-white/90 backdrop-blur-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 focus:bg-white/95 placeholder:text-gray-600 scroll-hidden transition-all duration-200 ${replyingTo ? 'rounded-b-2xl rounded-t-none border-t-0' : 'rounded-2xl'} ${isMobile ? 'text-base' : 'text-sm sm:text-base'}`}
         maxLength={MAX_MESSAGE_LENGTH}
         disabled={!isComposingEnabled}
         style={{
           borderRadius: replyingTo ? '0 0 16px 16px' : '16px',
-          boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)'
+          boxShadow: '0 4px 20px rgba(59, 130, 246, 0.15)',
+          fontSize: isMobile ? '16px' : undefined
         }}
       />
       

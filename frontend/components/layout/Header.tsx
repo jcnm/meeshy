@@ -4,16 +4,29 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { 
   LogIn, 
   UserPlus, 
   MessageSquare,
   Menu,
   X,
-  Share2
+  Share2,
+  Sun,
+  Moon,
+  Monitor,
+  ChevronDown
 } from 'lucide-react';
 import { AuthMode } from '@/types';
 import { useAuth } from '@/hooks/use-auth';
+import { useAppStore } from '@/stores/app-store';
 
 interface HeaderProps {
   mode?: 'landing' | 'chat' | 'default';
@@ -35,6 +48,7 @@ export function Header({
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAnonymous } = useAuth();
+  const { theme, setTheme } = useAppStore();
 
   const handleAuthClick = (newMode: AuthMode) => {
     if (onAuthModeChange) {
@@ -81,40 +95,67 @@ export function Header({
                   </Button>
                 )}
                 
-                {/* Informations utilisateur */}
+                {/* Menu Utilisateur avec Dropdown */}
                 {user && (
-                  <div className="flex items-center space-x-3 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                      {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
-                      </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="flex items-center space-x-2 px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                          {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
+                        </div>
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
+                          </span>
+                          {isAnonymous && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Guest</span>
+                          )}
+                        </div>
+                        <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        {user.displayName || user.username}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      
+                      {/* Options de connexion pour utilisateurs anonymes */}
                       {isAnonymous && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Guest</span>
+                        <>
+                          <DropdownMenuItem onClick={() => router.push('/login')}>
+                            <LogIn className="h-4 w-4 mr-2" />
+                            Login
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push('/signin')}>
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Sign Up
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
                       )}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Boutons de connexion pour les utilisateurs anonymes */}
-                {isAnonymous && (
-                  <>
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => router.push('/login')}
-                    >
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Login
-                    </Button>
-                    <Button 
-                      onClick={() => router.push('/signin')}
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Sign Up
-                    </Button>
-                  </>
+                      
+                      {/* Options de thème */}
+                      <DropdownMenuLabel className="text-xs text-gray-500 dark:text-gray-400">
+                        Theme
+                      </DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => setTheme('light')}>
+                        <Sun className="h-4 w-4 mr-2" />
+                        Light
+                        {theme === 'light' && <span className="ml-auto">✓</span>}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTheme('dark')}>
+                        <Moon className="h-4 w-4 mr-2" />
+                        Dark
+                        {theme === 'dark' && <span className="ml-auto">✓</span>}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setTheme('auto')}>
+                        <Monitor className="h-4 w-4 mr-2" />
+                        System
+                        {theme === 'auto' && <span className="ml-auto">✓</span>}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </>
             )}
@@ -190,19 +231,91 @@ export function Header({
                 <>
                   {/* Informations utilisateur en mobile */}
                   {user && (
-                    <div className="flex items-center space-x-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                        {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
+                    <>
+                      <div className="flex items-center space-x-3 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                          {user.displayName?.[0] || user.firstName?.[0] || user.username[0].toUpperCase()}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
+                          </span>
+                          {isAnonymous && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Guest</span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {user.displayName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username}
-                        </span>
-                        {isAnonymous && (
-                          <span className="text-xs text-gray-500 dark:text-gray-400">Guest</span>
-                        )}
+                      
+                      {/* Options pour utilisateurs anonymes */}
+                      {isAnonymous && (
+                        <>
+                          <Button 
+                            variant="ghost" 
+                            className="w-full justify-start"
+                            onClick={() => {
+                              router.push('/login');
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <LogIn className="h-4 w-4 mr-2" />
+                            Login
+                          </Button>
+                          <Button 
+                            className="w-full justify-start"
+                            onClick={() => {
+                              router.push('/signin');
+                              setIsMobileMenuOpen(false);
+                            }}
+                          >
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Sign Up
+                          </Button>
+                        </>
+                      )}
+                      
+                      {/* Options de thème */}
+                      <div className="space-y-2">
+                        <div className="px-2 py-1.5">
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Theme</span>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start"
+                          onClick={() => {
+                            setTheme('light');
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <Sun className="h-4 w-4 mr-2" />
+                          Light
+                          {theme === 'light' && <span className="ml-auto">✓</span>}
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start"
+                          onClick={() => {
+                            setTheme('dark');
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <Moon className="h-4 w-4 mr-2" />
+                          Dark
+                          {theme === 'dark' && <span className="ml-auto">✓</span>}
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start"
+                          onClick={() => {
+                            setTheme('auto');
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          <Monitor className="h-4 w-4 mr-2" />
+                          System
+                          {theme === 'auto' && <span className="ml-auto">✓</span>}
+                        </Button>
                       </div>
-                    </div>
+                    </>
                   )}
                   
                   {shareLink && (
@@ -214,33 +327,6 @@ export function Header({
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
                     </Button>
-                  )}
-                  
-                  {/* Boutons de connexion pour les utilisateurs anonymes */}
-                  {isAnonymous && (
-                    <>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start"
-                        onClick={() => {
-                          router.push('/login');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <LogIn className="h-4 w-4 mr-2" />
-                        Login
-                      </Button>
-                      <Button 
-                        className="w-full justify-start"
-                        onClick={() => {
-                          router.push('/signin');
-                          setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Sign Up
-                      </Button>
-                    </>
                   )}
                 </>
               )}

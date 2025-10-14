@@ -103,6 +103,16 @@ export type AffiliateToken = $Result.DefaultSelection<Prisma.$AffiliateTokenPayl
  * Relation d'affiliation entre utilisateurs
  */
 export type AffiliateRelation = $Result.DefaultSelection<Prisma.$AffiliateRelationPayload>
+/**
+ * Model TrackingLink
+ * Lien de tracking pour compter les clics sur les liens partagés
+ */
+export type TrackingLink = $Result.DefaultSelection<Prisma.$TrackingLinkPayload>
+/**
+ * Model TrackingLinkClick
+ * Clic sur un lien de tracking
+ */
+export type TrackingLinkClick = $Result.DefaultSelection<Prisma.$TrackingLinkClickPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -375,6 +385,26 @@ export class PrismaClient<
     * ```
     */
   get affiliateRelation(): Prisma.AffiliateRelationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.trackingLink`: Exposes CRUD operations for the **TrackingLink** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TrackingLinks
+    * const trackingLinks = await prisma.trackingLink.findMany()
+    * ```
+    */
+  get trackingLink(): Prisma.TrackingLinkDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.trackingLinkClick`: Exposes CRUD operations for the **TrackingLinkClick** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TrackingLinkClicks
+    * const trackingLinkClicks = await prisma.trackingLinkClick.findMany()
+    * ```
+    */
+  get trackingLinkClick(): Prisma.TrackingLinkClickDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -434,7 +464,7 @@ export namespace Prisma {
 
   /**
    * Prisma Client JS version: 6.13.0
-   * Query Engine version: 393aa359c9ad4a4bb28630fb5613f9c281cde053
+   * Query Engine version: 361e86d0ea4987e9f53a565309b3eed797a6bcbd
    */
   export type PrismaVersion = {
     client: string
@@ -832,7 +862,9 @@ export namespace Prisma {
     UserPreference: 'UserPreference',
     ConversationPreference: 'ConversationPreference',
     AffiliateToken: 'AffiliateToken',
-    AffiliateRelation: 'AffiliateRelation'
+    AffiliateRelation: 'AffiliateRelation',
+    TrackingLink: 'TrackingLink',
+    TrackingLinkClick: 'TrackingLinkClick'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -851,7 +883,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation"
+      modelProps: "user" | "conversation" | "conversationMember" | "conversationShareLink" | "anonymousParticipant" | "message" | "messageTranslation" | "messageStatus" | "friendRequest" | "typingIndicator" | "notification" | "community" | "communityMember" | "userStats" | "userPreference" | "conversationPreference" | "affiliateToken" | "affiliateRelation" | "trackingLink" | "trackingLinkClick"
       txIsolationLevel: never
     }
     model: {
@@ -2187,6 +2219,154 @@ export namespace Prisma {
           }
         }
       }
+      TrackingLink: {
+        payload: Prisma.$TrackingLinkPayload<ExtArgs>
+        fields: Prisma.TrackingLinkFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TrackingLinkFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TrackingLinkFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload>
+          }
+          findFirst: {
+            args: Prisma.TrackingLinkFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TrackingLinkFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload>
+          }
+          findMany: {
+            args: Prisma.TrackingLinkFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload>[]
+          }
+          create: {
+            args: Prisma.TrackingLinkCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload>
+          }
+          createMany: {
+            args: Prisma.TrackingLinkCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.TrackingLinkDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload>
+          }
+          update: {
+            args: Prisma.TrackingLinkUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload>
+          }
+          deleteMany: {
+            args: Prisma.TrackingLinkDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TrackingLinkUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TrackingLinkUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkPayload>
+          }
+          aggregate: {
+            args: Prisma.TrackingLinkAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTrackingLink>
+          }
+          groupBy: {
+            args: Prisma.TrackingLinkGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TrackingLinkGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.TrackingLinkFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.TrackingLinkAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.TrackingLinkCountArgs<ExtArgs>
+            result: $Utils.Optional<TrackingLinkCountAggregateOutputType> | number
+          }
+        }
+      }
+      TrackingLinkClick: {
+        payload: Prisma.$TrackingLinkClickPayload<ExtArgs>
+        fields: Prisma.TrackingLinkClickFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TrackingLinkClickFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TrackingLinkClickFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload>
+          }
+          findFirst: {
+            args: Prisma.TrackingLinkClickFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TrackingLinkClickFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload>
+          }
+          findMany: {
+            args: Prisma.TrackingLinkClickFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload>[]
+          }
+          create: {
+            args: Prisma.TrackingLinkClickCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload>
+          }
+          createMany: {
+            args: Prisma.TrackingLinkClickCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.TrackingLinkClickDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload>
+          }
+          update: {
+            args: Prisma.TrackingLinkClickUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload>
+          }
+          deleteMany: {
+            args: Prisma.TrackingLinkClickDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TrackingLinkClickUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TrackingLinkClickUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TrackingLinkClickPayload>
+          }
+          aggregate: {
+            args: Prisma.TrackingLinkClickAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTrackingLinkClick>
+          }
+          groupBy: {
+            args: Prisma.TrackingLinkClickGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TrackingLinkClickGroupByOutputType>[]
+          }
+          findRaw: {
+            args: Prisma.TrackingLinkClickFindRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          aggregateRaw: {
+            args: Prisma.TrackingLinkClickAggregateRawArgs<ExtArgs>
+            result: JsonObject
+          }
+          count: {
+            args: Prisma.TrackingLinkClickCountArgs<ExtArgs>
+            result: $Utils.Optional<TrackingLinkClickCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2284,6 +2464,8 @@ export namespace Prisma {
     conversationPreference?: ConversationPreferenceOmit
     affiliateToken?: AffiliateTokenOmit
     affiliateRelation?: AffiliateRelationOmit
+    trackingLink?: TrackingLinkOmit
+    trackingLinkClick?: TrackingLinkClickOmit
   }
 
   /* Types for Logging */
@@ -2398,6 +2580,8 @@ export namespace Prisma {
     createdAffiliateTokens: number
     affiliateRelations: number
     referredRelations: number
+    createdTrackingLinks: number
+    trackingLinkClicks: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2416,6 +2600,8 @@ export namespace Prisma {
     createdAffiliateTokens?: boolean | UserCountOutputTypeCountCreatedAffiliateTokensArgs
     affiliateRelations?: boolean | UserCountOutputTypeCountAffiliateRelationsArgs
     referredRelations?: boolean | UserCountOutputTypeCountReferredRelationsArgs
+    createdTrackingLinks?: boolean | UserCountOutputTypeCountCreatedTrackingLinksArgs
+    trackingLinkClicks?: boolean | UserCountOutputTypeCountTrackingLinkClicksArgs
   }
 
   // Custom InputTypes
@@ -2534,6 +2720,20 @@ export namespace Prisma {
     where?: AffiliateRelationWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCreatedTrackingLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingLinkWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTrackingLinkClicksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingLinkClickWhereInput
+  }
+
 
   /**
    * Count Type ConversationCountOutputType
@@ -2648,10 +2848,12 @@ export namespace Prisma {
 
   export type AnonymousParticipantCountOutputType = {
     sentMessages: number
+    trackingLinkClicks: number
   }
 
   export type AnonymousParticipantCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sentMessages?: boolean | AnonymousParticipantCountOutputTypeCountSentMessagesArgs
+    trackingLinkClicks?: boolean | AnonymousParticipantCountOutputTypeCountTrackingLinkClicksArgs
   }
 
   // Custom InputTypes
@@ -2670,6 +2872,13 @@ export namespace Prisma {
    */
   export type AnonymousParticipantCountOutputTypeCountSentMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageWhereInput
+  }
+
+  /**
+   * AnonymousParticipantCountOutputType without action
+   */
+  export type AnonymousParticipantCountOutputTypeCountTrackingLinkClicksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingLinkClickWhereInput
   }
 
 
@@ -2799,6 +3008,37 @@ export namespace Prisma {
    */
   export type AffiliateTokenCountOutputTypeCountAffiliationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AffiliateRelationWhereInput
+  }
+
+
+  /**
+   * Count Type TrackingLinkCountOutputType
+   */
+
+  export type TrackingLinkCountOutputType = {
+    clicks: number
+  }
+
+  export type TrackingLinkCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    clicks?: boolean | TrackingLinkCountOutputTypeCountClicksArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * TrackingLinkCountOutputType without action
+   */
+  export type TrackingLinkCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkCountOutputType
+     */
+    select?: TrackingLinkCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TrackingLinkCountOutputType without action
+   */
+  export type TrackingLinkCountOutputTypeCountClicksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingLinkClickWhereInput
   }
 
 
@@ -3146,6 +3386,8 @@ export namespace Prisma {
     createdAffiliateTokens?: boolean | User$createdAffiliateTokensArgs<ExtArgs>
     affiliateRelations?: boolean | User$affiliateRelationsArgs<ExtArgs>
     referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
+    createdTrackingLinks?: boolean | User$createdTrackingLinksArgs<ExtArgs>
+    trackingLinkClicks?: boolean | User$trackingLinkClicksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3197,6 +3439,8 @@ export namespace Prisma {
     createdAffiliateTokens?: boolean | User$createdAffiliateTokensArgs<ExtArgs>
     affiliateRelations?: boolean | User$affiliateRelationsArgs<ExtArgs>
     referredRelations?: boolean | User$referredRelationsArgs<ExtArgs>
+    createdTrackingLinks?: boolean | User$createdTrackingLinksArgs<ExtArgs>
+    trackingLinkClicks?: boolean | User$trackingLinkClicksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3219,6 +3463,8 @@ export namespace Prisma {
       createdAffiliateTokens: Prisma.$AffiliateTokenPayload<ExtArgs>[]
       affiliateRelations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
       referredRelations: Prisma.$AffiliateRelationPayload<ExtArgs>[]
+      createdTrackingLinks: Prisma.$TrackingLinkPayload<ExtArgs>[]
+      trackingLinkClicks: Prisma.$TrackingLinkClickPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3628,6 +3874,8 @@ export namespace Prisma {
     createdAffiliateTokens<T extends User$createdAffiliateTokensArgs<ExtArgs> = {}>(args?: Subset<T, User$createdAffiliateTokensArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     affiliateRelations<T extends User$affiliateRelationsArgs<ExtArgs> = {}>(args?: Subset<T, User$affiliateRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     referredRelations<T extends User$referredRelationsArgs<ExtArgs> = {}>(args?: Subset<T, User$referredRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AffiliateRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    createdTrackingLinks<T extends User$createdTrackingLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$createdTrackingLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    trackingLinkClicks<T extends User$trackingLinkClicksArgs<ExtArgs> = {}>(args?: Subset<T, User$trackingLinkClicksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3951,6 +4199,10 @@ export namespace Prisma {
      * Filter which Users to update
      */
     where?: UserWhereInput
+    /**
+     * Limit how many Users to update.
+     */
+    limit?: number
   }
 
   /**
@@ -4013,6 +4265,10 @@ export namespace Prisma {
      * Filter which Users to delete
      */
     where?: UserWhereInput
+    /**
+     * Limit how many Users to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -4420,6 +4676,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AffiliateRelationScalarFieldEnum | AffiliateRelationScalarFieldEnum[]
+  }
+
+  /**
+   * User.createdTrackingLinks
+   */
+  export type User$createdTrackingLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    where?: TrackingLinkWhereInput
+    orderBy?: TrackingLinkOrderByWithRelationInput | TrackingLinkOrderByWithRelationInput[]
+    cursor?: TrackingLinkWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TrackingLinkScalarFieldEnum | TrackingLinkScalarFieldEnum[]
+  }
+
+  /**
+   * User.trackingLinkClicks
+   */
+  export type User$trackingLinkClicksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    where?: TrackingLinkClickWhereInput
+    orderBy?: TrackingLinkClickOrderByWithRelationInput | TrackingLinkClickOrderByWithRelationInput[]
+    cursor?: TrackingLinkClickWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TrackingLinkClickScalarFieldEnum | TrackingLinkClickScalarFieldEnum[]
   }
 
   /**
@@ -5421,6 +5725,10 @@ export namespace Prisma {
      * Filter which Conversations to update
      */
     where?: ConversationWhereInput
+    /**
+     * Limit how many Conversations to update.
+     */
+    limit?: number
   }
 
   /**
@@ -5483,6 +5791,10 @@ export namespace Prisma {
      * Filter which Conversations to delete
      */
     where?: ConversationWhereInput
+    /**
+     * Limit how many Conversations to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -6661,6 +6973,10 @@ export namespace Prisma {
      * Filter which ConversationMembers to update
      */
     where?: ConversationMemberWhereInput
+    /**
+     * Limit how many ConversationMembers to update.
+     */
+    limit?: number
   }
 
   /**
@@ -6723,6 +7039,10 @@ export namespace Prisma {
      * Filter which ConversationMembers to delete
      */
     where?: ConversationMemberWhereInput
+    /**
+     * Limit how many ConversationMembers to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -7918,6 +8238,10 @@ export namespace Prisma {
      * Filter which ConversationShareLinks to update
      */
     where?: ConversationShareLinkWhereInput
+    /**
+     * Limit how many ConversationShareLinks to update.
+     */
+    limit?: number
   }
 
   /**
@@ -7980,6 +8304,10 @@ export namespace Prisma {
      * Filter which ConversationShareLinks to delete
      */
     where?: ConversationShareLinkWhereInput
+    /**
+     * Limit how many ConversationShareLinks to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -8348,6 +8676,7 @@ export namespace Prisma {
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     sentMessages?: boolean | AnonymousParticipant$sentMessagesArgs<ExtArgs>
+    trackingLinkClicks?: boolean | AnonymousParticipant$trackingLinkClicksArgs<ExtArgs>
     _count?: boolean | AnonymousParticipantCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["anonymousParticipant"]>
 
@@ -8382,6 +8711,7 @@ export namespace Prisma {
     shareLink?: boolean | ConversationShareLinkDefaultArgs<ExtArgs>
     conversation?: boolean | ConversationDefaultArgs<ExtArgs>
     sentMessages?: boolean | AnonymousParticipant$sentMessagesArgs<ExtArgs>
+    trackingLinkClicks?: boolean | AnonymousParticipant$trackingLinkClicksArgs<ExtArgs>
     _count?: boolean | AnonymousParticipantCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -8391,6 +8721,7 @@ export namespace Prisma {
       shareLink: Prisma.$ConversationShareLinkPayload<ExtArgs>
       conversation: Prisma.$ConversationPayload<ExtArgs>
       sentMessages: Prisma.$MessagePayload<ExtArgs>[]
+      trackingLinkClicks: Prisma.$TrackingLinkClickPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8780,6 +9111,7 @@ export namespace Prisma {
     shareLink<T extends ConversationShareLinkDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationShareLinkDefaultArgs<ExtArgs>>): Prisma__ConversationShareLinkClient<$Result.GetResult<Prisma.$ConversationShareLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     conversation<T extends ConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ConversationDefaultArgs<ExtArgs>>): Prisma__ConversationClient<$Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     sentMessages<T extends AnonymousParticipant$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, AnonymousParticipant$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    trackingLinkClicks<T extends AnonymousParticipant$trackingLinkClicksArgs<ExtArgs> = {}>(args?: Subset<T, AnonymousParticipant$trackingLinkClicksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9099,6 +9431,10 @@ export namespace Prisma {
      * Filter which AnonymousParticipants to update
      */
     where?: AnonymousParticipantWhereInput
+    /**
+     * Limit how many AnonymousParticipants to update.
+     */
+    limit?: number
   }
 
   /**
@@ -9161,6 +9497,10 @@ export namespace Prisma {
      * Filter which AnonymousParticipants to delete
      */
     where?: AnonymousParticipantWhereInput
+    /**
+     * Limit how many AnonymousParticipants to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -9213,6 +9553,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MessageScalarFieldEnum | MessageScalarFieldEnum[]
+  }
+
+  /**
+   * AnonymousParticipant.trackingLinkClicks
+   */
+  export type AnonymousParticipant$trackingLinkClicksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    where?: TrackingLinkClickWhereInput
+    orderBy?: TrackingLinkClickOrderByWithRelationInput | TrackingLinkClickOrderByWithRelationInput[]
+    cursor?: TrackingLinkClickWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TrackingLinkClickScalarFieldEnum | TrackingLinkClickScalarFieldEnum[]
   }
 
   /**
@@ -10226,6 +10590,10 @@ export namespace Prisma {
      * Filter which Messages to update
      */
     where?: MessageWhereInput
+    /**
+     * Limit how many Messages to update.
+     */
+    limit?: number
   }
 
   /**
@@ -10288,6 +10656,10 @@ export namespace Prisma {
      * Filter which Messages to delete
      */
     where?: MessageWhereInput
+    /**
+     * Limit how many Messages to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -11428,6 +11800,10 @@ export namespace Prisma {
      * Filter which MessageTranslations to update
      */
     where?: MessageTranslationWhereInput
+    /**
+     * Limit how many MessageTranslations to update.
+     */
+    limit?: number
   }
 
   /**
@@ -11490,6 +11866,10 @@ export namespace Prisma {
      * Filter which MessageTranslations to delete
      */
     where?: MessageTranslationWhereInput
+    /**
+     * Limit how many MessageTranslations to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -12427,6 +12807,10 @@ export namespace Prisma {
      * Filter which MessageStatuses to update
      */
     where?: MessageStatusWhereInput
+    /**
+     * Limit how many MessageStatuses to update.
+     */
+    limit?: number
   }
 
   /**
@@ -12489,6 +12873,10 @@ export namespace Prisma {
      * Filter which MessageStatuses to delete
      */
     where?: MessageStatusWhereInput
+    /**
+     * Limit how many MessageStatuses to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -13435,6 +13823,10 @@ export namespace Prisma {
      * Filter which FriendRequests to update
      */
     where?: FriendRequestWhereInput
+    /**
+     * Limit how many FriendRequests to update.
+     */
+    limit?: number
   }
 
   /**
@@ -13497,6 +13889,10 @@ export namespace Prisma {
      * Filter which FriendRequests to delete
      */
     where?: FriendRequestWhereInput
+    /**
+     * Limit how many FriendRequests to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -14421,6 +14817,10 @@ export namespace Prisma {
      * Filter which TypingIndicators to update
      */
     where?: TypingIndicatorWhereInput
+    /**
+     * Limit how many TypingIndicators to update.
+     */
+    limit?: number
   }
 
   /**
@@ -14483,6 +14883,10 @@ export namespace Prisma {
      * Filter which TypingIndicators to delete
      */
     where?: TypingIndicatorWhereInput
+    /**
+     * Limit how many TypingIndicators to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -15472,6 +15876,10 @@ export namespace Prisma {
      * Filter which Notifications to update
      */
     where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to update.
+     */
+    limit?: number
   }
 
   /**
@@ -15534,6 +15942,10 @@ export namespace Prisma {
      * Filter which Notifications to delete
      */
     where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -16500,6 +16912,10 @@ export namespace Prisma {
      * Filter which Communities to update
      */
     where?: CommunityWhereInput
+    /**
+     * Limit how many Communities to update.
+     */
+    limit?: number
   }
 
   /**
@@ -16562,6 +16978,10 @@ export namespace Prisma {
      * Filter which Communities to delete
      */
     where?: CommunityWhereInput
+    /**
+     * Limit how many Communities to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -17526,6 +17946,10 @@ export namespace Prisma {
      * Filter which CommunityMembers to update
      */
     where?: CommunityMemberWhereInput
+    /**
+     * Limit how many CommunityMembers to update.
+     */
+    limit?: number
   }
 
   /**
@@ -17588,6 +18012,10 @@ export namespace Prisma {
      * Filter which CommunityMembers to delete
      */
     where?: CommunityMemberWhereInput
+    /**
+     * Limit how many CommunityMembers to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -18737,6 +19165,10 @@ export namespace Prisma {
      * Filter which UserStats to update
      */
     where?: UserStatsWhereInput
+    /**
+     * Limit how many UserStats to update.
+     */
+    limit?: number
   }
 
   /**
@@ -18799,6 +19231,10 @@ export namespace Prisma {
      * Filter which UserStats to delete
      */
     where?: UserStatsWhereInput
+    /**
+     * Limit how many UserStats to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -19741,6 +20177,10 @@ export namespace Prisma {
      * Filter which UserPreferences to update
      */
     where?: UserPreferenceWhereInput
+    /**
+     * Limit how many UserPreferences to update.
+     */
+    limit?: number
   }
 
   /**
@@ -19803,6 +20243,10 @@ export namespace Prisma {
      * Filter which UserPreferences to delete
      */
     where?: UserPreferenceWhereInput
+    /**
+     * Limit how many UserPreferences to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -20760,6 +21204,10 @@ export namespace Prisma {
      * Filter which ConversationPreferences to update
      */
     where?: ConversationPreferenceWhereInput
+    /**
+     * Limit how many ConversationPreferences to update.
+     */
+    limit?: number
   }
 
   /**
@@ -20822,6 +21270,10 @@ export namespace Prisma {
      * Filter which ConversationPreferences to delete
      */
     where?: ConversationPreferenceWhereInput
+    /**
+     * Limit how many ConversationPreferences to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -21830,6 +22282,10 @@ export namespace Prisma {
      * Filter which AffiliateTokens to update
      */
     where?: AffiliateTokenWhereInput
+    /**
+     * Limit how many AffiliateTokens to update.
+     */
+    limit?: number
   }
 
   /**
@@ -21892,6 +22348,10 @@ export namespace Prisma {
      * Filter which AffiliateTokens to delete
      */
     where?: AffiliateTokenWhereInput
+    /**
+     * Limit how many AffiliateTokens to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -22855,6 +23315,10 @@ export namespace Prisma {
      * Filter which AffiliateRelations to update
      */
     where?: AffiliateRelationWhereInput
+    /**
+     * Limit how many AffiliateRelations to update.
+     */
+    limit?: number
   }
 
   /**
@@ -22917,6 +23381,10 @@ export namespace Prisma {
      * Filter which AffiliateRelations to delete
      */
     where?: AffiliateRelationWhereInput
+    /**
+     * Limit how many AffiliateRelations to delete.
+     */
+    limit?: number
   }
 
   /**
@@ -22963,6 +23431,2317 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: AffiliateRelationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TrackingLink
+   */
+
+  export type AggregateTrackingLink = {
+    _count: TrackingLinkCountAggregateOutputType | null
+    _avg: TrackingLinkAvgAggregateOutputType | null
+    _sum: TrackingLinkSumAggregateOutputType | null
+    _min: TrackingLinkMinAggregateOutputType | null
+    _max: TrackingLinkMaxAggregateOutputType | null
+  }
+
+  export type TrackingLinkAvgAggregateOutputType = {
+    totalClicks: number | null
+    uniqueClicks: number | null
+  }
+
+  export type TrackingLinkSumAggregateOutputType = {
+    totalClicks: number | null
+    uniqueClicks: number | null
+  }
+
+  export type TrackingLinkMinAggregateOutputType = {
+    id: string | null
+    token: string | null
+    originalUrl: string | null
+    shortUrl: string | null
+    createdBy: string | null
+    conversationId: string | null
+    messageId: string | null
+    totalClicks: number | null
+    uniqueClicks: number | null
+    isActive: boolean | null
+    expiresAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    lastClickedAt: Date | null
+  }
+
+  export type TrackingLinkMaxAggregateOutputType = {
+    id: string | null
+    token: string | null
+    originalUrl: string | null
+    shortUrl: string | null
+    createdBy: string | null
+    conversationId: string | null
+    messageId: string | null
+    totalClicks: number | null
+    uniqueClicks: number | null
+    isActive: boolean | null
+    expiresAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    lastClickedAt: Date | null
+  }
+
+  export type TrackingLinkCountAggregateOutputType = {
+    id: number
+    token: number
+    originalUrl: number
+    shortUrl: number
+    createdBy: number
+    conversationId: number
+    messageId: number
+    totalClicks: number
+    uniqueClicks: number
+    isActive: number
+    expiresAt: number
+    createdAt: number
+    updatedAt: number
+    lastClickedAt: number
+    _all: number
+  }
+
+
+  export type TrackingLinkAvgAggregateInputType = {
+    totalClicks?: true
+    uniqueClicks?: true
+  }
+
+  export type TrackingLinkSumAggregateInputType = {
+    totalClicks?: true
+    uniqueClicks?: true
+  }
+
+  export type TrackingLinkMinAggregateInputType = {
+    id?: true
+    token?: true
+    originalUrl?: true
+    shortUrl?: true
+    createdBy?: true
+    conversationId?: true
+    messageId?: true
+    totalClicks?: true
+    uniqueClicks?: true
+    isActive?: true
+    expiresAt?: true
+    createdAt?: true
+    updatedAt?: true
+    lastClickedAt?: true
+  }
+
+  export type TrackingLinkMaxAggregateInputType = {
+    id?: true
+    token?: true
+    originalUrl?: true
+    shortUrl?: true
+    createdBy?: true
+    conversationId?: true
+    messageId?: true
+    totalClicks?: true
+    uniqueClicks?: true
+    isActive?: true
+    expiresAt?: true
+    createdAt?: true
+    updatedAt?: true
+    lastClickedAt?: true
+  }
+
+  export type TrackingLinkCountAggregateInputType = {
+    id?: true
+    token?: true
+    originalUrl?: true
+    shortUrl?: true
+    createdBy?: true
+    conversationId?: true
+    messageId?: true
+    totalClicks?: true
+    uniqueClicks?: true
+    isActive?: true
+    expiresAt?: true
+    createdAt?: true
+    updatedAt?: true
+    lastClickedAt?: true
+    _all?: true
+  }
+
+  export type TrackingLinkAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TrackingLink to aggregate.
+     */
+    where?: TrackingLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinks to fetch.
+     */
+    orderBy?: TrackingLinkOrderByWithRelationInput | TrackingLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TrackingLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TrackingLinks
+    **/
+    _count?: true | TrackingLinkCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TrackingLinkAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TrackingLinkSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TrackingLinkMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TrackingLinkMaxAggregateInputType
+  }
+
+  export type GetTrackingLinkAggregateType<T extends TrackingLinkAggregateArgs> = {
+        [P in keyof T & keyof AggregateTrackingLink]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTrackingLink[P]>
+      : GetScalarType<T[P], AggregateTrackingLink[P]>
+  }
+
+
+
+
+  export type TrackingLinkGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingLinkWhereInput
+    orderBy?: TrackingLinkOrderByWithAggregationInput | TrackingLinkOrderByWithAggregationInput[]
+    by: TrackingLinkScalarFieldEnum[] | TrackingLinkScalarFieldEnum
+    having?: TrackingLinkScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TrackingLinkCountAggregateInputType | true
+    _avg?: TrackingLinkAvgAggregateInputType
+    _sum?: TrackingLinkSumAggregateInputType
+    _min?: TrackingLinkMinAggregateInputType
+    _max?: TrackingLinkMaxAggregateInputType
+  }
+
+  export type TrackingLinkGroupByOutputType = {
+    id: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    createdBy: string | null
+    conversationId: string | null
+    messageId: string | null
+    totalClicks: number
+    uniqueClicks: number
+    isActive: boolean
+    expiresAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    lastClickedAt: Date | null
+    _count: TrackingLinkCountAggregateOutputType | null
+    _avg: TrackingLinkAvgAggregateOutputType | null
+    _sum: TrackingLinkSumAggregateOutputType | null
+    _min: TrackingLinkMinAggregateOutputType | null
+    _max: TrackingLinkMaxAggregateOutputType | null
+  }
+
+  type GetTrackingLinkGroupByPayload<T extends TrackingLinkGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TrackingLinkGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TrackingLinkGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TrackingLinkGroupByOutputType[P]>
+            : GetScalarType<T[P], TrackingLinkGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TrackingLinkSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    token?: boolean
+    originalUrl?: boolean
+    shortUrl?: boolean
+    createdBy?: boolean
+    conversationId?: boolean
+    messageId?: boolean
+    totalClicks?: boolean
+    uniqueClicks?: boolean
+    isActive?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    lastClickedAt?: boolean
+    clicks?: boolean | TrackingLink$clicksArgs<ExtArgs>
+    creator?: boolean | TrackingLink$creatorArgs<ExtArgs>
+    _count?: boolean | TrackingLinkCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["trackingLink"]>
+
+
+
+  export type TrackingLinkSelectScalar = {
+    id?: boolean
+    token?: boolean
+    originalUrl?: boolean
+    shortUrl?: boolean
+    createdBy?: boolean
+    conversationId?: boolean
+    messageId?: boolean
+    totalClicks?: boolean
+    uniqueClicks?: boolean
+    isActive?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    lastClickedAt?: boolean
+  }
+
+  export type TrackingLinkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "token" | "originalUrl" | "shortUrl" | "createdBy" | "conversationId" | "messageId" | "totalClicks" | "uniqueClicks" | "isActive" | "expiresAt" | "createdAt" | "updatedAt" | "lastClickedAt", ExtArgs["result"]["trackingLink"]>
+  export type TrackingLinkInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    clicks?: boolean | TrackingLink$clicksArgs<ExtArgs>
+    creator?: boolean | TrackingLink$creatorArgs<ExtArgs>
+    _count?: boolean | TrackingLinkCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $TrackingLinkPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TrackingLink"
+    objects: {
+      clicks: Prisma.$TrackingLinkClickPayload<ExtArgs>[]
+      creator: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      token: string
+      originalUrl: string
+      shortUrl: string
+      createdBy: string | null
+      conversationId: string | null
+      messageId: string | null
+      totalClicks: number
+      uniqueClicks: number
+      isActive: boolean
+      expiresAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+      lastClickedAt: Date | null
+    }, ExtArgs["result"]["trackingLink"]>
+    composites: {}
+  }
+
+  type TrackingLinkGetPayload<S extends boolean | null | undefined | TrackingLinkDefaultArgs> = $Result.GetResult<Prisma.$TrackingLinkPayload, S>
+
+  type TrackingLinkCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TrackingLinkFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TrackingLinkCountAggregateInputType | true
+    }
+
+  export interface TrackingLinkDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TrackingLink'], meta: { name: 'TrackingLink' } }
+    /**
+     * Find zero or one TrackingLink that matches the filter.
+     * @param {TrackingLinkFindUniqueArgs} args - Arguments to find a TrackingLink
+     * @example
+     * // Get one TrackingLink
+     * const trackingLink = await prisma.trackingLink.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TrackingLinkFindUniqueArgs>(args: SelectSubset<T, TrackingLinkFindUniqueArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TrackingLink that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TrackingLinkFindUniqueOrThrowArgs} args - Arguments to find a TrackingLink
+     * @example
+     * // Get one TrackingLink
+     * const trackingLink = await prisma.trackingLink.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TrackingLinkFindUniqueOrThrowArgs>(args: SelectSubset<T, TrackingLinkFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TrackingLink that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkFindFirstArgs} args - Arguments to find a TrackingLink
+     * @example
+     * // Get one TrackingLink
+     * const trackingLink = await prisma.trackingLink.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TrackingLinkFindFirstArgs>(args?: SelectSubset<T, TrackingLinkFindFirstArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TrackingLink that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkFindFirstOrThrowArgs} args - Arguments to find a TrackingLink
+     * @example
+     * // Get one TrackingLink
+     * const trackingLink = await prisma.trackingLink.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TrackingLinkFindFirstOrThrowArgs>(args?: SelectSubset<T, TrackingLinkFindFirstOrThrowArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TrackingLinks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TrackingLinks
+     * const trackingLinks = await prisma.trackingLink.findMany()
+     * 
+     * // Get first 10 TrackingLinks
+     * const trackingLinks = await prisma.trackingLink.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const trackingLinkWithIdOnly = await prisma.trackingLink.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TrackingLinkFindManyArgs>(args?: SelectSubset<T, TrackingLinkFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TrackingLink.
+     * @param {TrackingLinkCreateArgs} args - Arguments to create a TrackingLink.
+     * @example
+     * // Create one TrackingLink
+     * const TrackingLink = await prisma.trackingLink.create({
+     *   data: {
+     *     // ... data to create a TrackingLink
+     *   }
+     * })
+     * 
+     */
+    create<T extends TrackingLinkCreateArgs>(args: SelectSubset<T, TrackingLinkCreateArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TrackingLinks.
+     * @param {TrackingLinkCreateManyArgs} args - Arguments to create many TrackingLinks.
+     * @example
+     * // Create many TrackingLinks
+     * const trackingLink = await prisma.trackingLink.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TrackingLinkCreateManyArgs>(args?: SelectSubset<T, TrackingLinkCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a TrackingLink.
+     * @param {TrackingLinkDeleteArgs} args - Arguments to delete one TrackingLink.
+     * @example
+     * // Delete one TrackingLink
+     * const TrackingLink = await prisma.trackingLink.delete({
+     *   where: {
+     *     // ... filter to delete one TrackingLink
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TrackingLinkDeleteArgs>(args: SelectSubset<T, TrackingLinkDeleteArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TrackingLink.
+     * @param {TrackingLinkUpdateArgs} args - Arguments to update one TrackingLink.
+     * @example
+     * // Update one TrackingLink
+     * const trackingLink = await prisma.trackingLink.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TrackingLinkUpdateArgs>(args: SelectSubset<T, TrackingLinkUpdateArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TrackingLinks.
+     * @param {TrackingLinkDeleteManyArgs} args - Arguments to filter TrackingLinks to delete.
+     * @example
+     * // Delete a few TrackingLinks
+     * const { count } = await prisma.trackingLink.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TrackingLinkDeleteManyArgs>(args?: SelectSubset<T, TrackingLinkDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TrackingLinks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TrackingLinks
+     * const trackingLink = await prisma.trackingLink.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TrackingLinkUpdateManyArgs>(args: SelectSubset<T, TrackingLinkUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TrackingLink.
+     * @param {TrackingLinkUpsertArgs} args - Arguments to update or create a TrackingLink.
+     * @example
+     * // Update or create a TrackingLink
+     * const trackingLink = await prisma.trackingLink.upsert({
+     *   create: {
+     *     // ... data to create a TrackingLink
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TrackingLink we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TrackingLinkUpsertArgs>(args: SelectSubset<T, TrackingLinkUpsertArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TrackingLinks that matches the filter.
+     * @param {TrackingLinkFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const trackingLink = await prisma.trackingLink.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: TrackingLinkFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a TrackingLink.
+     * @param {TrackingLinkAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const trackingLink = await prisma.trackingLink.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: TrackingLinkAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of TrackingLinks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkCountArgs} args - Arguments to filter TrackingLinks to count.
+     * @example
+     * // Count the number of TrackingLinks
+     * const count = await prisma.trackingLink.count({
+     *   where: {
+     *     // ... the filter for the TrackingLinks we want to count
+     *   }
+     * })
+    **/
+    count<T extends TrackingLinkCountArgs>(
+      args?: Subset<T, TrackingLinkCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TrackingLinkCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TrackingLink.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TrackingLinkAggregateArgs>(args: Subset<T, TrackingLinkAggregateArgs>): Prisma.PrismaPromise<GetTrackingLinkAggregateType<T>>
+
+    /**
+     * Group by TrackingLink.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TrackingLinkGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TrackingLinkGroupByArgs['orderBy'] }
+        : { orderBy?: TrackingLinkGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TrackingLinkGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTrackingLinkGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TrackingLink model
+   */
+  readonly fields: TrackingLinkFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TrackingLink.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TrackingLinkClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    clicks<T extends TrackingLink$clicksArgs<ExtArgs> = {}>(args?: Subset<T, TrackingLink$clicksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    creator<T extends TrackingLink$creatorArgs<ExtArgs> = {}>(args?: Subset<T, TrackingLink$creatorArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TrackingLink model
+   */
+  interface TrackingLinkFieldRefs {
+    readonly id: FieldRef<"TrackingLink", 'String'>
+    readonly token: FieldRef<"TrackingLink", 'String'>
+    readonly originalUrl: FieldRef<"TrackingLink", 'String'>
+    readonly shortUrl: FieldRef<"TrackingLink", 'String'>
+    readonly createdBy: FieldRef<"TrackingLink", 'String'>
+    readonly conversationId: FieldRef<"TrackingLink", 'String'>
+    readonly messageId: FieldRef<"TrackingLink", 'String'>
+    readonly totalClicks: FieldRef<"TrackingLink", 'Int'>
+    readonly uniqueClicks: FieldRef<"TrackingLink", 'Int'>
+    readonly isActive: FieldRef<"TrackingLink", 'Boolean'>
+    readonly expiresAt: FieldRef<"TrackingLink", 'DateTime'>
+    readonly createdAt: FieldRef<"TrackingLink", 'DateTime'>
+    readonly updatedAt: FieldRef<"TrackingLink", 'DateTime'>
+    readonly lastClickedAt: FieldRef<"TrackingLink", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TrackingLink findUnique
+   */
+  export type TrackingLinkFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLink to fetch.
+     */
+    where: TrackingLinkWhereUniqueInput
+  }
+
+  /**
+   * TrackingLink findUniqueOrThrow
+   */
+  export type TrackingLinkFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLink to fetch.
+     */
+    where: TrackingLinkWhereUniqueInput
+  }
+
+  /**
+   * TrackingLink findFirst
+   */
+  export type TrackingLinkFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLink to fetch.
+     */
+    where?: TrackingLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinks to fetch.
+     */
+    orderBy?: TrackingLinkOrderByWithRelationInput | TrackingLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TrackingLinks.
+     */
+    cursor?: TrackingLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TrackingLinks.
+     */
+    distinct?: TrackingLinkScalarFieldEnum | TrackingLinkScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingLink findFirstOrThrow
+   */
+  export type TrackingLinkFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLink to fetch.
+     */
+    where?: TrackingLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinks to fetch.
+     */
+    orderBy?: TrackingLinkOrderByWithRelationInput | TrackingLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TrackingLinks.
+     */
+    cursor?: TrackingLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TrackingLinks.
+     */
+    distinct?: TrackingLinkScalarFieldEnum | TrackingLinkScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingLink findMany
+   */
+  export type TrackingLinkFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLinks to fetch.
+     */
+    where?: TrackingLinkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinks to fetch.
+     */
+    orderBy?: TrackingLinkOrderByWithRelationInput | TrackingLinkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TrackingLinks.
+     */
+    cursor?: TrackingLinkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinks.
+     */
+    skip?: number
+    distinct?: TrackingLinkScalarFieldEnum | TrackingLinkScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingLink create
+   */
+  export type TrackingLinkCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TrackingLink.
+     */
+    data: XOR<TrackingLinkCreateInput, TrackingLinkUncheckedCreateInput>
+  }
+
+  /**
+   * TrackingLink createMany
+   */
+  export type TrackingLinkCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TrackingLinks.
+     */
+    data: TrackingLinkCreateManyInput | TrackingLinkCreateManyInput[]
+  }
+
+  /**
+   * TrackingLink update
+   */
+  export type TrackingLinkUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TrackingLink.
+     */
+    data: XOR<TrackingLinkUpdateInput, TrackingLinkUncheckedUpdateInput>
+    /**
+     * Choose, which TrackingLink to update.
+     */
+    where: TrackingLinkWhereUniqueInput
+  }
+
+  /**
+   * TrackingLink updateMany
+   */
+  export type TrackingLinkUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TrackingLinks.
+     */
+    data: XOR<TrackingLinkUpdateManyMutationInput, TrackingLinkUncheckedUpdateManyInput>
+    /**
+     * Filter which TrackingLinks to update
+     */
+    where?: TrackingLinkWhereInput
+    /**
+     * Limit how many TrackingLinks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TrackingLink upsert
+   */
+  export type TrackingLinkUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TrackingLink to update in case it exists.
+     */
+    where: TrackingLinkWhereUniqueInput
+    /**
+     * In case the TrackingLink found by the `where` argument doesn't exist, create a new TrackingLink with this data.
+     */
+    create: XOR<TrackingLinkCreateInput, TrackingLinkUncheckedCreateInput>
+    /**
+     * In case the TrackingLink was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TrackingLinkUpdateInput, TrackingLinkUncheckedUpdateInput>
+  }
+
+  /**
+   * TrackingLink delete
+   */
+  export type TrackingLinkDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+    /**
+     * Filter which TrackingLink to delete.
+     */
+    where: TrackingLinkWhereUniqueInput
+  }
+
+  /**
+   * TrackingLink deleteMany
+   */
+  export type TrackingLinkDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TrackingLinks to delete
+     */
+    where?: TrackingLinkWhereInput
+    /**
+     * Limit how many TrackingLinks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TrackingLink findRaw
+   */
+  export type TrackingLinkFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * TrackingLink aggregateRaw
+   */
+  export type TrackingLinkAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * TrackingLink.clicks
+   */
+  export type TrackingLink$clicksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    where?: TrackingLinkClickWhereInput
+    orderBy?: TrackingLinkClickOrderByWithRelationInput | TrackingLinkClickOrderByWithRelationInput[]
+    cursor?: TrackingLinkClickWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TrackingLinkClickScalarFieldEnum | TrackingLinkClickScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingLink.creator
+   */
+  export type TrackingLink$creatorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * TrackingLink without action
+   */
+  export type TrackingLinkDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLink
+     */
+    select?: TrackingLinkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLink
+     */
+    omit?: TrackingLinkOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TrackingLinkClick
+   */
+
+  export type AggregateTrackingLinkClick = {
+    _count: TrackingLinkClickCountAggregateOutputType | null
+    _min: TrackingLinkClickMinAggregateOutputType | null
+    _max: TrackingLinkClickMaxAggregateOutputType | null
+  }
+
+  export type TrackingLinkClickMinAggregateOutputType = {
+    id: string | null
+    trackingLinkId: string | null
+    userId: string | null
+    anonymousId: string | null
+    ipAddress: string | null
+    country: string | null
+    city: string | null
+    region: string | null
+    userAgent: string | null
+    browser: string | null
+    os: string | null
+    device: string | null
+    language: string | null
+    referrer: string | null
+    deviceFingerprint: string | null
+    clickedAt: Date | null
+  }
+
+  export type TrackingLinkClickMaxAggregateOutputType = {
+    id: string | null
+    trackingLinkId: string | null
+    userId: string | null
+    anonymousId: string | null
+    ipAddress: string | null
+    country: string | null
+    city: string | null
+    region: string | null
+    userAgent: string | null
+    browser: string | null
+    os: string | null
+    device: string | null
+    language: string | null
+    referrer: string | null
+    deviceFingerprint: string | null
+    clickedAt: Date | null
+  }
+
+  export type TrackingLinkClickCountAggregateOutputType = {
+    id: number
+    trackingLinkId: number
+    userId: number
+    anonymousId: number
+    ipAddress: number
+    country: number
+    city: number
+    region: number
+    userAgent: number
+    browser: number
+    os: number
+    device: number
+    language: number
+    referrer: number
+    deviceFingerprint: number
+    clickedAt: number
+    _all: number
+  }
+
+
+  export type TrackingLinkClickMinAggregateInputType = {
+    id?: true
+    trackingLinkId?: true
+    userId?: true
+    anonymousId?: true
+    ipAddress?: true
+    country?: true
+    city?: true
+    region?: true
+    userAgent?: true
+    browser?: true
+    os?: true
+    device?: true
+    language?: true
+    referrer?: true
+    deviceFingerprint?: true
+    clickedAt?: true
+  }
+
+  export type TrackingLinkClickMaxAggregateInputType = {
+    id?: true
+    trackingLinkId?: true
+    userId?: true
+    anonymousId?: true
+    ipAddress?: true
+    country?: true
+    city?: true
+    region?: true
+    userAgent?: true
+    browser?: true
+    os?: true
+    device?: true
+    language?: true
+    referrer?: true
+    deviceFingerprint?: true
+    clickedAt?: true
+  }
+
+  export type TrackingLinkClickCountAggregateInputType = {
+    id?: true
+    trackingLinkId?: true
+    userId?: true
+    anonymousId?: true
+    ipAddress?: true
+    country?: true
+    city?: true
+    region?: true
+    userAgent?: true
+    browser?: true
+    os?: true
+    device?: true
+    language?: true
+    referrer?: true
+    deviceFingerprint?: true
+    clickedAt?: true
+    _all?: true
+  }
+
+  export type TrackingLinkClickAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TrackingLinkClick to aggregate.
+     */
+    where?: TrackingLinkClickWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinkClicks to fetch.
+     */
+    orderBy?: TrackingLinkClickOrderByWithRelationInput | TrackingLinkClickOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TrackingLinkClickWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinkClicks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinkClicks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TrackingLinkClicks
+    **/
+    _count?: true | TrackingLinkClickCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TrackingLinkClickMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TrackingLinkClickMaxAggregateInputType
+  }
+
+  export type GetTrackingLinkClickAggregateType<T extends TrackingLinkClickAggregateArgs> = {
+        [P in keyof T & keyof AggregateTrackingLinkClick]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTrackingLinkClick[P]>
+      : GetScalarType<T[P], AggregateTrackingLinkClick[P]>
+  }
+
+
+
+
+  export type TrackingLinkClickGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TrackingLinkClickWhereInput
+    orderBy?: TrackingLinkClickOrderByWithAggregationInput | TrackingLinkClickOrderByWithAggregationInput[]
+    by: TrackingLinkClickScalarFieldEnum[] | TrackingLinkClickScalarFieldEnum
+    having?: TrackingLinkClickScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TrackingLinkClickCountAggregateInputType | true
+    _min?: TrackingLinkClickMinAggregateInputType
+    _max?: TrackingLinkClickMaxAggregateInputType
+  }
+
+  export type TrackingLinkClickGroupByOutputType = {
+    id: string
+    trackingLinkId: string
+    userId: string | null
+    anonymousId: string | null
+    ipAddress: string | null
+    country: string | null
+    city: string | null
+    region: string | null
+    userAgent: string | null
+    browser: string | null
+    os: string | null
+    device: string | null
+    language: string | null
+    referrer: string | null
+    deviceFingerprint: string | null
+    clickedAt: Date
+    _count: TrackingLinkClickCountAggregateOutputType | null
+    _min: TrackingLinkClickMinAggregateOutputType | null
+    _max: TrackingLinkClickMaxAggregateOutputType | null
+  }
+
+  type GetTrackingLinkClickGroupByPayload<T extends TrackingLinkClickGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TrackingLinkClickGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TrackingLinkClickGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TrackingLinkClickGroupByOutputType[P]>
+            : GetScalarType<T[P], TrackingLinkClickGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TrackingLinkClickSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    trackingLinkId?: boolean
+    userId?: boolean
+    anonymousId?: boolean
+    ipAddress?: boolean
+    country?: boolean
+    city?: boolean
+    region?: boolean
+    userAgent?: boolean
+    browser?: boolean
+    os?: boolean
+    device?: boolean
+    language?: boolean
+    referrer?: boolean
+    deviceFingerprint?: boolean
+    clickedAt?: boolean
+    trackingLink?: boolean | TrackingLinkDefaultArgs<ExtArgs>
+    user?: boolean | TrackingLinkClick$userArgs<ExtArgs>
+    anonymousUser?: boolean | TrackingLinkClick$anonymousUserArgs<ExtArgs>
+  }, ExtArgs["result"]["trackingLinkClick"]>
+
+
+
+  export type TrackingLinkClickSelectScalar = {
+    id?: boolean
+    trackingLinkId?: boolean
+    userId?: boolean
+    anonymousId?: boolean
+    ipAddress?: boolean
+    country?: boolean
+    city?: boolean
+    region?: boolean
+    userAgent?: boolean
+    browser?: boolean
+    os?: boolean
+    device?: boolean
+    language?: boolean
+    referrer?: boolean
+    deviceFingerprint?: boolean
+    clickedAt?: boolean
+  }
+
+  export type TrackingLinkClickOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "trackingLinkId" | "userId" | "anonymousId" | "ipAddress" | "country" | "city" | "region" | "userAgent" | "browser" | "os" | "device" | "language" | "referrer" | "deviceFingerprint" | "clickedAt", ExtArgs["result"]["trackingLinkClick"]>
+  export type TrackingLinkClickInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    trackingLink?: boolean | TrackingLinkDefaultArgs<ExtArgs>
+    user?: boolean | TrackingLinkClick$userArgs<ExtArgs>
+    anonymousUser?: boolean | TrackingLinkClick$anonymousUserArgs<ExtArgs>
+  }
+
+  export type $TrackingLinkClickPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TrackingLinkClick"
+    objects: {
+      trackingLink: Prisma.$TrackingLinkPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs> | null
+      anonymousUser: Prisma.$AnonymousParticipantPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      trackingLinkId: string
+      userId: string | null
+      anonymousId: string | null
+      ipAddress: string | null
+      country: string | null
+      city: string | null
+      region: string | null
+      userAgent: string | null
+      browser: string | null
+      os: string | null
+      device: string | null
+      language: string | null
+      referrer: string | null
+      deviceFingerprint: string | null
+      clickedAt: Date
+    }, ExtArgs["result"]["trackingLinkClick"]>
+    composites: {}
+  }
+
+  type TrackingLinkClickGetPayload<S extends boolean | null | undefined | TrackingLinkClickDefaultArgs> = $Result.GetResult<Prisma.$TrackingLinkClickPayload, S>
+
+  type TrackingLinkClickCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TrackingLinkClickFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TrackingLinkClickCountAggregateInputType | true
+    }
+
+  export interface TrackingLinkClickDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TrackingLinkClick'], meta: { name: 'TrackingLinkClick' } }
+    /**
+     * Find zero or one TrackingLinkClick that matches the filter.
+     * @param {TrackingLinkClickFindUniqueArgs} args - Arguments to find a TrackingLinkClick
+     * @example
+     * // Get one TrackingLinkClick
+     * const trackingLinkClick = await prisma.trackingLinkClick.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TrackingLinkClickFindUniqueArgs>(args: SelectSubset<T, TrackingLinkClickFindUniqueArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TrackingLinkClick that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TrackingLinkClickFindUniqueOrThrowArgs} args - Arguments to find a TrackingLinkClick
+     * @example
+     * // Get one TrackingLinkClick
+     * const trackingLinkClick = await prisma.trackingLinkClick.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TrackingLinkClickFindUniqueOrThrowArgs>(args: SelectSubset<T, TrackingLinkClickFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TrackingLinkClick that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkClickFindFirstArgs} args - Arguments to find a TrackingLinkClick
+     * @example
+     * // Get one TrackingLinkClick
+     * const trackingLinkClick = await prisma.trackingLinkClick.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TrackingLinkClickFindFirstArgs>(args?: SelectSubset<T, TrackingLinkClickFindFirstArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TrackingLinkClick that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkClickFindFirstOrThrowArgs} args - Arguments to find a TrackingLinkClick
+     * @example
+     * // Get one TrackingLinkClick
+     * const trackingLinkClick = await prisma.trackingLinkClick.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TrackingLinkClickFindFirstOrThrowArgs>(args?: SelectSubset<T, TrackingLinkClickFindFirstOrThrowArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TrackingLinkClicks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkClickFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TrackingLinkClicks
+     * const trackingLinkClicks = await prisma.trackingLinkClick.findMany()
+     * 
+     * // Get first 10 TrackingLinkClicks
+     * const trackingLinkClicks = await prisma.trackingLinkClick.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const trackingLinkClickWithIdOnly = await prisma.trackingLinkClick.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TrackingLinkClickFindManyArgs>(args?: SelectSubset<T, TrackingLinkClickFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TrackingLinkClick.
+     * @param {TrackingLinkClickCreateArgs} args - Arguments to create a TrackingLinkClick.
+     * @example
+     * // Create one TrackingLinkClick
+     * const TrackingLinkClick = await prisma.trackingLinkClick.create({
+     *   data: {
+     *     // ... data to create a TrackingLinkClick
+     *   }
+     * })
+     * 
+     */
+    create<T extends TrackingLinkClickCreateArgs>(args: SelectSubset<T, TrackingLinkClickCreateArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TrackingLinkClicks.
+     * @param {TrackingLinkClickCreateManyArgs} args - Arguments to create many TrackingLinkClicks.
+     * @example
+     * // Create many TrackingLinkClicks
+     * const trackingLinkClick = await prisma.trackingLinkClick.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TrackingLinkClickCreateManyArgs>(args?: SelectSubset<T, TrackingLinkClickCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a TrackingLinkClick.
+     * @param {TrackingLinkClickDeleteArgs} args - Arguments to delete one TrackingLinkClick.
+     * @example
+     * // Delete one TrackingLinkClick
+     * const TrackingLinkClick = await prisma.trackingLinkClick.delete({
+     *   where: {
+     *     // ... filter to delete one TrackingLinkClick
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TrackingLinkClickDeleteArgs>(args: SelectSubset<T, TrackingLinkClickDeleteArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TrackingLinkClick.
+     * @param {TrackingLinkClickUpdateArgs} args - Arguments to update one TrackingLinkClick.
+     * @example
+     * // Update one TrackingLinkClick
+     * const trackingLinkClick = await prisma.trackingLinkClick.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TrackingLinkClickUpdateArgs>(args: SelectSubset<T, TrackingLinkClickUpdateArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TrackingLinkClicks.
+     * @param {TrackingLinkClickDeleteManyArgs} args - Arguments to filter TrackingLinkClicks to delete.
+     * @example
+     * // Delete a few TrackingLinkClicks
+     * const { count } = await prisma.trackingLinkClick.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TrackingLinkClickDeleteManyArgs>(args?: SelectSubset<T, TrackingLinkClickDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TrackingLinkClicks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkClickUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TrackingLinkClicks
+     * const trackingLinkClick = await prisma.trackingLinkClick.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TrackingLinkClickUpdateManyArgs>(args: SelectSubset<T, TrackingLinkClickUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TrackingLinkClick.
+     * @param {TrackingLinkClickUpsertArgs} args - Arguments to update or create a TrackingLinkClick.
+     * @example
+     * // Update or create a TrackingLinkClick
+     * const trackingLinkClick = await prisma.trackingLinkClick.upsert({
+     *   create: {
+     *     // ... data to create a TrackingLinkClick
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TrackingLinkClick we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TrackingLinkClickUpsertArgs>(args: SelectSubset<T, TrackingLinkClickUpsertArgs<ExtArgs>>): Prisma__TrackingLinkClickClient<$Result.GetResult<Prisma.$TrackingLinkClickPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TrackingLinkClicks that matches the filter.
+     * @param {TrackingLinkClickFindRawArgs} args - Select which filters you would like to apply.
+     * @example
+     * const trackingLinkClick = await prisma.trackingLinkClick.findRaw({
+     *   filter: { age: { $gt: 25 } }
+     * })
+     */
+    findRaw(args?: TrackingLinkClickFindRawArgs): Prisma.PrismaPromise<JsonObject>
+
+    /**
+     * Perform aggregation operations on a TrackingLinkClick.
+     * @param {TrackingLinkClickAggregateRawArgs} args - Select which aggregations you would like to apply.
+     * @example
+     * const trackingLinkClick = await prisma.trackingLinkClick.aggregateRaw({
+     *   pipeline: [
+     *     { $match: { status: "registered" } },
+     *     { $group: { _id: "$country", total: { $sum: 1 } } }
+     *   ]
+     * })
+     */
+    aggregateRaw(args?: TrackingLinkClickAggregateRawArgs): Prisma.PrismaPromise<JsonObject>
+
+
+    /**
+     * Count the number of TrackingLinkClicks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkClickCountArgs} args - Arguments to filter TrackingLinkClicks to count.
+     * @example
+     * // Count the number of TrackingLinkClicks
+     * const count = await prisma.trackingLinkClick.count({
+     *   where: {
+     *     // ... the filter for the TrackingLinkClicks we want to count
+     *   }
+     * })
+    **/
+    count<T extends TrackingLinkClickCountArgs>(
+      args?: Subset<T, TrackingLinkClickCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TrackingLinkClickCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TrackingLinkClick.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkClickAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TrackingLinkClickAggregateArgs>(args: Subset<T, TrackingLinkClickAggregateArgs>): Prisma.PrismaPromise<GetTrackingLinkClickAggregateType<T>>
+
+    /**
+     * Group by TrackingLinkClick.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TrackingLinkClickGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TrackingLinkClickGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TrackingLinkClickGroupByArgs['orderBy'] }
+        : { orderBy?: TrackingLinkClickGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TrackingLinkClickGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTrackingLinkClickGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TrackingLinkClick model
+   */
+  readonly fields: TrackingLinkClickFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TrackingLinkClick.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TrackingLinkClickClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    trackingLink<T extends TrackingLinkDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TrackingLinkDefaultArgs<ExtArgs>>): Prisma__TrackingLinkClient<$Result.GetResult<Prisma.$TrackingLinkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends TrackingLinkClick$userArgs<ExtArgs> = {}>(args?: Subset<T, TrackingLinkClick$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    anonymousUser<T extends TrackingLinkClick$anonymousUserArgs<ExtArgs> = {}>(args?: Subset<T, TrackingLinkClick$anonymousUserArgs<ExtArgs>>): Prisma__AnonymousParticipantClient<$Result.GetResult<Prisma.$AnonymousParticipantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TrackingLinkClick model
+   */
+  interface TrackingLinkClickFieldRefs {
+    readonly id: FieldRef<"TrackingLinkClick", 'String'>
+    readonly trackingLinkId: FieldRef<"TrackingLinkClick", 'String'>
+    readonly userId: FieldRef<"TrackingLinkClick", 'String'>
+    readonly anonymousId: FieldRef<"TrackingLinkClick", 'String'>
+    readonly ipAddress: FieldRef<"TrackingLinkClick", 'String'>
+    readonly country: FieldRef<"TrackingLinkClick", 'String'>
+    readonly city: FieldRef<"TrackingLinkClick", 'String'>
+    readonly region: FieldRef<"TrackingLinkClick", 'String'>
+    readonly userAgent: FieldRef<"TrackingLinkClick", 'String'>
+    readonly browser: FieldRef<"TrackingLinkClick", 'String'>
+    readonly os: FieldRef<"TrackingLinkClick", 'String'>
+    readonly device: FieldRef<"TrackingLinkClick", 'String'>
+    readonly language: FieldRef<"TrackingLinkClick", 'String'>
+    readonly referrer: FieldRef<"TrackingLinkClick", 'String'>
+    readonly deviceFingerprint: FieldRef<"TrackingLinkClick", 'String'>
+    readonly clickedAt: FieldRef<"TrackingLinkClick", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TrackingLinkClick findUnique
+   */
+  export type TrackingLinkClickFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLinkClick to fetch.
+     */
+    where: TrackingLinkClickWhereUniqueInput
+  }
+
+  /**
+   * TrackingLinkClick findUniqueOrThrow
+   */
+  export type TrackingLinkClickFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLinkClick to fetch.
+     */
+    where: TrackingLinkClickWhereUniqueInput
+  }
+
+  /**
+   * TrackingLinkClick findFirst
+   */
+  export type TrackingLinkClickFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLinkClick to fetch.
+     */
+    where?: TrackingLinkClickWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinkClicks to fetch.
+     */
+    orderBy?: TrackingLinkClickOrderByWithRelationInput | TrackingLinkClickOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TrackingLinkClicks.
+     */
+    cursor?: TrackingLinkClickWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinkClicks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinkClicks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TrackingLinkClicks.
+     */
+    distinct?: TrackingLinkClickScalarFieldEnum | TrackingLinkClickScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingLinkClick findFirstOrThrow
+   */
+  export type TrackingLinkClickFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLinkClick to fetch.
+     */
+    where?: TrackingLinkClickWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinkClicks to fetch.
+     */
+    orderBy?: TrackingLinkClickOrderByWithRelationInput | TrackingLinkClickOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TrackingLinkClicks.
+     */
+    cursor?: TrackingLinkClickWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinkClicks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinkClicks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TrackingLinkClicks.
+     */
+    distinct?: TrackingLinkClickScalarFieldEnum | TrackingLinkClickScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingLinkClick findMany
+   */
+  export type TrackingLinkClickFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * Filter, which TrackingLinkClicks to fetch.
+     */
+    where?: TrackingLinkClickWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TrackingLinkClicks to fetch.
+     */
+    orderBy?: TrackingLinkClickOrderByWithRelationInput | TrackingLinkClickOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TrackingLinkClicks.
+     */
+    cursor?: TrackingLinkClickWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TrackingLinkClicks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TrackingLinkClicks.
+     */
+    skip?: number
+    distinct?: TrackingLinkClickScalarFieldEnum | TrackingLinkClickScalarFieldEnum[]
+  }
+
+  /**
+   * TrackingLinkClick create
+   */
+  export type TrackingLinkClickCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TrackingLinkClick.
+     */
+    data: XOR<TrackingLinkClickCreateInput, TrackingLinkClickUncheckedCreateInput>
+  }
+
+  /**
+   * TrackingLinkClick createMany
+   */
+  export type TrackingLinkClickCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TrackingLinkClicks.
+     */
+    data: TrackingLinkClickCreateManyInput | TrackingLinkClickCreateManyInput[]
+  }
+
+  /**
+   * TrackingLinkClick update
+   */
+  export type TrackingLinkClickUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TrackingLinkClick.
+     */
+    data: XOR<TrackingLinkClickUpdateInput, TrackingLinkClickUncheckedUpdateInput>
+    /**
+     * Choose, which TrackingLinkClick to update.
+     */
+    where: TrackingLinkClickWhereUniqueInput
+  }
+
+  /**
+   * TrackingLinkClick updateMany
+   */
+  export type TrackingLinkClickUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TrackingLinkClicks.
+     */
+    data: XOR<TrackingLinkClickUpdateManyMutationInput, TrackingLinkClickUncheckedUpdateManyInput>
+    /**
+     * Filter which TrackingLinkClicks to update
+     */
+    where?: TrackingLinkClickWhereInput
+    /**
+     * Limit how many TrackingLinkClicks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TrackingLinkClick upsert
+   */
+  export type TrackingLinkClickUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TrackingLinkClick to update in case it exists.
+     */
+    where: TrackingLinkClickWhereUniqueInput
+    /**
+     * In case the TrackingLinkClick found by the `where` argument doesn't exist, create a new TrackingLinkClick with this data.
+     */
+    create: XOR<TrackingLinkClickCreateInput, TrackingLinkClickUncheckedCreateInput>
+    /**
+     * In case the TrackingLinkClick was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TrackingLinkClickUpdateInput, TrackingLinkClickUncheckedUpdateInput>
+  }
+
+  /**
+   * TrackingLinkClick delete
+   */
+  export type TrackingLinkClickDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
+    /**
+     * Filter which TrackingLinkClick to delete.
+     */
+    where: TrackingLinkClickWhereUniqueInput
+  }
+
+  /**
+   * TrackingLinkClick deleteMany
+   */
+  export type TrackingLinkClickDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TrackingLinkClicks to delete
+     */
+    where?: TrackingLinkClickWhereInput
+    /**
+     * Limit how many TrackingLinkClicks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TrackingLinkClick findRaw
+   */
+  export type TrackingLinkClickFindRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The query predicate filter. If unspecified, then all documents in the collection will match the predicate. ${@link https://docs.mongodb.com/manual/reference/operator/query MongoDB Docs}.
+     */
+    filter?: InputJsonValue
+    /**
+     * Additional options to pass to the `find` command ${@link https://docs.mongodb.com/manual/reference/command/find/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * TrackingLinkClick aggregateRaw
+   */
+  export type TrackingLinkClickAggregateRawArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * An array of aggregation stages to process and transform the document stream via the aggregation pipeline. ${@link https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline MongoDB Docs}.
+     */
+    pipeline?: InputJsonValue[]
+    /**
+     * Additional options to pass to the `aggregate` command ${@link https://docs.mongodb.com/manual/reference/command/aggregate/#command-fields MongoDB Docs}.
+     */
+    options?: InputJsonValue
+  }
+
+  /**
+   * TrackingLinkClick.user
+   */
+  export type TrackingLinkClick$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * TrackingLinkClick.anonymousUser
+   */
+  export type TrackingLinkClick$anonymousUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AnonymousParticipant
+     */
+    select?: AnonymousParticipantSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AnonymousParticipant
+     */
+    omit?: AnonymousParticipantOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AnonymousParticipantInclude<ExtArgs> | null
+    where?: AnonymousParticipantWhereInput
+  }
+
+  /**
+   * TrackingLinkClick without action
+   */
+  export type TrackingLinkClickDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TrackingLinkClick
+     */
+    select?: TrackingLinkClickSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TrackingLinkClick
+     */
+    omit?: TrackingLinkClickOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TrackingLinkClickInclude<ExtArgs> | null
   }
 
 
@@ -23297,6 +26076,48 @@ export namespace Prisma {
   export type AffiliateRelationScalarFieldEnum = (typeof AffiliateRelationScalarFieldEnum)[keyof typeof AffiliateRelationScalarFieldEnum]
 
 
+  export const TrackingLinkScalarFieldEnum: {
+    id: 'id',
+    token: 'token',
+    originalUrl: 'originalUrl',
+    shortUrl: 'shortUrl',
+    createdBy: 'createdBy',
+    conversationId: 'conversationId',
+    messageId: 'messageId',
+    totalClicks: 'totalClicks',
+    uniqueClicks: 'uniqueClicks',
+    isActive: 'isActive',
+    expiresAt: 'expiresAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    lastClickedAt: 'lastClickedAt'
+  };
+
+  export type TrackingLinkScalarFieldEnum = (typeof TrackingLinkScalarFieldEnum)[keyof typeof TrackingLinkScalarFieldEnum]
+
+
+  export const TrackingLinkClickScalarFieldEnum: {
+    id: 'id',
+    trackingLinkId: 'trackingLinkId',
+    userId: 'userId',
+    anonymousId: 'anonymousId',
+    ipAddress: 'ipAddress',
+    country: 'country',
+    city: 'city',
+    region: 'region',
+    userAgent: 'userAgent',
+    browser: 'browser',
+    os: 'os',
+    device: 'device',
+    language: 'language',
+    referrer: 'referrer',
+    deviceFingerprint: 'deviceFingerprint',
+    clickedAt: 'clickedAt'
+  };
+
+  export type TrackingLinkClickScalarFieldEnum = (typeof TrackingLinkClickScalarFieldEnum)[keyof typeof TrackingLinkClickScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -23425,10 +26246,12 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
-    stats?: XOR<UserStatsNullableRelationFilter, UserStatsWhereInput> | null
+    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
     createdAffiliateTokens?: AffiliateTokenListRelationFilter
     affiliateRelations?: AffiliateRelationListRelationFilter
     referredRelations?: AffiliateRelationListRelationFilter
+    createdTrackingLinks?: TrackingLinkListRelationFilter
+    trackingLinkClicks?: TrackingLinkClickListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -23473,6 +26296,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenOrderByRelationAggregateInput
     affiliateRelations?: AffiliateRelationOrderByRelationAggregateInput
     referredRelations?: AffiliateRelationOrderByRelationAggregateInput
+    createdTrackingLinks?: TrackingLinkOrderByRelationAggregateInput
+    trackingLinkClicks?: TrackingLinkClickOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -23516,10 +26341,12 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
     preferences?: UserPreferenceListRelationFilter
-    stats?: XOR<UserStatsNullableRelationFilter, UserStatsWhereInput> | null
+    stats?: XOR<UserStatsNullableScalarRelationFilter, UserStatsWhereInput> | null
     createdAffiliateTokens?: AffiliateTokenListRelationFilter
     affiliateRelations?: AffiliateRelationListRelationFilter
     referredRelations?: AffiliateRelationListRelationFilter
+    createdTrackingLinks?: TrackingLinkListRelationFilter
+    trackingLinkClicks?: TrackingLinkClickListRelationFilter
   }, "id" | "username" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -23605,7 +26432,7 @@ export namespace Prisma {
     members?: ConversationMemberListRelationFilter
     preferences?: ConversationPreferenceListRelationFilter
     shareLinks?: ConversationShareLinkListRelationFilter
-    community?: XOR<CommunityNullableRelationFilter, CommunityWhereInput> | null
+    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
   }
@@ -23654,7 +26481,7 @@ export namespace Prisma {
     members?: ConversationMemberListRelationFilter
     preferences?: ConversationPreferenceListRelationFilter
     shareLinks?: ConversationShareLinkListRelationFilter
-    community?: XOR<CommunityNullableRelationFilter, CommunityWhereInput> | null
+    community?: XOR<CommunityNullableScalarRelationFilter, CommunityWhereInput> | null
     messages?: MessageListRelationFilter
     typingIndicators?: TypingIndicatorListRelationFilter
   }, "id" | "identifier">
@@ -23715,8 +26542,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"ConversationMember"> | Date | string
     leftAt?: DateTimeNullableFilter<"ConversationMember"> | Date | string | null
     isActive?: BoolFilter<"ConversationMember"> | boolean
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationMemberOrderByWithRelationInput = {
@@ -23756,8 +26583,8 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"ConversationMember"> | Date | string
     leftAt?: DateTimeNullableFilter<"ConversationMember"> | Date | string | null
     isActive?: BoolFilter<"ConversationMember"> | boolean
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type ConversationMemberOrderByWithAggregationInput = {
@@ -23831,8 +26658,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     anonymousParticipants?: AnonymousParticipantListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationShareLinkOrderByWithRelationInput = {
@@ -23898,8 +26725,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationShareLink"> | Date | string
     anonymousParticipants?: AnonymousParticipantListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id" | "linkId" | "identifier">
 
   export type ConversationShareLinkOrderByWithAggregationInput = {
@@ -23993,9 +26820,10 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
-    shareLink?: XOR<ConversationShareLinkRelationFilter, ConversationShareLinkWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    shareLink?: XOR<ConversationShareLinkScalarRelationFilter, ConversationShareLinkWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     sentMessages?: MessageListRelationFilter
+    trackingLinkClicks?: TrackingLinkClickListRelationFilter
   }
 
   export type AnonymousParticipantOrderByWithRelationInput = {
@@ -24023,6 +26851,7 @@ export namespace Prisma {
     shareLink?: ConversationShareLinkOrderByWithRelationInput
     conversation?: ConversationOrderByWithRelationInput
     sentMessages?: MessageOrderByRelationAggregateInput
+    trackingLinkClicks?: TrackingLinkClickOrderByRelationAggregateInput
   }
 
   export type AnonymousParticipantWhereUniqueInput = Prisma.AtLeast<{
@@ -24050,9 +26879,10 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     lastSeenAt?: DateTimeFilter<"AnonymousParticipant"> | Date | string
     leftAt?: DateTimeNullableFilter<"AnonymousParticipant"> | Date | string | null
-    shareLink?: XOR<ConversationShareLinkRelationFilter, ConversationShareLinkWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    shareLink?: XOR<ConversationShareLinkScalarRelationFilter, ConversationShareLinkWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
     sentMessages?: MessageListRelationFilter
+    trackingLinkClicks?: TrackingLinkClickListRelationFilter
   }, "id" | "sessionToken">
 
   export type AnonymousParticipantOrderByWithAggregationInput = {
@@ -24130,11 +26960,11 @@ export namespace Prisma {
     status?: MessageStatusListRelationFilter
     statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
-    replyTo?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
-    anonymousSender?: XOR<AnonymousParticipantNullableRelationFilter, AnonymousParticipantWhereInput> | null
-    sender?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type MessageOrderByWithRelationInput = {
@@ -24183,11 +27013,11 @@ export namespace Prisma {
     status?: MessageStatusListRelationFilter
     statusResponses?: MessageStatusListRelationFilter
     translations?: MessageTranslationListRelationFilter
-    replyTo?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    replyTo?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
     replies?: MessageListRelationFilter
-    anonymousSender?: XOR<AnonymousParticipantNullableRelationFilter, AnonymousParticipantWhereInput> | null
-    sender?: XOR<UserNullableRelationFilter, UserWhereInput> | null
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    anonymousSender?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+    sender?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type MessageOrderByWithAggregationInput = {
@@ -24243,7 +27073,7 @@ export namespace Prisma {
     cacheKey?: StringFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }
 
   export type MessageTranslationOrderByWithRelationInput = {
@@ -24272,7 +27102,7 @@ export namespace Prisma {
     translationModel?: StringFilter<"MessageTranslation"> | string
     confidenceScore?: FloatNullableFilter<"MessageTranslation"> | number | null
     createdAt?: DateTimeFilter<"MessageTranslation"> | Date | string
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
   }, "id" | "cacheKey">
 
   export type MessageTranslationOrderByWithAggregationInput = {
@@ -24317,9 +27147,9 @@ export namespace Prisma {
     receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     answer?: StringNullableFilter<"MessageStatus"> | string | null
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
-    response?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }
 
   export type MessageStatusOrderByWithRelationInput = {
@@ -24345,9 +27175,9 @@ export namespace Prisma {
     receivedAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     readAt?: DateTimeNullableFilter<"MessageStatus"> | Date | string | null
     answer?: StringNullableFilter<"MessageStatus"> | string | null
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    message?: XOR<MessageRelationFilter, MessageWhereInput>
-    response?: XOR<MessageNullableRelationFilter, MessageWhereInput> | null
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    response?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
   }, "id" | "messageId_userId">
 
   export type MessageStatusOrderByWithAggregationInput = {
@@ -24384,8 +27214,8 @@ export namespace Prisma {
     status?: StringFilter<"FriendRequest"> | string
     createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
     updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
-    receiver?: XOR<UserRelationFilter, UserWhereInput>
-    sender?: XOR<UserRelationFilter, UserWhereInput>
+    receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type FriendRequestOrderByWithRelationInput = {
@@ -24409,8 +27239,8 @@ export namespace Prisma {
     status?: StringFilter<"FriendRequest"> | string
     createdAt?: DateTimeFilter<"FriendRequest"> | Date | string
     updatedAt?: DateTimeFilter<"FriendRequest"> | Date | string
-    receiver?: XOR<UserRelationFilter, UserWhereInput>
-    sender?: XOR<UserRelationFilter, UserWhereInput>
+    receiver?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type FriendRequestOrderByWithAggregationInput = {
@@ -24447,8 +27277,8 @@ export namespace Prisma {
     isTyping?: BoolFilter<"TypingIndicator"> | boolean
     startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
     updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type TypingIndicatorOrderByWithRelationInput = {
@@ -24472,8 +27302,8 @@ export namespace Prisma {
     isTyping?: BoolFilter<"TypingIndicator"> | boolean
     startedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
     updatedAt?: DateTimeFilter<"TypingIndicator"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type TypingIndicatorOrderByWithAggregationInput = {
@@ -24516,7 +27346,7 @@ export namespace Prisma {
     pushSent?: BoolFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type NotificationOrderByWithRelationInput = {
@@ -24551,7 +27381,7 @@ export namespace Prisma {
     pushSent?: BoolFilter<"Notification"> | boolean
     expiresAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type NotificationOrderByWithAggregationInput = {
@@ -24604,7 +27434,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Community"> | Date | string
     updatedAt?: DateTimeFilter<"Community"> | Date | string
     members?: CommunityMemberListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     Conversation?: ConversationListRelationFilter
   }
 
@@ -24637,7 +27467,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Community"> | Date | string
     updatedAt?: DateTimeFilter<"Community"> | Date | string
     members?: CommunityMemberListRelationFilter
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     Conversation?: ConversationListRelationFilter
   }, "id" | "identifier">
 
@@ -24680,8 +27510,8 @@ export namespace Prisma {
     userId?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
     role?: StringFilter<"CommunityMember"> | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    community?: XOR<CommunityRelationFilter, CommunityWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }
 
   export type CommunityMemberOrderByWithRelationInput = {
@@ -24703,8 +27533,8 @@ export namespace Prisma {
     userId?: StringFilter<"CommunityMember"> | string
     joinedAt?: DateTimeFilter<"CommunityMember"> | Date | string
     role?: StringFilter<"CommunityMember"> | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    community?: XOR<CommunityRelationFilter, CommunityWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    community?: XOR<CommunityScalarRelationFilter, CommunityWhereInput>
   }, "id">
 
   export type CommunityMemberOrderByWithAggregationInput = {
@@ -24752,7 +27582,7 @@ export namespace Prisma {
     lastActiveAt?: DateTimeFilter<"UserStats"> | Date | string
     createdAt?: DateTimeFilter<"UserStats"> | Date | string
     updatedAt?: DateTimeFilter<"UserStats"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type UserStatsOrderByWithRelationInput = {
@@ -24801,7 +27631,7 @@ export namespace Prisma {
     lastActiveAt?: DateTimeFilter<"UserStats"> | Date | string
     createdAt?: DateTimeFilter<"UserStats"> | Date | string
     updatedAt?: DateTimeFilter<"UserStats"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id" | "userId">
 
   export type UserStatsOrderByWithAggregationInput = {
@@ -24868,7 +27698,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"UserPreference"> | string | null
     createdAt?: DateTimeFilter<"UserPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type UserPreferenceOrderByWithRelationInput = {
@@ -24895,7 +27725,7 @@ export namespace Prisma {
     description?: StringNullableFilter<"UserPreference"> | string | null
     createdAt?: DateTimeFilter<"UserPreference"> | Date | string
     updatedAt?: DateTimeFilter<"UserPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type UserPreferenceOrderByWithAggregationInput = {
@@ -24939,8 +27769,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"ConversationPreference"> | string | null
     createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }
 
   export type ConversationPreferenceOrderByWithRelationInput = {
@@ -24970,8 +27800,8 @@ export namespace Prisma {
     description?: StringNullableFilter<"ConversationPreference"> | string | null
     createdAt?: DateTimeFilter<"ConversationPreference"> | Date | string
     updatedAt?: DateTimeFilter<"ConversationPreference"> | Date | string
-    user?: XOR<UserRelationFilter, UserWhereInput>
-    conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    conversation?: XOR<ConversationScalarRelationFilter, ConversationWhereInput>
   }, "id">
 
   export type ConversationPreferenceOrderByWithAggregationInput = {
@@ -25018,7 +27848,7 @@ export namespace Prisma {
     isActive?: BoolFilter<"AffiliateToken"> | boolean
     createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
     updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     affiliations?: AffiliateRelationListRelationFilter
   }
 
@@ -25051,7 +27881,7 @@ export namespace Prisma {
     isActive?: BoolFilter<"AffiliateToken"> | boolean
     createdAt?: DateTimeFilter<"AffiliateToken"> | Date | string
     updatedAt?: DateTimeFilter<"AffiliateToken"> | Date | string
-    creator?: XOR<UserRelationFilter, UserWhereInput>
+    creator?: XOR<UserScalarRelationFilter, UserWhereInput>
     affiliations?: AffiliateRelationListRelationFilter
   }, "id" | "token">
 
@@ -25100,9 +27930,9 @@ export namespace Prisma {
     status?: StringFilter<"AffiliateRelation"> | string
     createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
     completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
-    affiliateToken?: XOR<AffiliateTokenRelationFilter, AffiliateTokenWhereInput>
-    affiliateUser?: XOR<UserRelationFilter, UserWhereInput>
-    referredUser?: XOR<UserRelationFilter, UserWhereInput>
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type AffiliateRelationOrderByWithRelationInput = {
@@ -25129,9 +27959,9 @@ export namespace Prisma {
     status?: StringFilter<"AffiliateRelation"> | string
     createdAt?: DateTimeFilter<"AffiliateRelation"> | Date | string
     completedAt?: DateTimeNullableFilter<"AffiliateRelation"> | Date | string | null
-    affiliateToken?: XOR<AffiliateTokenRelationFilter, AffiliateTokenWhereInput>
-    affiliateUser?: XOR<UserRelationFilter, UserWhereInput>
-    referredUser?: XOR<UserRelationFilter, UserWhereInput>
+    affiliateToken?: XOR<AffiliateTokenScalarRelationFilter, AffiliateTokenWhereInput>
+    affiliateUser?: XOR<UserScalarRelationFilter, UserWhereInput>
+    referredUser?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type AffiliateRelationOrderByWithAggregationInput = {
@@ -25158,6 +27988,227 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"AffiliateRelation"> | string
     createdAt?: DateTimeWithAggregatesFilter<"AffiliateRelation"> | Date | string
     completedAt?: DateTimeNullableWithAggregatesFilter<"AffiliateRelation"> | Date | string | null
+  }
+
+  export type TrackingLinkWhereInput = {
+    AND?: TrackingLinkWhereInput | TrackingLinkWhereInput[]
+    OR?: TrackingLinkWhereInput[]
+    NOT?: TrackingLinkWhereInput | TrackingLinkWhereInput[]
+    id?: StringFilter<"TrackingLink"> | string
+    token?: StringFilter<"TrackingLink"> | string
+    originalUrl?: StringFilter<"TrackingLink"> | string
+    shortUrl?: StringFilter<"TrackingLink"> | string
+    createdBy?: StringNullableFilter<"TrackingLink"> | string | null
+    conversationId?: StringNullableFilter<"TrackingLink"> | string | null
+    messageId?: StringNullableFilter<"TrackingLink"> | string | null
+    totalClicks?: IntFilter<"TrackingLink"> | number
+    uniqueClicks?: IntFilter<"TrackingLink"> | number
+    isActive?: BoolFilter<"TrackingLink"> | boolean
+    expiresAt?: DateTimeNullableFilter<"TrackingLink"> | Date | string | null
+    createdAt?: DateTimeFilter<"TrackingLink"> | Date | string
+    updatedAt?: DateTimeFilter<"TrackingLink"> | Date | string
+    lastClickedAt?: DateTimeNullableFilter<"TrackingLink"> | Date | string | null
+    clicks?: TrackingLinkClickListRelationFilter
+    creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type TrackingLinkOrderByWithRelationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    originalUrl?: SortOrder
+    shortUrl?: SortOrder
+    createdBy?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    totalClicks?: SortOrder
+    uniqueClicks?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    lastClickedAt?: SortOrder
+    clicks?: TrackingLinkClickOrderByRelationAggregateInput
+    creator?: UserOrderByWithRelationInput
+  }
+
+  export type TrackingLinkWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    token?: string
+    AND?: TrackingLinkWhereInput | TrackingLinkWhereInput[]
+    OR?: TrackingLinkWhereInput[]
+    NOT?: TrackingLinkWhereInput | TrackingLinkWhereInput[]
+    originalUrl?: StringFilter<"TrackingLink"> | string
+    shortUrl?: StringFilter<"TrackingLink"> | string
+    createdBy?: StringNullableFilter<"TrackingLink"> | string | null
+    conversationId?: StringNullableFilter<"TrackingLink"> | string | null
+    messageId?: StringNullableFilter<"TrackingLink"> | string | null
+    totalClicks?: IntFilter<"TrackingLink"> | number
+    uniqueClicks?: IntFilter<"TrackingLink"> | number
+    isActive?: BoolFilter<"TrackingLink"> | boolean
+    expiresAt?: DateTimeNullableFilter<"TrackingLink"> | Date | string | null
+    createdAt?: DateTimeFilter<"TrackingLink"> | Date | string
+    updatedAt?: DateTimeFilter<"TrackingLink"> | Date | string
+    lastClickedAt?: DateTimeNullableFilter<"TrackingLink"> | Date | string | null
+    clicks?: TrackingLinkClickListRelationFilter
+    creator?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id" | "token">
+
+  export type TrackingLinkOrderByWithAggregationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    originalUrl?: SortOrder
+    shortUrl?: SortOrder
+    createdBy?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    totalClicks?: SortOrder
+    uniqueClicks?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    lastClickedAt?: SortOrder
+    _count?: TrackingLinkCountOrderByAggregateInput
+    _avg?: TrackingLinkAvgOrderByAggregateInput
+    _max?: TrackingLinkMaxOrderByAggregateInput
+    _min?: TrackingLinkMinOrderByAggregateInput
+    _sum?: TrackingLinkSumOrderByAggregateInput
+  }
+
+  export type TrackingLinkScalarWhereWithAggregatesInput = {
+    AND?: TrackingLinkScalarWhereWithAggregatesInput | TrackingLinkScalarWhereWithAggregatesInput[]
+    OR?: TrackingLinkScalarWhereWithAggregatesInput[]
+    NOT?: TrackingLinkScalarWhereWithAggregatesInput | TrackingLinkScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TrackingLink"> | string
+    token?: StringWithAggregatesFilter<"TrackingLink"> | string
+    originalUrl?: StringWithAggregatesFilter<"TrackingLink"> | string
+    shortUrl?: StringWithAggregatesFilter<"TrackingLink"> | string
+    createdBy?: StringNullableWithAggregatesFilter<"TrackingLink"> | string | null
+    conversationId?: StringNullableWithAggregatesFilter<"TrackingLink"> | string | null
+    messageId?: StringNullableWithAggregatesFilter<"TrackingLink"> | string | null
+    totalClicks?: IntWithAggregatesFilter<"TrackingLink"> | number
+    uniqueClicks?: IntWithAggregatesFilter<"TrackingLink"> | number
+    isActive?: BoolWithAggregatesFilter<"TrackingLink"> | boolean
+    expiresAt?: DateTimeNullableWithAggregatesFilter<"TrackingLink"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"TrackingLink"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TrackingLink"> | Date | string
+    lastClickedAt?: DateTimeNullableWithAggregatesFilter<"TrackingLink"> | Date | string | null
+  }
+
+  export type TrackingLinkClickWhereInput = {
+    AND?: TrackingLinkClickWhereInput | TrackingLinkClickWhereInput[]
+    OR?: TrackingLinkClickWhereInput[]
+    NOT?: TrackingLinkClickWhereInput | TrackingLinkClickWhereInput[]
+    id?: StringFilter<"TrackingLinkClick"> | string
+    trackingLinkId?: StringFilter<"TrackingLinkClick"> | string
+    userId?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    anonymousId?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    ipAddress?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    country?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    city?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    region?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    userAgent?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    browser?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    os?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    device?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    language?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    referrer?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    deviceFingerprint?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    clickedAt?: DateTimeFilter<"TrackingLinkClick"> | Date | string
+    trackingLink?: XOR<TrackingLinkScalarRelationFilter, TrackingLinkWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    anonymousUser?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+  }
+
+  export type TrackingLinkClickOrderByWithRelationInput = {
+    id?: SortOrder
+    trackingLinkId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    ipAddress?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    region?: SortOrder
+    userAgent?: SortOrder
+    browser?: SortOrder
+    os?: SortOrder
+    device?: SortOrder
+    language?: SortOrder
+    referrer?: SortOrder
+    deviceFingerprint?: SortOrder
+    clickedAt?: SortOrder
+    trackingLink?: TrackingLinkOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+    anonymousUser?: AnonymousParticipantOrderByWithRelationInput
+  }
+
+  export type TrackingLinkClickWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: TrackingLinkClickWhereInput | TrackingLinkClickWhereInput[]
+    OR?: TrackingLinkClickWhereInput[]
+    NOT?: TrackingLinkClickWhereInput | TrackingLinkClickWhereInput[]
+    trackingLinkId?: StringFilter<"TrackingLinkClick"> | string
+    userId?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    anonymousId?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    ipAddress?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    country?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    city?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    region?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    userAgent?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    browser?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    os?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    device?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    language?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    referrer?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    deviceFingerprint?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    clickedAt?: DateTimeFilter<"TrackingLinkClick"> | Date | string
+    trackingLink?: XOR<TrackingLinkScalarRelationFilter, TrackingLinkWhereInput>
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    anonymousUser?: XOR<AnonymousParticipantNullableScalarRelationFilter, AnonymousParticipantWhereInput> | null
+  }, "id">
+
+  export type TrackingLinkClickOrderByWithAggregationInput = {
+    id?: SortOrder
+    trackingLinkId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    ipAddress?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    region?: SortOrder
+    userAgent?: SortOrder
+    browser?: SortOrder
+    os?: SortOrder
+    device?: SortOrder
+    language?: SortOrder
+    referrer?: SortOrder
+    deviceFingerprint?: SortOrder
+    clickedAt?: SortOrder
+    _count?: TrackingLinkClickCountOrderByAggregateInput
+    _max?: TrackingLinkClickMaxOrderByAggregateInput
+    _min?: TrackingLinkClickMinOrderByAggregateInput
+  }
+
+  export type TrackingLinkClickScalarWhereWithAggregatesInput = {
+    AND?: TrackingLinkClickScalarWhereWithAggregatesInput | TrackingLinkClickScalarWhereWithAggregatesInput[]
+    OR?: TrackingLinkClickScalarWhereWithAggregatesInput[]
+    NOT?: TrackingLinkClickScalarWhereWithAggregatesInput | TrackingLinkClickScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TrackingLinkClick"> | string
+    trackingLinkId?: StringWithAggregatesFilter<"TrackingLinkClick"> | string
+    userId?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    anonymousId?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    ipAddress?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    country?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    city?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    region?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    browser?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    os?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    device?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    language?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    referrer?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    deviceFingerprint?: StringNullableWithAggregatesFilter<"TrackingLinkClick"> | string | null
+    clickedAt?: DateTimeWithAggregatesFilter<"TrackingLinkClick"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -25202,6 +28253,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -25246,6 +28299,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -25289,6 +28344,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -25332,6 +28389,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -25884,6 +28943,7 @@ export namespace Prisma {
     shareLink: ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput
     conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
     sentMessages?: MessageCreateNestedManyWithoutAnonymousSenderInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantUncheckedCreateInput = {
@@ -25909,6 +28969,7 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     leftAt?: Date | string | null
     sentMessages?: MessageUncheckedCreateNestedManyWithoutAnonymousSenderInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantUpdateInput = {
@@ -25933,6 +28994,7 @@ export namespace Prisma {
     shareLink?: ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
     conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
     sentMessages?: MessageUpdateManyWithoutAnonymousSenderNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type AnonymousParticipantUncheckedUpdateInput = {
@@ -25957,6 +29019,7 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sentMessages?: MessageUncheckedUpdateManyWithoutAnonymousSenderNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type AnonymousParticipantCreateManyInput = {
@@ -27092,6 +30155,250 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type TrackingLinkCreateInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+    clicks?: TrackingLinkClickCreateNestedManyWithoutTrackingLinkInput
+    creator?: UserCreateNestedOneWithoutCreatedTrackingLinksInput
+  }
+
+  export type TrackingLinkUncheckedCreateInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    createdBy?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+    clicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutTrackingLinkInput
+  }
+
+  export type TrackingLinkUpdateInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clicks?: TrackingLinkClickUpdateManyWithoutTrackingLinkNestedInput
+    creator?: UserUpdateOneWithoutCreatedTrackingLinksNestedInput
+  }
+
+  export type TrackingLinkUncheckedUpdateInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clicks?: TrackingLinkClickUncheckedUpdateManyWithoutTrackingLinkNestedInput
+  }
+
+  export type TrackingLinkCreateManyInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    createdBy?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+  }
+
+  export type TrackingLinkUpdateManyMutationInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TrackingLinkUncheckedUpdateManyInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TrackingLinkClickCreateInput = {
+    id?: string
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+    trackingLink: TrackingLinkCreateNestedOneWithoutClicksInput
+    user?: UserCreateNestedOneWithoutTrackingLinkClicksInput
+    anonymousUser?: AnonymousParticipantCreateNestedOneWithoutTrackingLinkClicksInput
+  }
+
+  export type TrackingLinkClickUncheckedCreateInput = {
+    id?: string
+    trackingLinkId: string
+    userId?: string | null
+    anonymousId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+  }
+
+  export type TrackingLinkClickUpdateInput = {
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trackingLink?: TrackingLinkUpdateOneRequiredWithoutClicksNestedInput
+    user?: UserUpdateOneWithoutTrackingLinkClicksNestedInput
+    anonymousUser?: AnonymousParticipantUpdateOneWithoutTrackingLinkClicksNestedInput
+  }
+
+  export type TrackingLinkClickUncheckedUpdateInput = {
+    trackingLinkId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingLinkClickCreateManyInput = {
+    id?: string
+    trackingLinkId: string
+    userId?: string | null
+    anonymousId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+  }
+
+  export type TrackingLinkClickUpdateManyMutationInput = {
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingLinkClickUncheckedUpdateManyInput = {
+    trackingLinkId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -27217,7 +30524,7 @@ export namespace Prisma {
     none?: UserPreferenceWhereInput
   }
 
-  export type UserStatsNullableRelationFilter = {
+  export type UserStatsNullableScalarRelationFilter = {
     is?: UserStatsWhereInput | null
     isNot?: UserStatsWhereInput | null
   }
@@ -27232,6 +30539,18 @@ export namespace Prisma {
     every?: AffiliateRelationWhereInput
     some?: AffiliateRelationWhereInput
     none?: AffiliateRelationWhereInput
+  }
+
+  export type TrackingLinkListRelationFilter = {
+    every?: TrackingLinkWhereInput
+    some?: TrackingLinkWhereInput
+    none?: TrackingLinkWhereInput
+  }
+
+  export type TrackingLinkClickListRelationFilter = {
+    every?: TrackingLinkClickWhereInput
+    some?: TrackingLinkClickWhereInput
+    none?: TrackingLinkClickWhereInput
   }
 
   export type CommunityOrderByRelationAggregateInput = {
@@ -27283,6 +30602,14 @@ export namespace Prisma {
   }
 
   export type AffiliateRelationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TrackingLinkOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TrackingLinkClickOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -27450,7 +30777,7 @@ export namespace Prisma {
     none?: AnonymousParticipantWhereInput
   }
 
-  export type CommunityNullableRelationFilter = {
+  export type CommunityNullableScalarRelationFilter = {
     is?: CommunityWhereInput | null
     isNot?: CommunityWhereInput | null
   }
@@ -27507,12 +30834,12 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type UserRelationFilter = {
+  export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
   }
 
-  export type ConversationRelationFilter = {
+  export type ConversationScalarRelationFilter = {
     is?: ConversationWhereInput
     isNot?: ConversationWhereInput
   }
@@ -27731,7 +31058,7 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
-  export type ConversationShareLinkRelationFilter = {
+  export type ConversationShareLinkScalarRelationFilter = {
     is?: ConversationShareLinkWhereInput
     isNot?: ConversationShareLinkWhereInput
   }
@@ -27814,17 +31141,17 @@ export namespace Prisma {
     none?: MessageTranslationWhereInput
   }
 
-  export type MessageNullableRelationFilter = {
+  export type MessageNullableScalarRelationFilter = {
     is?: MessageWhereInput | null
     isNot?: MessageWhereInput | null
   }
 
-  export type AnonymousParticipantNullableRelationFilter = {
+  export type AnonymousParticipantNullableScalarRelationFilter = {
     is?: AnonymousParticipantWhereInput | null
     isNot?: AnonymousParticipantWhereInput | null
   }
 
-  export type UserNullableRelationFilter = {
+  export type UserNullableScalarRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
   }
@@ -27896,7 +31223,7 @@ export namespace Prisma {
     isSet?: boolean
   }
 
-  export type MessageRelationFilter = {
+  export type MessageScalarRelationFilter = {
     is?: MessageWhereInput
     isNot?: MessageWhereInput
   }
@@ -28139,7 +31466,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type CommunityRelationFilter = {
+  export type CommunityScalarRelationFilter = {
     is?: CommunityWhereInput
     isNot?: CommunityWhereInput
   }
@@ -28386,7 +31713,7 @@ export namespace Prisma {
     currentUses?: SortOrder
   }
 
-  export type AffiliateTokenRelationFilter = {
+  export type AffiliateTokenScalarRelationFilter = {
     is?: AffiliateTokenWhereInput
     isNot?: AffiliateTokenWhereInput
   }
@@ -28419,6 +31746,129 @@ export namespace Prisma {
     status?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
+  }
+
+  export type TrackingLinkCountOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    originalUrl?: SortOrder
+    shortUrl?: SortOrder
+    createdBy?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    totalClicks?: SortOrder
+    uniqueClicks?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    lastClickedAt?: SortOrder
+  }
+
+  export type TrackingLinkAvgOrderByAggregateInput = {
+    totalClicks?: SortOrder
+    uniqueClicks?: SortOrder
+  }
+
+  export type TrackingLinkMaxOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    originalUrl?: SortOrder
+    shortUrl?: SortOrder
+    createdBy?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    totalClicks?: SortOrder
+    uniqueClicks?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    lastClickedAt?: SortOrder
+  }
+
+  export type TrackingLinkMinOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    originalUrl?: SortOrder
+    shortUrl?: SortOrder
+    createdBy?: SortOrder
+    conversationId?: SortOrder
+    messageId?: SortOrder
+    totalClicks?: SortOrder
+    uniqueClicks?: SortOrder
+    isActive?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    lastClickedAt?: SortOrder
+  }
+
+  export type TrackingLinkSumOrderByAggregateInput = {
+    totalClicks?: SortOrder
+    uniqueClicks?: SortOrder
+  }
+
+  export type TrackingLinkScalarRelationFilter = {
+    is?: TrackingLinkWhereInput
+    isNot?: TrackingLinkWhereInput
+  }
+
+  export type TrackingLinkClickCountOrderByAggregateInput = {
+    id?: SortOrder
+    trackingLinkId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    ipAddress?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    region?: SortOrder
+    userAgent?: SortOrder
+    browser?: SortOrder
+    os?: SortOrder
+    device?: SortOrder
+    language?: SortOrder
+    referrer?: SortOrder
+    deviceFingerprint?: SortOrder
+    clickedAt?: SortOrder
+  }
+
+  export type TrackingLinkClickMaxOrderByAggregateInput = {
+    id?: SortOrder
+    trackingLinkId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    ipAddress?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    region?: SortOrder
+    userAgent?: SortOrder
+    browser?: SortOrder
+    os?: SortOrder
+    device?: SortOrder
+    language?: SortOrder
+    referrer?: SortOrder
+    deviceFingerprint?: SortOrder
+    clickedAt?: SortOrder
+  }
+
+  export type TrackingLinkClickMinOrderByAggregateInput = {
+    id?: SortOrder
+    trackingLinkId?: SortOrder
+    userId?: SortOrder
+    anonymousId?: SortOrder
+    ipAddress?: SortOrder
+    country?: SortOrder
+    city?: SortOrder
+    region?: SortOrder
+    userAgent?: SortOrder
+    browser?: SortOrder
+    os?: SortOrder
+    device?: SortOrder
+    language?: SortOrder
+    referrer?: SortOrder
+    deviceFingerprint?: SortOrder
+    clickedAt?: SortOrder
   }
 
   export type CommunityCreateNestedManyWithoutCreatorInput = {
@@ -28532,6 +31982,20 @@ export namespace Prisma {
     connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
   }
 
+  export type TrackingLinkCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<TrackingLinkCreateWithoutCreatorInput, TrackingLinkUncheckedCreateWithoutCreatorInput> | TrackingLinkCreateWithoutCreatorInput[] | TrackingLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TrackingLinkCreateOrConnectWithoutCreatorInput | TrackingLinkCreateOrConnectWithoutCreatorInput[]
+    createMany?: TrackingLinkCreateManyCreatorInputEnvelope
+    connect?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+  }
+
+  export type TrackingLinkClickCreateNestedManyWithoutUserInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutUserInput, TrackingLinkClickUncheckedCreateWithoutUserInput> | TrackingLinkClickCreateWithoutUserInput[] | TrackingLinkClickUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutUserInput | TrackingLinkClickCreateOrConnectWithoutUserInput[]
+    createMany?: TrackingLinkClickCreateManyUserInputEnvelope
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+  }
+
   export type CommunityUncheckedCreateNestedManyWithoutCreatorInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -28641,6 +32105,20 @@ export namespace Prisma {
     connectOrCreate?: AffiliateRelationCreateOrConnectWithoutReferredUserInput | AffiliateRelationCreateOrConnectWithoutReferredUserInput[]
     createMany?: AffiliateRelationCreateManyReferredUserInputEnvelope
     connect?: AffiliateRelationWhereUniqueInput | AffiliateRelationWhereUniqueInput[]
+  }
+
+  export type TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput = {
+    create?: XOR<TrackingLinkCreateWithoutCreatorInput, TrackingLinkUncheckedCreateWithoutCreatorInput> | TrackingLinkCreateWithoutCreatorInput[] | TrackingLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TrackingLinkCreateOrConnectWithoutCreatorInput | TrackingLinkCreateOrConnectWithoutCreatorInput[]
+    createMany?: TrackingLinkCreateManyCreatorInputEnvelope
+    connect?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+  }
+
+  export type TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutUserInput, TrackingLinkClickUncheckedCreateWithoutUserInput> | TrackingLinkClickCreateWithoutUserInput[] | TrackingLinkClickUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutUserInput | TrackingLinkClickCreateOrConnectWithoutUserInput[]
+    createMany?: TrackingLinkClickCreateManyUserInputEnvelope
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -28885,6 +32363,34 @@ export namespace Prisma {
     deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
   }
 
+  export type TrackingLinkUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<TrackingLinkCreateWithoutCreatorInput, TrackingLinkUncheckedCreateWithoutCreatorInput> | TrackingLinkCreateWithoutCreatorInput[] | TrackingLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TrackingLinkCreateOrConnectWithoutCreatorInput | TrackingLinkCreateOrConnectWithoutCreatorInput[]
+    upsert?: TrackingLinkUpsertWithWhereUniqueWithoutCreatorInput | TrackingLinkUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: TrackingLinkCreateManyCreatorInputEnvelope
+    set?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    disconnect?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    delete?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    connect?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    update?: TrackingLinkUpdateWithWhereUniqueWithoutCreatorInput | TrackingLinkUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: TrackingLinkUpdateManyWithWhereWithoutCreatorInput | TrackingLinkUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: TrackingLinkScalarWhereInput | TrackingLinkScalarWhereInput[]
+  }
+
+  export type TrackingLinkClickUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutUserInput, TrackingLinkClickUncheckedCreateWithoutUserInput> | TrackingLinkClickCreateWithoutUserInput[] | TrackingLinkClickUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutUserInput | TrackingLinkClickCreateOrConnectWithoutUserInput[]
+    upsert?: TrackingLinkClickUpsertWithWhereUniqueWithoutUserInput | TrackingLinkClickUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TrackingLinkClickCreateManyUserInputEnvelope
+    set?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    disconnect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    delete?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    update?: TrackingLinkClickUpdateWithWhereUniqueWithoutUserInput | TrackingLinkClickUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TrackingLinkClickUpdateManyWithWhereWithoutUserInput | TrackingLinkClickUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
+  }
+
   export type CommunityUncheckedUpdateManyWithoutCreatorNestedInput = {
     create?: XOR<CommunityCreateWithoutCreatorInput, CommunityUncheckedCreateWithoutCreatorInput> | CommunityCreateWithoutCreatorInput[] | CommunityUncheckedCreateWithoutCreatorInput[]
     connectOrCreate?: CommunityCreateOrConnectWithoutCreatorInput | CommunityCreateOrConnectWithoutCreatorInput[]
@@ -29103,6 +32609,34 @@ export namespace Prisma {
     update?: AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput | AffiliateRelationUpdateWithWhereUniqueWithoutReferredUserInput[]
     updateMany?: AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput | AffiliateRelationUpdateManyWithWhereWithoutReferredUserInput[]
     deleteMany?: AffiliateRelationScalarWhereInput | AffiliateRelationScalarWhereInput[]
+  }
+
+  export type TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput = {
+    create?: XOR<TrackingLinkCreateWithoutCreatorInput, TrackingLinkUncheckedCreateWithoutCreatorInput> | TrackingLinkCreateWithoutCreatorInput[] | TrackingLinkUncheckedCreateWithoutCreatorInput[]
+    connectOrCreate?: TrackingLinkCreateOrConnectWithoutCreatorInput | TrackingLinkCreateOrConnectWithoutCreatorInput[]
+    upsert?: TrackingLinkUpsertWithWhereUniqueWithoutCreatorInput | TrackingLinkUpsertWithWhereUniqueWithoutCreatorInput[]
+    createMany?: TrackingLinkCreateManyCreatorInputEnvelope
+    set?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    disconnect?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    delete?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    connect?: TrackingLinkWhereUniqueInput | TrackingLinkWhereUniqueInput[]
+    update?: TrackingLinkUpdateWithWhereUniqueWithoutCreatorInput | TrackingLinkUpdateWithWhereUniqueWithoutCreatorInput[]
+    updateMany?: TrackingLinkUpdateManyWithWhereWithoutCreatorInput | TrackingLinkUpdateManyWithWhereWithoutCreatorInput[]
+    deleteMany?: TrackingLinkScalarWhereInput | TrackingLinkScalarWhereInput[]
+  }
+
+  export type TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutUserInput, TrackingLinkClickUncheckedCreateWithoutUserInput> | TrackingLinkClickCreateWithoutUserInput[] | TrackingLinkClickUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutUserInput | TrackingLinkClickCreateOrConnectWithoutUserInput[]
+    upsert?: TrackingLinkClickUpsertWithWhereUniqueWithoutUserInput | TrackingLinkClickUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: TrackingLinkClickCreateManyUserInputEnvelope
+    set?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    disconnect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    delete?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    update?: TrackingLinkClickUpdateWithWhereUniqueWithoutUserInput | TrackingLinkClickUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: TrackingLinkClickUpdateManyWithWhereWithoutUserInput | TrackingLinkClickUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
   }
 
   export type AnonymousParticipantCreateNestedManyWithoutConversationInput = {
@@ -29534,11 +33068,25 @@ export namespace Prisma {
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
   }
 
+  export type TrackingLinkClickCreateNestedManyWithoutAnonymousUserInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutAnonymousUserInput, TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput> | TrackingLinkClickCreateWithoutAnonymousUserInput[] | TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput | TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput[]
+    createMany?: TrackingLinkClickCreateManyAnonymousUserInputEnvelope
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+  }
+
   export type MessageUncheckedCreateNestedManyWithoutAnonymousSenderInput = {
     create?: XOR<MessageCreateWithoutAnonymousSenderInput, MessageUncheckedCreateWithoutAnonymousSenderInput> | MessageCreateWithoutAnonymousSenderInput[] | MessageUncheckedCreateWithoutAnonymousSenderInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutAnonymousSenderInput | MessageCreateOrConnectWithoutAnonymousSenderInput[]
     createMany?: MessageCreateManyAnonymousSenderInputEnvelope
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
+  }
+
+  export type TrackingLinkClickUncheckedCreateNestedManyWithoutAnonymousUserInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutAnonymousUserInput, TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput> | TrackingLinkClickCreateWithoutAnonymousUserInput[] | TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput | TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput[]
+    createMany?: TrackingLinkClickCreateManyAnonymousUserInputEnvelope
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
   }
 
   export type ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput = {
@@ -29571,6 +33119,20 @@ export namespace Prisma {
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
   }
 
+  export type TrackingLinkClickUpdateManyWithoutAnonymousUserNestedInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutAnonymousUserInput, TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput> | TrackingLinkClickCreateWithoutAnonymousUserInput[] | TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput | TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput[]
+    upsert?: TrackingLinkClickUpsertWithWhereUniqueWithoutAnonymousUserInput | TrackingLinkClickUpsertWithWhereUniqueWithoutAnonymousUserInput[]
+    createMany?: TrackingLinkClickCreateManyAnonymousUserInputEnvelope
+    set?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    disconnect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    delete?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    update?: TrackingLinkClickUpdateWithWhereUniqueWithoutAnonymousUserInput | TrackingLinkClickUpdateWithWhereUniqueWithoutAnonymousUserInput[]
+    updateMany?: TrackingLinkClickUpdateManyWithWhereWithoutAnonymousUserInput | TrackingLinkClickUpdateManyWithWhereWithoutAnonymousUserInput[]
+    deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
+  }
+
   export type MessageUncheckedUpdateManyWithoutAnonymousSenderNestedInput = {
     create?: XOR<MessageCreateWithoutAnonymousSenderInput, MessageUncheckedCreateWithoutAnonymousSenderInput> | MessageCreateWithoutAnonymousSenderInput[] | MessageUncheckedCreateWithoutAnonymousSenderInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutAnonymousSenderInput | MessageCreateOrConnectWithoutAnonymousSenderInput[]
@@ -29583,6 +33145,20 @@ export namespace Prisma {
     update?: MessageUpdateWithWhereUniqueWithoutAnonymousSenderInput | MessageUpdateWithWhereUniqueWithoutAnonymousSenderInput[]
     updateMany?: MessageUpdateManyWithWhereWithoutAnonymousSenderInput | MessageUpdateManyWithWhereWithoutAnonymousSenderInput[]
     deleteMany?: MessageScalarWhereInput | MessageScalarWhereInput[]
+  }
+
+  export type TrackingLinkClickUncheckedUpdateManyWithoutAnonymousUserNestedInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutAnonymousUserInput, TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput> | TrackingLinkClickCreateWithoutAnonymousUserInput[] | TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput | TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput[]
+    upsert?: TrackingLinkClickUpsertWithWhereUniqueWithoutAnonymousUserInput | TrackingLinkClickUpsertWithWhereUniqueWithoutAnonymousUserInput[]
+    createMany?: TrackingLinkClickCreateManyAnonymousUserInputEnvelope
+    set?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    disconnect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    delete?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    update?: TrackingLinkClickUpdateWithWhereUniqueWithoutAnonymousUserInput | TrackingLinkClickUpdateWithWhereUniqueWithoutAnonymousUserInput[]
+    updateMany?: TrackingLinkClickUpdateManyWithWhereWithoutAnonymousUserInput | TrackingLinkClickUpdateManyWithWhereWithoutAnonymousUserInput[]
+    deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
   }
 
   export type MessageStatusCreateNestedManyWithoutMessageInput = {
@@ -30230,6 +33806,110 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutReferredRelationsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReferredRelationsInput, UserUpdateWithoutReferredRelationsInput>, UserUncheckedUpdateWithoutReferredRelationsInput>
+  }
+
+  export type TrackingLinkClickCreateNestedManyWithoutTrackingLinkInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutTrackingLinkInput, TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput> | TrackingLinkClickCreateWithoutTrackingLinkInput[] | TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput | TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput[]
+    createMany?: TrackingLinkClickCreateManyTrackingLinkInputEnvelope
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+  }
+
+  export type UserCreateNestedOneWithoutCreatedTrackingLinksInput = {
+    create?: XOR<UserCreateWithoutCreatedTrackingLinksInput, UserUncheckedCreateWithoutCreatedTrackingLinksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedTrackingLinksInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type TrackingLinkClickUncheckedCreateNestedManyWithoutTrackingLinkInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutTrackingLinkInput, TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput> | TrackingLinkClickCreateWithoutTrackingLinkInput[] | TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput | TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput[]
+    createMany?: TrackingLinkClickCreateManyTrackingLinkInputEnvelope
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+  }
+
+  export type TrackingLinkClickUpdateManyWithoutTrackingLinkNestedInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutTrackingLinkInput, TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput> | TrackingLinkClickCreateWithoutTrackingLinkInput[] | TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput | TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput[]
+    upsert?: TrackingLinkClickUpsertWithWhereUniqueWithoutTrackingLinkInput | TrackingLinkClickUpsertWithWhereUniqueWithoutTrackingLinkInput[]
+    createMany?: TrackingLinkClickCreateManyTrackingLinkInputEnvelope
+    set?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    disconnect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    delete?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    update?: TrackingLinkClickUpdateWithWhereUniqueWithoutTrackingLinkInput | TrackingLinkClickUpdateWithWhereUniqueWithoutTrackingLinkInput[]
+    updateMany?: TrackingLinkClickUpdateManyWithWhereWithoutTrackingLinkInput | TrackingLinkClickUpdateManyWithWhereWithoutTrackingLinkInput[]
+    deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
+  }
+
+  export type UserUpdateOneWithoutCreatedTrackingLinksNestedInput = {
+    create?: XOR<UserCreateWithoutCreatedTrackingLinksInput, UserUncheckedCreateWithoutCreatedTrackingLinksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutCreatedTrackingLinksInput
+    upsert?: UserUpsertWithoutCreatedTrackingLinksInput
+    disconnect?: boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedTrackingLinksInput, UserUpdateWithoutCreatedTrackingLinksInput>, UserUncheckedUpdateWithoutCreatedTrackingLinksInput>
+  }
+
+  export type TrackingLinkClickUncheckedUpdateManyWithoutTrackingLinkNestedInput = {
+    create?: XOR<TrackingLinkClickCreateWithoutTrackingLinkInput, TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput> | TrackingLinkClickCreateWithoutTrackingLinkInput[] | TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput[]
+    connectOrCreate?: TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput | TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput[]
+    upsert?: TrackingLinkClickUpsertWithWhereUniqueWithoutTrackingLinkInput | TrackingLinkClickUpsertWithWhereUniqueWithoutTrackingLinkInput[]
+    createMany?: TrackingLinkClickCreateManyTrackingLinkInputEnvelope
+    set?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    disconnect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    delete?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    connect?: TrackingLinkClickWhereUniqueInput | TrackingLinkClickWhereUniqueInput[]
+    update?: TrackingLinkClickUpdateWithWhereUniqueWithoutTrackingLinkInput | TrackingLinkClickUpdateWithWhereUniqueWithoutTrackingLinkInput[]
+    updateMany?: TrackingLinkClickUpdateManyWithWhereWithoutTrackingLinkInput | TrackingLinkClickUpdateManyWithWhereWithoutTrackingLinkInput[]
+    deleteMany?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
+  }
+
+  export type TrackingLinkCreateNestedOneWithoutClicksInput = {
+    create?: XOR<TrackingLinkCreateWithoutClicksInput, TrackingLinkUncheckedCreateWithoutClicksInput>
+    connectOrCreate?: TrackingLinkCreateOrConnectWithoutClicksInput
+    connect?: TrackingLinkWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutTrackingLinkClicksInput = {
+    create?: XOR<UserCreateWithoutTrackingLinkClicksInput, UserUncheckedCreateWithoutTrackingLinkClicksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTrackingLinkClicksInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type AnonymousParticipantCreateNestedOneWithoutTrackingLinkClicksInput = {
+    create?: XOR<AnonymousParticipantCreateWithoutTrackingLinkClicksInput, AnonymousParticipantUncheckedCreateWithoutTrackingLinkClicksInput>
+    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutTrackingLinkClicksInput
+    connect?: AnonymousParticipantWhereUniqueInput
+  }
+
+  export type TrackingLinkUpdateOneRequiredWithoutClicksNestedInput = {
+    create?: XOR<TrackingLinkCreateWithoutClicksInput, TrackingLinkUncheckedCreateWithoutClicksInput>
+    connectOrCreate?: TrackingLinkCreateOrConnectWithoutClicksInput
+    upsert?: TrackingLinkUpsertWithoutClicksInput
+    connect?: TrackingLinkWhereUniqueInput
+    update?: XOR<XOR<TrackingLinkUpdateToOneWithWhereWithoutClicksInput, TrackingLinkUpdateWithoutClicksInput>, TrackingLinkUncheckedUpdateWithoutClicksInput>
+  }
+
+  export type UserUpdateOneWithoutTrackingLinkClicksNestedInput = {
+    create?: XOR<UserCreateWithoutTrackingLinkClicksInput, UserUncheckedCreateWithoutTrackingLinkClicksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTrackingLinkClicksInput
+    upsert?: UserUpsertWithoutTrackingLinkClicksInput
+    disconnect?: boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTrackingLinkClicksInput, UserUpdateWithoutTrackingLinkClicksInput>, UserUncheckedUpdateWithoutTrackingLinkClicksInput>
+  }
+
+  export type AnonymousParticipantUpdateOneWithoutTrackingLinkClicksNestedInput = {
+    create?: XOR<AnonymousParticipantCreateWithoutTrackingLinkClicksInput, AnonymousParticipantUncheckedCreateWithoutTrackingLinkClicksInput>
+    connectOrCreate?: AnonymousParticipantCreateOrConnectWithoutTrackingLinkClicksInput
+    upsert?: AnonymousParticipantUpsertWithoutTrackingLinkClicksInput
+    disconnect?: boolean
+    delete?: AnonymousParticipantWhereInput | boolean
+    connect?: AnonymousParticipantWhereUniqueInput
+    update?: XOR<XOR<AnonymousParticipantUpdateToOneWithWhereWithoutTrackingLinkClicksInput, AnonymousParticipantUpdateWithoutTrackingLinkClicksInput>, AnonymousParticipantUncheckedUpdateWithoutTrackingLinkClicksInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -31005,6 +34685,94 @@ export namespace Prisma {
     data: AffiliateRelationCreateManyReferredUserInput | AffiliateRelationCreateManyReferredUserInput[]
   }
 
+  export type TrackingLinkCreateWithoutCreatorInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+    clicks?: TrackingLinkClickCreateNestedManyWithoutTrackingLinkInput
+  }
+
+  export type TrackingLinkUncheckedCreateWithoutCreatorInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+    clicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutTrackingLinkInput
+  }
+
+  export type TrackingLinkCreateOrConnectWithoutCreatorInput = {
+    where: TrackingLinkWhereUniqueInput
+    create: XOR<TrackingLinkCreateWithoutCreatorInput, TrackingLinkUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type TrackingLinkCreateManyCreatorInputEnvelope = {
+    data: TrackingLinkCreateManyCreatorInput | TrackingLinkCreateManyCreatorInput[]
+  }
+
+  export type TrackingLinkClickCreateWithoutUserInput = {
+    id?: string
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+    trackingLink: TrackingLinkCreateNestedOneWithoutClicksInput
+    anonymousUser?: AnonymousParticipantCreateNestedOneWithoutTrackingLinkClicksInput
+  }
+
+  export type TrackingLinkClickUncheckedCreateWithoutUserInput = {
+    id?: string
+    trackingLinkId: string
+    anonymousId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+  }
+
+  export type TrackingLinkClickCreateOrConnectWithoutUserInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    create: XOR<TrackingLinkClickCreateWithoutUserInput, TrackingLinkClickUncheckedCreateWithoutUserInput>
+  }
+
+  export type TrackingLinkClickCreateManyUserInputEnvelope = {
+    data: TrackingLinkClickCreateManyUserInput | TrackingLinkClickCreateManyUserInput[]
+  }
+
   export type CommunityUpsertWithWhereUniqueWithoutCreatorInput = {
     where: CommunityWhereUniqueInput
     update: XOR<CommunityUpdateWithoutCreatorInput, CommunityUncheckedUpdateWithoutCreatorInput>
@@ -31506,6 +35274,80 @@ export namespace Prisma {
     data: XOR<AffiliateRelationUpdateManyMutationInput, AffiliateRelationUncheckedUpdateManyWithoutReferredUserInput>
   }
 
+  export type TrackingLinkUpsertWithWhereUniqueWithoutCreatorInput = {
+    where: TrackingLinkWhereUniqueInput
+    update: XOR<TrackingLinkUpdateWithoutCreatorInput, TrackingLinkUncheckedUpdateWithoutCreatorInput>
+    create: XOR<TrackingLinkCreateWithoutCreatorInput, TrackingLinkUncheckedCreateWithoutCreatorInput>
+  }
+
+  export type TrackingLinkUpdateWithWhereUniqueWithoutCreatorInput = {
+    where: TrackingLinkWhereUniqueInput
+    data: XOR<TrackingLinkUpdateWithoutCreatorInput, TrackingLinkUncheckedUpdateWithoutCreatorInput>
+  }
+
+  export type TrackingLinkUpdateManyWithWhereWithoutCreatorInput = {
+    where: TrackingLinkScalarWhereInput
+    data: XOR<TrackingLinkUpdateManyMutationInput, TrackingLinkUncheckedUpdateManyWithoutCreatorInput>
+  }
+
+  export type TrackingLinkScalarWhereInput = {
+    AND?: TrackingLinkScalarWhereInput | TrackingLinkScalarWhereInput[]
+    OR?: TrackingLinkScalarWhereInput[]
+    NOT?: TrackingLinkScalarWhereInput | TrackingLinkScalarWhereInput[]
+    id?: StringFilter<"TrackingLink"> | string
+    token?: StringFilter<"TrackingLink"> | string
+    originalUrl?: StringFilter<"TrackingLink"> | string
+    shortUrl?: StringFilter<"TrackingLink"> | string
+    createdBy?: StringNullableFilter<"TrackingLink"> | string | null
+    conversationId?: StringNullableFilter<"TrackingLink"> | string | null
+    messageId?: StringNullableFilter<"TrackingLink"> | string | null
+    totalClicks?: IntFilter<"TrackingLink"> | number
+    uniqueClicks?: IntFilter<"TrackingLink"> | number
+    isActive?: BoolFilter<"TrackingLink"> | boolean
+    expiresAt?: DateTimeNullableFilter<"TrackingLink"> | Date | string | null
+    createdAt?: DateTimeFilter<"TrackingLink"> | Date | string
+    updatedAt?: DateTimeFilter<"TrackingLink"> | Date | string
+    lastClickedAt?: DateTimeNullableFilter<"TrackingLink"> | Date | string | null
+  }
+
+  export type TrackingLinkClickUpsertWithWhereUniqueWithoutUserInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    update: XOR<TrackingLinkClickUpdateWithoutUserInput, TrackingLinkClickUncheckedUpdateWithoutUserInput>
+    create: XOR<TrackingLinkClickCreateWithoutUserInput, TrackingLinkClickUncheckedCreateWithoutUserInput>
+  }
+
+  export type TrackingLinkClickUpdateWithWhereUniqueWithoutUserInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    data: XOR<TrackingLinkClickUpdateWithoutUserInput, TrackingLinkClickUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TrackingLinkClickUpdateManyWithWhereWithoutUserInput = {
+    where: TrackingLinkClickScalarWhereInput
+    data: XOR<TrackingLinkClickUpdateManyMutationInput, TrackingLinkClickUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type TrackingLinkClickScalarWhereInput = {
+    AND?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
+    OR?: TrackingLinkClickScalarWhereInput[]
+    NOT?: TrackingLinkClickScalarWhereInput | TrackingLinkClickScalarWhereInput[]
+    id?: StringFilter<"TrackingLinkClick"> | string
+    trackingLinkId?: StringFilter<"TrackingLinkClick"> | string
+    userId?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    anonymousId?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    ipAddress?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    country?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    city?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    region?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    userAgent?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    browser?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    os?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    device?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    language?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    referrer?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    deviceFingerprint?: StringNullableFilter<"TrackingLinkClick"> | string | null
+    clickedAt?: DateTimeFilter<"TrackingLinkClick"> | Date | string
+  }
+
   export type AnonymousParticipantCreateWithoutConversationInput = {
     id?: string
     firstName: string
@@ -31528,6 +35370,7 @@ export namespace Prisma {
     leftAt?: Date | string | null
     shareLink: ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput
     sentMessages?: MessageCreateNestedManyWithoutAnonymousSenderInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantUncheckedCreateWithoutConversationInput = {
@@ -31552,6 +35395,7 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     leftAt?: Date | string | null
     sentMessages?: MessageUncheckedCreateNestedManyWithoutAnonymousSenderInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantCreateOrConnectWithoutConversationInput = {
@@ -32006,6 +35850,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationsInput = {
@@ -32049,6 +35895,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationsInput = {
@@ -32154,6 +36002,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationsInput = {
@@ -32196,6 +36046,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutMembersInput = {
@@ -32271,6 +36123,7 @@ export namespace Prisma {
     leftAt?: Date | string | null
     conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
     sentMessages?: MessageCreateNestedManyWithoutAnonymousSenderInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantUncheckedCreateWithoutShareLinkInput = {
@@ -32295,6 +36148,7 @@ export namespace Prisma {
     lastSeenAt?: Date | string
     leftAt?: Date | string | null
     sentMessages?: MessageUncheckedCreateNestedManyWithoutAnonymousSenderInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantCreateOrConnectWithoutShareLinkInput = {
@@ -32347,6 +36201,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedShareLinksInput = {
@@ -32390,6 +36246,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedShareLinksInput = {
@@ -32511,6 +36369,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedShareLinksInput = {
@@ -32553,6 +36413,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutShareLinksInput = {
@@ -32765,6 +36627,51 @@ export namespace Prisma {
     data: MessageCreateManyAnonymousSenderInput | MessageCreateManyAnonymousSenderInput[]
   }
 
+  export type TrackingLinkClickCreateWithoutAnonymousUserInput = {
+    id?: string
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+    trackingLink: TrackingLinkCreateNestedOneWithoutClicksInput
+    user?: UserCreateNestedOneWithoutTrackingLinkClicksInput
+  }
+
+  export type TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput = {
+    id?: string
+    trackingLinkId: string
+    userId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+  }
+
+  export type TrackingLinkClickCreateOrConnectWithoutAnonymousUserInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    create: XOR<TrackingLinkClickCreateWithoutAnonymousUserInput, TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput>
+  }
+
+  export type TrackingLinkClickCreateManyAnonymousUserInputEnvelope = {
+    data: TrackingLinkClickCreateManyAnonymousUserInput | TrackingLinkClickCreateManyAnonymousUserInput[]
+  }
+
   export type ConversationShareLinkUpsertWithoutAnonymousParticipantsInput = {
     update: XOR<ConversationShareLinkUpdateWithoutAnonymousParticipantsInput, ConversationShareLinkUncheckedUpdateWithoutAnonymousParticipantsInput>
     create: XOR<ConversationShareLinkCreateWithoutAnonymousParticipantsInput, ConversationShareLinkUncheckedCreateWithoutAnonymousParticipantsInput>
@@ -32897,6 +36804,22 @@ export namespace Prisma {
   export type MessageUpdateManyWithWhereWithoutAnonymousSenderInput = {
     where: MessageScalarWhereInput
     data: XOR<MessageUpdateManyMutationInput, MessageUncheckedUpdateManyWithoutAnonymousSenderInput>
+  }
+
+  export type TrackingLinkClickUpsertWithWhereUniqueWithoutAnonymousUserInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    update: XOR<TrackingLinkClickUpdateWithoutAnonymousUserInput, TrackingLinkClickUncheckedUpdateWithoutAnonymousUserInput>
+    create: XOR<TrackingLinkClickCreateWithoutAnonymousUserInput, TrackingLinkClickUncheckedCreateWithoutAnonymousUserInput>
+  }
+
+  export type TrackingLinkClickUpdateWithWhereUniqueWithoutAnonymousUserInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    data: XOR<TrackingLinkClickUpdateWithoutAnonymousUserInput, TrackingLinkClickUncheckedUpdateWithoutAnonymousUserInput>
+  }
+
+  export type TrackingLinkClickUpdateManyWithWhereWithoutAnonymousUserInput = {
+    where: TrackingLinkClickScalarWhereInput
+    data: XOR<TrackingLinkClickUpdateManyMutationInput, TrackingLinkClickUncheckedUpdateManyWithoutAnonymousUserInput>
   }
 
   export type MessageStatusCreateWithoutMessageInput = {
@@ -33096,6 +37019,7 @@ export namespace Prisma {
     leftAt?: Date | string | null
     shareLink: ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput
     conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantUncheckedCreateWithoutSentMessagesInput = {
@@ -33120,6 +37044,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     lastSeenAt?: Date | string
     leftAt?: Date | string | null
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutAnonymousUserInput
   }
 
   export type AnonymousParticipantCreateOrConnectWithoutSentMessagesInput = {
@@ -33168,6 +37093,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -33211,6 +37138,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -33425,6 +37354,7 @@ export namespace Prisma {
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     shareLink?: ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
     conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type AnonymousParticipantUncheckedUpdateWithoutSentMessagesInput = {
@@ -33448,6 +37378,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type UserUpsertWithoutSentMessagesInput = {
@@ -33501,6 +37432,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -33543,6 +37476,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutMessagesInput = {
@@ -33731,6 +37666,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMessageStatusInput = {
@@ -33774,6 +37711,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMessageStatusInput = {
@@ -33922,6 +37861,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageStatusInput = {
@@ -33964,6 +37905,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type MessageUpsertWithoutStatusInput = {
@@ -34105,6 +38048,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReceivedFriendRequestsInput = {
@@ -34148,6 +38093,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReceivedFriendRequestsInput = {
@@ -34196,6 +38143,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSentFriendRequestsInput = {
@@ -34239,6 +38188,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSentFriendRequestsInput = {
@@ -34297,6 +38248,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReceivedFriendRequestsInput = {
@@ -34339,6 +38292,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSentFriendRequestsInput = {
@@ -34392,6 +38347,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSentFriendRequestsInput = {
@@ -34434,6 +38391,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTypingIndicatorsInput = {
@@ -34477,6 +38436,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTypingIndicatorsInput = {
@@ -34520,6 +38481,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTypingIndicatorsInput = {
@@ -34625,6 +38588,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTypingIndicatorsInput = {
@@ -34667,6 +38632,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutTypingIndicatorsInput = {
@@ -34761,6 +38728,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -34804,6 +38773,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -34862,6 +38833,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -34904,6 +38877,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommunityMemberCreateWithoutCommunityInput = {
@@ -34970,6 +38945,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedCommunitiesInput = {
@@ -35013,6 +38990,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedCommunitiesInput = {
@@ -35138,6 +39117,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedCommunitiesInput = {
@@ -35180,6 +39161,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithWhereUniqueWithoutCommunityInput = {
@@ -35258,6 +39241,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCommunityMembershipsInput = {
@@ -35301,6 +39286,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCommunityMembershipsInput = {
@@ -35390,6 +39377,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommunityMembershipsInput = {
@@ -35432,6 +39421,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommunityUpsertWithoutMembersInput = {
@@ -35510,6 +39501,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutStatsInput = {
@@ -35553,6 +39546,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutStatsInput = {
@@ -35611,6 +39606,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutStatsInput = {
@@ -35653,6 +39650,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutPreferencesInput = {
@@ -35696,6 +39695,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -35739,6 +39740,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -35797,6 +39800,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPreferencesInput = {
@@ -35839,6 +39844,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutConversationPreferencesInput = {
@@ -35882,6 +39889,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutConversationPreferencesInput = {
@@ -35925,6 +39934,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutConversationPreferencesInput = {
@@ -36030,6 +40041,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutConversationPreferencesInput = {
@@ -36072,6 +40085,8 @@ export namespace Prisma {
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ConversationUpsertWithoutPreferencesInput = {
@@ -36166,6 +40181,8 @@ export namespace Prisma {
     stats?: UserStatsCreateNestedOneWithoutUserInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedAffiliateTokensInput = {
@@ -36209,6 +40226,8 @@ export namespace Prisma {
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedAffiliateTokensInput = {
@@ -36294,6 +40313,8 @@ export namespace Prisma {
     stats?: UserStatsUpdateOneWithoutUserNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedAffiliateTokensInput = {
@@ -36336,6 +40357,8 @@ export namespace Prisma {
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type AffiliateRelationUpsertWithWhereUniqueWithoutAffiliateTokenInput = {
@@ -36426,6 +40449,8 @@ export namespace Prisma {
     stats?: UserStatsCreateNestedOneWithoutUserInput
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAffiliateRelationsInput = {
@@ -36469,6 +40494,8 @@ export namespace Prisma {
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAffiliateRelationsInput = {
@@ -36517,6 +40544,8 @@ export namespace Prisma {
     stats?: UserStatsCreateNestedOneWithoutUserInput
     createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReferredRelationsInput = {
@@ -36560,6 +40589,8 @@ export namespace Prisma {
     stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
     createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
     affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReferredRelationsInput = {
@@ -36653,6 +40684,8 @@ export namespace Prisma {
     stats?: UserStatsUpdateOneWithoutUserNestedInput
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAffiliateRelationsInput = {
@@ -36695,6 +40728,8 @@ export namespace Prisma {
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutReferredRelationsInput = {
@@ -36748,6 +40783,8 @@ export namespace Prisma {
     stats?: UserStatsUpdateOneWithoutUserNestedInput
     createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReferredRelationsInput = {
@@ -36790,6 +40827,653 @@ export namespace Prisma {
     stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
     createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
     affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type TrackingLinkClickCreateWithoutTrackingLinkInput = {
+    id?: string
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+    user?: UserCreateNestedOneWithoutTrackingLinkClicksInput
+    anonymousUser?: AnonymousParticipantCreateNestedOneWithoutTrackingLinkClicksInput
+  }
+
+  export type TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput = {
+    id?: string
+    userId?: string | null
+    anonymousId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+  }
+
+  export type TrackingLinkClickCreateOrConnectWithoutTrackingLinkInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    create: XOR<TrackingLinkClickCreateWithoutTrackingLinkInput, TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput>
+  }
+
+  export type TrackingLinkClickCreateManyTrackingLinkInputEnvelope = {
+    data: TrackingLinkClickCreateManyTrackingLinkInput | TrackingLinkClickCreateManyTrackingLinkInput[]
+  }
+
+  export type UserCreateWithoutCreatedTrackingLinksInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    trackingLinkClicks?: TrackingLinkClickCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutCreatedTrackingLinksInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutCreatedTrackingLinksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCreatedTrackingLinksInput, UserUncheckedCreateWithoutCreatedTrackingLinksInput>
+  }
+
+  export type TrackingLinkClickUpsertWithWhereUniqueWithoutTrackingLinkInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    update: XOR<TrackingLinkClickUpdateWithoutTrackingLinkInput, TrackingLinkClickUncheckedUpdateWithoutTrackingLinkInput>
+    create: XOR<TrackingLinkClickCreateWithoutTrackingLinkInput, TrackingLinkClickUncheckedCreateWithoutTrackingLinkInput>
+  }
+
+  export type TrackingLinkClickUpdateWithWhereUniqueWithoutTrackingLinkInput = {
+    where: TrackingLinkClickWhereUniqueInput
+    data: XOR<TrackingLinkClickUpdateWithoutTrackingLinkInput, TrackingLinkClickUncheckedUpdateWithoutTrackingLinkInput>
+  }
+
+  export type TrackingLinkClickUpdateManyWithWhereWithoutTrackingLinkInput = {
+    where: TrackingLinkClickScalarWhereInput
+    data: XOR<TrackingLinkClickUpdateManyMutationInput, TrackingLinkClickUncheckedUpdateManyWithoutTrackingLinkInput>
+  }
+
+  export type UserUpsertWithoutCreatedTrackingLinksInput = {
+    update: XOR<UserUpdateWithoutCreatedTrackingLinksInput, UserUncheckedUpdateWithoutCreatedTrackingLinksInput>
+    create: XOR<UserCreateWithoutCreatedTrackingLinksInput, UserUncheckedCreateWithoutCreatedTrackingLinksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutCreatedTrackingLinksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutCreatedTrackingLinksInput, UserUncheckedUpdateWithoutCreatedTrackingLinksInput>
+  }
+
+  export type UserUpdateWithoutCreatedTrackingLinksInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCreatedTrackingLinksInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type TrackingLinkCreateWithoutClicksInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+    creator?: UserCreateNestedOneWithoutCreatedTrackingLinksInput
+  }
+
+  export type TrackingLinkUncheckedCreateWithoutClicksInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    createdBy?: string | null
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+  }
+
+  export type TrackingLinkCreateOrConnectWithoutClicksInput = {
+    where: TrackingLinkWhereUniqueInput
+    create: XOR<TrackingLinkCreateWithoutClicksInput, TrackingLinkUncheckedCreateWithoutClicksInput>
+  }
+
+  export type UserCreateWithoutTrackingLinkClicksInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusCreateNestedManyWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceCreateNestedManyWithoutUserInput
+    stats?: UserStatsCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserUncheckedCreateWithoutTrackingLinkClicksInput = {
+    id?: string
+    username: string
+    firstName: string
+    lastName: string
+    bio?: string
+    email: string
+    phoneNumber?: string | null
+    password: string
+    displayName?: string | null
+    avatar?: string | null
+    isOnline?: boolean
+    lastSeen?: Date | string
+    lastActiveAt?: Date | string
+    systemLanguage?: string
+    regionalLanguage?: string
+    customDestinationLanguage?: string | null
+    autoTranslateEnabled?: boolean
+    translateToSystemLanguage?: boolean
+    translateToRegionalLanguage?: boolean
+    useCustomDestination?: boolean
+    role?: string
+    isActive?: boolean
+    deactivatedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdCommunities?: CommunityUncheckedCreateNestedManyWithoutCreatorInput
+    communityMemberships?: CommunityMemberUncheckedCreateNestedManyWithoutUserInput
+    conversations?: ConversationMemberUncheckedCreateNestedManyWithoutUserInput
+    conversationPreferences?: ConversationPreferenceUncheckedCreateNestedManyWithoutUserInput
+    createdShareLinks?: ConversationShareLinkUncheckedCreateNestedManyWithoutCreatorInput
+    receivedFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutReceiverInput
+    sentFriendRequests?: FriendRequestUncheckedCreateNestedManyWithoutSenderInput
+    messageStatus?: MessageStatusUncheckedCreateNestedManyWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    typingIndicators?: TypingIndicatorUncheckedCreateNestedManyWithoutUserInput
+    preferences?: UserPreferenceUncheckedCreateNestedManyWithoutUserInput
+    stats?: UserStatsUncheckedCreateNestedOneWithoutUserInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedCreateNestedManyWithoutCreatorInput
+    affiliateRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutAffiliateUserInput
+    referredRelations?: AffiliateRelationUncheckedCreateNestedManyWithoutReferredUserInput
+    createdTrackingLinks?: TrackingLinkUncheckedCreateNestedManyWithoutCreatorInput
+  }
+
+  export type UserCreateOrConnectWithoutTrackingLinkClicksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTrackingLinkClicksInput, UserUncheckedCreateWithoutTrackingLinkClicksInput>
+  }
+
+  export type AnonymousParticipantCreateWithoutTrackingLinkClicksInput = {
+    id?: string
+    firstName: string
+    lastName: string
+    username: string
+    email?: string | null
+    sessionToken: string
+    ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
+    isActive?: boolean
+    isOnline?: boolean
+    lastActiveAt?: Date | string
+    canSendMessages?: boolean
+    canSendFiles?: boolean
+    canSendImages?: boolean
+    joinedAt?: Date | string
+    lastSeenAt?: Date | string
+    leftAt?: Date | string | null
+    shareLink: ConversationShareLinkCreateNestedOneWithoutAnonymousParticipantsInput
+    conversation: ConversationCreateNestedOneWithoutAnonymousParticipantsInput
+    sentMessages?: MessageCreateNestedManyWithoutAnonymousSenderInput
+  }
+
+  export type AnonymousParticipantUncheckedCreateWithoutTrackingLinkClicksInput = {
+    id?: string
+    conversationId: string
+    shareLinkId: string
+    firstName: string
+    lastName: string
+    username: string
+    email?: string | null
+    sessionToken: string
+    ipAddress?: string | null
+    country?: string | null
+    language?: string
+    deviceFingerprint?: string | null
+    isActive?: boolean
+    isOnline?: boolean
+    lastActiveAt?: Date | string
+    canSendMessages?: boolean
+    canSendFiles?: boolean
+    canSendImages?: boolean
+    joinedAt?: Date | string
+    lastSeenAt?: Date | string
+    leftAt?: Date | string | null
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutAnonymousSenderInput
+  }
+
+  export type AnonymousParticipantCreateOrConnectWithoutTrackingLinkClicksInput = {
+    where: AnonymousParticipantWhereUniqueInput
+    create: XOR<AnonymousParticipantCreateWithoutTrackingLinkClicksInput, AnonymousParticipantUncheckedCreateWithoutTrackingLinkClicksInput>
+  }
+
+  export type TrackingLinkUpsertWithoutClicksInput = {
+    update: XOR<TrackingLinkUpdateWithoutClicksInput, TrackingLinkUncheckedUpdateWithoutClicksInput>
+    create: XOR<TrackingLinkCreateWithoutClicksInput, TrackingLinkUncheckedCreateWithoutClicksInput>
+    where?: TrackingLinkWhereInput
+  }
+
+  export type TrackingLinkUpdateToOneWithWhereWithoutClicksInput = {
+    where?: TrackingLinkWhereInput
+    data: XOR<TrackingLinkUpdateWithoutClicksInput, TrackingLinkUncheckedUpdateWithoutClicksInput>
+  }
+
+  export type TrackingLinkUpdateWithoutClicksInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    creator?: UserUpdateOneWithoutCreatedTrackingLinksNestedInput
+  }
+
+  export type TrackingLinkUncheckedUpdateWithoutClicksInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    createdBy?: NullableStringFieldUpdateOperationsInput | string | null
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type UserUpsertWithoutTrackingLinkClicksInput = {
+    update: XOR<UserUpdateWithoutTrackingLinkClicksInput, UserUncheckedUpdateWithoutTrackingLinkClicksInput>
+    create: XOR<UserCreateWithoutTrackingLinkClicksInput, UserUncheckedCreateWithoutTrackingLinkClicksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTrackingLinkClicksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTrackingLinkClicksInput, UserUncheckedUpdateWithoutTrackingLinkClicksInput>
+  }
+
+  export type UserUpdateWithoutTrackingLinkClicksInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTrackingLinkClicksInput = {
+    username?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    bio?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastSeen?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    systemLanguage?: StringFieldUpdateOperationsInput | string
+    regionalLanguage?: StringFieldUpdateOperationsInput | string
+    customDestinationLanguage?: NullableStringFieldUpdateOperationsInput | string | null
+    autoTranslateEnabled?: BoolFieldUpdateOperationsInput | boolean
+    translateToSystemLanguage?: BoolFieldUpdateOperationsInput | boolean
+    translateToRegionalLanguage?: BoolFieldUpdateOperationsInput | boolean
+    useCustomDestination?: BoolFieldUpdateOperationsInput | boolean
+    role?: StringFieldUpdateOperationsInput | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdCommunities?: CommunityUncheckedUpdateManyWithoutCreatorNestedInput
+    communityMemberships?: CommunityMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversations?: ConversationMemberUncheckedUpdateManyWithoutUserNestedInput
+    conversationPreferences?: ConversationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    createdShareLinks?: ConversationShareLinkUncheckedUpdateManyWithoutCreatorNestedInput
+    receivedFriendRequests?: FriendRequestUncheckedUpdateManyWithoutReceiverNestedInput
+    sentFriendRequests?: FriendRequestUncheckedUpdateManyWithoutSenderNestedInput
+    messageStatus?: MessageStatusUncheckedUpdateManyWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    typingIndicators?: TypingIndicatorUncheckedUpdateManyWithoutUserNestedInput
+    preferences?: UserPreferenceUncheckedUpdateManyWithoutUserNestedInput
+    stats?: UserStatsUncheckedUpdateOneWithoutUserNestedInput
+    createdAffiliateTokens?: AffiliateTokenUncheckedUpdateManyWithoutCreatorNestedInput
+    affiliateRelations?: AffiliateRelationUncheckedUpdateManyWithoutAffiliateUserNestedInput
+    referredRelations?: AffiliateRelationUncheckedUpdateManyWithoutReferredUserNestedInput
+    createdTrackingLinks?: TrackingLinkUncheckedUpdateManyWithoutCreatorNestedInput
+  }
+
+  export type AnonymousParticipantUpsertWithoutTrackingLinkClicksInput = {
+    update: XOR<AnonymousParticipantUpdateWithoutTrackingLinkClicksInput, AnonymousParticipantUncheckedUpdateWithoutTrackingLinkClicksInput>
+    create: XOR<AnonymousParticipantCreateWithoutTrackingLinkClicksInput, AnonymousParticipantUncheckedCreateWithoutTrackingLinkClicksInput>
+    where?: AnonymousParticipantWhereInput
+  }
+
+  export type AnonymousParticipantUpdateToOneWithWhereWithoutTrackingLinkClicksInput = {
+    where?: AnonymousParticipantWhereInput
+    data: XOR<AnonymousParticipantUpdateWithoutTrackingLinkClicksInput, AnonymousParticipantUncheckedUpdateWithoutTrackingLinkClicksInput>
+  }
+
+  export type AnonymousParticipantUpdateWithoutTrackingLinkClicksInput = {
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionToken?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    canSendMessages?: BoolFieldUpdateOperationsInput | boolean
+    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
+    canSendImages?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    shareLink?: ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
+    conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
+    sentMessages?: MessageUpdateManyWithoutAnonymousSenderNestedInput
+  }
+
+  export type AnonymousParticipantUncheckedUpdateWithoutTrackingLinkClicksInput = {
+    conversationId?: StringFieldUpdateOperationsInput | string
+    shareLinkId?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    username?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    sessionToken?: StringFieldUpdateOperationsInput | string
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: StringFieldUpdateOperationsInput | string
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    isOnline?: BoolFieldUpdateOperationsInput | boolean
+    lastActiveAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    canSendMessages?: BoolFieldUpdateOperationsInput | boolean
+    canSendFiles?: BoolFieldUpdateOperationsInput | boolean
+    canSendImages?: BoolFieldUpdateOperationsInput | boolean
+    joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sentMessages?: MessageUncheckedUpdateManyWithoutAnonymousSenderNestedInput
   }
 
   export type CommunityCreateManyCreatorInput = {
@@ -36965,6 +41649,40 @@ export namespace Prisma {
     status?: string
     createdAt?: Date | string
     completedAt?: Date | string | null
+  }
+
+  export type TrackingLinkCreateManyCreatorInput = {
+    id?: string
+    token: string
+    originalUrl: string
+    shortUrl: string
+    conversationId?: string | null
+    messageId?: string | null
+    totalClicks?: number
+    uniqueClicks?: number
+    isActive?: boolean
+    expiresAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lastClickedAt?: Date | string | null
+  }
+
+  export type TrackingLinkClickCreateManyUserInput = {
+    id?: string
+    trackingLinkId: string
+    anonymousId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
   }
 
   export type CommunityUpdateWithoutCreatorInput = {
@@ -37463,6 +42181,104 @@ export namespace Prisma {
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type TrackingLinkUpdateWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clicks?: TrackingLinkClickUpdateManyWithoutTrackingLinkNestedInput
+  }
+
+  export type TrackingLinkUncheckedUpdateWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    clicks?: TrackingLinkClickUncheckedUpdateManyWithoutTrackingLinkNestedInput
+  }
+
+  export type TrackingLinkUncheckedUpdateManyWithoutCreatorInput = {
+    token?: StringFieldUpdateOperationsInput | string
+    originalUrl?: StringFieldUpdateOperationsInput | string
+    shortUrl?: StringFieldUpdateOperationsInput | string
+    conversationId?: NullableStringFieldUpdateOperationsInput | string | null
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    totalClicks?: IntFieldUpdateOperationsInput | number
+    uniqueClicks?: IntFieldUpdateOperationsInput | number
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lastClickedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TrackingLinkClickUpdateWithoutUserInput = {
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trackingLink?: TrackingLinkUpdateOneRequiredWithoutClicksNestedInput
+    anonymousUser?: AnonymousParticipantUpdateOneWithoutTrackingLinkClicksNestedInput
+  }
+
+  export type TrackingLinkClickUncheckedUpdateWithoutUserInput = {
+    trackingLinkId?: StringFieldUpdateOperationsInput | string
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingLinkClickUncheckedUpdateManyWithoutUserInput = {
+    trackingLinkId?: StringFieldUpdateOperationsInput | string
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AnonymousParticipantCreateManyConversationInput = {
     id?: string
     shareLinkId: string
@@ -37586,6 +42402,7 @@ export namespace Prisma {
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     shareLink?: ConversationShareLinkUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
     sentMessages?: MessageUpdateManyWithoutAnonymousSenderNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type AnonymousParticipantUncheckedUpdateWithoutConversationInput = {
@@ -37609,6 +42426,7 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sentMessages?: MessageUncheckedUpdateManyWithoutAnonymousSenderNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type AnonymousParticipantUncheckedUpdateManyWithoutConversationInput = {
@@ -37909,6 +42727,7 @@ export namespace Prisma {
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     conversation?: ConversationUpdateOneRequiredWithoutAnonymousParticipantsNestedInput
     sentMessages?: MessageUpdateManyWithoutAnonymousSenderNestedInput
+    trackingLinkClicks?: TrackingLinkClickUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type AnonymousParticipantUncheckedUpdateWithoutShareLinkInput = {
@@ -37932,6 +42751,7 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leftAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     sentMessages?: MessageUncheckedUpdateManyWithoutAnonymousSenderNestedInput
+    trackingLinkClicks?: TrackingLinkClickUncheckedUpdateManyWithoutAnonymousUserNestedInput
   }
 
   export type AnonymousParticipantUncheckedUpdateManyWithoutShareLinkInput = {
@@ -37970,6 +42790,24 @@ export namespace Prisma {
     replyToId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type TrackingLinkClickCreateManyAnonymousUserInput = {
+    id?: string
+    trackingLinkId: string
+    userId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
   }
 
   export type MessageUpdateWithoutAnonymousSenderInput = {
@@ -38023,6 +42861,57 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingLinkClickUpdateWithoutAnonymousUserInput = {
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    trackingLink?: TrackingLinkUpdateOneRequiredWithoutClicksNestedInput
+    user?: UserUpdateOneWithoutTrackingLinkClicksNestedInput
+  }
+
+  export type TrackingLinkClickUncheckedUpdateWithoutAnonymousUserInput = {
+    trackingLinkId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingLinkClickUncheckedUpdateManyWithoutAnonymousUserInput = {
+    trackingLinkId?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type MessageStatusCreateManyMessageInput = {
@@ -38318,6 +43207,75 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type TrackingLinkClickCreateManyTrackingLinkInput = {
+    id?: string
+    userId?: string | null
+    anonymousId?: string | null
+    ipAddress?: string | null
+    country?: string | null
+    city?: string | null
+    region?: string | null
+    userAgent?: string | null
+    browser?: string | null
+    os?: string | null
+    device?: string | null
+    language?: string | null
+    referrer?: string | null
+    deviceFingerprint?: string | null
+    clickedAt?: Date | string
+  }
+
+  export type TrackingLinkClickUpdateWithoutTrackingLinkInput = {
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutTrackingLinkClicksNestedInput
+    anonymousUser?: AnonymousParticipantUpdateOneWithoutTrackingLinkClicksNestedInput
+  }
+
+  export type TrackingLinkClickUncheckedUpdateWithoutTrackingLinkInput = {
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TrackingLinkClickUncheckedUpdateManyWithoutTrackingLinkInput = {
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    anonymousId?: NullableStringFieldUpdateOperationsInput | string | null
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    city?: NullableStringFieldUpdateOperationsInput | string | null
+    region?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    browser?: NullableStringFieldUpdateOperationsInput | string | null
+    os?: NullableStringFieldUpdateOperationsInput | string | null
+    device?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    referrer?: NullableStringFieldUpdateOperationsInput | string | null
+    deviceFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    clickedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
