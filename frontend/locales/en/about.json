@@ -29,7 +29,9 @@
     "cta": {
       "title": "Want to know more?",
       "contact": "Contact us",
-      "joinUs": "Join us"
+      "joinUs": "Join us",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
     }
   }
 }

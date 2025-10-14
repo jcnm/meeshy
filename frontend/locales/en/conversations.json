@@ -88,7 +88,10 @@
       "deleteConversation": "Delete conversation",
       "conversationSettings": "Conversation settings",
       "members": "members",
-      "online": "online"
+      "online": "online",
+      "autoTranslation": "Auto translation",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
     },
     "addParticipant": "Add participant",
     "conversationParticipants": {
@@ -115,13 +118,16 @@
       "conversationNotFound": "Conversation not found",
       "invalidData": "Invalid data",
       "participantRemovedSuccess": "Participant removed successfully",
+      "participantRemoved": "Participant removed",
       "removeParticipantError": "Error removing participant",
       "searchParticipants": "Search participants...",
       "noOneOnline": "No one online",
       "you": "you",
       "removeFromGroup": "Remove from group",
       "offline": "offline",
-      "noOfflineParticipants": "No offline participants"
+      "noOfflineParticipants": "No offline participants",
+      "close": "Close",
+      "createLink": "Create link"
     },
     "typingIndicator": {
       "typing": "Typing...",

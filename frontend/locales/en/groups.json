@@ -2,6 +2,7 @@
   "groups": {
     "title": "Groups",
     "description": "Manage your groups and communities",
+    "authChecking": "Checking authentication...",
     "createGroup": "Create a group",
     "joinGroup": "Join a group",
     "searchPlaceholder": "Search groups...",

@@ -112,6 +112,8 @@
     "theme": {
       "title": "Theme and interface",
       "description": "Customize the appearance, language and fonts of the application",
+      "settingsUpdated": "Settings updated successfully",
+      "interfaceLanguageUpdated": "Interface language updated",
       "displayMode": {
         "title": "Display mode",
         "light": "Light",
@@ -140,6 +142,22 @@
           "medium": "Medium",
           "large": "Large"
         },
+        "fontFamily": {
+          "title": "Font family",
+          "description": "Choose the font style for the interface"
+        },
+        "lineHeight": {
+          "title": "Line height",
+          "description": "Adjust spacing between lines of text",
+          "tight": "Tight",
+          "normal": "Normal",
+          "relaxed": "Relaxed",
+          "loose": "Loose"
+        },
+        "interfaceLanguage": {
+          "title": "Interface language",
+          "description": "Language for menus and buttons"
+        },
         "compactMode": {
           "title": "Compact mode",
           "description": "Reduces spacing to display more content"
@@ -148,7 +166,26 @@
           "title": "Animations",
           "description": "Enables interface transitions and animations"
         }
+      },
+      "preview": {
+        "title": "Preview",
+        "description": "See how your settings look",
+        "exampleMessage": "This is an example message",
+        "exampleText": "This is example text with your selected font and line height settings"
       }
-    }
+    },
+    "language": {
+      "title": "Language Settings",
+      "description": "Configure your language preferences"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Manage your notification preferences"
+    },
+    "privacy": {
+      "title": "Privacy Settings",
+      "description": "Control your privacy and data settings"
+    },
+    "noUserConnected": "No user connected"
   }
 }
